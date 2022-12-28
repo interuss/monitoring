@@ -62,10 +62,10 @@ therefore may not be used in any production systems.
 
 ### dev DSS
 
-The [dev DSS configuration](../build/dev) brings up a local development DSS
-instance with [run_locally.sh](../build/dev/run_locally.sh), including a [Dummy
-OAuth server](../cmds/dummy-oauth) which grants properly-formatted access tokens
-(which can be validated against the
+`make start-locally` (or [build/dev/run_locally.sh](../build/dev/run_locally.sh))
+brings up a local development DSS including a
+[Dummy OAuth server](https://github.com/interuss/dss/tree/master/cmds/dummy-oauth)
+which grants properly-formatted access tokens (which can be validated against the
 [test public key](../build/test-certs/auth2.pem)) to anyone requesting them.
 
 ### mock_uss

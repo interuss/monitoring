@@ -1,10 +1,10 @@
-# This workflow builds and pushes the dss docker image when a release tag is pushed.
+# This workflow builds and pushes the monitoring docker image when a release tag is pushed.
 # The following secrets must be provided:
 # DOCKER_USERNAME: The username to log into the registry.
 # DOCKER_PASSWORD: The access token of the user to log into the registry.
 # DOCKER_URL: The base url of the repository. Example: `docker.io/interuss` or `interuss`.
 
-name: Publish DSS image to Docker Registry (on new release tag)
+name: Publish monitoring image to Docker Registry (on new release tag)
 on:
   push:
     tags:
@@ -13,13 +13,13 @@ on:
       # pattern matches more often than it should.  A more correct regex would
       # be the one found in scripts/tag.sh.
       # [1] https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
-      - "interuss/dss/v[0-9]+.[0-9]+.[0-9]+-?*"
+      - "interuss/monitoring/v[0-9]+.[0-9]+.[0-9]+-?*"
 jobs:
   docker-hub-push:
-    name: DSS Build and Push to Docker Hub
+    name: Build and Push to Docker Hub
     runs-on: ubuntu-latest
     # To modify to enable the job for forked repository
-    if: github.repository == 'interuss/dss'
+    if: github.repository == 'interuss/monitoring'
     steps:
       - name: Job information
         run: |
@@ -46,4 +46,4 @@ jobs:
         env:
           DOCKER_URL: ${{ secrets.DOCKER_URL }}
         run: |
-          build/build.sh
+          build/build_and_push.sh

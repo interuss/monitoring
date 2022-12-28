@@ -3,7 +3,7 @@ on:
   pull_request: # All
   push:
     branches:
-    - master
+    - main
 jobs:
   hygiene-tests:
     name: Repository hygiene
@@ -31,41 +31,6 @@ jobs:
       run: make shell-lint
     - name: Go lint
       run: make go-lint
-
-  dss-tests:
-    name: DSS tests
-    runs-on: ubuntu-latest
-    steps:
-    - name: Job information
-      run: |
-        echo "Job information"
-        echo "Trigger: ${{ github.event_name }}"
-        echo "Host: ${{ runner.os }}"
-        echo "Repository: ${{ github.repository }}"
-        echo "Branch: ${{ github.ref }}"
-        docker images
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        submodules: true
-    - name: Deployment infrastructure tests
-      run: make evaluate-tanka
-    - name: Go unit tests
-      run: make test-go-units
-    - name: Go unit tests with CockroachDB
-      run: make test-go-units-crdb
-    - name: Build dss image
-      run: make build-dss
-    - name: Build monitoring image
-      run: make build-monitoring
-    - name: Tear down any pre-existing local DSS instance
-      run: make down-locally
-    - name: Start local DSS instance
-      run: make start-locally
-    - name: Probe local DSS instance
-      run: make probe-locally
-    - name: Bring down local DSS instance
-      run: make down-locally
 
   monitoring-tests:
     name: monitoring tests

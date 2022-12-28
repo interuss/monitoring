@@ -17,10 +17,7 @@ services:
     restart: always
 
   local-dss-rid-bootstrapper:
-    build:
-      context: ../..
-      dockerfile: Dockerfile
-    image: interuss-local/dss
+    image: interuss/dss:v0.6.0
     volumes:
       - local-dss-data:/var/local-dss-data
       - $PWD/startup:/startup:ro
@@ -29,10 +26,7 @@ services:
       - local-dss-crdb
 
   local-dss-scd-bootstrapper:
-    build:
-      context: ../..
-      dockerfile: Dockerfile
-    image: interuss-local/dss
+    image: interuss/dss:v0.6.0
     volumes:
       - local-dss-data:/var/local-dss-data
       - $PWD/startup:/startup:ro
@@ -41,10 +35,7 @@ services:
       - local-dss-crdb
 
   local-dss-core-service:
-    build:
-      context: ../..
-      dockerfile: Dockerfile
-    image: interuss-local/dss
+    image: interuss/dss:v0.6.0
     volumes:
       - $PWD/../test-certs:/var/test-certs:ro
       - local-dss-data:/var/local-dss-data
@@ -58,10 +49,7 @@ services:
       - local-dss-scd-bootstrapper
 
   local-dss-dummy-oauth:
-    build:
-      context: ../..
-      dockerfile: cmds/dummy-oauth/Dockerfile
-    image: interuss-local/dummy-oauth
+    image: interuss/dummy-oauth
     command: -private_key_file /var/test-certs/auth2.key
     ports:
       - "8085:8085"

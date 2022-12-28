@@ -12,9 +12,11 @@ else
 fi
 cd "${BASEDIR}/.." || exit 1
 
+TAG="${1:-interuss/monitoring}"
+
 docker build \
     -f monitoring/Dockerfile \
-    -t interuss/monitoring \
+    -t "${TAG}" \
     --build-arg version="$(scripts/git/version.sh monitoring --long)" \
     monitoring \
   || exit 1
