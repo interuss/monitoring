@@ -17,7 +17,7 @@ Releasing a monitoring version requires the following steps:
 - The github workflow ([.github/workflows/image-publish.yml](.github/workflows/image-publish.yml)) is triggered for every new release tag. On the canonical interuss fork, it builds and publishes the monitoring image to the [official docker registry](https://hub.docker.com/repository/docker/interuss/monitoring).
 
 To enable releases of monitoring version in a fork, the following steps are required:
-  1. Set the remote origin url of the repository of the target fork. (ie git@github.com:[owner]/dss.git)
+  1. Set the remote origin url of the repository of the target fork. (ie git@github.com:[owner]/monitoring.git)
   2. Edit in ([.github/workflows/image-publish.yml](.github/workflows/image-publish.yml)) the trigger to match the tags of the fork's owner as well as the job's entry condition to allow the forked repository.
   3. [Enable github actions in the forked project](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#configuring-required-approval-for-workflows-from-public-forks).
   4. Configure the environment variables to setup the registry. (See instructions at the top of [.github/workflows/image-publish.yml](.github/workflows/image-publish.yml))
