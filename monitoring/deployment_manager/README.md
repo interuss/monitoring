@@ -2,10 +2,10 @@
 
 deployment_manager is an automation tool that will be capable of performing most of the steps a human would otherwise have to manually execute to:
 
-* Deploy a DSS instance, both [locally](../../build/dev/standalone_instance.md) and [in production](../../build/README.md)
-* [Troubleshoot a DSS instance](../../build/README.md)
-* [Form or maintain a DSS pool](../../build/pooling.md)
-* [Migrate database schemas](../../build/README.md#upgrading-database-schemas)
+* Deploy a DSS instance, both [locally](https://github.com/interuss/dss/blob/master/build/dev/standalone_instance.md) and [in production](https://github.com/interuss/dss/blob/master/build/README.md)
+* [Troubleshoot a DSS instance](https://github.com/interuss/dss/blob/master/build/README.md#troubleshooting)
+* [Form or maintain a DSS pool](https://github.com/interuss/dss/blob/master/build/pooling.md)
+* [Migrate database schemas](https://github.com/interuss/dss/blob/master/build/README.md#upgrading-database-schemas)
 * [Upgrade CockroachDB nodes](https://www.cockroachlabs.com/docs/stable/upgrade-cockroach-version.html)
 * Deploy a set of diagnostic tools ([tracer](../tracer), [uss_qualifier](../uss_qualifier), [mock_uss](../mock_uss))
 

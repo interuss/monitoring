@@ -5,7 +5,7 @@ import marko.block
 import marko.inline
 
 
-REPO_CONTENT_BASE_URL = "https://github.com/interuss/dss/tree/master/"
+REPO_CONTENT_BASE_URL = "https://github.com/interuss/monitoring/tree/main/"
 
 
 def check_local_links(parent: marko.block.Element, doc_path: str, repo_root: str) -> None:

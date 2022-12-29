@@ -15,8 +15,8 @@ fi
 
 branch=$(git rev-parse --abbrev-ref HEAD)
 
-if test "${branch}" != "master"; then
-  echo "releases are only supported on master branch (currently on ${branch})" && false
+if test "${branch}" != "main"; then
+  echo "releases are only supported on main branch (currently on ${branch})" && false
 fi
 
 if test -n "$(git status -s)"; then

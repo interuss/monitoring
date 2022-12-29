@@ -1,10 +1,9 @@
 # Introduction to the Repository
 
-This document aims to provide a introduction to the repository and it's structure to new contributors and developers.
+This document aims to provide a introduction to the repository and its structure to new contributors and developers.
 
 ## Repository structure
 
-- The main codebase for the DSS is in `/pkg` and `/cmds`, the core organization and structure of the DSS is in these directories.
 - The `/monitoring` folder contains tools to validate DSS deployments and has different directories detailing the tests.
 - The `/interfaces` folder contains diagrams, API specifications of the standards and other test tools that come with the DSS. This folder contains references to the ASTM standard, diagrams about remote-id test suite etc.
 
@@ -14,9 +13,9 @@ The `monitoring` directory contains a set of folders containing different test s
 
 ### Running tools locally
 
-- When running tools in the monitoring toolset for local debugging outside of Docker, the [monitoring](https://github.com/interuss/dss/tree/master/monitoring) folder must be accessible from one of the entries in your `PYTHONPATH`.  To accomplish this, add the root repo folder to your `PYTHONPATH`.
+- When running tools in the monitoring toolset for local debugging outside of Docker, the [monitoring](monitoring) folder must be accessible from one of the entries in your `PYTHONPATH`.  To accomplish this, add the root repo folder to your `PYTHONPATH`.
 
-- To run a DSS instance locally, see [this documentation](build/dev/standalone_instance.md).
+- To run a DSS instance locally, run `make start-locally` and `make stop-locally`, or [see DSS documentation](https://github.com/interuss/dss/blob/master/build/dev/standalone_instance.md).
 
 ### Building new monitoring tools
 

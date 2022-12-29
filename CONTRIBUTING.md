@@ -1,17 +1,17 @@
 # Contributing to this repository
 
-Welcome to the DSS repository and thank you for your interest in contributing to it.
+Welcome to this repository and thank you for your interest in contributing to it.
 
 In order to maximize the quality of contributions while keeping the time and energy spent by contributors and committers to a minimum, we kindly ask you to adhere to the practices described below.
 
 ## General principles
 1. Any change to resources in this repository must be handled through a [Pull Request (PR)](https://docs.github.com/en/get-started/quickstart/contributing-to-projects).
 
-1. PRs to the master branch are expected to pass [continuous integration automated tests](.github/workflows/CI.md).
+1. PRs to the main branch are expected to pass [continuous integration automated tests](.github/workflows/CI.md).
 
-1. No PR on the master branch can be merged without being reviewed.
+1. No PR on the main branch can be merged without being reviewed.
 
-1. The master branch should remain stable at all times. Before a PR is merged into the master branch, it shall pass the tests described in the [Development Guidelines](./DEVELOPMENT.md). Checks are run automatically on every PR.
+1. The main branch should remain stable at all times. Before a PR is merged into the main branch, it shall pass the tests described in the [continuous integration](./.github/workflows/CI.md). Checks are run automatically on every PR.
 
 1. Before your PR can be accepted, you must submit a Contributor License Agreement (CLA). See [here](https://github.com/interuss/tsc/blob/main/CONTRIBUTING.md#contributor-license-agreement-cla) for more details.
 

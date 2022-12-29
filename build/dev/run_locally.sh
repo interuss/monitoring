@@ -2,8 +2,8 @@
 
 set -eo pipefail
 
-# This script will deploy a standalone DSS instance with docker-compose.  See
-# standalone_instance.md for more information.
+# This script will deploy a standalone DSS instance with docker-compose using
+# images from Docker Hub.
 
 if [[ -z $(command -v docker-compose) ]]; then
   echo "docker-compose is required but not installed.  Visit https://docs.docker.com/compose/install/ to install."
