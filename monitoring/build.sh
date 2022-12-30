@@ -18,5 +18,5 @@ docker build \
     -f monitoring/Dockerfile \
     -t "${TAG}" \
     --build-arg version="$(scripts/git/version.sh monitoring --long)" \
-    monitoring \
+    . \
   || exit 1
