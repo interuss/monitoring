@@ -23,11 +23,11 @@ if [[ -z "${DOCKER_URL}" ]]; then
 
   echo "DOCKER_URL environment variable was not set; built image to interuss/monitoring"
 else
-  echo "Building image ${DOCKER_URL}/dss:${VERSION}"
-  ./monitoring/build.sh "${DOCKER_URL}/dss:${VERSION}"
+  echo "Building image ${DOCKER_URL}/monitoring:${VERSION}"
+  ./monitoring/build.sh "${DOCKER_URL}/monitoring:${VERSION}"
 
-  echo "Pushing docker image ${DOCKER_URL}/dss:${VERSION}..."
-  docker image push "${DOCKER_URL}/dss:${VERSION}"
+  echo "Pushing docker image ${DOCKER_URL}/monitoring:${VERSION}..."
+  docker image push "${DOCKER_URL}/monitoring:${VERSION}"
 
-  echo "Built and pushed docker image ${DOCKER_URL}/dss:${VERSION}"
+  echo "Built and pushed docker image ${DOCKER_URL}/monitoring:${VERSION}"
 fi
