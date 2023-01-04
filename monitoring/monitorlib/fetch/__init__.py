@@ -1,6 +1,7 @@
 import datetime
 import json
-from typing import Dict, Optional
+import traceback
+from typing import Dict, Optional, List
 
 import arrow
 import flask
@@ -123,6 +124,22 @@ class Query(dict):
     @property
     def json_result(self) -> Optional[Dict]:
         return self.response.get("json", None)
+
+
+class QueryError(RuntimeError):
+    """Error encountered when interacting with a server in the UTM ecosystem."""
+
+    def __init__(self, msg, queries: Optional[List[Query]] = None):
+        super(RuntimeError, self).__init__(msg)
+        self.queries = queries or []
+
+    @property
+    def stacktrace(self) -> str:
+        return "".join(
+            traceback.format_exception(
+                etype=QueryError, value=self, tb=self.__traceback__
+            )
+        )
 
 
 yaml.add_representer(Query, Representer.represent_dict)

@@ -2,6 +2,7 @@ import traceback
 from datetime import datetime
 from typing import List, Dict, Union, Optional, Tuple, Iterable
 
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd import bounding_vol4
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
@@ -13,7 +14,6 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlanner,
-    QueryError,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
@@ -148,7 +148,11 @@ def check_capabilities(
             for required_capability in capabilities:
                 available_capabilities = [
                     c for p, c in flight_planner_capabilities if p is flight_planner
-                ][0]
+                ]
+                if not available_capabilities:
+                    available_capabilities = []
+                else:
+                    available_capabilities = available_capabilities[0]
                 with scenario.check(
                     f"Support {required_capability}", [flight_planner.participant_id]
                 ) as check:
@@ -157,12 +161,16 @@ def check_capabilities(
                             t
                             for p, t in flight_planner_capability_query_timestamps
                             if p is flight_planner
-                        ][0]
+                        ]
+                        if timestamp:
+                            timestamps = [timestamp[0]]
+                        else:
+                            timestamps = []
                         check.record_failed(
                             summary=f"Flight planner {flight_planner.participant_id} does not support {required_capability}",
                             severity=Severity.High,
                             details=f"Reported capabilities: ({', '.join(available_capabilities)})",
-                            query_timestamps=[timestamp],
+                            query_timestamps=timestamps,
                         )
                         return False
 

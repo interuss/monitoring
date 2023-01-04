@@ -1,14 +1,17 @@
+import traceback
 from datetime import datetime, timedelta
 import time
 from typing import List, Tuple
 import uuid
 
 import flask
+from loguru import logger
 import requests.exceptions
 import yaml
 
-from monitoring.monitorlib import scd, versioning
+from monitoring.monitorlib import scd, versioning, fetch
 from monitoring.monitorlib.clients import scd as scd_client
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
     InjectFlightResponse,
@@ -110,7 +113,7 @@ def scd_capabilities() -> Tuple[dict, int]:
 @requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
 def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
     """Implements flight injection in SCD automated testing injection API."""
-    print(f"[inject_flight:{flight_id}] Starting handler")
+    logger.debug(f"[inject_flight:{flight_id}] Starting handler")
     try:
         json = flask.request.json
         if json is None:
@@ -128,7 +131,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
 
     if locality.is_uspace_applicable():
         # Validate flight authorisation
-        print(f"[inject_flight:{flight_id}] Validating flight authorisation")
+        logger.debug(f"[inject_flight:{flight_id}] Validating flight authorisation")
         problems = problems_with_flight_authorisation(req_body.flight_authorisation)
         if problems:
             return (
@@ -146,13 +149,13 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 # This is an existing flight being modified
                 existing_flight = tx.flights[flight_id]
                 if existing_flight and not existing_flight.locked:
-                    print(
+                    logger.debug(
                         f"[inject_flight:{flight_id}] Existing flight locked for update"
                     )
                     existing_flight.locked = True
                     break
             else:
-                print(f"[inject_flight:{flight_id}] Request is for a new flight")
+                logger.debug(f"[inject_flight:{flight_id}] Request is for a new flight")
                 tx.flights[flight_id] = None
                 existing_flight = None
                 break
@@ -165,9 +168,11 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 f"Deadlock in inject_flight while attempting to gain access to flight {flight_id}"
             )
 
+    step_name = "performing unknown operation"
     try:
         # Check for operational intents in the DSS
-        print(
+        step_name = "querying DSS for operational intents"
+        logger.debug(
             f"[inject_flight:{flight_id}] Checking for operational intents in the DSS"
         )
         start_time = scd.start_of(req_body.operational_intent.volumes)
@@ -183,22 +188,11 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             alt_hi,
             polygon=scd.make_polygon(latlngrect=area),
         )
-        try:
-            op_intents = query_operational_intents(vol4)
-        except (
-            ValueError,
-            scd_client.OperationError,
-            requests.exceptions.ConnectionError,
-            ConnectionError,
-        ) as e:
-            notes = "Error querying operational intents: {}".format(e)
-            return (
-                InjectFlightResponse(result=InjectFlightResult.Failed, notes=notes),
-                200,
-            )
+        op_intents = query_operational_intents(vol4)
 
         # Check for intersections
-        print(
+        step_name = "checking for intersections"
+        logger.debug(
             f"[inject_flight:{flight_id}] Checking for intersections with {', '.join(op_intent.reference.id for op_intent in op_intents)}"
         )
         v1 = req_body.operational_intent.volumes
@@ -232,7 +226,8 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 )
 
         # Create operational intent in DSS
-        print(f"[inject_flight:{flight_id}] Sharing operational intent with DSS")
+        step_name = "sharing operational intent in DSS"
+        logger.debug(f"[inject_flight:{flight_id}] Sharing operational intent with DSS")
         base_url = "{}/mock/scd".format(webapp.config[config.KEY_BASE_URL])
         req = scd.PutOperationalIntentReferenceParameters(
             extents=req_body.operational_intent.volumes,
@@ -241,34 +236,27 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             uss_base_url=base_url,
             new_subscription=scd.ImplicitSubscriptionParameters(uss_base_url=base_url),
         )
-        try:
-            if existing_flight:
-                id = existing_flight.op_intent_reference.id
-                result = scd_client.update_operational_intent_reference(
-                    resources.utm_client,
-                    id,
-                    existing_flight.op_intent_reference.ovn,
-                    req,
-                )
-            else:
-                id = str(uuid.uuid4())
-                result = scd_client.create_operational_intent_reference(
-                    resources.utm_client, id, req
-                )
-        except (
-            ValueError,
-            scd_client.OperationError,
-            requests.exceptions.ConnectionError,
-            ConnectionError,
-        ) as e:
-            notes = "Error creating operational intent: {}".format(e)
-            print(f"[inject_flight:{flight_id}] {notes}")
-            return (
-                InjectFlightResponse(result=InjectFlightResult.Failed, notes=notes),
-                200,
+        if existing_flight:
+            id = existing_flight.op_intent_reference.id
+            step_name = f"updating existing operational intent {id} in DSS"
+            result = scd_client.update_operational_intent_reference(
+                resources.utm_client,
+                id,
+                existing_flight.op_intent_reference.ovn,
+                req,
             )
-        print(
-            f"[inject_flight:{flight_id}] Notifying subscribers {', '.join(s.uss_base_url for s in result.subscribers)}"
+        else:
+            id = str(uuid.uuid4())
+            step_name = f"creating new operational intent {id} in DSS"
+            result = scd_client.create_operational_intent_reference(
+                resources.utm_client, id, req
+            )
+
+        # Notify subscribers
+        subscriber_list = ", ".join(s.uss_base_url for s in result.subscribers)
+        step_name = f"notifying subscribers {{{subscriber_list}}}"
+        logger.debug(
+            f"[inject_flight:{flight_id}] Notifying subscribers {subscriber_list}"
         )
         scd_client.notify_subscribers(
             resources.utm_client,
@@ -281,7 +269,8 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         )
 
         # Store flight in database
-        print(f"[inject_flight:{flight_id}] Storing flight in database")
+        step_name = "storing flight in database"
+        logger.debug(f"[inject_flight:{flight_id}] Storing flight in database")
         record = database.FlightRecord(
             op_intent_reference=result.operational_intent_reference,
             op_intent_injection=req_body.operational_intent,
@@ -290,24 +279,46 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         with db as tx:
             tx.flights[flight_id] = record
 
-        print(f"[inject_flight:{flight_id}] Complete.")
+        step_name = "returning final successful result"
+        logger.debug(f"[inject_flight:{flight_id}] Complete.")
         return (
             InjectFlightResponse(
                 result=InjectFlightResult.Planned, operational_intent_id=id
             ),
             200,
         )
+    except (ValueError, ConnectionError) as e:
+        notes = (
+            f"{e.__class__.__name__} while {step_name} for flight {flight_id}: {str(e)}"
+        )
+        return (
+            InjectFlightResponse(result=InjectFlightResult.Failed, notes=notes),
+            200,
+        )
+    except requests.exceptions.ConnectionError as e:
+        notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
+        response = InjectFlightResponse(result=InjectFlightResult.Failed, notes=notes)
+        response["stacktrace"] = "".join(
+            traceback.format_exception(etype=QueryError, value=e, tb=e.__traceback__)
+        )
+        return response, 200
+    except QueryError as e:
+        notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
+        response = InjectFlightResponse(result=InjectFlightResult.Failed, notes=notes)
+        response["queries"] = e.queries
+        response["stacktrace"] = e.stacktrace
+        return response, 200
     finally:
         with db as tx:
             if tx.flights[flight_id]:
                 # FlightRecord was a true existing flight
-                print(
+                logger.debug(
                     f"[inject_flight] Releasing placeholder for flight_id {flight_id}"
                 )
                 tx.flights[flight_id].locked = False
             else:
                 # FlightRecord was just a placeholder for a new flight
-                print(
+                logger.debug(
                     f"[inject_flight] Releasing lock on existing flight_id {flight_id}"
                 )
                 del tx.flights[flight_id]
@@ -353,29 +364,43 @@ def delete_flight(flight_id) -> Tuple[dict, int]:
         )
 
     # Delete operational intent from DSS
+    step_name = "performing unknown operation"
     try:
+        step_name = f"deleting operational intent {flight.op_intent_reference.id} with OVN {flight.op_intent_reference.ovn} from DSS"
         result = scd_client.delete_operational_intent_reference(
             resources.utm_client,
             flight.op_intent_reference.id,
             flight.op_intent_reference.ovn,
         )
-    except (
-        ValueError,
-        scd_client.OperationError,
-        requests.exceptions.ConnectionError,
-        ConnectionError,
-    ) as e:
-        notes = "Error deleting operational intent: {}".format(e)
+
+        step_name = "notifying subscribers"
+        scd_client.notify_subscribers(
+            resources.utm_client,
+            result.operational_intent_reference.id,
+            None,
+            result.subscribers,
+        )
+    except (ValueError, ConnectionError) as e:
+        notes = (
+            f"{e.__class__.__name__} while {step_name} for flight {flight_id}: {str(e)}"
+        )
         return (
             DeleteFlightResponse(result=DeleteFlightResult.Failed, notes=notes),
             200,
         )
-    scd_client.notify_subscribers(
-        resources.utm_client,
-        result.operational_intent_reference.id,
-        None,
-        result.subscribers,
-    )
+    except requests.exceptions.ConnectionError as e:
+        notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
+        response = DeleteFlightResponse(result=DeleteFlightResult.Failed, notes=notes)
+        response["stacktrace"] = "".join(
+            traceback.format_exception(etype=QueryError, value=e, tb=e.__traceback__)
+        )
+        return response, 200
+    except QueryError as e:
+        notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
+        response = DeleteFlightResponse(result=DeleteFlightResult.Failed, notes=notes)
+        response["queries"] = e.queries
+        response["stacktrace"] = e.stacktrace
+        return response, 200
 
     return DeleteFlightResponse(result=DeleteFlightResult.Closed), 200
 
@@ -396,95 +421,106 @@ def scdsc_clear_area() -> Tuple[str, int]:
 
 
 def clear_area(req: ClearAreaRequest) -> Tuple[dict, int]:
-    # Find operational intents in the DSS
-    start_time = scd.start_of([req.extent])
-    end_time = scd.end_of([req.extent])
-    area = scd.rect_bounds_of([req.extent])
-    alt_lo, alt_hi = scd.meter_altitude_bounds_of([req.extent])
-    vol4 = scd.make_vol4(
-        start_time, end_time, alt_lo, alt_hi, polygon=scd.make_polygon(latlngrect=area)
-    )
-    try:
-        op_intent_refs = scd_client.query_operational_intent_references(
-            resources.utm_client, vol4
-        )
-    except (
-        ValueError,
-        scd_client.OperationError,
-        requests.exceptions.ConnectionError,
-        ConnectionError,
-    ) as e:
-        msg = "Error querying operational intents: {}".format(e)
-        return (
-            ClearAreaResponse(
-                outcome=ClearAreaOutcome(
-                    success=False,
-                    message=msg,
-                    timestamp=StringBasedDateTime(datetime.utcnow()),
-                ),
-                request=req,
-            ),
-            200,
-        )
-
-    # Try to delete every operational intent found
-    dss_deletion_results = {}
-    deleted = set()
-    for op_intent_ref in op_intent_refs:
-        try:
-            scd_client.delete_operational_intent_reference(
-                resources.utm_client, op_intent_ref.id, op_intent_ref.ovn
-            )
-            dss_deletion_results[op_intent_ref.id] = "Deleted from DSS"
-            deleted.add(op_intent_ref.id)
-        except scd_client.OperationError as e:
-            dss_deletion_results[op_intent_ref.id] = str(e)
-
-    # Delete corresponding flight injections and cached operational intents
-    deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
-    while True:
-        pending_flights = set()
-        with db as tx:
-            flights_to_delete = []
-            for flight_id, record in tx.flights.items():
-                if record is None or record.locked:
-                    pending_flights.add(flight_id)
-                    continue
-                if record.op_intent_reference.id in deleted:
-                    flights_to_delete.append(flight_id)
-            for flight_id in flights_to_delete:
-                del tx.flights[flight_id]
-
-            cache_deletions = []
-            for op_intent_id in deleted:
-                if op_intent_id in tx.cached_operations:
-                    del tx.cached_operations[op_intent_id]
-                    cache_deletions.append(op_intent_id)
-
-        if not pending_flights:
-            break
-        time.sleep(0.5)
-
-        if datetime.utcnow() > deadline:
-            raise RuntimeError(
-                f"Deadlock in clear_area while attempting to gain access to flight(s) {', '.join(pending_flights)}"
-            )
-
-    msg = yaml.dump(
-        {
-            "dss_deletions": dss_deletion_results,
-            "flight_deletions": flights_to_delete,
-            "cache_deletions": cache_deletions,
-        }
-    )
-    return (
-        ClearAreaResponse(
+    def make_result(success: bool, msg: str) -> ClearAreaResponse:
+        return ClearAreaResponse(
             outcome=ClearAreaOutcome(
-                success=True,
+                success=success,
                 message=msg,
                 timestamp=StringBasedDateTime(datetime.utcnow()),
             ),
             request=req,
-        ),
-        200,
-    )
+        )
+
+    step_name = "performing unknown operation"
+    try:
+        # Find operational intents in the DSS
+        step_name = "constructing DSS operational intent query"
+        start_time = scd.start_of([req.extent])
+        end_time = scd.end_of([req.extent])
+        area = scd.rect_bounds_of([req.extent])
+        alt_lo, alt_hi = scd.meter_altitude_bounds_of([req.extent])
+        vol4 = scd.make_vol4(
+            start_time,
+            end_time,
+            alt_lo,
+            alt_hi,
+            polygon=scd.make_polygon(latlngrect=area),
+        )
+        step_name = "finding operational intents in the DSS"
+        op_intent_refs = scd_client.query_operational_intent_references(
+            resources.utm_client, vol4
+        )
+
+        # Try to delete every operational intent found
+        op_intent_ids = ", ".join(op_intent_ref.id for op_intent_ref in op_intent_refs)
+        step_name = f"deleting operational intents {{{op_intent_ids}}}"
+        dss_deletion_results = {}
+        deleted = set()
+        for op_intent_ref in op_intent_refs:
+            try:
+                scd_client.delete_operational_intent_reference(
+                    resources.utm_client, op_intent_ref.id, op_intent_ref.ovn
+                )
+                dss_deletion_results[op_intent_ref.id] = "Deleted from DSS"
+                deleted.add(op_intent_ref.id)
+            except QueryError as e:
+                dss_deletion_results[op_intent_ref.id] = {
+                    "deletion_success": False,
+                    "message": str(e),
+                    "queries": e.queries,
+                    "stacktrace": e.stacktrace,
+                }
+
+        # Delete corresponding flight injections and cached operational intents
+        step_name = "deleting flight injections and cached operational intents"
+        deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
+        while True:
+            pending_flights = set()
+            with db as tx:
+                flights_to_delete = []
+                for flight_id, record in tx.flights.items():
+                    if record is None or record.locked:
+                        pending_flights.add(flight_id)
+                        continue
+                    if record.op_intent_reference.id in deleted:
+                        flights_to_delete.append(flight_id)
+                for flight_id in flights_to_delete:
+                    del tx.flights[flight_id]
+
+                cache_deletions = []
+                for op_intent_id in deleted:
+                    if op_intent_id in tx.cached_operations:
+                        del tx.cached_operations[op_intent_id]
+                        cache_deletions.append(op_intent_id)
+
+            if not pending_flights:
+                break
+            time.sleep(0.5)
+
+            if datetime.utcnow() > deadline:
+                raise RuntimeError(
+                    f"Deadlock in clear_area while attempting to gain access to flight(s) {', '.join(pending_flights)}"
+                )
+
+    except (ValueError, ConnectionError) as e:
+        msg = f"{e.__class__.__name__} while {step_name}: {str(e)}"
+        return make_result(False, msg), 200
+    except requests.exceptions.ConnectionError as e:
+        msg = f"Connection error to {e.request.method} {e.request.url} while {step_name}: {str(e)}"
+        result = make_result(False, msg)
+        result["stacktrace"] = "".join(
+            traceback.format_exception(etype=QueryError, value=e, tb=e.__traceback__)
+        )
+        return result, 200
+    except QueryError as e:
+        msg = f"Unexpected response from remote server while {step_name}: {str(e)}"
+        result = make_result(False, msg)
+        result["queries"] = e.queries
+        result["stacktrace"] = e.stacktrace
+        return result, 200
+
+    result = make_result(True, "Area clearing attempt complete")
+    result["dss_deletions"] = dss_deletion_results
+    result["flight_deletions"] = (flights_to_delete,)
+    result["cache_deletions"] = cache_deletions
+    return result, 200
