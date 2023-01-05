@@ -93,9 +93,10 @@ def _entity_references(
         )
     }
     url = "/dss/v1/{}/query".format(dss_resource_name)
+    scope = scd.SCOPE_CP if "constraint" in dss_resource_name else scd.SCOPE_SC
     entity_references = FetchedEntityReferences(
         fetch.query_and_describe(
-            utm_client, "POST", url, json=request_body, scope=scd.SCOPE_SC
+            utm_client, "POST", url, json=request_body, scope=scope
         )
     )
     entity_references["entity_type"] = dss_resource_name
@@ -192,8 +193,9 @@ def _full_entity(
     )
 
     # Query the USS for Entity details
+    scope = scd.SCOPE_CP if "constraint" in uss_resource_name else scd.SCOPE_SC
     entity = FetchedEntity(
-        fetch.query_and_describe(utm_client, "GET", uss_entity_url, scope=scd.SCOPE_SC)
+        fetch.query_and_describe(utm_client, "GET", uss_entity_url, scope=scope)
     )
     entity["id_requested"] = entity_id
     entity["entity_type"] = uss_resource_name
@@ -338,8 +340,8 @@ def operations(
     operation_cache: Optional[Dict[str, FetchedEntity]] = None,
 ) -> FetchedEntities:
     return _entities(
-        "operation_references",
-        "operation",
+        "operational_intent_references",
+        "operational_intent",
         utm_client,
         area,
         start_time,

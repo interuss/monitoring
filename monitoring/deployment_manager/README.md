@@ -7,7 +7,7 @@ deployment_manager is an automation tool that will be capable of performing most
 * [Form or maintain a DSS pool](https://github.com/interuss/dss/blob/master/build/pooling.md)
 * [Migrate database schemas](https://github.com/interuss/dss/blob/master/build/README.md#upgrading-database-schemas)
 * [Upgrade CockroachDB nodes](https://www.cockroachlabs.com/docs/stable/upgrade-cockroach-version.html)
-* Deploy a set of diagnostic tools ([tracer](../tracer), [uss_qualifier](../uss_qualifier), [mock_uss](../mock_uss))
+* Deploy a set of diagnostic tools ([uss_qualifier](../uss_qualifier), [mock_uss](../mock_uss))
 
 deployment_manager actions all accept a declarative definition of the InterUSS deployment desired.  To make changes to a deployment, the administrator should edit the development definition and then execute the desired action.
 

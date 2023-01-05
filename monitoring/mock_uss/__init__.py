@@ -7,6 +7,7 @@ SERVICE_RIDSP = "ridsp"
 SERVICE_RIDDP = "riddp"
 SERVICE_SCDSC = "scdsc"
 SERVICE_MESSAGESIGNING = "msgsigning"
+SERVICE_TRACER = "tracer"
 
 webapp = flask.Flask(__name__)
 enabled_services = set()
@@ -47,3 +48,8 @@ if SERVICE_MESSAGESIGNING in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_MESSAGESIGNING)
     from monitoring.mock_uss import msgsigning
     from monitoring.mock_uss.msgsigning import routes as msgsigning_routes
+
+if SERVICE_TRACER in webapp.config[config.KEY_SERVICES]:
+    enabled_services.add(SERVICE_TRACER)
+    from monitoring.mock_uss import tracer
+    from monitoring.mock_uss.tracer import routes as tracer_routes

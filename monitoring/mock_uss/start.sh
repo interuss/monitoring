@@ -22,5 +22,6 @@ export PYTHONUNBUFFERED=TRUE
 gunicorn \
     --preload \
     --workers=4 \
+    --threads=2 \
     --bind=0.0.0.0:5000 \
     monitoring.mock_uss:webapp

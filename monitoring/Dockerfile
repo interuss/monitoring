@@ -28,10 +28,6 @@ RUN mkdir -p /app/monitoring/prober
 COPY prober/requirements.txt /app/monitoring/prober/requirements.txt
 RUN pip install -r /app/monitoring/prober/requirements.txt
 
-RUN mkdir -p /app/monitoring/tracer
-COPY tracer/requirements.txt /app/monitoring/tracer/requirements.txt
-RUN pip install -r /app/monitoring/tracer/requirements.txt
-
 RUN mkdir -p /app/monitoring/uss_qualifier
 COPY uss_qualifier/requirements.txt /app/monitoring/uss_qualifier/requirements.txt
 RUN pip install -r /app/monitoring/uss_qualifier/requirements.txt
