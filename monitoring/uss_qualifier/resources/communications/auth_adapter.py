@@ -25,7 +25,10 @@ class AuthAdapterResource(Resource[AuthAdapterSpecification]):
     adapter: infrastructure.AuthAdapter
 
     def __init__(self, specification: AuthAdapterSpecification):
-        if specification.environment_variable_containing_auth_spec:
+        if (
+            "environment_variable_containing_auth_spec" in specification
+            and specification.environment_variable_containing_auth_spec
+        ):
             if (
                 specification.environment_variable_containing_auth_spec
                 not in os.environ
@@ -36,7 +39,7 @@ class AuthAdapterResource(Resource[AuthAdapterSpecification]):
                     )
                 )
             spec = os.environ[specification.environment_variable_containing_auth_spec]
-        elif specification.auth_spec:
+        elif "auth_spec" in specification and specification.auth_spec:
             spec = specification.auth_spec
         else:
             raise ValueError("No auth spec was declared")
