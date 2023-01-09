@@ -15,7 +15,8 @@ docker run --name tracer_subscribe \
   -e TRACER_OPTIONS="${TRACER_OPTIONS}" \
   -p ${PORT}:5000 \
   -v "$(pwd):/config" \
-  interuss/dss/tracer \
+  --workdir=/app/monitoring/tracer \
+  interuss/monitoring \
   gunicorn \
     --preload \
     --workers=2 \
