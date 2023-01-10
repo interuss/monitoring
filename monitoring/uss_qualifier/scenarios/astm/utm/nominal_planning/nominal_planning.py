@@ -1,3 +1,4 @@
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
     InjectFlightResult,
@@ -11,7 +12,6 @@ from monitoring.uss_qualifier.resources.flight_planning import (
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlanner,
-    QueryError,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,

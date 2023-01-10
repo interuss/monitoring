@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd import Volume4D
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightResult,
@@ -23,19 +24,6 @@ from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     StatusResponse,
     CapabilitiesResponse,
 )
-
-
-class QueryError(RuntimeError):
-    """An error encountered when interacting with a DSS or a USS"""
-
-    def __init__(self, msg, queries: List[fetch.Query]):
-        super(RuntimeError, self).__init__(msg)
-        self.queries = queries
-        self.stacktrace = "".join(
-            traceback.format_exception(
-                etype=QueryError, value=self, tb=self.__traceback__
-            )
-        )
 
 
 class FlightPlannerConfiguration(ImplicitDict):
