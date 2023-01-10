@@ -8,6 +8,7 @@ SERVICE_RIDDP = "riddp"
 SERVICE_SCDSC = "scdsc"
 SERVICE_MESSAGESIGNING = "msgsigning"
 SERVICE_ATPROXY_CLIENT = "atproxy_client"
+SERVICE_TRACER = "tracer"
 
 webapp = flask.Flask(__name__)
 enabled_services = set()
@@ -55,3 +56,8 @@ if SERVICE_ATPROXY_CLIENT in webapp.config[config.KEY_SERVICES]:
     from monitoring.mock_uss.atproxy_client import daemon
 
     daemon.start()
+
+if SERVICE_TRACER in webapp.config[config.KEY_SERVICES]:
+    enabled_services.add(SERVICE_TRACER)
+    from monitoring.mock_uss import tracer
+    from monitoring.mock_uss.tracer import routes as tracer_routes

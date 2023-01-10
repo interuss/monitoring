@@ -13,6 +13,11 @@ def status():
     )
 
 
+@webapp.route("/favicon.ico")
+def favicon():
+    flask.abort(404)
+
+
 @webapp.errorhandler(Exception)
 def handle_exception(e):
     if isinstance(e, HTTPException):

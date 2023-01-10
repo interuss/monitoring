@@ -49,15 +49,6 @@ observed.  It is intended to be run in a production-like shared test environment
 to verify the interoperability of all participants' systems before promoting
 any system changes to production.
 
-### tracer
-
-![tracer](../assets/tracer_system.png)
-
-[tracer](tracer) is a diagnostic tool that acts like an RID Display Provider in
-order to collect and present information about the state of the system.  It is
-not compliant with the data protection requirements of the ASTM RID standard and
-therefore may not be used in any production systems.
-
 ## Mock systems
 
 ### dev DSS
@@ -89,3 +80,13 @@ that makes remote ID information available to Display Application substitutes
 via the
 [InterUSS RID automated testing interface](../interfaces/automated_testing/rid)
 observation API.
+
+#### tracer
+
+![tracer](../assets/tracer_system.png)
+
+[tracer](mock_uss) is a diagnostic tool that acts like an RID Display Provider
+and strategic coordination USS order to collect and present information about
+the state of the system.  It is not compliant with the data protection
+requirements of the ASTM standards and therefore may not be used in any
+production systems.
