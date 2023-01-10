@@ -7,7 +7,6 @@ import uuid
 import flask
 from loguru import logger
 import requests.exceptions
-import yaml
 
 from monitoring.monitorlib import scd, versioning, fetch
 from monitoring.monitorlib.clients import scd as scd_client
@@ -34,6 +33,12 @@ from monitoring.monitorlib.uspace import problems_with_flight_authorisation
 
 
 DEADLOCK_TIMEOUT = timedelta(seconds=60)
+
+
+def _make_stacktrace(e) -> str:
+    return "".join(
+        traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+    )
 
 
 def query_operational_intents(
@@ -298,9 +303,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
     except requests.exceptions.ConnectionError as e:
         notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
         response = InjectFlightResponse(result=InjectFlightResult.Failed, notes=notes)
-        response["stacktrace"] = "".join(
-            traceback.format_exception(etype=QueryError, value=e, tb=e.__traceback__)
-        )
+        response["stacktrace"] = _make_stacktrace(e)
         return response, 200
     except QueryError as e:
         notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
@@ -391,9 +394,7 @@ def delete_flight(flight_id) -> Tuple[dict, int]:
     except requests.exceptions.ConnectionError as e:
         notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
         response = DeleteFlightResponse(result=DeleteFlightResult.Failed, notes=notes)
-        response["stacktrace"] = "".join(
-            traceback.format_exception(etype=QueryError, value=e, tb=e.__traceback__)
-        )
+        response["stacktrace"] = _make_stacktrace(e)
         return response, 200
     except QueryError as e:
         notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
@@ -508,9 +509,7 @@ def clear_area(req: ClearAreaRequest) -> Tuple[dict, int]:
     except requests.exceptions.ConnectionError as e:
         msg = f"Connection error to {e.request.method} {e.request.url} while {step_name}: {str(e)}"
         result = make_result(False, msg)
-        result["stacktrace"] = "".join(
-            traceback.format_exception(etype=QueryError, value=e, tb=e.__traceback__)
-        )
+        result["stacktrace"] = _make_stacktrace(e)
         return result, 200
     except QueryError as e:
         msg = f"Unexpected response from remote server while {step_name}: {str(e)}"
