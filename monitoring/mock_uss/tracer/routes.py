@@ -81,7 +81,7 @@ def tracer_scd_v21_operation_notification() -> Tuple[str, int]:
     """Implements SCD Operation notification receiver."""
     logger.debug(f"Handling tracer_scd_v21_operation_notification from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
-    req["endpoint"] = "operations"
+    req["endpoint"] = "operational_intents"
     log_name = context.resources.logger.log_new("notify_op", req)
 
     claims = req.token
