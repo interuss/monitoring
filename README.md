@@ -29,7 +29,7 @@ Management (UTM) UAS Service Supplier (USS) Interoperability Specification.
   - [USS qualifier](./monitoring/uss_qualifier)
   - [DSS integration test: prober](./monitoring/prober)
   - [DSS load test](./monitoring/loadtest)
-  - [Diagnostic tool to monitor DSS and USS interactions: tracer](./monitoring/tracer)
+  - [Mock USS](./monitoring/mock_uss), with multiple capabilities
 
 ## Development Practices
 - [Introduction to the repository](./introduction_to_repository.md)
