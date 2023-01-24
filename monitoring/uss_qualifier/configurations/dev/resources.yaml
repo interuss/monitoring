@@ -62,12 +62,46 @@ net_rid_sims:
       flight_record_collection_path: "./test_data/usa/netrid/dcdemo_flights.json"
 
 flight_auth:
-  $ref: '#/f3548'
+  $ref: '#/f3548_che'
   invalid_flight_auth_flights:
     resource_type: resources.flight_planning.FlightIntentsResource
     specification:
       planning_time: '0:05:00'
       file_source: file://./test_data/che/flight_intents/invalid_flight_auths.json
+
+che_flight_intents:
+  conflicting_flights:
+    resource_type: resources.flight_planning.FlightIntentsResource
+    specification:
+      planning_time: '0:05:00'
+      file_source: file://./test_data/che/flight_intents/conflicting_flights.json
+  priority_preemption_flights:
+    resource_type: resources.flight_planning.FlightIntentsResource
+    specification:
+      planning_time: '0:05:00'
+      file_source: test_data.che.flight_intents.priority_preemption
+
+kentland_flight_intents:
+  conflicting_flights:
+    resource_type: resources.flight_planning.FlightIntentsResource
+    specification:
+      planning_time: '0:05:00'
+      file_source: file://./test_data/usa/kentland/flight_intents/conflicting_flights.yaml
+  priority_preemption_flights:
+    resource_type: resources.flight_planning.FlightIntentsResource
+    specification:
+      planning_time: '0:05:00'
+      file_source: test_data.usa.kentland.flight_intents.priority_preemption
+
+f3548_che:
+  allOf:
+    - $ref: '#/f3548'
+    - $ref: '#/che_flight_intents'
+
+f3548_kentland:
+  allOf:
+  - $ref: '#/f3548'
+  - $ref: '#/kentland_flight_intents'
 
 f3548:
   $ref: '#/common'
@@ -83,16 +117,6 @@ f3548:
       # uss2 uses atproxy, with requests being fulfilled by mock_uss with atproxy_client functionality enabled
       - participant_id: uss2
         injection_base_url: http://host.docker.internal:8075/scd
-  conflicting_flights:
-    resource_type: resources.flight_planning.FlightIntentsResource
-    specification:
-      planning_time: '0:05:00'
-      file_source: file://./test_data/che/flight_intents/conflicting_flights.json
-  priority_preemption_flights:
-    resource_type: resources.flight_planning.FlightIntentsResource
-    specification:
-      planning_time: '0:05:00'
-      file_source: test_data.che.flight_intents.priority_preemption
   dss:
     resource_type: resources.astm.f3548.v21.DSSInstanceResource
     dependencies:
@@ -102,7 +126,7 @@ f3548:
       base_url: http://host.docker.internal:8082
 
 f3548_single_scenario:
-  $ref: '#/f3548'
+  $ref: '#/f3548_che'
   uss1:
     resource_type: resources.flight_planning.FlightPlannerResource
     dependencies:

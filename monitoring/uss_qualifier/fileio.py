@@ -120,6 +120,8 @@ def _load_dict_with_references_from_file_name(
         root_path = os.path.dirname(context_file_name)
         base_file_name = os.path.join(root_path, base_file_name)
 
+    base_file_name = os.path.abspath(base_file_name)
+
     if base_file_name in cache:
         dict_content = cache[base_file_name]
     else:
@@ -159,6 +161,15 @@ def _should_recurse(item):
     return False
 
 
+def _is_descendant(potential_descendant: str, ancestor: str) -> bool:
+    ancestor_paths = ancestor.split(".")
+    potential_descendant_paths = potential_descendant.split(".")
+    if len(potential_descendant_paths) < len(ancestor_paths):
+        return False
+    result = potential_descendant_paths[0 : len(ancestor_paths)] == ancestor_paths
+    return result
+
+
 def _identify_refs(content: dict) -> List[str]:
     refs = _find_refs(content)
     external_refs = [k for k, v in refs.items() if not v.startswith("#")]
@@ -167,20 +178,23 @@ def _identify_refs(content: dict) -> List[str]:
     # Order internal references by dependency
     internal_refs = []
     while remaining_internal_refs:
+        # ref_to_add will only contain a reference whose referenced section does not contain any remaining_internal_refs
         ref_to_add = None
         for potential_ref, ref_path in remaining_internal_refs.items():
+            # ref_json_path is the JSON path to the content referenced by potential_ref
             ref_json_path = ref_path.replace("#", "$").replace("/", ".")
+            # potential_ref has a dependency on an entry of remaining_internal_refs if that entry descends from ref_json_path
             dependencies = [
                 r
                 for r in remaining_internal_refs
-                if r != potential_ref and r.startswith(ref_json_path)
+                if r != potential_ref and _is_descendant(r, ref_json_path)
             ]
             if not dependencies:
                 ref_to_add = potential_ref
                 break
         if ref_to_add is None:
             raise ValueError(
-                f'Circular dependency in $refs: {", ".join(remaining_internal_refs)}'
+                f'Likely circular dependency in $refs; could not add any of the refs {{{", ".join(remaining_internal_refs)}}} to dependency list of [{" <- ".join(internal_refs)}]'
             )
         internal_refs.append(ref_to_add)
         del remaining_internal_refs[ref_to_add]
