@@ -8,7 +8,9 @@ import flask
 from loguru import logger
 import requests.exceptions
 
-from uas_standards.interuss.automated_testing.flight_planning.v1.api import OperationalIntentState
+from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
+    OperationalIntentState,
+)
 from monitoring.monitorlib import scd, versioning, fetch
 from monitoring.monitorlib.clients import scd as scd_client
 from monitoring.monitorlib.fetch import QueryError
@@ -288,14 +290,15 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         step_name = "returning final successful result"
         logger.debug(f"[inject_flight:{flight_id}] Complete.")
 
-        if result.operational_intent_reference.state == OperationalIntentState.Activated:
+        if (
+            result.operational_intent_reference.state
+            == OperationalIntentState.Activated
+        ):
             injection_result = InjectFlightResult.ReadyToFly
         else:
             injection_result = InjectFlightResult.Planned
         return (
-            InjectFlightResponse(
-                result=injection_result, operational_intent_id=id
-            ),
+            InjectFlightResponse(result=injection_result, operational_intent_id=id),
             200,
         )
     except (ValueError, ConnectionError) as e:
