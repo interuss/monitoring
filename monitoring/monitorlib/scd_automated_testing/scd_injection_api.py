@@ -76,6 +76,7 @@ class InjectFlightRequest(ImplicitDict):
 
 class InjectFlightResult(str, Enum):
     Planned = "Planned"
+    ReadyToFly = "ReadyToFly"
     Rejected = "Rejected"
     ConflictWithFlight = "ConflictWithFlight"
     Failed = "Failed"
