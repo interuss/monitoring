@@ -40,7 +40,6 @@ if ! docker run --link "$OAUTH_CONTAINER":oauth \
 	--link "$CORE_SERVICE_CONTAINER":core-service \
 	--network dss_sandbox_default \
 	-v "${RESULTFILE}:/app/test_result" \
-	--env F3411_22A_ALTITUDE_REFERENCE=WGS84 \
 	-w /app/monitoring/prober \
 	interuss/monitoring \
 	pytest \

@@ -1,5 +1,4 @@
 import datetime
-import os
 from typing import Literal
 
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -12,17 +11,6 @@ SCOPE_DP = "rid.display_provider"
 SCOPE_SP = "rid.service_provider"
 
 
-# TODO(#17): Remove this variable behavior
-ALTITUDE_REFERENCE: str = os.environ.get("F3411_22A_ALTITUDE_REFERENCE", "W84")
-"""Altitude reference constant.
-
-F3411-22a uses the altitude reference constant `W84`, but both the DSS and and
-this repository incorrectly used `WGS84` prior to this addition.  This feature
-allows prober tests to pass using an old DSS version, but can be removed once
-the DSS has been updated to fix the bug.
-"""
-
-
 class Time(ImplicitDict):
     value: StringBasedDateTime
     format: Literal["RFC3339"]
@@ -33,14 +21,13 @@ class Time(ImplicitDict):
 
 
 class Altitude(ImplicitDict):
-    # TODO(#17): Change `reference` to Literal["W84"]
-    reference: str
+    reference: Literal["W84"]
     units: Literal["M"]
     value: float
 
     @classmethod
     def make(cls, altitude_meters: float):
-        return Altitude(reference=ALTITUDE_REFERENCE, units="M", value=altitude_meters)
+        return Altitude(reference="W84", units="M", value=altitude_meters)
 
 
 MAX_SUB_PER_AREA = rid_v1.MAX_SUB_PER_AREA
