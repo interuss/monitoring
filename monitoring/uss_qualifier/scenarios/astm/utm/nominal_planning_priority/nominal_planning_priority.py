@@ -33,6 +33,7 @@ class NominalPlanningPriority(TestScenario):
     first_flight: InjectFlightRequest
     first_flight_id: Optional[str]
     priority_flight: InjectFlightRequest
+    priority_flight_activated: InjectFlightRequest
     priority_flight_id: Optional[str]
     uss1: FlightPlanner
     uss2: FlightPlanner
@@ -50,17 +51,30 @@ class NominalPlanningPriority(TestScenario):
         self.uss2 = uss2.flight_planner
 
         flight_intents = flight_intents.get_flight_intents()
-        if len(flight_intents) < 2:
+        if len(flight_intents) < 3:
             raise ValueError(
-                f"`{self.me()}` TestScenario requires at least 2 flight_intents; found {len(flight_intents)}"
+                f"`{self.me()}` TestScenario requires at least 3 flight_intents; found {len(flight_intents)}"
             )
-        self.first_flight, self.priority_flight = flight_intents
+        (
+            self.first_flight,
+            self.priority_flight,
+            self.priority_flight_activated,
+        ) = flight_intents
         if (
             self.priority_flight.operational_intent.priority
             <= self.first_flight.operational_intent.priority
+            or self.priority_flight_activated.operational_intent.priority
+            <= self.first_flight.operational_intent.priority
         ):
             raise ValueError(
-                f"`{self.me()}` TestScenario requires the second flight_intent to be higher priority than the first flight_intent; instead found priorities {self.first_flight.operational_intent.priority} then {self.priority_flight.operational_intent.priority}"
+                f"`{self.me()}` TestScenario requires the second and third flight_intent to be higher priority than the first flight_intent; instead found priorities {self.first_flight.operational_intent.priority} then {self.priority_flight.operational_intent.priority} and {self.priority_flight_activated.operational_intent.priority}"
+            )
+        elif (
+            self.priority_flight.operational_intent.priority
+            != self.priority_flight_activated.operational_intent.priority
+        ):
+            raise ValueError(
+                f"`{self.me()}` TestScenario requires the second flight_intent to the same priority as the third flight_intent; instead found priorities {self.priority_flight.operational_intent.priority} and {self.priority_flight_activated.operational_intent.priority}"
             )
         self.first_flight_id, self.priority_flight_id = None, None
 
@@ -153,7 +167,7 @@ class NominalPlanningPriority(TestScenario):
             "Activate priority flight",
             self.uss2,
             self.priority_flight_id,
-            self.priority_flight,
+            self.priority_flight_activated,
         )
         if resp is None:
             raise RuntimeError(
@@ -162,7 +176,10 @@ class NominalPlanningPriority(TestScenario):
         op_intent_id = resp.operational_intent_id
 
         validate_shared_operational_intent(
-            self, "Validate flight sharing", self.priority_flight, op_intent_id
+            self,
+            "Validate flight sharing",
+            self.priority_flight_activated,
+            op_intent_id,
         )
 
     def cleanup(self):
