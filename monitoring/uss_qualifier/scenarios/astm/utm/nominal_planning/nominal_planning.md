@@ -73,7 +73,7 @@ All flight intent data provided was complete and correct. It should have been pr
 
 ## Activate first flight test case
 
-In this step, the first USS successfully executes a user intent to activate the priority flight.
+In this step, the first USS successfully executes a user intent to activate the first flight.
 
 ### [Activate first flight test step](../../../flight_planning/successfully_activate_flight.md)
 
