@@ -1,3 +1,5 @@
+from typing import Optional
+
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
@@ -25,12 +27,15 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     check_capabilities,
     inject_successful_flight_intent,
     cleanup_flights,
+    activate_valid_flight_intent,
 )
 
 
 class NominalPlanning(TestScenario):
     first_flight: InjectFlightRequest
+    first_flight_id: Optional[str]
     conflicting_flight: InjectFlightRequest
+    first_flight_activated: InjectFlightRequest
     uss1: FlightPlanner
     uss2: FlightPlanner
     dss: DSSInstance
@@ -47,11 +52,16 @@ class NominalPlanning(TestScenario):
         self.uss2 = uss2.flight_planner
 
         flight_intents = flight_intents.get_flight_intents()
-        if len(flight_intents) < 2:
+        if len(flight_intents) < 3:
             raise ValueError(
-                f"`{self.me()}` TestScenario requires at least 2 flight_intents; found {len(flight_intents)}"
+                f"`{self.me()}` TestScenario requires at least 3 flight_intents; found {len(flight_intents)}"
             )
-        self.first_flight, self.conflicting_flight = flight_intents
+        (
+            self.first_flight,
+            self.conflicting_flight,
+            self.first_flight_activated,
+        ) = flight_intents
+        self.first_flight_id = None
 
         self.dss = dss.dss
 
@@ -82,6 +92,10 @@ class NominalPlanning(TestScenario):
             return
         self.end_test_case()
 
+        self.begin_test_case("Activate first flight")
+        self._activate_first_flight()
+        self.end_test_case()
+
         self.end_test_scenario()
 
     def _setup(self) -> bool:
@@ -97,18 +111,19 @@ class NominalPlanning(TestScenario):
         clear_area(
             self,
             "Area clearing",
-            [self.first_flight, self.conflicting_flight],
+            [self.first_flight, self.conflicting_flight, self.first_flight_activated],
             [self.uss1, self.uss2],
         )
 
         return True
 
     def _plan_first_flight(self) -> bool:
-        resp, _ = inject_successful_flight_intent(
+        resp, flight_id = inject_successful_flight_intent(
             self, "Inject flight intent", self.uss1, self.first_flight
         )
         if resp is None:
             return False
+        self.first_flight_id = flight_id
         op_intent_id = resp.operational_intent_id
 
         validate_shared_operational_intent(
@@ -155,6 +170,24 @@ class NominalPlanning(TestScenario):
 
         self.end_test_step()  # Inject flight intent
         return True
+
+    def _activate_first_flight(self):
+        resp = activate_valid_flight_intent(
+            self,
+            "Activate first flight",
+            self.uss1,
+            self.first_flight_id,
+            self.first_flight_activated,
+        )
+        if resp is None:
+            raise RuntimeError(
+                "Flight intent not activated successfully, but a High Severity issue didn't stop scenario execution"
+            )
+        op_intent_id = resp.operational_intent_id
+
+        validate_shared_operational_intent(
+            self, "Validate flight sharing", self.first_flight_activated, op_intent_id
+        )
 
     def cleanup(self):
         self.begin_cleanup()
