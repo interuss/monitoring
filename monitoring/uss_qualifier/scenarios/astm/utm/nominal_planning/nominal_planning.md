@@ -71,6 +71,16 @@ The second flight intent conflicts with the first flight that was already planne
 
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS to reject or accept the flight.  If the USS indicates that the injection attempt failed, this check will fail per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
+## Activate first flight test case
+
+In this step, the first USS successfully executes a user intent to activate the first flight.
+
+### [Activate first flight test step](../../../flight_planning/successfully_activate_flight.md)
+
+The first flight intent should be successfully activated by the first flight planner.
+
+### [Validate flight sharing test step](../validate_shared_operational_intent.md)
+
 ## Cleanup
 
 ### Successful flight deletion check
