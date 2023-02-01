@@ -15,7 +15,7 @@ from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlanner,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
+from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType, PendingCheck
 
 
 def clear_area(
@@ -219,45 +219,15 @@ def inject_successful_flight_intent(
       * None if a check failed, otherwise the ID of the injected flight
     """
     scenario.begin_test_step(test_step)
-    with scenario.check(
-        "Successful planning", [flight_planner.participant_id]
-    ) as check:
-        try:
-            resp, query, flight_id = flight_planner.request_flight(flight_intent)
-        except QueryError as e:
-            for q in e.queries:
-                scenario.record_query(q)
-            check.record_failed(
-                summary=f"Error from {flight_planner.participant_id} when attempting to successfully inject flight",
-                severity=Severity.High,
-                details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
-                query_timestamps=[q.request.timestamp for q in e.queries],
-            )
-        scenario.record_query(query)
-        if resp.result == InjectFlightResult.ConflictWithFlight:
-            check.record_failed(
-                summary="Conflict-free flight not created due to conflict",
-                severity=Severity.High,
-                details=f'{flight_planner.participant_id} indicated ConflictWithFlight: "{resp.notes}"',
-                query_timestamps=[query.request.timestamp],
-            )
-            return None, None
-        if resp.result == InjectFlightResult.Rejected:
-            check.record_failed(
-                summary="Valid flight rejected",
-                severity=Severity.High,
-                details=f'{flight_planner.participant_id} indicated Rejected: "{resp.notes}"',
-                query_timestamps=[query.request.timestamp],
-            )
-            return None, None
-        if resp.result == InjectFlightResult.Failed:
-            check.record_failed(
-                summary="Failed to create flight",
-                severity=Severity.High,
-                details=f'{flight_planner.participant_id} Failed to process the user flight intent: "{resp.notes}"',
-                query_timestamps=[query.request.timestamp],
-            )
-            return None, None
+    resp, flight_id = _submit_flight_intent(
+        scenario,
+        scenario.check("Successful planning", [flight_planner.participant_id]),
+        InjectFlightResult.Planned,
+        flight_planner,
+        flight_intent,
+    )
+    if resp is None:
+        return None, None
     scenario.end_test_step()
     return resp, flight_id
 
@@ -277,9 +247,37 @@ def activate_valid_flight_intent(
     Returns: None if a check failed, otherwise the injection response.
     """
     scenario.begin_test_step(test_step)
-    with scenario.check(
-        "Successful activation", [flight_planner.participant_id]
-    ) as check:
+    resp, _ = _submit_flight_intent(
+        scenario,
+        scenario.check("Successful activation", [flight_planner.participant_id]),
+        InjectFlightResult.ReadyToFly,
+        flight_planner,
+        flight_intent,
+        flight_id,
+    )
+    if resp is None:
+        return None
+    scenario.end_test_step()
+    return resp
+
+
+def _submit_flight_intent(
+    scenario: TestScenarioType,
+    check: PendingCheck,
+    expected_result: InjectFlightResult,
+    flight_planner: FlightPlanner,
+    flight_intent: InjectFlightRequest,
+    flight_id: Optional[str] = None,
+) -> Tuple[Optional[InjectFlightResponse], Optional[str]]:
+    """Submit a flight intent with an expected result.
+
+    This function does not directly implement a test step.
+
+    Returns:
+      * None if a check failed, otherwise the injection response.
+      * None if a check failed, otherwise the ID of the injected flight
+    """
+    with check as check:
         try:
             resp, query, flight_id = flight_planner.request_flight(
                 flight_intent, flight_id
@@ -288,38 +286,57 @@ def activate_valid_flight_intent(
             for q in e.queries:
                 scenario.record_query(q)
             check.record_failed(
-                summary=f"Error from {flight_planner.participant_id} when attempting to activate flight {flight_id}",
+                summary=f"Error from {flight_planner.participant_id} when attempting to submit a flight intent (flight ID: {flight_id})",
                 severity=Severity.High,
                 details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
         scenario.record_query(query)
-        if resp.result == InjectFlightResult.ConflictWithFlight:
+        if resp.result == expected_result:
+            return resp, flight_id
+        elif resp.result == InjectFlightResult.Planned:
             check.record_failed(
-                summary="Conflict-free flight not activated due to conflict",
+                summary="Flight got unexpectedly planned",
+                severity=Severity.High,
+                details=f'{flight_planner.participant_id} indicated Planned: "{resp.notes}"',
+                query_timestamps=[query.request.timestamp],
+            )
+        elif resp.result == InjectFlightResult.ReadyToFly:
+            check.record_failed(
+                summary="Flight got unexpectedly ready to fly",
+                severity=Severity.High,
+                details=f'{flight_planner.participant_id} indicated ReadyToFly: "{resp.notes}"',
+                query_timestamps=[query.request.timestamp],
+            )
+        elif resp.result == InjectFlightResult.ConflictWithFlight:
+            check.record_failed(
+                summary="Flight unexpectedly conflicts with another flight",
                 severity=Severity.High,
                 details=f'{flight_planner.participant_id} indicated ConflictWithFlight: "{resp.notes}"',
                 query_timestamps=[query.request.timestamp],
             )
-            return None
-        if resp.result == InjectFlightResult.Rejected:
+        elif resp.result == InjectFlightResult.Rejected:
             check.record_failed(
-                summary="Valid flight activation rejected",
+                summary="Flight got unexpectedly rejected",
                 severity=Severity.High,
                 details=f'{flight_planner.participant_id} indicated Rejected: "{resp.notes}"',
                 query_timestamps=[query.request.timestamp],
             )
-            return None
-        if resp.result == InjectFlightResult.Failed:
+        elif resp.result == InjectFlightResult.Failed:
             check.record_failed(
-                summary="Failed to activate flight",
+                summary="Flight request unexpectedly failed to be processed",
                 severity=Severity.High,
                 details=f'{flight_planner.participant_id} Failed to process the user flight intent: "{resp.notes}"',
                 query_timestamps=[query.request.timestamp],
             )
-            return None
-    scenario.end_test_step()
-    return resp
+        else:
+            check.record_failed(
+                summary="Got an unexpected result",
+                severity=Severity.High,
+                details=f'{flight_planner.participant_id} unexpectedly indicated {resp.result}: "{resp.notes}"',
+                query_timestamps=[q.request.timestamp for q in e.queries],
+            )
+        return None, None
 
 
 def cleanup_flights(
