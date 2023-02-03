@@ -59,11 +59,13 @@ jobs:
         cd monitoring/uss_qualifier
         make test
     - name: Save logs of containers as artifacts
+      if: always()
       uses: actions/upload-artifact@v3
       with:
         name: monitoring-tests-containers-logs
         path: logs
     - name: Save logs of tracer as artifacts
+      if: always()
       uses: actions/upload-artifact@v3
       with:
         name: monitoring-tests-tracer-logs
