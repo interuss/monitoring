@@ -58,3 +58,11 @@ jobs:
       run: |
         cd monitoring/uss_qualifier
         make test
+    - uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-tests-logs
+        path: logs
+    - uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-tests-tracer-logs
+        path: monitoring/mock_uss/tracer/logs

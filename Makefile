@@ -66,9 +66,17 @@ stop-uss-mocks:
 	monitoring/mock_uss/stop_all_local_mocks.sh
 	docker container rm -f atproxy
 
+# The prepended dash ignores errors. This allows collecting logs even if some containers are missing.
 .PHONY: collect-local-logs
 collect-local-logs:
-	docker logs dss_sandbox_local-dss-core-service_1 2> core-service-for-testing.log
+	mkdir -p logs
+	-sh -c "build/dev/run_locally.sh logs --timestamps" > logs/dss_sandbox_local.log 2>&1
+	-docker logs atproxy > logs/atproxy.log 2>&1
+	-docker logs mock_uss_scdsc > logs/mock_uss_scdsc.log 2>&1
+	-docker logs mock_uss_ridsp > logs/mock_uss_ridsp.log 2>&1
+	-docker logs mock_uss_riddp > logs/mock_uss_riddp.log 2>&1
+	-docker logs mock_uss_geoawareness > logs/mock_uss_geoawareness.log 2>&1
+	-docker logs mock_uss_tracer > logs/mock_uss_tracer.log 2>&1
 
 .PHONY: stop-locally
 stop-locally:
