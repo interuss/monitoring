@@ -58,11 +58,13 @@ jobs:
       run: |
         cd monitoring/uss_qualifier
         make test
-    - uses: actions/upload-artifact@v3
+    - name: Save logs of containers as artifacts
+      uses: actions/upload-artifact@v3
       with:
-        name: monitoring-tests-logs
+        name: monitoring-tests-containers-logs
         path: logs
-    - uses: actions/upload-artifact@v3
+    - name: Save logs of tracer as artifacts
+      uses: actions/upload-artifact@v3
       with:
         name: monitoring-tests-tracer-logs
         path: monitoring/mock_uss/tracer/logs
