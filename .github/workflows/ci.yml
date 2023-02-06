@@ -58,3 +58,20 @@ jobs:
       run: |
         cd monitoring/uss_qualifier
         make test
+    - name: Save containers and tracer logs as artifact
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-tests-logs
+        path: |
+          logs
+          monitoring/mock_uss/tracer/logs
+    - name: Save USS qualifier report as artifact
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-tests-report
+        path: |
+          monitoring/uss_qualifier/report.gv
+          monitoring/uss_qualifier/report.json
+          monitoring/uss_qualifier/tested_requirements.html

@@ -18,6 +18,12 @@ echo "============="
 make down-locally
 make stop-uss-mocks
 
+function collect_logs() {
+  echo "Collect local logs"
+  echo "============="
+  make collect-local-logs
+}
+
 function cleanup() {
   echo "Clean up"
   echo "============="
@@ -26,10 +32,12 @@ function cleanup() {
 }
 
 function on_exit() {
+    collect_logs
 	cleanup
 }
 
 function on_sigint() {
+    collect_logs
 	cleanup
 	exit
 }
