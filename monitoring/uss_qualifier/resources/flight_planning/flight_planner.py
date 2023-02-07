@@ -1,6 +1,4 @@
-import traceback
 import uuid
-from datetime import datetime
 from typing import Tuple, List, Optional, Set
 from urllib.parse import urlparse
 
@@ -88,15 +86,17 @@ class FlightPlanner:
             flight_id = str(uuid.uuid4())
         url = "{}/v1/flights/{}".format(self.config.injection_base_url, flight_id)
 
-        initiated_at = datetime.utcnow()
-        resp = self.client.put(url, json=request, scope=SCOPE_SCD_QUALIFIER_INJECT)
-        query = fetch.describe_query(resp, initiated_at)
-        if resp.status_code != 200:
+        query = fetch.query_and_describe(
+            self.client, "PUT", url, json=request, scope=SCOPE_SCD_QUALIFIER_INJECT
+        )
+        if query.status_code != 200:
             raise QueryError(
-                f"Inject flight query to {url} returned {resp.status_code}", [query]
+                f"Inject flight query to {url} returned {query.status_code}", [query]
             )
         try:
-            result = ImplicitDict.parse(resp.json(), InjectFlightResponse)
+            result = ImplicitDict.parse(
+                query.response.get("json", {}), InjectFlightResponse
+            )
         except ValueError as e:
             raise QueryError(
                 f"Inject flight response from {url} could not be decoded: {str(e)}",
@@ -112,15 +112,17 @@ class FlightPlanner:
         self, flight_id: str
     ) -> Tuple[DeleteFlightResponse, fetch.Query]:
         url = "{}/v1/flights/{}".format(self.config.injection_base_url, flight_id)
-        initiated_at = datetime.utcnow()
-        resp = self.client.delete(url, scope=SCOPE_SCD_QUALIFIER_INJECT)
-        query = fetch.describe_query(resp, initiated_at)
-        if resp.status_code != 200:
+        query = fetch.query_and_describe(
+            self.client, "DELETE", url, scope=SCOPE_SCD_QUALIFIER_INJECT
+        )
+        if query.status_code != 200:
             raise QueryError(
-                f"Delete flight query to {url} returned {resp.status_code}", [query]
+                f"Delete flight query to {url} returned {query.status_code}", [query]
             )
         try:
-            result = ImplicitDict.parse(resp.json(), DeleteFlightResponse)
+            result = ImplicitDict.parse(
+                query.response.get("json", {}), DeleteFlightResponse
+            )
         except ValueError as e:
             raise QueryError(
                 f"Delete flight response from {url} could not be decoded: {str(e)}",
@@ -133,16 +135,18 @@ class FlightPlanner:
 
     def get_target_information(self) -> FlightPlannerInformation:
         url_status = "{}/v1/status".format(self.config.injection_base_url)
-        initiated_at = datetime.utcnow()
-        resp_status = self.client.get(url_status, scope=SCOPE_SCD_QUALIFIER_INJECT)
-        version_query = fetch.describe_query(resp_status, initiated_at)
-        if resp_status.status_code != 200:
+        version_query = fetch.query_and_describe(
+            self.client, "GET", url_status, scope=SCOPE_SCD_QUALIFIER_INJECT
+        )
+        if version_query.status_code != 200:
             raise QueryError(
-                f"Status query to {url_status} returned {resp_status.status_code}",
+                f"Status query to {url_status} returned {version_query.status_code}",
                 [version_query],
             )
         try:
-            status_body = ImplicitDict.parse(resp_status.json(), StatusResponse)
+            status_body = ImplicitDict.parse(
+                version_query.response.get("json", {}), StatusResponse
+            )
         except ValueError as e:
             raise QueryError(
                 f"Status response from {url_status} could not be decoded: {str(e)}",
@@ -151,19 +155,17 @@ class FlightPlanner:
         version = status_body.version if status_body.version is not None else "Unknown"
 
         url_capabilities = "{}/v1/capabilities".format(self.config.injection_base_url)
-        initiated_at = datetime.utcnow()
-        resp_capabilities = self.client.get(
-            url_capabilities, scope=SCOPE_SCD_QUALIFIER_INJECT
+        capabilities_query = fetch.query_and_describe(
+            self.client, "GET", url_capabilities, scope=SCOPE_SCD_QUALIFIER_INJECT
         )
-        capabilities_query = fetch.describe_query(resp_capabilities, initiated_at)
-        if resp_capabilities.status_code != 200:
+        if capabilities_query.status_code != 200:
             raise QueryError(
-                f"Capabilities query to {url_capabilities} returned {resp_capabilities.status_code}",
+                f"Capabilities query to {url_capabilities} returned {capabilities_query.status_code}",
                 [version_query, capabilities_query],
             )
         try:
             capabilities_body = ImplicitDict.parse(
-                resp_capabilities.json(), CapabilitiesResponse
+                capabilities_query.response.get("json", {}), CapabilitiesResponse
             )
         except ValueError as e:
             raise QueryError(
@@ -181,15 +183,17 @@ class FlightPlanner:
     def clear_area(self, extent: Volume4D) -> Tuple[ClearAreaResponse, fetch.Query]:
         req = ClearAreaRequest(request_id=str(uuid.uuid4()), extent=extent)
         url = f"{self.config.injection_base_url}/v1/clear_area_requests"
-        initiated_at = datetime.utcnow()
-        resp = self.client.post(url, scope=SCOPE_SCD_QUALIFIER_INJECT, json=req)
-        query = fetch.describe_query(resp, initiated_at)
-        if resp.status_code != 200:
+        query = fetch.query_and_describe(
+            self.client, "POST", url, scope=SCOPE_SCD_QUALIFIER_INJECT, json=req
+        )
+        if query.status_code != 200:
             raise QueryError(
-                f"Clear area query to {url} returned {resp.status_code}", [query]
+                f"Clear area query to {url} returned {query.status_code}", [query]
             )
         try:
-            result = ImplicitDict.parse(resp.json(), ClearAreaResponse)
+            result = ImplicitDict.parse(
+                query.response.get("json", {}), ClearAreaResponse
+            )
         except ValueError as e:
             raise QueryError(
                 f"Clear area response from {url} could not be decoded: {str(e)}",
