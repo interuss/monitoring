@@ -1,6 +1,5 @@
-import traceback
 from datetime import datetime
-from typing import List, Dict, Union, Optional, Tuple, Iterable
+from typing import List, Union, Optional, Tuple, Iterable, Set
 
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd import bounding_vol4
@@ -29,6 +28,12 @@ def clear_area(
     This function assumes:
     * `scenario` is ready to execute a test step
     * "Area cleared successfully" check declared for specified test step in `scenario`'s documentation
+
+    Args:
+      scenario: Scenario in which this step is being executed
+      test_step: Name of this test step (according to scenario's documentation)
+      flight_intents: Flight intents to be used in this test case (defines bounds of area to be cleared)
+      flight_planners: Flight planners to which clear area requests should be issued
     """
     scenario.begin_test_step(test_step)
 
@@ -85,11 +90,13 @@ def check_capabilities(
       * "Support {required_capability}" check declared for specified test in step`scenario`'s documentation
 
     Args:
+      scenario: Scenario in which this step is being executed
+      test_step: Name of this test step (according to scenario's documentation)
       required_capabilities: The specified USSs must support these capabilities.
         If a capability is not supported, a "Valid responses" failed check will
         be created.
       prerequisite_capabilities: If any of the specified USSs do not support
-        this capabilities, a "Prerequisite capabilities" note will be added and
+        these capabilities, a "Prerequisite capabilities" note will be added and
         the scenario will be indicated to stop, but no failed check will be
         created.
     """
@@ -222,7 +229,7 @@ def inject_successful_flight_intent(
     resp, flight_id = _submit_flight_intent(
         scenario,
         scenario.check("Successful planning", [flight_planner.participant_id]),
-        InjectFlightResult.Planned,
+        {InjectFlightResult.Planned},
         flight_planner,
         flight_intent,
     )
@@ -250,7 +257,7 @@ def activate_valid_flight_intent(
     resp, _ = _submit_flight_intent(
         scenario,
         scenario.check("Successful activation", [flight_planner.participant_id]),
-        InjectFlightResult.ReadyToFly,
+        {InjectFlightResult.ReadyToFly},
         flight_planner,
         flight_intent,
         flight_id,
@@ -264,7 +271,7 @@ def activate_valid_flight_intent(
 def _submit_flight_intent(
     scenario: TestScenarioType,
     check: PendingCheck,
-    expected_result: InjectFlightResult,
+    expected_results: Set[InjectFlightResult],
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: Optional[str] = None,
@@ -292,51 +299,16 @@ def _submit_flight_intent(
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
         scenario.record_query(query)
-        if resp.result == expected_result:
+        if resp.result in expected_results:
             return resp, flight_id
-        elif resp.result == InjectFlightResult.Planned:
-            check.record_failed(
-                summary="Flight got unexpectedly planned",
-                severity=Severity.High,
-                details=f'{flight_planner.participant_id} indicated Planned: "{resp.notes}"',
-                query_timestamps=[query.request.timestamp],
-            )
-        elif resp.result == InjectFlightResult.ReadyToFly:
-            check.record_failed(
-                summary="Flight got unexpectedly ready to fly",
-                severity=Severity.High,
-                details=f'{flight_planner.participant_id} indicated ReadyToFly: "{resp.notes}"',
-                query_timestamps=[query.request.timestamp],
-            )
-        elif resp.result == InjectFlightResult.ConflictWithFlight:
-            check.record_failed(
-                summary="Flight unexpectedly conflicts with another flight",
-                severity=Severity.High,
-                details=f'{flight_planner.participant_id} indicated ConflictWithFlight: "{resp.notes}"',
-                query_timestamps=[query.request.timestamp],
-            )
-        elif resp.result == InjectFlightResult.Rejected:
-            check.record_failed(
-                summary="Flight got unexpectedly rejected",
-                severity=Severity.High,
-                details=f'{flight_planner.participant_id} indicated Rejected: "{resp.notes}"',
-                query_timestamps=[query.request.timestamp],
-            )
-        elif resp.result == InjectFlightResult.Failed:
-            check.record_failed(
-                summary="Flight request unexpectedly failed to be processed",
-                severity=Severity.High,
-                details=f'{flight_planner.participant_id} Failed to process the user flight intent: "{resp.notes}"',
-                query_timestamps=[query.request.timestamp],
-            )
         else:
             check.record_failed(
-                summary="Got an unexpected result",
+                summary=f"Flight unexpectedly {resp.result}",
                 severity=Severity.High,
-                details=f'{flight_planner.participant_id} unexpectedly indicated {resp.result}: "{resp.notes}"',
-                query_timestamps=[q.request.timestamp for q in e.queries],
+                details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}: "{resp.notes}"',
+                query_timestamps=[query.request.timestamp],
             )
-        return None, None
+            return None, None
 
 
 def cleanup_flights(
