@@ -81,11 +81,10 @@ The high-priority flight intent should be successfully activated by the first fl
 
 ## Attempt to activate first flight test case
 
-In this step, the first USS fails to activate the flight it previously created.
+### [Activate first flight with higher priority conflict test step](../../../flight_planning/activate_priority_conflict_flight_intent.md)
 
-TODO: Complete this test case
-
-**[astm.f3548.v21.SCD0015](../../../../requirements/astm/f3548/v21.md)**
+In this step, the first USS fails to activate the flight it previously created as the second USS planned and activated
+a conflicting higher priority flight in the meantime.
 
 ## Cleanup
 

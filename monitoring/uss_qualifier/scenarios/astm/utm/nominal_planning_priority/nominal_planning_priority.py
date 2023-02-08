@@ -8,7 +8,6 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResourc
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
-    FlightPlannersResource,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlanner,
@@ -18,6 +17,9 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     validate_shared_operational_intent,
+)
+from monitoring.uss_qualifier.scenarios.flight_planning.prioritization_test_steps import (
+    activate_priority_conflict_flight_intent,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
@@ -31,6 +33,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
 
 class NominalPlanningPriority(TestScenario):
     first_flight: InjectFlightRequest
+    first_flight_activated: InjectFlightRequest
     first_flight_id: Optional[str]
     priority_flight: InjectFlightRequest
     priority_flight_activated: InjectFlightRequest
@@ -51,12 +54,13 @@ class NominalPlanningPriority(TestScenario):
         self.uss2 = uss2.flight_planner
 
         flight_intents = flight_intents.get_flight_intents()
-        if len(flight_intents) < 3:
+        if len(flight_intents) < 4:
             raise ValueError(
-                f"`{self.me()}` TestScenario requires at least 3 flight_intents; found {len(flight_intents)}"
+                f"`{self.me()}` TestScenario requires at least 4 flight_intents; found {len(flight_intents)}"
             )
         (
             self.first_flight,
+            self.first_flight_activated,
             self.priority_flight,
             self.priority_flight_activated,
         ) = flight_intents
@@ -107,6 +111,10 @@ class NominalPlanningPriority(TestScenario):
 
         self.begin_test_case("Activate priority flight")
         self._activate_priority_flight()
+        self.end_test_case()
+
+        self.begin_test_case("Attempt to activate first flight")
+        self._activate_first_flight_attempt()
         self.end_test_case()
 
         self.end_test_scenario()
@@ -181,6 +189,20 @@ class NominalPlanningPriority(TestScenario):
             self.priority_flight_activated,
             op_intent_id,
         )
+
+    def _activate_first_flight_attempt(self):
+        resp = activate_priority_conflict_flight_intent(
+            self,
+            "Activate first flight with higher priority conflict",
+            self.uss1,
+            self.first_flight_id,
+            self.first_flight_activated,
+        )
+        if resp is None:
+            raise RuntimeError(
+                "Flight intent activation attempt did not return a conflict, but a High Severity issue didn't stop scenario execution"
+            )
+        return resp
 
     def cleanup(self):
         self.begin_cleanup()
