@@ -96,7 +96,8 @@ class NominalPlanning(TestScenario):
         self.end_test_case()
 
         self.begin_test_case("Activate first flight")
-        self._activate_first_flight()
+        if not self._activate_first_flight():
+            return
         self.end_test_case()
 
         self.end_test_scenario()
@@ -155,9 +156,7 @@ class NominalPlanning(TestScenario):
             self.first_flight_activated,
         )
         if resp is None:
-            raise RuntimeError(
-                "Flight intent not activated successfully, but a High Severity issue didn't stop scenario execution"
-            )
+            return False
         op_intent_id = resp.operational_intent_id
 
         validate_shared_operational_intent(
