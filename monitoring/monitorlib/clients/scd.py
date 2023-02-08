@@ -13,24 +13,33 @@ from implicitdict import ImplicitDict
 def query_operational_intent_references(
     utm_client: UTMClientSession, area_of_interest: scd.Volume4D
 ) -> List[scd.OperationalIntentReference]:
+    url = "/dss/v1/operational_intent_references/query"
+    subject = f"queryOperationalIntentReferences from {url}"
     req = scd.QueryOperationalIntentReferenceParameters(
         area_of_interest=area_of_interest
     )
-    initiated_at = datetime.utcnow()
-    resp = utm_client.post(
-        "/dss/v1/operational_intent_references/query", json=req, scope=scd.SCOPE_SC
+    query = fetch.query_and_describe(
+        utm_client, "POST", url, json=req, scope=scd.SCOPE_SC
     )
-    query = fetch.describe_query(resp, initiated_at)
-    if resp.status_code != 200:
+    if query.status_code != 200:
         raise QueryError(
-            msg="queryOperationalIntentReferences failed {}:\n{}".format(
-                resp.status_code, resp.content.decode("utf-8")
+            msg="{} failed {}:\n{}".format(
+                subject, query.status_code, query.response.get("content", "")
             ),
             queries=[query],
         )
-    resp_body = ImplicitDict.parse(
-        resp.json(), scd.QueryOperationalIntentReferenceResponse
-    )
+    try:
+        resp_body = ImplicitDict.parse(
+            query.response["json"], scd.QueryOperationalIntentReferenceResponse
+        )
+    except KeyError:
+        raise QueryError(
+            msg=f"{subject} response did not contain JSON body", queries=[query]
+        )
+    except ValueError as e:
+        raise QueryError(
+            msg=f"{subject} response contained invalid JSON: {str(e)}", queries=[query]
+        )
     return resp_body.operational_intent_references
 
 
@@ -40,17 +49,29 @@ def create_operational_intent_reference(
     req: scd.PutOperationalIntentReferenceParameters,
 ) -> scd.ChangeOperationalIntentReferenceResponse:
     url = "/dss/v1/operational_intent_references/{}".format(id)
-    initiated_at = datetime.utcnow()
-    resp = utm_client.put(url, json=req, scope=scd.SCOPE_SC)
-    query = fetch.describe_query(resp, initiated_at)
-    if resp.status_code != 200 and resp.status_code != 201:
+    subject = f"createOperationalIntentReference to {url}"
+    query = fetch.query_and_describe(
+        utm_client, "PUT", url, json=req, scope=scd.SCOPE_SC
+    )
+    if query.status_code != 200 and query.status_code != 201:
         raise QueryError(
-            msg="createOperationalIntentReference failed {} to {}:\n{}".format(
-                resp.status_code, url, resp.content.decode("utf-8")
+            msg="{} failed {}:\n{}".format(
+                subject, query.status_code, query.response.get("content", "")
             ),
             queries=[query],
         )
-    return ImplicitDict.parse(resp.json(), scd.ChangeOperationalIntentReferenceResponse)
+    try:
+        return ImplicitDict.parse(
+            query.response["json"], scd.ChangeOperationalIntentReferenceResponse
+        )
+    except KeyError:
+        raise QueryError(
+            msg=f"{subject} response did not contain JSON body", queries=[query]
+        )
+    except ValueError as e:
+        raise QueryError(
+            msg=f"{subject} response contained invalid JSON: {str(e)}", queries=[query]
+        )
 
 
 def update_operational_intent_reference(
@@ -60,36 +81,56 @@ def update_operational_intent_reference(
     req: scd.PutOperationalIntentReferenceParameters,
 ) -> scd.ChangeOperationalIntentReferenceResponse:
     url = "/dss/v1/operational_intent_references/{}/{}".format(id, ovn)
-    initiated_at = datetime.utcnow()
-    resp = utm_client.put(url, json=req, scope=scd.SCOPE_SC)
-    query = fetch.describe_query(resp, initiated_at)
-    if resp.status_code != 200 and resp.status_code != 201:
+    subject = f"updateOperationalIntentReference to {url}"
+    query = fetch.query_and_describe(
+        utm_client, "PUT", url, json=req, scope=scd.SCOPE_SC
+    )
+    if query.status_code != 200 and query.status_code != 201:
         raise QueryError(
-            msg="updateOperationalIntentReference failed {} to {}:\n{}".format(
-                resp.status_code, url, resp.content.decode("utf-8")
+            msg="{} failed {}:\n{}".format(
+                subject, query.status_code, query.response.get("content", "")
             ),
             queries=[query],
         )
-    return ImplicitDict.parse(resp.json(), scd.ChangeOperationalIntentReferenceResponse)
+    try:
+        return ImplicitDict.parse(
+            query.response["json"], scd.ChangeOperationalIntentReferenceResponse
+        )
+    except KeyError:
+        raise QueryError(
+            msg=f"{subject} response did not contain JSON body", queries=[query]
+        )
+    except ValueError as e:
+        raise QueryError(
+            msg=f"{subject} response contained invalid JSON: {str(e)}", queries=[query]
+        )
 
 
 def delete_operational_intent_reference(
     utm_client: UTMClientSession, id: str, ovn: str
 ) -> scd.ChangeOperationalIntentReferenceResponse:
-    initiated_at = datetime.utcnow()
-    resp = utm_client.delete(
-        "/dss/v1/operational_intent_references/{}/{}".format(id, ovn),
-        scope=scd.SCOPE_SC,
-    )
-    query = fetch.describe_query(resp, initiated_at)
-    if resp.status_code != 200:
+    url = f"/dss/v1/operational_intent_references/{id}/{ovn}"
+    subject = f"deleteOperationalIntentReference from {url}"
+    query = fetch.query_and_describe(utm_client, "DELETE", url, scope=scd.SCOPE_SC)
+    if query.status_code != 200:
         raise QueryError(
-            msg="deleteOperationalIntentReference failed {}:\n{}".format(
-                resp.status_code, resp.content.decode("utf-8")
+            msg="{} failed {}:\n{}".format(
+                subject, query.status_code, query.response.get("content", "")
             ),
             queries=[query],
         )
-    return ImplicitDict.parse(resp.json(), scd.ChangeOperationalIntentReferenceResponse)
+    try:
+        return ImplicitDict.parse(
+            query.response["json"], scd.ChangeOperationalIntentReferenceResponse
+        )
+    except KeyError:
+        raise QueryError(
+            msg=f"{subject} response did not contain JSON body", queries=[query]
+        )
+    except ValueError as e:
+        raise QueryError(
+            msg=f"{subject} response contained invalid JSON: {str(e)}", queries=[query]
+        )
 
 
 # === USS operations defined in the ASTM API ===
@@ -98,19 +139,28 @@ def delete_operational_intent_reference(
 def get_operational_intent_details(
     utm_client: UTMClientSession, uss_base_url: str, id: str
 ) -> scd.OperationalIntent:
-    initiated_at = datetime.utcnow()
-    resp = utm_client.get(
-        "{}/uss/v1/operational_intents/{}".format(uss_base_url, id), scope=scd.SCOPE_SC
-    )
-    query = fetch.describe_query(resp, initiated_at)
-    if resp.status_code != 200:
+    url = f"{uss_base_url}/uss/v1/operational_intents/{id}"
+    subject = f"getOperationalIntentDetails from {url}"
+    query = fetch.query_and_describe(utm_client, "GET", url, scope=scd.SCOPE_SC)
+    if query.status_code != 200:
         raise QueryError(
-            msg="getOperationalIntentDetails failed {}:\n{}".format(
-                resp.status_code, resp.content.decode("utf-8")
+            msg="{} failed {}:\n{}".format(
+                subject, query.status_code, query.response.get("content", "")
             ),
             queries=[query],
         )
-    resp_body = ImplicitDict.parse(resp.json(), scd.GetOperationalIntentDetailsResponse)
+    try:
+        resp_body = ImplicitDict.parse(
+            query.response["json"], scd.GetOperationalIntentDetailsResponse
+        )
+    except KeyError:
+        raise QueryError(
+            msg=f"{subject} response did not contain JSON body", queries=[query]
+        )
+    except ValueError as e:
+        raise QueryError(
+            msg=f"{subject} response contained invalid JSON: {str(e)}", queries=[query]
+        )
     return resp_body.operational_intent
 
 
@@ -119,17 +169,15 @@ def notify_operational_intent_details_changed(
     uss_base_url: str,
     update: scd.PutOperationalIntentDetailsParameters,
 ) -> None:
-    initiated_at = datetime.utcnow()
-    resp = utm_client.post(
-        "{}/uss/v1/operational_intents".format(uss_base_url),
-        json=update,
-        scope=scd.SCOPE_SC,
+    url = f"{uss_base_url}/uss/v1/operational_intents"
+    subject = f"notifyOperationalIntentDetailsChanged to {url}"
+    query = fetch.query_and_describe(
+        utm_client, "POST", url, json=update, scope=scd.SCOPE_SC
     )
-    query = fetch.describe_query(resp, initiated_at)
-    if resp.status_code != 204 and resp.status_code != 200:
+    if query.status_code != 204 and query.status_code != 200:
         raise QueryError(
-            msg="notifyOperationalIntentDetailsChanged failed {} to {}:\n{}".format(
-                resp.status_code, resp.request.url, resp.content.decode("utf-8")
+            msg="{} failed {}:\n{}".format(
+                subject, query.status_code, query.response.get("content", "")
             ),
             queries=[query],
         )

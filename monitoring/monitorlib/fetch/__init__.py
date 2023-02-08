@@ -6,6 +6,7 @@ from typing import Dict, Optional, List
 import arrow
 import flask
 import requests
+import urllib3
 import yaml
 from yaml.representer import Representer
 
@@ -162,7 +163,7 @@ def query_and_describe(
     t0 = datetime.datetime.utcnow()
     try:
         return describe_query(client.request(method, url, **req_kwargs), t0)
-    except requests.RequestException as e:
+    except (requests.RequestException, urllib3.exceptions.ReadTimeoutError) as e:
         msg = "{}: {}".format(type(e).__name__, str(e))
     t1 = datetime.datetime.utcnow()
 
