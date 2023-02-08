@@ -14,7 +14,7 @@ from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlanner,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType, PendingCheck
+from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 
 def clear_area(
@@ -225,18 +225,14 @@ def inject_successful_flight_intent(
       * None if a check failed, otherwise the injection response.
       * None if a check failed, otherwise the ID of the injected flight
     """
-    scenario.begin_test_step(test_step)
-    resp, flight_id = _submit_flight_intent(
+    return submit_flight_intent(
         scenario,
-        scenario.check("Successful planning", [flight_planner.participant_id]),
+        test_step,
+        "Successful planning",
         {InjectFlightResult.Planned},
         flight_planner,
         flight_intent,
     )
-    if resp is None:
-        return None, None
-    scenario.end_test_step()
-    return resp, flight_id
 
 
 def activate_valid_flight_intent(
@@ -253,24 +249,21 @@ def activate_valid_flight_intent(
 
     Returns: None if a check failed, otherwise the injection response.
     """
-    scenario.begin_test_step(test_step)
-    resp, _ = _submit_flight_intent(
+    return submit_flight_intent(
         scenario,
-        scenario.check("Successful activation", [flight_planner.participant_id]),
+        test_step,
+        "Successful activation",
         {InjectFlightResult.ReadyToFly},
         flight_planner,
         flight_intent,
         flight_id,
-    )
-    if resp is None:
-        return None
-    scenario.end_test_step()
-    return resp
+    )[0]
 
 
-def _submit_flight_intent(
+def submit_flight_intent(
     scenario: TestScenarioType,
-    check: PendingCheck,
+    test_step: str,
+    test_check: str,
     expected_results: Set[InjectFlightResult],
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
@@ -284,7 +277,8 @@ def _submit_flight_intent(
       * None if a check failed, otherwise the injection response.
       * None if a check failed, otherwise the ID of the injected flight
     """
-    with check as check:
+    scenario.begin_test_step(test_step)
+    with scenario.check(test_check, [flight_planner.participant_id]) as check:
         try:
             resp, query, flight_id = flight_planner.request_flight(
                 flight_intent, flight_id
@@ -300,6 +294,7 @@ def _submit_flight_intent(
             )
         scenario.record_query(query)
         if resp.result in expected_results:
+            scenario.end_test_step()
             return resp, flight_id
         else:
             check.record_failed(
