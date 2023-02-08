@@ -24,9 +24,9 @@ class MockUSSClient(object):
         self.participant_id = participant_id
 
     def get_status(self) -> fetch.Query:
-        initiated_at = arrow.utcnow().datetime
-        resp = self.session.get("/scdsc/v1/status", scope=SCOPE_SCD_QUALIFIER_INJECT)
-        return fetch.describe_query(resp, initiated_at)
+        return fetch.query_and_describe(
+            self.session, "GET", "/scdsc/v1/status", scope=SCOPE_SCD_QUALIFIER_INJECT
+        )
 
     # TODO: Add other methods to interact with the mock USS in other ways (like starting/stopping message signing data collection)
 
@@ -34,7 +34,7 @@ class MockUSSClient(object):
 class MockUSSSpecification(ImplicitDict):
     mock_uss_base_url: str
     """The base URL for the mock USS.
-    
+
     If the mock USS had scdsc enabled, for instance, then these URLs would be
     valid:
       * <mock_uss_base_url>/mock/scd/uss/v1/reports
