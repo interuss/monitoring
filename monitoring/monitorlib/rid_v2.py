@@ -1,8 +1,7 @@
 import datetime
-from typing import Literal
 
-from implicitdict import ImplicitDict, StringBasedDateTime
-from . import rid as rid_v1
+from uas_standards.astm.f3411.v22a.api import Time, Altitude
+from . import rid_v1 as rid_v1
 
 
 ISA_PATH = "/dss/identification_service_areas"
@@ -11,23 +10,12 @@ SCOPE_DP = "rid.display_provider"
 SCOPE_SP = "rid.service_provider"
 
 
-class Time(ImplicitDict):
-    value: StringBasedDateTime
-    format: Literal["RFC3339"]
-
-    @classmethod
-    def make(cls, t: datetime.datetime):
-        return Time(format="RFC3339", value=t.strftime(DATE_FORMAT))
+def make_time(t: datetime.datetime) -> Time:
+    return Time(format="RFC3339", value=t.strftime(DATE_FORMAT))
 
 
-class Altitude(ImplicitDict):
-    reference: Literal["W84"]
-    units: Literal["M"]
-    value: float
-
-    @classmethod
-    def make(cls, altitude_meters: float):
-        return Altitude(reference="W84", units="M", value=altitude_meters)
+def make_altitude(altitude_meters: float) -> Altitude:
+    return Altitude(reference="W84", units="M", value=altitude_meters)
 
 
 MAX_SUB_PER_AREA = rid_v1.MAX_SUB_PER_AREA

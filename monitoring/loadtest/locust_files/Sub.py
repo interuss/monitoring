@@ -4,7 +4,7 @@ import datetime
 import random
 import threading
 import uuid
-from monitoring.monitorlib import rid
+from monitoring.monitorlib import rid_v1
 from locust import task, between
 
 

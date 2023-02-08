@@ -1,4 +1,4 @@
-from monitoring.monitorlib import rid
+from monitoring.monitorlib import rid_v1
 
 
 VERTICES = [

@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
 # A file to generate Flight Records from KML.
-import datetime
 import math
 import random
 
 import s2sphere
-import os
 import uuid
 from datetime import timedelta
 from shapely.geometry import LineString, Point, Polygon
@@ -16,14 +14,14 @@ from monitoring.uss_qualifier.resources.netrid.flight_data import (
     FullFlightRecord,
     FlightRecordCollection,
 )
-from monitoring.monitorlib.rid import (
-    RIDAircraftState,
-    RIDAircraftPosition,
-    RIDFlightDetails,
-    LatLngPoint,
-)
 from typing import List
 
+from uas_standards.astm.f3411.v19.api import (
+    LatLngPoint,
+    RIDFlightDetails,
+    RIDAircraftPosition,
+    RIDAircraftState,
+)
 
 STATE_INCREMENT_SECONDS = 1
 

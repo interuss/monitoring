@@ -3,7 +3,7 @@
 import pytest
 
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib import rid
+from monitoring.monitorlib import rid_v1
 from monitoring.monitorlib.auth import DummyOAuth
 
 

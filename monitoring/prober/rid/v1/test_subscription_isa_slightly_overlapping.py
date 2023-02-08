@@ -9,8 +9,8 @@
 import datetime
 
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib import rid
-from monitoring.monitorlib.rid import SCOPE_READ, SCOPE_WRITE, ISA_PATH, SUBSCRIPTION_PATH
+from monitoring.monitorlib import rid_v1
+from monitoring.monitorlib.rid_v1 import SCOPE_READ, SCOPE_WRITE, ISA_PATH, SUBSCRIPTION_PATH
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
 

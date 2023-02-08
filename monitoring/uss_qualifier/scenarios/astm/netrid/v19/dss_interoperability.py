@@ -19,7 +19,7 @@ from uas_standards.astm.f3411.v19.api import (
 )
 
 from monitoring.monitorlib.infrastructure import UTMClientSession
-from monitoring.monitorlib.rid import SCOPE_READ, SCOPE_WRITE
+from monitoring.monitorlib.rid_v1 import SCOPE_READ, SCOPE_WRITE
 from monitoring.monitorlib.rid_common import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.reports.report import ParticipantID

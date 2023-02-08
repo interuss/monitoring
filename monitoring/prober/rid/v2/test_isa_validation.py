@@ -45,11 +45,11 @@ def test_isa_huge_area(ids, session_ridv2):
                   'outline_polygon': {
                       'vertices': common.HUGE_VERTICES,
                   },
-                  'altitude_lower': rid_v2.Altitude.make(20),
-                  'altitude_upper': rid_v2.Altitude.make(400),
+                  'altitude_lower': rid_v2.make_altitude(20),
+                  'altitude_upper': rid_v2.make_altitude(400),
               },
-              'time_start': rid_v2.Time.make(time_start),
-              'time_end': rid_v2.Time.make(time_end),
+              'time_start': rid_v2.make_time(time_start),
+              'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL,
       })
@@ -70,11 +70,11 @@ def test_isa_empty_vertices(ids, session_ridv2):
                   'outline_polygon': {
                       'vertices': [],
                   },
-                  'altitude_lower': rid_v2.Altitude.make(20),
-                  'altitude_upper': rid_v2.Altitude.make(400),
+                  'altitude_lower': rid_v2.make_altitude(20),
+                  'altitude_upper': rid_v2.make_altitude(400),
               },
-              'time_start': rid_v2.Time.make(time_start),
-              'time_end': rid_v2.Time.make(time_end),
+              'time_start': rid_v2.make_time(time_start),
+              'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL,
       })
@@ -92,11 +92,11 @@ def test_isa_missing_outline(ids, session_ridv2):
       json={
           'extents': {
               'volume': {
-                  'altitude_lower': rid_v2.Altitude.make(20),
-                  'altitude_upper': rid_v2.Altitude.make(400),
+                  'altitude_lower': rid_v2.make_altitude(20),
+                  'altitude_upper': rid_v2.make_altitude(400),
               },
-              'time_start': rid_v2.Time.make(time_start),
-              'time_end': rid_v2.Time.make(time_end),
+              'time_start': rid_v2.make_time(time_start),
+              'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL,
       })
@@ -113,8 +113,8 @@ def test_isa_missing_volume(ids, session_ridv2):
       '{}/{}'.format(ISA_PATH, ids(ISA_TYPE)),
       json={
           'extents': {
-              'time_start': rid_v2.Time.make(time_start),
-              'time_end': rid_v2.Time.make(time_end),
+              'time_start': rid_v2.make_time(time_start),
+              'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL,
       })
@@ -146,11 +146,11 @@ def test_isa_start_time_in_past(ids, session_ridv2):
                   'outline_polygon': {
                       'vertices': common.VERTICES,
                   },
-                  'altitude_lower': rid_v2.Altitude.make(20),
-                  'altitude_upper': rid_v2.Altitude.make(400),
+                  'altitude_lower': rid_v2.make_altitude(20),
+                  'altitude_upper': rid_v2.make_altitude(400),
               },
-              'time_start': rid_v2.Time.make(time_start),
-              'time_end': rid_v2.Time.make(time_end),
+              'time_start': rid_v2.make_time(time_start),
+              'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL,
       })
@@ -171,11 +171,11 @@ def test_isa_start_time_after_time_end(ids, session_ridv2):
                   'outline_polygon': {
                       'vertices': common.VERTICES,
                   },
-                  'altitude_lower': rid_v2.Altitude.make(20),
-                  'altitude_upper': rid_v2.Altitude.make(400),
+                  'altitude_lower': rid_v2.make_altitude(20),
+                  'altitude_upper': rid_v2.make_altitude(400),
               },
-              'time_start': rid_v2.Time.make(time_start),
-              'time_end': rid_v2.Time.make(time_end),
+              'time_start': rid_v2.make_time(time_start),
+              'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL,
       })
@@ -201,11 +201,11 @@ def test_isa_not_on_earth(ids, session_ridv2):
                         {'lat': 130.6466, 'lng': -23.6407},
                       ],
                   },
-                  'altitude_lower': rid_v2.Altitude.make(20),
-                  'altitude_upper': rid_v2.Altitude.make(400),
+                  'altitude_lower': rid_v2.make_altitude(20),
+                  'altitude_upper': rid_v2.make_altitude(400),
               },
-              'time_start': rid_v2.Time.make(time_start),
-              'time_end': rid_v2.Time.make(time_end),
+              'time_start': rid_v2.make_time(time_start),
+              'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL,
       })

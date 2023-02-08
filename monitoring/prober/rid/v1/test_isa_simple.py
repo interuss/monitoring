@@ -10,8 +10,8 @@ import datetime
 import re
 
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib import rid
-from monitoring.monitorlib.rid import SCOPE_READ, SCOPE_WRITE, ISA_PATH
+from monitoring.monitorlib import rid_v1
+from monitoring.monitorlib.rid_v1 import SCOPE_READ, SCOPE_WRITE, ISA_PATH
 from monitoring.monitorlib.testing import assert_datetimes_are_equal
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
@@ -154,7 +154,7 @@ def test_get_isa_by_search_latest_time_included(ids, session_ridv1):
   latest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=1)
   resp = session_ridv1.get('{}?area={}&latest_time={}'.format(
       ISA_PATH, common.GEO_POLYGON_STRING,
-      latest_time.strftime(rid.DATE_FORMAT)))
+      latest_time.strftime(rid_v1.DATE_FORMAT)))
   assert resp.status_code == 200, resp.content
   assert ids(ISA_TYPE) in [x['id'] for x in resp.json()['service_areas']]
 
