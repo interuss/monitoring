@@ -30,7 +30,7 @@ def query_operational_intent_references(
         )
     try:
         resp_body = ImplicitDict.parse(
-            query.response["json"], scd.QueryOperationalIntentReferenceResponse
+            query.response.json, scd.QueryOperationalIntentReferenceResponse
         )
     except KeyError:
         raise QueryError(
@@ -62,7 +62,7 @@ def create_operational_intent_reference(
         )
     try:
         return ImplicitDict.parse(
-            query.response["json"], scd.ChangeOperationalIntentReferenceResponse
+            query.response.json, scd.ChangeOperationalIntentReferenceResponse
         )
     except KeyError:
         raise QueryError(
@@ -94,7 +94,7 @@ def update_operational_intent_reference(
         )
     try:
         return ImplicitDict.parse(
-            query.response["json"], scd.ChangeOperationalIntentReferenceResponse
+            query.response.json, scd.ChangeOperationalIntentReferenceResponse
         )
     except KeyError:
         raise QueryError(
@@ -121,7 +121,7 @@ def delete_operational_intent_reference(
         )
     try:
         return ImplicitDict.parse(
-            query.response["json"], scd.ChangeOperationalIntentReferenceResponse
+            query.response.json, scd.ChangeOperationalIntentReferenceResponse
         )
     except KeyError:
         raise QueryError(
@@ -151,7 +151,7 @@ def get_operational_intent_details(
         )
     try:
         resp_body = ImplicitDict.parse(
-            query.response["json"], scd.GetOperationalIntentDetailsResponse
+            query.response.json, scd.GetOperationalIntentDetailsResponse
         )
     except KeyError:
         raise QueryError(

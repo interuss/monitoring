@@ -125,7 +125,7 @@ class RIDObservationEvaluator(object):
 
         for expected_flight in self._injected_flights:
             t_initiated = query.request.timestamp
-            t_response = query.response.reported
+            t_response = query.response.reported.datetime
             timestamps = [
                 arrow.get(t.timestamp) for t in expected_flight.flight.telemetry
             ]

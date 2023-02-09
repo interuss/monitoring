@@ -59,7 +59,7 @@ class DSSInstance(object):
             result = None
         else:
             result = ImplicitDict.parse(
-                query.response["json"], QueryOperationalIntentReferenceResponse
+                query.response.json, QueryOperationalIntentReferenceResponse
             ).operational_intent_references
         return result, query
 
@@ -72,7 +72,7 @@ class DSSInstance(object):
             result = None
         else:
             result = ImplicitDict.parse(
-                query.response["json"], GetOperationalIntentDetailsResponse
+                query.response.json, GetOperationalIntentDetailsResponse
             ).operational_intent
         return result, query
 

@@ -10,6 +10,8 @@ from implicitdict import ImplicitDict
 
 
 class MutatedSubscription(fetch.Query):
+    mutation: Optional[str] = None
+
     @property
     def success(self) -> bool:
         return not self.errors
@@ -36,10 +38,6 @@ class MutatedSubscription(fetch.Query):
         if not sub:
             return None
         return rid.Subscription(sub)
-
-    @property
-    def mutation(self) -> str:
-        return self["mutation"]
 
 
 yaml.add_representer(MutatedSubscription, Representer.represent_dict)
@@ -77,7 +75,7 @@ def put_subscription(
             utm_client, "PUT", url, json=body, scope=rid.SCOPE_READ
         )
     )
-    result["mutation"] = "create" if subscription_version is None else "update"
+    result.mutation = "create" if subscription_version is None else "update"
     return result
 
 
@@ -90,12 +88,14 @@ def delete_subscription(
     result = MutatedSubscription(
         fetch.query_and_describe(utm_client, "DELETE", url, scope=rid.SCOPE_READ)
     )
-    result["mutation"] = "delete"
+    result.mutation = "delete"
     return result
 
 
 class MutatedISAResponse(fetch.Query):
     """Response to a call to the DSS to mutate an ISA"""
+
+    mutation: Optional[str] = None
 
     @property
     def success(self) -> bool:
@@ -129,10 +129,6 @@ class MutatedISAResponse(fetch.Query):
         if not subs:
             return []
         return [rid.SubscriberToNotify(sub) for sub in subs]
-
-    @property
-    def mutation(self) -> str:
-        return self["mutation"]
 
 
 yaml.add_representer(MutatedISAResponse, Representer.represent_dict)
