@@ -59,8 +59,8 @@ def test_create_isa(ids, session_ridv1):
                   'altitude_lo': 20,
                   'altitude_hi': 400,
               },
-              'time_start': time_start.strftime(rid.DATE_FORMAT),
-              'time_end': time_end.strftime(rid.DATE_FORMAT),
+              'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+              'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
           },
           'flights_url': 'https://example.com/dss',
       })
@@ -84,8 +84,8 @@ def test_create_subscription(ids, session_ridv1):
                   'altitude_lo': 20,
                   'altitude_hi': 400,
               },
-              'time_start': time_start.strftime(rid.DATE_FORMAT),
-              'time_end': time_end.strftime(rid.DATE_FORMAT),
+              'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+              'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
           },
           'callbacks': {
               'identification_service_area_url': 'https://example.com/foo'

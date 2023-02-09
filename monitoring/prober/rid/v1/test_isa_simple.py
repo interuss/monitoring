@@ -48,8 +48,8 @@ def test_create_isa(ids, session_ridv1):
         'altitude_lo': 20,
         'altitude_hi': 400,
       },
-      'time_start': time_start.strftime(rid.DATE_FORMAT),
-      'time_end': time_end.strftime(rid.DATE_FORMAT),
+      'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+      'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
     },
     'flights_url': 'https://example.com/dss',
   }
@@ -134,7 +134,7 @@ def test_get_isa_by_search_earliest_time_included(ids, session_ridv1):
   earliest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=59)
   resp = session_ridv1.get('{}?area={}&earliest_time={}'.format(
       ISA_PATH, common.GEO_POLYGON_STRING,
-      earliest_time.strftime(rid.DATE_FORMAT)))
+      earliest_time.strftime(rid_v1.DATE_FORMAT)))
   assert resp.status_code == 200, resp.content
   assert ids(ISA_TYPE) in [x['id'] for x in resp.json()['service_areas']]
 
@@ -144,7 +144,7 @@ def test_get_isa_by_search_earliest_time_excluded(ids, session_ridv1):
   earliest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=61)
   resp = session_ridv1.get('{}?area={}&earliest_time={}'.format(
       ISA_PATH, common.GEO_POLYGON_STRING,
-      earliest_time.strftime(rid.DATE_FORMAT)))
+      earliest_time.strftime(rid_v1.DATE_FORMAT)))
   assert resp.status_code == 200, resp.content
   assert ids(ISA_TYPE) not in [x['id'] for x in resp.json()['service_areas']]
 
@@ -164,7 +164,7 @@ def test_get_isa_by_search_latest_time_excluded(ids, session_ridv1):
   latest_time = datetime.datetime.utcnow() - datetime.timedelta(minutes=1)
   resp = session_ridv1.get('{}?area={}&latest_time={}'.format(
       ISA_PATH, common.GEO_POLYGON_STRING,
-      latest_time.strftime(rid.DATE_FORMAT)))
+      latest_time.strftime(rid_v1.DATE_FORMAT)))
   assert resp.status_code == 200, resp.content
   assert ids(ISA_TYPE) not in [x['id'] for x in resp.json()['service_areas']]
 
