@@ -1,6 +1,7 @@
 import datetime
 import json
 import traceback
+from types import MappingProxyType
 from typing import Dict, Optional, List
 
 import flask
@@ -19,7 +20,8 @@ TIMEOUTS = (5, 25)  # Timeouts of `connect` and `read` in seconds
 class RequestDescription(ImplicitDict):
     method: str
     url: str
-    headers: dict
+    # Note: MappingProxyType effectively creates a read-only dict.
+    headers: dict = MappingProxyType({})
     json: Optional[dict] = None
     body: Optional[str] = None
 
