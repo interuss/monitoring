@@ -88,7 +88,8 @@ def describe_request(
 class ResponseDescription(ImplicitDict):
     code: Optional[int] = None
     failure: Optional[str]
-    headers: dict
+    # Note: MappingProxyType effectively creates a read-only dict.
+    headers: dict = MappingProxyType({})
     elapsed_s: float
     reported: StringBasedDateTime
     json: Optional[dict] = None
