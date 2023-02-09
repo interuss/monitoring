@@ -1,16 +1,15 @@
-import argparse
 import atexit
 import datetime
 import os
-import shlex
 import signal
 import sys
-import threading
-import time
 from multiprocessing import Process
 from typing import Optional
 
+from implicitdict import StringBasedDateTime
 from loguru import logger
+import yaml
+from yaml.representer import Representer
 
 from monitoring.monitorlib import ids, versioning
 from monitoring.monitorlib import fetch
@@ -24,6 +23,8 @@ from monitoring.mock_uss.tracer import tracer_poll
 from monitoring.mock_uss.tracer.resources import ResourceSet, get_options
 from monitoring.mock_uss.tracer.database import db
 
+
+yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
 RID_SUBSCRIPTION_ID_CODE = "tracer RID Subscription"
 SCD_SUBSCRIPTION_ID_CODE = "tracer SCD Subscription"

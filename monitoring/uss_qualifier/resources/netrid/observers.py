@@ -40,7 +40,7 @@ class RIDSystemObserver(object):
         try:
             result = (
                 ImplicitDict.parse(
-                    query.response["json"], observation_api.GetDisplayDataResponse
+                    query.response.json, observation_api.GetDisplayDataResponse
                 )
                 if query.status_code == 200
                 else None
@@ -59,7 +59,7 @@ class RIDSystemObserver(object):
         try:
             result = (
                 ImplicitDict.parse(
-                    query.response["json"], observation_api.GetDetailsResponse
+                    query.response.json, observation_api.GetDetailsResponse
                 )
                 if query.status_code == 200
                 else None

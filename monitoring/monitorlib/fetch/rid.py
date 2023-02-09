@@ -5,6 +5,7 @@ import s2sphere
 import yaml
 from yaml.representer import Representer
 
+from implicitdict import ImplicitDict
 from monitoring.monitorlib import fetch, infrastructure, rid_v1
 
 
@@ -87,6 +88,8 @@ def isas(
 
 
 class FetchedUSSFlights(fetch.Query):
+    """Wrapper to interpret a USS flights query as a list of flights."""
+
     @property
     def success(self) -> bool:
         return not self.errors
@@ -132,6 +135,8 @@ def flights(
 
 
 class FetchedUSSFlightDetails(fetch.Query):
+    """Wrapper to interpret a USS flight details query as details for a flight."""
+
     @property
     def success(self) -> bool:
         return not self.errors
@@ -157,7 +162,7 @@ yaml.add_representer(FetchedUSSFlightDetails, Representer.represent_dict)
 def flight_details(
     utm_client: infrastructure.UTMClientSession,
     flights_url: str,
-    id: str,
+    flight_id: str,
     enhanced_details: bool = False,
 ) -> FetchedUSSFlightDetails:
     suffix = "?enhanced=true" if enhanced_details else ""
@@ -170,15 +175,19 @@ def flight_details(
         fetch.query_and_describe(
             utm_client,
             "GET",
-            flights_url + "/{}/details{}".format(id, suffix),
+            flights_url + "/{}/details{}".format(flight_id, suffix),
             scope=scope,
         )
     )
-    result["requested_id"] = id
+    result["requested_id"] = flight_id
     return result
 
 
-class FetchedFlights(fetch.Query):
+class FetchedFlights(ImplicitDict):
+    dss_isa_query: FetchedISAs
+    uss_flight_queries: Dict[str, FetchedUSSFlights]
+    uss_flight_details_queries: Dict[str, FetchedUSSFlightDetails]
+
     @property
     def success(self):
         return not self.errors
@@ -188,24 +197,6 @@ class FetchedFlights(fetch.Query):
         if not self.dss_isa_query.success:
             return ["Failed to obtain ISAs: " + self.dss_isa_query.error]
         return []
-
-    @property
-    def dss_isa_query(self) -> FetchedISAs:
-        return fetch.coerce(self["dss_isa_query"], FetchedISAs)
-
-    @property
-    def uss_flight_queries(self) -> Dict[str, FetchedUSSFlights]:
-        return {
-            k: fetch.coerce(v, FetchedUSSFlights)
-            for k, v in self.get("uss_flight_queries", {}).items()
-        }
-
-    @property
-    def uss_flight_details_queries(self) -> Dict[str, FetchedUSSFlightDetails]:
-        return {
-            k: fetch.coerce(v, FetchedUSSFlightDetails)
-            for k, v in self.get("uss_flight_details_queries", {}).items()
-        }
 
 
 yaml.add_representer(FetchedFlights, Representer.represent_dict)
@@ -239,15 +230,15 @@ def all_flights(
                     uss_flight_details_queries[flight.id] = details
 
     return FetchedFlights(
-        {
-            "dss_isa_query": isa_query,
-            "uss_flight_queries": uss_flight_queries,
-            "uss_flight_details_queries": uss_flight_details_queries,
-        }
+        dss_isa_query=isa_query,
+        uss_flight_queries=uss_flight_queries,
+        uss_flight_details_querie=uss_flight_details_queries,
     )
 
 
 class FetchedSubscription(fetch.Query):
+    """Wrapper to interpret a DSS Subscription query as a Subscription."""
+
     @property
     def success(self) -> bool:
         return not self.errors

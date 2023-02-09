@@ -106,7 +106,7 @@ class NominalBehavior(TestScenario):
                 if "json" not in query.response:
                     raise ValueError(f"Response did not contain a JSON body")
                 changed_test: ChangeTestResponse = ImplicitDict.parse(
-                    query.response["json"], ChangeTestResponse
+                    query.response.json, ChangeTestResponse
                 )
                 injections = changed_test.injected_flights
                 check.record_passed()

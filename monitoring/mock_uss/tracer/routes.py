@@ -8,6 +8,7 @@ from loguru import logger
 from termcolor import colored
 import yaml
 
+from implicitdict import ImplicitDict
 from monitoring.monitorlib import fetch, formatting, geo, infrastructure, versioning
 from monitoring.monitorlib.fetch import summarize
 import monitoring.monitorlib.fetch.rid
@@ -248,17 +249,21 @@ def tracer_logs(log):
     object_type = obj.get("object_type", None)
     if object_type == fetch.rid.FetchedISAs.__name__:
         obj = {
-            "summary": summarize.isas(fetch.rid.FetchedISAs(obj)),
+            "summary": summarize.isas(ImplicitDict.parse(obj, fetch.rid.FetchedISAs)),
             "details": obj,
         }
     elif object_type == fetch.scd.FetchedEntities.__name__:
         obj = {
-            "summary": summarize.entities(fetch.scd.FetchedEntities(obj)),
+            "summary": summarize.entities(
+                ImplicitDict.parse(obj, fetch.scd.FetchedEntities)
+            ),
             "details": obj,
         }
     elif object_type == fetch.rid.FetchedFlights.__name__:
         obj = {
-            "summary": summarize.flights(fetch.rid.FetchedFlights(obj)),
+            "summary": summarize.flights(
+                ImplicitDict.parse(obj, fetch.rid.FetchedFlights)
+            ),
             "details": obj,
         }
 

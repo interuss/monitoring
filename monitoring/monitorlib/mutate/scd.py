@@ -10,6 +10,8 @@ from monitoring.monitorlib import fetch
 
 
 class MutatedSubscription(fetch.Query):
+    mutation: Optional[str] = None
+
     @property
     def success(self) -> bool:
         return not self.errors
@@ -36,10 +38,6 @@ class MutatedSubscription(fetch.Query):
         if not sub:
             return None
         return scd.Subscription(sub)
-
-    @property
-    def mutation(self) -> str:
-        return self["mutation"]
 
 
 yaml.add_representer(MutatedSubscription, Representer.represent_dict)
@@ -74,7 +72,7 @@ def put_subscription(
     result = MutatedSubscription(
         fetch.query_and_describe(utm_client, "PUT", url, json=body, scope=scd.SCOPE_SC)
     )
-    result["mutation"] = "update" if version else "create"
+    result.mutation = "update" if version else "create"
     return result
 
 
@@ -85,5 +83,5 @@ def delete_subscription(
     result = MutatedSubscription(
         fetch.query_and_describe(utm_client, "DELETE", url, scope=scd.SCOPE_SC)
     )
-    result["mutation"] = "delete"
+    result.mutation = "delete"
     return result
