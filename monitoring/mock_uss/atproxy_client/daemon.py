@@ -109,6 +109,7 @@ def _atproxy_client_worker(worker_id: ATProxyWorkerID) -> None:
     Args:
         worker_id: atproxy worker ID of this daemon worker
     """
+    logger.info("Starting atproxy client worker {}", worker_id)
     try:
         # Collect configuration information for this worker
         base_url = mock_uss.webapp.config[config.KEY_ATPROXY_BASE_URL]
@@ -124,9 +125,11 @@ def _atproxy_client_worker(worker_id: ATProxyWorkerID) -> None:
         with db as tx:
             assert isinstance(tx, Database)
             tx.atproxy_workers[worker_id].state = ATProxyWorkerState.Starting
+        logger.info("Verifying atproxy availability for worker {}", worker_id)
         _wait_for_atproxy(worker_id, base_url, basic_auth)
 
         # Mark worker as Running
+        logger.info("Marking worker {} as Running", worker_id)
         with db as tx:
             assert isinstance(tx, Database)
             if tx.atproxy_workers[worker_id].state != ATProxyWorkerState.Starting:
@@ -205,6 +208,7 @@ def _poll_atproxy(
         basic_auth: (username, password) tuple for accessing atproxy
     """
     query_url = f"{base_url}/handler/queries"
+    logger.info("Entering polling loop from worker {}", worker_id)
     while db.value.atproxy_workers[worker_id].state == ATProxyWorkerState.Running:
         # Poll atproxy to see if there are any requests pending
         resp = requests.get(query_url, auth=basic_auth)
@@ -245,13 +249,16 @@ def _poll_atproxy(
             continue
 
         # Handle the request
-        logger.info("Handling response to {} request", request_to_handle.type)
+        logger.info(
+            "Handling {} request, id {}", request_to_handle.type, request_to_handle.id
+        )
         fulfillment = PutQueryRequest(
             return_code=500,
             response={"message": "Unknown error in mock_uss atproxy client handler"},
         )
         try:
             content, code = _fulfill_request(request_to_handle)
+            logger.info(f"Request {request_to_handle.id} fulfillment has code {code}")
             fulfillment = PutQueryRequest(return_code=code, response=content)
         except ValueError as e:
             msg = f"mock_uss atproxy client handler encountered ValueError: {e}"
@@ -273,10 +280,20 @@ def _poll_atproxy(
             resp = requests.put(
                 f"{query_url}/{request_to_handle.id}", json=fulfillment, auth=basic_auth
             )
-            if resp.status_code != 200:
+            if resp.status_code != 204:
                 logger.error(
                     f"Error {resp.status_code} reporting response {fulfillment.return_code} to query {request_to_handle.id}: {resp.content.decode()}"
                 )
+            else:
+                logger.info(
+                    f"Delivered response to request {request_to_handle.id} to atproxy"
+                )
+
+    logger.info(
+        "Gracefully exiting polling loop from worker {} with state {}",
+        worker_id,
+        db.value.atproxy_workers[worker_id].state,
+    )
 
 
 def _fulfill_request(request_to_handle: PendingRequest) -> Tuple[Optional[dict], int]:
