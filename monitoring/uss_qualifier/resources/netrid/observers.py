@@ -28,41 +28,45 @@ class RIDSystemObserver(object):
     def observe_system(
         self, rect: s2sphere.LatLngRect
     ) -> Tuple[Optional[observation_api.GetDisplayDataResponse], fetch.Query]:
-        initiated_at = datetime.datetime.utcnow()
-        resp = self.session.get(
-            "/display_data?view={},{},{},{}".format(
-                rect.lo().lat().degrees,
-                rect.lo().lng().degrees,
-                rect.hi().lat().degrees,
-                rect.hi().lng().degrees,
-            ),
-            scope=self.rid_version.read_scope,
+        url = "/display_data?view={},{},{},{}".format(
+            rect.lo().lat().degrees,
+            rect.lo().lng().degrees,
+            rect.hi().lat().degrees,
+            rect.hi().lng().degrees,
+        )
+        query = fetch.query_and_describe(
+            self.session, "GET", url, scope=self.rid_version.read_scope
         )
         try:
             result = (
-                ImplicitDict.parse(resp.json(), observation_api.GetDisplayDataResponse)
-                if resp.status_code == 200
+                ImplicitDict.parse(
+                    query.response["json"], observation_api.GetDisplayDataResponse
+                )
+                if query.status_code == 200
                 else None
             )
         except ValueError as e:
             print("Error parsing observation response: {}".format(e))
             result = None
-        return (result, fetch.describe_query(resp, initiated_at))
+        return result, query
 
     def observe_flight_details(
         self, flight_id: str
     ) -> Tuple[Optional[observation_api.GetDetailsResponse], fetch.Query]:
-        initiated_at = datetime.datetime.utcnow()
-        resp = self.session.get("/display_data/{}".format(flight_id))
+        query = fetch.query_and_describe(
+            self.session, "GET", f"/display_data/{flight_id}"
+        )
         try:
             result = (
-                ImplicitDict.parse(resp.json(), observation_api.GetDetailsResponse)
-                if resp.status_code == 200
+                ImplicitDict.parse(
+                    query.response["json"], observation_api.GetDetailsResponse
+                )
+                if query.status_code == 200
                 else None
             )
         except ValueError:
             result = None
-        return (result, fetch.describe_query(resp, initiated_at))
+        return result, query
 
 
 class ObserverConfiguration(ImplicitDict):

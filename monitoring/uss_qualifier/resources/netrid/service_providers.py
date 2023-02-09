@@ -49,22 +49,21 @@ class NetRIDServiceProvider(object):
         self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
 
     def submit_test(self, request: CreateTestParameters, test_id: str) -> fetch.Query:
-        injection_path = "/tests/{}".format(test_id)
-
-        initiated_at = datetime.datetime.utcnow()
-        response = self.client.put(
-            url=injection_path, json=request, scope=SCOPE_RID_QUALIFIER_INJECT
+        return fetch.query_and_describe(
+            self.client,
+            "PUT",
+            url=f"/tests/{test_id}",
+            json=request,
+            scope=SCOPE_RID_QUALIFIER_INJECT,
         )
-        return fetch.describe_query(response, initiated_at)
 
     def delete_test(self, test_id: str) -> fetch.Query:
-        deletion_path = "/tests/{}".format(test_id)
-
-        initiated_at = datetime.datetime.utcnow()
-        response = self.client.delete(
-            url=deletion_path, scope=SCOPE_RID_QUALIFIER_INJECT
+        return fetch.query_and_describe(
+            self.client,
+            "DELETE",
+            url=f"/tests/{test_id}",
+            scope=SCOPE_RID_QUALIFIER_INJECT,
         )
-        return fetch.describe_query(response, initiated_at)
 
 
 class NetRIDServiceProviders(Resource[NetRIDServiceProvidersSpecification]):
