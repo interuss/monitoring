@@ -14,6 +14,7 @@ from monitoring.mock_uss.auth import requires_scope
 from . import clustering, database
 from .behavior import DisplayProviderBehavior
 from .database import db
+from ...monitorlib.rid_common import RIDVersion
 
 
 def _make_flight_observation(
@@ -91,10 +92,12 @@ def riddp_display_data() -> Tuple[str, int]:
 
     # Get ISAs in the DSS
     t = arrow.utcnow().datetime
-    isas_response: fetch.FetchedISAs = fetch.isas(resources.utm_client, view, t, t)
-    if not isas_response.success:
+    isa_list: fetch.ISAList = fetch.ISAList.query_dss(
+        view, t, t, RIDVersion.f3411_19, resources.utm_client
+    )
+    if not isa_list.success:
         response = ErrorResponse(message="Unable to fetch ISAs from DSS")
-        response["errors"] = [isas_response]
+        response["errors"] = [isa_list]
         return flask.jsonify(response), 412
 
     # Fetch flights from each unique flights URL
@@ -103,7 +106,7 @@ def riddp_display_data() -> Tuple[str, int]:
     flight_info: Dict[str, database.FlightInfo] = {k: v for k, v in tx.flights.items()}
     behavior: DisplayProviderBehavior = tx.behavior
 
-    for flights_url, uss in isas_response.flight_urls.items():
+    for flights_url, uss in isa_list.flights_urls.items():
         if uss in behavior.do_not_display_flights_from:
             continue
         flights_response = fetch.flights(resources.utm_client, flights_url, view, True)

@@ -1,90 +1,241 @@
+from __future__ import annotations
+import arrow
 import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any, Union
 
+from implicitdict import ImplicitDict
 import s2sphere
+from uas_standards.astm.f3411 import v19, v22a
+import uas_standards.astm.f3411.v19.api
+import uas_standards.astm.f3411.v19.constants
+import uas_standards.astm.f3411.v22a.api
+import uas_standards.astm.f3411.v22a.constants
 import yaml
 from yaml.representer import Representer
 
-from implicitdict import ImplicitDict
 from monitoring.monitorlib import fetch, infrastructure, rid_v1
+from monitoring.monitorlib.fetch import Query
+from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.monitorlib.rid_common import RIDVersion
 
 
-class FetchedISAs(fetch.Query):
-    """Wrapper to interpret a DSS ISA query as a set of ISAs."""
+class ISA(ImplicitDict):
+    """Version-independent representation of a F3411 identification service area."""
+
+    v19: Optional[v19.api.IdentificationServiceArea]
+    v22a: Optional[v22a.api.IdentificationServiceArea]
+
+    @property
+    def rid_version(self) -> RIDVersion:
+        if self.v19 is not None:
+            return RIDVersion.f3411_19
+        elif self.v22a is not None:
+            return RIDVersion.f3411_22a
+        else:
+            raise ValueError("No valid representation was specified for ISA")
+
+    @property
+    def raw(
+        self,
+    ) -> Union[v19.api.IdentificationServiceArea, v22a.api.IdentificationServiceArea]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve response using RID version {self.rid_version}"
+            )
+
+    @property
+    def flights_url(self) -> str:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19.flights_url
+        elif self.rid_version == RIDVersion.f3411_22a:
+            flights_path = v22a.api.OPERATIONS[v22a.api.OperationID.SearchFlights].path
+            return self.v22a.uss_base_url + flights_path
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve ISA flights URLs using RID version {self.rid_version}"
+            )
+
+    @property
+    def owner(self) -> str:
+        return self.raw.owner
+
+    @property
+    def id(self) -> str:
+        return self.raw.id
+
+
+class ISAList(ImplicitDict):
+    """Version-independent representation of a list of F3411 identification service areas."""
+
+    v19_query: Optional[Query] = None
+    v22a_query: Optional[Query] = None
+
+    @staticmethod
+    def query_dss(
+        box: s2sphere.LatLngRect,
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+        rid_version: RIDVersion,
+        session: UTMClientSession,
+        base_url: str = "",
+    ) -> ISAList:
+        t0 = arrow.get(start_time).isoformat().replace("+00:00", "Z")
+        t1 = arrow.get(end_time).isoformat().replace("+00:00", "Z")
+        if rid_version == RIDVersion.f3411_19:
+            op = v19.api.OPERATIONS[
+                v19.api.OperationID.SearchIdentificationServiceAreas
+            ]
+            area = rid_v1.geo_polygon_string(rid_v1.vertices_from_latlng_rect(box))
+            url = f"{base_url}{op.path}?area={area}&earliest_time={t0}&latest_time={t1}"
+            return ISAList(
+                v19_query=fetch.query_and_describe(
+                    session, op.verb, url, scope=v19.constants.Scope.Read
+                )
+            )
+        elif rid_version == RIDVersion.f3411_22a:
+            op = v22a.api.OPERATIONS[
+                v22a.api.OperationID.SearchIdentificationServiceAreas
+            ]
+            area = rid_v1.geo_polygon_string(rid_v1.vertices_from_latlng_rect(box))
+            url = f"{base_url}{op.path}?area={area}&earliest_time={t0}&latest_time={t1}"
+            return ISAList(
+                v22a_query=fetch.query_and_describe(
+                    session, op.verb, url, scope=v22a.constants.Scope.DisplayProvider
+                )
+            )
+        else:
+            raise NotImplementedError(
+                f"Cannot query DSS for ISA list using RID version {rid_version}"
+            )
+
+    @property
+    def rid_version(self) -> RIDVersion:
+        if self.v19_query is not None:
+            return RIDVersion.f3411_19
+        elif self.v22a_query is not None:
+            return RIDVersion.f3411_22a
+        else:
+            raise ValueError("No valid query was populated in ISAList")
+
+    @property
+    def query(self) -> Query:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_query
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_query
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve query using RID version {self.rid_version}"
+            )
+
+    @property
+    def status_code(self):
+        return self.query.status_code
+
+    @property
+    def _v19_response(
+        self,
+    ) -> Optional[v19.api.SearchIdentificationServiceAreasResponse]:
+        try:
+            return ImplicitDict.parse(
+                self.v19_query.response.json,
+                v19.api.SearchIdentificationServiceAreasResponse,
+            )
+        except ValueError:
+            return None
+
+    @property
+    def _v22a_response(
+        self,
+    ) -> Optional[v22a.api.SearchIdentificationServiceAreasResponse]:
+        try:
+            return ImplicitDict.parse(
+                self.v22a_query.response.json,
+                v22a.api.SearchIdentificationServiceAreasResponse,
+            )
+        except ValueError:
+            return None
+
+    @property
+    def error(self) -> Optional[str]:
+        # Overall errors
+        if self.status_code != 200:
+            return f"Failed to search ISAs in DSS ({self.status_code})"
+
+        if self.query.response.json is None:
+            return "DSS response to search ISAs did not contain valid JSON"
+
+        if self.rid_version == RIDVersion.f3411_19:
+            if self._v19_response is None:
+                try:
+                    ImplicitDict.parse(
+                        self.v19_query.response.json,
+                        v19.api.SearchIdentificationServiceAreasResponse,
+                    )
+                    return "Unknown error with F3411-19 response"
+                except ValueError as e:
+                    return f"Error parsing F3411-19 DSS response: {str(e)}"
+
+        if self.rid_version == RIDVersion.f3411_22a:
+            if self._v22a_response is None:
+                try:
+                    ImplicitDict.parse(
+                        self.v22a_query.response.json,
+                        v22a.api.SearchIdentificationServiceAreasResponse,
+                    )
+                    return "Unknown error with F3411-22a response"
+                except ValueError as e:
+                    return f"Error parsing F3411-22a DSS response: {str(e)}"
+
+        return None
 
     @property
     def success(self) -> bool:
         return self.error is None
 
     @property
-    def error(self) -> Optional[str]:
-        # Overall errors
-        if self.status_code != 200:
-            return "Failed to search ISAs in DSS ({})".format(self.status_code)
-        if self.json_result is None:
-            return "DSS response to search ISAs was not valid JSON"
-
-        # ISA format errors
-        isa_list = self.json_result.get("service_areas", [])
-        for isa in isa_list:
-            if "id" not in isa:
-                return "DSS response to search ISAs included ISA without id"
-            if "owner" not in isa:
-                return "DSS response to search ISAs included ISA without owner"
-
-        return None
-
-    @property
-    def isas(self) -> Dict[str, rid_v1.ISA]:
-        if not self.json_result:
+    def isas(self) -> Dict[str, ISA]:
+        if not self.success:
             return {}
-        isa_list = self.json_result.get("service_areas", [])
-        return {isa.get("id", ""): rid_v1.ISA(isa) for isa in isa_list}
+        if self.rid_version == RIDVersion.f3411_19:
+            return {isa.id: ISA(v19=isa) for isa in self._v19_response.service_areas}
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return {isa.id: ISA(v22a=isa) for isa in self._v22a_response.service_areas}
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve ISAs using RID version {self.rid_version}"
+            )
 
     @property
-    def flight_urls(self) -> Dict[str, str]:
-        """Returns map of flight URL to USS"""
-        urls = dict()
-        for _, isa in self.isas.items():
-            if isa.flights_url is not None:
-                urls[isa.flights_url] = isa.owner
-        return urls
+    def flights_urls(self) -> Dict[str, str]:
+        """Returns map of flights URL to owning USS"""
+        if not self.success:
+            return {}
+        return {isa.flights_url: isa.owner for _, isa in self.isas.items()}
 
-    def has_different_content_than(self, other):
-        if not isinstance(other, FetchedISAs):
+    def has_different_content_than(self, other: Any) -> bool:
+        if not isinstance(other, ISAList):
             return True
         if self.error != other.error:
             return True
-        if self.success:
-            my_isas = self.isas
-            other_isas = other.isas
-            for id in other_isas:
-                if id not in my_isas:
-                    return True
-            for id, isa in my_isas.items():
-                if id not in other_isas or isa != other_isas[id]:
-                    return True
-        return False
+        if self.rid_version != other.rid_version:
+            return True
+
+        if self.rid_version == RIDVersion.f3411_19:
+            return self._v19_response != other._v19_response
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self._v22_response != other._v22_response
+        else:
+            raise NotImplementedError(
+                f"Cannot compare ISAs using RID version {self.rid_version}"
+            )
 
 
-yaml.add_representer(FetchedISAs, Representer.represent_dict)
-
-
-def isas(
-    utm_client: infrastructure.UTMClientSession,
-    box: s2sphere.LatLngRect,
-    start_time: datetime.datetime,
-    end_time: datetime.datetime,
-) -> FetchedISAs:
-    area = rid_v1.geo_polygon_string(rid_v1.vertices_from_latlng_rect(box))
-    url = "/v1/dss/identification_service_areas?area={}&earliest_time={}&latest_time={}".format(
-        area,
-        start_time.strftime(rid_v1.DATE_FORMAT),
-        end_time.strftime(rid_v1.DATE_FORMAT),
-    )
-    return FetchedISAs(
-        fetch.query_and_describe(utm_client, "GET", url, scope=rid_v1.SCOPE_READ)
-    )
+yaml.add_representer(ISAList, Representer.represent_dict)
 
 
 class FetchedUSSFlights(fetch.Query):

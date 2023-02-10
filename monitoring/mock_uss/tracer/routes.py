@@ -247,9 +247,9 @@ def tracer_logs(log):
         obj = {"entries": objs}
 
     object_type = obj.get("object_type", None)
-    if object_type == fetch.rid.FetchedISAs.__name__:
+    if object_type == fetch.rid.ISAList.__name__:
         obj = {
-            "summary": summarize.isas(ImplicitDict.parse(obj, fetch.rid.FetchedISAs)),
+            "summary": summarize.isas(ImplicitDict.parse(obj, fetch.rid.ISAList)),
             "details": obj,
         }
     elif object_type == fetch.scd.FetchedEntities.__name__:

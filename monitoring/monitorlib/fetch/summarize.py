@@ -21,7 +21,7 @@ def limit_long_arrays(obj, limit: int):
         return obj
 
 
-def isas(fetched: rid.FetchedISAs) -> Dict:
+def isas(fetched: rid.ISAList) -> Dict:
     summary = {}
     if fetched.success:
         for isa_id, isa in fetched.isas.items():
