@@ -1,5 +1,6 @@
 import arrow
 import datetime
+from datetime import timedelta
 from typing import List, Optional
 
 import flask
@@ -37,7 +38,9 @@ def _get_report(
         return None
 
     recent_states = flight.select_relevant_states(
-        view, t_request - NetMaxNearRealTimeDataPeriodSeconds, t_request
+        view,
+        t_request - timedelta(seconds=NetMaxNearRealTimeDataPeriodSeconds),
+        t_request,
     )
     if not recent_states:
         # No recent telemetry applicable to view

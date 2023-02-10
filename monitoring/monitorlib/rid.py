@@ -25,9 +25,9 @@ class RIDVersion(str, Enum):
     @property
     def realtime_period(self) -> timedelta:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetMaxNearRealTimeDataPeriodSeconds
+            return timedelta(seconds=v19.constants.NetMaxNearRealTimeDataPeriodSeconds)
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetMaxNearRealTimeDataPeriodSeconds
+            return timedelta(seconds=v22a.constants.NetMaxNearRealTimeDataPeriodSeconds)
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
