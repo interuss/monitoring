@@ -3,21 +3,24 @@
 import datetime
 import time
 
+from uas_standards.astm.f3411.v22a.api import OPERATIONS, OperationID
+from uas_standards.astm.f3411.v22a.constants import Scope
+
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import rid_v2
-from monitoring.monitorlib.rid_v2 import SCOPE_DP, SCOPE_SP, ISA_PATH
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
 
 
+ISA_PATH = OPERATIONS[OperationID.SearchIdentificationServiceAreas].path
 ISA_TYPE = register_resource_type(347, 'ISA')
 
 
 def test_ensure_clean_workspace_v2(ids, session_ridv2):
-  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_SP)
+  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.ServiceProvider)
   if resp.status_code == 200:
     version = resp.json()['service_area']['version']
-    resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_SP)
+    resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=Scope.ServiceProvider)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected.
@@ -26,7 +29,7 @@ def test_ensure_clean_workspace_v2(ids, session_ridv2):
     assert False, resp.content
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_create(ids, session_ridv2):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(seconds=5)
@@ -50,7 +53,7 @@ def test_create(ids, session_ridv2):
   assert resp.status_code == 200, resp.content
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_valid_immediately(ids, session_ridv2):
   # The ISA is still valid immediately after we create it.
   resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)))
@@ -62,14 +65,14 @@ def test_sleep_5_seconds():
   time.sleep(5)
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_returned_by_id(ids, session_ridv2):
   # We can get it explicitly by ID
   resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)))
   assert resp.status_code == 200, resp.content
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_not_returned_by_search(ids, session_ridv2):
   # ...but it's not included in a search.
   resp = session_ridv2.get('{}?area={}'.format(
@@ -78,10 +81,10 @@ def test_not_returned_by_search(ids, session_ridv2):
   assert ids(ISA_TYPE) not in [x['id'] for x in resp.json()['service_areas']]
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_delete(ids, session_ridv2):
-  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_DP)
+  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.DisplayProvider)
   assert resp.status_code == 200
   version = resp.json()['service_area']['version']
-  resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_SP)
+  resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=Scope.ServiceProvider)
   assert resp.status_code == 200, resp.content

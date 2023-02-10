@@ -1,12 +1,10 @@
-import datetime
-import time
 from typing import List, Optional
 
 import arrow
 import s2sphere
 
 from monitoring.monitorlib import fetch, geo
-from monitoring.monitorlib.rid_common import RIDVersion
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.resources.netrid.observers import RIDSystemObserver

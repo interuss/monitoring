@@ -3,8 +3,8 @@ import datetime
 from typing import List, Optional
 
 import flask
+from implicitdict import StringBasedDateTime
 import s2sphere
-
 from uas_standards.astm.f3411.v19.api import (
     ErrorResponse,
     RIDRecentAircraftPosition,
@@ -12,9 +12,14 @@ from uas_standards.astm.f3411.v19.api import (
     GetFlightDetailsResponse,
     GetFlightsResponse,
 )
+from uas_standards.astm.f3411.v19.constants import (
+    Scope,
+    NetMaxNearRealTimeDataPeriodSeconds,
+    NetMaxDisplayAreaDiagonalKm,
+)
+
 from monitoring.monitorlib import geo, rid_v1
 from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
-from implicitdict import StringBasedDateTime
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
 from . import behavior
@@ -32,7 +37,7 @@ def _get_report(
         return None
 
     recent_states = flight.select_relevant_states(
-        view, t_request - rid_v1.NetMaxNearRealTimeDataPeriod, t_request
+        view, t_request - NetMaxNearRealTimeDataPeriodSeconds, t_request
     )
     if not recent_states:
         # No recent telemetry applicable to view
@@ -58,7 +63,7 @@ def _get_report(
 
 
 @webapp.route("/mock/ridsp/v1/uss/identification_service_areas/<id>", methods=["POST"])
-@requires_scope([rid_v1.SCOPE_WRITE])
+@requires_scope([Scope.Write])
 def ridsp_notify_isa(id: str):
     return (
         flask.jsonify(
@@ -69,7 +74,7 @@ def ridsp_notify_isa(id: str):
 
 
 @webapp.route("/mock/ridsp/v1/uss/flights", methods=["GET"])
-@requires_scope([rid_v1.SCOPE_READ])
+@requires_scope([Scope.Read])
 def ridsp_flights():
     if "view" not in flask.request.args:
         return (
@@ -91,9 +96,9 @@ def ridsp_flights():
     diagonal = (
         view.lo().get_distance(view.hi()).degrees * geo.EARTH_CIRCUMFERENCE_KM / 360
     )
-    if diagonal > rid_v1.NetMaxDisplayAreaDiagonal:
+    if diagonal > NetMaxDisplayAreaDiagonalKm:
         msg = "Requested diagonal of {} km exceeds limit of {} km".format(
-            diagonal, rid_v1.NetMaxDisplayAreaDiagonal
+            diagonal, NetMaxDisplayAreaDiagonalKm
         )
         return flask.jsonify(ErrorResponse(message=msg)), 413
 
@@ -117,7 +122,7 @@ def ridsp_flights():
 
 
 @webapp.route("/mock/ridsp/v1/uss/flights/<id>/details", methods=["GET"])
-@requires_scope([rid_v1.SCOPE_READ])
+@requires_scope([Scope.Read])
 def ridsp_flight_details(id: str):
     now = arrow.utcnow().datetime
     tx = db.value

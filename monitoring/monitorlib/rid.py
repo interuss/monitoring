@@ -1,10 +1,9 @@
 from datetime import timedelta
 from enum import Enum
 
-from monitoring.monitorlib import rid_v1
-from monitoring.monitorlib import rid_v2
-
-# TODO(BenjaminPelletier): Rename this file to `rid.py`
+from uas_standards.astm.f3411 import v19, v22a
+import uas_standards.astm.f3411.v19.constants
+import uas_standards.astm.f3411.v22a.constants
 
 
 class RIDVersion(str, Enum):
@@ -17,35 +16,35 @@ class RIDVersion(str, Enum):
     @property
     def read_scope(self) -> str:
         if self == RIDVersion.f3411_19:
-            return rid_v1.SCOPE_READ
+            return v19.constants.Scope.Read
         elif self == RIDVersion.f3411_22a:
-            return rid_v2.SCOPE_DP
+            return v22a.constants.Scope.DisplayProvider
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def realtime_period(self) -> timedelta:
         if self == RIDVersion.f3411_19:
-            return rid_v1.NetMaxNearRealTimeDataPeriod
+            return v19.constants.NetMaxNearRealTimeDataPeriodSeconds
         elif self == RIDVersion.f3411_22a:
-            return rid_v2.NetMaxNearRealTimeDataPeriod
+            return v22a.constants.NetMaxNearRealTimeDataPeriodSeconds
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def max_diagonal_km(self) -> float:
         if self == RIDVersion.f3411_19:
-            return rid_v1.NetMaxDisplayAreaDiagonal
+            return v19.constants.NetMaxDisplayAreaDiagonalKm
         elif self == RIDVersion.f3411_22a:
-            return rid_v2.NetMaxDisplayAreaDiagonal
+            return v22a.constants.NetMaxDisplayAreaDiagonalKm
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def max_details_diagonal_km(self) -> float:
         if self == RIDVersion.f3411_19:
-            return rid_v1.NetDetailsMaxDisplayAreaDiagonal
+            return v19.constants.NetDetailsMaxDisplayAreaDiagonalKm
         elif self == RIDVersion.f3411_22a:
-            return rid_v2.NetDetailsMaxDisplayAreaDiagonal
+            return v22a.constants.NetDetailsMaxDisplayAreaDiagonalKm
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))

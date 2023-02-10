@@ -11,20 +11,22 @@ import re
 
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import rid_v1
-from monitoring.monitorlib.rid_v1 import SCOPE_READ, SUBSCRIPTION_PATH
 from monitoring.monitorlib.testing import assert_datetimes_are_equal
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
 
+from uas_standards.astm.f3411.v19.api import OPERATIONS, OperationID
+from uas_standards.astm.f3411.v19.constants import Scope
 
+SUBSCRIPTION_PATH = OPERATIONS[OperationID.SearchSubscriptions].path
 SUB_TYPE = register_resource_type(327, 'Subscription')
 
 
 def test_ensure_clean_workspace(ids, session_ridv1):
-  resp = session_ridv1.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)), scope=SCOPE_READ)
+  resp = session_ridv1.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)), scope=Scope.Read)
   if resp.status_code == 200:
     version = resp.json()['subscription']['version']
-    resp = session_ridv1.delete('{}/{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE), version), scope=SCOPE_READ)
+    resp = session_ridv1.delete('{}/{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE), version), scope=Scope.Read)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected.
@@ -33,14 +35,14 @@ def test_ensure_clean_workspace(ids, session_ridv1):
     assert False, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_sub_does_not_exist(ids, session_ridv1):
   resp = session_ridv1.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)))
   assert resp.status_code == 404, resp.content
   assert 'Subscription {} not found'.format(ids(SUB_TYPE)) in resp.json()['message']
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_create_sub(ids, session_ridv1):
   """ASTM Compliance Test: DSS0030_C_PUT_SUB."""
   time_start = datetime.datetime.utcnow()
@@ -79,7 +81,7 @@ def test_create_sub(ids, session_ridv1):
   assert 'service_areas' in data
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_get_sub_by_id(ids, session_ridv1):
   """ASTM Compliance Test: DSS0030_E_GET_SUB_BY_ID."""
   resp = session_ridv1.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)))
@@ -93,7 +95,7 @@ def test_get_sub_by_id(ids, session_ridv1):
   }
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_get_sub_by_search(ids, session_ridv1):
   """ASTM Compliance Test: DSS0030_F_GET_SUBS_BY_AREA."""
   resp = session_ridv1.get('{}?area={}'.format(SUBSCRIPTION_PATH, common.GEO_POLYGON_STRING))
@@ -101,25 +103,25 @@ def test_get_sub_by_search(ids, session_ridv1):
   assert ids(SUB_TYPE) in [x['id'] for x in resp.json()['subscriptions']]
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_get_sub_by_searching_huge_area(session_ridv1):
   resp = session_ridv1.get('{}?area={}'.format(SUBSCRIPTION_PATH, common.HUGE_GEO_POLYGON_STRING))
   assert resp.status_code == 413, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_delete_sub_empty_version(ids, session_ridv1):
   resp = session_ridv1.delete('{}/{}/'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)))
   assert resp.status_code == 400, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_delete_sub_wrong_version(ids, session_ridv1):
   resp = session_ridv1.delete('{}/{}/fake_version'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)))
   assert resp.status_code == 400, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_delete_sub(ids, session_ridv1):
   """ASTM Compliance Test: DSS0030_D_DELETE_SUB."""
   # GET the sub first to find its version.
@@ -132,20 +134,20 @@ def test_delete_sub(ids, session_ridv1):
   assert resp.status_code == 200, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_get_deleted_sub_by_id(ids, session_ridv1):
   resp = session_ridv1.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)))
   assert resp.status_code == 404, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_get_deleted_sub_by_search(ids, session_ridv1):
   resp = session_ridv1.get('{}?area={}'.format(SUBSCRIPTION_PATH, common.GEO_POLYGON_STRING))
   assert resp.status_code == 200, resp.content
   assert ids(SUB_TYPE) not in [x['id'] for x in resp.json()['subscriptions']]
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_get_sub_with_loop_area(session_ridv1):
   resp = session_ridv1.get('{}?area={}'.format(SUBSCRIPTION_PATH, common.LOOP_GEO_POLYGON_STRING))
   assert resp.status_code == 400, resp.content

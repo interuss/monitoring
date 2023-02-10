@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure
-from monitoring.monitorlib.rid_common import RIDVersion
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.reports.report import ParticipantID
 from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
