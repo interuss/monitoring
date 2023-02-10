@@ -99,6 +99,13 @@ class ResponseDescription(ImplicitDict):
     def status_code(self) -> int:
         return self.code or 999
 
+    @property
+    def content(self) -> Optional[str]:
+        if self.json is not None:
+            return json.dumps(self.json)
+        else:
+            return self.body
+
 
 yaml.add_representer(ResponseDescription, Representer.represent_dict)
 
@@ -158,22 +165,42 @@ def describe_query(resp: requests.Response, initiated_at: datetime.datetime) -> 
 
 
 def query_and_describe(
-    client: infrastructure.UTMClientSession, method: str, url: str, **kwargs
+    client: Optional[infrastructure.UTMClientSession], verb: str, url: str, **kwargs
 ) -> Query:
+    """Attempt to perform a query, and the describe the results of that attempt.
+
+    This function should capture all common problems when attempting to send a query and report the problem in the Query
+    result rather than raising an exception.
+
+    Args:
+        client: UTMClientSession to use, or None to use a default `requests` Session.
+        verb: HTTP verb to perform at the specified URL.
+        url: URL to query.
+        **kwargs: Any keyword arguments that should be applied to the <session>.request method when invoking it.
+
+    Returns:
+        Query object describing the request and response/result.
+    """
+    if client is None:
+        utm_session = False
+        client = requests.session()
+    else:
+        utm_session = True
     req_kwargs = kwargs.copy()
     req_kwargs["timeout"] = TIMEOUTS
     t0 = datetime.datetime.utcnow()
     try:
-        return describe_query(client.request(method, url, **req_kwargs), t0)
+        return describe_query(client.request(verb, url, **req_kwargs), t0)
     except (requests.RequestException, urllib3.exceptions.ReadTimeoutError) as e:
         msg = "{}: {}".format(type(e).__name__, str(e))
     t1 = datetime.datetime.utcnow()
 
     # Reconstruct request similar to the one in the query (which is not
     # accessible at this point)
-    req_kwargs = client.adjust_request_kwargs(req_kwargs)
+    if utm_session:
+        req_kwargs = client.adjust_request_kwargs(req_kwargs)
     del req_kwargs["timeout"]
-    req = requests.Request(method, url, **req_kwargs)
+    req = requests.Request(verb, url, **req_kwargs)
     prepped_req = client.prepare_request(req)
     return Query(
         request=describe_request(prepped_req, t0),
