@@ -3,8 +3,8 @@
 import os
 import time
 import typing
-from locust import User 
-from monitoring.monitorlib import auth, infrastructure, rid
+from locust import User
+from monitoring.monitorlib import auth, infrastructure, rid_v1
 
 class DSSClient(infrastructure.UTMClientSession):
     _locust_environment = None
@@ -68,4 +68,4 @@ class USS(User):
             raise e
         # This is a load tester its acceptable to have all the scopes required to operate anything.
         # We are not testing if the scope is incorrect. We are testing if it can handle the load.
-        self.client.default_scopes = [rid.SCOPE_WRITE, rid.SCOPE_READ]
+        self.client.default_scopes = [rid_v1.SCOPE_WRITE, rid_v1.SCOPE_READ]

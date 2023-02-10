@@ -46,11 +46,11 @@ def test_create_isa(ids, session_ridv2):
         'outline_polygon': {
           'vertices': common.VERTICES,
         },
-        'altitude_lower': rid_v2.Altitude.make(20),
-        'altitude_upper': rid_v2.Altitude.make(400),
+        'altitude_lower': rid_v2.make_altitude(20),
+        'altitude_upper': rid_v2.make_altitude(400),
       },
-      'time_start': rid_v2.Time.make(time_start),
-      'time_end': rid_v2.Time.make(time_end),
+      'time_start': rid_v2.make_time(time_start),
+      'time_end': rid_v2.make_time(time_end),
     },
     'uss_base_url': BASE_URL_V1,
   }
@@ -92,8 +92,8 @@ def test_update_isa(ids, session_ridv2):
                   'outline_polygon': {
                       'vertices': common.VERTICES,
                   },
-                  'altitude_lower': rid_v2.Altitude.make(20),
-                  'altitude_upper': rid_v2.Altitude.make(400),
+                  'altitude_lower': rid_v2.make_altitude(20),
+                  'altitude_upper': rid_v2.make_altitude(400),
               },
           },
           'uss_base_url': BASE_URL_V2,

@@ -88,7 +88,8 @@ def describe_request(
 class ResponseDescription(ImplicitDict):
     code: Optional[int] = None
     failure: Optional[str]
-    headers: dict
+    # Note: MappingProxyType effectively creates a read-only dict.
+    headers: dict = MappingProxyType({})
     elapsed_s: float
     reported: StringBasedDateTime
     json: Optional[dict] = None
@@ -170,8 +171,8 @@ def query_and_describe(
 
     # Reconstruct request similar to the one in the query (which is not
     # accessible at this point)
-    del req_kwargs["timeout"]
     req_kwargs = client.adjust_request_kwargs(req_kwargs)
+    del req_kwargs["timeout"]
     req = requests.Request(method, url, **req_kwargs)
     prepped_req = client.prepare_request(req)
     return Query(

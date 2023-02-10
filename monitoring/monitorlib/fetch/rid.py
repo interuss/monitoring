@@ -6,7 +6,7 @@ import yaml
 from yaml.representer import Representer
 
 from implicitdict import ImplicitDict
-from monitoring.monitorlib import fetch, infrastructure, rid
+from monitoring.monitorlib import fetch, infrastructure, rid_v1
 
 
 class FetchedISAs(fetch.Query):
@@ -35,11 +35,11 @@ class FetchedISAs(fetch.Query):
         return None
 
     @property
-    def isas(self) -> Dict[str, rid.ISA]:
+    def isas(self) -> Dict[str, rid_v1.ISA]:
         if not self.json_result:
             return {}
         isa_list = self.json_result.get("service_areas", [])
-        return {isa.get("id", ""): rid.ISA(isa) for isa in isa_list}
+        return {isa.get("id", ""): rid_v1.ISA(isa) for isa in isa_list}
 
     @property
     def flight_urls(self) -> Dict[str, str]:
@@ -76,12 +76,14 @@ def isas(
     start_time: datetime.datetime,
     end_time: datetime.datetime,
 ) -> FetchedISAs:
-    area = rid.geo_polygon_string(rid.vertices_from_latlng_rect(box))
+    area = rid_v1.geo_polygon_string(rid_v1.vertices_from_latlng_rect(box))
     url = "/v1/dss/identification_service_areas?area={}&earliest_time={}&latest_time={}".format(
-        area, start_time.strftime(rid.DATE_FORMAT), end_time.strftime(rid.DATE_FORMAT)
+        area,
+        start_time.strftime(rid_v1.DATE_FORMAT),
+        end_time.strftime(rid_v1.DATE_FORMAT),
     )
     return FetchedISAs(
-        fetch.query_and_describe(utm_client, "GET", url, scope=rid.SCOPE_READ)
+        fetch.query_and_describe(utm_client, "GET", url, scope=rid_v1.SCOPE_READ)
     )
 
 
@@ -101,8 +103,8 @@ class FetchedUSSFlights(fetch.Query):
         return []
 
     @property
-    def flights(self) -> List[rid.Flight]:
-        return [rid.Flight(f) for f in self.json_result.get("flights", [])]
+    def flights(self) -> List[rid_v1.Flight]:
+        return [rid_v1.Flight(f) for f in self.json_result.get("flights", [])]
 
 
 yaml.add_representer(FetchedUSSFlights, Representer.represent_dict)
@@ -127,7 +129,7 @@ def flights(
             ),
             "include_recent_positions": "true" if include_recent_positions else "false",
         },
-        scope=rid.SCOPE_READ,
+        scope=rid_v1.SCOPE_READ,
     )
     return FetchedUSSFlights(result)
 
@@ -148,10 +150,10 @@ class FetchedUSSFlightDetails(fetch.Query):
         return []
 
     @property
-    def details(self) -> Optional[rid.FlightDetails]:
+    def details(self) -> Optional[dict]:
         if self.json_result is None or "details" not in self.json_result:
             return None
-        return rid.FlightDetails(self.json_result["details"])
+        return self.json_result["details"]
 
 
 yaml.add_representer(FetchedUSSFlightDetails, Representer.represent_dict)
@@ -165,9 +167,9 @@ def flight_details(
 ) -> FetchedUSSFlightDetails:
     suffix = "?enhanced=true" if enhanced_details else ""
     scope = (
-        " ".join([rid.SCOPE_READ, rid.UPP2_SCOPE_ENHANCED_DETAILS])
+        " ".join([rid_v1.SCOPE_READ, rid_v1.UPP2_SCOPE_ENHANCED_DETAILS])
         if enhanced_details
-        else rid.SCOPE_READ
+        else rid_v1.SCOPE_READ
     )
     result = FetchedUSSFlightDetails(
         fetch.query_and_describe(
@@ -254,11 +256,11 @@ class FetchedSubscription(fetch.Query):
         return []
 
     @property
-    def _subscription(self) -> rid.Subscription:
-        return rid.Subscription(self.json_result.get("subscription", {}))
+    def _subscription(self) -> rid_v1.Subscription:
+        return rid_v1.Subscription(self.json_result.get("subscription", {}))
 
     @property
-    def subscription(self) -> Optional[rid.Subscription]:
+    def subscription(self) -> Optional[rid_v1.Subscription]:
         if not self.success or self.status_code == 404:
             return None
         else:
@@ -272,5 +274,5 @@ def subscription(
     utm_client: infrastructure.UTMClientSession, subscription_id: str
 ) -> FetchedSubscription:
     url = "/v1/dss/subscriptions/{}".format(subscription_id)
-    result = fetch.query_and_describe(utm_client, "GET", url, scope=rid.SCOPE_READ)
+    result = fetch.query_and_describe(utm_client, "GET", url, scope=rid_v1.SCOPE_READ)
     return FetchedSubscription(result)

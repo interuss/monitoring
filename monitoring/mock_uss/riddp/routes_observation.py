@@ -4,7 +4,8 @@ import arrow
 import flask
 import s2sphere
 
-from monitoring.monitorlib import geo, rid
+from uas_standards.astm.f3411.v19.api import ErrorResponse, RIDFlight
+from monitoring.monitorlib import geo, rid_v1
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.rid_automated_testing import observation_api
 from implicitdict import ImplicitDict
@@ -16,7 +17,7 @@ from .database import db
 
 
 def _make_flight_observation(
-    flight: rid.RIDFlight, view: s2sphere.LatLngRect
+    flight: RIDFlight, view: s2sphere.LatLngRect
 ) -> observation_api.Flight:
     paths: List[List[observation_api.Position]] = []
     current_path: List[observation_api.Position] = []
@@ -63,34 +64,28 @@ def _make_flight_observation(
 
 
 @webapp.route("/riddp/observation/display_data", methods=["GET"])
-@requires_scope([rid.SCOPE_READ])
+@requires_scope([rid_v1.SCOPE_READ])
 def riddp_display_data() -> Tuple[str, int]:
     """Implements retrieval of current display data per automated testing API."""
 
     if "view" not in flask.request.args:
         return (
-            flask.jsonify(
-                rid.ErrorResponse(message='Missing required "view" parameter')
-            ),
+            flask.jsonify(ErrorResponse(message='Missing required "view" parameter')),
             400,
         )
     try:
         view = geo.make_latlng_rect(flask.request.args["view"])
     except ValueError as e:
         return (
-            flask.jsonify(
-                rid.ErrorResponse(message="Error parsing view: {}".format(e))
-            ),
+            flask.jsonify(ErrorResponse(message="Error parsing view: {}".format(e))),
             400,
         )
 
     # Determine what kind of response to produce
     diagonal = geo.get_latlngrect_diagonal_km(view)
-    if diagonal > rid.NetMaxDisplayAreaDiagonal:
+    if diagonal > rid_v1.NetMaxDisplayAreaDiagonal:
         return (
-            flask.jsonify(
-                rid.ErrorResponse(message="Requested diagonal was too large")
-            ),
+            flask.jsonify(ErrorResponse(message="Requested diagonal was too large")),
             413,
         )
 
@@ -98,12 +93,12 @@ def riddp_display_data() -> Tuple[str, int]:
     t = arrow.utcnow().datetime
     isas_response: fetch.FetchedISAs = fetch.isas(resources.utm_client, view, t, t)
     if not isas_response.success:
-        response = rid.ErrorResponse(message="Unable to fetch ISAs from DSS")
+        response = ErrorResponse(message="Unable to fetch ISAs from DSS")
         response["errors"] = [isas_response]
         return flask.jsonify(response), 412
 
     # Fetch flights from each unique flights URL
-    validated_flights: List[rid.RIDFlight] = []
+    validated_flights: List[RIDFlight] = []
     tx = db.value
     flight_info: Dict[str, database.FlightInfo] = {k: v for k, v in tx.flights.items()}
     behavior: DisplayProviderBehavior = tx.behavior
@@ -113,18 +108,16 @@ def riddp_display_data() -> Tuple[str, int]:
             continue
         flights_response = fetch.flights(resources.utm_client, flights_url, view, True)
         if not flights_response.success:
-            response = rid.ErrorResponse(
+            response = ErrorResponse(
                 message="Error querying {} from {}".format(flights_url, uss)
             )
             response["errors"] = [flights_response]
             return flask.jsonify(response), 412
         for flight in flights_response.flights:
             try:
-                validated_flight: rid.RIDFlight = ImplicitDict.parse(
-                    flight, rid.RIDFlight
-                )
+                validated_flight: RIDFlight = ImplicitDict.parse(flight, RIDFlight)
             except ValueError as e:
-                response = rid.ErrorResponse(
+                response = ErrorResponse(
                     message="Error parsing flight from {}'s {}".format(uss, flights_url)
                 )
                 response["parse_error"] = str(e)
@@ -143,7 +136,7 @@ def riddp_display_data() -> Tuple[str, int]:
     if behavior.always_omit_recent_paths:
         for f in flights:
             f.recent_paths = None
-    if diagonal <= rid.NetDetailsMaxDisplayAreaDiagonal:
+    if diagonal <= rid_v1.NetDetailsMaxDisplayAreaDiagonal:
         # Construct detailed flights response
         response = observation_api.GetDisplayDataResponse(flights=flights)
     else:
@@ -154,7 +147,7 @@ def riddp_display_data() -> Tuple[str, int]:
 
 
 @webapp.route("/riddp/observation/display_data/<flight_id>", methods=["GET"])
-@requires_scope([rid.SCOPE_READ])
+@requires_scope([rid_v1.SCOPE_READ])
 def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
     """Implements get flight details endpoint per automated testing API."""
 

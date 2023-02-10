@@ -1,10 +1,10 @@
 from datetime import timedelta
 from enum import Enum
 
-from monitoring.monitorlib import rid as rid_v1
+from monitoring.monitorlib import rid_v1
 from monitoring.monitorlib import rid_v2
 
-# TODO(BenjaminPelletier): Rename current `rid.py` to `rid_v1.py`, then rename this file to `rid.py`
+# TODO(BenjaminPelletier): Rename this file to `rid.py`
 
 
 class RIDVersion(str, Enum):

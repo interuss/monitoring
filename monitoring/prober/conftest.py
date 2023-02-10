@@ -2,7 +2,7 @@ import argparse
 from typing import Callable, Optional
 
 from monitoring.monitorlib.infrastructure import UTMClientSession, AsyncUTMTestSession
-from monitoring.monitorlib import auth, rid, scd
+from monitoring.monitorlib import auth, rid_v1, scd
 from monitoring.prober.infrastructure import add_test_result, IDFactory, ResourceType, VersionString
 
 import pytest
@@ -178,7 +178,7 @@ def subscriber(pytestconfig) -> Optional[str]:
   """Subscriber of USS making UTM API calls"""
   if pytestconfig.getoption(OPT_RID_AUTH):
     session = make_session(pytestconfig, BASE_URL_RID, OPT_RID_AUTH)
-    session.get('/healthy', scope=rid.SCOPE_READ)
+    session.get('/healthy', scope=rid_v1.SCOPE_READ)
     rid_sub = session.auth_adapter.get_sub()
     if rid_sub:
       return rid_sub

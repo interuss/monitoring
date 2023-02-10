@@ -46,11 +46,11 @@ def test_create_sub_empty_vertices(ids, session_ridv2):
                   'outline_polygon': {
                       'vertices': [],
                   },
-                  'altitude_lower': rid_v2.Altitude.make(20),
-                  'altitude_upper': rid_v2.Altitude.make(400),
+                  'altitude_lower': rid_v2.make_altitude(20),
+                  'altitude_upper': rid_v2.make_altitude(400),
               },
-              'time_start': rid_v2.Time.make(time_start),
-              'time_end': rid_v2.Time.make(time_end),
+              'time_start': rid_v2.make_time(time_start),
+              'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL
       })
@@ -67,11 +67,11 @@ def test_create_sub_missing_outline_polygon(ids, session_ridv2):
       json={
           'extents': {
               'volume': {
-                  'altitude_lower': rid_v2.Altitude.make(20),
-                  'altitude_upper': rid_v2.Altitude.make(400),
+                  'altitude_lower': rid_v2.make_altitude(20),
+                  'altitude_upper': rid_v2.make_altitude(400),
               },
-              'time_start': rid_v2.Time.make(time_start),
-              'time_end': rid_v2.Time.make(time_end),
+              'time_start': rid_v2.make_time(time_start),
+              'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL
       })
@@ -91,11 +91,11 @@ def test_create_sub_with_huge_area(ids, session_ridv2):
                   'outline_polygon': {
                       'vertices': common.HUGE_VERTICES,
                   },
-                  'altitude_lower': rid_v2.Altitude.make(20),
-                  'altitude_upper': rid_v2.Altitude.make(400),
+                  'altitude_lower': rid_v2.make_altitude(20),
+                  'altitude_upper': rid_v2.make_altitude(400),
               },
-              'time_start': rid_v2.Time.make(time_start),
-              'time_end': rid_v2.Time.make(time_end),
+              'time_start': rid_v2.make_time(time_start),
+              'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL
       })
@@ -136,11 +136,11 @@ def test_create_too_many_subs(ids, session_ridv2):
                             },
                         ],
                     },
-                    'altitude_lower': rid_v2.Altitude.make(20),
-                    'altitude_upper': rid_v2.Altitude.make(400),
+                    'altitude_lower': rid_v2.make_altitude(20),
+                    'altitude_upper': rid_v2.make_altitude(400),
                 },
-                'time_start': rid_v2.Time.make(time_start),
-                'time_end': rid_v2.Time.make(time_end),
+                'time_start': rid_v2.make_time(time_start),
+                'time_end': rid_v2.make_time(time_end),
             },
             'uss_base_url': BASE_URL
         })
@@ -171,11 +171,11 @@ def test_create_sub_with_too_long_end_time(ids, session_ridv2):
             "extents": {
                 "volume": {
                     "outline_polygon": {"vertices": common.VERTICES},
-                    'altitude_lower': rid_v2.Altitude.make(20),
-                    'altitude_upper': rid_v2.Altitude.make(400),
+                    'altitude_lower': rid_v2.make_altitude(20),
+                    'altitude_upper': rid_v2.make_altitude(400),
                 },
-                'time_start': rid_v2.Time.make(time_start),
-                'time_end': rid_v2.Time.make(time_end),
+                'time_start': rid_v2.make_time(time_start),
+                'time_end': rid_v2.make_time(time_end),
             },
             'uss_base_url': BASE_URL
         },
@@ -195,11 +195,11 @@ def test_update_sub_with_too_long_end_time(ids, session_ridv2):
             "extents": {
                 "volume": {
                     "outline_polygon": {"vertices": common.VERTICES},
-                    'altitude_lower': rid_v2.Altitude.make(20),
-                    'altitude_upper': rid_v2.Altitude.make(400),
+                    'altitude_lower': rid_v2.make_altitude(20),
+                    'altitude_upper': rid_v2.make_altitude(400),
                 },
-                'time_start': rid_v2.Time.make(time_start),
-                'time_end': rid_v2.Time.make(time_end),
+                'time_start': rid_v2.make_time(time_start),
+                'time_end': rid_v2.make_time(time_end),
             },
             'uss_base_url': BASE_URL
         },
@@ -213,11 +213,11 @@ def test_update_sub_with_too_long_end_time(ids, session_ridv2):
             "extents": {
                 "volume": {
                     "outline_polygon": {"vertices": common.VERTICES},
-                    'altitude_lower': rid_v2.Altitude.make(20),
-                    'altitude_upper': rid_v2.Altitude.make(400),
+                    'altitude_lower': rid_v2.make_altitude(20),
+                    'altitude_upper': rid_v2.make_altitude(400),
                 },
-                'time_start': rid_v2.Time.make(time_start),
-                'time_end': rid_v2.Time.make(time_end),
+                'time_start': rid_v2.make_time(time_start),
+                'time_end': rid_v2.make_time(time_end),
             },
             'uss_base_url': BASE_URL
         },

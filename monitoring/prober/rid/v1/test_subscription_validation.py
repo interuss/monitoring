@@ -9,8 +9,8 @@
 import datetime
 
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib import rid
-from monitoring.monitorlib.rid import SCOPE_READ, SUBSCRIPTION_PATH
+from monitoring.monitorlib import rid_v1
+from monitoring.monitorlib.rid_v1 import SCOPE_READ, SUBSCRIPTION_PATH
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
 
@@ -48,8 +48,8 @@ def test_create_sub_empty_vertices(ids, session_ridv1):
                   'altitude_lo': 20,
                   'altitude_hi': 400,
               },
-              'time_start': time_start.strftime(rid.DATE_FORMAT),
-              'time_end': time_end.strftime(rid.DATE_FORMAT),
+              'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+              'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
           },
           'callbacks': {
               'identification_service_area_url': 'https://example.com/foo'
@@ -71,8 +71,8 @@ def test_create_sub_missing_footprint(ids, session_ridv1):
                   'altitude_lo': 20,
                   'altitude_hi': 400,
               },
-              'time_start': time_start.strftime(rid.DATE_FORMAT),
-              'time_end': time_end.strftime(rid.DATE_FORMAT),
+              'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+              'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
           },
           'callbacks': {
               'identification_service_area_url': 'https://example.com/foo'
@@ -97,8 +97,8 @@ def test_create_sub_with_huge_area(ids, session_ridv1):
                   'altitude_lo': 20,
                   'altitude_hi': 400,
               },
-              'time_start': time_start.strftime(rid.DATE_FORMAT),
-              'time_end': time_end.strftime(rid.DATE_FORMAT),
+              'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+              'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
           },
           'callbacks': {
               'identification_service_area_url': 'https://example.com/foo'
@@ -115,7 +115,7 @@ def test_create_too_many_subs(ids, session_ridv1):
 
   # create 1 more than the max allowed Subscriptions per area
   versions = []
-  for index in range(rid.MAX_SUB_PER_AREA + 1):
+  for index in range(rid_v1.MAX_SUB_PER_AREA + 1):
     resp = session_ridv1.put(
         '{}/{}'.format(SUBSCRIPTION_PATH, ids(MULTI_SUB_TYPES[index])),
         json={
@@ -144,14 +144,14 @@ def test_create_too_many_subs(ids, session_ridv1):
                     'altitude_lo': 20,
                     'altitude_hi': 400,
                 },
-                'time_start': time_start.strftime(rid.DATE_FORMAT),
-                'time_end': time_end.strftime(rid.DATE_FORMAT),
+                'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+                'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
             },
             'callbacks': {
                 'identification_service_area_url': 'https://example.com/foo'
             },
         })
-    if index < rid.MAX_SUB_PER_AREA:
+    if index < rid_v1.MAX_SUB_PER_AREA:
       assert resp.status_code == 200, resp.content
       resp_json = resp.json()
       assert 'subscription' in resp_json
@@ -161,7 +161,7 @@ def test_create_too_many_subs(ids, session_ridv1):
       assert resp.status_code == 429, resp.content
 
   # clean up Subscription-limit Subscriptions
-  for index in range(rid.MAX_SUB_PER_AREA):
+  for index in range(rid_v1.MAX_SUB_PER_AREA):
     resp = session_ridv1.delete('{}/{}/{}'.format(SUBSCRIPTION_PATH, ids(MULTI_SUB_TYPES[index]), versions[index]))
     assert resp.status_code == 200
 
@@ -170,7 +170,7 @@ def test_create_too_many_subs(ids, session_ridv1):
 def test_create_sub_with_too_long_end_time(ids, session_ridv1):
     """ASTM Compliance Test: DSS0060_MAX_SUBS_DURATION."""
     time_start = datetime.datetime.utcnow()
-    time_end = time_start + datetime.timedelta(hours=(rid.MAX_SUB_TIME_HRS + 1))
+    time_end = time_start + datetime.timedelta(hours=(rid_v1.MAX_SUB_TIME_HRS + 1))
 
     resp = session_ridv1.put(
         "{}/{}".format(SUBSCRIPTION_PATH, ids(SUB_TYPE)),
@@ -181,8 +181,8 @@ def test_create_sub_with_too_long_end_time(ids, session_ridv1):
                     "altitude_lo": 20,
                     "altitude_hi": 400,
                 },
-                "time_start": time_start.strftime(rid.DATE_FORMAT),
-                "time_end": time_end.strftime(rid.DATE_FORMAT),
+                "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
+                "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
             "callbacks": {"identification_service_area_url": "https://example.com/foo"},
         },
@@ -205,15 +205,15 @@ def test_update_sub_with_too_long_end_time(ids, session_ridv1):
                     "altitude_lo": 20,
                     "altitude_hi": 400,
                 },
-                "time_start": time_start.strftime(rid.DATE_FORMAT),
-                "time_end": time_end.strftime(rid.DATE_FORMAT),
+                "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
+                "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
             "callbacks": {"identification_service_area_url": "https://example.com/foo"},
         },
     )
     assert resp.status_code == 200, resp.content
 
-    time_end = time_start + datetime.timedelta(hours=(rid.MAX_SUB_TIME_HRS + 1))
+    time_end = time_start + datetime.timedelta(hours=(rid_v1.MAX_SUB_TIME_HRS + 1))
     resp = session_ridv1.put(
         '{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)) + '/' + resp.json()["subscription"]["version"],
         json={
@@ -223,8 +223,8 @@ def test_update_sub_with_too_long_end_time(ids, session_ridv1):
                     "altitude_lo": 20,
                     "altitude_hi": 400,
                 },
-                "time_start": time_start.strftime(rid.DATE_FORMAT),
-                "time_end": time_end.strftime(rid.DATE_FORMAT),
+                "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
+                "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
             "callbacks": {"identification_service_area_url": "https://example.com/foo"},
         },
