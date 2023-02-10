@@ -20,13 +20,17 @@ TIMEOUTS = (5, 25)  # Timeouts of `connect` and `read` in seconds
 class RequestDescription(ImplicitDict):
     method: str
     url: str
-    # Note: MappingProxyType effectively creates a read-only dict.
-    headers: dict = MappingProxyType({})
+    headers: Optional[dict]
     json: Optional[dict] = None
     body: Optional[str] = None
 
     initiated_at: Optional[StringBasedDateTime]
     received_at: Optional[StringBasedDateTime]
+
+    def __init__(self, *args, **kwargs):
+        super(RequestDescription, self).__init__(*args, **kwargs)
+        if "headers" not in self:
+            self.headers = {}
 
     @property
     def token(self) -> Dict:
@@ -88,12 +92,16 @@ def describe_request(
 class ResponseDescription(ImplicitDict):
     code: Optional[int] = None
     failure: Optional[str]
-    # Note: MappingProxyType effectively creates a read-only dict.
-    headers: dict = MappingProxyType({})
+    headers: Optional[dict]
     elapsed_s: float
     reported: StringBasedDateTime
     json: Optional[dict] = None
     body: Optional[str] = None
+
+    def __init__(self, *args, **kwargs):
+        super(ResponseDescription, self).__init__(*args, **kwargs)
+        if "headers" not in self:
+            self.headers = {}
 
     @property
     def status_code(self) -> int:
