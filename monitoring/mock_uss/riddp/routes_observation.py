@@ -116,7 +116,9 @@ def riddp_display_data() -> Tuple[str, int]:
             flights_url, view, True, RIDVersion.f3411_19, resources.utm_client
         )
         if not flights_response.success:
-            msg = f"Error querying {flights_url} from {uss}: {flights_response.errors[0]}"
+            msg = (
+                f"Error querying {flights_url} from {uss}: {flights_response.errors[0]}"
+            )
             logger.error(msg)
             response = ErrorResponse(message=msg)
             response["errors"] = [flights_response]

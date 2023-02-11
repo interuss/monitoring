@@ -1,5 +1,4 @@
 from __future__ import annotations
-import arrow
 import datetime
 from typing import Dict, List, Optional, Any, Union
 
@@ -13,39 +12,10 @@ import uas_standards.astm.f3411.v22a.constants
 import yaml
 from yaml.representer import Representer
 
-from monitoring.monitorlib import fetch, infrastructure, rid_v1
+from monitoring.monitorlib import fetch, rid_v1
 from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid_common import RIDVersion
-
-
-class RIDQuery(ImplicitDict):
-    v19_query: Optional[Query] = None
-    v22a_query: Optional[Query] = None
-
-    @property
-    def rid_version(self) -> RIDVersion:
-        if self.v19_query is not None:
-            return RIDVersion.f3411_19
-        elif self.v22a_query is not None:
-            return RIDVersion.f3411_22a
-        else:
-            raise ValueError(f"No valid query was populated in {type(self).__name__}")
-
-    @property
-    def query(self) -> Query:
-        if self.rid_version == RIDVersion.f3411_19:
-            return self.v19_query
-        elif self.rid_version == RIDVersion.f3411_22a:
-            return self.v22a_query
-        else:
-            raise NotImplementedError(
-                f"Cannot retrieve query using RID version {self.rid_version}"
-            )
-
-    @property
-    def status_code(self):
-        return self.query.status_code
 
 
 class ISA(ImplicitDict):
@@ -95,6 +65,142 @@ class ISA(ImplicitDict):
     @property
     def id(self) -> str:
         return self.raw.id
+
+
+class Flight(ImplicitDict):
+    """Version-independent representation of a F3411 flight."""
+
+    v19: Optional[v19.api.RIDFlight]
+    v22a: Optional[v22a.api.RIDFlight]
+
+    @property
+    def rid_version(self) -> RIDVersion:
+        if self.v19 is not None:
+            return RIDVersion.f3411_19
+        elif self.v22a is not None:
+            return RIDVersion.f3411_22a
+        else:
+            raise ValueError("No valid representation was specified for flight")
+
+    @property
+    def raw(
+        self,
+    ) -> Union[v19.api.RIDFlight, v22a.api.RIDFlight]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve raw flight using RID version {self.rid_version}"
+            )
+
+    @property
+    def id(self) -> str:
+        return self.raw.id
+
+    def as_v19(self) -> v19.api.RIDFlight:
+        if self.v19 is not None:
+            return self.v19
+        else:
+            raise NotImplementedError(
+                f"Conversion to F3411-19 RIDFlight has not yet been implemented for RID version {self.rid_version}"
+            )
+
+
+class FlightDetails(ImplicitDict):
+    """Version-independent representation of details for a F3411 flight."""
+
+    v19: Optional[v19.api.RIDFlightDetails]
+    v22a: Optional[v22a.api.RIDFlightDetails]
+
+    @property
+    def rid_version(self) -> RIDVersion:
+        if self.v19 is not None:
+            return RIDVersion.f3411_19
+        elif self.v22a is not None:
+            return RIDVersion.f3411_22a
+        else:
+            raise ValueError("No valid representation was specified for flight details")
+
+    @property
+    def raw(
+        self,
+    ) -> Union[v19.api.RIDFlightDetails, v22a.api.RIDFlightDetails]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve raw flight details using RID version {self.rid_version}"
+            )
+
+    @property
+    def id(self) -> str:
+        return self.raw.id
+
+
+class Subscription(ImplicitDict):
+    """Version-independent representation of a F3411 subscription."""
+
+    v19: Optional[v19.api.Subscription]
+    v22a: Optional[v22a.api.Subscription]
+
+    @property
+    def rid_version(self) -> RIDVersion:
+        if self.v19 is not None:
+            return RIDVersion.f3411_19
+        elif self.v22a is not None:
+            return RIDVersion.f3411_22a
+        else:
+            raise ValueError("No valid representation was specified for subscription")
+
+    @property
+    def raw(
+        self,
+    ) -> Union[v19.api.Subscription, v22a.api.Subscription]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve raw subscription using RID version {self.rid_version}"
+            )
+
+    @property
+    def version(self) -> str:
+        return self.raw.version
+
+
+class RIDQuery(ImplicitDict):
+    v19_query: Optional[Query] = None
+    v22a_query: Optional[Query] = None
+
+    @property
+    def rid_version(self) -> RIDVersion:
+        if self.v19_query is not None:
+            return RIDVersion.f3411_19
+        elif self.v22a_query is not None:
+            return RIDVersion.f3411_22a
+        else:
+            raise ValueError(f"No valid query was populated in {type(self).__name__}")
+
+    @property
+    def query(self) -> Query:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_query
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_query
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve query using RID version {self.rid_version}"
+            )
+
+    @property
+    def status_code(self):
+        return self.query.status_code
 
 
 class FetchedISAs(RIDQuery):
@@ -199,9 +305,6 @@ class FetchedISAs(RIDQuery):
             )
 
 
-yaml.add_representer(FetchedISAs, Representer.represent_dict)
-
-
 def isas(
     box: s2sphere.LatLngRect,
     start_time: datetime.datetime,
@@ -234,45 +337,6 @@ def isas(
         raise NotImplementedError(
             f"Cannot query DSS for ISA list using RID version {rid_version}"
         )
-
-
-class Flight(ImplicitDict):
-    """Version-independent representation of a F3411 flight."""
-
-    v19: Optional[v19.api.RIDFlight]
-    v22a: Optional[v22a.api.RIDFlight]
-
-    @property
-    def rid_version(self) -> RIDVersion:
-        if self.v19 is not None:
-            return RIDVersion.f3411_19
-        elif self.v22a is not None:
-            return RIDVersion.f3411_22a
-        else:
-            raise ValueError("No valid representation was specified for flight")
-
-    @property
-    def raw(
-        self,
-    ) -> Union[v19.api.RIDFlight, v22a.api.RIDFlight]:
-        if self.rid_version == RIDVersion.f3411_19:
-            return self.v19
-        elif self.rid_version == RIDVersion.f3411_22a:
-            return self.v22a
-        else:
-            raise NotImplementedError(
-                f"Cannot retrieve raw flight using RID version {self.rid_version}"
-            )
-
-    @property
-    def id(self) -> str:
-        return self.raw.id
-
-    def as_v19(self) -> v19.api.RIDFlight:
-        if self.v19 is not None:
-            return self.v19
-        else:
-            raise NotImplementedError(f"Conversion to F3411-19 RIDFlight has not yet been implemented for RID version {self.rid_version}")
 
 
 class FetchedUSSFlights(RIDQuery):
@@ -351,9 +415,6 @@ class FetchedUSSFlights(RIDQuery):
             )
 
 
-yaml.add_representer(FetchedUSSFlights, Representer.represent_dict)
-
-
 def uss_flights(
     flights_url: str,
     area: s2sphere.LatLngRect,
@@ -403,39 +464,6 @@ def uss_flights(
         raise NotImplementedError(
             f"Cannot query USS for flights using RID version {rid_version}"
         )
-
-
-class FlightDetails(ImplicitDict):
-    """Version-independent representation of details for a F3411 flight."""
-
-    v19: Optional[v19.api.RIDFlightDetails]
-    v22a: Optional[v22a.api.RIDFlightDetails]
-
-    @property
-    def rid_version(self) -> RIDVersion:
-        if self.v19 is not None:
-            return RIDVersion.f3411_19
-        elif self.v22a is not None:
-            return RIDVersion.f3411_22a
-        else:
-            raise ValueError("No valid representation was specified for flight details")
-
-    @property
-    def raw(
-        self,
-    ) -> Union[v19.api.RIDFlightDetails, v22a.api.RIDFlightDetails]:
-        if self.rid_version == RIDVersion.f3411_19:
-            return self.v19
-        elif self.rid_version == RIDVersion.f3411_22a:
-            return self.v22a
-        else:
-            raise NotImplementedError(
-                f"Cannot retrieve raw flight details using RID version {self.rid_version}"
-            )
-
-    @property
-    def id(self) -> str:
-        return self.raw.id
 
 
 class FetchedUSSFlightDetails(RIDQuery):
@@ -520,9 +548,6 @@ class FetchedUSSFlightDetails(RIDQuery):
             )
 
 
-yaml.add_representer(FetchedUSSFlightDetails, Representer.represent_dict)
-
-
 def flight_details(
     flights_url: str,
     flight_id: str,
@@ -579,9 +604,6 @@ class FetchedFlights(ImplicitDict):
         return result
 
 
-yaml.add_representer(FetchedFlights, Representer.represent_dict)
-
-
 def all_flights(
     area: s2sphere.LatLngRect,
     include_recent_positions: bool,
@@ -616,8 +638,36 @@ def all_flights(
     )
 
 
-class FetchedSubscription(fetch.Query):
-    """Wrapper to interpret a DSS Subscription query as a Subscription."""
+class FetchedSubscription(RIDQuery):
+    """Version-independent representation of a Subscription read from the DSS."""
+
+    @property
+    def _v19_response(
+        self,
+    ) -> Optional[v19.api.GetSubscriptionResponse]:
+        try:
+            return ImplicitDict.parse(
+                self.v19_query.response.json,
+                v19.api.GetSubscriptionResponse,
+            )
+        except ValueError:
+            return None
+
+    @property
+    def _v22a_response(
+        self,
+    ) -> Optional[v22a.api.GetSubscriptionResponse]:
+        try:
+            return ImplicitDict.parse(
+                self.v22a_query.response.json,
+                v22a.api.GetSubscriptionResponse,
+            )
+        except ValueError:
+            return None
+
+    @property
+    def id(self) -> str:
+        return self.raw.id
 
     @property
     def success(self) -> bool:
@@ -626,33 +676,84 @@ class FetchedSubscription(fetch.Query):
     @property
     def errors(self) -> List[str]:
         if self.status_code == 404:
-            return []
+            return ["Subscription not present in DSS"]
         if self.status_code != 200:
-            return ["Request to get Subscription failed ({})".format(self.status_code)]
-        if self.json_result is None:
-            return ["Request to get Subscription did not return valid JSON"]
-        if not self._subscription.valid:
-            return ["Invalid Subscription data"]
+            return ["Failed to get Subscription ({})".format(self.status_code)]
+        if self.query.response.json is None:
+            return ["Subscription response did not include valid JSON"]
+
+        if self.rid_version == RIDVersion.f3411_19:
+            if self._v19_response is None:
+                try:
+                    ImplicitDict.parse(
+                        self.v19_query.response.json,
+                        v19.api.GetSubscriptionResponse,
+                    )
+                    return ["Unknown error with F3411-19 GetSubscriptionResponse"]
+                except ValueError as e:
+                    return [
+                        f"Error parsing F3411-19 USS GetSubscriptionResponse: {str(e)}"
+                    ]
+
+        if self.rid_version == RIDVersion.f3411_22a:
+            if self._v22a_response is None:
+                try:
+                    ImplicitDict.parse(
+                        self.v22a_query.response.json,
+                        v22a.api.GetSubscriptionResponse,
+                    )
+                    return ["Unknown error with F3411-22a GetSubscriptionResponse"]
+                except ValueError as e:
+                    return [
+                        f"Error parsing F3411-22a USS GetSubscriptionResponse: {str(e)}"
+                    ]
+
         return []
 
     @property
-    def _subscription(self) -> rid_v1.Subscription:
-        return rid_v1.Subscription(self.json_result.get("subscription", {}))
-
-    @property
-    def subscription(self) -> Optional[rid_v1.Subscription]:
-        if not self.success or self.status_code == 404:
+    def subscription(self) -> Optional[Subscription]:
+        if not self.success:
             return None
+        if self.rid_version == RIDVersion.f3411_19:
+            return Subscription(v19=self._v19_response.subscription)
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return Subscription(v22a=self._v22a_response.subscription)
         else:
-            return self._subscription
-
-
-yaml.add_representer(FetchedSubscription, Representer.represent_dict)
+            raise NotImplementedError(
+                f"Cannot retrieve subscription using RID version {self.rid_version}"
+            )
 
 
 def subscription(
-    utm_client: infrastructure.UTMClientSession, subscription_id: str
+    subscription_id: str,
+    rid_version: RIDVersion,
+    session: UTMClientSession,
+    dss_base_url: str = "",
 ) -> FetchedSubscription:
-    url = "/v1/dss/subscriptions/{}".format(subscription_id)
-    result = fetch.query_and_describe(utm_client, "GET", url, scope=rid_v1.SCOPE_READ)
-    return FetchedSubscription(result)
+    if rid_version == RIDVersion.f3411_19:
+        op = v19.api.OPERATIONS[v19.api.OperationID.GetSubscription]
+        url = f"{dss_base_url}{op.path}".replace("{id}", subscription_id)
+        return FetchedSubscription(
+            v19_query=fetch.query_and_describe(
+                session, op.verb, url, scope=v19.constants.Scope.Read
+            )
+        )
+    elif rid_version == RIDVersion.f3411_22a:
+        op = v22a.api.OPERATIONS[v22a.api.OperationID.GetSubscription]
+        url = f"{dss_base_url}{op.path}".replace("{id}", subscription_id)
+        return FetchedSubscription(
+            v22a_query=fetch.query_and_describe(
+                session, op.verb, url, scope=v22a.constants.Scope.DisplayProvider
+            )
+        )
+    else:
+        raise NotImplementedError(
+            f"Cannot query DSS for subscription using RID version {rid_version}"
+        )
+
+
+yaml.add_representer(FetchedISAs, Representer.represent_dict)
+yaml.add_representer(FetchedUSSFlights, Representer.represent_dict)
+yaml.add_representer(FetchedUSSFlightDetails, Representer.represent_dict)
+yaml.add_representer(FetchedFlights, Representer.represent_dict)
+yaml.add_representer(FetchedSubscription, Representer.represent_dict)
