@@ -1,5 +1,8 @@
+import datetime
 from datetime import timedelta
 from enum import Enum
+
+import arrow
 
 from monitoring.monitorlib import rid_v1
 from monitoring.monitorlib import rid_v2
@@ -13,6 +16,9 @@ class RIDVersion(str, Enum):
 
     f3411_22a = "F3411-22a"
     """ASTM F3411-22a (second version, v2, API version 2.1)"""
+
+    def format_time(self, t: datetime.datetime) -> str:
+        return arrow.get(t).isoformat().replace("+00:00", "Z")
 
     @property
     def read_scope(self) -> str:

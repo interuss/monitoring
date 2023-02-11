@@ -2,7 +2,7 @@ from monitoring.monitorlib.fetch import rid, scd, summarize
 from monitoring.monitorlib import formatting
 
 
-def isa_diff_text(a: rid.ISAList, b: rid.ISAList) -> str:
+def isa_diff_text(a: rid.FetchedISAs, b: rid.FetchedISAs) -> str:
     """Create text to display to a real-time user describing a change in ISAs."""
     a_summary = summarize.isas(a) if a else {}
     a_summary = summarize.limit_long_arrays(a_summary, 6)

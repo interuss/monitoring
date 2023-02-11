@@ -50,8 +50,8 @@ class Poller(object):
 
 def poll_rid_isas(
     resources: ResourceSet, box: s2sphere.LatLngRect
-) -> fetch.rid.ISAList:
-    return fetch.rid.ISAList.query_dss(
+) -> fetch.rid.FetchedISAs:
+    return fetch.rid.isas(
         box,
         resources.start_time,
         resources.end_time,

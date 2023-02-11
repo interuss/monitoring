@@ -2,6 +2,7 @@ from typing import Dict, List, Optional, Tuple
 
 import arrow
 import flask
+from loguru import logger
 import s2sphere
 
 from uas_standards.astm.f3411.v19.api import ErrorResponse, RIDFlight
@@ -92,11 +93,13 @@ def riddp_display_data() -> Tuple[str, int]:
 
     # Get ISAs in the DSS
     t = arrow.utcnow().datetime
-    isa_list: fetch.ISAList = fetch.ISAList.query_dss(
+    isa_list: fetch.FetchedISAs = fetch.isas(
         view, t, t, RIDVersion.f3411_19, resources.utm_client
     )
     if not isa_list.success:
-        response = ErrorResponse(message="Unable to fetch ISAs from DSS")
+        msg = f"Error fetching ISAs from DSS: {isa_list.error}"
+        logger.error(msg)
+        response = ErrorResponse(message=msg)
         response["errors"] = [isa_list]
         return flask.jsonify(response), 412
 
@@ -109,24 +112,17 @@ def riddp_display_data() -> Tuple[str, int]:
     for flights_url, uss in isa_list.flights_urls.items():
         if uss in behavior.do_not_display_flights_from:
             continue
-        flights_response = fetch.flights(resources.utm_client, flights_url, view, True)
+        flights_response = fetch.uss_flights(
+            flights_url, view, True, RIDVersion.f3411_19, resources.utm_client
+        )
         if not flights_response.success:
-            response = ErrorResponse(
-                message="Error querying {} from {}".format(flights_url, uss)
-            )
+            msg = f"Error querying {flights_url} from {uss}: {flights_response.errors[0]}"
+            logger.error(msg)
+            response = ErrorResponse(message=msg)
             response["errors"] = [flights_response]
             return flask.jsonify(response), 412
         for flight in flights_response.flights:
-            try:
-                validated_flight: RIDFlight = ImplicitDict.parse(flight, RIDFlight)
-            except ValueError as e:
-                response = ErrorResponse(
-                    message="Error parsing flight from {}'s {}".format(uss, flights_url)
-                )
-                response["parse_error"] = str(e)
-                response["flights"] = flights_response.flights
-                return flask.jsonify(response), 412
-            validated_flights.append(validated_flight)
+            validated_flights.append(flight.as_v19())
             flight_info[flight.id] = database.FlightInfo(flights_url=flights_url)
 
     # Update links between flight IDs and flight URLs

@@ -20,8 +20,7 @@ TIMEOUTS = (5, 25)  # Timeouts of `connect` and `read` in seconds
 class RequestDescription(ImplicitDict):
     method: str
     url: str
-    # Note: MappingProxyType effectively creates a read-only dict.
-    headers: dict = MappingProxyType({})
+    headers: dict = {}
     json: Optional[dict] = None
     body: Optional[str] = None
 
@@ -88,8 +87,7 @@ def describe_request(
 class ResponseDescription(ImplicitDict):
     code: Optional[int] = None
     failure: Optional[str]
-    # Note: MappingProxyType effectively creates a read-only dict.
-    headers: dict = MappingProxyType({})
+    headers: dict = {}
     elapsed_s: float
     reported: StringBasedDateTime
     json: Optional[dict] = None
