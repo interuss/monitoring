@@ -10,9 +10,8 @@ class TestScenarioDeclaration(ImplicitDict):
     scenario_type: FileReference
     """Type/location of test scenario.  Usually expressed as the class name of the scenario module-qualified relative to the `uss_qualifier` folder"""
 
-    # Note: MappingProxyType effectively creates a read-only dict.
-    resources: Dict[ResourceID, ResourceID] = MappingProxyType({})
+    resources: Dict[ResourceID, ResourceID] = {}
     """Mapping of the ID a resource in the test scenario -> the ID a resource is known by in the parent test suite.
-    
+
     The additional argument to concrete test scenario constructor <key> is supplied by the parent suite resource <value>.
     """
