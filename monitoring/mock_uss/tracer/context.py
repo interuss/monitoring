@@ -116,9 +116,7 @@ def _subscribe(
     if base_url.endswith("/"):
         base_url = base_url[0:-1]
     if monitor_rid:
-        _subscribe_rid(
-            resources, base_url + "/tracer/f3411v19/v1/uss/identification_service_areas"
-        )
+        _subscribe_rid(resources, base_url + "/tracer/f3411v19")
     if monitor_scd:
         _subscribe_scd(resources, base_url)
 
@@ -138,16 +136,17 @@ def _rid_subscription_id() -> str:
 RID_SUBSCRIPTION_KEY = "subscribe_ridsubscription"
 
 
-def _subscribe_rid(resources: ResourceSet, callback_url: str) -> None:
+def _subscribe_rid(resources: ResourceSet, uss_base_url: str) -> None:
     _clear_existing_rid_subscription(resources, "old")
 
-    create_result = mutate.rid.put_subscription(
-        resources.dss_client,
-        resources.area,
-        resources.start_time,
-        resources.end_time,
-        callback_url,
-        _rid_subscription_id(),
+    create_result = mutate.rid.upsert_subscription(
+        area=resources.area,
+        start_time=resources.start_time,
+        end_time=resources.end_time,
+        uss_base_url=uss_base_url,
+        subscription_id=_rid_subscription_id(),
+        rid_version=RIDVersion.f3411_19,
+        utm_client=resources.dss_client,
     )
     resources.logger.log_new(RID_SUBSCRIPTION_KEY, create_result)
     if not create_result.success:
@@ -168,9 +167,10 @@ def _clear_existing_rid_subscription(resources: ResourceSet, suffix: str) -> Non
 
     if existing_result.subscription is not None:
         del_result = mutate.rid.delete_subscription(
-            resources.dss_client,
-            _rid_subscription_id(),
-            existing_result.subscription.version,
+            subscription_id=_rid_subscription_id(),
+            subscription_version=existing_result.subscription.version,
+            rid_version=RIDVersion.f3411_19,
+            utm_client=resources.dss_client,
         )
         logfile = resources.logger.log_new(
             "{}_{}_del".format(RID_SUBSCRIPTION_KEY, suffix), del_result

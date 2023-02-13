@@ -19,6 +19,8 @@ from .database import db
 
 # Time after the last position report during which the created ISA will still
 # exist.  This value must be at least 60 seconds per NET0610.
+from ...monitorlib.rid import RIDVersion
+
 RECENT_POSITIONS_BUFFER = datetime.timedelta(seconds=60.2)
 
 
@@ -45,32 +47,42 @@ def ridsp_create_test(test_id: str) -> Tuple[str, int]:
     (t0, t1) = req_body.get_span()
     t1 += RECENT_POSITIONS_BUFFER
     rect = req_body.get_rect()
-    flights_url = "{}/mock/ridsp/v1/uss/flights".format(
-        webapp.config.get(config.KEY_BASE_URL)
-    )
+    uss_base_url = "{}/mock/ridsp".format(webapp.config.get(config.KEY_BASE_URL))
     mutated_isa = mutate.put_isa(
-        resources.utm_client, rect, t0, t1, flights_url, record.version
+        area=rect,
+        start_time=t0,
+        end_time=t1,
+        uss_base_url=uss_base_url,
+        isa_id=record.version,
+        rid_version=RIDVersion.f3411_19,
+        utm_client=resources.utm_client,
     )
-    if not mutated_isa.dss_response.success:
-        logger.error("Unable to create ISA in DSS")
-        response = ErrorResponse(message="Unable to create ISA in DSS")
-        response["errors"] = mutated_isa.dss_response.errors
+    if not mutated_isa.dss_query.success:
+        errors = "\n".join(mutated_isa.dss_query.errors)
+        msg = f"Unable to create ISA in DSS ({mutated_isa.dss_query.status_code}): {errors}"
+        logger.error(msg)
+        response = ErrorResponse(message=msg)
+        response["errors"] = mutated_isa.dss_query.errors
+        response["dss_query"] = mutated_isa.dss_query
         return flask.jsonify(response), 412
     bounds = f"(lat {rect.lat_lo().degrees}, lng {rect.lng_lo().degrees})-(lat {rect.lat_hi().degrees}, lng {rect.lng_hi().degrees})"
+    isa = mutated_isa.dss_query.isa
     logger.info(
-        f"Created ISA {mutated_isa.dss_response.isa.id} from {t0} to {t1} at {bounds}"
+        f"Created ISA {isa.id} version {isa.version} from {t0} to {t1} at {bounds}"
     )
-    record.isa_version = mutated_isa.dss_response.isa.version
+    record.isa_version = mutated_isa.dss_query.isa.version
     for (url, notification) in mutated_isa.notifications.items():
-        code = notification.response.status_code
+        code = notification.query.status_code
         if code == 200:
             logger.warning(
-                f"Notification to {notification.request['url']} incorrectly returned 200 rather than 204"
+                f"Notification to {notification.query.request.url} incorrectly returned 200 rather than 204"
             )
         elif code != 204:
-            logger.error(
-                f"Notification failure {code} to {notification.request['url']}: "
-            )
+            msg = f"Notification failure {code} to {notification.query.request.url}"
+            logger.error(msg)
+            response = ErrorResponse(message=msg)
+            response["query"] = notification.query
+            return flask.jsonify(response), 412
 
     with db as tx:
         tx.tests[test_id] = record
@@ -91,27 +103,30 @@ def ridsp_delete_test(test_id: str) -> Tuple[str, int]:
 
     # Delete ISA from DSS
     deleted_isa = mutate.delete_isa(
-        resources.utm_client, record.version, record.isa_version
+        isa_id=record.version,
+        isa_version=record.isa_version,
+        rid_version=RIDVersion.f3411_19,
+        utm_client=resources.utm_client,
     )
-    if not deleted_isa.dss_response.success:
+    if not deleted_isa.dss_query.success:
         logger.error(f"Unable to delete ISA {record.version} from DSS")
         response = ErrorResponse(message="Unable to delete ISA from DSS")
-        response["errors"] = deleted_isa.dss_response.errors
+        response["errors"] = deleted_isa.dss_query.errors
         return flask.jsonify(response), 412
-    logger.info(f"Created ISA {deleted_isa.dss_response.isa.id}")
+    logger.info(f"Created ISA {deleted_isa.dss_query.isa.id}")
+    result = ChangeTestResponse(version=record.version, injected_flights=record.flights)
     for (url, notification) in deleted_isa.notifications.items():
-        code = notification.response.status_code
+        code = notification.query.status_code
         if code == 200:
             logger.warning(
-                f"Notification to {notification.request['url']} incorrectly returned 200 rather than 204"
+                f"Notification to {notification.query.request.url} incorrectly returned 200 rather than 204"
             )
         elif code != 204:
             logger.error(
-                f"Notification failure {code} to {notification.request['url']}: "
+                f"Notification failure {code} to {notification.query.request.url}"
             )
+            result["query"] = notification.query
 
     with db as tx:
         del tx.tests[test_id]
-    return flask.jsonify(
-        ChangeTestResponse(version=record.version, injected_flights=record.flights)
-    )
+    return flask.jsonify(result)

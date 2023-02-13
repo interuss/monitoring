@@ -21,14 +21,14 @@ from monitoring.monitorlib.rid import RIDVersion
 class ISA(ImplicitDict):
     """Version-independent representation of a F3411 identification service area."""
 
-    v19: Optional[v19.api.IdentificationServiceArea]
-    v22a: Optional[v22a.api.IdentificationServiceArea]
+    v19_value: Optional[v19.api.IdentificationServiceArea] = None
+    v22a_value: Optional[v22a.api.IdentificationServiceArea] = None
 
     @property
     def rid_version(self) -> RIDVersion:
-        if self.v19 is not None:
+        if self.v19_value is not None:
             return RIDVersion.f3411_19
-        elif self.v22a is not None:
+        elif self.v22a_value is not None:
             return RIDVersion.f3411_22a
         else:
             raise ValueError("No valid representation was specified for ISA")
@@ -38,21 +38,46 @@ class ISA(ImplicitDict):
         self,
     ) -> Union[v19.api.IdentificationServiceArea, v22a.api.IdentificationServiceArea]:
         if self.rid_version == RIDVersion.f3411_19:
-            return self.v19
+            return self.v19_value
         elif self.rid_version == RIDVersion.f3411_22a:
-            return self.v22a
+            return self.v22a_value
         else:
             raise NotImplementedError(
                 f"Cannot retrieve raw ISA using RID version {self.rid_version}"
             )
 
+    def as_v19(self) -> v19.api.IdentificationServiceArea:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return v19.api.IdentificationServiceArea(
+                flights_url=self.flights_url,
+                owner=self.v22a_value.owner,
+                time_start=self.v22a_value.time_start.value,
+                time_end=self.v22a_value.time_end.value,
+                version=self.v22a_value.version,
+                id=self.v22a_value.id,
+            )
+        else:
+            raise NotImplementedError(
+                f"Cannot generate v19 representation of ISA using RID version {self.rid_version}"
+            )
+
+    def as_v22a(self) -> v22a.api.IdentificationServiceArea:
+        if self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_value
+        else:
+            raise NotImplementedError(
+                f"Cannot generate v22a representation of ISA using RID version {self.rid_version}"
+            )
+
     @property
     def flights_url(self) -> str:
         if self.rid_version == RIDVersion.f3411_19:
-            return self.v19.flights_url
+            return self.v19_value.flights_url
         elif self.rid_version == RIDVersion.f3411_22a:
             flights_path = v22a.api.OPERATIONS[v22a.api.OperationID.SearchFlights].path
-            return self.v22a.uss_base_url + flights_path
+            return self.v22a_value.uss_base_url + flights_path
         else:
             raise NotImplementedError(
                 f"Cannot retrieve ISA flights URLs using RID version {self.rid_version}"
@@ -66,18 +91,22 @@ class ISA(ImplicitDict):
     def id(self) -> str:
         return self.raw.id
 
+    @property
+    def version(self) -> str:
+        return self.raw.version
+
 
 class Flight(ImplicitDict):
     """Version-independent representation of a F3411 flight."""
 
-    v19: Optional[v19.api.RIDFlight]
-    v22a: Optional[v22a.api.RIDFlight]
+    v19_value: Optional[v19.api.RIDFlight] = None
+    v22a_value: Optional[v22a.api.RIDFlight] = None
 
     @property
     def rid_version(self) -> RIDVersion:
-        if self.v19 is not None:
+        if self.v19_value is not None:
             return RIDVersion.f3411_19
-        elif self.v22a is not None:
+        elif self.v22a_value is not None:
             return RIDVersion.f3411_22a
         else:
             raise ValueError("No valid representation was specified for flight")
@@ -87,9 +116,9 @@ class Flight(ImplicitDict):
         self,
     ) -> Union[v19.api.RIDFlight, v22a.api.RIDFlight]:
         if self.rid_version == RIDVersion.f3411_19:
-            return self.v19
+            return self.v19_value
         elif self.rid_version == RIDVersion.f3411_22a:
-            return self.v22a
+            return self.v22a_value
         else:
             raise NotImplementedError(
                 f"Cannot retrieve raw flight using RID version {self.rid_version}"
@@ -100,8 +129,8 @@ class Flight(ImplicitDict):
         return self.raw.id
 
     def as_v19(self) -> v19.api.RIDFlight:
-        if self.v19 is not None:
-            return self.v19
+        if self.v19_value is not None:
+            return self.v19_value
         else:
             raise NotImplementedError(
                 f"Conversion to F3411-19 RIDFlight has not yet been implemented for RID version {self.rid_version}"
@@ -111,14 +140,14 @@ class Flight(ImplicitDict):
 class FlightDetails(ImplicitDict):
     """Version-independent representation of details for a F3411 flight."""
 
-    v19: Optional[v19.api.RIDFlightDetails]
-    v22a: Optional[v22a.api.RIDFlightDetails]
+    v19_value: Optional[v19.api.RIDFlightDetails] = None
+    v22a_value: Optional[v22a.api.RIDFlightDetails] = None
 
     @property
     def rid_version(self) -> RIDVersion:
-        if self.v19 is not None:
+        if self.v19_value is not None:
             return RIDVersion.f3411_19
-        elif self.v22a is not None:
+        elif self.v22a_value is not None:
             return RIDVersion.f3411_22a
         else:
             raise ValueError("No valid representation was specified for flight details")
@@ -128,9 +157,9 @@ class FlightDetails(ImplicitDict):
         self,
     ) -> Union[v19.api.RIDFlightDetails, v22a.api.RIDFlightDetails]:
         if self.rid_version == RIDVersion.f3411_19:
-            return self.v19
+            return self.v19_value
         elif self.rid_version == RIDVersion.f3411_22a:
-            return self.v22a
+            return self.v22a_value
         else:
             raise NotImplementedError(
                 f"Cannot retrieve raw flight details using RID version {self.rid_version}"
@@ -144,14 +173,14 @@ class FlightDetails(ImplicitDict):
 class Subscription(ImplicitDict):
     """Version-independent representation of a F3411 subscription."""
 
-    v19: Optional[v19.api.Subscription]
-    v22a: Optional[v22a.api.Subscription]
+    v19_value: Optional[v19.api.Subscription] = None
+    v22a_value: Optional[v22a.api.Subscription] = None
 
     @property
     def rid_version(self) -> RIDVersion:
-        if self.v19 is not None:
+        if self.v19_value is not None:
             return RIDVersion.f3411_19
-        elif self.v22a is not None:
+        elif self.v22a_value is not None:
             return RIDVersion.f3411_22a
         else:
             raise ValueError("No valid representation was specified for subscription")
@@ -161,9 +190,9 @@ class Subscription(ImplicitDict):
         self,
     ) -> Union[v19.api.Subscription, v22a.api.Subscription]:
         if self.rid_version == RIDVersion.f3411_19:
-            return self.v19
+            return self.v19_value
         elif self.rid_version == RIDVersion.f3411_22a:
-            return self.v22a
+            return self.v22a_value
         else:
             raise NotImplementedError(
                 f"Cannot retrieve raw subscription using RID version {self.rid_version}"
@@ -209,26 +238,20 @@ class FetchedISAs(RIDQuery):
     @property
     def _v19_response(
         self,
-    ) -> Optional[v19.api.SearchIdentificationServiceAreasResponse]:
-        try:
-            return ImplicitDict.parse(
-                self.v19_query.response.json,
-                v19.api.SearchIdentificationServiceAreasResponse,
-            )
-        except ValueError:
-            return None
+    ) -> v19.api.SearchIdentificationServiceAreasResponse:
+        return ImplicitDict.parse(
+            self.v19_query.response.json,
+            v19.api.SearchIdentificationServiceAreasResponse,
+        )
 
     @property
     def _v22a_response(
         self,
-    ) -> Optional[v22a.api.SearchIdentificationServiceAreasResponse]:
-        try:
-            return ImplicitDict.parse(
-                self.v22a_query.response.json,
-                v22a.api.SearchIdentificationServiceAreasResponse,
-            )
-        except ValueError:
-            return None
+    ) -> v22a.api.SearchIdentificationServiceAreasResponse:
+        return ImplicitDict.parse(
+            self.v22a_query.response.json,
+            v22a.api.SearchIdentificationServiceAreasResponse,
+        )
 
     @property
     def error(self) -> Optional[str]:
@@ -240,26 +263,18 @@ class FetchedISAs(RIDQuery):
             return "DSS response to search ISAs did not contain valid JSON"
 
         if self.rid_version == RIDVersion.f3411_19:
-            if self._v19_response is None:
-                try:
-                    ImplicitDict.parse(
-                        self.v19_query.response.json,
-                        v19.api.SearchIdentificationServiceAreasResponse,
-                    )
+            try:
+                if not self._v19_response:
                     return "Unknown error with F3411-19 SearchIdentificationServiceAreasResponse"
-                except ValueError as e:
-                    return f"Error parsing F3411-19 DSS SearchIdentificationServiceAreasResponse: {str(e)}"
+            except ValueError as e:
+                return f"Error parsing F3411-19 DSS SearchIdentificationServiceAreasResponse: {str(e)}"
 
         if self.rid_version == RIDVersion.f3411_22a:
-            if self._v22a_response is None:
-                try:
-                    ImplicitDict.parse(
-                        self.v22a_query.response.json,
-                        v22a.api.SearchIdentificationServiceAreasResponse,
-                    )
+            try:
+                if not self._v22a_response:
                     return "Unknown error with F3411-22a SearchIdentificationServiceAreasResponse"
-                except ValueError as e:
-                    return f"Error parsing F3411-22a DSS SearchIdentificationServiceAreasResponse: {str(e)}"
+            except ValueError as e:
+                return f"Error parsing F3411-22a DSS SearchIdentificationServiceAreasResponse: {str(e)}"
 
         return None
 
@@ -272,9 +287,13 @@ class FetchedISAs(RIDQuery):
         if not self.success:
             return {}
         if self.rid_version == RIDVersion.f3411_19:
-            return {isa.id: ISA(v19=isa) for isa in self._v19_response.service_areas}
+            return {
+                isa.id: ISA(v19_value=isa) for isa in self._v19_response.service_areas
+            }
         elif self.rid_version == RIDVersion.f3411_22a:
-            return {isa.id: ISA(v22a=isa) for isa in self._v22a_response.service_areas}
+            return {
+                isa.id: ISA(v22a_value=isa) for isa in self._v22a_response.service_areas
+            }
         else:
             raise NotImplementedError(
                 f"Cannot retrieve ISAs using RID version {self.rid_version}"
@@ -345,26 +364,20 @@ class FetchedUSSFlights(RIDQuery):
     @property
     def _v19_response(
         self,
-    ) -> Optional[v19.api.GetFlightsResponse]:
-        try:
-            return ImplicitDict.parse(
-                self.v19_query.response.json,
-                v19.api.GetFlightsResponse,
-            )
-        except ValueError:
-            return None
+    ) -> v19.api.GetFlightsResponse:
+        return ImplicitDict.parse(
+            self.v19_query.response.json,
+            v19.api.GetFlightsResponse,
+        )
 
     @property
     def _v22a_response(
         self,
-    ) -> Optional[v22a.api.GetFlightsResponse]:
-        try:
-            return ImplicitDict.parse(
-                self.v22a_query.response.json,
-                v22a.api.GetFlightsResponse,
-            )
-        except ValueError:
-            return None
+    ) -> v22a.api.GetFlightsResponse:
+        return ImplicitDict.parse(
+            self.v22a_query.response.json,
+            v22a.api.GetFlightsResponse,
+        )
 
     @property
     def success(self) -> bool:
@@ -378,26 +391,18 @@ class FetchedUSSFlights(RIDQuery):
             return ["Flights response did not include valid JSON"]
 
         if self.rid_version == RIDVersion.f3411_19:
-            if self._v19_response is None:
-                try:
-                    ImplicitDict.parse(
-                        self.v19_query.response.json,
-                        v19.api.GetFlightsResponse,
-                    )
+            try:
+                if not self._v19_response:
                     return ["Unknown error with F3411-19 GetFlightsResponse"]
-                except ValueError as e:
-                    return [f"Error parsing F3411-19 USS GetFlightsResponse: {str(e)}"]
+            except ValueError as e:
+                return [f"Error parsing F3411-19 USS GetFlightsResponse: {str(e)}"]
 
         if self.rid_version == RIDVersion.f3411_22a:
-            if self._v22a_response is None:
-                try:
-                    ImplicitDict.parse(
-                        self.v22a_query.response.json,
-                        v22a.api.GetFlightsResponse,
-                    )
+            try:
+                if not self._v22a_response:
                     return ["Unknown error with F3411-22a GetFlightsResponse"]
-                except ValueError as e:
-                    return [f"Error parsing F3411-22a USS GetFlightsResponse: {str(e)}"]
+            except ValueError as e:
+                return [f"Error parsing F3411-22a USS GetFlightsResponse: {str(e)}"]
 
         return []
 
@@ -406,9 +411,9 @@ class FetchedUSSFlights(RIDQuery):
         if not self.success:
             return []
         if self.rid_version == RIDVersion.f3411_19:
-            return [Flight(v19=f) for f in self._v19_response.flights]
+            return [Flight(v19_value=f) for f in self._v19_response.flights]
         elif self.rid_version == RIDVersion.f3411_22a:
-            return [Flight(v22a=f) for f in self._v22a_response.flights]
+            return [Flight(v22a_value=f) for f in self._v22a_response.flights]
         else:
             raise NotImplementedError(
                 f"Cannot retrieve flights using RID version {self.rid_version}"
@@ -474,26 +479,20 @@ class FetchedUSSFlightDetails(RIDQuery):
     @property
     def _v19_response(
         self,
-    ) -> Optional[v19.api.GetFlightDetailsResponse]:
-        try:
-            return ImplicitDict.parse(
-                self.v19_query.response.json,
-                v19.api.GetFlightDetailsResponse,
-            )
-        except ValueError:
-            return None
+    ) -> v19.api.GetFlightDetailsResponse:
+        return ImplicitDict.parse(
+            self.v19_query.response.json,
+            v19.api.GetFlightDetailsResponse,
+        )
 
     @property
     def _v22a_response(
         self,
-    ) -> Optional[v22a.api.GetFlightDetailsResponse]:
-        try:
-            return ImplicitDict.parse(
-                self.v22a_query.response.json,
-                v22a.api.GetFlightDetailsResponse,
-            )
-        except ValueError:
-            return None
+    ) -> v22a.api.GetFlightDetailsResponse:
+        return ImplicitDict.parse(
+            self.v22a_query.response.json,
+            v22a.api.GetFlightDetailsResponse,
+        )
 
     @property
     def success(self) -> bool:
@@ -507,30 +506,22 @@ class FetchedUSSFlightDetails(RIDQuery):
             return ["Flight details response did not include valid JSON"]
 
         if self.rid_version == RIDVersion.f3411_19:
-            if self._v19_response is None:
-                try:
-                    ImplicitDict.parse(
-                        self.v19_query.response.json,
-                        v19.api.GetFlightDetailsResponse,
-                    )
+            try:
+                if not self._v19_response:
                     return ["Unknown error with F3411-19 GetFlightDetailsResponse"]
-                except ValueError as e:
-                    return [
-                        f"Error parsing F3411-19 USS GetFlightDetailsResponse: {str(e)}"
-                    ]
+            except ValueError as e:
+                return [
+                    f"Error parsing F3411-19 USS GetFlightDetailsResponse: {str(e)}"
+                ]
 
         if self.rid_version == RIDVersion.f3411_22a:
-            if self._v22a_response is None:
-                try:
-                    ImplicitDict.parse(
-                        self.v22a_query.response.json,
-                        v22a.api.GetFlightDetailsResponse,
-                    )
+            try:
+                if not self._v22a_response:
                     return ["Unknown error with F3411-22a GetFlightDetailsResponse"]
-                except ValueError as e:
-                    return [
-                        f"Error parsing F3411-22a USS GetFlightDetailsResponse: {str(e)}"
-                    ]
+            except ValueError as e:
+                return [
+                    f"Error parsing F3411-22a USS GetFlightDetailsResponse: {str(e)}"
+                ]
 
         return []
 
@@ -539,9 +530,9 @@ class FetchedUSSFlightDetails(RIDQuery):
         if not self.success:
             return None
         if self.rid_version == RIDVersion.f3411_19:
-            return FlightDetails(v19=self._v19_response.details)
+            return FlightDetails(v19_value=self._v19_response.details)
         elif self.rid_version == RIDVersion.f3411_22a:
-            return FlightDetails(v22a=self._v22a_response.details)
+            return FlightDetails(v22a_value=self._v22a_response.details)
         else:
             raise NotImplementedError(
                 f"Cannot retrieve flight details using RID version {self.rid_version}"
@@ -644,26 +635,20 @@ class FetchedSubscription(RIDQuery):
     @property
     def _v19_response(
         self,
-    ) -> Optional[v19.api.GetSubscriptionResponse]:
-        try:
-            return ImplicitDict.parse(
-                self.v19_query.response.json,
-                v19.api.GetSubscriptionResponse,
-            )
-        except ValueError:
-            return None
+    ) -> v19.api.GetSubscriptionResponse:
+        return ImplicitDict.parse(
+            self.v19_query.response.json,
+            v19.api.GetSubscriptionResponse,
+        )
 
     @property
     def _v22a_response(
         self,
-    ) -> Optional[v22a.api.GetSubscriptionResponse]:
-        try:
-            return ImplicitDict.parse(
-                self.v22a_query.response.json,
-                v22a.api.GetSubscriptionResponse,
-            )
-        except ValueError:
-            return None
+    ) -> v22a.api.GetSubscriptionResponse:
+        return ImplicitDict.parse(
+            self.v22a_query.response.json,
+            v22a.api.GetSubscriptionResponse,
+        )
 
     @property
     def id(self) -> str:
@@ -683,30 +668,20 @@ class FetchedSubscription(RIDQuery):
             return ["Subscription response did not include valid JSON"]
 
         if self.rid_version == RIDVersion.f3411_19:
-            if self._v19_response is None:
-                try:
-                    ImplicitDict.parse(
-                        self.v19_query.response.json,
-                        v19.api.GetSubscriptionResponse,
-                    )
+            try:
+                if not self._v19_response:
                     return ["Unknown error with F3411-19 GetSubscriptionResponse"]
-                except ValueError as e:
-                    return [
-                        f"Error parsing F3411-19 USS GetSubscriptionResponse: {str(e)}"
-                    ]
+            except ValueError as e:
+                return [f"Error parsing F3411-19 USS GetSubscriptionResponse: {str(e)}"]
 
         if self.rid_version == RIDVersion.f3411_22a:
-            if self._v22a_response is None:
-                try:
-                    ImplicitDict.parse(
-                        self.v22a_query.response.json,
-                        v22a.api.GetSubscriptionResponse,
-                    )
+            try:
+                if not self._v22a_response:
                     return ["Unknown error with F3411-22a GetSubscriptionResponse"]
-                except ValueError as e:
-                    return [
-                        f"Error parsing F3411-22a USS GetSubscriptionResponse: {str(e)}"
-                    ]
+            except ValueError as e:
+                return [
+                    f"Error parsing F3411-22a USS GetSubscriptionResponse: {str(e)}"
+                ]
 
         return []
 
@@ -715,9 +690,9 @@ class FetchedSubscription(RIDQuery):
         if not self.success:
             return None
         if self.rid_version == RIDVersion.f3411_19:
-            return Subscription(v19=self._v19_response.subscription)
+            return Subscription(v19_value=self._v19_response.subscription)
         elif self.rid_version == RIDVersion.f3411_22a:
-            return Subscription(v22a=self._v22a_response.subscription)
+            return Subscription(v22a_value=self._v22a_response.subscription)
         else:
             raise NotImplementedError(
                 f"Cannot retrieve subscription using RID version {self.rid_version}"
