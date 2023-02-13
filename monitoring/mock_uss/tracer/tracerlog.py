@@ -1,6 +1,5 @@
 import copy
 import datetime
-import logging
 import os
 from typing import Dict
 
@@ -9,17 +8,11 @@ import yaml
 from monitoring.monitorlib import infrastructure
 
 
-logging.basicConfig()
-_logger = logging.getLogger("tracer.logging")
-_logger.setLevel(logging.DEBUG)
-
-
 class Logger(object):
     def __init__(
         self, log_path: str, kml_session: infrastructure.KMLGenerationSession = None
     ):
         self.log_path = log_path
-        _logger.info("Log path: {}".format(self.log_path))
         os.makedirs(self.log_path, exist_ok=True)
         self.kml_session = kml_session
 

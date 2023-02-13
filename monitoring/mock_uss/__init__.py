@@ -1,6 +1,5 @@
-import flask
-
 from monitoring.mock_uss import config
+from monitoring.mock_uss.server import MockUSS
 
 SERVICE_GEOAWARENESS = "geoawareness"
 SERVICE_RIDSP = "ridsp"
@@ -10,7 +9,7 @@ SERVICE_MESSAGESIGNING = "msgsigning"
 SERVICE_ATPROXY_CLIENT = "atproxy_client"
 SERVICE_TRACER = "tracer"
 
-webapp = flask.Flask(__name__)
+webapp = MockUSS(__name__)
 enabled_services = set()
 
 webapp.config.from_object(config.Config)
@@ -59,5 +58,4 @@ if SERVICE_ATPROXY_CLIENT in webapp.config[config.KEY_SERVICES]:
 
 if SERVICE_TRACER in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_TRACER)
-    from monitoring.mock_uss import tracer
     from monitoring.mock_uss.tracer import routes as tracer_routes

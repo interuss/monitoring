@@ -348,6 +348,3 @@ def tracer_catch_all(u_path) -> Tuple[str, int]:
     logger.error("{} to {} ({}): {}".format(label, u_path, owner, log_name))
 
     return RESULT
-
-
-context.init()
