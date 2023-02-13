@@ -9,14 +9,13 @@ import uas_standards.astm.f3411.v19.api
 import uas_standards.astm.f3411.v19.constants
 import uas_standards.astm.f3411.v22a.api
 import uas_standards.astm.f3411.v22a.constants
-from uas_standards.astm.f3411.v19.constants import Scope
 import yaml
 from yaml.representer import Representer
 
-from monitoring.monitorlib import fetch, infrastructure, rid_v1
+from monitoring.monitorlib import fetch, rid_v1
 from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.infrastructure import UTMClientSession
-from monitoring.monitorlib.rid_common import RIDVersion
+from monitoring.monitorlib.rid import RIDVersion
 
 
 class ISA(ImplicitDict):

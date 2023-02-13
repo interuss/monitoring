@@ -15,7 +15,7 @@ import monitoring.monitorlib.fetch.rid
 import monitoring.monitorlib.fetch.scd
 from monitoring.mock_uss import webapp
 from . import context
-from ...monitorlib.rid_common import RIDVersion
+from ...monitorlib.rid import RIDVersion
 
 RESULT = ("", 204)
 

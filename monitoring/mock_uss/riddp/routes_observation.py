@@ -2,7 +2,6 @@ from typing import Dict, List, Optional, Tuple
 
 import arrow
 import flask
-from implicitdict import ImplicitDict
 from loguru import logger
 import s2sphere
 from uas_standards.astm.f3411.v19.api import ErrorResponse, RIDFlight
@@ -12,7 +11,7 @@ from uas_standards.astm.f3411.v19.constants import (
     NetDetailsMaxDisplayAreaDiagonalKm,
 )
 
-from monitoring.monitorlib import geo, rid_v1
+from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.rid_automated_testing import observation_api
 from monitoring.mock_uss import resources, webapp
@@ -20,7 +19,7 @@ from monitoring.mock_uss.auth import requires_scope
 from . import clustering, database
 from .behavior import DisplayProviderBehavior
 from .database import db
-from ...monitorlib.rid_common import RIDVersion
+from ...monitorlib.rid import RIDVersion
 
 
 def _make_flight_observation(

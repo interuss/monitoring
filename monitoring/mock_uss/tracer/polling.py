@@ -7,7 +7,7 @@ from monitoring.monitorlib import fetch
 import monitoring.monitorlib.fetch.rid
 import monitoring.monitorlib.fetch.scd
 from monitoring.mock_uss.tracer.resources import ResourceSet
-from monitoring.monitorlib.rid_common import RIDVersion
+from monitoring.monitorlib.rid import RIDVersion
 
 
 def indent(s: str, level: int) -> str:

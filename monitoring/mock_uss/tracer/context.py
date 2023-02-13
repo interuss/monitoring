@@ -22,7 +22,7 @@ from monitoring.mock_uss import config, webapp
 from monitoring.mock_uss.tracer import tracer_poll
 from monitoring.mock_uss.tracer.resources import ResourceSet, get_options
 from monitoring.mock_uss.tracer.database import db
-from monitoring.monitorlib.rid_common import RIDVersion
+from monitoring.monitorlib.rid import RIDVersion
 
 yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
