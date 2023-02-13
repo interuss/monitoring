@@ -1,11 +1,12 @@
 import datetime
 from typing import Dict, List, Optional
 
+from implicitdict import ImplicitDict
 import s2sphere
+from uas_standards.astm.f3411.v19.constants import Scope
 import yaml
 from yaml.representer import Representer
 
-from implicitdict import ImplicitDict
 from monitoring.monitorlib import fetch, infrastructure, rid_v1
 
 
@@ -83,7 +84,7 @@ def isas(
         end_time.strftime(rid_v1.DATE_FORMAT),
     )
     return FetchedISAs(
-        fetch.query_and_describe(utm_client, "GET", url, scope=rid_v1.SCOPE_READ)
+        fetch.query_and_describe(utm_client, "GET", url, scope=Scope.Read)
     )
 
 
@@ -129,7 +130,7 @@ def flights(
             ),
             "include_recent_positions": "true" if include_recent_positions else "false",
         },
-        scope=rid_v1.SCOPE_READ,
+        scope=Scope.Read,
     )
     return FetchedUSSFlights(result)
 
@@ -167,9 +168,9 @@ def flight_details(
 ) -> FetchedUSSFlightDetails:
     suffix = "?enhanced=true" if enhanced_details else ""
     scope = (
-        " ".join([rid_v1.SCOPE_READ, rid_v1.UPP2_SCOPE_ENHANCED_DETAILS])
+        " ".join([Scope.Read, rid_v1.UPP2_SCOPE_ENHANCED_DETAILS])
         if enhanced_details
-        else rid_v1.SCOPE_READ
+        else Scope.Read
     )
     result = FetchedUSSFlightDetails(
         fetch.query_and_describe(
@@ -274,5 +275,5 @@ def subscription(
     utm_client: infrastructure.UTMClientSession, subscription_id: str
 ) -> FetchedSubscription:
     url = "/v1/dss/subscriptions/{}".format(subscription_id)
-    result = fetch.query_and_describe(utm_client, "GET", url, scope=rid_v1.SCOPE_READ)
+    result = fetch.query_and_describe(utm_client, "GET", url, scope=Scope.Read)
     return FetchedSubscription(result)
