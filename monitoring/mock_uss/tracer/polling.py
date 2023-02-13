@@ -6,6 +6,7 @@ from monitoring.monitorlib import fetch
 import monitoring.monitorlib.fetch.rid
 import monitoring.monitorlib.fetch.scd
 from monitoring.mock_uss.tracer.resources import ResourceSet
+from monitoring.monitorlib.rid import RIDVersion
 
 
 def indent(s: str, level: int) -> str:
@@ -14,7 +15,11 @@ def indent(s: str, level: int) -> str:
 
 def poll_rid_isas(resources: ResourceSet, box: s2sphere.LatLngRect) -> Any:
     return fetch.rid.isas(
-        resources.dss_client, box, resources.start_time, resources.end_time
+        box,
+        resources.start_time,
+        resources.end_time,
+        RIDVersion.f3411_19,
+        resources.dss_client,
     )
 
 

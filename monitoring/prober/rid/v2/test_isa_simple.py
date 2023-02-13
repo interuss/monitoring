@@ -9,23 +9,26 @@
 import datetime
 import re
 
+from uas_standards.astm.f3411.v22a.api import OPERATIONS, OperationID
+from uas_standards.astm.f3411.v22a.constants import Scope
+
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import rid_v2
-from monitoring.monitorlib.rid_v2 import SCOPE_DP, SCOPE_SP, ISA_PATH
 from monitoring.monitorlib.testing import assert_datetimes_are_equal
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
 
 
+ISA_PATH = OPERATIONS[OperationID.SearchIdentificationServiceAreas].path
 ISA_TYPE = register_resource_type(348, 'ISA')
 BASE_URL_V1 = 'https://example.com/rid/v2'
 BASE_URL_V2 = 'https://s2.example.com/rid/v2'
 
 def test_ensure_clean_workspace(ids, session_ridv2):
-  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_DP)
+  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.DisplayProvider)
   if resp.status_code == 200:
     version = resp.json()['service_area']['version']
-    resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_SP)
+    resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=Scope.ServiceProvider)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected.
@@ -34,7 +37,7 @@ def test_ensure_clean_workspace(ids, session_ridv2):
     assert False, resp.content
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_create_isa(ids, session_ridv2):
   """ASTM Compliance Test: DSS0030_A_PUT_ISA."""
   time_start = datetime.datetime.utcnow()
@@ -68,7 +71,7 @@ def test_create_isa(ids, session_ridv2):
   assert 'subscribers' in data
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_isa_by_id(ids, session_ridv2):
   resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)))
   assert resp.status_code == 200, resp.content
@@ -78,7 +81,7 @@ def test_get_isa_by_id(ids, session_ridv2):
   assert data['service_area']['uss_base_url'] == BASE_URL_V1
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_update_isa(ids, session_ridv2):
   resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)))
   assert resp.status_code == 200, resp.content
@@ -107,7 +110,7 @@ def test_update_isa(ids, session_ridv2):
   assert 'subscribers' in data
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_isa_by_id_after_update(ids, session_ridv2):
   resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)))
   assert resp.status_code == 200, resp.content
@@ -117,13 +120,13 @@ def test_get_isa_by_id_after_update(ids, session_ridv2):
   assert data['service_area']['uss_base_url'] == BASE_URL_V2
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_isa_by_search_missing_params(session_ridv2):
   resp = session_ridv2.get(ISA_PATH)
   assert resp.status_code == 400, resp.content
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_isa_by_search(ids, session_ridv2):
   resp = session_ridv2.get('{}?area={}'.format(
       ISA_PATH, common.GEO_POLYGON_STRING))
@@ -131,7 +134,7 @@ def test_get_isa_by_search(ids, session_ridv2):
   assert ids(ISA_TYPE) in [x['id'] for x in resp.json()['service_areas']]
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_isa_by_search_earliest_time_included(ids, session_ridv2):
   earliest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=59)
   resp = session_ridv2.get('{}?area={}&earliest_time={}'.format(
@@ -141,7 +144,7 @@ def test_get_isa_by_search_earliest_time_included(ids, session_ridv2):
   assert ids(ISA_TYPE) in [x['id'] for x in resp.json()['service_areas']]
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_isa_by_search_earliest_time_excluded(ids, session_ridv2):
   earliest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=61)
   resp = session_ridv2.get('{}?area={}&earliest_time={}'.format(
@@ -151,7 +154,7 @@ def test_get_isa_by_search_earliest_time_excluded(ids, session_ridv2):
   assert ids(ISA_TYPE) not in [x['id'] for x in resp.json()['service_areas']]
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_isa_by_search_latest_time_included(ids, session_ridv2):
   latest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=1)
   resp = session_ridv2.get('{}?area={}&latest_time={}'.format(
@@ -161,7 +164,7 @@ def test_get_isa_by_search_latest_time_included(ids, session_ridv2):
   assert ids(ISA_TYPE) in [x['id'] for x in resp.json()['service_areas']]
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_isa_by_search_latest_time_excluded(ids, session_ridv2):
   latest_time = datetime.datetime.utcnow() - datetime.timedelta(minutes=1)
   resp = session_ridv2.get('{}?area={}&latest_time={}'.format(
@@ -171,26 +174,26 @@ def test_get_isa_by_search_latest_time_excluded(ids, session_ridv2):
   assert ids(ISA_TYPE) not in [x['id'] for x in resp.json()['service_areas']]
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_isa_by_search_area_only(ids, session_ridv2):
   resp = session_ridv2.get('{}?area={}'.format(ISA_PATH, common.GEO_POLYGON_STRING))
   assert resp.status_code == 200, resp.content
   assert ids(ISA_TYPE) in [x['id'] for x in resp.json()['service_areas']]
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_isa_by_search_huge_area(session_ridv2):
   resp = session_ridv2.get('{}?area={}'.format(ISA_PATH, common.HUGE_GEO_POLYGON_STRING))
   assert resp.status_code == 413, resp.content
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_delete_isa_wrong_version(ids, session_ridv2):
   resp = session_ridv2.delete('{}/{}/fake_version'.format(ISA_PATH, ids(ISA_TYPE)))
   assert resp.status_code == 400, resp.content
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_delete_isa_empty_version(ids, session_ridv2):
   resp = session_ridv2.delete('{}/{}/'.format(ISA_PATH, ids(ISA_TYPE)))
   assert resp.status_code == 400, resp.content
@@ -199,29 +202,29 @@ def test_delete_isa_empty_version(ids, session_ridv2):
 def test_delete_isa(ids, session_ridv2):
   """ASTM Compliance Test: DSS0030_B_DELETE_ISA."""
   # GET the ISA first to find its version.
-  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_DP)
+  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.DisplayProvider)
   assert resp.status_code == 200, resp.content
   version = resp.json()['service_area']['version']
 
   # Then delete it.
-  resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_SP)
+  resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=Scope.ServiceProvider)
   assert resp.status_code == 200, resp.content
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_deleted_isa_by_id(ids, session_ridv2):
   resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)))
   assert resp.status_code == 404, resp.content
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_deleted_isa_by_search(ids, session_ridv2):
   resp = session_ridv2.get('{}?area={}'.format(ISA_PATH, common.GEO_POLYGON_STRING))
   assert resp.status_code == 200, resp.content
   assert ids(ISA_TYPE) not in [x['id'] for x in resp.json()['service_areas']]
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_get_isa_search_area_with_loop(session_ridv2):
   resp = session_ridv2.get('{}?area={}'.format(ISA_PATH, common.LOOP_GEO_POLYGON_STRING))
   assert resp.status_code == 400, resp.content

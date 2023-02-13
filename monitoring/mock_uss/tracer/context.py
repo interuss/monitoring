@@ -22,7 +22,8 @@ import monitoring.monitorlib.mutate.rid
 import monitoring.monitorlib.mutate.scd
 from monitoring.mock_uss import config, webapp, SERVICE_TRACER
 from monitoring.mock_uss.tracer.resources import ResourceSet, get_options
-
+from monitoring.mock_uss.tracer.database import db
+from monitoring.monitorlib.rid import RIDVersion
 
 yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
@@ -155,12 +156,12 @@ def _subscribe_rid(resources: ResourceSet, callback_url: str) -> None:
 
 def _clear_existing_rid_subscription(resources: ResourceSet, suffix: str) -> None:
     existing_result = fetch.rid.subscription(
-        resources.dss_client, _rid_subscription_id()
+        _rid_subscription_id(), RIDVersion.f3411_19, resources.dss_client
     )
     logfile = resources.logger.log_new(
         "{}_{}_get".format(RID_SUBSCRIPTION_KEY, suffix), existing_result
     )
-    if not existing_result.success:
+    if existing_result.status_code != 404 and not existing_result.success:
         raise SubscriptionManagementError(
             "Could not query existing RID Subscription -> {}".format(logfile)
         )

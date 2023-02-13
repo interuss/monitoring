@@ -10,7 +10,7 @@ from requests.exceptions import RequestException
 from monitoring.monitorlib.rid_automated_testing.injection_api import (
     CreateTestParameters,
 )
-from monitoring.monitorlib.rid_common import RIDVersion
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.netrid import (
     FlightDataResource,

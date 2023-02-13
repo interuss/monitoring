@@ -8,22 +8,25 @@
 
 import datetime
 
+from uas_standards.astm.f3411.v22a.api import OPERATIONS, OperationID
+from uas_standards.astm.f3411.v22a.constants import Scope
+
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import rid_v2
-from monitoring.monitorlib.rid_v2 import SCOPE_DP, SCOPE_SP, ISA_PATH
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
 
 
+ISA_PATH = OPERATIONS[OperationID.SearchIdentificationServiceAreas].path
 ISA_TYPE = register_resource_type(366, 'ISA')
 BASE_URL = 'https://example.com/rid/v2'
 
 
 def test_ensure_clean_workspace(ids, session_ridv2):
-  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_DP)
+  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.DisplayProvider)
   if resp.status_code == 200:
     version = resp.json()["service_area"]['version']
-    resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_SP)
+    resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=Scope.ServiceProvider)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected.
@@ -32,7 +35,7 @@ def test_ensure_clean_workspace(ids, session_ridv2):
     assert False, resp.content
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_isa_huge_area(ids, session_ridv2):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(minutes=60)
@@ -57,7 +60,7 @@ def test_isa_huge_area(ids, session_ridv2):
   assert 'too large' in resp.json()['message']
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_isa_empty_vertices(ids, session_ridv2):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(minutes=60)
@@ -82,7 +85,7 @@ def test_isa_empty_vertices(ids, session_ridv2):
   assert 'Not enough points in polygon' in resp.json()['message']
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_isa_missing_outline(ids, session_ridv2):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(minutes=60)
@@ -104,7 +107,7 @@ def test_isa_missing_outline(ids, session_ridv2):
   assert 'Error parsing Volume4D' in resp.json()['message']
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_isa_missing_volume(ids, session_ridv2):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(minutes=60)
@@ -122,7 +125,7 @@ def test_isa_missing_volume(ids, session_ridv2):
   assert 'Error parsing Volume4D' in resp.json()['message']
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_isa_missing_extents(ids, session_ridv2):
   resp = session_ridv2.put(
       '{}/{}'.format(ISA_PATH, ids(ISA_TYPE)),
@@ -133,7 +136,7 @@ def test_isa_missing_extents(ids, session_ridv2):
   assert 'Error parsing Volume4D: Neither outline_polygon nor outline_circle were specified in volume' in resp.json()['message']
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_isa_start_time_in_past(ids, session_ridv2):
   time_start = datetime.datetime.utcnow() - datetime.timedelta(minutes=10)
   time_end = time_start + datetime.timedelta(minutes=60)
@@ -158,7 +161,7 @@ def test_isa_start_time_in_past(ids, session_ridv2):
   assert 'IdentificationServiceArea time_start must not be in the past' in resp.json()['message']
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_isa_start_time_after_time_end(ids, session_ridv2):
   time_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
   time_end = time_start - datetime.timedelta(minutes=5)
@@ -183,7 +186,7 @@ def test_isa_start_time_after_time_end(ids, session_ridv2):
   assert 'IdentificationServiceArea time_end must be after time_start' in resp.json()['message']
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_isa_not_on_earth(ids, session_ridv2):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(minutes=60)

@@ -9,23 +9,27 @@
 
 import datetime
 
+from uas_standards.astm.f3411.v22a.api import OPERATIONS, OperationID
+from uas_standards.astm.f3411.v22a.constants import Scope
+
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import rid_v2
-from monitoring.monitorlib.rid_v2 import SCOPE_DP, SCOPE_SP, ISA_PATH, SUBSCRIPTION_PATH
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
 
 
+ISA_PATH = OPERATIONS[OperationID.SearchIdentificationServiceAreas].path
+SUBSCRIPTION_PATH = OPERATIONS[OperationID.SearchSubscriptions].path
 ISA_TYPE = register_resource_type(364, 'ISA')
 SUB_TYPE = register_resource_type(365, 'Subscription')
 BASE_URL = 'https://example.com/rid/v2'
 
 
 def test_ensure_clean_workspace(ids, session_ridv2):
-  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_DP)
+  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.DisplayProvider)
   if resp.status_code == 200:
     version = resp.json()['service_area']['version']
-    resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_SP)
+    resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=Scope.ServiceProvider)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected.
@@ -33,10 +37,10 @@ def test_ensure_clean_workspace(ids, session_ridv2):
   else:
     assert False, resp.content
 
-  resp = session_ridv2.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)), scope=SCOPE_DP)
+  resp = session_ridv2.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)), scope=Scope.DisplayProvider)
   if resp.status_code == 200:
     version = resp.json()['subscription']['version']
-    resp = session_ridv2.delete('{}/{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE), version), scope=SCOPE_DP)
+    resp = session_ridv2.delete('{}/{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE), version), scope=Scope.DisplayProvider)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected
@@ -45,7 +49,7 @@ def test_ensure_clean_workspace(ids, session_ridv2):
     assert False, resp.content
 
 
-@default_scope(SCOPE_SP)
+@default_scope(Scope.ServiceProvider)
 def test_create_isa(ids, session_ridv2):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(minutes=60)
@@ -69,7 +73,7 @@ def test_create_isa(ids, session_ridv2):
   assert resp.status_code == 200, resp.content
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_create_subscription(ids, session_ridv2):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(minutes=60)
@@ -100,7 +104,7 @@ def test_create_subscription(ids, session_ridv2):
 
 def test_modify_isa(ids, session_ridv2):
   # GET the ISA first to find its version.
-  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_DP)
+  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.DisplayProvider)
   assert resp.status_code == 200, resp.content
   version = resp.json()['service_area']['version']
 
@@ -120,7 +124,7 @@ def test_modify_isa(ids, session_ridv2):
               'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL,
-      }, scope=SCOPE_SP)
+      }, scope=Scope.ServiceProvider)
   assert resp.status_code == 200, resp.content
 
   # The response should include our subscription.
@@ -136,13 +140,13 @@ def test_modify_isa(ids, session_ridv2):
 
 def test_delete_isa(ids, session_ridv2):
   # GET the ISA first to find its version.
-  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_DP)
+  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.DisplayProvider)
   assert resp.status_code == 200, resp.content
   version = resp.json()['service_area']['version']
 
   # Then delete it.
   resp = session_ridv2.delete('{}/{}/{}'.format(
-      ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_SP)
+      ISA_PATH, ids(ISA_TYPE), version), scope=Scope.ServiceProvider)
   assert resp.status_code == 200, resp.content
 
   # The response should include our subscription.
@@ -156,7 +160,7 @@ def test_delete_isa(ids, session_ridv2):
   } in data['subscribers']
 
 
-@default_scope(SCOPE_DP)
+@default_scope(Scope.DisplayProvider)
 def test_delete_subscription(ids, session_ridv2):
   # GET the sub first to find its version.
   resp = session_ridv2.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)))

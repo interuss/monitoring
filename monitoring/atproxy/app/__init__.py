@@ -1,7 +1,3 @@
-import logging
-_logger = logging.getLogger('atproxy.context')
-_logger.setLevel(logging.DEBUG)
-
 import flask
 from flask_httpauth import HTTPBasicAuth
 
