@@ -1,4 +1,5 @@
 import atexit
+import json
 from datetime import timedelta, datetime
 from multiprocessing import Process
 import os
@@ -37,6 +38,7 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
 )
 from .database import db, Database, ATProxyWorker, ATProxyWorkerState, ATProxyWorkerID
+from ...monitorlib import fetch
 
 MAX_DAEMON_PROCESSES = 1
 ATPROXY_WAIT_TIMEOUT = timedelta(minutes=5)
@@ -211,19 +213,19 @@ def _poll_atproxy(
     logger.info("Entering polling loop from worker {}", worker_id)
     while db.value.atproxy_workers[worker_id].state == ATProxyWorkerState.Running:
         # Poll atproxy to see if there are any requests pending
-        resp = requests.get(query_url, auth=basic_auth)
-        if resp.status_code != 200:
+        query = fetch.query_and_describe(None, "GET", query_url, auth=basic_auth)
+        if query.status_code != 200:
             logger.error(
                 "Error {} polling {}: {}",
-                resp.status_code,
+                query.status_code,
                 query_url,
-                resp.content.decode(),
+                query.response.content,
             )
             time.sleep(5)
             continue
         try:
             queries_resp: ListQueriesResponse = ImplicitDict.parse(
-                resp.json(), ListQueriesResponse
+                query.response.json, ListQueriesResponse
             )
         except ValueError as e:
             logger.error(
@@ -277,12 +279,20 @@ def _poll_atproxy(
                 response={"message": msg},
             )
         finally:
-            resp = requests.put(
-                f"{query_url}/{request_to_handle.id}", json=fulfillment, auth=basic_auth
+            query = fetch.query_and_describe(
+                None,
+                "PUT",
+                f"{query_url}/{request_to_handle.id}",
+                json=fulfillment,
+                auth=basic_auth,
             )
-            if resp.status_code != 204:
+            if query.status_code != 204:
                 logger.error(
-                    f"Error {resp.status_code} reporting response {fulfillment.return_code} to query {request_to_handle.id}: {resp.content.decode()}"
+                    f"Error {query.status_code} reporting response {fulfillment.return_code} to query {request_to_handle.id}: {query.response.content}"
+                )
+                logger.debug(
+                    "Query details for failed attempt to report response to atproxy:\n{}",
+                    json.dumps(query, indent=2),
                 )
             else:
                 logger.info(

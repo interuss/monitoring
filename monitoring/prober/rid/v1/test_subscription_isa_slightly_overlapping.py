@@ -10,20 +10,23 @@ import datetime
 
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import rid_v1
-from monitoring.monitorlib.rid_v1 import SCOPE_READ, SCOPE_WRITE, ISA_PATH, SUBSCRIPTION_PATH
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
 
+from uas_standards.astm.f3411.v19.api import OPERATIONS, OperationID
+from uas_standards.astm.f3411.v19.constants import Scope
 
+ISA_PATH = OPERATIONS[OperationID.SearchIdentificationServiceAreas].path
+SUBSCRIPTION_PATH = OPERATIONS[OperationID.SearchSubscriptions].path
 ISA_TYPE = register_resource_type(427, 'ISA')
 SUB_TYPE = register_resource_type(428, 'Subscription')
 
 
 def test_ensure_clean_workspace(ids, session_ridv1):
-  resp = session_ridv1.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_READ)
+  resp = session_ridv1.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.Read)
   if resp.status_code == 200:
     version = resp.json()['service_area']['version']
-    resp = session_ridv1.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_WRITE)
+    resp = session_ridv1.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=Scope.Write)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected.
@@ -31,10 +34,10 @@ def test_ensure_clean_workspace(ids, session_ridv1):
   else:
     assert False, resp.content
 
-  resp = session_ridv1.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)), scope=SCOPE_READ)
+  resp = session_ridv1.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)), scope=Scope.Read)
   if resp.status_code == 200:
     version = resp.json()['subscription']['version']
-    resp = session_ridv1.delete('{}/{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE), version), scope=SCOPE_READ)
+    resp = session_ridv1.delete('{}/{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE), version), scope=Scope.Read)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected
@@ -43,7 +46,7 @@ def test_ensure_clean_workspace(ids, session_ridv1):
     assert False, resp.content
 
 
-@default_scope(SCOPE_WRITE)
+@default_scope(Scope.Write)
 def test_create_isa(ids, session_ridv1):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(minutes=60)
@@ -67,7 +70,7 @@ def test_create_isa(ids, session_ridv1):
   assert resp.status_code == 200, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_create_subscription(ids, session_ridv1):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(minutes=60)
@@ -101,13 +104,13 @@ def test_create_subscription(ids, session_ridv1):
 
 def test_delete_isa(ids, session_ridv1):
   # GET the ISA first to find its version.
-  resp = session_ridv1.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_READ)
+  resp = session_ridv1.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.Read)
   assert resp.status_code == 200, resp.content
   version = resp.json()['service_area']['version']
 
   # Then delete it.
   resp = session_ridv1.delete('{}/{}/{}'.format(
-      ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_WRITE)
+      ISA_PATH, ids(ISA_TYPE), version), scope=Scope.Write)
   assert resp.status_code == 200, resp.content
 
   # The response should include our subscription.
@@ -122,7 +125,7 @@ def test_delete_isa(ids, session_ridv1):
   } in data['subscribers']
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_delete_subscription(ids, session_ridv1):
   # GET the sub first to find its version.
   resp = session_ridv1.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)))

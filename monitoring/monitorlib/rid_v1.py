@@ -1,20 +1,7 @@
-import datetime
 from typing import Dict, List, Optional
 import s2sphere
 
-MAX_SUB_PER_AREA = 10
-
-MAX_SUB_TIME_HRS = 24
-
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-
-ISA_PATH = "/v1/dss/identification_service_areas"
-SUBSCRIPTION_PATH = "/v1/dss/subscriptions"
-SCOPE_READ = "dss.read.identification_service_areas"
-SCOPE_WRITE = "dss.write.identification_service_areas"
-NetMaxNearRealTimeDataPeriod = datetime.timedelta(seconds=60)
-NetMaxDisplayAreaDiagonal = 3.6  # km
-NetDetailsMaxDisplayAreaDiagonal = 1.0  # km
 
 # This scope is used only for experimentation during UPP2
 UPP2_SCOPE_ENHANCED_DETAILS = "rid.read.enhanced_details"

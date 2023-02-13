@@ -1,16 +1,17 @@
 import datetime
 from typing import Dict, List, Optional
 
-import s2sphere
-import yaml
-from yaml.representer import Representer
-
-from monitoring.monitorlib import fetch, infrastructure, rid_v1
 from implicitdict import ImplicitDict
+import s2sphere
 from uas_standards.astm.f3411.v19.api import (
     IdentificationServiceArea,
     SubscriberToNotify,
 )
+from uas_standards.astm.f3411.v19.constants import Scope
+import yaml
+from yaml.representer import Representer
+
+from monitoring.monitorlib import fetch, infrastructure, rid_v1
 
 
 class MutatedSubscription(fetch.Query):
@@ -75,9 +76,7 @@ def put_subscription(
             subscription_id, subscription_version
         )
     result = MutatedSubscription(
-        fetch.query_and_describe(
-            utm_client, "PUT", url, json=body, scope=rid_v1.SCOPE_READ
-        )
+        fetch.query_and_describe(utm_client, "PUT", url, json=body, scope=Scope.Read)
     )
     result.mutation = "create" if subscription_version is None else "update"
     return result
@@ -90,7 +89,7 @@ def delete_subscription(
 ) -> MutatedSubscription:
     url = "/v1/dss/subscriptions/{}/{}".format(subscription_id, subscription_version)
     result = MutatedSubscription(
-        fetch.query_and_describe(utm_client, "DELETE", url, scope=rid_v1.SCOPE_READ)
+        fetch.query_and_describe(utm_client, "DELETE", url, scope=Scope.Read)
     )
     result.mutation = "delete"
     return result
@@ -174,9 +173,7 @@ def put_isa(
             entity_id, isa_version
         )
     dss_response = MutatedISAResponse(
-        fetch.query_and_describe(
-            utm_client, "PUT", url, json=body, scope=rid_v1.SCOPE_WRITE
-        )
+        fetch.query_and_describe(utm_client, "PUT", url, json=body, scope=Scope.Write)
     )
     dss_response["mutation"] = "create" if isa_version is None else "update"
 
@@ -196,7 +193,7 @@ def put_isa(
         }
         url = "{}/{}".format(subscriber.url, entity_id)
         notifications[subscriber.url] = fetch.query_and_describe(
-            utm_client, "POST", url, json=body, scope=rid_v1.SCOPE_WRITE
+            utm_client, "POST", url, json=body, scope=Scope.Write
         )
 
     return MutatedISA(dss_response=dss_response, notifications=notifications)
@@ -207,7 +204,7 @@ def delete_isa(
 ) -> MutatedISA:
     url = "/v1/dss/identification_service_areas/{}/{}".format(entity_id, isa_version)
     dss_response = MutatedISAResponse(
-        fetch.query_and_describe(utm_client, "DELETE", url, scope=rid_v1.SCOPE_WRITE)
+        fetch.query_and_describe(utm_client, "DELETE", url, scope=Scope.Write)
     )
     dss_response["mutation"] = "delete"
 
@@ -221,7 +218,7 @@ def delete_isa(
         body = {"subscriptions": subscriber.subscriptions}
         url = "{}/{}".format(subscriber.url, entity_id)
         notifications[subscriber.url] = fetch.query_and_describe(
-            utm_client, "POST", url, json=body, scope=rid_v1.SCOPE_WRITE
+            utm_client, "POST", url, json=body, scope=Scope.Write
         )
 
     return MutatedISA(dss_response=dss_response, notifications=notifications)

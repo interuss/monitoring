@@ -2,14 +2,19 @@ from typing import Dict, List, Optional, Tuple
 
 import arrow
 import flask
+from implicitdict import ImplicitDict
 from loguru import logger
 import s2sphere
-
 from uas_standards.astm.f3411.v19.api import ErrorResponse, RIDFlight
+from uas_standards.astm.f3411.v19.constants import (
+    Scope,
+    NetMaxDisplayAreaDiagonalKm,
+    NetDetailsMaxDisplayAreaDiagonalKm,
+)
+
 from monitoring.monitorlib import geo, rid_v1
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.rid_automated_testing import observation_api
-from implicitdict import ImplicitDict
 from monitoring.mock_uss import resources, webapp
 from monitoring.mock_uss.auth import requires_scope
 from . import clustering, database
@@ -66,7 +71,7 @@ def _make_flight_observation(
 
 
 @webapp.route("/riddp/observation/display_data", methods=["GET"])
-@requires_scope([rid_v1.SCOPE_READ])
+@requires_scope([Scope.Read])
 def riddp_display_data() -> Tuple[str, int]:
     """Implements retrieval of current display data per automated testing API."""
 
@@ -85,7 +90,7 @@ def riddp_display_data() -> Tuple[str, int]:
 
     # Determine what kind of response to produce
     diagonal = geo.get_latlngrect_diagonal_km(view)
-    if diagonal > rid_v1.NetMaxDisplayAreaDiagonal:
+    if diagonal > NetMaxDisplayAreaDiagonalKm:
         return (
             flask.jsonify(ErrorResponse(message="Requested diagonal was too large")),
             413,
@@ -137,7 +142,7 @@ def riddp_display_data() -> Tuple[str, int]:
     if behavior.always_omit_recent_paths:
         for f in flights:
             f.recent_paths = None
-    if diagonal <= rid_v1.NetDetailsMaxDisplayAreaDiagonal:
+    if diagonal <= NetDetailsMaxDisplayAreaDiagonalKm:
         # Construct detailed flights response
         response = observation_api.GetDisplayDataResponse(flights=flights)
     else:
@@ -148,7 +153,7 @@ def riddp_display_data() -> Tuple[str, int]:
 
 
 @webapp.route("/riddp/observation/display_data/<flight_id>", methods=["GET"])
-@requires_scope([rid_v1.SCOPE_READ])
+@requires_scope([Scope.Read])
 def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
     """Implements get flight details endpoint per automated testing API."""
 
