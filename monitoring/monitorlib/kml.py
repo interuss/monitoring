@@ -1,6 +1,3 @@
-# Module to parse KML file.
-
-import logging
 from pykml import parser
 import re
 
@@ -96,9 +93,13 @@ def get_folder_description(folder_elem):
         folder_elem: Folder element from KML.
     """
     description = folder_elem.description
-    return dict(
-        [tuple(j.strip() for j in i.split(":")) for i in str(description).split("\n")]
-    )
+    lines = [line for line in str(description).split("\n") if ":" in line]
+    values = {}
+    for line in lines:
+        cols = [col.strip() for col in line.split(":")]
+        if len(cols) == 2:
+            values[cols[0]] = cols[1]
+    return values
 
 
 def get_kml_content(kml_file, from_string=False):

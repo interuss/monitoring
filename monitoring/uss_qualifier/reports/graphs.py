@@ -132,7 +132,7 @@ def _make_test_suite_nodes(
     new_nodes = None
     nodes: List[Node] = []
     children: List[NodeName] = []
-    definition = TestSuiteDefinition.load(declaration.suite_type)
+    definition = TestSuiteDefinition.load_from_declaration(declaration)
     for action_report, action in zip(report.actions, definition.actions):
         action_nodes = _translate_ids(nodes_by_id, action.get_resource_links())
         if "test_suite" in action_report:

@@ -146,7 +146,7 @@ class TestSuite(object):
         resources: Dict[ResourceID, ResourceType],
     ):
         self.declaration = declaration
-        self.definition = TestSuiteDefinition.load(declaration.suite_type)
+        self.definition = TestSuiteDefinition.load_from_declaration(declaration)
         local_resources = {
             local_resource_id: resources[parent_resource_id]
             for local_resource_id, parent_resource_id in declaration.resources.items()
@@ -173,7 +173,7 @@ class TestSuite(object):
     def run(self) -> TestSuiteReport:
         report = TestSuiteReport(
             name=self.definition.name,
-            suite_type=self.declaration.suite_type,
+            suite_type=self.declaration.type_name,
             documentation_url="",  # TODO: Populate correctly
             start_time=StringBasedDateTime(datetime.utcnow()),
             actions=[],
