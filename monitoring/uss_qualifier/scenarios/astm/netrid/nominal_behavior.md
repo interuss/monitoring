@@ -2,7 +2,7 @@
 
 ## Overview
 
-In this scenario, a single nominal flight is injected into each NetRID Service Provider (SP) under test.  Each of the injected flights is expected to be visible to all the observers at appropriate times and for appropriate requests. 
+In this scenario, a single nominal flight is injected into each NetRID Service Provider (SP) under test.  Each of the injected flights is expected to be visible to all the observers at appropriate times and for appropriate requests.
 
 ## Resources
 
@@ -37,6 +37,10 @@ Per **[interuss.automated_testing.rid.injection.UpsertTestSuccess](../../../requ
 Per **[interuss.automated_testing.rid.injection.UpsertTestResult](../../../requirements/interuss/automated_testing/rid/injection.md)**, the NetRID Service Provider under test should only make valid modifications to the injected flights.  This includes:
 * A flight with the specified injection ID must be returned.
 
+#### Identifiable flights check
+
+This particular test requires each flight to be uniquely identifiable by its 2D telemetry position; the same (lat, lng) pair may not appear in two different telemetry points, even if the two points are in different injected flights.  This should generally be achieved by injecting appropriate data.
+
 ### Polling test step
 
 In this step, all observers are periodically queried for the flights they observe.  Based on the known flights that were injected into the SPs in the previous step, these observations are checked against expected behavior/data.  Observation rectangles are chosen to encompass the known flights when possible.
@@ -47,9 +51,7 @@ Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../r
 
 #### Duplicate flights check
 
-An assumption (**[interuss.automated_testing.rid.ObservationFlightID](../../../requirements/interuss/automated_testing/rid.md)**) this test scenario currently makes is that the flight ID reported by the SP the flight was injected into is the same flight ID that each observer will report.  This is probably not a robust assumption and should be adjusted.
-
-This check will fail if an observation contains two flights with the same ID.
+Per **[interuss.automated_testing.rid.observation.UniqueFlights](../../../requirements/interuss/automated_testing/rid/observation.md)**, the same flight ID may not be reported by a Display Provider for two flights in the same observation.
 
 #### Premature flight check
 
@@ -62,6 +64,10 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 #### Missing flight check
 
 **[astm.f3411.v19.NET0610](../../../requirements/astm/f3411/v19.md)** require that SPs make all UAS operations discoverable over the duration of the flight plus *NetMaxNearRealTimeDataPeriod*, so each injected flight should be observable during this time.  If one of the flights is not observed during its appropriate time period, this check will fail.
+
+#### Altitude check
+
+If the observed altitude of a flight does not match the altitude of the injected telemetry, this check will fail.
 
 #### Area too large check
 
