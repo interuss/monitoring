@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Union, Optional, Tuple, Iterable, Set
+from typing import List, Union, Optional, Tuple, Iterable, Set, Dict
 
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd import bounding_vol4
@@ -230,6 +230,7 @@ def inject_successful_flight_intent(
         test_step,
         "Successful planning",
         {InjectFlightResult.Planned},
+        {InjectFlightResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
     )
@@ -254,6 +255,7 @@ def activate_valid_flight_intent(
         test_step,
         "Successful activation",
         {InjectFlightResult.ReadyToFly},
+        {InjectFlightResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
         flight_id,
@@ -263,8 +265,9 @@ def activate_valid_flight_intent(
 def submit_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
-    test_check: str,
+    success_check: str,
     expected_results: Set[InjectFlightResult],
+    failed_checks: Dict[InjectFlightResult, str],
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: Optional[str] = None,
@@ -278,7 +281,7 @@ def submit_flight_intent(
       * None if a check failed, otherwise the ID of the injected flight
     """
     scenario.begin_test_step(test_step)
-    with scenario.check(test_check, [flight_planner.participant_id]) as check:
+    with scenario.check(success_check, [flight_planner.participant_id]) as check:
         try:
             resp, query, flight_id = flight_planner.request_flight(
                 flight_intent, flight_id
@@ -294,15 +297,17 @@ def submit_flight_intent(
             )
         scenario.record_query(query)
 
-        with scenario.check("Failure", [flight_planner.participant_id]) as fail_check:
-            if resp.result == InjectFlightResult.Failed:
-                fail_check.record_failed(
-                    summary="Failed to process flight intent",
-                    severity=Severity.High,
-                    details=f'{flight_planner.participant_id} failed to process the user flight intent: "{resp.notes}"',
-                    query_timestamps=[query.request.timestamp],
-                )
-                return None, None
+        for unexpected_result, failed_test_check in failed_checks.items():
+            with scenario.check(
+                failed_test_check, [flight_planner.participant_id]
+            ) as failed_check:
+                if resp.result == unexpected_result:
+                    failed_check.record_failed(
+                        summary=f"Flight unexpectedly {resp.result}",
+                        severity=Severity.High,
+                        details=f'{flight_planner.participant_id} indicated {resp.result}, explicitly failing this check: "{resp.notes}"',
+                        query_timestamps=[query.request.timestamp],
+                    )
 
         if resp.result in expected_results:
             scenario.end_test_step()
