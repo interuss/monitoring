@@ -1,17 +1,12 @@
-import logging
 from typing import Tuple
 
 import flask
+from loguru import logger
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash
 
 from monitoring.monitorlib import auth_validation, versioning
 from .app import webapp, basic_auth, users
-
-
-logging.basicConfig()
-_logger = logging.getLogger('atproxy.notifications')
-_logger.setLevel(logging.DEBUG)
 
 
 @webapp.route('/')
@@ -32,6 +27,7 @@ def status():
 
 @webapp.errorhandler(Exception)
 def handle_exception(e):
+    logger.error("Reporting exception {}: {}", type(e).__name__, str(e))
     if isinstance(e, HTTPException):
         return e
     elif isinstance(e, auth_validation.InvalidScopeError):

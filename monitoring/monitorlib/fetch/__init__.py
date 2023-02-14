@@ -1,41 +1,49 @@
 import datetime
 import json
 import traceback
+from types import MappingProxyType
 from typing import Dict, Optional, List
 
-import arrow
 import flask
 import requests
 import urllib3
 import yaml
 from yaml.representer import Representer
 
+from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.monitorlib import infrastructure
 
 
 TIMEOUTS = (5, 25)  # Timeouts of `connect` and `read` in seconds
 
 
-def coerce(obj: Dict, desired_type: type):
-    if isinstance(obj, desired_type):
-        return obj
-    else:
-        return desired_type(obj)
+class RequestDescription(ImplicitDict):
+    method: str
+    url: str
+    headers: Optional[dict]
+    json: Optional[dict] = None
+    body: Optional[str] = None
 
+    initiated_at: Optional[StringBasedDateTime]
+    received_at: Optional[StringBasedDateTime]
 
-class RequestDescription(dict):
+    def __init__(self, *args, **kwargs):
+        super(RequestDescription, self).__init__(*args, **kwargs)
+        if "headers" not in self:
+            self.headers = {}
+
     @property
     def token(self) -> Dict:
-        return infrastructure.get_token_claims(self.get("headers", {}))
+        return infrastructure.get_token_claims(self.headers)
 
     @property
     def timestamp(self) -> datetime.datetime:
         if "initiated_at" in self:
             # This was an outgoing request
-            return arrow.get(self["initiated_at"]).datetime
+            return self.initiated_at.datetime
         elif "received_at" in self:
             # This was an incoming request
-            return arrow.get(self["received_at"]).datetime
+            return self.received_at.datetime
         else:
             raise KeyError(
                 "RequestDescription missing both initiated_at and received_at"
@@ -47,48 +55,64 @@ yaml.add_representer(RequestDescription, Representer.represent_dict)
 
 def describe_flask_request(request: flask.Request) -> RequestDescription:
     headers = {k: v for k, v in request.headers}
-    info = {
+    kwargs = {
         "method": request.method,
         "url": request.url,
-        "received_at": datetime.datetime.utcnow().isoformat(),
+        "received_at": StringBasedDateTime(datetime.datetime.utcnow()),
         "headers": headers,
     }
     try:
-        info["json"] = request.json
+        kwargs["json"] = request.json
     except ValueError:
-        info["body"] = request.data.encode("utf-8")
-    return RequestDescription(info)
+        kwargs["body"] = request.data.decode("utf-8")
+    return RequestDescription(**kwargs)
 
 
 def describe_request(
     req: requests.PreparedRequest, initiated_at: datetime.datetime
 ) -> RequestDescription:
     headers = {k: v for k, v in req.headers.items()}
-    info = {
+    kwargs = {
         "method": req.method,
         "url": req.url,
-        "initiated_at": initiated_at.isoformat(),
+        "initiated_at": StringBasedDateTime(initiated_at),
         "headers": headers,
     }
     body = req.body.decode("utf-8") if req.body else None
     try:
         if body:
-            info["json"] = json.loads(body)
+            kwargs["json"] = json.loads(body)
         else:
-            info["body"] = body
+            kwargs["body"] = body
     except ValueError:
-        info["body"] = body
-    return RequestDescription(info)
+        kwargs["body"] = body
+    return RequestDescription(**kwargs)
 
 
-class ResponseDescription(dict):
+class ResponseDescription(ImplicitDict):
+    code: Optional[int] = None
+    failure: Optional[str]
+    headers: Optional[dict]
+    elapsed_s: float
+    reported: StringBasedDateTime
+    json: Optional[dict] = None
+    body: Optional[str] = None
+
+    def __init__(self, *args, **kwargs):
+        super(ResponseDescription, self).__init__(*args, **kwargs)
+        if "headers" not in self:
+            self.headers = {}
+
     @property
     def status_code(self) -> int:
-        return self["code"] if self.get("code") is not None else 999
+        return self.code or 999
 
     @property
-    def reported(self) -> datetime.datetime:
-        return arrow.get(self["reported"]).datetime
+    def content(self) -> Optional[str]:
+        if self.json is not None:
+            return json.dumps(self.json)
+        else:
+            return self.body
 
 
 yaml.add_representer(ResponseDescription, Representer.represent_dict)
@@ -96,27 +120,22 @@ yaml.add_representer(ResponseDescription, Representer.represent_dict)
 
 def describe_response(resp: requests.Response) -> ResponseDescription:
     headers = {k: v for k, v in resp.headers.items()}
-    info = {
+    kwargs = {
         "code": resp.status_code,
         "headers": headers,
         "elapsed_s": resp.elapsed.total_seconds(),
-        "reported": datetime.datetime.utcnow().isoformat(),
+        "reported": StringBasedDateTime(datetime.datetime.utcnow()),
     }
     try:
-        info["json"] = resp.json()
+        kwargs["json"] = resp.json()
     except ValueError:
-        info["body"] = resp.content.decode("utf-8")
-    return ResponseDescription(info)
+        kwargs["body"] = resp.content.decode("utf-8")
+    return ResponseDescription(**kwargs)
 
 
-class Query(dict):
-    @property
-    def request(self) -> RequestDescription:
-        return coerce(self["request"], RequestDescription)
-
-    @property
-    def response(self) -> ResponseDescription:
-        return coerce(self["response"], ResponseDescription)
+class Query(ImplicitDict):
+    request: RequestDescription
+    response: ResponseDescription
 
     @property
     def status_code(self) -> int:
@@ -124,7 +143,7 @@ class Query(dict):
 
     @property
     def json_result(self) -> Optional[Dict]:
-        return self.response.get("json", None)
+        return self.response.json
 
 
 class QueryError(RuntimeError):
@@ -148,41 +167,55 @@ yaml.add_representer(Query, Representer.represent_dict)
 
 def describe_query(resp: requests.Response, initiated_at: datetime.datetime) -> Query:
     return Query(
-        {
-            "request": describe_request(resp.request, initiated_at),
-            "response": describe_response(resp),
-        }
+        request=describe_request(resp.request, initiated_at),
+        response=describe_response(resp),
     )
 
 
 def query_and_describe(
-    client: infrastructure.UTMClientSession, method: str, url: str, **kwargs
+    client: Optional[infrastructure.UTMClientSession], verb: str, url: str, **kwargs
 ) -> Query:
+    """Attempt to perform a query, and the describe the results of that attempt.
+
+    This function should capture all common problems when attempting to send a query and report the problem in the Query
+    result rather than raising an exception.
+
+    Args:
+        client: UTMClientSession to use, or None to use a default `requests` Session.
+        verb: HTTP verb to perform at the specified URL.
+        url: URL to query.
+        **kwargs: Any keyword arguments that should be applied to the <session>.request method when invoking it.
+
+    Returns:
+        Query object describing the request and response/result.
+    """
+    if client is None:
+        utm_session = False
+        client = requests.session()
+    else:
+        utm_session = True
     req_kwargs = kwargs.copy()
     req_kwargs["timeout"] = TIMEOUTS
     t0 = datetime.datetime.utcnow()
     try:
-        return describe_query(client.request(method, url, **req_kwargs), t0)
+        return describe_query(client.request(verb, url, **req_kwargs), t0)
     except (requests.RequestException, urllib3.exceptions.ReadTimeoutError) as e:
         msg = "{}: {}".format(type(e).__name__, str(e))
     t1 = datetime.datetime.utcnow()
 
     # Reconstruct request similar to the one in the query (which is not
     # accessible at this point)
+    if utm_session:
+        req_kwargs = client.adjust_request_kwargs(req_kwargs)
     del req_kwargs["timeout"]
-    req_kwargs = client.adjust_request_kwargs(req_kwargs)
-    req = requests.Request(method, url, **req_kwargs)
+    req = requests.Request(verb, url, **req_kwargs)
     prepped_req = client.prepare_request(req)
     return Query(
-        {
-            "request": describe_request(prepped_req, t0),
-            "response": ResponseDescription(
-                {
-                    "code": None,
-                    "failure": msg,
-                    "elapsed_s": (t1 - t0).total_seconds(),
-                    "reported": t1,
-                }
-            ),
-        }
+        request=describe_request(prepped_req, t0),
+        response=ResponseDescription(
+            code=None,
+            failure=msg,
+            elapsed_s=(t1 - t0).total_seconds(),
+            reported=StringBasedDateTime(t1),
+        ),
     )

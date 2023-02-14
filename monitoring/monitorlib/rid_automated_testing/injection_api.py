@@ -4,7 +4,8 @@ from typing import List, Optional, Tuple
 import arrow
 import s2sphere
 
-from monitoring.monitorlib import geo, rid
+from monitoring.monitorlib import geo, rid_v1
+from uas_standards.astm.f3411.v19.api import RIDFlightDetails, RIDAircraftState
 
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 
@@ -33,7 +34,7 @@ class TestFlight(injection.TestFlight):
                 latest = t
         return (earliest, latest)
 
-    def get_details(self, t_now: datetime.datetime) -> Optional[rid.RIDFlightDetails]:
+    def get_details(self, t_now: datetime.datetime) -> Optional[RIDFlightDetails]:
         latest_after: Optional[datetime.datetime] = None
         tf_details = None
         for response in self.details_responses:
@@ -55,8 +56,8 @@ class TestFlight(injection.TestFlight):
 
     def select_relevant_states(
         self, view: s2sphere.LatLngRect, t0: datetime.datetime, t1: datetime.datetime
-    ) -> List[rid.RIDAircraftState]:
-        recent_states: List[rid.RIDAircraftState] = []
+    ) -> List[RIDAircraftState]:
+        recent_states: List[RIDAircraftState] = []
         previously_outside = False
         previously_inside = False
         previous_telemetry = None

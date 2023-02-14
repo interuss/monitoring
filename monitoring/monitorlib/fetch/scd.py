@@ -5,19 +5,18 @@ import s2sphere
 import yaml
 from yaml.representer import Representer
 
+from implicitdict import ImplicitDict
 from monitoring.monitorlib import fetch, infrastructure, scd
 
 
 class FetchedEntityReferences(fetch.Query):
-    """Wrapper to interpret a DSS Entity query as a set of Entities."""
+    """Wrapper to interpret a DSS Entity query as a set of Entity references."""
+
+    entity_type: Optional[str] = None
 
     @property
     def success(self) -> bool:
         return self.error is None
-
-    @property
-    def entity_type(self) -> str:
-        return self["entity_type"]
 
     @property
     def error(self) -> Optional[str]:
@@ -99,7 +98,7 @@ def _entity_references(
             utm_client, "POST", url, json=request_body, scope=scope
         )
     )
-    entity_references["entity_type"] = dss_resource_name
+    entity_references.entity_type = dss_resource_name
     return entity_references
 
 
@@ -123,17 +122,12 @@ def operational_intent_references(
 
 
 class FetchedEntity(fetch.Query):
+    id_requested: Optional[str] = None
+    entity_type: Optional[str] = None
+
     @property
     def success(self) -> bool:
         return self.error is None
-
-    @property
-    def id_requested(self) -> str:
-        return self["id_requested"]
-
-    @property
-    def entity_type(self) -> str:
-        return self["entity_type"]
 
     @property
     def reference(self) -> Optional[Dict]:
@@ -197,8 +191,8 @@ def _full_entity(
     entity = FetchedEntity(
         fetch.query_and_describe(utm_client, "GET", uss_entity_url, scope=scope)
     )
-    entity["id_requested"] = entity_id
-    entity["entity_type"] = uss_resource_name
+    entity.id_requested = entity_id
+    entity.entity_type = uss_resource_name
     return entity
 
 
@@ -208,7 +202,11 @@ def operational_intent(
     return _full_entity("operational_intent", uss_base_url, entity_id, utm_client)
 
 
-class FetchedEntities(dict):
+class FetchedEntities(ImplicitDict):
+    dss_query: FetchedEntityReferences
+    uss_queries: Dict[str, FetchedEntity]
+    cached_uss_queries: Dict[str, FetchedEntity]
+
     @property
     def success(self) -> bool:
         return not self.error
@@ -221,26 +219,19 @@ class FetchedEntities(dict):
         return None
 
     @property
-    def dss_query(self) -> FetchedEntityReferences:
-        return fetch.coerce(self["dss_query"], FetchedEntityReferences)
-
-    @property
     def entities_by_id(self) -> Dict[str, FetchedEntity]:
-        entities = {
-            k: fetch.coerce(v, FetchedEntity)
-            for k, v in self.cached_entities_by_id.items()
-        }
+        entities = self.cached_entities_by_id.copy()
         for k, v in self.new_entities_by_id.items():
-            entities[k] = fetch.coerce(v, FetchedEntity)
+            entities[k] = v
         return entities
 
     @property
     def new_entities_by_id(self) -> Dict[str, FetchedEntity]:
-        return fetch.coerce(self["uss_queries"].copy(), FetchedEntity)
+        return self.uss_queries
 
     @property
     def cached_entities_by_id(self) -> Dict[str, FetchedEntity]:
-        return fetch.coerce(self["cached_uss_queries"], FetchedEntity)
+        return self.cached_uss_queries
 
     def has_different_content_than(self, other):
         if not isinstance(other, FetchedEntities):
@@ -265,18 +256,21 @@ class FetchedEntities(dict):
 yaml.add_representer(FetchedEntities, Representer.represent_dict)
 
 
-class CachedEntity(dict):
+class CachedEntity(ImplicitDict):
+    reference: dict
+    uss_query: FetchedEntity
+
     @property
     def uss_success(self) -> bool:
         return self.fetched_entity.success
 
     @property
     def reference(self) -> Dict:
-        return self["reference"]
+        return self.reference
 
     @property
     def fetched_entity(self) -> FetchedEntity:
-        return self["uss_query"]
+        return self.uss_query
 
 
 def _entities(
@@ -315,18 +309,13 @@ def _entities(
             )
             uss_queries[entity_id] = fetched_entity
             entity_cache[entity_id] = CachedEntity(
-                {
-                    "reference": entity_ref,
-                    "uss_query": fetched_entity,
-                }
+                reference=entity_ref, uss_query=fetched_entity
             )
 
     return FetchedEntities(
-        {
-            "dss_query": fetched_references,
-            "uss_queries": uss_queries,
-            "cached_uss_queries": cached_queries,
-        }
+        dss_query=fetched_references,
+        uss_queries=uss_queries,
+        cached_uss_queries=cached_queries,
     )
 
 

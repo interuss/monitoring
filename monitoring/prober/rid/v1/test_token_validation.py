@@ -10,20 +10,22 @@
 
 import datetime
 
-from monitoring.monitorlib import rid
-from monitoring.monitorlib.rid import SCOPE_READ, SCOPE_WRITE, ISA_PATH
+from monitoring.monitorlib import rid_v1
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
 
+from uas_standards.astm.f3411.v19.api import OPERATIONS, OperationID
+from uas_standards.astm.f3411.v19.constants import Scope
 
+ISA_PATH = OPERATIONS[OperationID.SearchIdentificationServiceAreas].path
 ISA_TYPE = register_resource_type(340, 'ISA')
 
 
 def test_ensure_clean_workspace(ids, session_ridv1):
-  resp = session_ridv1.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_READ)
+  resp = session_ridv1.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.Read)
   if resp.status_code == 200:
     version = resp.json()["service_area"]['version']
-    resp = session_ridv1.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_WRITE)
+    resp = session_ridv1.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=Scope.Write)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected.
@@ -47,11 +49,11 @@ def test_put_isa_with_read_only_scope_token(ids, session_ridv1):
                   'altitude_lo': 20,
                   'altitude_hi': 400,
               },
-              'time_start': time_start.strftime(rid.DATE_FORMAT),
-              'time_end': time_end.strftime(rid.DATE_FORMAT),
+              'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+              'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
           },
           'flights_url': 'https://example.com/dss',
-      }, scope=SCOPE_READ)
+      }, scope=Scope.Read)
   assert resp.status_code == 403, resp.content
 
 
@@ -70,11 +72,11 @@ def test_create_isa(ids, session_ridv1):
                   'altitude_lo': 20,
                   'altitude_hi': 400,
               },
-              'time_start': time_start.strftime(rid.DATE_FORMAT),
-              'time_end': time_end.strftime(rid.DATE_FORMAT),
+              'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+              'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
           },
           'flights_url': 'https://example.com/dss',
-      }, scope=SCOPE_WRITE)
+      }, scope=Scope.Write)
   assert resp.status_code == 200, resp.content
 
 
@@ -92,10 +94,10 @@ def test_get_isa_with_fake_token(ids, no_auth_session_ridv1):
 
 
 def test_delete(ids, session_ridv1):
-  resp = session_ridv1.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_READ)
+  resp = session_ridv1.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.Read)
   if resp.status_code == 200:
     version = resp.json()["service_area"]['version']
-    resp = session_ridv1.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_WRITE)
+    resp = session_ridv1.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=Scope.Write)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected.

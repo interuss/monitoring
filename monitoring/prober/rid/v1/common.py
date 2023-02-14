@@ -1,4 +1,4 @@
-from monitoring.monitorlib import rid
+from monitoring.monitorlib import rid_v1
 
 
 VERTICES = [
@@ -39,7 +39,7 @@ CLOSER_POLYGON_VERTICES = [
     },
 ]
 
-GEO_POLYGON_STRING = rid.geo_polygon_string(VERTICES)
+GEO_POLYGON_STRING = rid_v1.geo_polygon_string(VERTICES)
 
 HUGE_VERTICES = [
     {
@@ -60,7 +60,7 @@ HUGE_VERTICES = [
     },
 ]
 
-HUGE_GEO_POLYGON_STRING = rid.geo_polygon_string(HUGE_VERTICES)
+HUGE_GEO_POLYGON_STRING = rid_v1.geo_polygon_string(HUGE_VERTICES)
 
 LOOP_VERTICES = [
     {
@@ -85,4 +85,4 @@ LOOP_VERTICES = [
     }
 ]
 
-LOOP_GEO_POLYGON_STRING = rid.geo_polygon_string(LOOP_VERTICES)
+LOOP_GEO_POLYGON_STRING = rid_v1.geo_polygon_string(LOOP_VERTICES)

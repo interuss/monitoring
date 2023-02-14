@@ -10,21 +10,24 @@
 
 import datetime
 
+from uas_standards.astm.f3411.v22a.api import OPERATIONS, OperationID
+from uas_standards.astm.f3411.v22a.constants import Scope
+
 from monitoring.monitorlib import rid_v2
-from monitoring.monitorlib.rid_v2 import SCOPE_DP, SCOPE_SP, ISA_PATH
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
 
 
+ISA_PATH = OPERATIONS[OperationID.SearchIdentificationServiceAreas].path
 ISA_TYPE = register_resource_type(363, 'ISA')
 BASE_URL = 'https://example.com/rid/v2'
 
 
 def test_ensure_clean_workspace(ids, session_ridv2):
-  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_DP)
+  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.DisplayProvider)
   if resp.status_code == 200:
     version = resp.json()["service_area"]['version']
-    resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_SP)
+    resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=Scope.ServiceProvider)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected.
@@ -45,14 +48,14 @@ def test_put_isa_with_read_only_scope_token(ids, session_ridv2):
                   'outline_polygon': {
                       'vertices': common.VERTICES,
                   },
-                  'altitude_lower': rid_v2.Altitude.make(20),
-                  'altitude_upper': rid_v2.Altitude.make(400),
+                  'altitude_lower': rid_v2.make_altitude(20),
+                  'altitude_upper': rid_v2.make_altitude(400),
               },
-              'time_start': rid_v2.Time.make(time_start),
-              'time_end': rid_v2.Time.make(time_end),
+              'time_start': rid_v2.make_time(time_start),
+              'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL,
-      }, scope=SCOPE_DP)
+      }, scope=Scope.DisplayProvider)
   assert resp.status_code == 403, resp.content
 
 
@@ -68,14 +71,14 @@ def test_create_isa(ids, session_ridv2):
                   'outline_polygon': {
                       'vertices': common.VERTICES,
                   },
-                  'altitude_lower': rid_v2.Altitude.make(20),
-                  'altitude_upper': rid_v2.Altitude.make(400),
+                  'altitude_lower': rid_v2.make_altitude(20),
+                  'altitude_upper': rid_v2.make_altitude(400),
               },
-              'time_start': rid_v2.Time.make(time_start),
-              'time_end': rid_v2.Time.make(time_end),
+              'time_start': rid_v2.make_time(time_start),
+              'time_end': rid_v2.make_time(time_end),
           },
           'uss_base_url': BASE_URL,
-      }, scope=SCOPE_SP)
+      }, scope=Scope.ServiceProvider)
   assert resp.status_code == 200, resp.content
 
 
@@ -93,10 +96,10 @@ def test_get_isa_with_fake_token(ids, no_auth_session_ridv2):
 
 
 def test_delete(ids, session_ridv2):
-  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=SCOPE_DP)
+  resp = session_ridv2.get('{}/{}'.format(ISA_PATH, ids(ISA_TYPE)), scope=Scope.DisplayProvider)
   if resp.status_code == 200:
     version = resp.json()["service_area"]['version']
-    resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=SCOPE_SP)
+    resp = session_ridv2.delete('{}/{}/{}'.format(ISA_PATH, ids(ISA_TYPE), version), scope=Scope.ServiceProvider)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected.

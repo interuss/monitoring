@@ -1,9 +1,8 @@
 from typing import Optional
 
 from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
-from monitoring.monitorlib.rid import RIDFlight
 from implicitdict import ImplicitDict
-
+from uas_standards.astm.f3411.v19.api import RIDFlight
 
 FEET_PER_METER = 1 / 0.3048
 

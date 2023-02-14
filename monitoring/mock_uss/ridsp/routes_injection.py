@@ -5,7 +5,7 @@ import uuid
 import flask
 from loguru import logger
 
-from monitoring.monitorlib import rid
+from uas_standards.astm.f3411.v19.api import ErrorResponse
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.rid_automated_testing import injection_api
 from implicitdict import ImplicitDict
@@ -53,7 +53,7 @@ def ridsp_create_test(test_id: str) -> Tuple[str, int]:
     )
     if not mutated_isa.dss_response.success:
         logger.error("Unable to create ISA in DSS")
-        response = rid.ErrorResponse(message="Unable to create ISA in DSS")
+        response = ErrorResponse(message="Unable to create ISA in DSS")
         response["errors"] = mutated_isa.dss_response.errors
         return flask.jsonify(response), 412
     bounds = f"(lat {rect.lat_lo().degrees}, lng {rect.lng_lo().degrees})-(lat {rect.lat_hi().degrees}, lng {rect.lng_hi().degrees})"
@@ -95,7 +95,7 @@ def ridsp_delete_test(test_id: str) -> Tuple[str, int]:
     )
     if not deleted_isa.dss_response.success:
         logger.error(f"Unable to delete ISA {record.version} from DSS")
-        response = rid.ErrorResponse(message="Unable to delete ISA from DSS")
+        response = ErrorResponse(message="Unable to delete ISA from DSS")
         response["errors"] = deleted_isa.dss_response.errors
         return flask.jsonify(response), 412
     logger.info(f"Created ISA {deleted_isa.dss_response.isa.id}")

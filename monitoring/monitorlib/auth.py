@@ -16,6 +16,8 @@ import jwcrypto.jwk
 import jwcrypto.jws
 import jwcrypto.jwt
 import requests
+from google import auth as google_auth
+from google.auth import impersonated_credentials
 from google.auth.transport import requests as google_requests
 from google.oauth2 import service_account
 from monitoring.monitorlib.infrastructure import AuthAdapter
@@ -105,21 +107,17 @@ class DummyOAuth(AuthAdapter):
         return response.json()["access_token"]
 
 
-class ServiceAccount(AuthAdapter):
-    """Auth adapter that gets JWTs using a service account."""
+class _SessionIssuer:
+    """Helper for issuing tokens using a pre-configured Google session."""
 
-    def __init__(self, token_endpoint: str, service_account_json: str):
-        super().__init__()
-
-        credentials = service_account.Credentials.from_service_account_file(
-            service_account_json
-        ).with_scopes(["email"])
-        oauth_session = google_requests.AuthorizedSession(credentials)
-
+    def __init__(
+        self,
+        token_endpoint: str,
+        session: google_requests.AuthorizedSession,
+    ):
         self._oauth_token_endpoint = token_endpoint
-        self._oauth_session = oauth_session
+        self._oauth_session = session
 
-    # Overrides method in AuthAdapter
     def issue_token(self, intended_audience: str, scopes: List[str]) -> str:
         url = "{}?grant_type=client_credentials&scope={}&intended_audience={}".format(
             self._oauth_token_endpoint,
@@ -134,6 +132,52 @@ class ServiceAccount(AuthAdapter):
                 )
             )
         return response.json()["access_token"]
+
+
+class ServiceAccount(AuthAdapter):
+    """Auth adapter that gets JWTs using a service account key file."""
+
+    def __init__(self, token_endpoint: str, service_account_json: str):
+        super().__init__()
+
+        credentials = service_account.Credentials.from_service_account_file(
+            service_account_json
+        ).with_scopes(["email"])
+        oauth_session = google_requests.AuthorizedSession(credentials)
+
+        self._session_issuer = _SessionIssuer(token_endpoint, oauth_session)
+
+    # Overrides method in AuthAdapter
+    def issue_token(self, intended_audience: str, scopes: List[str]) -> str:
+        return self._session_issuer.issue_token(intended_audience, scopes)
+
+
+class ServiceAccountImpersonation(AuthAdapter):
+    """Auth adapter that gets JWTs using the target service account.
+
+    This assumes the environment is configured with Application Default
+    Credentials (e.g. when running in Google Cloud), and that these credentials
+    have permission to impersonate the given target_service_account (namely, the
+    "Service Account Token Creator" role).
+    """
+
+    def __init__(self, token_endpoint: str, target_service_account: str):
+        super().__init__()
+
+        default_credentials, _ = google_auth.default(scopes=["email"])
+
+        target_credentials = impersonated_credentials.Credentials(
+            source_credentials=default_credentials,
+            target_principal=target_service_account,
+            target_scopes=["email"],
+        )
+        oauth_session = google_requests.AuthorizedSession(target_credentials)
+
+        self._session_issuer = _SessionIssuer(token_endpoint, oauth_session)
+
+    # Overrides method in AuthAdapter
+    def issue_token(self, intended_audience: str, scopes: List[str]) -> str:
+        return self._session_issuer.issue_token(intended_audience, scopes)
 
 
 class UsernamePassword(AuthAdapter):
