@@ -293,6 +293,17 @@ def submit_flight_intent(
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
         scenario.record_query(query)
+
+        with scenario.check("Failure", [flight_planner.participant_id]) as fail_check:
+            if resp.result == InjectFlightResult.Failed:
+                fail_check.record_failed(
+                    summary="Failed to process flight intent",
+                    severity=Severity.High,
+                    details=f'{flight_planner.participant_id} failed to process the user flight intent: "{resp.notes}"',
+                    query_timestamps=[query.request.timestamp],
+                )
+                return None, None
+
         if resp.result in expected_results:
             scenario.end_test_step()
             return resp, flight_id

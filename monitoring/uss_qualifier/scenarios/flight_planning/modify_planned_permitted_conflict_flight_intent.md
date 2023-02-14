@@ -11,3 +11,9 @@ conflicting flight intent.
 
 If the USS fails to modify the flight or otherwise wrongly indicates a conflict, this check will fail, per
 **[astm.f3548.v21.SCD0060](../../requirements/astm/f3548/v21.md)**.
+
+## Failure check
+
+All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
+to reject or accept the flight. If the USS indicates that the injection attempt failed, this check will fail per
+**[interuss.automated_testing.flight_planning.ExpectedBehavior](../../requirements/interuss/automated_testing/flight_planning.md)**.
