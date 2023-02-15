@@ -8,13 +8,14 @@ from loguru import logger
 from termcolor import colored
 import yaml
 
+from implicitdict import ImplicitDict
 from monitoring.monitorlib import fetch, formatting, geo, infrastructure, versioning
 from monitoring.monitorlib.fetch import summarize
 import monitoring.monitorlib.fetch.rid
 import monitoring.monitorlib.fetch.scd
 from monitoring.mock_uss import webapp
 from . import context
-
+from ...monitorlib.rid import RIDVersion
 
 RESULT = ("", 204)
 
@@ -248,17 +249,21 @@ def tracer_logs(log):
     object_type = obj.get("object_type", None)
     if object_type == fetch.rid.FetchedISAs.__name__:
         obj = {
-            "summary": summarize.isas(fetch.rid.FetchedISAs(obj)),
+            "summary": summarize.isas(ImplicitDict.parse(obj, fetch.rid.FetchedISAs)),
             "details": obj,
         }
     elif object_type == fetch.scd.FetchedEntities.__name__:
         obj = {
-            "summary": summarize.entities(fetch.scd.FetchedEntities(obj)),
+            "summary": summarize.entities(
+                ImplicitDict.parse(obj, fetch.scd.FetchedEntities)
+            ),
             "details": obj,
         }
     elif object_type == fetch.rid.FetchedFlights.__name__:
         obj = {
-            "summary": summarize.flights(fetch.rid.FetchedFlights(obj)),
+            "summary": summarize.flights(
+                ImplicitDict.parse(obj, fetch.rid.FetchedFlights)
+            ),
             "details": obj,
         }
 
@@ -317,11 +322,12 @@ def tracer_rid_v19_request_rid_poll():
         return
 
     flights_result = fetch.rid.all_flights(
-        context.resources.dss_client,
         area,
         flask.request.form.get("include_recent_positions"),
         flask.request.form.get("get_details"),
-        flask.request.form.get("enhanced_details"),
+        RIDVersion.f3411_19,
+        context.resources.dss_client,
+        enhanced_details=flask.request.form.get("enhanced_details"),
     )
     log_name = context.resources.logger.log_new(
         "clientrequest_getflights", flights_result
@@ -342,6 +348,3 @@ def tracer_catch_all(u_path) -> Tuple[str, int]:
     logger.error("{} to {} ({}): {}".format(label, u_path, owner, log_name))
 
     return RESULT
-
-
-context.init()

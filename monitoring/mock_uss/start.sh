@@ -21,6 +21,7 @@ cp health_check.sh /app
 export PYTHONUNBUFFERED=TRUE
 gunicorn \
     --preload \
+    --config ./gunicorn.conf.py \
     --workers=4 \
     --threads=2 \
     --bind=0.0.0.0:5000 \

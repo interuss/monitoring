@@ -9,21 +9,24 @@
 import datetime
 
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib import rid
-from monitoring.monitorlib.rid import SCOPE_READ, SUBSCRIPTION_PATH
+from monitoring.monitorlib import rid_v1
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
 
+from uas_standards.astm.f3411.v19.api import OPERATIONS, OperationID
+from uas_standards.astm.f3411.v19.constants import Scope, NetDSSMaxSubscriptionPerArea, NetDSSMaxSubscriptionDurationHours
 
+
+SUBSCRIPTION_PATH = OPERATIONS[OperationID.SearchSubscriptions].path
 SUB_TYPE = register_resource_type(328, 'Subscription')
 MULTI_SUB_TYPES = [register_resource_type(329 + i, 'Subscription limit Subscription {}'.format(i)) for i in range(11)]
 
 
 def test_ensure_clean_workspace(ids, session_ridv1):
-  resp = session_ridv1.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)), scope=SCOPE_READ)
+  resp = session_ridv1.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)), scope=Scope.Read)
   if resp.status_code == 200:
     version = resp.json()['subscription']['version']
-    resp = session_ridv1.delete('{}/{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE), version), scope=SCOPE_READ)
+    resp = session_ridv1.delete('{}/{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE), version), scope=Scope.Read)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected.
@@ -32,7 +35,7 @@ def test_ensure_clean_workspace(ids, session_ridv1):
     assert False, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_create_sub_empty_vertices(ids, session_ridv1):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(seconds=10)
@@ -48,8 +51,8 @@ def test_create_sub_empty_vertices(ids, session_ridv1):
                   'altitude_lo': 20,
                   'altitude_hi': 400,
               },
-              'time_start': time_start.strftime(rid.DATE_FORMAT),
-              'time_end': time_end.strftime(rid.DATE_FORMAT),
+              'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+              'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
           },
           'callbacks': {
               'identification_service_area_url': 'https://example.com/foo'
@@ -58,7 +61,7 @@ def test_create_sub_empty_vertices(ids, session_ridv1):
   assert resp.status_code == 400, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_create_sub_missing_footprint(ids, session_ridv1):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(seconds=10)
@@ -71,8 +74,8 @@ def test_create_sub_missing_footprint(ids, session_ridv1):
                   'altitude_lo': 20,
                   'altitude_hi': 400,
               },
-              'time_start': time_start.strftime(rid.DATE_FORMAT),
-              'time_end': time_end.strftime(rid.DATE_FORMAT),
+              'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+              'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
           },
           'callbacks': {
               'identification_service_area_url': 'https://example.com/foo'
@@ -81,7 +84,7 @@ def test_create_sub_missing_footprint(ids, session_ridv1):
   assert resp.status_code == 400, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_create_sub_with_huge_area(ids, session_ridv1):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(seconds=10)
@@ -97,8 +100,8 @@ def test_create_sub_with_huge_area(ids, session_ridv1):
                   'altitude_lo': 20,
                   'altitude_hi': 400,
               },
-              'time_start': time_start.strftime(rid.DATE_FORMAT),
-              'time_end': time_end.strftime(rid.DATE_FORMAT),
+              'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+              'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
           },
           'callbacks': {
               'identification_service_area_url': 'https://example.com/foo'
@@ -107,7 +110,7 @@ def test_create_sub_with_huge_area(ids, session_ridv1):
   assert resp.status_code == 400, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_create_too_many_subs(ids, session_ridv1):
   """ASTM Compliance Test: DSS0050_MAX_SUBS_PER_AREA."""
   time_start = datetime.datetime.utcnow()
@@ -115,7 +118,7 @@ def test_create_too_many_subs(ids, session_ridv1):
 
   # create 1 more than the max allowed Subscriptions per area
   versions = []
-  for index in range(rid.MAX_SUB_PER_AREA + 1):
+  for index in range(NetDSSMaxSubscriptionPerArea + 1):
     resp = session_ridv1.put(
         '{}/{}'.format(SUBSCRIPTION_PATH, ids(MULTI_SUB_TYPES[index])),
         json={
@@ -144,14 +147,14 @@ def test_create_too_many_subs(ids, session_ridv1):
                     'altitude_lo': 20,
                     'altitude_hi': 400,
                 },
-                'time_start': time_start.strftime(rid.DATE_FORMAT),
-                'time_end': time_end.strftime(rid.DATE_FORMAT),
+                'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+                'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
             },
             'callbacks': {
                 'identification_service_area_url': 'https://example.com/foo'
             },
         })
-    if index < rid.MAX_SUB_PER_AREA:
+    if index < NetDSSMaxSubscriptionPerArea:
       assert resp.status_code == 200, resp.content
       resp_json = resp.json()
       assert 'subscription' in resp_json
@@ -161,16 +164,16 @@ def test_create_too_many_subs(ids, session_ridv1):
       assert resp.status_code == 429, resp.content
 
   # clean up Subscription-limit Subscriptions
-  for index in range(rid.MAX_SUB_PER_AREA):
+  for index in range(NetDSSMaxSubscriptionPerArea):
     resp = session_ridv1.delete('{}/{}/{}'.format(SUBSCRIPTION_PATH, ids(MULTI_SUB_TYPES[index]), versions[index]))
     assert resp.status_code == 200
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_create_sub_with_too_long_end_time(ids, session_ridv1):
     """ASTM Compliance Test: DSS0060_MAX_SUBS_DURATION."""
     time_start = datetime.datetime.utcnow()
-    time_end = time_start + datetime.timedelta(hours=(rid.MAX_SUB_TIME_HRS + 1))
+    time_end = time_start + datetime.timedelta(hours=(NetDSSMaxSubscriptionDurationHours + 1))
 
     resp = session_ridv1.put(
         "{}/{}".format(SUBSCRIPTION_PATH, ids(SUB_TYPE)),
@@ -181,8 +184,8 @@ def test_create_sub_with_too_long_end_time(ids, session_ridv1):
                     "altitude_lo": 20,
                     "altitude_hi": 400,
                 },
-                "time_start": time_start.strftime(rid.DATE_FORMAT),
-                "time_end": time_end.strftime(rid.DATE_FORMAT),
+                "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
+                "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
             "callbacks": {"identification_service_area_url": "https://example.com/foo"},
         },
@@ -190,7 +193,7 @@ def test_create_sub_with_too_long_end_time(ids, session_ridv1):
     assert resp.status_code == 400, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_update_sub_with_too_long_end_time(ids, session_ridv1):
     """ASTM Compliance Test: DSS0060_MAX_SUBS_DURATION."""
     time_start = datetime.datetime.utcnow()
@@ -205,15 +208,15 @@ def test_update_sub_with_too_long_end_time(ids, session_ridv1):
                     "altitude_lo": 20,
                     "altitude_hi": 400,
                 },
-                "time_start": time_start.strftime(rid.DATE_FORMAT),
-                "time_end": time_end.strftime(rid.DATE_FORMAT),
+                "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
+                "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
             "callbacks": {"identification_service_area_url": "https://example.com/foo"},
         },
     )
     assert resp.status_code == 200, resp.content
 
-    time_end = time_start + datetime.timedelta(hours=(rid.MAX_SUB_TIME_HRS + 1))
+    time_end = time_start + datetime.timedelta(hours=(NetDSSMaxSubscriptionDurationHours + 1))
     resp = session_ridv1.put(
         '{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)) + '/' + resp.json()["subscription"]["version"],
         json={
@@ -223,8 +226,8 @@ def test_update_sub_with_too_long_end_time(ids, session_ridv1):
                     "altitude_lo": 20,
                     "altitude_hi": 400,
                 },
-                "time_start": time_start.strftime(rid.DATE_FORMAT),
-                "time_end": time_end.strftime(rid.DATE_FORMAT),
+                "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
+                "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
             "callbacks": {"identification_service_area_url": "https://example.com/foo"},
         },
@@ -232,12 +235,12 @@ def test_update_sub_with_too_long_end_time(ids, session_ridv1):
     assert resp.status_code == 400, resp.content
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_delete(ids, session_ridv1):
-  resp = session_ridv1.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)), scope=SCOPE_READ)
+  resp = session_ridv1.get('{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE)), scope=Scope.Read)
   if resp.status_code == 200:
     version = resp.json()['subscription']['version']
-    resp = session_ridv1.delete('{}/{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE), version), scope=SCOPE_READ)
+    resp = session_ridv1.delete('{}/{}/{}'.format(SUBSCRIPTION_PATH, ids(SUB_TYPE), version), scope=Scope.Read)
     assert resp.status_code == 200, resp.content
   elif resp.status_code == 404:
     # As expected.

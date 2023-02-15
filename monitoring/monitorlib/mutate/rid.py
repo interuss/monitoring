@@ -1,15 +1,22 @@
 import datetime
 from typing import Dict, List, Optional
 
+from implicitdict import ImplicitDict
 import s2sphere
+from uas_standards.astm.f3411.v19.api import (
+    IdentificationServiceArea,
+    SubscriberToNotify,
+)
+from uas_standards.astm.f3411.v19.constants import Scope
 import yaml
 from yaml.representer import Representer
 
-from monitoring.monitorlib import fetch, infrastructure, rid
-from implicitdict import ImplicitDict
+from monitoring.monitorlib import fetch, infrastructure, rid_v1
 
 
 class MutatedSubscription(fetch.Query):
+    mutation: Optional[str] = None
+
     @property
     def success(self) -> bool:
         return not self.errors
@@ -29,17 +36,13 @@ class MutatedSubscription(fetch.Query):
             return ["Response returned an invalid Subscription"]
 
     @property
-    def subscription(self) -> Optional[rid.Subscription]:
+    def subscription(self) -> Optional[rid_v1.Subscription]:
         if self.json_result is None:
             return None
         sub = self.json_result.get("subscription", None)
         if not sub:
             return None
-        return rid.Subscription(sub)
-
-    @property
-    def mutation(self) -> str:
-        return self["mutation"]
+        return rid_v1.Subscription(sub)
 
 
 yaml.add_representer(MutatedSubscription, Representer.represent_dict)
@@ -57,12 +60,12 @@ def put_subscription(
     body = {
         "extents": {
             "spatial_volume": {
-                "footprint": {"vertices": rid.vertices_from_latlng_rect(area)},
+                "footprint": {"vertices": rid_v1.vertices_from_latlng_rect(area)},
                 "altitude_lo": 0,
                 "altitude_hi": 3048,
             },
-            "time_start": start_time.strftime(rid.DATE_FORMAT),
-            "time_end": end_time.strftime(rid.DATE_FORMAT),
+            "time_start": start_time.strftime(rid_v1.DATE_FORMAT),
+            "time_end": end_time.strftime(rid_v1.DATE_FORMAT),
         },
         "callbacks": {"identification_service_area_url": callback_url},
     }
@@ -73,11 +76,9 @@ def put_subscription(
             subscription_id, subscription_version
         )
     result = MutatedSubscription(
-        fetch.query_and_describe(
-            utm_client, "PUT", url, json=body, scope=rid.SCOPE_READ
-        )
+        fetch.query_and_describe(utm_client, "PUT", url, json=body, scope=Scope.Read)
     )
-    result["mutation"] = "create" if subscription_version is None else "update"
+    result.mutation = "create" if subscription_version is None else "update"
     return result
 
 
@@ -88,14 +89,16 @@ def delete_subscription(
 ) -> MutatedSubscription:
     url = "/v1/dss/subscriptions/{}/{}".format(subscription_id, subscription_version)
     result = MutatedSubscription(
-        fetch.query_and_describe(utm_client, "DELETE", url, scope=rid.SCOPE_READ)
+        fetch.query_and_describe(utm_client, "DELETE", url, scope=Scope.Read)
     )
-    result["mutation"] = "delete"
+    result.mutation = "delete"
     return result
 
 
 class MutatedISAResponse(fetch.Query):
     """Response to a call to the DSS to mutate an ISA"""
+
+    mutation: Optional[str] = None
 
     @property
     def success(self) -> bool:
@@ -113,26 +116,22 @@ class MutatedISAResponse(fetch.Query):
             return ["Response returned an invalid ISA: {}".format(e)]
 
     @property
-    def isa(self) -> rid.IdentificationServiceArea:
+    def isa(self) -> IdentificationServiceArea:
         if self.json_result is None:
             raise ValueError("No JSON result present in response from DSS")
         isa_dict = self.json_result.get("service_area", None)
         if not isa_dict:
             raise ValueError("No `service_area` field present in response from DSS")
-        return rid.IdentificationServiceArea(isa_dict)
+        return IdentificationServiceArea(isa_dict)
 
     @property
-    def subscribers(self) -> List[rid.SubscriberToNotify]:
+    def subscribers(self) -> List[SubscriberToNotify]:
         if self.json_result is None:
             raise ValueError("No JSON result present in response from DSS")
         subs = self.json_result.get("subscribers", None)
         if not subs:
             return []
-        return [rid.SubscriberToNotify(sub) for sub in subs]
-
-    @property
-    def mutation(self) -> str:
-        return self["mutation"]
+        return [SubscriberToNotify(sub) for sub in subs]
 
 
 yaml.add_representer(MutatedISAResponse, Representer.represent_dict)
@@ -156,12 +155,12 @@ def put_isa(
 ) -> MutatedISA:
     extents = {
         "spatial_volume": {
-            "footprint": {"vertices": rid.vertices_from_latlng_rect(area)},
+            "footprint": {"vertices": rid_v1.vertices_from_latlng_rect(area)},
             "altitude_lo": 0,
             "altitude_hi": 3048,
         },
-        "time_start": start_time.strftime(rid.DATE_FORMAT),
-        "time_end": end_time.strftime(rid.DATE_FORMAT),
+        "time_start": start_time.strftime(rid_v1.DATE_FORMAT),
+        "time_end": end_time.strftime(rid_v1.DATE_FORMAT),
     }
     body = {
         "extents": extents,
@@ -174,9 +173,7 @@ def put_isa(
             entity_id, isa_version
         )
     dss_response = MutatedISAResponse(
-        fetch.query_and_describe(
-            utm_client, "PUT", url, json=body, scope=rid.SCOPE_WRITE
-        )
+        fetch.query_and_describe(utm_client, "PUT", url, json=body, scope=Scope.Write)
     )
     dss_response["mutation"] = "create" if isa_version is None else "update"
 
@@ -196,7 +193,7 @@ def put_isa(
         }
         url = "{}/{}".format(subscriber.url, entity_id)
         notifications[subscriber.url] = fetch.query_and_describe(
-            utm_client, "POST", url, json=body, scope=rid.SCOPE_WRITE
+            utm_client, "POST", url, json=body, scope=Scope.Write
         )
 
     return MutatedISA(dss_response=dss_response, notifications=notifications)
@@ -207,7 +204,7 @@ def delete_isa(
 ) -> MutatedISA:
     url = "/v1/dss/identification_service_areas/{}/{}".format(entity_id, isa_version)
     dss_response = MutatedISAResponse(
-        fetch.query_and_describe(utm_client, "DELETE", url, scope=rid.SCOPE_WRITE)
+        fetch.query_and_describe(utm_client, "DELETE", url, scope=Scope.Write)
     )
     dss_response["mutation"] = "delete"
 
@@ -221,7 +218,7 @@ def delete_isa(
         body = {"subscriptions": subscriber.subscriptions}
         url = "{}/{}".format(subscriber.url, entity_id)
         notifications[subscriber.url] = fetch.query_and_describe(
-            utm_client, "POST", url, json=body, scope=rid.SCOPE_WRITE
+            utm_client, "POST", url, json=body, scope=Scope.Write
         )
 
     return MutatedISA(dss_response=dss_response, notifications=notifications)

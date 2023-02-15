@@ -58,13 +58,9 @@ Although the flight authorisation data is invalid, it is properly formatted and 
 
 ## Plan valid flight test case
 
-### Inject valid flight intent test step
+### [Inject valid flight intent test step](../../flight_planning/inject_successful_flight_intent.md)
 
 uss_qualifier indicates to the flight planner a user intent to create a valid flight.
-
-#### Successful planning check
-
-All flight intent data provided is correct and valid and free of conflict in space and time, therefore it should have been planned by the USS.  If the USSP indicates a conflict, this check will fail.  If the USSP indicates that the flight was rejected, this check will fail.  If the USSP indicates that the injection attempt failed, this check will fail.
 
 ## Cleanup
 

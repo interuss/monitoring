@@ -19,15 +19,14 @@ from uas_standards.astm.f3411.v19.api import (
 )
 
 from monitoring.monitorlib.infrastructure import UTMClientSession
-from monitoring.monitorlib.rid import SCOPE_READ, SCOPE_WRITE
-from monitoring.monitorlib.rid_common import RIDVersion
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.reports.report import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
     DSSInstancesResource,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
-
+from uas_standards.astm.f3411.v19.constants import Scope
 
 VERTICES = [
     LatLngPoint(lng=130.6205, lat=-23.6558),
@@ -159,7 +158,7 @@ class DSSInteroperability(TestScenario):
         resp = self._dss_map[self._primary_dss_instance].put(
             f"/v1/dss/identification_service_areas/{isa1.uuid}",
             json=_make_create_isa(time_end),
-            scope=SCOPE_WRITE,
+            scope=Scope.Write,
         )
         query = fetch.describe_query(resp, initiated_at)
         self.record_query(query)
@@ -191,7 +190,7 @@ class DSSInteroperability(TestScenario):
             resp = self._dss_map[dss].put(
                 f"/v1/dss/subscriptions/{sub_1_uuid}",
                 json=_make_create_subscription(time_end),
-                scope=SCOPE_READ,
+                scope=Scope.Read,
             )
             query = fetch.describe_query(resp, initiated_at)
             self.record_query(query)
@@ -231,7 +230,7 @@ class DSSInteroperability(TestScenario):
             initiated_at = datetime.datetime.utcnow()
             resp = self._dss_map[dss].get(
                 f"/v1/dss/subscriptions/{self._context['sub_1_0'].uuid}",
-                scope=SCOPE_READ,
+                scope=Scope.Read,
             )
             query = fetch.describe_query(resp, initiated_at)
             self.record_query(query)
@@ -266,7 +265,7 @@ class DSSInteroperability(TestScenario):
         for index, dss in enumerate(all_dss):
             initiated_at = datetime.datetime.utcnow()
             resp = self._dss_map[dss].get(
-                f"/v1/dss/subscriptions?area={GEO_POLYGON_STRING}", scope=SCOPE_READ
+                f"/v1/dss/subscriptions?area={GEO_POLYGON_STRING}", scope=Scope.Read
             )
             query = fetch.describe_query(resp, initiated_at)
             self.record_query(query)
@@ -298,7 +297,7 @@ class DSSInteroperability(TestScenario):
         isa_1 = self._context["isa_1"]
         initiated_at = datetime.datetime.utcnow()
         resp = self._dss_map[self._primary_dss_instance].get(
-            f"/v1/dss/identification_service_areas/{isa_1.uuid}", scope=SCOPE_READ
+            f"/v1/dss/identification_service_areas/{isa_1.uuid}", scope=Scope.Read
         )
         query = fetch.describe_query(resp, initiated_at)
         self.record_query(query)
@@ -323,7 +322,7 @@ class DSSInteroperability(TestScenario):
         put_resp = self._dss_map[self._primary_dss_instance].put(
             f"/v1/dss/identification_service_areas/{isa_1.uuid}/{isa_1.version}",
             json=isa_update,
-            scope=SCOPE_WRITE,
+            scope=Scope.Write,
         )
         query = fetch.describe_query(put_resp, initiated_at)
         self.record_query(query)
@@ -360,7 +359,7 @@ class DSSInteroperability(TestScenario):
                 initiated_at = datetime.datetime.utcnow()
                 resp = dss.delete(
                     f"/v1/dss/subscriptions/{entity.uuid}/{entity.version}",
-                    scope=SCOPE_READ,
+                    scope=Scope.Read,
                 )
                 query = fetch.describe_query(resp, initiated_at)
                 self.record_query(query)
@@ -384,7 +383,7 @@ class DSSInteroperability(TestScenario):
             dss = self._dss_map[dss_name]
             sub_uuid = self._context[f"sub_1_{index}"].uuid
             initiated_at = datetime.datetime.utcnow()
-            resp = dss.get(f"/v1/dss/subscriptions/{sub_uuid}", scope=SCOPE_READ)
+            resp = dss.get(f"/v1/dss/subscriptions/{sub_uuid}", scope=Scope.Read)
             query = fetch.describe_query(resp, initiated_at)
             self.record_query(query)
             with self.check("404 with proper response", [dss_name]) as check:
@@ -402,7 +401,7 @@ class DSSInteroperability(TestScenario):
         for dss in all_dss:
             initiated_at = datetime.datetime.utcnow()
             resp = self._dss_map[dss].get(
-                f"/v1/dss/subscriptions?area={GEO_POLYGON_STRING}", scope=SCOPE_READ
+                f"/v1/dss/subscriptions?area={GEO_POLYGON_STRING}", scope=Scope.Read
             )
             query = fetch.describe_query(resp, initiated_at)
             self.record_query(query)
@@ -450,7 +449,7 @@ class DSSInteroperability(TestScenario):
             resp = self._dss_map[dss].put(
                 f"/v1/dss/subscriptions/{sub_2_uuid}",
                 json=_make_create_subscription(time_end),
-                scope=SCOPE_READ,
+                scope=Scope.Read,
             )
             query = fetch.describe_query(resp, initiated_at)
             self.record_query(query)
@@ -488,7 +487,7 @@ class DSSInteroperability(TestScenario):
         resp = self._dss_map[self._primary_dss_instance].put(
             f"/v1/dss/identification_service_areas/{self._context['isa_2'].uuid}",
             json=_make_create_isa(time_end),
-            scope=SCOPE_WRITE,
+            scope=Scope.Write,
         )
         query = fetch.describe_query(resp, initiated_at)
         self.record_query(query)
@@ -532,7 +531,7 @@ class DSSInteroperability(TestScenario):
         initiated_at = datetime.datetime.utcnow()
         resp = self._dss_map[self._primary_dss_instance].delete(
             f"/v1/dss/identification_service_areas/{isa_2_uuid}/{version}",
-            scope=SCOPE_WRITE,
+            scope=Scope.Write,
         )
         query = fetch.describe_query(resp, initiated_at)
         self.record_query(query)
@@ -575,7 +574,7 @@ class DSSInteroperability(TestScenario):
         resp = self._dss_map[self._primary_dss_instance].put(
             f"/v1/dss/identification_service_areas/{self._context['isa_3'].uuid}",
             json=_make_create_isa(time_end),
-            scope=SCOPE_WRITE,
+            scope=Scope.Write,
         )
         query = fetch.describe_query(resp, initiated_at)
         self.record_query(query)
@@ -617,7 +616,7 @@ class DSSInteroperability(TestScenario):
         for index, dss in enumerate(all_dss):
             initiated_at = datetime.datetime.utcnow()
             resp = self._dss_map[dss].get(
-                f"/v1/dss/subscriptions?area={GEO_POLYGON_STRING}", scope=SCOPE_READ
+                f"/v1/dss/subscriptions?area={GEO_POLYGON_STRING}", scope=Scope.Read
             )
             query = fetch.describe_query(resp, initiated_at)
             self.record_query(query)
@@ -646,7 +645,7 @@ class DSSInteroperability(TestScenario):
             sub_2_uuid = self._context[f"sub_2_{index}"].uuid
             initiated_at = datetime.datetime.utcnow()
             resp = self._dss_map[dss].get(
-                f"/v1/dss/subscriptions/{sub_2_uuid}", scope=SCOPE_READ
+                f"/v1/dss/subscriptions/{sub_2_uuid}", scope=Scope.Read
             )
             query = fetch.describe_query(resp, initiated_at)
             self.record_query(query)
@@ -660,7 +659,7 @@ class DSSInteroperability(TestScenario):
         initiated_at = datetime.datetime.utcnow()
         resp = self._dss_map[self._primary_dss_instance].delete(
             f"/v1/dss/identification_service_areas/{isa_3_uuid}/{version}",
-            scope=SCOPE_WRITE,
+            scope=Scope.Write,
         )
         query = fetch.describe_query(resp, initiated_at)
         self.record_query(query)
@@ -702,7 +701,7 @@ class DSSInteroperability(TestScenario):
             resp = self._dss_map[dss].put(
                 f"/v1/dss/subscriptions/{sub_3_uuid}",
                 json=_make_create_subscription(time_end),
-                scope=SCOPE_READ,
+                scope=Scope.Read,
             )
             query = fetch.describe_query(resp, initiated_at)
             self.record_query(query)
@@ -738,7 +737,7 @@ class DSSInteroperability(TestScenario):
                 continue
             initiated_at = datetime.datetime.utcnow()
             resp = self._dss_map[self._primary_dss_instance].delete(
-                f"/v1/dss/subscriptions/{sub_3.uuid}/{sub_3.version}", scope=SCOPE_READ
+                f"/v1/dss/subscriptions/{sub_3.uuid}/{sub_3.version}", scope=Scope.Read
             )
             query = fetch.describe_query(resp, initiated_at)
             self.record_query(query)
@@ -763,7 +762,7 @@ class DSSInteroperability(TestScenario):
                 initiated_at = datetime.datetime.utcnow()
                 resp = dss.get(
                     f"/v1/dss/identification_service_areas/{entity.uuid}",
-                    scope=SCOPE_READ,
+                    scope=Scope.Read,
                 )
                 query = fetch.describe_query(resp, initiated_at)
                 self.record_query(query)
@@ -775,7 +774,7 @@ class DSSInteroperability(TestScenario):
                 initiated_at = datetime.datetime.utcnow()
                 resp = dss.delete(
                     f"/v1/dss/identification_service_areas/{entity.uuid}/{entity.version}",
-                    scope=SCOPE_WRITE,
+                    scope=Scope.Write,
                 )
                 query = fetch.describe_query(resp, initiated_at)
                 self.record_query(query)
@@ -794,7 +793,7 @@ class DSSInteroperability(TestScenario):
                 initiated_at = datetime.datetime.utcnow()
                 resp = dss.get(
                     f"/v1/dss/subscriptions/{entity.uuid}",
-                    scope=SCOPE_READ,
+                    scope=Scope.Read,
                 )
                 query = fetch.describe_query(resp, initiated_at)
                 self.record_query(query)
@@ -806,7 +805,7 @@ class DSSInteroperability(TestScenario):
                 initiated_at = datetime.datetime.utcnow()
                 resp = dss.delete(
                     f"/v1/dss/subscriptions/{entity.uuid}/{entity.version}",
-                    scope=SCOPE_READ,
+                    scope=Scope.Read,
                 )
                 query = fetch.describe_query(resp, initiated_at)
                 self.record_query(query)

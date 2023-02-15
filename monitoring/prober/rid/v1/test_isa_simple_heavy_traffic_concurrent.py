@@ -10,16 +10,18 @@ import asyncio
 import datetime
 import re
 
-from monitoring.monitorlib import rid
+from monitoring.monitorlib import rid_v1
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib.rid import SCOPE_READ, SCOPE_WRITE, ISA_PATH
 from monitoring.monitorlib.testing import assert_datetimes_are_equal
 from monitoring.prober.infrastructure import register_resource_type
 from . import common
 
+from uas_standards.astm.f3411.v19.api import OPERATIONS, OperationID
+from uas_standards.astm.f3411.v19.constants import Scope
 
 THREAD_COUNT = 10
 FLIGHTS_URL = 'https://example.com/dss'
+ISA_PATH = OPERATIONS[OperationID.SearchIdentificationServiceAreas].path
 ISA_TYPES = [register_resource_type(224 + i, 'Operational intent {}'.format(i)) for i in range(100)]
 # Semaphore is added to limit the number of simultaneous requests,
 # default is 100.
@@ -40,8 +42,8 @@ def _make_isa_request(time_start, time_end):
         'altitude_lo': 20,
         'altitude_hi': 400,
       },
-      'time_start': time_start.strftime(rid.DATE_FORMAT),
-      'time_end': time_end.strftime(rid.DATE_FORMAT),
+      'time_start': time_start.strftime(rid_v1.DATE_FORMAT),
+      'time_end': time_end.strftime(rid_v1.DATE_FORMAT),
     },
     'flights_url': FLIGHTS_URL,
   }
@@ -49,25 +51,25 @@ def _make_isa_request(time_start, time_end):
 
 async def _put_isa(isa_id, req, session_ridv1):
   async with SEMAPHORE:
-    return isa_id, await session_ridv1.put('{}/{}'.format(ISA_PATH, isa_id), json=req, scope=SCOPE_WRITE)
+    return isa_id, await session_ridv1.put('{}/{}'.format(ISA_PATH, isa_id), json=req, scope=Scope.Write)
 
 async def _get_isa(isa_id, session_ridv1):
   async with SEMAPHORE:
-    return isa_id, await session_ridv1.get('{}/{}'.format(ISA_PATH, isa_id), scope=SCOPE_READ)
+    return isa_id, await session_ridv1.get('{}/{}'.format(ISA_PATH, isa_id), scope=Scope.Read)
 
 
 async def _delete_isa(isa_id, version, session_ridv1):
   async with SEMAPHORE:
-    return isa_id, await session_ridv1.delete('{}/{}/{}'.format(ISA_PATH, isa_id, version), scope=SCOPE_WRITE)
+    return isa_id, await session_ridv1.delete('{}/{}/{}'.format(ISA_PATH, isa_id, version), scope=Scope.Write)
 
 
 
 def test_ensure_clean_workspace(ids, session_ridv1):
   for isa_id in map(ids, ISA_TYPES):
-    resp = session_ridv1.get('{}/{}'.format(ISA_PATH, isa_id), scope=SCOPE_READ)
+    resp = session_ridv1.get('{}/{}'.format(ISA_PATH, isa_id), scope=Scope.Read)
     if resp.status_code == 200:
       version = resp.json()['service_area']['version']
-      resp = session_ridv1.delete('{}/{}/{}'.format(ISA_PATH, isa_id, version), scope=SCOPE_WRITE)
+      resp = session_ridv1.delete('{}/{}/{}'.format(ISA_PATH, isa_id, version), scope=Scope.Write)
       assert resp.status_code == 200, resp.content
     elif resp.status_code == 404:
       # As expected.
@@ -76,7 +78,7 @@ def test_ensure_clean_workspace(ids, session_ridv1):
       assert False, resp.content
 
 
-@default_scope(SCOPE_WRITE)
+@default_scope(Scope.Write)
 def test_create_isa_concurrent(ids, session_ridv1_async):
   time_start = datetime.datetime.utcnow()
   time_end = time_start + datetime.timedelta(minutes=60)
@@ -98,7 +100,7 @@ def test_create_isa_concurrent(ids, session_ridv1_async):
     assert 'subscribers' in data
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_get_isa_by_ids_concurrent(ids, session_ridv1_async):
   resp_map = {}
 
@@ -114,7 +116,7 @@ def test_get_isa_by_ids_concurrent(ids, session_ridv1_async):
     assert data['service_area']['flights_url'] == FLIGHTS_URL
 
 
-@default_scope(SCOPE_READ)
+@default_scope(Scope.Read)
 def test_get_isa_by_search(ids, session_ridv1):
   resp = session_ridv1.get('{}?area={}'.format(ISA_PATH, common.GEO_POLYGON_STRING))
 

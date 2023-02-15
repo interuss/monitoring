@@ -1,4 +1,3 @@
-import datetime
 from typing import List, Optional, Tuple
 
 import s2sphere
@@ -6,7 +5,7 @@ from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import fetch, infrastructure
 from monitoring.monitorlib.infrastructure import UTMClientSession
-from monitoring.monitorlib.rid_common import RIDVersion
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing import observation_api
 from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
@@ -40,7 +39,7 @@ class RIDSystemObserver(object):
         try:
             result = (
                 ImplicitDict.parse(
-                    query.response["json"], observation_api.GetDisplayDataResponse
+                    query.response.json, observation_api.GetDisplayDataResponse
                 )
                 if query.status_code == 200
                 else None
@@ -59,7 +58,7 @@ class RIDSystemObserver(object):
         try:
             result = (
                 ImplicitDict.parse(
-                    query.response["json"], observation_api.GetDetailsResponse
+                    query.response.json, observation_api.GetDetailsResponse
                 )
                 if query.status_code == 200
                 else None

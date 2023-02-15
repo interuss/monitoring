@@ -1,17 +1,18 @@
-import argparse
-import atexit
 import datetime
 import os
-import shlex
-import signal
 import sys
-import threading
-import time
-from multiprocessing import Process
 from typing import Optional
 
+from implicitdict import StringBasedDateTime
 from loguru import logger
+import yaml
+from yaml.representer import Representer
 
+from monitoring.mock_uss.tracer.tracer_poll import (
+    TASK_POLL_ISAS,
+    TASK_POLL_OPS,
+    TASK_POLL_CONSTRAINTS,
+)
 from monitoring.monitorlib import ids, versioning
 from monitoring.monitorlib import fetch
 import monitoring.monitorlib.fetch.rid
@@ -19,11 +20,12 @@ import monitoring.monitorlib.fetch.scd
 from monitoring.monitorlib import mutate
 import monitoring.monitorlib.mutate.rid
 import monitoring.monitorlib.mutate.scd
-from monitoring.mock_uss import config, webapp
-from monitoring.mock_uss.tracer import tracer_poll
+from monitoring.mock_uss import config, webapp, SERVICE_TRACER
 from monitoring.mock_uss.tracer.resources import ResourceSet, get_options
 from monitoring.mock_uss.tracer.database import db
+from monitoring.monitorlib.rid import RIDVersion
 
+yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
 RID_SUBSCRIPTION_ID_CODE = "tracer RID Subscription"
 SCD_SUBSCRIPTION_ID_CODE = "tracer SCD Subscription"
@@ -36,29 +38,34 @@ class SubscriptionManagementError(RuntimeError):
         super(SubscriptionManagementError, self).__init__(msg)
 
 
+@webapp.setup_task("tracer context creation")
 def init() -> None:
-    perform_setup = False
-    with db as tx:
-        if not tx.setup_initiated:
-            tx.setup_initiated = True
-            perform_setup = True
-    if not perform_setup:
-        logger.info(f"Skipping setup on process ID {os.getpid()}")
-        return
-    logger.info(f"Initiating setup on process ID {os.getpid()}")
+    if not config.Config.TRACER_OPTIONS:
+        raise ValueError(
+            f"{config.ENV_KEY_TRACER_OPTIONS} is required for the {SERVICE_TRACER} service"
+        )
+
+    if not config.Config.DSS_URL:
+        raise ValueError(
+            f"{config.ENV_KEY_DSS} is required for the {SERVICE_TRACER} service"
+        )
 
     args = get_options()
 
-    # Initiate polling loop
-    if (
-        args.rid_isa_poll_interval
-        or args.scd_operation_poll_interval
-        or args.scd_constraint_poll_interval
-    ):
-        logger.info("Initiating polling loop")
-        p = Process(target=tracer_poll.poll_loop)
-        p.start()
-        logger.info(f"Polling loop on process ID {p.pid}, initiated by {os.getpid()}")
+    # Enable polling tasks
+    if args.rid_isa_poll_interval:
+        webapp.set_task_period(
+            TASK_POLL_ISAS, datetime.timedelta(seconds=args.rid_isa_poll_interval)
+        )
+    if args.scd_operation_poll_interval:
+        webapp.set_task_period(
+            TASK_POLL_OPS, datetime.timedelta(seconds=args.scd_operation_poll_interval)
+        )
+    if args.scd_constraint_poll_interval:
+        webapp.set_task_period(
+            TASK_POLL_CONSTRAINTS,
+            datetime.timedelta(seconds=args.scd_constraint_poll_interval),
+        )
 
     global resources
     resources = ResourceSet.from_arguments(args)
@@ -84,28 +91,9 @@ def init() -> None:
             sys.stderr.write(msg)
             sys.exit(-1)
 
-    shutdown = lambda signal_number: _shutdown(p, signal_number)
-    atexit.register(shutdown, None)
-    for sig in (signal.SIGABRT, signal.SIGINT, signal.SIGTERM):
-        signal.signal(sig, shutdown)
 
-
-def initiate_shutdown():
-    with db as tx:
-        tx.stopping = True
-    os.kill(os.getpid(), signal.SIGINT)
-
-
-def _shutdown(p: Process, signal_number):
-    should_cleanup = False
-    with db as tx:
-        if tx.stopping and not tx.cleanup_initiated:
-            tx.cleanup_initiated = True
-            should_cleanup = True
-    if not should_cleanup:
-        logger.info(f"Not cleaning up Subscriptions from process {os.getpid()}")
-        return
-
+@webapp.shutdown_task("tracer cleanup")
+def _shutdown():
     args = get_options()
     logger.info(
         "Cleaning up Subscriptions from PID {} at {}...".format(
@@ -118,7 +106,6 @@ def _shutdown(p: Process, signal_number):
         "subscribe_stop",
         {
             "timestamp": datetime.datetime.utcnow(),
-            "signal_number": signal_number,
         },
     )
 
@@ -169,12 +156,12 @@ def _subscribe_rid(resources: ResourceSet, callback_url: str) -> None:
 
 def _clear_existing_rid_subscription(resources: ResourceSet, suffix: str) -> None:
     existing_result = fetch.rid.subscription(
-        resources.dss_client, _rid_subscription_id()
+        _rid_subscription_id(), RIDVersion.f3411_19, resources.dss_client
     )
     logfile = resources.logger.log_new(
         "{}_{}_get".format(RID_SUBSCRIPTION_KEY, suffix), existing_result
     )
-    if not existing_result.success:
+    if existing_result.status_code != 404 and not existing_result.success:
         raise SubscriptionManagementError(
             "Could not query existing RID Subscription -> {}".format(logfile)
         )
