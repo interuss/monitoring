@@ -1,7 +1,14 @@
-from typing import List, Optional
+from dataclasses import dataclass
+from typing import List, Optional, Dict
 
 import arrow
 import s2sphere
+
+from uas_standards.astm.f3411.v19.api import RIDAircraftState
+from uas_standards.interuss.automated_testing.rid.v1.observation import (
+    Flight,
+    GetDisplayDataResponse,
+)
 
 from monitoring.monitorlib import fetch, geo
 from monitoring.monitorlib.rid import RIDVersion
@@ -16,7 +23,10 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFlight
-from monitoring.monitorlib.rid_automated_testing import observation_api
+
+
+DISTANCE_TOLERANCE_M = 0.01
+COORD_TOLERANCE_DEG = 360 / geo.EARTH_CIRCUMFERENCE_M * DISTANCE_TOLERANCE_M
 
 
 def _rect_str(rect) -> str:
@@ -26,6 +36,86 @@ def _rect_str(rect) -> str:
         rect.hi().lat().degrees,
         rect.hi().lng().degrees,
     )
+
+
+def _telemetry_match(t1: RIDAircraftState, t2: RIDAircraftState) -> bool:
+    """Determine whether two telemetry points may be mistaken for each other."""
+    return (
+        abs(t1.position.lat - t2.position.lat) < COORD_TOLERANCE_DEG
+        and abs(t1.position.lng == t2.position.lng) < COORD_TOLERANCE_DEG
+    )
+
+
+def injected_flights_errors(injected_flights: List[InjectedFlight]) -> List[str]:
+    """Determine whether each telemetry in each injected flight can be easily distinguished from each other.
+
+    Args:
+        injected_flights: Full set of flights injected into Service Providers.
+
+    Returns: List of error messages, or an empty list if no errors.
+    """
+    errors: List[str] = []
+    for f1, injected_flight in enumerate(injected_flights):
+        for t1, injected_telemetry in enumerate(injected_flight.flight.telemetry):
+            for t2, other_telmetry in enumerate(
+                injected_flight.flight.telemetry[t1 + 1 :]
+            ):
+                if _telemetry_match(injected_telemetry, other_telmetry):
+                    errors.append(
+                        f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at indices {t1} and {t1 + 1 + t2} which can be mistaken for each other"
+                    )
+            for f2, other_flight in enumerate(injected_flights[f1 + 1 :]):
+                for t2, other_telemetry in enumerate(other_flight.flight.telemetry):
+                    if _telemetry_match(injected_telemetry, other_telemetry):
+                        errors.append(
+                            f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at index {t1} that can be mistaken for telemetry index {t2} in {other_flight.uss_participant_id}'s flight with injection ID {other_flight.flight.injection_id} in test {other_flight.test_id}"
+                        )
+    return errors
+
+
+@dataclass
+class TelemetryMapping(object):
+    injected_flight: InjectedFlight
+    telemetry_index: int
+    observed_flight: Flight
+
+
+def _make_flight_mapping(
+    injected_flights: List[InjectedFlight], observed_flights: List[Flight]
+) -> Dict[str, TelemetryMapping]:
+    """Identify which of the observed flights (if any) matches to each of the injected flights
+
+    This function assumes there is no valid situation in which a particular observed flight could be one of multiple
+    InjectedFlights; the 3D position of each telemetry point in each InjectedFlight may not be duplicated in any other
+    telemetry point in any InjectedFlight.  This assumption is checked by injected_flights_errors.
+
+    Args:
+        injected_flights: Flights injected into RID Service Providers under test.
+        observed_flights: Flight observed from an RID Display Provider under test.
+
+    Returns: Mapping betweenInjectedFlight and observed Flight, indexed by injection_id.
+    """
+    mapping: Dict[str, TelemetryMapping] = {}
+    for injected_flight in injected_flights:
+        found = False
+        for observed_flight in observed_flights:
+            p = observed_flight.most_recent_position
+            for t1, injected_telemetry in enumerate(injected_flight.flight.telemetry):
+                if (
+                    abs(p.lat - injected_telemetry.position.lat) < COORD_TOLERANCE_DEG
+                    and abs(p.lng - injected_telemetry.position.lng)
+                    < COORD_TOLERANCE_DEG
+                ):
+                    mapping[injected_flight.flight.injection_id] = TelemetryMapping(
+                        injected_flight=injected_flight,
+                        telemetry_index=t1,
+                        observed_flight=observed_flight,
+                    )
+                    found = True
+                    break
+            if found:
+                break
+    return mapping
 
 
 class RIDObservationEvaluator(object):
@@ -80,7 +170,7 @@ class RIDObservationEvaluator(object):
         self,
         observer: RIDSystemObserver,
         rect: s2sphere.LatLngRect,
-        observation: Optional[observation_api.GetDisplayDataResponse],
+        observation: Optional[GetDisplayDataResponse],
         query: fetch.Query,
     ) -> None:
         diagonal_km = (
@@ -104,7 +194,7 @@ class RIDObservationEvaluator(object):
         self,
         observer: RIDSystemObserver,
         rect: s2sphere.LatLngRect,
-        observation: Optional[observation_api.GetDisplayDataResponse],
+        observation: Optional[GetDisplayDataResponse],
         query: fetch.Query,
     ) -> None:
         with self._test_scenario.check(
@@ -121,6 +211,28 @@ class RIDObservationEvaluator(object):
             else:
                 check.record_passed()
 
+        # Make sure we didn't get duplicate flight IDs
+        flights_by_id = {}
+        for observed_flight in observation.flights:
+            flights_by_id[observed_flight.id] = (
+                flights_by_id.get(observed_flight.id, 0) + 1
+            )
+        with self._test_scenario.check(
+            "Duplicate flights", [observer.participant_id]
+        ) as check:
+            duplicates = [f"{k} ({v})" for k, v in flights_by_id.items() if v > 1]
+            if duplicates:
+                check.record_failed(
+                    "Duplicate flight IDs in observation",
+                    Severity.Medium,
+                    details="Duplicate flight IDs observed: " + ", ".join(duplicates),
+                    query_timestamps=[query.request.timestamp],
+                )
+
+        mapping_by_injection_id = _make_flight_mapping(
+            self._injected_flights, observation.flights
+        )
+
         for expected_flight in self._injected_flights:
             t_initiated = query.request.timestamp
             t_response = query.response.reported.datetime
@@ -130,37 +242,15 @@ class RIDObservationEvaluator(object):
             t_min = min(timestamps).datetime
             t_max = max(timestamps).datetime
 
-            flight_id = expected_flight.flight.details_responses[
-                0
-            ].details.id  # TODO: Choose appropriate details rather than first
-            matching_flights = [
-                observed_flight
-                for observed_flight in observation.flights
-                if observed_flight.id == flight_id
-            ]
-            with self._test_scenario.check(
-                "Duplicate flights", [observer.participant_id]
-            ) as check:
-                if len(matching_flights) > 1:
-                    check.record_failed(
-                        summary="Duplicate flights observed",
-                        details=f'When queried for an observation in {_rect_str(rect)}, {observer.participant_id} found {len(matching_flights)} flights with flight ID "{flight_id}" that was injected into {expected_flight.uss_participant_id}',
-                        severity=Severity.Medium,
-                        query_timestamps=[
-                            query.request.timestamp,
-                            expected_flight.query_timestamp,
-                        ],
-                    )
-
             if t_response < t_min:
                 # This flight should definitely not have been observed (it starts in the future)
                 with self._test_scenario.check(
                     "Premature flight", [expected_flight.uss_participant_id]
                 ) as check:
-                    if matching_flights:
+                    if expected_flight.flight.injection_id in mapping_by_injection_id:
                         check.record_failed(
                             summary="Flight observed before it started",
-                            details=f"Flight {flight_id} injected into {expected_flight.uss_participant_id} was observed by {observer.participant_id} at {t_response.isoformat()} before that flight should have started at {t_min.isoformat()}",
+                            details=f"Flight {expected_flight.flight.injection_id} injected into {expected_flight.uss_participant_id} was observed by {observer.participant_id} at {t_response.isoformat()} before that flight should have started at {t_min.isoformat()}",
                             severity=Severity.Medium,
                             query_timestamps=[
                                 query.request.timestamp,
@@ -183,10 +273,10 @@ class RIDObservationEvaluator(object):
                         observer.participant_id,
                     ],
                 ) as check:
-                    if matching_flights:
+                    if expected_flight.flight.injection_id in mapping_by_injection_id:
                         check.record_failed(
                             summary="Flight still observed long after it ended",
-                            details=f"Flight {flight_id} injected into {expected_flight.uss_participant_id} was observed by {observer.participant_id} at {t_response.isoformat()} after it ended at {t_max.isoformat()}",
+                            details=f"Flight {expected_flight.flight.injection_id} injected into {expected_flight.uss_participant_id} was observed by {observer.participant_id} at {t_response.isoformat()} after it ended at {t_max.isoformat()}",
                             severity=Severity.Medium,
                             query_timestamps=[
                                 query.request.timestamp,
@@ -207,10 +297,13 @@ class RIDObservationEvaluator(object):
                         observer.participant_id,
                     ],
                 ) as check:
-                    if not matching_flights:
+                    if (
+                        expected_flight.flight.injection_id
+                        not in mapping_by_injection_id
+                    ):
                         check.record_failed(
                             summary="Expected flight not observed",
-                            details=f"Flight {flight_id} injected into {expected_flight.uss_participant_id} was not listed in the observation by {observer.participant_id} at {t_response.isoformat()} even though it should have been active from {t_min.isoformat()} to {t_max.isoformat()}",
+                            details=f"Flight {expected_flight.flight.injection_id} injected into {expected_flight.uss_participant_id} was not found in the observation by {observer.participant_id} at {t_response.isoformat()} even though it should have been active from {t_min.isoformat()} to {t_max.isoformat()}",
                             severity=Severity.Medium,
                             query_timestamps=[
                                 query.request.timestamp,
@@ -223,8 +316,22 @@ class RIDObservationEvaluator(object):
                 # If this flight was not observed, there may be propagation latency
                 pass  # TODO: findings propagation latency
 
-            for matching_flight in matching_flights:
-                pass  # TODO: Check position, altitude, flight details, etc
+            # Check that altitudes match
+            for mapping in mapping_by_injection_id.values():
+                expected_telemetry = expected_flight.flight.telemetry[
+                    mapping.telemetry_index
+                ]
+                observed_alt = mapping.observed_flight.most_recent_position.alt
+                expected_alt = expected_telemetry.position.alt
+                if abs(observed_alt - expected_alt) > DISTANCE_TOLERANCE_M:
+                    self._test_scenario.check(
+                        "Altitude",
+                        [expected_flight.uss_participant_id, observer.participant_id],
+                    ).record_failed(
+                        "Observed altitude does not match injected altitude",
+                        Severity.Medium,
+                        details=f"{expected_flight.uss_participant_id}'s flight with injection ID {expected_flight.flight.injection_id} in test {expected_flight.test_id} had telemetry index {mapping.telemetry_index} at {expected_telemetry.timestamp} with lat={expected_telemetry.position.lat}, lng={expected_telemetry.position.lng}, alt={expected_telemetry.position.alt}, but {observer.participant_id} observed lat={observed_flight.most_recent_position.lat}, lng={observed_flight.most_recent_position.lng}, alt={observed_flight.most_recent_position.alt} at {query.response.reported}",
+                    )
 
     def _evaluate_area_too_large_observation(
         self,

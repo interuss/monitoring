@@ -8,4 +8,3 @@ TODO: Describe overall approach, link to injection & observation
 
 TODO: Describe requirements
 
-### <tt>ObservationFlightID</tt>

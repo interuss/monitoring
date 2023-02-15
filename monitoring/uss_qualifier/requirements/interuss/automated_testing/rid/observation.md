@@ -9,3 +9,5 @@ TODO: Link to API YAML and provide overview
 TODO: Describe requirements
 
 ### <tt>ObservationSuccess</tt>
+
+### <tt>UniqueFlights</tt>

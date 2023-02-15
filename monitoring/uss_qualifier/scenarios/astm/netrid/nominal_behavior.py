@@ -128,6 +128,22 @@ class NominalBehavior(TestScenario):
                     )
                 )
 
+        # Make sure the injected flights can be identified correctly by the test harness
+        with self.check("Identifiable flights") as check:
+            errors = display_data_evaluator.injected_flights_errors(
+                self._injected_flights
+            )
+            if errors:
+                check.record_failed(
+                    "Injected flights not suitable for test",
+                    Severity.High,
+                    details="When checking the suitability of the flights (as injected) for the test, found:\n"
+                    + "\n".join(errors),
+                    query_timestamps=[
+                        f.query_timestamp for f in self._injected_flights
+                    ],
+                )
+
         config = self._evaluation_configuration.configuration
         # TODO: Replace hardcoded value
         rid_version = RIDVersion.f3411_19
