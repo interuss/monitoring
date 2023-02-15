@@ -1,3 +1,4 @@
+from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional, TypeVar
 
@@ -11,14 +12,42 @@ from monitoring.uss_qualifier.scenarios.definitions import (
 
 
 class TestSuiteDeclaration(ImplicitDict):
-    suite_type: FileReference
+    suite_type: Optional[FileReference]
     """Type/location of test suite.  Usually expressed as the file name of the suite definition (without extension) qualified relative to the `uss_qualifier` folder"""
+
+    suite_definition: Optional[TestSuiteDefinition]
+    """Definition of test suite internal to the configuration -- specified instead of `suite_type`."""
 
     resources: Dict[ResourceID, ResourceID]
     """Mapping of the ID a resource will be known by in the child test suite -> the ID a resource is known by in the parent test suite.
-    
+
     The child suite resource <key> is supplied by the parent suite resource <value>.
     """
+
+    def __init__(self, *args, **kwargs):
+        super(TestSuiteDeclaration, self).__init__(*args, **kwargs)
+        if (
+            "suite_type" in self
+            and self.suite_type
+            and "suite_definition" in self
+            and self.suite_definition
+        ):
+            raise ValueError(
+                f"May not specify both suite_type ({self.suite_type}) and suite_definition (name='{self.suite_definition.name}') in the same TestSuiteDeclaration"
+            )
+        if ("suite_type" not in self or not self.suite_type) and (
+            "suite_definition" not in self or not self.suite_definition
+        ):
+            raise ValueError(
+                "Must specify either suite_type or suite_definition in TestSuiteDeclaration"
+            )
+
+    @property
+    def type_name(self) -> str:
+        if "suite_type" in self and self.suite_type:
+            return self.suite_type
+        else:
+            return "<in-configuration definition>"
 
 
 GeneratorTypeName = str
@@ -39,11 +68,11 @@ class ActionGeneratorDefinition(ImplicitDict):
 
     resources: Dict[ResourceID, ResourceID]
     """Mapping of the ID a resource will be known by in the child action -> the ID a resource is known by in the parent test suite.
-    
+
     The child action resource ID <key> is supplied by the parent test suite resource ID <value>.
-    
+
     Resources not included in this field will not be available to the child action.
-    
+
     If the parent resource ID is suffixed with ? then the resource will not be required (and will not be populated for the child action when not present in the parent)
     """
 
@@ -108,7 +137,7 @@ class TestSuiteActionDeclaration(ImplicitDict):
         if action_type == ActionType.TestScenario:
             return self.test_scenario.scenario_type
         elif action_type == ActionType.TestSuite:
-            return self.test_suite.suite_type
+            return self.test_suite.type_name
         elif action_type == ActionType.ActionGenerator:
             return self.action_generator.generator_type
         else:
@@ -128,7 +157,16 @@ class TestSuiteDefinition(ImplicitDict):
     """The actions to take when running the test suite.  Components will be executed in order."""
 
     @staticmethod
-    def load(suite_type: FileReference) -> "TestSuiteDefinition":
-        return ImplicitDict.parse(
-            load_dict_with_references(suite_type), TestSuiteDefinition
-        )
+    def load_from_declaration(
+        declaration: TestSuiteDeclaration,
+    ) -> "TestSuiteDefinition":
+        if "suite_type" in declaration:
+            return ImplicitDict.parse(
+                load_dict_with_references(declaration.suite_type), TestSuiteDefinition
+            )
+        elif "suite_definition" in declaration:
+            return declaration.suite_definition
+        else:
+            raise ValueError(
+                "Neither suite_type nor suite_definition were specified in TestSuiteDefinition"
+            )

@@ -115,6 +115,7 @@ class NominalBehavior(TestScenario):
                     summary="Error injecting test flight",
                     severity=Severity.High,
                     details=f"Attempting to inject a test flight into {target.participant_id}, encountered status code {query.status_code}: {str(e)}",
+                    query_timestamps=[query.request.timestamp],
                 )
                 return False
             # TODO: Validate injected flights, especially to make sure they contain the specified injection IDs

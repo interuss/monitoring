@@ -1,0 +1,126 @@
+v1:
+    test_run:
+        resources:
+            resource_declarations:
+                # ===== Common resources =====
+                utm_auth:
+                    resource_type: resources.communications.AuthAdapterResource
+                    specification:
+                        environment_variable_containing_auth_spec: AUTH_SPEC
+
+                # ===== F3548 resources =====
+                flight_planners:
+                    resource_type: resources.flight_planning.FlightPlannersResource
+                    dependencies:
+                        auth_adapter: utm_auth
+                    specification:
+                        flight_planners:
+                            # uss1 is the mock_uss directly exposing scdsc functionality
+                            - participant_id: uss8074
+                              injection_base_url: http://host.docker.internal:8074/scdsc
+                            # uss2 uses atproxy, with requests being fulfilled by mock_uss with atproxy_client functionality enabled
+                            - participant_id: uss8075
+                              injection_base_url: http://host.docker.internal:8075/scd
+                scd_dss:
+                    resource_type: resources.astm.f3548.v21.DSSInstanceResource
+                    dependencies:
+                        auth_adapter: utm_auth
+                    specification:
+                        participant_id: uss8082
+                        base_url: http://host.docker.internal:8082
+                conflicting_flights:
+                    resource_type: resources.flight_planning.FlightIntentsResource
+                    specification:
+                        planning_time: '0:05:00'
+                        file_source: file://./test_data/usa/kentland/flight_intents/conflicting_flights.yaml
+                priority_preemption_flights:
+                    resource_type: resources.flight_planning.FlightIntentsResource
+                    specification:
+                        planning_time: '0:05:00'
+                        file_source: test_data.usa.kentland.flight_intents.priority_preemption
+
+                # ===== NetRID resources =====
+                flights_data:
+                    resource_type: resources.netrid.FlightDataResource
+                    specification:
+                        kml_source:
+                            kml_location: file://./test_data/usa/kentland/rid.kml
+                service_providers:
+                    resource_type: resources.netrid.NetRIDServiceProviders
+                    dependencies:
+                        auth_adapter: utm_auth
+                    specification:
+                        service_providers:
+                            -   participant_id: uss8071
+                                injection_base_url: http://host.docker.internal:8071/ridsp/injection
+                observers:
+                    resource_type: resources.netrid.NetRIDObserversResource
+                    dependencies:
+                        auth_adapter: utm_auth
+                    specification:
+                        observers:
+                            -   participant_id: uss8073
+                                observation_base_url: http://host.docker.internal:8073/riddp/observation
+                evaluation_configuration:
+                    resource_type: resources.netrid.EvaluationConfigurationResource
+                    specification: { }
+
+        action:
+            test_suite:
+                resources:  # Resources provided to suite from resource pool (UFT suite resource name: pool resource name)
+                    # SCD
+                    flight_planners: flight_planners
+                    conflicting_flights: conflicting_flights
+                    priority_preemption_flights: priority_preemption_flights
+                    scd_dss: scd_dss
+
+                    # NetRID
+                    flights_data: flights_data
+                    service_providers: service_providers
+                    observers: observers
+                    evaluation_configuration: evaluation_configuration
+
+                suite_definition:  # In-configuration definition of what tests to run
+                    name: UFT automated test suite
+                    resources:  # Resources needed by suite
+                        # SCD
+                        flight_planners: resources.flight_planning.FlightPlannersResource
+                        scd_dss: resources.astm.f3548.v21.DSSInstanceResource
+                        conflicting_flights: resources.flight_planning.FlightIntentsResource
+                        priority_preemption_flights: resources.flight_planning.FlightIntentsResource
+                        nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
+                        priority_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
+
+                        # NetRID
+                        flights_data: resources.netrid.FlightDataResource
+                        service_providers: resources.netrid.NetRIDServiceProviders
+                        observers: resources.netrid.NetRIDObserversResource
+                        evaluation_configuration: resources.netrid.EvaluationConfigurationResource
+                    actions:
+                        - test_suite:
+                              suite_type: suites.astm.utm.f3548_21
+                              resources:  # Resources needed by F3548-21 suite (F3548 suite resource name: UFT suite resource name)
+                                  conflicting_flights: conflicting_flights
+                                  priority_preemption_flights: priority_preemption_flights
+                                  flight_planners: flight_planners
+                                  dss: scd_dss
+                              on_failure: Continue
+                        - test_scenario:
+                              scenario_type: scenarios.astm.netrid.NominalBehavior
+                              resources:  # Resources needed by RID Nominal Behavior scenario (RID scenario resource name: UFT suite resource name)
+                                  flights_data: flights_data
+                                  service_providers: service_providers
+                                  observers: observers
+                                  evaluation_configuration: evaluation_configuration
+                              on_failure: Continue
+
+    artifacts:
+        tested_roles:
+            report_path: tested_requirements.html
+            roles:
+                - name: Strategic Coordination role
+                  requirement_set: astm.f3548.v21.scd
+                  participants:
+                      - uss1
+                      - uss2
+        "$ref": ../../artifacts.yaml#/relative

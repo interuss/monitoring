@@ -8,6 +8,8 @@ import s2sphere
 import uuid
 from datetime import timedelta
 from shapely.geometry import LineString, Point, Polygon
+
+from implicitdict import StringBasedDateTime
 from monitoring.monitorlib.geo import flatten, unflatten
 from monitoring.monitorlib import kml
 from monitoring.uss_qualifier.resources.netrid.flight_data import (
@@ -205,7 +207,7 @@ def generate_flight_record(
         )
         aircraft_height = None
         rid_aircraft_state = RIDAircraftState(
-            timestamp=timestamp_isoformat,
+            timestamp=StringBasedDateTime(timestamp_isoformat),
             operational_status="Airborne",
             position=aircraft_position,
             height=aircraft_height,
@@ -214,7 +216,7 @@ def generate_flight_record(
             timestamp_accuracy=float(
                 flight_description.get("timestamp_accuracy", "0.0")
             ),
-            speed_accuracy=flight_description.get("speed_accuracy", ""),
+            speed_accuracy=flight_description["speed_accuracy"],
             vertical_speed=0.0,
         )
         flight_telemetry.append(rid_aircraft_state)
@@ -234,7 +236,7 @@ def generate_flight_record(
     )
 
     return FullFlightRecord(
-        reference_time=now_isoformat,
+        reference_time=StringBasedDateTime(now_isoformat),
         states=flight_telemetry,
         flight_details=rid_details,
         aircraft_type=flight_description.get("aircraft_type"),
