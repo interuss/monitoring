@@ -21,6 +21,9 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     validate_shared_operational_intent,
 )
+from monitoring.uss_qualifier.scenarios.flight_planning.prioritization_test_steps import (
+    plan_conflict_flight_intent,
+)
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     clear_area,
@@ -133,42 +136,14 @@ class NominalPlanning(TestScenario):
         return True
 
     def _attempt_second_flight(self) -> bool:
-        self.begin_test_step("Inject flight intent")
-
-        with self.check("Incorrectly planned", [self.uss2.participant_id]) as check:
-            try:
-                resp, query, flight_id = self.uss2.request_flight(
-                    self.conflicting_flight
-                )
-            except QueryError as e:
-                for q in e.queries:
-                    self.record_query(q)
-                check.record_failed(
-                    summary=f"Error from {self.uss2.participant_id} when attempting second flight",
-                    severity=Severity.High,
-                    details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
-                    query_timestamps=[q.request.timestamp for q in e.queries],
-                )
-            self.record_query(query)
-            if resp.result == InjectFlightResult.Planned:
-                check.record_failed(
-                    summary="Flight created even though there was a conflict",
-                    severity=Severity.High,
-                    details="The user's intended flight conflicts with an existing operational intent so the result of attempting to fulfill this flight intent should not be a successful planning of the flight.",
-                    query_timestamps=[query.request.timestamp],
-                )
-                return False
-        with self.check("Failure", [self.uss2.participant_id]) as check:
-            if resp.result == InjectFlightResult.Failed:
-                check.record_failed(
-                    summary="Failed to create flight",
-                    severity=Severity.High,
-                    details=f'{self.uss1.participant_id} Failed to process the user flight intent: "{resp.notes}"',
-                    query_timestamps=[query.request.timestamp],
-                )
-                return False
-
-        self.end_test_step()  # Inject flight intent
+        resp = plan_conflict_flight_intent(
+            self,
+            "Plan second flight with non-permitted equal priority conflict",
+            self.uss2,
+            self.conflicting_flight,
+        )
+        if resp is None:
+            return False
         return True
 
     def _activate_first_flight(self):
