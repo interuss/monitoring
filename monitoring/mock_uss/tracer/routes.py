@@ -347,4 +347,4 @@ def tracer_catch_all(u_path) -> Tuple[str, int]:
     label = colored("Bad route", "red")
     logger.error("{} to {} ({}): {}".format(label, u_path, owner, log_name))
 
-    return RESULT
+    return f"Path is not a supported endpoint: {u_path}", 404
