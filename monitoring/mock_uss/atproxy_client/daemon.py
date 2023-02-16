@@ -153,25 +153,34 @@ def _poll_atproxy() -> None:
             response={"message": msg},
         )
     finally:
-        query = fetch.query_and_describe(
-            None,
-            "PUT",
-            f"{query_url}/{request_to_handle.id}",
-            json=fulfillment,
-            auth=basic_auth,
-        )
-        if query.status_code != 204:
-            logger.error(
-                f"Error {query.status_code} reporting response {fulfillment.return_code} to query {request_to_handle.id}: {query.response.content}"
+        for attempt in range(1, 4):
+            query = fetch.query_and_describe(
+                None,
+                "PUT",
+                f"{query_url}/{request_to_handle.id}",
+                json=fulfillment,
+                auth=basic_auth,
             )
-            logger.debug(
-                "Query details for failed attempt to report response to atproxy:\n{}",
-                json.dumps(query, indent=2),
-            )
-        else:
-            logger.info(
-                f"Delivered response to request {request_to_handle.id} to atproxy"
-            )
+            if query.status_code != 204:
+                logger.error(
+                    "Error {} reporting response {} to query {} on attempt {}; details:\n{}",
+                    query.status_code,
+                    fulfillment.return_code,
+                    request_to_handle.id,
+                    attempt,
+                    "JSON: " + json.dumps(query.response.json, indent=2)
+                    if query.response.json
+                    else f"Body: {query.response.content}",
+                )
+                logger.debug(
+                    "Query details for failed attempt to report response to atproxy:\n{}",
+                    json.dumps(query, indent=2),
+                )
+            else:
+                logger.info(
+                    f"Delivered response to request {request_to_handle.id} to atproxy on attempt {attempt}"
+                )
+                break
 
 
 def _fulfill_request(request_to_handle: PendingRequest) -> Tuple[Optional[dict], int]:
