@@ -22,6 +22,10 @@ A set of [`NetRIDObserversResource`](../../../resources/netrid/observers.py) to 
 
 This [`EvaluationConfigurationResource`](../../../resources/netrid/observers.py) defines how to gauge success when observing the injected flights.
 
+### dss_pool
+
+If specified, uss_qualifier will act as a Display Provider and check a DSS instance from this [`DSSInstanceResource`](../../../resources/astm/f3411/dss.py) for appropriate identification service areas and then query the corresponding USSs with flights using the same session.
+
 ## Nominal flight test case
 
 ### Injection test step
@@ -41,9 +45,39 @@ Per **[interuss.automated_testing.rid.injection.UpsertTestResult](../../../requi
 
 This particular test requires each flight to be uniquely identifiable by its 2D telemetry position; the same (lat, lng) pair may not appear in two different telemetry points, even if the two points are in different injected flights.  This should generally be achieved by injecting appropriate data.
 
-### Polling test step
+### Service Provider polling test step
 
-In this step, all observers are periodically queried for the flights they observe.  Based on the known flights that were injected into the SPs in the previous step, these observations are checked against expected behavior/data.  Observation rectangles are chosen to encompass the known flights when possible.
+If a DSS was provided to this test scenario, uss_qualifier acts as a Display Provider to query Service Providers under test in this step.
+
+#### ISA query check
+
+**[astm.f3411.v19.DSS0030](../../../requirements/astm/f3411/v19.md)** requires a USS providing a DSS instance to implement the DSS endpoints of the OpenAPI specification.  If uss_qualifier is unable to query the DSS for ISAs, this check will fail.
+
+#### Premature flight check
+
+The timestamps of the injected telemetry usually start in the future.  If a flight with injected telemetry only in the future is observed prior to the timestamp of the first telemetry point, this check will fail because the SP does not satisfy **[interuss.automated_testing.rid.injection.ExpectedBehavior](../../../requirements/interuss/automated_testing/rid/injection.md)**.
+
+#### Missing flight check
+
+**[astm.f3411.v19.NET0610](../../../requirements/astm/f3411/v19.md)** require that SPs make all UAS operations discoverable over the duration of the flight plus *NetMaxNearRealTimeDataPeriod*, so each injected flight should be observable during this time.  If a flight is not observed during its appropriate time period, this check will fail.
+
+**[astm.f3411.v19.NET0710](../../../requirements/astm/f3411/v19.md)** requires a Service Provider to implement the GET flights endpoint.  This check will also fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
+
+#### Successful flight details query check
+
+**[astm.f3411.v19.NET0710](../../../requirements/astm/f3411/v19.md)** requires a Service Provider to implement the GET flight details endpoint.  This check will fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
+
+#### Lingering flight check
+
+**[astm.f3411.v19.NET0260](../../../requirements/astm/f3411/v19.md)** requires a SP to provide flights up to *NetMaxNearRealTimeDataPeriod* in the past, but an SP should preserve privacy and ensure relevancy by not sharing flights that are further in the past than this window.
+
+#### Area too large check
+
+**[astm.f3411.v19.NET0430](../../../requirements/astm/f3411/v19.md)** require that a NetRID Display Provider reject a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
+
+### Observer polling test step
+
+In this step, all observers are queried for the flights they observe.  Based on the known flights that were injected into the SPs in the first step, these observations are checked against expected behavior/data.  Observation rectangles are chosen to encompass the known flights when possible.
 
 #### Successful observation check
 
@@ -57,13 +91,13 @@ Per **[interuss.automated_testing.rid.observation.UniqueFlights](../../../requir
 
 The timestamps of the injected telemetry usually start in the future.  If a flight with injected telemetry only in the future is observed prior to the timestamp of the first telemetry point, this check will fail because the SP does not satisfy **[interuss.automated_testing.rid.injection.ExpectedBehavior](../../../requirements/interuss/automated_testing/rid/injection.md)**.
 
-#### Lingering flight check
-
-**[astm.f3411.v19.NET0260](../../../requirements/astm/f3411/v19.md)** requires a SP to provide flights up to *NetMaxNearRealTimeDataPeriod* in the past, but an SP should preserve privacy and ensure relevancy by not sharing flights that are further in the past than this window.
-
 #### Missing flight check
 
 **[astm.f3411.v19.NET0610](../../../requirements/astm/f3411/v19.md)** require that SPs make all UAS operations discoverable over the duration of the flight plus *NetMaxNearRealTimeDataPeriod*, so each injected flight should be observable during this time.  If one of the flights is not observed during its appropriate time period, this check will fail.
+
+#### Lingering flight check
+
+**[astm.f3411.v19.NET0260](../../../requirements/astm/f3411/v19.md)** requires a SP to provide flights up to *NetMaxNearRealTimeDataPeriod* in the past, but an SP should preserve privacy and ensure relevancy by not sharing flights that are further in the past than this window.
 
 #### Altitude check
 

@@ -1,7 +1,7 @@
 import traceback
 import uuid
 import time
-from typing import List
+from typing import List, Optional
 
 import arrow
 from implicitdict import ImplicitDict
@@ -12,6 +12,7 @@ from monitoring.monitorlib.rid_automated_testing.injection_api import (
 )
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
+from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
     FlightDataResource,
     NetRIDServiceProviders,
@@ -44,6 +45,7 @@ class NominalBehavior(TestScenario):
         service_providers: NetRIDServiceProviders,
         observers: NetRIDObserversResource,
         evaluation_configuration: EvaluationConfigurationResource,
+        dss_pool: Optional[DSSInstancesResource] = None,
     ):
         super().__init__()
         self._flights_data = flights_data
@@ -51,25 +53,22 @@ class NominalBehavior(TestScenario):
         self._observers = observers
         self._evaluation_configuration = evaluation_configuration
         self._injected_flights = []
+        self._dss_pool = dss_pool
 
     def run(self):
         self.begin_test_scenario()
         self.begin_test_case("Nominal flight")
 
         self.begin_test_step("Injection")
-        if not self._inject_flights():
-            return
+        self._inject_flights()
         self.end_test_step()
 
-        self.begin_test_step("Polling")
-        if not self._poll_during_flights():
-            return
-        self.end_test_step()
+        self._poll_during_flights()
 
         self.end_test_case()
         self.end_test_scenario()
 
-    def _inject_flights(self) -> bool:
+    def _inject_flights(self):
         # Inject flights into all USSs
         test_id = str(uuid.uuid4())
         test_flights = self._flights_data.get_test_flights()
@@ -96,7 +95,7 @@ class NominalBehavior(TestScenario):
                     severity=Severity.High,
                     details=f"While trying to inject a test flight into {target.participant_id}, encountered error:\n{stacktrace}",
                 )
-                return False
+                raise RuntimeError("High-severity issue did not abort test scenario")
             self.record_query(query)
             try:
                 if query.status_code != 200:
@@ -117,7 +116,7 @@ class NominalBehavior(TestScenario):
                     details=f"Attempting to inject a test flight into {target.participant_id}, encountered status code {query.status_code}: {str(e)}",
                     query_timestamps=[query.request.timestamp],
                 )
-                return False
+                raise RuntimeError("High-severity issue did not abort test scenario")
             # TODO: Validate injected flights, especially to make sure they contain the specified injection IDs
             for flight in injections:
                 self._injected_flights.append(
@@ -144,6 +143,7 @@ class NominalBehavior(TestScenario):
                         f.query_timestamp for f in self._injected_flights
                     ],
                 )
+                raise RuntimeError("High-severity issue did not abort test scenario")
 
         config = self._evaluation_configuration.configuration
         # TODO: Replace hardcoded value
@@ -156,9 +156,7 @@ class NominalBehavior(TestScenario):
             + config.max_propagation_latency.timedelta,
         )
 
-        return True
-
-    def _poll_during_flights(self) -> bool:
+    def _poll_during_flights(self):
         # Evaluate observed RID system states
         evaluator = display_data_evaluator.RIDObservationEvaluator(
             self,
@@ -166,6 +164,7 @@ class NominalBehavior(TestScenario):
             self._evaluation_configuration.configuration,
             # TODO: Replace hardcoded value
             RIDVersion.f3411_19,
+            self._dss_pool.dss_instances[0] if self._dss_pool else None,
         )
 
         t_end = self._virtual_observer.get_last_time_of_interest()
@@ -190,11 +189,9 @@ class NominalBehavior(TestScenario):
             delay = t_next - arrow.utcnow()
             if delay.total_seconds() > 0:
                 print(
-                    f"Waiting {delay.total_seconds()} seconds before polling RID observers again..."
+                    f"Waiting {delay.total_seconds()} seconds before polling RID system again..."
                 )
                 time.sleep(delay.total_seconds())
-
-        return True
 
     def cleanup(self):
         self.begin_cleanup()
