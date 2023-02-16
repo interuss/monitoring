@@ -1,4 +1,5 @@
 from monitoring.mock_uss import config, SERVICE_ATPROXY_CLIENT
+from . import daemon
 
 if not config.Config.ATPROXY_BASE_URL:
     raise ValueError(

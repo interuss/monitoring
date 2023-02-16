@@ -133,7 +133,7 @@ class MockUSS(flask.Flask):
 
         return periodic_task_decorator
 
-    def set_task_period(self, task_name: str, period: timedelta):
+    def set_task_period(self, task_name: str, period: Optional[timedelta]):
         if task_name not in self._periodic_tasks:
             raise ValueError(
                 f"Periodic task '{task_name}' is not declared, so its period cannot be set"
@@ -142,7 +142,9 @@ class MockUSS(flask.Flask):
             assert isinstance(tx, Database)
             if task_name not in tx.periodic_tasks:
                 tx.periodic_tasks[task_name] = PeriodicTaskStatus()
-            tx.periodic_tasks[task_name].period = StringBasedTimeDelta(period)
+            tx.periodic_tasks[task_name].period = (
+                StringBasedTimeDelta(period) if period is not None else None
+            )
 
     def start_periodic_tasks_daemon(self):
         if not self._periodic_tasks:
@@ -224,7 +226,12 @@ class MockUSS(flask.Flask):
                     )
                     self._periodic_tasks[task_to_execute].run()
                     with db as tx:
-                        tx.periodic_tasks[task_to_execute].executing = False
+                        periodic_task = tx.periodic_tasks[task_to_execute]
+                        periodic_task.executing = False
+                        if periodic_task.period.timedelta.total_seconds() == 0:
+                            periodic_task.last_execution_time = StringBasedDateTime(
+                                arrow.utcnow().datetime
+                            )
                 else:
                     # Wait until another task may be ready to execute
                     if next_check:
@@ -243,6 +250,9 @@ class MockUSS(flask.Flask):
             self.stop()
         finally:
             logger.info(f"Periodic task daemon for process {os.getpid()} exited")
+
+    def is_stopping(self) -> bool:
+        return db.value.stopping
 
     def stop(self):
         send_signal = False
