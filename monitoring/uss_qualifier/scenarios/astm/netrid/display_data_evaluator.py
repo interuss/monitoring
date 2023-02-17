@@ -411,25 +411,24 @@ class RIDObservationEvaluator(object):
         dp_observation: FetchedFlights,
         rect: s2sphere.LatLngRect,
     ) -> None:
-        if not dp_observation.dss_isa_query.success:
-            # Note: This step currently uses the DSS endpoint to perform a one-time query for ISAs, but this
-            # endpoint is not strictly required.  The PUT Subscription endpoint, followed immediately by the
-            # DELETE Subscription would produce the same result, but because uss_qualifier does not expose any
-            # endpoints (and therefore cannot provide a callback/base URL), calling the one-time query endpoint
-            # is currently much cleaner.  If this test is applied to a DSS that does not implement the one-time
-            # ISA query endpoint, this check can be adapted.
-            with self._test_scenario.check("ISA query") as check:
-                if not dp_observation.dss_isa_query.success:
-                    check.record_failed(
-                        summary="Could not query ISAs from DSS",
-                        severity=Severity.Medium,
-                        details=f"Query to {self._dss.participant_id}'s DSS at {dp_observation.dss_isa_query.query.request.url} failed {dp_observation.dss_isa_query.query.status_code}",
-                        participants=[self._dss.participant_id],
-                        query_timestamps=[
-                            dp_observation.dss_isa_query.query.request.initiated_at.datetime
-                        ],
-                    )
-            return
+        # Note: This step currently uses the DSS endpoint to perform a one-time query for ISAs, but this
+        # endpoint is not strictly required.  The PUT Subscription endpoint, followed immediately by the
+        # DELETE Subscription would produce the same result, but because uss_qualifier does not expose any
+        # endpoints (and therefore cannot provide a callback/base URL), calling the one-time query endpoint
+        # is currently much cleaner.  If this test is applied to a DSS that does not implement the one-time
+        # ISA query endpoint, this check can be adapted.
+        with self._test_scenario.check("ISA query") as check:
+            if not dp_observation.dss_isa_query.success:
+                check.record_failed(
+                    summary="Could not query ISAs from DSS",
+                    severity=Severity.Medium,
+                    details=f"Query to {self._dss.participant_id}'s DSS at {dp_observation.dss_isa_query.query.request.url} failed {dp_observation.dss_isa_query.query.status_code}",
+                    participants=[self._dss.participant_id],
+                    query_timestamps=[
+                        dp_observation.dss_isa_query.query.request.initiated_at.datetime
+                    ],
+                )
+                return
 
         observed_flights = []
         for uss_query in dp_observation.uss_flight_queries.values():

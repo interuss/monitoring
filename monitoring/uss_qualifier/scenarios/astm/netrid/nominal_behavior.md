@@ -59,7 +59,7 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 
 #### Missing flight check
 
-**[astm.f3411.v19.NET0610](../../../requirements/astm/f3411/v19.md)** require that SPs make all UAS operations discoverable over the duration of the flight plus *NetMaxNearRealTimeDataPeriod*, so each injected flight should be observable during this time.  If a flight is not observed during its appropriate time period, this check will fail.
+**[astm.f3411.v19.NET0610](../../../requirements/astm/f3411/v19.md)** requires that SPs make all UAS operations discoverable over the duration of the flight plus *NetMaxNearRealTimeDataPeriod*, so each injected flight should be observable during this time.  If a flight is not observed during its appropriate time period, this check will fail.
 
 **[astm.f3411.v19.NET0710](../../../requirements/astm/f3411/v19.md)** requires a Service Provider to implement the GET flights endpoint.  This check will also fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
 
@@ -73,7 +73,7 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 
 #### Area too large check
 
-**[astm.f3411.v19.NET0430](../../../requirements/astm/f3411/v19.md)** require that a NetRID Display Provider reject a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
+**[astm.f3411.v19.NET0430](../../../requirements/astm/f3411/v19.md)** requires that a NetRID Display Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
 
 ### Observer polling test step
 
