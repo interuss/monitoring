@@ -26,7 +26,7 @@ fi
 docker container rm -f ${container_name} || echo "${container_name} container was not already running"
 
 # shellcheck disable=SC2086
-docker run ${docker_args} --name mock_uss_geoawareness \
+docker run ${docker_args} --name ${container_name} \
   -e MOCK_USS_PUBLIC_KEY="${PUBLIC_KEY}" \
   -e MOCK_USS_TOKEN_AUDIENCE="${AUD}" \
   -e MOCK_USS_SERVICES="geoawareness" \
