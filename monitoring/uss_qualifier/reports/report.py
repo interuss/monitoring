@@ -1,6 +1,6 @@
 from datetime import datetime
 import traceback
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Dict, Tuple, Any
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 
@@ -286,3 +286,24 @@ class TestRunReport(ImplicitDict):
 
     report: TestSuiteActionReport
     """Report produced by configured test action"""
+
+
+def redact_access_tokens(report: Dict[str, Any]) -> None:
+    changes = {}
+    for k, v in report.items():
+        if (
+            k.lower() == "authorization"
+            and isinstance(v, str)
+            and v.lower().startswith("bearer ")
+        ):
+            token_parts = v[len("bearer ") :].split(".")
+            token_parts[-1] = "REDACTED"
+            changes[k] = "Bearer " + ".".join(token_parts)
+        elif isinstance(v, dict):
+            redact_access_tokens(v)
+        elif isinstance(v, list):
+            for item in v:
+                if isinstance(item, dict):
+                    redact_access_tokens(item)
+    for k, v in changes.items():
+        report[k] = v
