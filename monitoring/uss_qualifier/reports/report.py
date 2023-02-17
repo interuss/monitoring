@@ -81,8 +81,11 @@ class TestStepReport(ImplicitDict):
     end_time: Optional[StringBasedDateTime]
     """Time at which the test step completed or encountered an error"""
 
-    def has_critical_problem(self):
+    def has_critical_problem(self) -> bool:
         return any(fc.severity == Severity.Critical for fc in self.failed_checks)
+
+    def successful(self) -> bool:
+        return False if self.failed_checks else True
 
 
 class TestCaseReport(ImplicitDict):

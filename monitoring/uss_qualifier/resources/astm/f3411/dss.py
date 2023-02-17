@@ -49,7 +49,7 @@ class DSSInstancesSpecification(ImplicitDict):
     dss_instances: List[DSSInstanceSpecification]
 
 
-class DSSInstancesResource(Resource[DSSInstanceSpecification]):
+class DSSInstancesResource(Resource[DSSInstancesSpecification]):
     dss_instances: List[DSSInstance]
 
     def __init__(

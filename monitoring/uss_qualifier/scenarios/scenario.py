@@ -185,6 +185,12 @@ class TestScenario(ABC):
             if arg_name == "self":
                 continue
             if arg_name not in resource_pool:
+                # Check if argument/resource is optional
+                if arg.default != inspect.Parameter.empty:
+                    # argument/resource is optional
+                    continue
+
+                # Missing value for required argument
                 available_pool = ", ".join(resource_pool)
                 raise ValueError(
                     f'Resource to populate test scenario argument "{arg_name}" was not found in the resource pool when trying to create {declaration.scenario_type} test scenario (resource pool: {available_pool})'
@@ -328,12 +334,14 @@ class TestScenario(ABC):
             on_failed_check=self.on_failed_check,
         )
 
-    def end_test_step(self) -> None:
+    def end_test_step(self) -> TestStepReport:
         self._expect_phase(ScenarioPhase.RunningTestStep)
         self._step_report.end_time = StringBasedDateTime(datetime.utcnow())
         self._current_step = None
+        report = self._step_report
         self._step_report = None
         self._phase = ScenarioPhase.ReadyForTestStep
+        return report
 
     def end_test_case(self) -> None:
         self._expect_phase(ScenarioPhase.ReadyForTestStep)
