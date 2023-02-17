@@ -85,7 +85,7 @@ def _poll_atproxy() -> None:
     """
     base_url = mock_uss.webapp.config[config.KEY_ATPROXY_BASE_URL]
     query_url = f"{base_url}/handler/queries"
-    basic_auth = _get_basic_auth()
+    basic_auth = mock_uss.webapp.config[config.KEY_ATPROXY_BASE_URL].tuple
 
     # Poll atproxy to see if there are any requests pending
     query = fetch.query_and_describe(None, "GET", query_url, auth=basic_auth)
