@@ -4,8 +4,10 @@ import shlex
 
 import s2sphere
 
+from monitoring import mock_uss
 from monitoring.monitorlib import auth, infrastructure, geo
-from monitoring.mock_uss import webapp, config
+from monitoring.mock_uss import webapp, tracer
+import monitoring.mock_uss.tracer.config
 from monitoring.mock_uss.tracer import tracerlog
 
 
@@ -14,7 +16,7 @@ def get_options():
         description="Subscribe to changes in DSS-tracked Entity status"
     )
     ResourceSet.add_arguments(parser)
-    tracer_options = webapp.config[config.KEY_TRACER_OPTIONS]
+    tracer_options = webapp.config[tracer.config.KEY_TRACER_OPTIONS]
     return parser.parse_args(shlex.split(tracer_options))
 
 
@@ -98,10 +100,10 @@ class ResourceSet(object):
     @classmethod
     def from_arguments(cls, args: argparse.Namespace):
         adapter: auth.AuthAdapter = auth.make_auth_adapter(
-            webapp.config[config.KEY_AUTH_SPEC]
+            webapp.config[mock_uss.config.KEY_AUTH_SPEC]
         )
         dss_client = infrastructure.UTMClientSession(
-            webapp.config[config.KEY_DSS_URL], adapter
+            webapp.config[mock_uss.config.KEY_DSS_URL], adapter
         )
         area: s2sphere.LatLngRect = geo.make_latlng_rect(args.area)
         start_time = datetime.datetime.fromisoformat(args.start_time)

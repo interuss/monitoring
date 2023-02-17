@@ -1,7 +1,7 @@
 import datetime
 import glob
 import os
-from typing import Dict, Tuple
+from typing import Tuple
 
 import flask
 from loguru import logger

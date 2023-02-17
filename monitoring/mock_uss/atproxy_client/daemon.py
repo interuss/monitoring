@@ -26,7 +26,7 @@ from monitoring.atproxy.handling import (
     PutQueryRequest,
     PendingRequest,
 )
-from monitoring.mock_uss import config
+from monitoring.mock_uss.atproxy_client import config
 from monitoring.mock_uss.scdsc.routes_injection import (
     injection_status,
     scd_capabilities,
@@ -115,13 +115,7 @@ def _atproxy_client_worker(worker_id: ATProxyWorkerID) -> None:
     try:
         # Collect configuration information for this worker
         base_url = mock_uss.webapp.config[config.KEY_ATPROXY_BASE_URL]
-        basic_auth_setting = mock_uss.webapp.config[config.KEY_ATPROXY_BASIC_AUTH]
-        auth_components = tuple(s.strip() for s in basic_auth_setting.split(":"))
-        if len(auth_components) != 2:
-            raise ValueError(
-                f'Invalid {config.ENV_KEY_ATPROXY_BASIC_AUTH}; expected <username>:<password> but instead found "{basic_auth_setting}"'
-            )
-        basic_auth = (auth_components[0], auth_components[1])
+        basic_auth = mock_uss.webapp.config[config.KEY_ATPROXY_BASIC_AUTH].tuple
 
         # Start worker by making sure atproxy is reachable
         with db as tx:
