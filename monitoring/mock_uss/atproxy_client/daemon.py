@@ -47,7 +47,7 @@ ATPROXY_WAIT_TIMEOUT = timedelta(minutes=5)
 def _wait_for_atproxy() -> None:
     """Wait for atproxy to be available"""
     base_url = mock_uss.webapp.config[config.KEY_ATPROXY_BASE_URL]
-    basic_auth = mock_uss.webapp.config[config.KEY_ATPROXY_BASE_URL].tuple
+    basic_auth = mock_uss.webapp.config[config.KEY_ATPROXY_BASIC_AUTH].tuple
     timeout = datetime.utcnow() + ATPROXY_WAIT_TIMEOUT
     status_url = f"{base_url}/status"
     while not webapp.is_stopping():
@@ -76,16 +76,10 @@ def _wait_for_atproxy() -> None:
 
 @webapp.periodic_task(TASK_POLL_ATPROXY)
 def _poll_atproxy() -> None:
-    """Poll atproxy for new requests and handle any unhandled requests
-
-    Args:
-        worker_id: atproxy worker ID of this daemon worker
-        base_url: base URL of remote atproxy instance
-        basic_auth: (username, password) tuple for accessing atproxy
-    """
+    """Poll atproxy for new requests and handle any unhandled requests"""
     base_url = mock_uss.webapp.config[config.KEY_ATPROXY_BASE_URL]
     query_url = f"{base_url}/handler/queries"
-    basic_auth = mock_uss.webapp.config[config.KEY_ATPROXY_BASE_URL].tuple
+    basic_auth = mock_uss.webapp.config[config.KEY_ATPROXY_BASIC_AUTH].tuple
 
     # Poll atproxy to see if there are any requests pending
     query = fetch.query_and_describe(None, "GET", query_url, auth=basic_auth)
