@@ -77,6 +77,7 @@ collect-local-logs:
 	-docker logs mock_uss_riddp > logs/mock_uss_riddp.log 2>&1
 	-docker logs mock_uss_geoawareness > logs/mock_uss_geoawareness.log 2>&1
 	-docker logs mock_uss_tracer > logs/mock_uss_tracer.log 2>&1
+	-docker logs mock_uss_atproxy_client > logs/mock_uss_atproxy_client.log 2>&1
 
 .PHONY: stop-locally
 stop-locally:

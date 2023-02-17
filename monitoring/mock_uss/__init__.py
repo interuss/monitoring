@@ -91,9 +91,6 @@ if SERVICE_MESSAGESIGNING in webapp.config[config.KEY_SERVICES]:
 if SERVICE_ATPROXY_CLIENT in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_ATPROXY_CLIENT)
     from monitoring.mock_uss import atproxy_client
-    from monitoring.mock_uss.atproxy_client import daemon
-
-    daemon.start()
 
 if SERVICE_TRACER in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_TRACER)
