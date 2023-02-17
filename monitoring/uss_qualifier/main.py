@@ -6,15 +6,18 @@ import os
 import sys
 
 from implicitdict import ImplicitDict
+from loguru import logger
+
 from monitoring.monitorlib.versioning import get_code_version
 from monitoring.uss_qualifier.configurations.configuration import (
     TestConfiguration,
     USSQualifierConfiguration,
     ArtifactsConfiguration,
+    ReportConfiguration,
 )
 from monitoring.uss_qualifier.reports.documents import generate_tested_requirements
 from monitoring.uss_qualifier.reports.graphs import make_graph
-from monitoring.uss_qualifier.reports.report import TestRunReport
+from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
 from monitoring.uss_qualifier.resources.resource import create_resources
 from monitoring.uss_qualifier.suites.suite import TestSuiteAction
 
@@ -42,9 +45,9 @@ def execute_test_run(config: TestConfiguration):
     action = TestSuiteAction(config.action, resources)
     report = action.run()
     if report.successful():
-        print("Final result: SUCCESS")
+        logger.info("Final result: SUCCESS")
     else:
-        print("Final result: FAILURE")
+        logger.warning("Final result: FAILURE")
 
     return TestRunReport(
         codebase_version=codebase_version, configuration=config, report=report
@@ -57,33 +60,44 @@ def main() -> int:
     config = USSQualifierConfiguration.from_string(args.config).v1
     if args.report:
         if not config.artifacts:
-            config.artifacts = ArtifactsConfiguration(report_path=args.report)
+            config.artifacts = ArtifactsConfiguration(
+                ReportConfiguration(report_path=args.report)
+            )
+        elif not config.artifacts.report:
+            config.artifacts.report = ReportConfiguration(report_path=args.report)
         else:
-            config.artifacts.report_path = args.report
+            config.artifacts.report.report_path = args.report
 
     if config.test_run:
         report = execute_test_run(config.test_run)
-        if config.artifacts and config.artifacts.report_path:
-            print(f"Writing report to {config.artifacts.report_path}")
-            with open(config.artifacts.report_path, "w") as f:
-                json.dump(report, f, indent=2)
-    elif config.artifacts and config.artifacts.report_path:
+    elif config.artifacts and config.artifacts.report:
         with open(config.artifacts.report_path, "r") as f:
             report = ImplicitDict.parse(json.load(f), TestRunReport)
     else:
         raise ValueError(
-            "No input provided; test_run or artifacts.report_path must be specified in configuration"
+            "No input provided; test_run or artifacts.report.report_path must be specified in configuration"
         )
 
     if config.artifacts:
+        if config.artifacts.report:
+            logger.info(json.dumps(config.artifacts.report))
+            if config.artifacts.report.redact_access_tokens:
+                logger.info("Redacting access tokens in report")
+                redact_access_tokens(report)
+            logger.info("Writing report to {}", config.artifacts.report.report_path)
+            with open(config.artifacts.report.report_path, "w") as f:
+                json.dump(report, f, indent=2)
+
         if config.artifacts.graph:
-            print(f"Writing GraphViz dot source to {config.artifacts.graph.gv_path}")
+            logger.info(
+                "Writing GraphViz dot source to {}", config.artifacts.graph.gv_path
+            )
             with open(config.artifacts.graph.gv_path, "w") as f:
                 f.write(make_graph(report).source)
 
         if config.artifacts.tested_roles:
             path = config.artifacts.tested_roles.report_path
-            print(f"Writing tested roles summary to {path}")
+            logger.info("Writing tested roles summary to {}", path)
             with open(path, "w") as f:
                 f.write(
                     generate_tested_requirements(

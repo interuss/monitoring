@@ -7,13 +7,14 @@ fi
 
 PUBLIC_KEY="/var/test-certs/auth2.pem"
 AUD=${MOCK_USS_TOKEN_AUDIENCE:-localhost,host.docker.internal}
+container_name="mock_uss_geoawareness"
 
 PORT=8076
 
 if [ "$CI" == "true" ]; then
   docker_args="--add-host host.docker.internal:host-gateway" # Required to reach other containers in Ubuntu (used for Github Actions)
 else
-  docker_args="-ti"
+  docker_args="-it"
 fi
 
 docker_command="mock_uss/start.sh"
@@ -22,11 +23,10 @@ if [ "$TEST" == "true" ]; then
   docker_command="mock_uss/test.sh"
 fi
 
-docker container rm -f mock_uss_geoawareness || echo "mock_uss_geoawareness container was not already running"
+docker container rm -f ${container_name} || echo "${container_name} container was not already running"
 
 # shellcheck disable=SC2086
-docker run ${docker_args} --name mock_uss_geoawareness \
-  --rm \
+docker run ${docker_args} --name ${container_name} \
   -e MOCK_USS_PUBLIC_KEY="${PUBLIC_KEY}" \
   -e MOCK_USS_TOKEN_AUDIENCE="${AUD}" \
   -e MOCK_USS_SERVICES="geoawareness" \

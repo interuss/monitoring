@@ -45,9 +45,17 @@ class GraphConfiguration(ImplicitDict):
     """Path of GraphViz (.gv) text file to contain a visualization of the test run"""
 
 
-class ArtifactsConfiguration(ImplicitDict):
-    report_path: Optional[str] = None
+class ReportConfiguration(ImplicitDict):
+    report_path: str
     """File name of the report to write (if test_config provided) or read (if test_config not provided)"""
+
+    redact_access_tokens: bool = True
+    """When True, look for instances of "Authorization" keys in the report with values starting "Bearer " and redact the signature from those access tokens"""
+
+
+class ArtifactsConfiguration(ImplicitDict):
+    report: Optional[ReportConfiguration] = None
+    """Configuration for report generation"""
 
     graph: Optional[GraphConfiguration] = None
     """If specified, configuration describing a desired graph visualization summarizing the test run"""

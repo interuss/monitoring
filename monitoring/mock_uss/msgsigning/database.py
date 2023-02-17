@@ -1,5 +1,4 @@
 import json
-from typing import Dict, Optional
 
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 from implicitdict import ImplicitDict

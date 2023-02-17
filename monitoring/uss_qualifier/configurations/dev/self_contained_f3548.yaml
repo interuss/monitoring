@@ -71,8 +71,10 @@ v1:
   # relative to where uss_qualifier is executed from, and are located inside the
   # Docker container executing uss_qualifier.
   artifacts:
-    # Path to main report output
-    report_path: report.json
+    report:
+      # Path to main report output
+      report_path: report.json
+      redact_access_tokens: true
 
     # Information about a report including a list of roles tested and which participants are attempting to fill them
     tested_roles:

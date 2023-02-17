@@ -23,7 +23,8 @@ from monitoring.atproxy.handling import (
     PutQueryRequest,
     PendingRequest,
 )
-from monitoring.mock_uss import config, webapp
+from monitoring.mock_uss.atproxy_client import config
+from monitoring.mock_uss import webapp
 from monitoring.mock_uss.scdsc.routes_injection import (
     injection_status,
     scd_capabilities,
@@ -42,21 +43,11 @@ MAX_DAEMON_PROCESSES = 1
 ATPROXY_WAIT_TIMEOUT = timedelta(minutes=5)
 
 
-def _get_basic_auth() -> Tuple[str, str]:
-    basic_auth_setting = mock_uss.webapp.config[config.KEY_ATPROXY_BASIC_AUTH]
-    auth_components = tuple(s.strip() for s in basic_auth_setting.split(":"))
-    if len(auth_components) != 2:
-        raise ValueError(
-            f'Invalid {config.ENV_KEY_ATPROXY_BASIC_AUTH}; expected <username>:<password> but instead found "{basic_auth_setting}"'
-        )
-    return auth_components[0], auth_components[1]
-
-
 @webapp.setup_task("verify atproxy connectivity")
 def _wait_for_atproxy() -> None:
     """Wait for atproxy to be available"""
     base_url = mock_uss.webapp.config[config.KEY_ATPROXY_BASE_URL]
-    basic_auth = _get_basic_auth()
+    basic_auth = mock_uss.webapp.config[config.KEY_ATPROXY_BASE_URL].tuple
     timeout = datetime.utcnow() + ATPROXY_WAIT_TIMEOUT
     status_url = f"{base_url}/status"
     while not webapp.is_stopping():

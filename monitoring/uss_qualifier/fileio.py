@@ -243,7 +243,7 @@ def _replace_refs(
             ref_content = [m.value for m in ref_json_path.find(content)]
             if len(ref_content) != 1:
                 raise RuntimeError(
-                    f'Unexpectedly found {len(ref_content)} matches for local $ref path "{ref_path}"'
+                    f'Unexpectedly found {len(ref_content)} matches for local $ref path "{ref_path}" in {context_file_name}'
                 )
             ref_content = ref_content[0]
         for k, v in ref_content.items():

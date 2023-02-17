@@ -11,7 +11,7 @@ import requests.exceptions
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     OperationalIntentState,
 )
-from monitoring.monitorlib import scd, versioning, fetch
+from monitoring.monitorlib import scd, versioning
 from monitoring.monitorlib.clients import scd as scd_client
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
@@ -28,7 +28,7 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     CapabilitiesResponse,
 )
 from implicitdict import ImplicitDict, StringBasedDateTime
-from monitoring.mock_uss import config, resources, webapp
+from monitoring.mock_uss import resources, webapp, config
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.scdsc import database
 from monitoring.mock_uss.scdsc.database import db

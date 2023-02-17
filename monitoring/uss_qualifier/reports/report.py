@@ -1,6 +1,6 @@
 from datetime import datetime
 import traceback
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Dict, Tuple, Any, Union
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 
@@ -81,8 +81,11 @@ class TestStepReport(ImplicitDict):
     end_time: Optional[StringBasedDateTime]
     """Time at which the test step completed or encountered an error"""
 
-    def has_critical_problem(self):
+    def has_critical_problem(self) -> bool:
         return any(fc.severity == Severity.Critical for fc in self.failed_checks)
+
+    def successful(self) -> bool:
+        return False if self.failed_checks else True
 
 
 class TestCaseReport(ImplicitDict):
@@ -286,3 +289,27 @@ class TestRunReport(ImplicitDict):
 
     report: TestSuiteActionReport
     """Report produced by configured test action"""
+
+
+def redact_access_tokens(report: Union[Dict[str, Any], list]) -> None:
+    if isinstance(report, dict):
+        changes = {}
+        for k, v in report.items():
+            if (
+                k.lower() == "authorization"
+                and isinstance(v, str)
+                and v.lower().startswith("bearer ")
+            ):
+                token_parts = v[len("bearer ") :].split(".")
+                token_parts[-1] = "REDACTED"
+                changes[k] = v[0 : len("bearer ")] + ".".join(token_parts)
+            elif isinstance(v, dict) or isinstance(v, list):
+                redact_access_tokens(v)
+        for k, v in changes.items():
+            report[k] = v
+    elif isinstance(report, list):
+        for item in report:
+            if isinstance(item, dict) or isinstance(item, list):
+                redact_access_tokens(item)
+    else:
+        raise ValueError(f"{type(report).__name__} is not a dict or list")

@@ -95,6 +95,16 @@ class ISA(ImplicitDict):
     def version(self) -> str:
         return self.raw.version
 
+    def query_flights(
+        self,
+        session: UTMClientSession,
+        area: s2sphere.LatLngRect,
+        include_recent_positions: bool = True,
+    ) -> FetchedUSSFlights:
+        return uss_flights(
+            self.flights_url, area, include_recent_positions, self.rid_version, session
+        )
+
 
 class Flight(ImplicitDict):
     """Version-independent representation of a F3411 flight."""
@@ -127,6 +137,16 @@ class Flight(ImplicitDict):
     @property
     def id(self) -> str:
         return self.raw.id
+
+    @property
+    def most_recent_position(
+        self,
+    ) -> Optional[Union[v19.api.RIDAircraftPosition, v22a.api.RIDAircraftPosition]]:
+        return (
+            self.raw.current_state.position
+            if "current_state" in self.raw and self.raw.current_state
+            else None
+        )
 
     def as_v19(self) -> v19.api.RIDFlight:
         if self.v19_value is not None:
@@ -407,6 +427,10 @@ class FetchedUSSFlights(RIDQuery):
         return []
 
     @property
+    def flights_url(self) -> str:
+        return self.query.request.url.split("?")[0]
+
+    @property
     def flights(self) -> List[Flight]:
         if not self.success:
             return []
@@ -474,8 +498,6 @@ def uss_flights(
 class FetchedUSSFlightDetails(RIDQuery):
     """Version-independent representation of the details of a flight reported by a USS."""
 
-    requested_id: str
-
     @property
     def _v19_response(
         self,
@@ -526,6 +548,15 @@ class FetchedUSSFlightDetails(RIDQuery):
         return []
 
     @property
+    def requested_id(self) -> str:
+        result = self.query.request.url.split("/")[-1]
+        return result.split("?")[0]
+
+    @property
+    def flights_url(self) -> str:
+        return "/".join(self.query.request.url.split("/")[0:-2])
+
+    @property
     def details(self) -> Optional[FlightDetails]:
         if not self.success:
             return None
@@ -562,12 +593,12 @@ def flight_details(
             url,
             **kwargs,
         )
-        return FetchedUSSFlightDetails(v19_query=query, requested_id=flight_id)
+        return FetchedUSSFlightDetails(v19_query=query)
     elif rid_version == RIDVersion.f3411_22a:
         query = fetch.query_and_describe(
             session, "GET", flights_url, scope=v22a.constants.Scope.DisplayProvider
         )
-        return FetchedUSSFlightDetails(v22a_query=query, requested_id=flight_id)
+        return FetchedUSSFlightDetails(v22a_query=query)
     else:
         raise NotImplementedError(
             f"Cannot query USS for flight details using RID version {rid_version}"
@@ -594,6 +625,20 @@ class FetchedFlights(ImplicitDict):
             result.extend(uss_details.errors)
         return result
 
+    @property
+    def queries(self) -> List[Query]:
+        result = [self.dss_isa_query.query]
+        result.extend(q.query for q in self.uss_flight_queries.values())
+        result.extend(q.query for q in self.uss_flight_details_queries.values())
+        return result
+
+    @property
+    def flights(self) -> List[Flight]:
+        all_flights = []
+        for q in self.uss_flight_queries.values():
+            all_flights.extend(q.flights)
+        return all_flights
+
 
 def all_flights(
     area: s2sphere.LatLngRect,
@@ -609,7 +654,7 @@ def all_flights(
 
     uss_flight_queries: Dict[str, FetchedUSSFlights] = {}
     uss_flight_details_queries: Dict[str, FetchedUSSFlightDetails] = {}
-    for flights_url in isa_list.flight_urls:
+    for flights_url in isa_list.flights_urls:
         flights_for_url = uss_flights(
             flights_url, area, include_recent_positions, rid_version, session
         )
@@ -625,7 +670,7 @@ def all_flights(
     return FetchedFlights(
         dss_isa_query=isa_list,
         uss_flight_queries=uss_flight_queries,
-        uss_flight_details_querie=uss_flight_details_queries,
+        uss_flight_details_queries=uss_flight_details_queries,
     )
 
 
