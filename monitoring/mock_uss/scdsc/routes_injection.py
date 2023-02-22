@@ -8,6 +8,7 @@ import flask
 from loguru import logger
 import requests.exceptions
 
+from monitoring.mock_uss.config import KEY_BASE_URL, KEY_BEHAVIOR_LOCALITY
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     OperationalIntentState,
 )
@@ -28,12 +29,15 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     CapabilitiesResponse,
 )
 from implicitdict import ImplicitDict, StringBasedDateTime
-from monitoring.mock_uss import resources, webapp, config
+from monitoring.mock_uss import webapp, require_config_value
 from monitoring.mock_uss.auth import requires_scope
-from monitoring.mock_uss.scdsc import database
+from monitoring.mock_uss.scdsc import database, utm_client
 from monitoring.mock_uss.scdsc.database import db
 from monitoring.monitorlib.uspace import problems_with_flight_authorisation
 
+
+require_config_value(KEY_BASE_URL)
+require_config_value(KEY_BEHAVIOR_LOCALITY)
 
 DEADLOCK_TIMEOUT = timedelta(seconds=60)
 
@@ -53,7 +57,7 @@ def query_operational_intents(
     :return: Full definition for every operational intent discovered
     """
     op_intent_refs = scd_client.query_operational_intent_references(
-        resources.utm_client, area_of_interest
+        utm_client, area_of_interest
     )
     tx = db.value
     get_details_for = []
@@ -69,7 +73,7 @@ def query_operational_intents(
     for op_intent_ref in get_details_for:
         updated_op_intents.append(
             scd_client.get_operational_intent_details(
-                resources.utm_client, op_intent_ref.uss_base_url, op_intent_ref.id
+                utm_client, op_intent_ref.uss_base_url, op_intent_ref.id
             )
         )
 
@@ -135,7 +139,7 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
 
 
 def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, int]:
-    locality = webapp.config[config.KEY_BEHAVIOR_LOCALITY]
+    locality = webapp.config[KEY_BEHAVIOR_LOCALITY]
 
     if locality.is_uspace_applicable():
         # Validate flight authorisation
@@ -236,7 +240,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         # Create operational intent in DSS
         step_name = "sharing operational intent in DSS"
         logger.debug(f"[inject_flight:{flight_id}] Sharing operational intent with DSS")
-        base_url = "{}/mock/scd".format(webapp.config[config.KEY_BASE_URL])
+        base_url = "{}/mock/scd".format(webapp.config[KEY_BASE_URL])
         req = scd.PutOperationalIntentReferenceParameters(
             extents=req_body.operational_intent.volumes,
             key=[op.reference.ovn for op in op_intents],
@@ -248,7 +252,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             id = existing_flight.op_intent_reference.id
             step_name = f"updating existing operational intent {id} in DSS"
             result = scd_client.update_operational_intent_reference(
-                resources.utm_client,
+                utm_client,
                 id,
                 existing_flight.op_intent_reference.ovn,
                 req,
@@ -256,9 +260,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         else:
             id = str(uuid.uuid4())
             step_name = f"creating new operational intent {id} in DSS"
-            result = scd_client.create_operational_intent_reference(
-                resources.utm_client, id, req
-            )
+            result = scd_client.create_operational_intent_reference(utm_client, id, req)
 
         # Notify subscribers
         subscriber_list = ", ".join(s.uss_base_url for s in result.subscribers)
@@ -267,7 +269,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             f"[inject_flight:{flight_id}] Notifying subscribers {subscriber_list}"
         )
         scd_client.notify_subscribers(
-            resources.utm_client,
+            utm_client,
             result.operational_intent_reference.id,
             scd.OperationalIntent(
                 reference=result.operational_intent_reference,
@@ -380,14 +382,14 @@ def delete_flight(flight_id) -> Tuple[dict, int]:
     try:
         step_name = f"deleting operational intent {flight.op_intent_reference.id} with OVN {flight.op_intent_reference.ovn} from DSS"
         result = scd_client.delete_operational_intent_reference(
-            resources.utm_client,
+            utm_client,
             flight.op_intent_reference.id,
             flight.op_intent_reference.ovn,
         )
 
         step_name = "notifying subscribers"
         scd_client.notify_subscribers(
-            resources.utm_client,
+            utm_client,
             result.operational_intent_reference.id,
             None,
             result.subscribers,
@@ -458,7 +460,7 @@ def clear_area(req: ClearAreaRequest) -> Tuple[dict, int]:
         )
         step_name = "finding operational intents in the DSS"
         op_intent_refs = scd_client.query_operational_intent_references(
-            resources.utm_client, vol4
+            utm_client, vol4
         )
 
         # Try to delete every operational intent found
@@ -469,7 +471,7 @@ def clear_area(req: ClearAreaRequest) -> Tuple[dict, int]:
         for op_intent_ref in op_intent_refs:
             try:
                 scd_client.delete_operational_intent_reference(
-                    resources.utm_client, op_intent_ref.id, op_intent_ref.ovn
+                    utm_client, op_intent_ref.id, op_intent_ref.ovn
                 )
                 dss_deletion_results[op_intent_ref.id] = "Deleted from DSS"
                 deleted.add(op_intent_ref.id)

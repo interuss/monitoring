@@ -12,9 +12,9 @@ from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.fetch.rid import Flight, FetchedISAs
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing import observation_api
-from monitoring.mock_uss import resources, webapp
+from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
-from . import clustering, database
+from . import clustering, database, utm_client
 from .behavior import DisplayProviderBehavior
 from .config import KEY_RID_VERSION
 from .database import db
@@ -92,7 +92,7 @@ def riddp_display_data() -> Tuple[str, int]:
 
     # Get ISAs in the DSS
     t = arrow.utcnow().datetime
-    isa_list: FetchedISAs = fetch.isas(view, t, t, rid_version, resources.utm_client)
+    isa_list: FetchedISAs = fetch.isas(view, t, t, rid_version, utm_client)
     if not isa_list.success:
         msg = f"Error fetching ISAs from DSS: {isa_list.error}"
         logger.error(msg)
@@ -110,7 +110,7 @@ def riddp_display_data() -> Tuple[str, int]:
         if uss in behavior.do_not_display_flights_from:
             continue
         flights_response = fetch.uss_flights(
-            flights_url, view, True, rid_version, resources.utm_client
+            flights_url, view, True, rid_version, utm_client
         )
         if not flights_response.success:
             msg = (

@@ -627,16 +627,11 @@ def flight_details(
             )
         else:
             kwargs["scope"] = v19.constants.Scope.Read
-        query = fetch.query_and_describe(
-            session,
-            "GET",
-            url,
-            **kwargs,
-        )
+        query = fetch.query_and_describe(session, "GET", url, **kwargs)
         return FetchedUSSFlightDetails(v19_query=query)
     elif rid_version == RIDVersion.f3411_22a:
         query = fetch.query_and_describe(
-            session, "GET", flights_url, scope=v22a.constants.Scope.DisplayProvider
+            session, "GET", url, scope=v22a.constants.Scope.DisplayProvider
         )
         return FetchedUSSFlightDetails(v22a_query=query)
     else:

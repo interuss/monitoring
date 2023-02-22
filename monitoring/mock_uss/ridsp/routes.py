@@ -13,6 +13,8 @@ def ridsp_status():
 
 if rid_version == RIDVersion.f3411_19:
     from . import routes_ridsp_v19
+elif rid_version == RIDVersion.f3411_22a:
+    from . import routes_ridsp_v22a
 else:
     raise NotImplementedError(
         f"Mock USS does not yet support RID version {rid_version}"
