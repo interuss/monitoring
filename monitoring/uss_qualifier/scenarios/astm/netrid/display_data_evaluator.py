@@ -4,14 +4,14 @@ from typing import List, Optional, Dict, Union
 import arrow
 import s2sphere
 
-from monitoring.monitorlib.fetch import rid, Query
+from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.fetch.rid import (
     all_flights,
     FetchedFlights,
     FetchedUSSFlights,
 )
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
-from uas_standards.astm.f3411.v19.api import RIDAircraftState
+from uas_standards.interuss.automated_testing.rid.v1.injection import RIDAircraftState
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     Flight,
     GetDisplayDataResponse,

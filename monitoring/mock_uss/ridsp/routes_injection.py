@@ -5,8 +5,8 @@ import uuid
 import flask
 from loguru import logger
 
-from uas_standards.astm.f3411.v19.api import ErrorResponse
 from monitoring.monitorlib.mutate import rid as mutate
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing import injection_api
 from implicitdict import ImplicitDict
 from monitoring.mock_uss import webapp
@@ -19,9 +19,11 @@ from .database import db
 
 # Time after the last position report during which the created ISA will still
 # exist.  This value must be at least 60 seconds per NET0610.
-from ...monitorlib.rid import RIDVersion
-
 RECENT_POSITIONS_BUFFER = datetime.timedelta(seconds=60.2)
+
+
+class ErrorResponse(ImplicitDict):
+    message: str
 
 
 @webapp.route("/ridsp/injection/tests/<test_id>", methods=["PUT"])

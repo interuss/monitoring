@@ -1,11 +1,22 @@
 from monitoring.mock_uss import webapp
+from monitoring.mock_uss.riddp.config import KEY_RID_VERSION
+from monitoring.monitorlib.rid import RIDVersion
+
+
+rid_version: RIDVersion = webapp.config[KEY_RID_VERSION]
 
 
 @webapp.route("/ridsp/status")
 def ridsp_status():
-    return "Mock RID Service Provider ok"
+    return f"Mock RID Service Provider ok; RID version {rid_version}"
 
 
-from . import routes_ridsp_v19
+if rid_version == RIDVersion.f3411_19:
+    from . import routes_ridsp_v19
+else:
+    raise NotImplementedError(
+        f"Mock USS does not yet support RID version {rid_version}"
+    )
+
 from . import routes_injection
 from . import routes_behavior
