@@ -268,13 +268,13 @@ def modify_planned_flight_intent(
     flight_planner: FlightPlanner,
     flight_id: str,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Modify a planned flight intent that should result in success.
 
     This function implements the test step described in
     modify_planned_flight_intent.md.
 
-    Returns: None if a check failed, otherwise the injection response.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
@@ -294,13 +294,13 @@ def modify_activated_flight_intent(
     flight_planner: FlightPlanner,
     flight_id: str,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Modify an activated flight intent that should result in success.
 
     This function implements the test step described in
     modify_activated_flight_intent.md.
 
-    Returns: None if a check failed, otherwise the injection response.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
