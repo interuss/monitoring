@@ -86,18 +86,15 @@ class NominalPlanning(TestScenario):
         self.end_test_case()
 
         self.begin_test_case("Plan first flight")
-        if not self._plan_first_flight():
-            return
+        self._plan_first_flight()
         self.end_test_case()
 
         self.begin_test_case("Attempt second flight")
-        if not self._attempt_second_flight():
-            return
+        self._attempt_second_flight()
         self.end_test_case()
 
         self.begin_test_case("Activate first flight")
-        if not self._activate_first_flight():
-            return
+        self._activate_first_flight()
         self.end_test_case()
 
         self.end_test_scenario()
@@ -121,31 +118,25 @@ class NominalPlanning(TestScenario):
 
         return True
 
-    def _plan_first_flight(self) -> bool:
-        resp, flight_id = inject_successful_flight_intent(
+    def _plan_first_flight(self):
+        resp, self.first_flight_id = inject_successful_flight_intent(
             self, "Inject flight intent", self.uss1, self.first_flight
         )
-        if resp is None:
-            return False
-        self.first_flight_id = flight_id
-        op_intent_id = resp.operational_intent_id
 
         validate_shared_operational_intent(
-            self, "Validate flight sharing", self.first_flight, op_intent_id
+            self,
+            "Validate flight sharing",
+            self.first_flight,
+            resp.operational_intent_id,
         )
 
-        return True
-
-    def _attempt_second_flight(self) -> bool:
+    def _attempt_second_flight(self):
         resp = plan_conflict_flight_intent(
             self,
             "Plan second flight with non-permitted equal priority conflict",
             self.uss2,
             self.conflicting_flight,
         )
-        if resp is None:
-            return False
-        return True
 
     def _activate_first_flight(self):
         resp = activate_valid_flight_intent(
@@ -155,12 +146,12 @@ class NominalPlanning(TestScenario):
             self.first_flight_id,
             self.first_flight_activated,
         )
-        if resp is None:
-            return False
-        op_intent_id = resp.operational_intent_id
 
         validate_shared_operational_intent(
-            self, "Validate flight sharing", self.first_flight_activated, op_intent_id
+            self,
+            "Validate flight sharing",
+            self.first_flight_activated,
+            resp.operational_intent_id,
         )
 
     def cleanup(self):

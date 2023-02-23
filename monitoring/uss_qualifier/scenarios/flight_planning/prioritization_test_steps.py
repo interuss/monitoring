@@ -18,13 +18,13 @@ def plan_priority_conflict_flight_intent(
     test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Attempt to plan a flight intent that should result in a conflict with a higher priority flight intent.
 
     This function implements the test step described in plan_priority_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0015.
 
-    Returns: None if a check failed, otherwise the injection response.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
@@ -43,13 +43,13 @@ def modify_planned_priority_conflict_flight_intent(
     flight_planner: FlightPlanner,
     flight_id: str,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Attempt to modify a planned flight intent that should result in a conflict with a higher priority flight intent.
 
     This function implements the test step described in modify_planned_priority_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0020.
 
-    Returns: None if a check failed, otherwise the injection response.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
@@ -69,13 +69,13 @@ def activate_priority_conflict_flight_intent(
     flight_planner: FlightPlanner,
     flight_id: str,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Attempt to activate a flight intent that should result in a conflict with a higher priority flight intent.
 
     This function implements the test step described in activate_priority_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0025.
 
-    Returns: None if a check failed, otherwise the injection response.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
@@ -95,13 +95,13 @@ def modify_activated_priority_conflict_flight_intent(
     flight_planner: FlightPlanner,
     flight_id: str,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Attempt to modify an activated flight intent that should result in a conflict with a higher priority flight intent.
 
     This function implements the test step described in modify_activated_priority_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0030.
 
-    Returns: None if a check failed, otherwise the injection response.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
@@ -120,13 +120,13 @@ def plan_conflict_flight_intent(
     test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Attempt to plan a flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
     This function implements the test step described in plan_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0035.
 
-    Returns: None if a check failed, otherwise the injection response.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
@@ -145,13 +145,13 @@ def modify_planned_conflict_flight_intent(
     flight_planner: FlightPlanner,
     flight_id: str,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Attempt to modify a planned flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
     This function implements the test step described in modify_planned_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0040.
 
-    Returns: None if a check failed, otherwise the injection response.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
@@ -171,13 +171,13 @@ def activate_conflict_flight_intent(
     flight_planner: FlightPlanner,
     flight_id: str,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Attempt to activate a flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
     This function implements the test step described in activate_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0045.
 
-    Returns: None if a check failed, otherwise the injection response.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
@@ -197,13 +197,13 @@ def modify_activated_conflict_flight_intent(
     flight_planner: FlightPlanner,
     flight_id: str,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Attempt to modify an activated flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
     This function implements the test step described in modify_activated_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0050.
 
-    Returns: None if a check failed, otherwise the injection response.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
@@ -222,15 +222,15 @@ def plan_permitted_conflict_flight_intent(
     test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
-) -> Tuple[Optional[InjectFlightResponse], Optional[str]]:
+) -> Tuple[InjectFlightResponse, Optional[str]]:
     """Plan a flight intent that has a permitted equal priority conflict with another flight intent, that should result in success.
 
     This function implements the test step described in plan_permitted_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0055.
 
     Returns:
-      * None if a check failed, otherwise the injection response.
-      * None if a check failed, otherwise the ID of the injected flight.
+      * The injection response.
+      * The ID of the injected flight if it is returned, None otherwise.
     """
     return submit_flight_intent(
         scenario,
@@ -249,15 +249,13 @@ def modify_planned_permitted_conflict_flight_intent(
     flight_planner: FlightPlanner,
     flight_id: str,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Modify a planned flight intent that has a permitted equal priority conflict with another flight intent, that should result in success.
 
     This function implements the test step described in modify_planned_permitted_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0060.
 
-    Returns:
-      * None if a check failed, otherwise the injection response.
-      * None if a check failed, otherwise the ID of the injected flight.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
@@ -277,15 +275,13 @@ def activate_permitted_conflict_flight_intent(
     flight_planner: FlightPlanner,
     flight_id: str,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Activate a flight intent that has a permitted equal priority conflict with another flight intent, that should result in success.
 
     This function implements the test step described in activate_permitted_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0065.
 
-    Returns:
-      * None if a check failed, otherwise the injection response.
-      * None if a check failed, otherwise the ID of the injected flight.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
@@ -305,15 +301,13 @@ def modify_activated_permitted_conflict_flight_intent(
     flight_planner: FlightPlanner,
     flight_id: str,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Modify an activated flight intent that has a permitted equal priority conflict with another flight intent, that should result in success.
 
     This function implements the test step described in modify_activated_permitted_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0070.
 
-    Returns:
-      * None if a check failed, otherwise the injection response.
-      * None if a check failed, otherwise the ID of the injected flight.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,

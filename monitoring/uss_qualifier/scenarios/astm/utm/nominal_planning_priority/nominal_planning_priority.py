@@ -140,33 +140,27 @@ class NominalPlanningPriority(TestScenario):
         return True
 
     def _plan_first_flight(self):
-        resp, flight_id = inject_successful_flight_intent(
+        resp, self.first_flight_id = inject_successful_flight_intent(
             self, "Inject flight intent", self.uss1, self.first_flight
         )
-        if resp is None:
-            raise RuntimeError(
-                "Flight intent not injected successfully, but a High Severity issue didn't stop scenario execution"
-            )
-        self.first_flight_id = flight_id
-        op_intent_id = resp.operational_intent_id
 
         validate_shared_operational_intent(
-            self, "Validate flight sharing", self.first_flight, op_intent_id
+            self,
+            "Validate flight sharing",
+            self.first_flight,
+            resp.operational_intent_id,
         )
 
     def _plan_priority_flight(self):
-        resp, flight_id = inject_successful_flight_intent(
+        resp, self.priority_flight_id = inject_successful_flight_intent(
             self, "Inject flight intent", self.uss2, self.priority_flight
         )
-        if resp is None:
-            raise RuntimeError(
-                "Flight intent not injected successfully, but a High Severity issue didn't stop scenario execution"
-            )
-        self.priority_flight_id = flight_id
-        op_intent_id = resp.operational_intent_id
 
         validate_shared_operational_intent(
-            self, "Validate flight sharing", self.priority_flight, op_intent_id
+            self,
+            "Validate flight sharing",
+            self.priority_flight,
+            resp.operational_intent_id,
         )
 
     def _activate_priority_flight(self):
@@ -177,17 +171,12 @@ class NominalPlanningPriority(TestScenario):
             self.priority_flight_id,
             self.priority_flight_activated,
         )
-        if resp is None:
-            raise RuntimeError(
-                "Flight intent not activated successfully, but a High Severity issue didn't stop scenario execution"
-            )
-        op_intent_id = resp.operational_intent_id
 
         validate_shared_operational_intent(
             self,
             "Validate flight sharing",
             self.priority_flight_activated,
-            op_intent_id,
+            resp.operational_intent_id,
         )
 
     def _activate_first_flight_attempt(self):
@@ -198,11 +187,6 @@ class NominalPlanningPriority(TestScenario):
             self.first_flight_id,
             self.first_flight_activated,
         )
-        if resp is None:
-            raise RuntimeError(
-                "Flight intent activation attempt did not return a conflict, but a High Severity issue didn't stop scenario execution"
-            )
-        return resp
 
     def cleanup(self):
         self.begin_cleanup()
