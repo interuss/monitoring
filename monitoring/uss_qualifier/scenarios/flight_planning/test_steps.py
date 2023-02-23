@@ -262,6 +262,58 @@ def activate_valid_flight_intent(
     )[0]
 
 
+def modify_planned_flight_intent(
+    scenario: TestScenarioType,
+    test_step: str,
+    flight_planner: FlightPlanner,
+    flight_id: str,
+    flight_intent: InjectFlightRequest,
+) -> Optional[InjectFlightResponse]:
+    """Modify a planned flight intent that should result in success.
+
+    This function implements the test step described in
+    modify_planned_flight_intent.md.
+
+    Returns: None if a check failed, otherwise the injection response.
+    """
+    return submit_flight_intent(
+        scenario,
+        test_step,
+        "Successful modification",
+        {InjectFlightResult.Planned},
+        {InjectFlightResult.Failed: "Failure"},
+        flight_planner,
+        flight_intent,
+        flight_id,
+    )[0]
+
+
+def modify_activated_flight_intent(
+    scenario: TestScenarioType,
+    test_step: str,
+    flight_planner: FlightPlanner,
+    flight_id: str,
+    flight_intent: InjectFlightRequest,
+) -> Optional[InjectFlightResponse]:
+    """Modify an activated flight intent that should result in success.
+
+    This function implements the test step described in
+    modify_activated_flight_intent.md.
+
+    Returns: None if a check failed, otherwise the injection response.
+    """
+    return submit_flight_intent(
+        scenario,
+        test_step,
+        "Successful modification",
+        {InjectFlightResult.ReadyToFly},
+        {InjectFlightResult.Failed: "Failure"},
+        flight_planner,
+        flight_intent,
+        flight_id,
+    )[0]
+
+
 def submit_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
