@@ -215,15 +215,15 @@ def inject_successful_flight_intent(
     test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
-) -> Tuple[Optional[InjectFlightResponse], Optional[str]]:
+) -> Tuple[InjectFlightResponse, Optional[str]]:
     """Inject a flight intent that should result in success.
 
     This function implements the test step described in
     inject_successful_flight_intent.md.
 
     Returns:
-      * None if a check failed, otherwise the injection response.
-      * None if a check failed, otherwise the ID of the injected flight
+      * The injection response.
+      * The ID of the injected flight if it is returned, None otherwise.
     """
     return submit_flight_intent(
         scenario,
@@ -242,13 +242,13 @@ def activate_valid_flight_intent(
     flight_planner: FlightPlanner,
     flight_id: str,
     flight_intent: InjectFlightRequest,
-) -> Optional[InjectFlightResponse]:
+) -> InjectFlightResponse:
     """Activate a flight intent that should result in success.
 
     This function implements the test step described in
     successfully_activate_flight.md.
 
-    Returns: None if a check failed, otherwise the injection response.
+    Returns: The injection response.
     """
     return submit_flight_intent(
         scenario,
@@ -271,14 +271,15 @@ def submit_flight_intent(
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: Optional[str] = None,
-) -> Tuple[Optional[InjectFlightResponse], Optional[str]]:
+) -> Tuple[InjectFlightResponse, Optional[str]]:
     """Submit a flight intent with an expected result.
+    A check fail is considered of high severity and as such will raise an ScenarioCannotContinueError.
 
     This function does not directly implement a test step.
 
     Returns:
-      * None if a check failed, otherwise the injection response.
-      * None if a check failed, otherwise the ID of the injected flight
+      * The injection response.
+      * The ID of the injected flight if it is returned, None otherwise.
     """
     scenario.begin_test_step(test_step)
     with scenario.check(success_check, [flight_planner.participant_id]) as check:
@@ -319,7 +320,10 @@ def submit_flight_intent(
                 details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}: "{resp.notes}"',
                 query_timestamps=[query.request.timestamp],
             )
-            return None, None
+
+    raise RuntimeError(
+        "Error with submission of flight intent, but a High Severity issue didn't interrupt execution"
+    )
 
 
 def cleanup_flights(
