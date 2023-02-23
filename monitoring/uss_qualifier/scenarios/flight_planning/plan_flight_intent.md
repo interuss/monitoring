@@ -1,6 +1,6 @@
-# Plan valid flight test step
+# Plan flight test step
 
-This page describes the content of a common test case where a valid user flight intent should be successfully planned by a flight planner.  See `inject_successful_flight_intent` in [test_steps.py](test_steps.py).
+This page describes the content of a common test case where a valid user flight intent should be successfully planned by a flight planner.  See `plan_flight_intent` in [test_steps.py](test_steps.py).
 
 ## Successful planning check
 

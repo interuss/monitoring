@@ -210,16 +210,16 @@ def check_capabilities(
     return True
 
 
-def inject_successful_flight_intent(
+def plan_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
 ) -> Tuple[InjectFlightResponse, Optional[str]]:
-    """Inject a flight intent that should result in success.
+    """Plan a flight intent that should result in success.
 
     This function implements the test step described in
-    inject_successful_flight_intent.md.
+    plan_flight_intent.md.
 
     Returns:
       * The injection response.
@@ -236,7 +236,7 @@ def inject_successful_flight_intent(
     )
 
 
-def activate_valid_flight_intent(
+def activate_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
@@ -246,7 +246,7 @@ def activate_valid_flight_intent(
     """Activate a flight intent that should result in success.
 
     This function implements the test step described in
-    successfully_activate_flight.md.
+    activate_flight_intent.md.
 
     Returns: The injection response.
     """

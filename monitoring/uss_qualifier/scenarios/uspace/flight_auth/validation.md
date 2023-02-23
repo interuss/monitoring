@@ -58,7 +58,7 @@ Although the flight authorisation data is invalid, it is properly formatted and 
 
 ## Plan valid flight test case
 
-### [Inject valid flight intent test step](../../flight_planning/inject_successful_flight_intent.md)
+### [Plan valid flight intent test step](../../flight_planning/plan_flight_intent.md)
 
 uss_qualifier indicates to the flight planner a user intent to create a valid flight.
 

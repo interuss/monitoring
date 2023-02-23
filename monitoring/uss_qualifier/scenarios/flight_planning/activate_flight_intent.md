@@ -1,6 +1,6 @@
-# Activate valid flight test step
+# Activate flight test step
 
-This page describes the content of a common test step where a valid user flight intent should be successfully activated by a flight planner.  See `activate_valid_flight_intent` in [test_steps.py](test_steps.py).
+This page describes the content of a common test step where a valid user flight intent should be successfully activated by a flight planner.  See `activate_flight_intent` in [test_steps.py](test_steps.py).
 
 ## Successful activation check
 

@@ -22,7 +22,7 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     clear_area,
     check_capabilities,
-    inject_successful_flight_intent,
+    plan_flight_intent,
     cleanup_flights,
 )
 
@@ -144,8 +144,8 @@ class Validation(TestScenario):
         return True
 
     def _plan_valid_flight(self) -> bool:
-        resp, _ = inject_successful_flight_intent(
-            self, "Inject valid flight intent", self.ussp, self.flight_intents[-1]
+        resp, _ = plan_flight_intent(
+            self, "Plan valid flight intent", self.ussp, self.flight_intents[-1]
         )
         if resp is None:
             return False

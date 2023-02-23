@@ -1,12 +1,9 @@
 from typing import Optional
 
-from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
-    InjectFlightResult,
     Capability,
 )
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
@@ -28,9 +25,9 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     clear_area,
     check_capabilities,
-    inject_successful_flight_intent,
+    plan_flight_intent,
     cleanup_flights,
-    activate_valid_flight_intent,
+    activate_flight_intent,
 )
 
 
@@ -119,8 +116,8 @@ class NominalPlanning(TestScenario):
         return True
 
     def _plan_first_flight(self):
-        resp, self.first_flight_id = inject_successful_flight_intent(
-            self, "Inject flight intent", self.uss1, self.first_flight
+        resp, self.first_flight_id = plan_flight_intent(
+            self, "Plan flight intent", self.uss1, self.first_flight
         )
 
         validate_shared_operational_intent(
@@ -139,7 +136,7 @@ class NominalPlanning(TestScenario):
         )
 
     def _activate_first_flight(self):
-        resp = activate_valid_flight_intent(
+        resp = activate_flight_intent(
             self,
             "Activate first flight",
             self.uss1,
