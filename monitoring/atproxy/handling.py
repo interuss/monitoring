@@ -41,15 +41,15 @@ class PutQueryRequest(ImplicitDict):
     """HTTP return code."""
 
 
-def fulfill_query(req: ImplicitDict) -> Tuple[str, int]:
+def fulfill_query(req: ImplicitDict, timeout: timedelta) -> Tuple[str, int]:
     """Fulfill an incoming automated testing query.
 
     :param req: Request descriptor from requests.py.
+    :param timeout: Maximum amount of time client has to fulfill query.
     :return: Flask endpoint handler result (content, HTTP code).
     """
     t_start = datetime.utcnow()
     query = Query(type=req.request_type_name(), request=req)
-    timeout = timedelta(seconds=59)
     id = str(uuid.uuid4())
     logger.debug('Attempting to fulfill {} query {} from worker {}', query.type, id, os.getpid())
 

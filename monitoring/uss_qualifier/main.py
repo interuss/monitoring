@@ -80,7 +80,6 @@ def main() -> int:
 
     if config.artifacts:
         if config.artifacts.report:
-            logger.info(json.dumps(config.artifacts.report))
             if config.artifacts.report.redact_access_tokens:
                 logger.info("Redacting access tokens in report")
                 redact_access_tokens(report)

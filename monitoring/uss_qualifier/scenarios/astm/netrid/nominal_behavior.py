@@ -5,6 +5,7 @@ from typing import List, Optional
 
 import arrow
 from implicitdict import ImplicitDict
+from loguru import logger
 from requests.exceptions import RequestException
 
 from monitoring.monitorlib.rid_automated_testing.injection_api import (
@@ -188,7 +189,7 @@ class NominalBehavior(TestScenario):
                 break
             delay = t_next - arrow.utcnow()
             if delay.total_seconds() > 0:
-                print(
+                logger.debug(
                     f"Waiting {delay.total_seconds()} seconds before polling RID system again..."
                 )
                 time.sleep(delay.total_seconds())
