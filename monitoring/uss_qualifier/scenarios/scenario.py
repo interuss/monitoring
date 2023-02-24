@@ -5,8 +5,8 @@ import inspect
 from typing import Callable, Dict, List, Optional, TypeVar, Union, Set
 
 import arrow
-
 from implicitdict import StringBasedDateTime
+from loguru import logger
 
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib import fetch, inspection
@@ -250,7 +250,7 @@ class TestScenario(ABC):
             message=message,
             timestamp=StringBasedDateTime(arrow.utcnow().datetime),
         )
-        print(f"Note: {key} -> {message}")
+        logger.info(f"Note: {key} -> {message}")
 
     def begin_test_scenario(self) -> None:
         self._expect_phase(ScenarioPhase.NotStarted)
@@ -303,7 +303,7 @@ class TestScenario(ABC):
         if "queries" not in self._step_report:
             self._step_report.queries = []
         self._step_report.queries.append(query)
-        print(
+        logger.debug(
             f"Queried {query.request['method']} {query.request['url']} -> {query.response.status_code}"
         )
 

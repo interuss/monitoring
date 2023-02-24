@@ -18,7 +18,7 @@ ALL_SCOPES = [
 
 EPOCH = datetime.datetime.utcfromtimestamp(0)
 TOKEN_REFRESH_MARGIN = datetime.timedelta(seconds=15)
-CLIENT_TIMEOUT = 60  # seconds
+CLIENT_TIMEOUT = 10  # seconds
 
 
 class AuthAdapter(object):
@@ -75,12 +75,18 @@ class UTMClientSession(requests.Session):
     DSS).
     """
 
-    def __init__(self, prefix_url: str, auth_adapter: Optional[AuthAdapter] = None):
+    def __init__(
+        self,
+        prefix_url: str,
+        auth_adapter: Optional[AuthAdapter] = None,
+        timeout_seconds: Optional[float] = None,
+    ):
         super().__init__()
 
         self._prefix_url = prefix_url[0:-1] if prefix_url[-1] == "/" else prefix_url
         self.auth_adapter = auth_adapter
         self.default_scopes = None
+        self.timeout_seconds = timeout_seconds or CLIENT_TIMEOUT
 
     # Overrides method on requests.Session
     def prepare_request(self, request, **kwargs):
@@ -113,7 +119,8 @@ class UTMClientSession(requests.Session):
                 return prepared_request
 
             kwargs["auth"] = auth
-        kwargs["timeout"] = CLIENT_TIMEOUT
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = self.timeout_seconds
         return kwargs
 
     def request(self, method, url, **kwargs):
@@ -130,7 +137,12 @@ class AsyncUTMTestSession:
       * Automatically applies authorization according to adapter, when present
     """
 
-    def __init__(self, prefix_url: str, auth_adapter: Optional[AuthAdapter] = None):
+    def __init__(
+        self,
+        prefix_url: str,
+        auth_adapter: Optional[AuthAdapter] = None,
+        timeout_seconds: Optional[float] = None,
+    ):
         self._client = None
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.build_session())
@@ -138,6 +150,7 @@ class AsyncUTMTestSession:
         self._prefix_url = prefix_url[0:-1] if prefix_url[-1] == "/" else prefix_url
         self.auth_adapter = auth_adapter
         self.default_scopes = None
+        self.timeout_seconds = timeout_seconds or CLIENT_TIMEOUT
 
     async def build_session(self):
         self._client = ClientSession()
@@ -168,8 +181,8 @@ class AsyncUTMTestSession:
             if method == "PUT" and kwargs.get("data"):
                 kwargs["json"] = kwargs["data"]
                 del kwargs["data"]
-
-        kwargs["timeout"] = CLIENT_TIMEOUT
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = self.timeout_seconds
         return kwargs
 
     async def put(self, url, **kwargs):

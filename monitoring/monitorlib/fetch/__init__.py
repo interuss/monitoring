@@ -195,7 +195,8 @@ def query_and_describe(
     else:
         utm_session = True
     req_kwargs = kwargs.copy()
-    req_kwargs["timeout"] = TIMEOUTS
+    if "timeout" not in req_kwargs:
+        req_kwargs["timeout"] = TIMEOUTS
     t0 = datetime.datetime.utcnow()
     try:
         return describe_query(client.request(verb, url, **req_kwargs), t0)
