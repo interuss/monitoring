@@ -182,9 +182,7 @@ def ridsp_flights_v22a():
         flask.request.args.get("include_recent_positions", "False").lower() == "true"
     )
 
-    diagonal = (
-        view.lo().get_distance(view.hi()).degrees * geo.EARTH_CIRCUMFERENCE_KM / 360
-    )
+    diagonal = geo.get_latlngrect_diagonal_km(view)
     if diagonal > NetMaxDisplayAreaDiagonalKm:
         msg = "Requested diagonal of {} km exceeds limit of {} km".format(
             diagonal, NetMaxDisplayAreaDiagonalKm
