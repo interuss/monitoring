@@ -5,6 +5,7 @@ import json
 from typing import Dict, List, Optional, TypeVar, Generic
 
 from implicitdict import StringBasedDateTime, ImplicitDict
+from loguru import logger
 import yaml
 
 from monitoring import uss_qualifier as uss_qualifier_module
@@ -42,9 +43,10 @@ from monitoring.uss_qualifier.suites.definitions import (
 
 
 def _print_failed_check(failed_check: FailedCheck) -> None:
-    print("New failed check:")
     yaml_lines = yaml.dump(json.loads(json.dumps(failed_check))).split("\n")
-    print("\n".join("  " + line for line in yaml_lines))
+    logger.warning(
+        "New failed check:\n{}", "\n".join("  " + line for line in yaml_lines)
+    )
 
 
 class TestSuiteAction(object):
@@ -92,7 +94,7 @@ class TestSuiteAction(object):
 
     def _run_test_scenario(self) -> TestScenarioReport:
         scenario = self.test_scenario
-        print(f'Running "{scenario.documentation.name}" scenario...')
+        logger.info(f'Running "{scenario.documentation.name}" scenario...')
         scenario.on_failed_check = _print_failed_check
         try:
             try:
@@ -107,18 +109,20 @@ class TestSuiteAction(object):
             scenario.record_execution_error(e)
         report = scenario.get_report()
         if report.successful:
-            print(f'SUCCESS for "{scenario.documentation.name}" scenario')
+            logger.info(f'SUCCESS for "{scenario.documentation.name}" scenario')
         else:
             if "execution_error" in report:
                 lines = report.execution_error.stacktrace.split("\n")
-                print("\n".join("  " + line for line in lines))
-            print(f'FAILURE for "{scenario.documentation.name}" scenario')
+                logger.error(
+                    "Execution error:\n{}", "\n".join("  " + line for line in lines)
+                )
+            logger.warning(f'FAILURE for "{scenario.documentation.name}" scenario')
         return report
 
     def _run_test_suite(self) -> TestSuiteReport:
-        print(f"Beginning test suite {self.test_suite.definition.name}...")
+        logger.info(f"Beginning test suite {self.test_suite.definition.name}...")
         report = self.test_suite.run()
-        print(f"Completed test suite {self.test_suite.definition.name}")
+        logger.info(f"Completed test suite {self.test_suite.definition.name}")
         return report
 
     def _run_action_generator(self) -> ActionGeneratorReport:

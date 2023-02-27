@@ -31,6 +31,9 @@ class FlightPlannerConfiguration(ImplicitDict):
     injection_base_url: str
     """Base URL for the flight planner's implementation of the interfaces/automated-testing/scd/scd.yaml API"""
 
+    timeout_seconds: Optional[float] = None
+    """Number of seconds to allow for requests to this flight planner.  If None, use default."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         try:
@@ -58,7 +61,7 @@ class FlightPlanner:
     ):
         self.config = config
         self.client = infrastructure.UTMClientSession(
-            self.config.injection_base_url, auth_adapter
+            self.config.injection_base_url, auth_adapter, config.timeout_seconds
         )
 
         # Flights injected by this target.

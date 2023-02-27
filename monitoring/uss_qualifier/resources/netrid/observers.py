@@ -1,5 +1,6 @@
 from typing import List, Optional, Tuple
 
+from loguru import logger
 import s2sphere
 from implicitdict import ImplicitDict
 
@@ -45,7 +46,7 @@ class RIDSystemObserver(object):
                 else None
             )
         except ValueError as e:
-            print("Error parsing observation response: {}".format(e))
+            logger.error("Error parsing observation response: {}", e)
             result = None
         return result, query
 

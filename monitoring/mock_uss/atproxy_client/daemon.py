@@ -53,7 +53,7 @@ def _wait_for_atproxy() -> None:
     while not webapp.is_stopping():
         resp = None
         try:
-            resp = requests.get(status_url, auth=basic_auth)
+            resp = requests.get(status_url, auth=basic_auth, timeout=8)
             if resp.status_code == 200:
                 break
             logger.info(
@@ -82,17 +82,14 @@ def _poll_atproxy() -> None:
     basic_auth = mock_uss.webapp.config[config.KEY_ATPROXY_BASIC_AUTH].tuple
 
     # Poll atproxy to see if there are any requests pending
-    query = fetch.query_and_describe(None, "GET", query_url, auth=basic_auth)
+    query = fetch.query_and_describe(None, "GET", query_url, auth=basic_auth, timeout=8)
     if query.status_code != 200:
         logger.error(
             "Error {} polling {}:\n{}",
             query.status_code,
             query_url,
-            "JSON: " + json.dumps(query.response.json, indent=2)
-            if query.response.json
-            else f"Body: {query.response.content}",
+            json.dumps(query, indent=2),
         )
-        time.sleep(5)
         return
     try:
         queries_resp: ListQueriesResponse = ImplicitDict.parse(
@@ -102,7 +99,6 @@ def _poll_atproxy() -> None:
         logger.error(
             "Error parsing atproxy response to request for queries: {}", str(e)
         )
-        time.sleep(5)
         return
     if not queries_resp.requests:
         logger.debug("No queries currently pending.")
@@ -145,6 +141,7 @@ def _poll_atproxy() -> None:
                 f"{query_url}/{request_to_handle.id}",
                 json=fulfillment,
                 auth=basic_auth,
+                timeout=(1, 2),
             )
             if query.status_code != 204:
                 logger.error(
@@ -153,14 +150,11 @@ def _poll_atproxy() -> None:
                     fulfillment.return_code,
                     request_to_handle.id,
                     attempt,
-                    "JSON: " + json.dumps(query.response.json, indent=2)
-                    if query.response.json
-                    else f"Body: {query.response.content}",
-                )
-                logger.debug(
-                    "Query details for failed attempt to report response to atproxy:\n{}",
                     json.dumps(query, indent=2),
                 )
+                if query.status_code != 999 and query.status_code != 500:
+                    # Error response is not retryable
+                    break
             else:
                 logger.info(
                     f"Delivered response to request {request_to_handle.id} to atproxy on attempt {attempt}"

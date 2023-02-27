@@ -94,6 +94,9 @@ class MockUSS(flask.Flask):
         if not tasks:
             logger.info(f"No {trigger} tasks to initiate from process ID {os.getpid()}")
             return
+        logger.info(
+            "Running {} {} task{}", len(tasks), trigger, "s" if len(tasks) > 1 else ""
+        )
         for task_name, setup_task in tasks.items():
             logger.info(
                 f"Initiating '{task_name}' {trigger} task from process ID {os.getpid()}"
@@ -113,6 +116,12 @@ class MockUSS(flask.Flask):
                     )
                     self.stop()
                     return
+        logger.info(
+            "Completed running {} {} task{}",
+            len(tasks),
+            trigger,
+            "s" if len(tasks) > 1 else "",
+        )
 
     def setup(self):
         self._run_one_time_tasks(TaskTrigger.Setup)
