@@ -4,11 +4,12 @@ from typing import List, Optional, Tuple
 import arrow
 import s2sphere
 
-from monitoring.monitorlib import geo, rid_v1
-from uas_standards.astm.f3411.v19.api import RIDFlightDetails, RIDAircraftState
-
+from monitoring.monitorlib import geo
 from uas_standards.interuss.automated_testing.rid.v1 import injection
-
+from uas_standards.interuss.automated_testing.rid.v1.injection import (
+    RIDFlightDetails,
+    RIDAircraftState,
+)
 
 SCOPE_RID_QUALIFIER_INJECT = "rid.inject_test_data"
 

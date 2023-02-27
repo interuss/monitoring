@@ -4,14 +4,14 @@ from typing import List, Optional, Dict, Union
 import arrow
 import s2sphere
 
-from monitoring.monitorlib.fetch import rid, Query
+from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.fetch.rid import (
     all_flights,
     FetchedFlights,
     FetchedUSSFlights,
 )
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
-from uas_standards.astm.f3411.v19.api import RIDAircraftState
+from uas_standards.interuss.automated_testing.rid.v1.injection import RIDAircraftState
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     Flight,
     GetDisplayDataResponse,
@@ -84,6 +84,10 @@ def injected_flights_errors(injected_flights: List[InjectedFlight]) -> List[str]
 class DPObservedFlight(object):
     query: FetchedUSSFlights
     flight: int
+
+    @property
+    def id(self) -> str:
+        return self.query.flights[self.flight].id
 
     @property
     def most_recent_position(self):
@@ -169,6 +173,10 @@ class RIDObservationEvaluator(object):
         self._config = config
         self._rid_version = rid_version
         self._dss = dss
+        if dss and dss.rid_version != rid_version:
+            raise ValueError(
+                f"Cannot evaluate a system using RID version {rid_version} with a DSS using RID version {dss.rid_version}"
+            )
 
     def evaluate_system_instantaneously(
         self,
@@ -467,8 +475,8 @@ class RIDObservationEvaluator(object):
         for mapping in mappings.values():
             details_queries = [
                 q
-                for q in dp_observation.uss_flight_details_queries.values()
-                if q.flights_url == mapping.observed_flight.query.flights_url
+                for flight_id, q in dp_observation.uss_flight_details_queries.items()
+                if flight_id == mapping.observed_flight.id
             ]
             if len(details_queries) != 1:
                 raise RuntimeError(

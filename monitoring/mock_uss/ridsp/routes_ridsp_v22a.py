@@ -6,7 +6,7 @@ from typing import List, Optional
 import flask
 from implicitdict import StringBasedDateTime
 import s2sphere
-from uas_standards.astm.f3411.v19.api import (
+from uas_standards.astm.f3411.v22a.api import (
     ErrorResponse,
     RIDRecentAircraftPosition,
     RIDFlight,
@@ -17,8 +17,12 @@ from uas_standards.astm.f3411.v19.api import (
     RIDAircraftPosition,
     RIDAircraftState,
     RIDFlightDetails,
+    OperatorLocation,
+    LatLngPoint,
+    UASID,
+    Altitude,
 )
-from uas_standards.astm.f3411.v19.constants import (
+from uas_standards.astm.f3411.v22a.constants import (
     Scope,
     NetMaxNearRealTimeDataPeriodSeconds,
     NetMaxDisplayAreaDiagonalKm,
@@ -31,21 +35,75 @@ from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
 from . import behavior
 from .database import db
-
-
-def _make_state(p: injection.RIDAircraftState) -> RIDAircraftState:
-    """Convert injection RIDAircraftState to F3411-19"""
-    return RIDAircraftState(p)
+from ...monitorlib.rid_v2 import make_time
 
 
 def _make_position(p: injection.RIDAircraftPosition) -> RIDAircraftPosition:
-    """Convert injection RIDAircraftPosition to F3411-19"""
+    """Convert injection RIDAircraftPosition to F3411-22a"""
     return RIDAircraftPosition(p)
 
 
+def _make_state(s: injection.RIDAircraftState) -> RIDAircraftState:
+    """Convert injection RIDAircraftState to F3411-22a"""
+    return RIDAircraftState(
+        timestamp=make_time(s.timestamp.datetime),
+        timestamp_accuracy=s.timestamp_accuracy,
+        operational_status=s.operational_status,
+        position=_make_position(s.position),
+        track=s.track,
+        speed=s.speed,
+        speed_accuracy=s.speed_accuracy,
+        vertical_speed=s.vertical_speed,
+    )
+
+
+def _make_operator_location(
+    position: injection.LatLngPoint, altitude: injection.OperatorAltitude
+) -> OperatorLocation:
+    """Convert injection information to F3411-22a OperatorLocation"""
+    return OperatorLocation(
+        position=LatLngPoint(position),
+        altitude=Altitude(value=altitude.altitude),
+        altitude_type=altitude.altitude_type,
+    )
+
+
 def _make_details(p: injection.RIDFlightDetails) -> RIDFlightDetails:
-    """Convert injection RIDFlightDetails to F3411-19"""
-    return RIDFlightDetails(p)
+    """Convert injection RIDFlightDetails to F3411-22a"""
+    serial_number = p.serial_number if "serial_number" in p and p.serial_number else ""
+    registration_number = (
+        p.registration_number
+        if "registration_number" in p and p.registration_number
+        else ""
+    )
+    uas_id = (
+        p.uas_id
+        if "uas_id" in p and p.uas_id
+        else UASID(
+            serial_number=serial_number,
+            registration_number=registration_number,
+            utm_id=p.id,
+        )
+    )
+    kwargs = {"id": p.id, "uas_id": uas_id}
+    for field in (
+        "operator_id",
+        "operation_description",
+        "auth_data",
+        "eu_classification",
+    ):
+        if field in p:
+            kwargs[field] = p[field]
+    if (
+        "operator_location" in p
+        and p.operator_location
+        and "operator_altitude" in p
+        and p.operator_altitude
+    ):
+        kwargs["operator_location"] = _make_operator_location(
+            p.operator_location, p.operator_altitude
+        )
+    return RIDFlightDetails(**kwargs)
 
 
 def _get_report(
@@ -79,7 +137,7 @@ def _get_report(
         for recent_state in recent_states:
             recent_positions.append(
                 RIDRecentAircraftPosition(
-                    time=recent_state.timestamp,
+                    time=make_time(recent_state.timestamp.datetime),
                     position=_make_position(recent_state.position),
                 )
             )
@@ -87,15 +145,15 @@ def _get_report(
     return result
 
 
-def rid_v19_operation(op_id: OperationID):
+def rid_v22a_operation(op_id: OperationID):
     op = OPERATIONS[op_id]
     path = op.path.replace("{", "<").replace("}", ">")
-    return webapp.route("/mock/ridsp" + path, methods=[op.verb])
+    return webapp.route("/mock/ridsp/v2" + path, methods=[op.verb])
 
 
-@rid_v19_operation(OperationID.PostIdentificationServiceArea)
-@requires_scope([Scope.Write])
-def ridsp_notify_isa_v19(id: str):
+@rid_v22a_operation(OperationID.PostIdentificationServiceArea)
+@requires_scope([Scope.ServiceProvider])
+def ridsp_notify_isa_v22a(id: str):
     return (
         flask.jsonify(
             {"message": "mock_ridsp never solicits subscription notifications"}
@@ -104,9 +162,9 @@ def ridsp_notify_isa_v19(id: str):
     )
 
 
-@rid_v19_operation(OperationID.SearchFlights)
-@requires_scope([Scope.Read])
-def ridsp_flights_v19():
+@rid_v22a_operation(OperationID.SearchFlights)
+@requires_scope([Scope.DisplayProvider])
+def ridsp_flights_v22a():
     if "view" not in flask.request.args:
         return (
             flask.jsonify(ErrorResponse(message='Missing required "view" parameter')),
@@ -138,21 +196,20 @@ def ridsp_flights_v19():
         for flight in record.flights:
             reported_flight = _get_report(flight, now, view, include_recent_positions)
             if reported_flight is not None:
-                reported_flight = behavior.adjust_reported_flight(
-                    flight, reported_flight, tx.behavior
-                )
+                # TODO: Implement Service Provider behaviors for F3411-22a
+                # reported_flight = behavior.adjust_reported_flight(
+                #     flight, reported_flight, tx.behavior
+                # )
                 flights.append(reported_flight)
     return (
-        flask.jsonify(
-            GetFlightsResponse(timestamp=StringBasedDateTime(now), flights=flights)
-        ),
+        flask.jsonify(GetFlightsResponse(timestamp=make_time(now), flights=flights)),
         200,
     )
 
 
-@rid_v19_operation(OperationID.GetFlightDetails)
-@requires_scope([Scope.Read])
-def ridsp_flight_details_v19(id: str):
+@rid_v22a_operation(OperationID.GetFlightDetails)
+@requires_scope([Scope.DisplayProvider])
+def ridsp_flight_details_v22a(id: str):
     now = arrow.utcnow().datetime
     tx = db.value
     for test_id, record in tx.tests.items():

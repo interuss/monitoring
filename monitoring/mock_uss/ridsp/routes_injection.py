@@ -3,25 +3,32 @@ from typing import Tuple
 import uuid
 
 import flask
-from loguru import logger
-
-from uas_standards.astm.f3411.v19.api import ErrorResponse
-from monitoring.monitorlib.mutate import rid as mutate
-from monitoring.monitorlib.rid_automated_testing import injection_api
 from implicitdict import ImplicitDict
-from monitoring.mock_uss import webapp
-from monitoring.mock_uss.auth import requires_scope
-from monitoring.mock_uss import config, resources
+from loguru import logger
 from uas_standards.interuss.automated_testing.rid.v1.injection import ChangeTestResponse
+
+from monitoring.monitorlib.mutate import rid as mutate
+from monitoring.monitorlib.rid import RIDVersion
+from monitoring.monitorlib.rid_automated_testing import injection_api
+from monitoring.mock_uss import webapp, require_config_value
+from monitoring.mock_uss.auth import requires_scope
+from monitoring.mock_uss.config import KEY_BASE_URL
+from monitoring.mock_uss.riddp.config import KEY_RID_VERSION
+from monitoring.mock_uss.ridsp import utm_client
 from . import database
 from .database import db
 
 
+require_config_value(KEY_BASE_URL)
+require_config_value(KEY_RID_VERSION)
+
 # Time after the last position report during which the created ISA will still
 # exist.  This value must be at least 60 seconds per NET0610.
-from ...monitorlib.rid import RIDVersion
-
 RECENT_POSITIONS_BUFFER = datetime.timedelta(seconds=60.2)
+
+
+class ErrorResponse(ImplicitDict):
+    message: str
 
 
 @webapp.route("/ridsp/injection/tests/<test_id>", methods=["PUT"])
@@ -29,6 +36,7 @@ RECENT_POSITIONS_BUFFER = datetime.timedelta(seconds=60.2)
 def ridsp_create_test(test_id: str) -> Tuple[str, int]:
     """Implements test creation in RID automated testing injection API."""
     logger.info(f"Create test {test_id}")
+    rid_version = webapp.config[KEY_RID_VERSION]
     try:
         json = flask.request.json
         if json is None:
@@ -47,15 +55,22 @@ def ridsp_create_test(test_id: str) -> Tuple[str, int]:
     (t0, t1) = req_body.get_span()
     t1 += RECENT_POSITIONS_BUFFER
     rect = req_body.get_rect()
-    uss_base_url = "{}/mock/ridsp".format(webapp.config.get(config.KEY_BASE_URL))
+    if rid_version == RIDVersion.f3411_19:
+        uss_base_url = f"{webapp.config[KEY_BASE_URL]}/mock/ridsp"
+    elif rid_version == RIDVersion.f3411_22a:
+        uss_base_url = f"{webapp.config[KEY_BASE_URL]}/mock/ridsp/v2"
+    else:
+        raise NotImplementedError(
+            f"Unable to determine base URL for RID version {rid_version}"
+        )
     mutated_isa = mutate.put_isa(
         area=rect,
         start_time=t0,
         end_time=t1,
         uss_base_url=uss_base_url,
         isa_id=record.version,
-        rid_version=RIDVersion.f3411_19,
-        utm_client=resources.utm_client,
+        rid_version=rid_version,
+        utm_client=utm_client,
     )
     if not mutated_isa.dss_query.success:
         errors = "\n".join(mutated_isa.dss_query.errors)
@@ -96,6 +111,7 @@ def ridsp_create_test(test_id: str) -> Tuple[str, int]:
 def ridsp_delete_test(test_id: str) -> Tuple[str, int]:
     """Implements test deletion in RID automated testing injection API."""
     logger.info(f"Delete test {test_id}")
+    rid_version = webapp.config[KEY_RID_VERSION]
     record = db.value.tests.get(test_id, None)
 
     if record is None:
@@ -105,13 +121,14 @@ def ridsp_delete_test(test_id: str) -> Tuple[str, int]:
     deleted_isa = mutate.delete_isa(
         isa_id=record.version,
         isa_version=record.isa_version,
-        rid_version=RIDVersion.f3411_19,
-        utm_client=resources.utm_client,
+        rid_version=rid_version,
+        utm_client=utm_client,
     )
     if not deleted_isa.dss_query.success:
         logger.error(f"Unable to delete ISA {record.version} from DSS")
         response = ErrorResponse(message="Unable to delete ISA from DSS")
         response["errors"] = deleted_isa.dss_query.errors
+        response["query"] = deleted_isa.dss_query
         return flask.jsonify(response), 412
     logger.info(f"Created ISA {deleted_isa.dss_query.isa.id}")
     result = ChangeTestResponse(version=record.version, injected_flights=record.flights)

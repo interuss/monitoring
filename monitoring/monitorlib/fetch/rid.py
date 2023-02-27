@@ -106,6 +106,27 @@ class ISA(ImplicitDict):
         )
 
 
+class Position(ImplicitDict):
+    """Version-independent representation of a 3D position."""
+
+    lat: float
+    """Degrees north of equator."""
+
+    lng: float
+    """Degrees east of prime meridian."""
+
+    alt: float
+    """Meters above the WGS84 reference ellipsoid."""
+
+    @staticmethod
+    def from_v19_rid_aircraft_position(p: v19.api.RIDAircraftPosition) -> Position:
+        return Position(lat=p.lat, lng=p.lng, alt=p.alt)
+
+    @staticmethod
+    def from_v22a_rid_aircraft_position(p: v22a.api.RIDAircraftPosition) -> Position:
+        return Position(lat=p.lat, lng=p.lng, alt=p.alt)
+
+
 class Flight(ImplicitDict):
     """Version-independent representation of a F3411 flight."""
 
@@ -141,19 +162,38 @@ class Flight(ImplicitDict):
     @property
     def most_recent_position(
         self,
-    ) -> Optional[Union[v19.api.RIDAircraftPosition, v22a.api.RIDAircraftPosition]]:
-        return (
-            self.raw.current_state.position
-            if "current_state" in self.raw and self.raw.current_state
-            else None
-        )
+    ) -> Optional[Position]:
+        if "current_state" in self.raw and self.raw.current_state:
+            if self.rid_version == RIDVersion.f3411_19:
+                return Position.from_v19_rid_aircraft_position(
+                    self.v19_value.current_state.position
+                )
+            elif self.rid_version == RIDVersion.f3411_22a:
+                return Position.from_v22a_rid_aircraft_position(
+                    self.v22a_value.current_state.position
+                )
+            else:
+                raise NotImplementedError(
+                    f"Cannot retrieve most recent position using RID version {self.rid_version}"
+                )
+        else:
+            return None
 
-    def as_v19(self) -> v19.api.RIDFlight:
-        if self.v19_value is not None:
-            return self.v19_value
+    @property
+    def recent_positions(self) -> List[Position]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return [
+                Position.from_v19_rid_aircraft_position(p.position)
+                for p in self.v19_value.recent_positions
+            ]
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return [
+                Position.from_v22a_rid_aircraft_position(p.position)
+                for p in self.v22a_value.recent_positions
+            ]
         else:
             raise NotImplementedError(
-                f"Conversion to F3411-19 RIDFlight has not yet been implemented for RID version {self.rid_version}"
+                f"Cannot retrieve recent positions using RID version {self.rid_version}"
             )
 
 
@@ -587,16 +627,11 @@ def flight_details(
             )
         else:
             kwargs["scope"] = v19.constants.Scope.Read
-        query = fetch.query_and_describe(
-            session,
-            "GET",
-            url,
-            **kwargs,
-        )
+        query = fetch.query_and_describe(session, "GET", url, **kwargs)
         return FetchedUSSFlightDetails(v19_query=query)
     elif rid_version == RIDVersion.f3411_22a:
         query = fetch.query_and_describe(
-            session, "GET", flights_url, scope=v22a.constants.Scope.DisplayProvider
+            session, "GET", url, scope=v22a.constants.Scope.DisplayProvider
         )
         return FetchedUSSFlightDetails(v22a_query=query)
     else:

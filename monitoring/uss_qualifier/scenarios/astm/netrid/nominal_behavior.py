@@ -56,6 +56,14 @@ class NominalBehavior(TestScenario):
         self._injected_flights = []
         self._dss_pool = dss_pool
 
+    @property
+    def _rid_version(self) -> RIDVersion:
+        return (
+            self._dss_pool.dss_instances[0].rid_version
+            if self._dss_pool
+            else RIDVersion.f3411_19
+        )
+
     def run(self):
         self.begin_test_scenario()
         self.begin_test_case("Nominal flight")
@@ -147,13 +155,11 @@ class NominalBehavior(TestScenario):
                 raise RuntimeError("High-severity issue did not abort test scenario")
 
         config = self._evaluation_configuration.configuration
-        # TODO: Replace hardcoded value
-        rid_version = RIDVersion.f3411_19
         self._virtual_observer = VirtualObserver(
             injected_flights=InjectedFlightCollection(self._injected_flights),
             repeat_query_rect_period=config.repeat_query_rect_period,
             min_query_diagonal_m=config.min_query_diagonal,
-            relevant_past_data_period=rid_version.realtime_period
+            relevant_past_data_period=self._rid_version.realtime_period
             + config.max_propagation_latency.timedelta,
         )
 
@@ -163,8 +169,7 @@ class NominalBehavior(TestScenario):
             self,
             self._injected_flights,
             self._evaluation_configuration.configuration,
-            # TODO: Replace hardcoded value
-            RIDVersion.f3411_19,
+            self._rid_version,
             self._dss_pool.dss_instances[0] if self._dss_pool else None,
         )
 

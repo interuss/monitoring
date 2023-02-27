@@ -425,10 +425,14 @@ def put_isa(
             "uss_base_url": uss_base_url,
         }
         if isa_version is None:
-            op = v22a.api.OPERATIONS[v22a.api.OperationID.CreateSubscription]
+            op = v22a.api.OPERATIONS[
+                v22a.api.OperationID.CreateIdentificationServiceArea
+            ]
             url = op.path.format(id=isa_id)
         else:
-            op = v22a.api.OPERATIONS[v22a.api.OperationID.UpdateSubscription]
+            op = v22a.api.OPERATIONS[
+                v22a.api.OperationID.UpdateIdentificationServiceArea
+            ]
             url = op.path.format(id=isa_id, version=isa_version)
         dss_response = ChangedISA(
             mutation=mutation,
@@ -471,7 +475,7 @@ def delete_isa(
             ),
         )
     elif rid_version == RIDVersion.f3411_22a:
-        op = v22a.api.OPERATIONS[v22a.api.OperationID.UpdateSubscription]
+        op = v22a.api.OPERATIONS[v22a.api.OperationID.DeleteIdentificationServiceArea]
         url = op.path.format(id=isa_id, version=isa_version)
         dss_response = ChangedISA(
             mutation="delete",

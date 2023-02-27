@@ -4,26 +4,24 @@ import arrow
 import flask
 from loguru import logger
 import s2sphere
-from uas_standards.astm.f3411.v19.api import ErrorResponse, RIDFlight
-from uas_standards.astm.f3411.v19.constants import (
-    Scope,
-    NetMaxDisplayAreaDiagonalKm,
-    NetDetailsMaxDisplayAreaDiagonalKm,
-)
+from uas_standards.astm.f3411.v19.api import ErrorResponse
+from uas_standards.astm.f3411.v19.constants import Scope
 
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
+from monitoring.monitorlib.fetch.rid import Flight, FetchedISAs
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing import observation_api
-from monitoring.mock_uss import resources, webapp
+from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
-from . import clustering, database
+from . import clustering, database, utm_client
 from .behavior import DisplayProviderBehavior
+from .config import KEY_RID_VERSION
 from .database import db
-from ...monitorlib.rid import RIDVersion
 
 
 def _make_flight_observation(
-    flight: RIDFlight, view: s2sphere.LatLngRect
+    flight: Flight, view: s2sphere.LatLngRect
 ) -> observation_api.Flight:
     paths: List[List[observation_api.Position]] = []
     current_path: List[observation_api.Position] = []
@@ -36,11 +34,9 @@ def _make_flight_observation(
 
     # Decompose recent positions into a list of contiguous paths
     for p in flight.recent_positions:
-        lat = p.position.lat
-        lng = p.position.lng
-        position_report = observation_api.Position(lat=lat, lng=lng, alt=p.position.alt)
+        position_report = observation_api.Position(lat=p.lat, lng=p.lng, alt=p.alt)
 
-        inside_view = lat_min <= lat <= lat_max and lng_min <= lng <= lng_max
+        inside_view = lat_min <= p.lat <= lat_max and lng_min <= p.lng <= lng_max
         if inside_view:
             # This point is inside the view
             if not current_path and previous_position:
@@ -58,13 +54,10 @@ def _make_flight_observation(
     if current_path:
         paths.append(current_path)
 
+    p = flight.most_recent_position
     return observation_api.Flight(
         id=flight.id,
-        most_recent_position=observation_api.Position(
-            lat=flight.current_state.position.lat,
-            lng=flight.current_state.position.lng,
-            alt=flight.current_state.position.alt,
-        ),
+        most_recent_position=observation_api.Position(lat=p.lat, lng=p.lng, alt=p.alt),
         recent_paths=[observation_api.Path(positions=path) for path in paths],
     )
 
@@ -87,9 +80,11 @@ def riddp_display_data() -> Tuple[str, int]:
             400,
         )
 
+    rid_version: RIDVersion = webapp.config[KEY_RID_VERSION]
+
     # Determine what kind of response to produce
     diagonal = geo.get_latlngrect_diagonal_km(view)
-    if diagonal > NetMaxDisplayAreaDiagonalKm:
+    if diagonal > rid_version.max_diagonal_km:
         return (
             flask.jsonify(ErrorResponse(message="Requested diagonal was too large")),
             413,
@@ -97,9 +92,7 @@ def riddp_display_data() -> Tuple[str, int]:
 
     # Get ISAs in the DSS
     t = arrow.utcnow().datetime
-    isa_list: fetch.FetchedISAs = fetch.isas(
-        view, t, t, RIDVersion.f3411_19, resources.utm_client
-    )
+    isa_list: FetchedISAs = fetch.isas(view, t, t, rid_version, utm_client)
     if not isa_list.success:
         msg = f"Error fetching ISAs from DSS: {isa_list.error}"
         logger.error(msg)
@@ -108,7 +101,7 @@ def riddp_display_data() -> Tuple[str, int]:
         return flask.jsonify(response), 412
 
     # Fetch flights from each unique flights URL
-    validated_flights: List[RIDFlight] = []
+    validated_flights: List[Flight] = []
     tx = db.value
     flight_info: Dict[str, database.FlightInfo] = {k: v for k, v in tx.flights.items()}
     behavior: DisplayProviderBehavior = tx.behavior
@@ -117,7 +110,7 @@ def riddp_display_data() -> Tuple[str, int]:
         if uss in behavior.do_not_display_flights_from:
             continue
         flights_response = fetch.uss_flights(
-            flights_url, view, True, RIDVersion.f3411_19, resources.utm_client
+            flights_url, view, True, rid_version, utm_client
         )
         if not flights_response.success:
             msg = (
@@ -128,7 +121,7 @@ def riddp_display_data() -> Tuple[str, int]:
             response["errors"] = [flights_response]
             return flask.jsonify(response), 412
         for flight in flights_response.flights:
-            validated_flights.append(flight.as_v19())
+            validated_flights.append(flight)
             flight_info[flight.id] = database.FlightInfo(flights_url=flights_url)
 
     # Update links between flight IDs and flight URLs
@@ -141,7 +134,7 @@ def riddp_display_data() -> Tuple[str, int]:
     if behavior.always_omit_recent_paths:
         for f in flights:
             f.recent_paths = None
-    if diagonal <= NetDetailsMaxDisplayAreaDiagonalKm:
+    if diagonal <= rid_version.max_details_diagonal_km:
         # Construct detailed flights response
         response = observation_api.GetDisplayDataResponse(flights=flights)
     else:
