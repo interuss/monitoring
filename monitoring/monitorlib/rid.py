@@ -22,27 +22,27 @@ class RIDVersion(str, Enum):
     @property
     def openapi_path(self) -> str:
         if self == RIDVersion.f3411_19:
-            return schema_validation.OPENAPI_F3411_19
+            return schema_validation.F3411_19.OpenAPIPath
         elif self == RIDVersion.f3411_22a:
-            return schema_validation.OPENAPI_F3411_22A
+            return schema_validation.F3411_22a.OpenAPIPath
         else:
             raise ValueError(f"Unsupported RID version '{self}'")
 
     @property
     def openapi_flights_response_path(self) -> str:
         if self == RIDVersion.f3411_19:
-            return "components.schemas.GetFlightsResponse"
+            return schema_validation.F3411_19.GetFlightsResponse
         elif self == RIDVersion.f3411_22a:
-            return "components.schemas.GetFlightsResponse"
+            return schema_validation.F3411_22a.GetFlightsResponse
         else:
             raise ValueError(f"Unsupported RID version '{self}'")
 
     @property
     def openapi_flight_details_response_path(self) -> str:
         if self == RIDVersion.f3411_19:
-            return "components.schemas.GetFlightDetailsResponse"
+            return schema_validation.F3411_19.GetFlightDetailsResponse
         elif self == RIDVersion.f3411_22a:
-            return "components.schemas.GetFlightDetailsResponse"
+            return schema_validation.F3411_22a.GetFlightDetailsResponse
         else:
             raise ValueError(f"Unsupported RID version '{self}'")
 

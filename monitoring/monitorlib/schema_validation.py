@@ -1,5 +1,6 @@
 import os.path
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from typing import List, Dict
 
@@ -8,9 +9,24 @@ import jsonschema.validators
 import yaml
 
 
-OPENAPI_F3411_19 = "interfaces/rid/v1/remoteid/augmented.yaml"
-OPENAPI_F3411_22A = "interfaces/rid/v2/remoteid/updated.yaml"
-OPENAPI_F3548_21 = "interfaces/astm-utm/Protocol/utm.yaml"
+class F3411_19(str, Enum):
+    OpenAPIPath = "interfaces/rid/v1/remoteid/augmented.yaml"
+    GetFlightsResponse = "components.schemas.GetFlightsResponse"
+    GetFlightDetailsResponse = "components.schemas.GetFlightDetailsResponse"
+
+
+class F3411_22a(str, Enum):
+    OpenAPIPath = "interfaces/rid/v2/remoteid/updated.yaml"
+    GetFlightsResponse = "components.schemas.GetFlightsResponse"
+    GetFlightDetailsResponse = "components.schemas.GetFlightDetailsResponse"
+
+
+class F3548_21(str, Enum):
+    OpenAPIPath = "interfaces/astm-utm/Protocol/utm.yaml"
+    GetOperationalIntentDetailsResponse = (
+        "components.schemas.GetOperationalIntentDetailsResponse"
+    )
+
 
 _openapi_content_cache: Dict[str, dict] = {}
 
