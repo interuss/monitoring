@@ -17,7 +17,7 @@ from uas_standards.interuss.automated_testing.rid.v1.observation import (
     GetDisplayDataResponse,
 )
 
-from monitoring.monitorlib import fetch, geo
+from monitoring.monitorlib import fetch, geo, schema_validation
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
@@ -471,7 +471,39 @@ class RIDObservationEvaluator(object):
             mappings,
         )
 
-        # Verify that flight details queries succeeded
+        # Verify that flights queries returned correctly-formatted data
+        for mapping in mappings.values():
+            flights_queries = [
+                q
+                for flight_url, q in dp_observation.uss_flight_queries.items()
+                if mapping.observed_flight.id in {f.id for f in q.flights}
+            ]
+            if len(flights_queries) != 1:
+                raise RuntimeError(
+                    f"Found {len(flights_queries)} flights queries (instead of the expected 1) for flight {mapping.observed_flight.id} corresponding to injection ID {mapping.injected_flight.flight.injection_id} for {mapping.injected_flight.uss_participant_id}"
+                )
+            flights_query = flights_queries[0]
+            errors = schema_validation.validate(
+                self._rid_version.openapi_path,
+                self._rid_version.openapi_flights_response_path,
+                flights_query.query.response.json,
+            )
+            with self._test_scenario.check(
+                "Flights data format", [mapping.injected_flight.uss_participant_id]
+            ) as check:
+                if errors:
+                    check.record_failed(
+                        summary="/flights response failed schema validation",
+                        severity=Severity.Medium,
+                        details="The response received from querying the /flights endpoint failed validation against the required OpenAPI schema:\n"
+                        + "\n".join(
+                            f"At {e.json_path} in the response: {e.message}"
+                            for e in errors
+                        ),
+                        query_timestamps=[flights_query.query.request.timestamp],
+                    )
+
+        # Verify that flight details queries succeeded and returned correctly-formatted data
         for mapping in mappings.values():
             details_queries = [
                 q
@@ -480,7 +512,7 @@ class RIDObservationEvaluator(object):
             ]
             if len(details_queries) != 1:
                 raise RuntimeError(
-                    f"Found {len(details_queries)} flight details queries (instead of the expected 1) for flight {mapping.observed_flight.id} corresponding to injection ID {mapping.injected_flight.flight.injection_id}"
+                    f"Found {len(details_queries)} flight details queries (instead of the expected 1) for flight {mapping.observed_flight.id} corresponding to injection ID {mapping.injected_flight.flight.injection_id} for {mapping.injected_flight.uss_participant_id}"
                 )
             details_query = details_queries[0]
             with self._test_scenario.check(
@@ -493,6 +525,26 @@ class RIDObservationEvaluator(object):
                         severity=Severity.Medium,
                         details=f"Flight details query to {details_query.query.request.url} failed {details_query.status_code}",
                         participants=[mapping.injected_flight.uss_participant_id],
+                        query_timestamps=[details_query.query.request.timestamp],
+                    )
+            errors = schema_validation.validate(
+                self._rid_version.openapi_path,
+                self._rid_version.openapi_flight_details_response_path,
+                details_query.query.response.json,
+            )
+            with self._test_scenario.check(
+                "Flight details data format",
+                [mapping.injected_flight.uss_participant_id],
+            ) as check:
+                if errors:
+                    check.record_failed(
+                        summary="Flight details response failed schema validation",
+                        severity=Severity.Medium,
+                        details="The response received from querying the flight details endpoint failed validation against the required OpenAPI schema:\n"
+                        + "\n".join(
+                            f"At {e.json_path} in the response: {e.message}"
+                            for e in errors
+                        ),
                         query_timestamps=[details_query.query.request.timestamp],
                     )
 
