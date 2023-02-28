@@ -53,7 +53,7 @@ Both USSs are requested to remove all flights from the area under test.
 
 ## Plan first flight test case
 
-### [Inject flight intent test step](../../../flight_planning/inject_successful_flight_intent.md)
+### [Plan flight intent test step](../../../flight_planning/plan_flight_intent.md)
 
 The first flight intent should be successfully planned by the first flight planner.
 
@@ -63,7 +63,7 @@ The first flight intent should be successfully planned by the first flight plann
 
 In this step, the second USS executes a user intent to plan a priority flight that conflicts with the first flight.
 
-### [Inject flight intent test step](../../../flight_planning/inject_successful_flight_intent.md)
+### [Plan flight intent test step](../../../flight_planning/plan_flight_intent.md)
 
 The first flight intent should be successfully planned by the first flight planner.
 
@@ -73,7 +73,7 @@ The first flight intent should be successfully planned by the first flight plann
 
 In this step, the second USS successfully executes a user intent to activate the priority flight.
 
-### [Activate priority flight test step](../../../flight_planning/successfully_activate_flight.md)
+### [Activate priority flight test step](../../../flight_planning/activate_flight_intent.md)
 
 The high-priority flight intent should be successfully activated by the first flight planner.
 
