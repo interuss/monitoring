@@ -1,3 +1,4 @@
+from monitoring.monitorlib import schema_validation
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
 from monitoring.monitorlib.scd import bounding_vol4
@@ -73,6 +74,25 @@ def validate_shared_operational_intent(
                 query_timestamps=[query.request.timestamp],
             )
             return False
+
+    with scenario.check(
+        "Operational intent details data format", [scenario.uss1.participant_id]
+    ) as check:
+        errors = schema_validation.validate(
+            schema_validation.F3548_21.OpenAPIPath,
+            schema_validation.F3548_21.GetOperationalIntentDetailsResponse,
+            query.response.json,
+        )
+        if errors:
+            check.record_failed(
+                summary="Operational intent details response failed schema validation",
+                severity=Severity.Medium,
+                details="The response received from querying operational intent details failed validation against the required OpenAPI schema:\n"
+                + "\n".join(
+                    f"At {e.json_path} in the response: {e.message}" for e in errors
+                ),
+                query_timestamps=[query.request.timestamp],
+            )
 
     error_text = validate_op_intent_details(op_intent, extent)
     with scenario.check(

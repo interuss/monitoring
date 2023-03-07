@@ -49,6 +49,10 @@ This particular test requires each flight to be uniquely identifiable by its 2D 
 
 If a DSS was provided to this test scenario, uss_qualifier acts as a Display Provider to query Service Providers under test in this step.
 
+#### Flights data format check
+
+**[astm.f3411.v19.NET0710](../../../requirements/astm/f3411/v19.md)** requires a Service Provider to implement the P2P portion of the OpenAPI specification.  This check will fail if the response to the /flights endpoint does not validate against the OpenAPI-specified schema.
+
 #### ISA query check
 
 **[astm.f3411.v19.DSS0030](../../../requirements/astm/f3411/v19.md)** requires a USS providing a DSS instance to implement the DSS endpoints of the OpenAPI specification.  If uss_qualifier is unable to query the DSS for ISAs, this check will fail.
@@ -66,6 +70,10 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 #### Successful flight details query check
 
 **[astm.f3411.v19.NET0710](../../../requirements/astm/f3411/v19.md)** requires a Service Provider to implement the GET flight details endpoint.  This check will fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
+
+#### Flight details data format check
+
+**[astm.f3411.v19.NET0710](../../../requirements/astm/f3411/v19.md)** requires a Service Provider to implement the P2P portion of the OpenAPI specification.  This check will fail if the response to the flight details endpoint does not validate against the OpenAPI-specified schema.
 
 #### Lingering flight check
 

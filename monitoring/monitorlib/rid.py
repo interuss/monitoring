@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 import arrow
+
+from monitoring.monitorlib import schema_validation
 from uas_standards.astm.f3411 import v19, v22a
 import uas_standards.astm.f3411.v19.constants
 import uas_standards.astm.f3411.v22a.constants
@@ -16,6 +18,33 @@ class RIDVersion(str, Enum):
 
     def format_time(self, t: datetime) -> str:
         return arrow.get(t).isoformat().replace("+00:00", "Z")
+
+    @property
+    def openapi_path(self) -> str:
+        if self == RIDVersion.f3411_19:
+            return schema_validation.F3411_19.OpenAPIPath
+        elif self == RIDVersion.f3411_22a:
+            return schema_validation.F3411_22a.OpenAPIPath
+        else:
+            raise ValueError(f"Unsupported RID version '{self}'")
+
+    @property
+    def openapi_flights_response_path(self) -> str:
+        if self == RIDVersion.f3411_19:
+            return schema_validation.F3411_19.GetFlightsResponse
+        elif self == RIDVersion.f3411_22a:
+            return schema_validation.F3411_22a.GetFlightsResponse
+        else:
+            raise ValueError(f"Unsupported RID version '{self}'")
+
+    @property
+    def openapi_flight_details_response_path(self) -> str:
+        if self == RIDVersion.f3411_19:
+            return schema_validation.F3411_19.GetFlightDetailsResponse
+        elif self == RIDVersion.f3411_22a:
+            return schema_validation.F3411_22a.GetFlightDetailsResponse
+        else:
+            raise ValueError(f"Unsupported RID version '{self}'")
 
     @property
     def read_scope(self) -> str:
