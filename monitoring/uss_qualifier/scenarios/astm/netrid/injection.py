@@ -10,3 +10,9 @@ class InjectedFlight(ImplicitDict):
     test_id: str
     flight: TestFlight
     query_timestamp: datetime
+
+
+class InjectedTest(ImplicitDict):
+    participant_id: str
+    test_id: str
+    version: str

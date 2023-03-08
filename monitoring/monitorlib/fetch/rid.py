@@ -196,6 +196,61 @@ class Flight(ImplicitDict):
                 f"Cannot retrieve recent positions using RID version {self.rid_version}"
             )
 
+    def errors(self) -> List[str]:
+        try:
+            rid_version = self.rid_version
+        except ValueError as e:
+            return [str(e)]
+        result = []
+        if rid_version == RIDVersion.f3411_19:
+            pass  # TODO: Check F3411-19 Flight data structures for errors
+        elif rid_version == RIDVersion.f3411_22a:
+            if (
+                "current_state" in self.v22a_value
+                and self.v22a_value.current_state is not None
+            ):
+                if "operating_area" in self.v22a_value:
+                    result.append(
+                        "Only one of `current_state` or `operating_area` may be specified, but both were specified"
+                    )
+                else:
+                    current_state = self.v22a_value.current_state
+                    if (
+                        "position" not in current_state
+                        or current_state.position is None
+                    ):
+                        result.append("`current_state` does not specify `position`")
+                    else:
+                        position = current_state.position
+                        for expected_field in (
+                            "lat",
+                            "lng",
+                            "alt",
+                            "accuracy_h",
+                            "accuracy_v",
+                        ):
+                            if (
+                                expected_field not in position
+                                or position["expected_field"] is None
+                            ):
+                                result.append(
+                                    f"`current_state.position.{expected_field}` is not specified"
+                                )
+            elif (
+                "operating_area" in self.v22a_value
+                and self.v22a_value.operating_area is not None
+            ):
+                pass  # TODO: Check operating_area data for errors
+            else:
+                result.append(
+                    "One of `current_state` or `operating_area` must be specified, but both were unspecified"
+                )
+        else:
+            raise NotImplementedError(
+                f"Cannot check for errors in Flight object using RID version {rid_version}"
+            )
+        return result
+
 
 class FlightDetails(ImplicitDict):
     """Version-independent representation of details for a F3411 flight."""
