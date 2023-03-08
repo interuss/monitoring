@@ -231,7 +231,7 @@ class Flight(ImplicitDict):
                         ):
                             if (
                                 expected_field not in position
-                                or position["expected_field"] is None
+                                or position[expected_field] is None
                             ):
                                 result.append(
                                     f"`current_state.position.{expected_field}` is not specified"
