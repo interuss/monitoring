@@ -97,7 +97,7 @@ def riddp_display_data() -> Tuple[str, int]:
         msg = f"Error fetching ISAs from DSS: {isa_list.error}"
         logger.error(msg)
         response = ErrorResponse(message=msg)
-        response["errors"] = [isa_list]
+        response["fetched_isas"] = isa_list
         return flask.jsonify(response), 412
 
     # Fetch flights from each unique flights URL
@@ -118,9 +118,20 @@ def riddp_display_data() -> Tuple[str, int]:
             )
             logger.error(msg)
             response = ErrorResponse(message=msg)
-            response["errors"] = [flights_response]
+            response["fetched_uss_flights"] = flights_response
             return flask.jsonify(response), 412
         for flight in flights_response.flights:
+            flight_errors = flight.errors()
+            if flight_errors:
+                msg = (
+                    f"Errors while validating Flight data structure returned from {flights_url} by {uss}:\n"
+                    + "\n".join(flight_errors)
+                )
+                logger.error(msg)
+                response = ErrorResponse(message=msg)
+                response["flight_validation_errors"] = flight_errors
+                response["fetched_uss_flights"] = flights_response
+                return flask.jsonify(response), 412
             validated_flights.append(flight)
             flight_info[flight.id] = database.FlightInfo(flights_url=flights_url)
 

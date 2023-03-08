@@ -57,11 +57,11 @@ class NetRIDServiceProvider(object):
             scope=SCOPE_RID_QUALIFIER_INJECT,
         )
 
-    def delete_test(self, test_id: str) -> fetch.Query:
+    def delete_test(self, test_id: str, version: str) -> fetch.Query:
         return fetch.query_and_describe(
             self.client,
             "DELETE",
-            url=f"/tests/{test_id}",
+            url=f"/tests/{test_id}/{version}",
             scope=SCOPE_RID_QUALIFIER_INJECT,
         )
 

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Dict, Union
 
 import arrow
+from loguru import logger
 import s2sphere
 
 from monitoring.monitorlib.fetch import Query
@@ -9,6 +10,7 @@ from monitoring.monitorlib.fetch.rid import (
     all_flights,
     FetchedFlights,
     FetchedUSSFlights,
+    Position,
 )
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
 from uas_standards.interuss.automated_testing.rid.v1.injection import RIDAircraftState
@@ -90,7 +92,7 @@ class DPObservedFlight(object):
         return self.query.flights[self.flight].id
 
     @property
-    def most_recent_position(self):
+    def most_recent_position(self) -> Optional[Position]:
         return self.query.flights[self.flight].most_recent_position
 
 
@@ -124,7 +126,22 @@ def _make_flight_mapping(
     for injected_flight in injected_flights:
         found = False
         for observed_flight in observed_flights:
+            if (
+                isinstance(observed_flight, Flight)
+                and "most_recent_position" not in observed_flight
+            ):
+                logger.warning(
+                    "observed_flight {} is missing most_recent_position",
+                    observed_flight.id,
+                )
+                continue
             p = observed_flight.most_recent_position
+            if p is None:
+                logger.warning(
+                    "most_recent_position is None in observed_flight {}",
+                    observed_flight.id,
+                )
+                continue
             for t1, injected_telemetry in enumerate(injected_flight.flight.telemetry):
                 if (
                     abs(p.lat - injected_telemetry.position.lat) < COORD_TOLERANCE_DEG
@@ -380,7 +397,8 @@ class RIDObservationEvaluator(object):
                 observed_position = mapping.observed_flight.most_recent_position
                 expected_position = expected_telemetry.position
                 if (
-                    abs(observed_position.alt - expected_position.alt)
+                    "alt" in observed_position
+                    and abs(observed_position.alt - expected_position.alt)
                     > DISTANCE_TOLERANCE_M
                 ):
                     self._test_scenario.check(

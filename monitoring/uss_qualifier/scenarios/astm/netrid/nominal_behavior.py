@@ -28,7 +28,10 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.astm.netrid import display_data_evaluator
-from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFlight
+from monitoring.uss_qualifier.scenarios.astm.netrid.injection import (
+    InjectedFlight,
+    InjectedTest,
+)
 from uas_standards.interuss.automated_testing.rid.v1.injection import ChangeTestResponse
 
 
@@ -39,6 +42,7 @@ class NominalBehavior(TestScenario):
     _evaluation_configuration: EvaluationConfigurationResource
 
     _injected_flights: List[InjectedFlight]
+    _injected_tests: List[InjectedTest]
 
     def __init__(
         self,
@@ -54,6 +58,7 @@ class NominalBehavior(TestScenario):
         self._observers = observers
         self._evaluation_configuration = evaluation_configuration
         self._injected_flights = []
+        self._injected_tests = []
         self._dss_pool = dss_pool
 
     @property
@@ -115,6 +120,13 @@ class NominalBehavior(TestScenario):
                     raise ValueError(f"Response did not contain a JSON body")
                 changed_test: ChangeTestResponse = ImplicitDict.parse(
                     query.response.json, ChangeTestResponse
+                )
+                self._injected_tests.append(
+                    InjectedTest(
+                        participant_id=target.participant_id,
+                        test_id=test_id,
+                        version=changed_test.version,
+                    )
                 )
                 injections = changed_test.injected_flights
                 check.record_passed()
@@ -201,26 +213,26 @@ class NominalBehavior(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        while self._injected_flights:
-            injected_flight = self._injected_flights.pop()
+        while self._injected_tests:
+            injected_test = self._injected_tests.pop()
             matching_sps = [
                 sp
                 for sp in self._service_providers.service_providers
-                if sp.participant_id == injected_flight.uss_participant_id
+                if sp.participant_id == injected_test.participant_id
             ]
             if len(matching_sps) != 1:
                 matching_ids = ", ".join(sp.participant_id for sp in matching_sps)
                 raise RuntimeError(
-                    f"Found {len(matching_sps)} service providers with participant ID {injected_flight.uss_participant_id} ({matching_ids}) when exactly 1 was expected"
+                    f"Found {len(matching_sps)} service providers with participant ID {injected_test.participant_id} ({matching_ids}) when exactly 1 was expected"
                 )
             sp = matching_sps[0]
             check = self.check("Successful test deletion", [sp.participant_id])
             try:
-                query = sp.delete_test(injected_flight.test_id)
+                query = sp.delete_test(injected_test.test_id, injected_test.version)
                 self.record_query(query)
                 if query.status_code != 200:
                     raise ValueError(
-                        f"Received status code {query.status_code} after attempting to delete test {injected_flight.test_id} from service provider {sp.participant_id}"
+                        f"Received status code {query.status_code} after attempting to delete test {injected_test.test_id} at version {injected_test.version} from service provider {sp.participant_id}"
                     )
                 check.record_passed()
             except (RequestException, ValueError) as e:

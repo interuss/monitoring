@@ -106,9 +106,9 @@ def ridsp_create_test(test_id: str) -> Tuple[str, int]:
     )
 
 
-@webapp.route("/ridsp/injection/tests/<test_id>", methods=["DELETE"])
+@webapp.route("/ridsp/injection/tests/<test_id>/<version>", methods=["DELETE"])
 @requires_scope([injection_api.SCOPE_RID_QUALIFIER_INJECT])
-def ridsp_delete_test(test_id: str) -> Tuple[str, int]:
+def ridsp_delete_test(test_id: str, version: str) -> Tuple[str, int]:
     """Implements test deletion in RID automated testing injection API."""
     logger.info(f"Delete test {test_id}")
     rid_version = webapp.config[KEY_RID_VERSION]
@@ -116,6 +116,12 @@ def ridsp_delete_test(test_id: str) -> Tuple[str, int]:
 
     if record is None:
         return 'Test "{}" not found'.format(test_id), 404
+
+    if record.version != version:
+        return (
+            f'Test "{test_id}" has version "{record.version}" rather than the specified version "{version}"',
+            404,
+        )
 
     # Delete ISA from DSS
     deleted_isa = mutate.delete_isa(
