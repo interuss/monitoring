@@ -243,8 +243,8 @@ class RIDObservationEvaluator(object):
             verified_sps = set()
 
         if perform_observation:
+            self._test_scenario.begin_test_step("Observer polling")
             for observer in observers:
-                self._test_scenario.begin_test_step("Observer polling")
                 (observation, query) = observer.observe_system(rect)
                 self._test_scenario.record_query(query)
                 self._evaluate_observation(
@@ -254,10 +254,10 @@ class RIDObservationEvaluator(object):
                     query,
                     verified_sps,
                 )
-                self._test_scenario.end_test_step()
 
                 # TODO: If bounding rect is smaller than cluster threshold, expand slightly above cluster threshold and re-observe
                 # TODO: If bounding rect is smaller than area-too-large threshold, expand slightly above area-too-large threshold and re-observe
+            self._test_scenario.end_test_step()
 
     def _evaluate_observation(
         self,
