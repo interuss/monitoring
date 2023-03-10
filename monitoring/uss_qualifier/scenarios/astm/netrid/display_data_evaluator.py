@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Union
+from typing import List, Optional, Dict, Union, Set
 
 import arrow
 from loguru import logger
+import math
 import s2sphere
 
 from monitoring.monitorlib.fetch import Query
@@ -124,7 +125,8 @@ def _make_flight_mapping(
     """
     mapping: Dict[str, TelemetryMapping] = {}
     for injected_flight in injected_flights:
-        found = False
+        smallest_distance = 1e9
+        best_match = None
         for observed_flight in observed_flights:
             if (
                 isinstance(observed_flight, Flight)
@@ -143,20 +145,32 @@ def _make_flight_mapping(
                 )
                 continue
             for t1, injected_telemetry in enumerate(injected_flight.flight.telemetry):
-                if (
-                    abs(p.lat - injected_telemetry.position.lat) < COORD_TOLERANCE_DEG
-                    and abs(p.lng - injected_telemetry.position.lng)
-                    < COORD_TOLERANCE_DEG
-                ):
-                    mapping[injected_flight.flight.injection_id] = TelemetryMapping(
-                        injected_flight=injected_flight,
-                        telemetry_index=t1,
-                        observed_flight=observed_flight,
-                    )
-                    found = True
-                    break
-            if found:
-                break
+                dlat = abs(p.lat - injected_telemetry.position.lat)
+                dlng = abs(p.lng - injected_telemetry.position.lng)
+                if dlat < COORD_TOLERANCE_DEG and dlng < COORD_TOLERANCE_DEG:
+                    new_distance = math.sqrt(math.pow(dlat, 2) + math.pow(dlng, 2))
+                    if new_distance < smallest_distance:
+                        best_match = TelemetryMapping(
+                            injected_flight=injected_flight,
+                            telemetry_index=t1,
+                            observed_flight=observed_flight,
+                        )
+                        smallest_distance = new_distance
+        if best_match is not None:
+            observed_p = best_match.observed_flight.most_recent_position
+            observed_lat = observed_p.lat if "lat" in observed_p else None
+            observed_lng = observed_p.lng if "lng" in observed_p else None
+            observed_alt = observed_p.alt if "alt" in observed_p else None
+            best_p = best_match.injected_flight.flight.telemetry[
+                best_match.telemetry_index
+            ].position
+            best_lat = best_p.lat if "lat" in best_p else None
+            best_lng = best_p.lng if "lng" in best_p else None
+            best_alt = best_p.alt if "alt" in best_p else None
+            logger.debug(
+                f"For injection ID {best_match.injected_flight.flight.injection_id}, matched observed flight {best_match.observed_flight.id} at ({observed_lat}, {observed_lng})+{observed_alt} to injected flight's telemetry index {best_match.telemetry_index} at ({best_lat}, {best_lng})+{best_alt}"
+            )
+            mapping[best_match.injected_flight.flight.injection_id] = best_match
     return mapping
 
 
@@ -203,26 +217,34 @@ class RIDObservationEvaluator(object):
         if self._dss:
             self._test_scenario.begin_test_step("Service Provider polling")
 
-            dp_observation = all_flights(
+            # Observe Service Provider with uss_qualifier acting as a Display Provider
+            sp_observation = all_flights(
                 rect,
                 include_recent_positions=True,
                 get_details=True,
                 rid_version=self._rid_version,
                 session=self._dss.client,
             )
-            for q in dp_observation.queries:
+            for q in sp_observation.queries:
                 self._test_scenario.record_query(q)
 
-            self._evaluate_dp_observation(dp_observation, rect)
+            self._evaluate_sp_observation(sp_observation, rect)
 
             step_report = self._test_scenario.end_test_step()
-            perform_observation = step_report.successful
+            perform_observation = step_report.successful()
+            verified_sps = {
+                obs.participant_id
+                for obs in observers
+                if obs.participant_id
+                not in step_report.participants_with_failed_checks()
+            }
         else:
             perform_observation = True
+            verified_sps = set()
 
         if perform_observation:
+            self._test_scenario.begin_test_step("Observer polling")
             for observer in observers:
-                self._test_scenario.begin_test_step("Observer polling")
                 (observation, query) = observer.observe_system(rect)
                 self._test_scenario.record_query(query)
                 self._evaluate_observation(
@@ -230,11 +252,12 @@ class RIDObservationEvaluator(object):
                     rect,
                     observation,
                     query,
+                    verified_sps,
                 )
-                self._test_scenario.end_test_step()
 
                 # TODO: If bounding rect is smaller than cluster threshold, expand slightly above cluster threshold and re-observe
                 # TODO: If bounding rect is smaller than area-too-large threshold, expand slightly above area-too-large threshold and re-observe
+            self._test_scenario.end_test_step()
 
     def _evaluate_observation(
         self,
@@ -242,6 +265,7 @@ class RIDObservationEvaluator(object):
         rect: s2sphere.LatLngRect,
         observation: Optional[GetDisplayDataResponse],
         query: fetch.Query,
+        verified_sps: Set[str],
     ) -> None:
         diagonal_km = (
             rect.lo().get_distance(rect.hi()).degrees * geo.EARTH_CIRCUMFERENCE_KM / 360
@@ -258,6 +282,7 @@ class RIDObservationEvaluator(object):
                 rect,
                 observation,
                 query,
+                verified_sps,
             )
 
     def _evaluate_normal_observation(
@@ -266,6 +291,7 @@ class RIDObservationEvaluator(object):
         rect: s2sphere.LatLngRect,
         observation: Optional[GetDisplayDataResponse],
         query: fetch.Query,
+        verified_sps: Set[str],
     ) -> None:
         with self._test_scenario.check(
             "Successful observation", [observer.participant_id]
@@ -304,8 +330,37 @@ class RIDObservationEvaluator(object):
         )
 
         self._evaluate_flight_presence(
-            observer.participant_id, [query], True, mapping_by_injection_id
+            observer.participant_id,
+            [query],
+            True,
+            mapping_by_injection_id,
+            verified_sps,
         )
+
+        # Check that altitudes match for any observed flights matching injected flights
+        for mapping in mapping_by_injection_id.values():
+            injected_telemetry = mapping.injected_flight.flight.telemetry[
+                mapping.telemetry_index
+            ]
+            observed_position = mapping.observed_flight.most_recent_position
+            injected_position = injected_telemetry.position
+            if "alt" in observed_position:
+                with self._test_scenario.check(
+                    "Observed altitude",
+                    [
+                        observer.participant_id,
+                        mapping.injected_flight.uss_participant_id,
+                    ],
+                ) as check:
+                    if (
+                        abs(observed_position.alt - injected_position.alt)
+                        > DISTANCE_TOLERANCE_M
+                    ):
+                        check.record_failed(
+                            "Observed altitude does not match injected altitude",
+                            Severity.Medium,
+                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}, alt={injected_telemetry.position.alt}, but {observer.participant_id} observed lat={observed_position.lat}, lng={observed_position.lng}, alt={observed_position.alt} at {query.request.initiated_at}",
+                        )
 
     def _evaluate_flight_presence(
         self,
@@ -313,6 +368,7 @@ class RIDObservationEvaluator(object):
         observation_queries: List[Query],
         observer_participant_is_relevant: bool,
         mapping_by_injection_id: Dict[str, TelemetryMapping],
+        verified_sps: Set[str],
     ):
         query_timestamps = [q.request.timestamp for q in observation_queries]
         observer_participants = (
@@ -349,9 +405,14 @@ class RIDObservationEvaluator(object):
                 + self._config.max_propagation_latency.timedelta
             ):
                 # This flight should not have been observed (it was too far in the past)
+                participants = observer_participants
+                if (
+                    expected_flight.uss_participant_id not in verified_sps
+                    or not participants
+                ):
+                    participants.append(expected_flight.uss_participant_id)
                 with self._test_scenario.check(
-                    "Lingering flight",
-                    observer_participants + [expected_flight.uss_participant_id],
+                    "Lingering flight", participants
                 ) as check:
                     if expected_flight.flight.injection_id in mapping_by_injection_id:
                         check.record_failed(
@@ -365,13 +426,18 @@ class RIDObservationEvaluator(object):
             elif (
                 t_min + self._config.max_propagation_latency.timedelta
                 < t_initiated
-                < t_max + self._rid_version.realtime_period
+                < t_max
+                + self._rid_version.realtime_period
+                - self._config.max_propagation_latency.timedelta
             ):
                 # This flight should definitely have been observed
-                with self._test_scenario.check(
-                    "Missing flight",
-                    observer_participants + [expected_flight.uss_participant_id],
-                ) as check:
+                participants = observer_participants
+                if (
+                    expected_flight.uss_participant_id not in verified_sps
+                    or not participants
+                ):
+                    participants.append(expected_flight.uss_participant_id)
+                with self._test_scenario.check("Missing flight", participants) as check:
                     if (
                         expected_flight.flight.injection_id
                         not in mapping_by_injection_id
@@ -388,27 +454,6 @@ class RIDObservationEvaluator(object):
             elif t_initiated > t_min:
                 # If this flight was not observed, there may be propagation latency
                 pass  # TODO: findings propagation latency
-
-            # Check that altitudes match
-            for mapping in mapping_by_injection_id.values():
-                expected_telemetry = expected_flight.flight.telemetry[
-                    mapping.telemetry_index
-                ]
-                observed_position = mapping.observed_flight.most_recent_position
-                expected_position = expected_telemetry.position
-                if (
-                    "alt" in observed_position
-                    and abs(observed_position.alt - expected_position.alt)
-                    > DISTANCE_TOLERANCE_M
-                ):
-                    self._test_scenario.check(
-                        "Altitude",
-                        observer_participants + [expected_flight.uss_participant_id],
-                    ).record_failed(
-                        "Observed altitude does not match injected altitude",
-                        Severity.Medium,
-                        details=f"{expected_flight.uss_participant_id}'s flight with injection ID {expected_flight.flight.injection_id} in test {expected_flight.test_id} had telemetry index {mapping.telemetry_index} at {expected_telemetry.timestamp} with lat={expected_telemetry.position.lat}, lng={expected_telemetry.position.lng}, alt={expected_telemetry.position.alt}, but {observer_participant_id} observed lat={observed_position.lat}, lng={observed_position.lng}, alt={observed_position.alt} at {t_response.isoformat()}",
-                    )
 
     def _evaluate_area_too_large_observation(
         self,
@@ -432,9 +477,9 @@ class RIDObservationEvaluator(object):
         # TODO: Check cluster sizing, aircraft counts, etc
         pass
 
-    def _evaluate_dp_observation(
+    def _evaluate_sp_observation(
         self,
-        dp_observation: FetchedFlights,
+        sp_observation: FetchedFlights,
         rect: s2sphere.LatLngRect,
     ) -> None:
         # Note: This step currently uses the DSS endpoint to perform a one-time query for ISAs, but this
@@ -444,20 +489,20 @@ class RIDObservationEvaluator(object):
         # is currently much cleaner.  If this test is applied to a DSS that does not implement the one-time
         # ISA query endpoint, this check can be adapted.
         with self._test_scenario.check("ISA query") as check:
-            if not dp_observation.dss_isa_query.success:
+            if not sp_observation.dss_isa_query.success:
                 check.record_failed(
                     summary="Could not query ISAs from DSS",
                     severity=Severity.Medium,
                     details=f"Query to {self._dss.participant_id}'s DSS at {dp_observation.dss_isa_query.query.request.url} failed {dp_observation.dss_isa_query.query.status_code}",
                     participants=[self._dss.participant_id],
                     query_timestamps=[
-                        dp_observation.dss_isa_query.query.request.initiated_at.datetime
+                        sp_observation.dss_isa_query.query.request.initiated_at.datetime
                     ],
                 )
                 return
 
         observed_flights = []
-        for uss_query in dp_observation.uss_flight_queries.values():
+        for uss_query in sp_observation.uss_flight_queries.values():
             for f in range(len(uss_query.flights)):
                 observed_flights.append(DPObservedFlight(query=uss_query, flight=f))
         mapping_by_injection_id = _make_flight_mapping(
@@ -468,32 +513,33 @@ class RIDObservationEvaluator(object):
             rect.lo().get_distance(rect.hi()).degrees * geo.EARTH_CIRCUMFERENCE_KM / 360
         )
         if diagonal_km > self._rid_version.max_diagonal_km:
-            self._evaluate_area_too_large_dp_observation(
+            self._evaluate_area_too_large_sp_observation(
                 mapping_by_injection_id, rect, diagonal_km
             )
         else:
-            self._evaluate_normal_dp_observation(
-                dp_observation, mapping_by_injection_id
+            self._evaluate_normal_sp_observation(
+                sp_observation, mapping_by_injection_id
             )
 
-    def _evaluate_normal_dp_observation(
+    def _evaluate_normal_sp_observation(
         self,
-        dp_observation: FetchedFlights,
+        sp_observation: FetchedFlights,
         mappings: Dict[str, TelemetryMapping],
     ) -> None:
 
         self._evaluate_flight_presence(
             "uss_qualifier, acting as Display Provider",
-            dp_observation.queries,
+            sp_observation.queries,
             False,
             mappings,
+            set(),
         )
 
         # Verify that flights queries returned correctly-formatted data
         for mapping in mappings.values():
             flights_queries = [
                 q
-                for flight_url, q in dp_observation.uss_flight_queries.items()
+                for flight_url, q in sp_observation.uss_flight_queries.items()
                 if mapping.observed_flight.id in {f.id for f in q.flights}
             ]
             if len(flights_queries) != 1:
@@ -521,11 +567,33 @@ class RIDObservationEvaluator(object):
                         query_timestamps=[flights_query.query.request.timestamp],
                     )
 
+        # Check that altitudes match for any observed flights matching injected flights
+        for mapping in mappings.values():
+            injected_telemetry = mapping.injected_flight.flight.telemetry[
+                mapping.telemetry_index
+            ]
+            observed_position = mapping.observed_flight.most_recent_position
+            injected_position = injected_telemetry.position
+            if "alt" in observed_position:
+                with self._test_scenario.check(
+                    "Service Provider altitude",
+                    [mapping.injected_flight.uss_participant_id],
+                ) as check:
+                    if (
+                        abs(observed_position.alt - injected_position.alt)
+                        > DISTANCE_TOLERANCE_M
+                    ):
+                        check.record_failed(
+                            "Altitude reported by Service Provider does not match injected altitude",
+                            Severity.Medium,
+                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}, alt={injected_telemetry.position.alt}, but Service Provider reported lat={observed_position.lat}, lng={observed_position.lng}, alt={observed_position.alt} at {mapping.observed_flight.query.query.request.initiated_at}",
+                        )
+
         # Verify that flight details queries succeeded and returned correctly-formatted data
         for mapping in mappings.values():
             details_queries = [
                 q
-                for flight_id, q in dp_observation.uss_flight_details_queries.items()
+                for flight_id, q in sp_observation.uss_flight_details_queries.items()
                 if flight_id == mapping.observed_flight.id
             ]
             if len(details_queries) != 1:
@@ -566,7 +634,7 @@ class RIDObservationEvaluator(object):
                         query_timestamps=[details_query.query.request.timestamp],
                     )
 
-    def _evaluate_area_too_large_dp_observation(
+    def _evaluate_area_too_large_sp_observation(
         self,
         mappings: Dict[str, TelemetryMapping],
         rect: s2sphere.LatLngRect,

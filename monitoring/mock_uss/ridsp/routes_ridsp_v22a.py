@@ -4,7 +4,6 @@ from datetime import timedelta
 from typing import List, Optional
 
 import flask
-from implicitdict import StringBasedDateTime
 import s2sphere
 from uas_standards.astm.f3411.v22a.api import (
     ErrorResponse,
@@ -110,7 +109,7 @@ def _get_report(
     flight: TestFlight,
     t_request: datetime.datetime,
     view: s2sphere.LatLngRect,
-    include_recent_positions: bool,
+    recent_positions_duration: float,
 ) -> Optional[RIDFlight]:
     details = flight.get_details(t_request)
     if not details:
@@ -132,15 +131,19 @@ def _get_report(
         current_state=_make_state(recent_states[-1]),
         simulated=True,
     )
-    if include_recent_positions:
+    if recent_positions_duration > 0:
         recent_positions: List[RIDRecentAircraftPosition] = []
+        now = arrow.utcnow().datetime
         for recent_state in recent_states:
-            recent_positions.append(
-                RIDRecentAircraftPosition(
-                    time=make_time(recent_state.timestamp.datetime),
-                    position=_make_position(recent_state.position),
+            if (
+                now - recent_state.timestamp.datetime
+            ).total_seconds() <= recent_positions_duration:
+                recent_positions.append(
+                    RIDRecentAircraftPosition(
+                        time=make_time(recent_state.timestamp.datetime),
+                        position=_make_position(recent_state.position),
+                    )
                 )
-            )
         result.recent_positions = recent_positions
     return result
 
@@ -178,9 +181,28 @@ def ridsp_flights_v22a():
             400,
         )
 
-    include_recent_positions = (
-        flask.request.args.get("include_recent_positions", "False").lower() == "true"
-    )
+    try:
+        recent_positions_duration = float(
+            flask.request.args.get("recent_positions_duration", "0")
+        )
+    except ValueError as e:
+        return (
+            flask.jsonify(
+                ErrorResponse(
+                    message=f"Error parsing recent_positions_duration: {str(e)}"
+                )
+            ),
+            400,
+        )
+    if recent_positions_duration < 0 or recent_positions_duration > 60:
+        return (
+            flask.jsonify(
+                ErrorResponse(
+                    message=f"Invalid recent_positions_duration; must be between 0 and 60, but received {recent_positions_duration}"
+                )
+            ),
+            400,
+        )
 
     diagonal = geo.get_latlngrect_diagonal_km(view)
     if diagonal > NetMaxDisplayAreaDiagonalKm:
@@ -194,7 +216,7 @@ def ridsp_flights_v22a():
     tx = db.value
     for test_id, record in tx.tests.items():
         for flight in record.flights:
-            reported_flight = _get_report(flight, now, view, include_recent_positions)
+            reported_flight = _get_report(flight, now, view, recent_positions_duration)
             if reported_flight is not None:
                 # TODO: Implement Service Provider behaviors for F3411-22a
                 # reported_flight = behavior.adjust_reported_flight(

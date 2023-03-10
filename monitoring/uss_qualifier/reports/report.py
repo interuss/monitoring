@@ -1,6 +1,6 @@
 from datetime import datetime
 import traceback
-from typing import List, Optional, Dict, Tuple, Any, Union
+from typing import List, Optional, Dict, Tuple, Any, Union, Set
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 
@@ -86,6 +86,13 @@ class TestStepReport(ImplicitDict):
 
     def successful(self) -> bool:
         return False if self.failed_checks else True
+
+    def participants_with_failed_checks(self) -> Set[str]:
+        participants = set()
+        for fc in self.failed_checks:
+            for p in fc.participants:
+                participants.add(p)
+        return participants
 
 
 class TestCaseReport(ImplicitDict):
