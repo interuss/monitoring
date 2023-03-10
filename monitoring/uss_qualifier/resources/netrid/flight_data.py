@@ -52,8 +52,8 @@ class AdjacentCircularFlightsSimulatorConfiguration(ImplicitDict):
     maxy: float = 46.9776318195799121
     """Northern edge of bounding box (degrees latitude)"""
 
-    utm_zone: str = "32T"
-    """UTM Zone string for the location, see https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system to identify the zone for the location."""
+    utm_zone: int = 32
+    """UTM Zone integer for the location, see https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system to identify the zone for the location."""
 
     altitude_of_ground_level_wgs_84 = 570
     """Height of the geoid above the WGS84 ellipsoid (using EGM 96) for Bern, rom https://geographiclib.sourceforge.io/cgi-bin/GeoidEval?input=46%B056%26%238242%3B53%26%238243%3BN+7%B026%26%238242%3B51%26%238243%3BE&option=Submit"""
