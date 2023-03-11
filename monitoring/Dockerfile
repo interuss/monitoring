@@ -12,8 +12,7 @@
 FROM python:3.8
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
-RUN apt-get update && apt-get install openssl && apt-get install ca-certificates
-
+RUN apt-get update && apt-get install openssl && apt-get install ca-certificates && apt-get install -y libgeos-dev
 RUN mkdir -p /app/monitoring
 COPY ./requirements.txt /app/monitoring/requirements.txt
 RUN pip install -r /app/monitoring/requirements.txt
