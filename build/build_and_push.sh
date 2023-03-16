@@ -3,6 +3,8 @@
 # This script builds and pushes the InterUSS monitoring docker image and may be
 # run from any working directory.  If DOCKER_URL is present, it will both
 # build the versioned monitoring image and push it to the DOCKER_URL remote.
+# If DOCKER_URL is set, DOCKER_UPDATE_LATEST can be optionally set to `true` in order
+# to publish the latest tag along the version.
 
 set -eo pipefail
 
@@ -16,6 +18,7 @@ fi
 cd "${BASEDIR}"
 
 VERSION=$(./scripts/git/version.sh monitoring)
+LATEST_TAG="latest"
 
 if [[ -z "${DOCKER_URL}" ]]; then
   echo "DOCKER_URL environment variable is not set; building image to interuss/monitoring..."
@@ -29,5 +32,14 @@ else
   echo "Pushing docker image ${DOCKER_URL}/monitoring:${VERSION}..."
   docker image push "${DOCKER_URL}/monitoring:${VERSION}"
 
+  if [[ "${DOCKER_UPDATE_LATEST}" == "true" ]]; then
+    echo "Tagging docker image ${DOCKER_URL}/monitoring:${LATEST_TAG}..."
+    docker tag "${DOCKER_URL}/monitoring:${VERSION}" "${DOCKER_URL}/monitoring:${LATEST_TAG}"
+
+    echo "Pushing docker image ${DOCKER_URL}/monitoring:${LATEST_TAG}..."
+    docker image push "${DOCKER_URL}/monitoring:${LATEST_TAG}"
+
+    echo "Built and pushed docker image ${DOCKER_URL}/monitoring:${LATEST_TAG}"
+  fi
   echo "Built and pushed docker image ${DOCKER_URL}/monitoring:${VERSION}"
 fi
