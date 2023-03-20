@@ -12,7 +12,7 @@ from yaml.representer import Representer
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.monitorlib import infrastructure
-
+from loguru import logger
 
 TIMEOUTS = (5, 25)  # Timeouts of `connect` and `read` in seconds
 
@@ -202,6 +202,7 @@ def query_and_describe(
         return describe_query(client.request(verb, url, **req_kwargs), t0)
     except (requests.RequestException, urllib3.exceptions.ReadTimeoutError) as e:
         msg = "{}: {}".format(type(e).__name__, str(e))
+        logger.error(f"Catched `query_and_describe` - {msg} - {e}")
     t1 = datetime.datetime.utcnow()
 
     # Reconstruct request similar to the one in the query (which is not
