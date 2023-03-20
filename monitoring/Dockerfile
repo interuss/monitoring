@@ -9,10 +9,10 @@
 #
 # This image is intended to be built from the repository root context/folder.
 
-FROM python:3.8
+FROM python:3.8-slim
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
-RUN apt-get update && apt-get install openssl && apt-get install ca-certificates
+RUN apt-get update && apt-get install -y openssl curl && apt-get install ca-certificates
 
 RUN mkdir -p /app/monitoring
 COPY ./requirements.txt /app/monitoring/requirements.txt
