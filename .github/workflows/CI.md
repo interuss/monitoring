@@ -30,3 +30,5 @@ Steps:
 Steps:
 
 * test_docker_fully_mocked.sh
+
+### prober tests (`make test` in monitoring/prober)

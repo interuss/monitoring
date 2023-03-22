@@ -13,3 +13,6 @@ shell-lint:
 format:
 	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:22.10.0 black .
 
+.PHONY: test
+test:
+	./scripts/test_docker_fully_mocked.sh
