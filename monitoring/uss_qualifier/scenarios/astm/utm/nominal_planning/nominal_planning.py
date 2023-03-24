@@ -9,6 +9,9 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
 )
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
+    FlightIntent,
+)
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlanner,
 )
@@ -32,10 +35,10 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
 
 
 class NominalPlanning(TestScenario):
-    first_flight: InjectFlightRequest
-    first_flight_id: Optional[str]
-    conflicting_flight: InjectFlightRequest
-    first_flight_activated: InjectFlightRequest
+    first_flight: FlightIntent
+    first_flight_id: Optional[str] = None
+    first_flight_op_intent_id: Optional[str] = None
+    conflicting_flight: FlightIntent
     uss1: FlightPlanner
     uss2: FlightPlanner
     dss: DSSInstance
@@ -50,20 +53,19 @@ class NominalPlanning(TestScenario):
         super().__init__()
         self.uss1 = uss1.flight_planner
         self.uss2 = uss2.flight_planner
+        self.dss = dss.dss
 
         flight_intents = flight_intents.get_flight_intents()
-        if len(flight_intents) < 3:
+        if len(flight_intents) < 2:
             raise ValueError(
-                f"`{self.me()}` TestScenario requires at least 3 flight_intents; found {len(flight_intents)}"
+                f"`{self.me()}` TestScenario requires at least 2 flight_intents; found {len(flight_intents)}"
             )
-        (
-            self.first_flight,
-            self.conflicting_flight,
-            self.first_flight_activated,
-        ) = flight_intents
-        self.first_flight_id = None
 
-        self.dss = dss.dss
+        (self.first_flight, self.conflicting_flight) = flight_intents
+        if "activated" not in self.first_flight.mutations:
+            raise ValueError(
+                f"`{self.me()}` TestScenario requires first_flight to have a 'activated' mutation"
+            )
 
     def run(self):
         self.begin_test_scenario()
@@ -109,7 +111,7 @@ class NominalPlanning(TestScenario):
         clear_area(
             self,
             "Area clearing",
-            [self.first_flight, self.conflicting_flight, self.first_flight_activated],
+            [self.first_flight, self.conflicting_flight],
             [self.uss1, self.uss2],
         )
 
@@ -117,38 +119,42 @@ class NominalPlanning(TestScenario):
 
     def _plan_first_flight(self):
         resp, self.first_flight_id = plan_flight_intent(
-            self, "Plan flight intent", self.uss1, self.first_flight
+            self, "Plan flight intent", self.uss1, self.first_flight.request
         )
+        self.first_flight_op_intent_id = resp.operational_intent_id
 
         validate_shared_operational_intent(
             self,
             "Validate flight sharing",
-            self.first_flight,
-            resp.operational_intent_id,
+            self.first_flight.request,
+            self.first_flight_op_intent_id,
         )
 
     def _attempt_second_flight(self):
-        resp = plan_conflict_flight_intent(
+        _ = plan_conflict_flight_intent(
             self,
             "Plan second flight with non-permitted equal priority conflict",
             self.uss2,
-            self.conflicting_flight,
+            self.conflicting_flight.request,
         )
 
+        # todo: add check flight intent was not planned
+
     def _activate_first_flight(self):
-        resp = activate_flight_intent(
+        first_flight_activated = self.first_flight.get_mutated("activated")
+        _ = activate_flight_intent(
             self,
             "Activate first flight",
             self.uss1,
             self.first_flight_id,
-            self.first_flight_activated,
+            first_flight_activated.request,
         )
 
         validate_shared_operational_intent(
             self,
             "Validate flight sharing",
-            self.first_flight_activated,
-            resp.operational_intent_id,
+            first_flight_activated.request,
+            self.first_flight_op_intent_id,
         )
 
     def cleanup(self):

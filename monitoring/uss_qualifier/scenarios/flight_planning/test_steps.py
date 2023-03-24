@@ -14,6 +14,9 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     DeleteFlightResponse,
 )
 from monitoring.uss_qualifier.common_data_definitions import Severity
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
+    FlightIntent,
+)
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlanner,
 )
@@ -23,7 +26,7 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 def clear_area(
     scenario: TestScenarioType,
     test_step: str,
-    flight_intents: List[InjectFlightRequest],
+    flight_intents: List[FlightIntent],
     flight_planners: List[FlightPlanner],
 ) -> None:
     """Perform a test step to clear the area that will be used in the scenario.
@@ -42,8 +45,13 @@ def clear_area(
 
     volumes = []
     for flight_intent in flight_intents:
-        volumes += flight_intent.operational_intent.volumes
-        volumes += flight_intent.operational_intent.off_nominal_volumes
+        volumes += flight_intent.request.operational_intent.volumes
+        volumes += flight_intent.request.operational_intent.off_nominal_volumes
+        for mutation in flight_intent.mutations.values():
+            if mutation.has_field_with_value("volumes"):
+                volumes += mutation.volumes
+            if mutation.has_field_with_value("off_nominal_volumes"):
+                volumes += mutation.off_nominal_volumes
     extent = bounding_vol4(volumes)
     for uss in flight_planners:
         with scenario.check("Area cleared successfully", [uss.participant_id]) as check:
