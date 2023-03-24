@@ -23,16 +23,12 @@ else
 fi
 cd "${BASEDIR}/../../.." || exit 1
 
-CONFIG_CONTAINER_LOCATION='/app/monitoring/uss_qualifier/config.json' # Path of the file in the container
+OUTPUT_DIR="monitoring/uss_qualifier/output"
+mkdir -p "$OUTPUT_DIR"
+
 AUTH="${2:-NoAuth()}"
 
-QUALIFIER_OPTIONS="--auth $AUTH --config $CONFIG_CONTAINER_LOCATION"
-
-REPORT_RID_FILE="$(pwd)/monitoring/uss_qualifier/report_rid.json"
-REPORT_SCD_FILE="$(pwd)/monitoring/uss_qualifier/report_scd.json"
-# files must already exist to share correctly with the Docker container
-touch "${REPORT_RID_FILE}"
-touch "${REPORT_SCD_FILE}"
+QUALIFIER_OPTIONS="--auth $AUTH --config /config.json --report output/report.json"
 
 "$(pwd)"/monitoring/build.sh
 
@@ -47,9 +43,8 @@ docker run ${docker_args} --name uss_qualifier \
   --rm \
   -e QUALIFIER_OPTIONS="${QUALIFIER_OPTIONS}" \
   -e PYTHONBUFFERED=1 \
-  -v "${REPORT_RID_FILE}:/app/monitoring/uss_qualifier/report.json" \
-  -v "${REPORT_SCD_FILE}:/app/monitoring/uss_qualifier/report_scd.json" \
-  -v "${CONFIG_LOCATION}:$CONFIG_CONTAINER_LOCATION" \
+  -v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \
+  -v "${CONFIG_LOCATION}:/config.json" \
   -w /app/monitoring/uss_qualifier \
   interuss/monitoring \
   python main.py $QUALIFIER_OPTIONS

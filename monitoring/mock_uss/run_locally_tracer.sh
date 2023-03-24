@@ -6,12 +6,14 @@ if [ -z "${DO_NOT_BUILD_MONITORING}" ]; then
 fi
 
 cd "${SCRIPT_DIR}" || exit 1
-mkdir -p tracer/logs
+
+OUTPUT_DIR="output/tracer"
+mkdir -p "$OUTPUT_DIR"
 # Prevent logs from building up too much by default
-rm tracer/logs/*.yaml
+find "$OUTPUT_DIR" -name "*.yaml" -exec rm {} \;
 
 AREA='--area=46.974,7.473,46.976,7.479'
-LOGS='--output-folder=/logs'
+LOGS="--output-folder=$OUTPUT_DIR"
 MONITOR='--monitor-rid --monitor-scd'
 POLL='--rid-isa-poll-interval=15 --scd-operation-poll-interval=15 --scd-constraint-poll-interval=15'
 
@@ -37,6 +39,7 @@ docker container rm -f ${container_name} || echo "No pre-existing ${container_na
 
 # shellcheck disable=SC2086
 docker run ${docker_args} --name ${container_name} \
+  -u "$(id -u):$(id -g)" \
   -e MOCK_USS_AUTH_SPEC="${AUTH}" \
   -e MOCK_USS_DSS_URL="${DSS}" \
   -e MOCK_USS_PUBLIC_KEY="${PUBLIC_KEY}" \
@@ -46,7 +49,8 @@ docker run ${docker_args} --name ${container_name} \
   -e MOCK_USS_SERVICES="tracer" \
   -p ${PORT}:5000 \
   -v "${SCRIPT_DIR}/../../build/test-certs:/var/test-certs:ro" \
-  -v "${SCRIPT_DIR}/tracer/logs:/logs" \
+  -v "$(pwd)/$OUTPUT_DIR:/app/monitoring/mock_uss/$OUTPUT_DIR" \
+  -w /app/monitoring/mock_uss \
   "$@" \
   interuss/monitoring \
-  mock_uss/start.sh
+  ./start.sh

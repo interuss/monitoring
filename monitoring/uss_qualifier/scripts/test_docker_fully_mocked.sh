@@ -55,7 +55,7 @@ echo "============="
 monitoring/uss_qualifier/run_locally.sh
 
 # Ensure all tests passed
-successful=$(python build/dev/extract_json_field.py report.test_suite.successful < monitoring/uss_qualifier/report.json)
+successful=$(python build/dev/extract_json_field.py report.test_suite.successful < monitoring/uss_qualifier/output/report.json)
 if echo "${successful}" | grep -iqF true; then
   echo "All uss_qualifier tests passed."
 else
