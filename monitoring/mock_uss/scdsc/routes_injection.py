@@ -226,8 +226,32 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             ):
                 # Don't consider intersections with same-priority operational intents if they're allowed
                 continue
+
             v2a = op_intent.details.volumes
             v2b = op_intent.details.off_nominal_volumes
+
+            if (
+                existing_flight
+                and existing_flight.op_intent_reference.state
+                == OperationalIntentState.Activated
+                and op_intent.reference.state == OperationalIntentState.Activated
+                and req_body.operational_intent.state
+                == OperationalIntentState.Activated
+                and (
+                    scd.vol4s_intersect(
+                        existing_flight.op_intent_injection.volumes, v2a
+                    )
+                    or scd.vol4s_intersect(
+                        existing_flight.op_intent_injection.volumes, v2b
+                    )
+                )
+            ):
+                # Don't consider intersections with higher-priority operational intents if:
+                # - both are Activated, and
+                # - if past version of the flight was already in conflict (i.e. conflict is pre-existing), and
+                # - if this is a modification
+                continue
+
             if scd.vol4s_intersect(v1, v2a) or scd.vol4s_intersect(v1, v2b):
                 notes = f"Requested flight (priority {req_body.operational_intent.priority}) intersected {op_intent.reference.manager}'s operational intent {op_intent.reference.id} (priority {op_intent.details.priority})"
                 return (
