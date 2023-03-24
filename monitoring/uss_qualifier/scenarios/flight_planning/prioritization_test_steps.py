@@ -1,4 +1,7 @@
 from typing import Optional, Tuple
+
+from uas_standards.astm.f3548.v21.api import OperationalIntentState
+
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
     InjectFlightResult,
@@ -26,6 +29,11 @@ def plan_priority_conflict_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Accepted:
+        raise ValueError(
+            f"operational intent state is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -51,6 +59,11 @@ def modify_planned_priority_conflict_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Accepted:
+        raise ValueError(
+            f"operational intent state is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -77,6 +90,11 @@ def activate_priority_conflict_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Activated:
+        raise ValueError(
+            f"operational intent state is expected to be `Activated`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -103,6 +121,11 @@ def modify_activated_priority_conflict_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Activated:
+        raise ValueError(
+            f"operational intent state is expected to be `Activated`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -128,6 +151,11 @@ def plan_conflict_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Accepted:
+        raise ValueError(
+            f"operational intent state is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -153,6 +181,11 @@ def modify_planned_conflict_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Accepted:
+        raise ValueError(
+            f"operational intent state is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -179,6 +212,11 @@ def activate_conflict_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Activated:
+        raise ValueError(
+            f"operational intent state is expected to be `Activated`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -205,6 +243,11 @@ def modify_activated_conflict_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Activated:
+        raise ValueError(
+            f"operational intent state is expected to be `Activated`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -232,6 +275,11 @@ def plan_permitted_conflict_flight_intent(
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Accepted:
+        raise ValueError(
+            f"operational intent state is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -257,6 +305,11 @@ def modify_planned_permitted_conflict_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Accepted:
+        raise ValueError(
+            f"operational intent state is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -283,6 +336,11 @@ def activate_permitted_conflict_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Activated:
+        raise ValueError(
+            f"operational intent state is expected to be `Activated`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -309,6 +367,11 @@ def modify_activated_permitted_conflict_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Activated:
+        raise ValueError(
+            f"operational intent state is expected to be `Activated`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
