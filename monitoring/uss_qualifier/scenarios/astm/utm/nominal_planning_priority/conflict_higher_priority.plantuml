@@ -7,123 +7,96 @@ participant "Test Driver" as TD
 participant "Tested USS\n(flight 1)" as T_USS
 participant "Control USS\n(flight 2)" as C_USS
 
-== Plan flight 1 via Tested USS ==
-TD -> T_USS: PUT /inject/flight/{flight1}\n{"state": "Accepted", "priority": 20, "volumes": [volume1]}
-TD <- T_USS: 200 Ok - Operational Intent 1 created\n{"result": "Planned"}
-
-TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume1
-TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS
-
-TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
-TD <- T_USS: 200 Ok - returns Operational Intent 1
-
-== Plan flight 2 via Control USS ==
-TD -> C_USS: PUT /inject/flight/{flight2}\n{"state": "Accepted", "priority": 30, "volumes": [volume2]}
+== Attempt to plan flight in conflict ==
+TD -> C_USS: PUT /inject/flight/{flight2}\n{"state": "Accepted", "priority": //high//, "volumes": //time_range_A//}
 TD <- C_USS: 200 Ok - Operational Intent 2 created\n{"result": "Planned"}
 
-TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume2
-TD <- DSS: 200 Ok - returns Operational Intent Reference 2 managed by Control USS
+TD -> T_USS: PUT /inject/flight/{flight1}\n{"state": "Accepted", "priority": //low//, "volumes": //time_range_A//}
+TD <- T_USS: 200 Ok - Planning rejected\n{"result": "ConflictWithFlight"}
+note left: Per ""astm.f3548.v21.SCD0015""
 
+TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
+TD <- DSS: 200 Ok - returns Operational Intent Reference 2 managed by Control USS
 TD -> C_USS: GET /uss/v1/operational_intents/{opintent2}
 TD <- C_USS: 200 Ok - returns Operational Intent 2
 
-== Attempt to plan flight 3 via Tested USS, conflicting with higher-priority planned flight 2 ==
-TD -> T_USS: PUT /inject/flight/{flight3}\n{"state": "Accepted", "priority": 20, "volumes": [volume2]}
-TD <- T_USS: 200 Ok - Planning rejected\n{"result": "ConflictWithFlight"}
+== Attempt to modify planned flight in conflict ==
+TD -> C_USS: DELETE /inject/flight/{flight2}
+TD <- C_USS: 200 Ok - Operational Intent 2 deleted\n{"result": "Closed"}
 
-TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume2
-TD <- DSS: 200 Ok - Operational Intent Reference 3 does not exist
+TD -> T_USS: PUT /inject/flight/{flight1}\n{"state": "Accepted", "priority": //low//, "volumes": //time_range_A//}
+TD <- T_USS: 200 Ok - Operational Intent 1 created\n{"result": "Planned"}
 
-== Attempt to move planned flight 1 onto volume of higher-priority planned flight 2 ==
-TD -> T_USS: PUT /inject/flight/{flight1}\n{"volumes": [volume2]}
+TD -> C_USS: PUT /inject/flight/{flight2}\n{"state": "Accepted", "priority": //high//, "volumes": //time_range_A//}
+TD <- C_USS: 200 Ok - Operational Intent 2 created\n{"result": "Planned"}
+
+TD -> T_USS: PUT /inject/flight/{flight1}\n{"volumes": //time_range_A_extended//}
 TD <- T_USS: 200 Ok - Modification rejected\n{"result": "ConflictWithFlight"}
+note left: Per ""astm.f3548.v21.SCD0020""
 
-TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume1
+TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
 TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS
-
 TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
 TD <- T_USS: 200 Ok - returns Operational Intent 1
 
-...
-
-== Move higher-priority planned flight 2 onto volume of planned flight 1 ==
-TD -> C_USS: PUT /inject/flight/{flight2}\n{"volumes": [volume1]}
-TD <- C_USS: 200 Ok - Operational Intent 2 updated
-
-TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume1
+TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
 TD <- DSS: 200 Ok - returns Operational Intent Reference 2 managed by Control USS
-
 TD -> C_USS: GET /uss/v1/operational_intents/{opintent2}
 TD <- C_USS: 200 Ok - returns Operational Intent 2
 
-== Attempt to activate planned flight 1, conflicting with higher-priority planned flight 2 ==
+== Attempt to activate flight in conflict ==
 TD -> T_USS: PUT /inject/flight/{flight1}\n{"state": "Activated"}
 TD <- T_USS: 200 Ok - Activation rejected\n{"result": "ConflictWithFlight"}
+note left: Per ""astm.f3548.v21.SCD0025""
 
-TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume1
+TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
 TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS
-
 TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
 TD <- T_USS: 200 Ok - returns Operational Intent 1
 
-...
-
-== Bump priority and activate flight 1 ==
-TD -> T_USS: PUT /inject/flight/{flight1}\n{"priority": 40}
-TD <- T_USS: 200 Ok - Operational Intent 1 updated
+== Modify activated flight with pre-existing conflict ==
+TD -> C_USS: DELETE /inject/flight/{flight2}
+TD <- C_USS: 200 Ok - Operational Intent 2 deleted\n{"result": "Closed"}
 
 TD -> T_USS: PUT /inject/flight/{flight1}\n{"state": "Activated"}
-TD <- T_USS: 200 Ok - Operational Intent 1 updated\n{"result": "ReadyToFly"}
+TD <- T_USS: 200 Ok - Operational Intent 1 activated\n{"result": "ReadyToFly"}
 
-TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume1
-TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS
-
-TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
-TD <- T_USS: 200 Ok - returns Operational Intent 1
-
-== Bump priority and activate flight 2 ==
-TD -> C_USS: PUT /inject/flight/{flight2}\n{"priority": 50}
-TD <- C_USS: 200 Ok - Operational Intent 2 updated
+TD -> C_USS: PUT /inject/flight/{flight2}\n{"state": "Accepted", "priority": //high//, "volumes": //time_range_A//}
+TD <- C_USS: 200 Ok - Operational Intent 2 created\n{"result": "Planned"}
 
 TD -> C_USS: PUT /inject/flight/{flight2}\n{"state": "Activated"}
-TD <- C_USS: 200 Ok - Operational Intent 2 updated\n{"result": "ReadyToFly"}
+TD <- C_USS: 200 Ok - Operational Intent 2 activated\n{"result": "ReadyToFly"}
 
-TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume1
-TD <- DSS: 200 Ok - returns Operational Intent Reference 2 managed by Control USS
+TD -> T_USS: PUT /inject/flight/{flight1}\n{"volumes": //time_range_A_extended//}
+TD <- T_USS: 200 Ok - Operational Intent 1 modified\n{"result": "ReadyToFly"}
+note left: Per ""astm.f3548.v21.SCD0030""
 
-TD -> C_USS: GET /uss/v1/operational_intents/{opintent2}
-TD <- C_USS: 200 Ok - returns Operational Intent 2
-
-== Slightly move activated flight 1, still conflicting with higher-priority activated flight 2 ==
-TD -> T_USS: PUT /inject/flight/{flight1}\n{"volumes": [volume1bis]}
-TD <- T_USS: 200 Ok - Operational Intent 1 updated
-
-TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume1bis
+TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
 TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS
-
 TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
 TD <- T_USS: 200 Ok - returns Operational Intent 1
 
-...
-
-== Move away higher-priority activated flight 2 ==
-TD -> C_USS: PUT /inject/flight/{flight2}\n{"volumes": [volume2]}
-TD <- C_USS: 200 Ok - Operational Intent 2 updated
-
-TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume2
+TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
 TD <- DSS: 200 Ok - returns Operational Intent Reference 2 managed by Control USS
-
 TD -> C_USS: GET /uss/v1/operational_intents/{opintent2}
 TD <- C_USS: 200 Ok - returns Operational Intent 2
 
-== Attempt to move activated flight 1 onto volume of higher-priority activated flight 2 ==
-TD -> T_USS: PUT /inject/flight/{flight1}\n{"volumes": [volume2]}
+== Attempt to modify activated flight in conflict ==
+TD -> C_USS: PUT /inject/flight/{flight2}\n{"volumes": //time_range_B//}
+TD <- C_USS: 200 Ok - Operational Intent 2 modified\n{"result": "ReadyToFly"}
+
+TD -> T_USS: PUT /inject/flight/{flight1}\n{"volumes": //time_range_B//}
 TD <- T_USS: 200 Ok - Modification rejected\n{"result": "ConflictWithFlight"}
+note left: Per ""astm.f3548.v21.SCD0030""
 
-TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume1bis
+TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
 TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS
-
 TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
 TD <- T_USS: 200 Ok - returns Operational Intent 1
+
+TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
+TD <- DSS: 200 Ok - returns Operational Intent Reference 2 managed by Control USS
+TD -> C_USS: GET /uss/v1/operational_intents/{opintent2}
+TD <- C_USS: 200 Ok - returns Operational Intent 2
 
 @enduml

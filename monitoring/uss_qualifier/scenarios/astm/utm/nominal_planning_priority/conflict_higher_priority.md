@@ -15,12 +15,22 @@ It involves a tested USS and a control USS through which conflicting flights are
 ![Sequence diagram](conflict_higher_priority.png)
 
 ## Resources
-
 ### flight_intents
 FlightIntentsResource that provides at least 3 flight intents:
-- flights 1 and 2 must have volumes that conflict in time but not in space;
-- flight 3 must have a volume that conflict in time and space with flight 2, and have a lower priority than flight 2;
-- priorities of the flights must be: flight 1 = flight 3 = 20 < flight 2 = 30.
+- Flight 1: used for the test lower priority flight
+  - original time range `time_range_A` (e.g. 1pm to 2pm)
+  - Mutations:
+    - `activated`: state mutation `Activated`
+    - `time_range_A_extended`: mutation of volume in time to extend original time range (e.g. 12pm to 2pm)
+    - `time_range_B`: mutation of volume in time to not intersect with `time_range_A` or `time_range_A_extended` (e.g. 4pm to 5pm)
+
+- Flight 2: used for the higher priority flight
+  - must have higher priority than flight 1
+  - must intersect flight 1 in space
+  - original time range `time_range_A` (e.g. 1pm to 2pm)
+  - Mutations:
+    - `activated`: state mutation `Activated`
+    - `time_range_B`: mutation of volume in time to not intersect with `time_range_A` or `time_range_A_extended` (e.g. 4pm to 5pm)
 
 ### tested_uss
 FlightPlannerResource that is under test and will manage the first and third flights.
@@ -51,88 +61,91 @@ Both USSs are requested to remove all flights from the area under test.
 #### Area cleared successfully check
 **[interuss.automated_testing.flight_planning.ClearArea](../../../../requirements/interuss/automated_testing/flight_planning.md)**
 
-## Plan flight 1 via Tested USS test case
+
+## Attempt to plan flight in conflict test case
+### [Plan flight 2 test step](../../../flight_planning/plan_flight_intent.md)
+The higher priority flight should be successfully planned by the control USS.
+
+### [Attempt to plan flight 1 test step](../../../flight_planning/plan_priority_conflict_flight_intent.md)
+The test driver attempts to plan the flight 1 via the tested USS. However, it conflicts with flight 2, which is of
+higher priority. As such it should be rejected per **[astm.f3548.v21.SCD0015](../../../../requirements/astm/f3548/v21.md)**.
+
+### [Validate flight 2 sharing test step](../validate_shared_operational_intent.md)
+
+TODO: add validation test step that op intent for flight 1 was not created
+
+
+## Attempt to modify planned flight in conflict test case
+### [Delete flight 2 test step](../../../flight_planning/delete_flight_intent.md)
+
 ### [Plan flight 1 test step](../../../flight_planning/plan_flight_intent.md)
 The first flight should be successfully planned by the tested USS.
 
-### [Validate flight sharing test step](../validate_shared_operational_intent.md)
-
-## Plan flight 2 via Control USS test case
 ### [Plan flight 2 test step](../../../flight_planning/plan_flight_intent.md)
 The second flight should be successfully planned by the control USS.
+It conflicts with flight 1, but it has higher priority.
 
-### [Validate flight sharing test step](../validate_shared_operational_intent.md)
-
-## Attempt to plan flight 3 via Tested USS, conflicting with higher-priority planned flight 2 test case
-### [Plan conflicting flight 3 test step](../../../flight_planning/plan_priority_conflict_flight_intent.md)
-The test driver attempts to plan the flight 3 via the tested USS. However, it conflicts with flight 2, which is of
-higher priority. As such it should be rejected per **[astm.f3548.v21.SCD0015](../../../../requirements/astm/f3548/v21.md)**.
-
-TODO: add validation test step that op intent was not created
-
-## Attempt to move planned flight 1 onto volume of higher-priority planned flight 2 test case
-### [Move conflicting flight 1 test step](../../../flight_planning/modify_planned_priority_conflict_flight_intent.md)
-The test driver attempts to move flight 1 via the tested USS, which is planned.
+### [Attempt to modify planned flight 1 in conflict test step](../../../flight_planning/modify_planned_priority_conflict_flight_intent.md)
+The test driver attempts to modify flight 1 via the tested USS, which is planned.
 However, it conflicts with flight 2, which is of higher priority and was planned in the meantime.
 As such it should be rejected per **[astm.f3548.v21.SCD0020](../../../../requirements/astm/f3548/v21.md)**.
 
-TODO: add validation test step that op intent was not modified
+### [Validate flight 1 sharing test step](../validate_shared_operational_intent.md)
+The first flight should not have been modified.
 
-## Move higher-priority planned flight 2 onto volume of planned flight 1 test case
-### [Move flight 2 test step](../../../flight_planning/modify_planned_flight_intent.md)
-Flight 2, which is planned and of higher priority than flight 1, which is also planned, should be successfully moved
-onto the volume of flight 1. The higher priority of flight 2 allows this modification resulting in a conflict.
+### [Validate flight 2 sharing test step](../validate_shared_operational_intent.md)
 
-### [Validate flight sharing test step](../validate_shared_operational_intent.md)
 
-## Attempt to activate planned flight 1, conflicting with higher-priority planned flight 2 test case
-### [Activate conflicting flight 1 test step](../../../flight_planning/activate_priority_conflict_flight_intent.md)
+## Attempt to activate flight in conflict test case
+### [Attempt to activate conflicting flight 1 test step](../../../flight_planning/activate_priority_conflict_flight_intent.md)
 The test driver attempts to activate planned flight 1, however, it conflicts with flight 2, which is also planned and of
 higher priority.
 As such it should be rejected per **[astm.f3548.v21.SCD0025](../../../../requirements/astm/f3548/v21.md)**.
 
-TODO: add validation test step that op intent was not activated
+### [Validate flight 1 sharing test step](../validate_shared_operational_intent.md)
+The first flight should not have been activated.
 
-## Bump priority and activate flight 1 test case
-### [Bump priority of flight 1 test step](../../../flight_planning/modify_planned_flight_intent.md)
-The test driver bumps the priority of flight 1 (planned) above the one of flight 2 (planned as well), making flight 1
-the higher-priority flight.
+
+## Modify activated flight with pre-existing conflict test case
+### [Delete flight 2 test step](../../../flight_planning/delete_flight_intent.md)
 
 ### [Activate flight 1 test step](../../../flight_planning/activate_flight_intent.md)
 The test driver activates flight 1, which should be done successfully given that it is now the highest-priority flight.
 
-### [Validate flight sharing test step](../validate_shared_operational_intent.md)
-
-## Bump priority and activate flight 2 test case
-### [Bump priority of flight 2 test step](../../../flight_planning/modify_planned_flight_intent.md)
-The test driver bumps the priority of flight 2 (planned) above the one of flight 1 (planned as well), making flight 2
-the highest-priority flight again.
+### [Plan flight 2 test step](../../../flight_planning/plan_flight_intent.md)
+The second flight should be successfully planned by the control USS.
 
 ### [Activate flight 2 test step](../../../flight_planning/activate_flight_intent.md)
-The test driver activates flight 2, which should be done successfully given that it is now again the highest-priority
-flight.
+The test driver activates flight 2, which should be done successfully given that it is the highest-priority flight.
 
-### [Validate flight sharing test step](../validate_shared_operational_intent.md)
-
-## Slightly move activated flight 1, still conflicting with higher-priority activated flight 2 test case
-### [Move flight 1 test step](../../../flight_planning/modify_activated_flight_intent.md)
-The test driver moves flight 1 in a way that still conflicts with flight 2. Both flights are activated at that point.
+### [Modify activated flight 1 in conflict with activated flight 2 test step](../../../flight_planning/modify_activated_flight_intent.md)
+Before execution of this step, flights 1 and 2 are activated and in conflict.
+The test driver modifies flight 1 in a way that still conflicts with flight 2.
 Even though flight 2 is the highest-priority flight, because the conflict existed before the modification was initiated,
 the modification is accepted per **[astm.f3548.v21.SCD0030](../../../../requirements/astm/f3548/v21.md)**.
 
-### [Validate flight sharing test step](../validate_shared_operational_intent.md)
+### [Validate flight 1 sharing test step](../validate_shared_operational_intent.md)
+The first flight should have been modified.
 
-## Move away higher-priority activated flight 2 test case
-### [Move flight 2 test step](../../../flight_planning/modify_planned_flight_intent.md)
-The test driver moves flight 2 back to its original volume, which is not conflicting with flight 1.
+### [Validate flight 2 sharing test step](../validate_shared_operational_intent.md)
 
-## Attempt to move activated flight 1 onto volume of higher-priority activated flight 2 test case
-### [Move conflicting flight 1 test step](../../../flight_planning/modify_planned_priority_conflict_flight_intent.md)
-The test driver attempts to move flight 1 onto the volume of flight 2. Both flights are activated at that point.
-However, this conflicts with higher-priority flight 2, and because the conflict did not exist when the modification was
-initiated, it should be rejected per **[astm.f3548.v21.SCD0030](../../../../requirements/astm/f3548/v21.md)**.
 
-TODO: add validation test step that op intent was not modified
+## Attempt to modify activated flight in conflict test case
+### [Modify activated flight 2 to not conflict with activated flight 1 test step](../../../flight_planning/modify_planned_flight_intent.md)
+The test driver modifies (activated) flight 2 with the control USS so that it is not anymore in conflict with (activated)
+flight of test USS.
+As flight 2 is of higher priority, this should succeed and leave flight 1 clear of conflict.
+
+### [Attempt to modify activated flight 1 in conflict test step](../../../flight_planning/modify_activated_priority_conflict_flight_intent.md)
+The test driver attempts to modify flight 1 so that it becomes in conflict with flight 2. Both flights are activated at that point.
+However, because the conflict did not exist when the modification was initiated, it should be rejected
+per **[astm.f3548.v21.SCD0030](../../../../requirements/astm/f3548/v21.md)**.
+
+### [Validate flight 1 sharing test step](../validate_shared_operational_intent.md)
+The first flight should not have been modified.
+
+### [Validate flight 2 sharing test step](../validate_shared_operational_intent.md)
+
 
 ## Cleanup
 ### Successful flight deletion check
