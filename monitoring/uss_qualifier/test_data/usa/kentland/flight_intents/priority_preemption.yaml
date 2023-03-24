@@ -69,6 +69,31 @@ intents:
           operational_intent:
             state: Activated
 
+  first_flight_time_range_A_extended:
+    delta:
+      source: first_flight
+      mutation:
+        request:
+          operational_intent:
+            volumes:
+              - time_start:
+                  value: '2023-01-01T00:02:00+00:00'
+                  format: RFC3339
+
+  first_flight_time_range_B:
+    delta:
+      source: first_flight
+      mutation:
+        request:
+          operational_intent:
+            volumes:
+              - time_start:
+                  value: '2023-01-01T00:09:00+00:00'
+                  format: RFC3339
+                time_end:
+                  value: '2023-01-01T00:10:00+00:00'
+                  format: RFC3339
+
   priority_flight:
     full:
       reference_time: '2023-01-01T00:00:00+00:00'
@@ -128,3 +153,17 @@ intents:
         request:
           operational_intent:
             state: Activated
+
+  priority_flight_time_range_B:
+    delta:
+      source: priority_flight
+      mutation:
+        request:
+          operational_intent:
+            volumes:
+              - time_start:
+                  value: '2023-01-01T00:09:00+00:00'
+                  format: RFC3339
+                time_end:
+                  value: '2023-01-01T00:10:00+00:00'
+                  format: RFC3339
