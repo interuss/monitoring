@@ -94,7 +94,9 @@ def validate_shared_operational_intent(
                 query_timestamps=[query.request.timestamp],
             )
 
-    error_text = validate_op_intent_details(op_intent, extent)
+    error_text = validate_op_intent_details(
+        op_intent.details, flight_intent.operational_intent.priority, extent
+    )
     with scenario.check(
         "Correct operational intent details", [scenario.uss1.participant_id]
     ) as check:
