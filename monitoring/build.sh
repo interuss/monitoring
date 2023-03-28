@@ -14,9 +14,10 @@ cd "${BASEDIR}/.." || exit 1
 
 TAG="${1:-interuss/monitoring}"
 
-docker build \
+docker image build \
     -f monitoring/Dockerfile \
     -t "${TAG}" \
     --build-arg version="$(scripts/git/version.sh monitoring --long)" \
+    --build-arg commit_hash="$(git rev-parse HEAD)" \
     . \
   || exit 1

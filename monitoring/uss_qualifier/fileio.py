@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 from typing import Tuple, Optional, Dict, List, Union
@@ -25,6 +26,10 @@ Allowed extensions:
   * .yaml (dict, content)
   * .kml (content)
 """
+
+
+content_signatures: Dict[str, str] = {}
+"""Cache populated with a mapping between the name of a file loaded by this module and the SHA-1 hash of that file's content."""
 
 
 def resolve_filename(data_file: FileReference) -> str:
@@ -60,6 +65,11 @@ def _load_content_from_file_name(file_name: str) -> str:
     else:
         with open(file_name, "r") as f:
             file_content = f.read()
+
+    # Compute and remember signature for this file content
+    sig = hashlib.sha1()
+    sig.update(file_content.encode("utf-8"))
+    content_signatures[file_name] = sig.hexdigest()
 
     return file_content
 

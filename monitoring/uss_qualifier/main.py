@@ -1,14 +1,17 @@
 #!env/bin/python3
 
 import argparse
+import hashlib
 import json
 import os
 import sys
+from typing import Dict
 
 from implicitdict import ImplicitDict
 from loguru import logger
 
-from monitoring.monitorlib.versioning import get_code_version
+from monitoring.monitorlib.versioning import get_code_version, get_commit_hash
+from monitoring.uss_qualifier import fileio
 from monitoring.uss_qualifier.configurations.configuration import (
     TestConfiguration,
     USSQualifierConfiguration,
@@ -39,8 +42,30 @@ def parseArgs() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def compute_baseline_signature(
+    codebase_version: str, commit_hash: str, file_signatures: Dict[str, str]
+) -> str:
+    """Compute a signature uniquely identifying the test baseline being run.
+
+    Args:
+        codebase_version: Name and source of codebase being used (e.g., interuss/monitoring/v0.2.0)
+        commit_hash: Full git commit hash of the codebase being used
+        file_signatures: Mapping between file name and signature of that file's content for all files constituting the
+            test baseline.
+
+    Returns: Signature uniquely identifying the test baseline, according to provided parameters.
+    """
+    sig = hashlib.sha1()
+    sig.update(codebase_version.encode("utf-8"))
+    sig.update(commit_hash.encode("utf-8"))
+    for k, v in file_signatures.items():
+        sig.update(f"{k}={v}".encode("utf-8"))
+    return sig.hexdigest()
+
+
 def execute_test_run(config: TestConfiguration):
     codebase_version = get_code_version()
+    commit_hash = get_commit_hash()
     resources = create_resources(config.resources.resource_declarations)
     action = TestSuiteAction(config.action, resources)
     report = action.run()
@@ -49,8 +74,25 @@ def execute_test_run(config: TestConfiguration):
     else:
         logger.warning("Final result: FAILURE")
 
+    # Report signatures of inputs
+    if config.non_baseline_inputs:
+        exclude = set(fileio.resolve_filename(f) for f in config.non_baseline_inputs)
+    else:
+        exclude = set()
+    file_signatures = fileio.content_signatures
+    baseline_signature = compute_baseline_signature(
+        codebase_version,
+        commit_hash,
+        {k: v for k, v in file_signatures.items() if k not in exclude},
+    )
+
     return TestRunReport(
-        codebase_version=codebase_version, configuration=config, report=report
+        codebase_version=codebase_version,
+        commit_hash=commit_hash,
+        file_signatures=file_signatures,
+        baseline_signature=baseline_signature,
+        configuration=config,
+        report=report,
     )
 
 
