@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import List, Union, Optional, Tuple, Iterable, Set, Dict
 
+from uas_standards.astm.f3548.v21.api import OperationalIntentState
+
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd import bounding_vol4
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
@@ -225,6 +227,11 @@ def plan_flight_intent(
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Accepted:
+        raise ValueError(
+            f"operational intent state is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -250,6 +257,11 @@ def activate_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Activated:
+        raise ValueError(
+            f"operational intent state is expected to be `Activated`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -276,6 +288,11 @@ def modify_planned_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Accepted:
+        raise ValueError(
+            f"operational intent state is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
@@ -302,6 +319,11 @@ def modify_activated_flight_intent(
 
     Returns: The injection response.
     """
+    if flight_intent.operational_intent.state != OperationalIntentState.Activated:
+        raise ValueError(
+            f"operational intent state is expected to be `Activated`, got {flight_intent.operational_intent.state}"
+        )
+
     return submit_flight_intent(
         scenario,
         test_step,
