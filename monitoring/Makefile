@@ -34,3 +34,4 @@ test:
 	cd monitorlib && make test
 	cd mock_uss && make test
 	cd uss_qualifier && make test
+	cd prober && make test

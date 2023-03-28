@@ -58,6 +58,10 @@ jobs:
       run: |
         cd monitoring/uss_qualifier
         make test
+    - name: prober tests
+      run: |
+        cd monitoring/prober
+        make test
     - name: Save containers and tracer logs as artifact
       if: always()
       uses: actions/upload-artifact@v3
@@ -70,5 +74,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v3
       with:
-        name: monitoring-tests-report
-        path: monitoring/uss_qualifier/output
+        name: monitoring-tests-reports
+        path: |
+          monitoring/uss_qualifier/output
+          monitoring/prober/output

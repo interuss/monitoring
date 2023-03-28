@@ -33,7 +33,7 @@ validate-uss-qualifier-docs:
 
 .PHONY: shell-lint
 shell-lint:
-	echo "===== Checking DSS shell lint except monitoring =====" && find . -name '*.sh' | grep -v '^./interfaces/astm-utm' | grep -v '^./monitoring' | xargs docker run --rm -v $(CURDIR):/monitoring -w /monitoring koalaman/shellcheck
+	echo "===== Checking DSS shell lint except monitoring =====" && find . -name '*.sh' | grep -v '^./interfaces/astm-utm' | grep -v '^./monitoring' | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck
 	cd monitoring && make shell-lint
 
 # This mirrors the hygiene-tests continuous integration workflow job (.github/workflows/ci.yml)
