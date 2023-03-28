@@ -69,14 +69,12 @@ jobs:
         name: monitoring-tests-logs
         path: |
           logs
-          monitoring/mock_uss/tracer/logs
+          monitoring/mock_uss/output
     - name: Save USS qualifier report as artifact
       if: always()
       uses: actions/upload-artifact@v3
       with:
         name: monitoring-tests-reports
         path: |
-          monitoring/uss_qualifier/report.gv
-          monitoring/uss_qualifier/report.json
-          monitoring/uss_qualifier/tested_requirements.html
-          monitoring/prober/prober_test_results.xml
+          monitoring/uss_qualifier/output
+          monitoring/prober/output

@@ -30,22 +30,21 @@ for container_name in "${localhost_containers[@]}"; do
 	fi
 done
 
-echo "Re/Create prober_test_results.xml file"
-RESULTFILE="$(pwd)/monitoring/prober/prober_test_results.xml"
-touch "${RESULTFILE}"
-cat /dev/null > "${RESULTFILE}"
+OUTPUT_DIR="monitoring/prober/output"
+mkdir -p "$OUTPUT_DIR"
 
 # TODO(#17): Remove F3411_22A_ALTITUDE_REFERENCE environment variable once DSS behaves correctly
 if ! docker run --link "$OAUTH_CONTAINER":oauth \
 	--link "$CORE_SERVICE_CONTAINER":core-service \
+	-u "$(id -u):$(id -g)" \
 	--network dss_sandbox_default \
-	-v "${RESULTFILE}:/app/test_result" \
+	-v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \
 	-w /app/monitoring/prober \
 	interuss/monitoring \
 	pytest \
 	"${1:-.}" \
 	-rsx \
-	--junitxml=/app/test_result \
+	--junitxml="/app/$OUTPUT_DIR/e2e_test_result" \
 	--dss-endpoint http://core-service:8082 \
 	--rid-auth "DummyOAuth(http://oauth:8085/token,sub=fake_uss)" \
 	--rid-v2-auth "DummyOAuth(http://oauth:8085/token,sub=fake_uss)" \
