@@ -53,3 +53,17 @@ actions:
       - uss1
       - uss2
   on_failure: Continue
+participant_badges:
+  - id: scd
+    name: Strategic Conflict Detection
+    description: Participant fulfills testable requirements necessary to perform the Strategic Conflict Detection role.
+    grant_condition:
+      requirements_checked:
+          checked:
+              requirement_sets:
+                  - "astm.f3548.v21.scd#Automated verification"
+  - id: no_failures
+    name: Fails No Existing Tests
+    description: Until testing coverage is sufficiently complete to verify all intended requirements for particular roles, this badge may be useful in communicating that the participant has passed all existing applicable tests for their role and capabilities.  This badge should be removed once test coverage extends to all intended requirements.
+    grant_condition:
+        no_failed_checks: {}

@@ -5,6 +5,9 @@ from typing import Dict, List, Optional, TypeVar
 from implicitdict import ImplicitDict
 
 from monitoring.uss_qualifier.fileio import load_dict_with_references, FileReference
+from monitoring.uss_qualifier.reports.badge_definitions import (
+    ParticipantBadgeDefinition,
+)
 from monitoring.uss_qualifier.resources.definitions import ResourceID, ResourceTypeName
 from monitoring.uss_qualifier.scenarios.definitions import (
     TestScenarioDeclaration,
@@ -155,6 +158,9 @@ class TestSuiteDefinition(ImplicitDict):
 
     actions: List[TestSuiteActionDeclaration]
     """The actions to take when running the test suite.  Components will be executed in order."""
+
+    participant_badges: Optional[List[ParticipantBadgeDefinition]]
+    """Definitions of badges granted by this test suite to individual participants."""
 
     @staticmethod
     def load_from_declaration(

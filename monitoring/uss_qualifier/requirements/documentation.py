@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Set, List
+from typing import Dict, Set, List, Optional
 
 from implicitdict import ImplicitDict
 import marko
@@ -7,45 +7,11 @@ import marko.element
 import marko.inline
 
 from monitoring.uss_qualifier.documentation import text_of
-
-
-class RequirementID(str):
-    """Identifier for a requirement.
-
-    Form: <PACKAGE>.<NAME>
-
-    PACKAGE is a Python-style package reference to a .md file (without extension)
-    relative to uss_qualifier/requirements.  For instance, the PACKAGE for the file
-    located at uss_qualifier/requirements/astm/f3548/v21.md would be
-    `astm.f3548.v21`.
-
-    NAME is an identifier defined in the file described by PACKAGE by enclosing it
-    in a <tt> tag; for instance: `<tt>USS0105</tt>`.
-    """
-
-    def __new__(cls, value):
-        illegal_characters = "#%&{}\\<>*?/ $!'\":@+`|="
-        if any(c in value for c in illegal_characters):
-            raise ValueError(
-                f'RequirementID "{value}" may not contain any of these characters: {illegal_characters}'
-            )
-        str_value = str.__new__(cls, value)
-        return str_value
-
-    def md_file_path(self) -> str:
-        parts = self.split(".")
-        md_filename = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), os.path.join(*parts[0:-1]) + ".md")
-        )
-        return md_filename
-
-    def requirement_name(self) -> str:
-        parts = self.split(".")
-        return parts[-1]
-
-    def package(self) -> str:
-        parts = self.split(".")
-        return ".".join(parts[:-1])
+from monitoring.uss_qualifier.requirements.definitions import (
+    RequirementCollection,
+    RequirementID,
+    RequirementSetID,
+)
 
 
 class Requirement(object):
@@ -95,25 +61,6 @@ def get_requirement(requirement_id: RequirementID) -> Requirement:
     return Requirement(requirement_id)
 
 
-class RequirementSetID(str):
-    """Identifier for a set of requirements.
-
-    The form of a value is a Python-style package reference to a .md file (without
-    extension) relative to uss_qualifier/requirements.  For instance, the set of
-    requirements described in uss_qualifier/requirements/astm/f3548/v21/scd.md would
-    have a RequirementSetID of astm.f3548.v21.scd.
-    """
-
-    def __new__(cls, value):
-        illegal_characters = "#%&{}\\<>*?/ $!'\":@+`|="
-        if any(c in value for c in illegal_characters):
-            raise ValueError(
-                f'RequirementSetID "{value}" may not contain any of these characters: {illegal_characters}'
-            )
-        str_value = str.__new__(cls, value)
-        return str_value
-
-
 class RequirementSet(ImplicitDict):
     name: str
     requirement_ids: List[RequirementID]
@@ -125,10 +72,35 @@ REQUIREMENT_SET_SUFFIX = " requirement set"
 _requirement_sets: Dict[RequirementSetID, RequirementSet] = {}
 
 
-def _parse_requirements(parent: marko.element.Element) -> List[RequirementID]:
+def _length_of_section(values, start_of_section: int) -> int:
+    level = values[start_of_section].level
+    c = start_of_section + 1
+    while c < len(values):
+        if isinstance(values[c], marko.block.Heading) and values[c].level == level:
+            break
+        c += 1
+    return c - start_of_section - 1
+
+
+def _find_section(values, section_title: str) -> int:
+    for c in range(len(values)):
+        if (
+            isinstance(values[c], marko.block.Heading)
+            and text_of(values[c]) == section_title
+        ):
+            return c
+    return -1
+
+
+def _parse_requirements(
+    parent: marko.element.Element, start_index: int = 0, end_index: int = 0
+) -> List[RequirementID]:
     reqs = []
     if hasattr(parent, "children") and not isinstance(parent.children, str):
-        for i, child in enumerate(parent.children):
+        if end_index <= start_index:
+            end_index = len(parent.children)
+        for i in range(start_index, end_index):
+            child = parent.children[i]
             if isinstance(child, str):
                 continue
             if isinstance(child, marko.inline.StrongEmphasis):
@@ -140,7 +112,11 @@ def _parse_requirements(parent: marko.element.Element) -> List[RequirementID]:
 
 
 def _load_requirement_set(requirement_set_id: RequirementSetID) -> RequirementSet:
-    parts = requirement_set_id.split(".")
+    if not isinstance(
+        requirement_set_id, RequirementID
+    ):  # TODO: Remove when ImplicitDict is fixed
+        requirement_set_id = RequirementSetID(requirement_set_id)
+    parts = requirement_set_id.base_id.split(".")
     md_filename = os.path.abspath(
         os.path.join(os.path.dirname(__file__), os.path.join(*parts) + ".md")
     )
@@ -151,7 +127,7 @@ def _load_requirement_set(requirement_set_id: RequirementSetID) -> RequirementSe
     with open(md_filename, "r") as f:
         doc = marko.parse(f.read())
 
-    # Extract the requirement set name from the first top-level header
+    # Extract the file-level name from the first top-level header
     if (
         not isinstance(doc.children[0], marko.block.Heading)
         or doc.children[0].level != 1
@@ -160,9 +136,22 @@ def _load_requirement_set(requirement_set_id: RequirementSetID) -> RequirementSe
         raise ValueError(
             f'The first line of {md_filename} must be a level-1 heading with the name of the scenario + "{REQUIREMENT_SET_SUFFIX}" (e.g., "# ASTM F3411-19 Service Provider requirement set")'
         )
-    requirement_set_name = text_of(doc.children[0])[0 : -len(REQUIREMENT_SET_SUFFIX)]
+    file_level_name = text_of(doc.children[0])[0 : -len(REQUIREMENT_SET_SUFFIX)]
 
-    reqs = _parse_requirements(doc)
+    anchor = requirement_set_id.anchor
+    requirement_set_name = f"{file_level_name}: {anchor}" if anchor else file_level_name
+
+    if anchor:
+        start_index = _find_section(doc.children, anchor)
+        if start_index == -1:
+            raise ValueError(
+                f"Could not find section entitled '{anchor}' in {md_filename}"
+            )
+        end_index = start_index + _length_of_section(doc.children, start_index)
+    else:
+        start_index = 0
+        end_index = 0
+    reqs = _parse_requirements(doc, start_index, end_index)
     for req in reqs:
         try:
             get_requirement(req)
@@ -179,3 +168,37 @@ def get_requirement_set(requirement_set_id: RequirementSetID) -> RequirementSet:
             requirement_set_id
         )
     return _requirement_sets[requirement_set_id]
+
+
+def resolve_requirements_collection(
+    collection: RequirementCollection,
+) -> Set[RequirementID]:
+    """Compute the set of requirement IDs identified by the specified requirements collection.
+
+    Args:
+        collection: Specified requirements collection.
+
+    Returns: Set of IDs of requirements identified by the specified collection.
+    """
+    reqs: Set[RequirementID] = set()
+
+    if "requirements" in collection and collection.requirements:
+        for req_id in collection.requirements:
+            reqs.add(req_id)
+
+    if "requirement_sets" in collection and collection.requirement_sets:
+        for req_set_id in collection.requirement_sets:
+            req_set = get_requirement_set(req_set_id)
+            for req_id in req_set.requirement_ids:
+                reqs.add(req_id)
+
+    if "requirement_collections" in collection and collection.requirement_collections:
+        for also_include in collection.requirement_collections:
+            for req_id in resolve_requirements_collection(also_include):
+                reqs.add(req_id)
+
+    if "exclude" in collection and collection.exclude:
+        for req_id in resolve_requirements_collection(collection.exclude):
+            reqs.remove(req_id)
+
+    return reqs

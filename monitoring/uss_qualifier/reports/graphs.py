@@ -87,7 +87,7 @@ def _make_test_scenario_nodes(
 
     # Add failed checks and error below
     parent_node = scenario_node
-    for failed_check in report.get_all_failed_checks():
+    for failed_check in report.query_failed_checks():
         check_node = Node(
             name=namer.make_name(report.scenario_type + "FailedCheck"),
             label=failed_check.summary,

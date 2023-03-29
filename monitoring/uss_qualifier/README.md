@@ -32,3 +32,11 @@ At this point, uss_qualifier can be run again with a different configuration tar
 * [Test scenarios](scenarios/README.md) (includes test case, test step, check breakdown)
 * [Test configurations](configurations/README.md)
 * [Test resources](resources/README.md)
+
+### Badges
+
+A test suite may define one or more "badges" and the criteria necessary for a participant to earn them.  Badges are intended to be used to indicate whether a participant has satisfied the requirements for an optional capability.
+
+For instance, ASTM F3411-22a network remote identification includes the concept of an "intent-based network participant" who provides information about their overall flight intent, but not real-time telemetry.  A NetRID Service Provider is not required to support intent-based network participants, but if they do choose to support them, then they must follow a few requirements.  In this case, an "intent-based network participant support" badge may be defined to be granted only if uss_qualifier confirms compliance with the requirements regarding intent-based network participants.  If compliance to the intent-based network participants cannot be confirmed, the NetRID Service Provider under test may still be fully compliant with the standard; they just elected not to support this particular optional capability and would therefore be standard-compliant without earning the "intent-based network participant support" badge.
+
+As another example, ASTM F3411-22a does not require a NetRID Display Provider to provide Display Application clients with the serial number of an identified aircraft.  However, a particular jurisdiction may accept F3411-22a remote identification as a means of compliance only if Display Applications are capable of providing the viewer with the aircraft serial number.  In this case, the ASTM F3411-22a test suite could define a "serial number" badge indicating that a Display Provider provides the correct aircraft serial number to its Display Application clients, and then the test suite for the jurisdiction may define a "qualified in jurisdiction" badge which is not granted unless the ASTM F3411-22a test suite's "serial number" badge is granted (among other criteria).

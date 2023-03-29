@@ -4,7 +4,7 @@ from enum import Enum
 from pathlib import Path
 from typing import List, Dict
 
-import jsonpath_ng
+import bc_jsonpath_ng
 import jsonschema.validators
 import yaml
 
@@ -80,7 +80,7 @@ def validate(
     resolver = jsonschema.validators.RefResolver(
         base_uri=f"{Path(base_path).as_uri()}/", referrer=openapi_content
     )
-    schema_matches = jsonpath_ng.parse(object_path).find(openapi_content)
+    schema_matches = bc_jsonpath_ng.parse(object_path).find(openapi_content)
     if len(schema_matches) != 1:
         raise ValueError(
             f"Found {len(schema_matches)} matches to JSON path '{object_path}' within OpenAPI definition at {openapi_path} when expecting exactly 1 match"
