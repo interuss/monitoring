@@ -2,7 +2,7 @@ from typing import Optional, List
 
 from implicitdict import ImplicitDict
 
-from monitoring.uss_qualifier.fileio import load_dict_with_references
+from monitoring.uss_qualifier.fileio import load_dict_with_references, FileReference
 from monitoring.uss_qualifier.requirements.documentation import RequirementSetID
 from monitoring.uss_qualifier.resources.definitions import ResourceCollection
 from monitoring.uss_qualifier.suites.definitions import (
@@ -16,6 +16,9 @@ ParticipantID = str
 class TestConfiguration(ImplicitDict):
     action: TestSuiteActionDeclaration
     """The action this test configuration wants to run (usually a test suite)"""
+
+    non_baseline_inputs: Optional[List[FileReference]] = None
+    """List of file inputs that should not be considered when computing the test baseline signature (e.g., environmental definitions)."""
 
     resources: ResourceCollection
     """Declarations for resources used by the test suite"""

@@ -291,6 +291,19 @@ class TestRunReport(ImplicitDict):
     codebase_version: str
     """Version of codebase used to run uss_qualifier"""
 
+    commit_hash: str
+    """Full commit hash of codebase used to run uss_qualifier"""
+
+    file_signatures: Dict[str, str]
+    """Mapping between the names of files loaded during test run and the SHA-1 hashes of those files' content."""
+
+    baseline_signature: str
+    """Signature of the test run including codebase version and all file signatures except excluded environmental files.
+
+    This field can be used to identify that a particular expected test baseline (codebase, all non-environmental inputs)
+    was run.  The value of this field is computed from codebase_version and all elements of file_signatures that are not
+    explicitly excluded as environmental configuration."""
+
     configuration: TestConfiguration
     """Configuration used to run uss_qualifier"""
 
