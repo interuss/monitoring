@@ -55,11 +55,11 @@ def compute_baseline_signature(
 
     Returns: Signature uniquely identifying the test baseline, according to provided parameters.
     """
-    sig = hashlib.sha1()
+    sig = hashlib.sha256()
     sig.update(codebase_version.encode("utf-8"))
     sig.update(commit_hash.encode("utf-8"))
-    for k, v in file_signatures.items():
-        sig.update(f"{k}={v}".encode("utf-8"))
+    for k in sorted(file_signatures):
+        sig.update(f"{k}={file_signatures[k]}".encode("utf-8"))
     return sig.hexdigest()
 
 

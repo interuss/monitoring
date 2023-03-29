@@ -67,7 +67,7 @@ def _load_content_from_file_name(file_name: str) -> str:
             file_content = f.read()
 
     # Compute and remember signature for this file content
-    sig = hashlib.sha1()
+    sig = hashlib.sha256()
     sig.update(file_content.encode("utf-8"))
     content_signatures[file_name] = sig.hexdigest()
 
