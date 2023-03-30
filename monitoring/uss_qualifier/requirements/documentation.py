@@ -112,10 +112,6 @@ def _parse_requirements(
 
 
 def _load_requirement_set(requirement_set_id: RequirementSetID) -> RequirementSet:
-    if not isinstance(
-        requirement_set_id, RequirementID
-    ):  # TODO: Remove when ImplicitDict is fixed
-        requirement_set_id = RequirementSetID(requirement_set_id)
     parts = requirement_set_id.base_id.split(".")
     md_filename = os.path.abspath(
         os.path.join(os.path.dirname(__file__), os.path.join(*parts) + ".md")
