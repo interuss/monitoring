@@ -11,6 +11,7 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightResult,
     InjectFlightResponse,
     DeleteFlightResult,
+    DeleteFlightResponse,
 )
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
@@ -397,6 +398,52 @@ def submit_flight_intent(
 
     raise RuntimeError(
         "Error with submission of flight intent, but a High Severity issue didn't interrupt execution"
+    )
+
+
+def delete_flight_intent(
+    scenario: TestScenarioType,
+    test_step: str,
+    flight_planner: FlightPlanner,
+    flight_id: str,
+) -> DeleteFlightResponse:
+    """Delete an existing flight intent that should result in success.
+    A check fail is considered of high severity and as such will raise an ScenarioCannotContinueError.
+
+    This function implements the test step described in `delete_flight_intent.md`.
+
+    Returns: The deletion response.
+    """
+    scenario.begin_test_step(test_step)
+    with scenario.check(
+        "Successful deletion", [flight_planner.participant_id]
+    ) as check:
+        try:
+            resp, query = flight_planner.cleanup_flight(flight_id)
+        except QueryError as e:
+            for q in e.queries:
+                scenario.record_query(q)
+            check.record_failed(
+                summary=f"Error from {flight_planner.participant_id} when attempting to delete a flight intent (flight ID: {flight_id})",
+                severity=Severity.High,
+                details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
+                query_timestamps=[q.request.timestamp for q in e.queries],
+            )
+        scenario.record_query(query)
+
+        if resp.result == DeleteFlightResult.Closed:
+            scenario.end_test_step()
+            return resp
+        else:
+            check.record_failed(
+                summary=f"Flight deletion attempt unexpectedly {resp.result}",
+                severity=Severity.High,
+                details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {DeleteFlightResult.Closed}: "{resp.notes}"',
+                query_timestamps=[query.request.timestamp],
+            )
+
+    raise RuntimeError(
+        "Error with deletion of flight intent, but a High Severity issue didn't interrupt execution"
     )
 
 

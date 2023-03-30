@@ -32,5 +32,7 @@ HEALTHCHECK CMD sh /app/health_check.sh
 
 ENV PYTHONPATH /app
 ARG version
+ARG commit_hash
 ENV MONITORING_VERSION=$version
+ENV GIT_COMMIT_HASH=$commit_hash
 ENTRYPOINT []
