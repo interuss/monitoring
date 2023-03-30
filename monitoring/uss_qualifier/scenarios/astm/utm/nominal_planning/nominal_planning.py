@@ -1,7 +1,9 @@
 from typing import Optional
 
+from uas_standards.astm.f3548.v21.api import OperationalIntentState
+
+from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    InjectFlightRequest,
     Capability,
 )
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
@@ -36,6 +38,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
 
 class NominalPlanning(TestScenario):
     first_flight: FlightIntent
+    first_flight_activated: FlightIntent
     first_flight_id: Optional[str] = None
     first_flight_op_intent_id: Optional[str] = None
     conflicting_flight: FlightIntent
@@ -56,15 +59,46 @@ class NominalPlanning(TestScenario):
         self.dss = dss.dss
 
         flight_intents = flight_intents.get_flight_intents()
-        if len(flight_intents) < 2:
-            raise ValueError(
-                f"`{self.me()}` TestScenario requires at least 2 flight_intents; found {len(flight_intents)}"
+        try:
+            (
+                self.first_flight,
+                self.first_flight_activated,
+                self.conflicting_flight,
+            ) = (
+                flight_intents["first_flight"],
+                flight_intents["first_flight_activated"],
+                flight_intents["conflicting_flight"],
             )
 
-        (self.first_flight, self.conflicting_flight) = flight_intents
-        if "activated" not in self.first_flight.mutations:
+            assert (
+                self.first_flight.request.operational_intent.state
+                == OperationalIntentState.Accepted
+            ), "first_flight must have state Accepted"
+            assert (
+                self.first_flight_activated.request.operational_intent.state
+                == OperationalIntentState.Activated
+            ), "first_flight_activated must have state Activated"
+            assert (
+                self.conflicting_flight.request.operational_intent.state
+                == OperationalIntentState.Accepted
+            ), "priority_flight must have state Accepted"
+
+            assert (
+                self.first_flight.request.operational_intent.priority
+                == self.conflicting_flight.request.operational_intent.priority
+            ), "flights must have the same priority"
+            assert scd.vol4s_intersect(
+                self.first_flight.request.operational_intent.volumes,
+                self.conflicting_flight.request.operational_intent.volumes,
+            ), "flights must have intersecting volumes"
+
+        except KeyError as e:
             raise ValueError(
-                f"`{self.me()}` TestScenario requires first_flight to have a 'activated' mutation"
+                f"`{self.me()}` TestScenario requirements for flight_intents not met: missing flight intent {e}"
+            )
+        except AssertionError as e:
+            raise ValueError(
+                f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
 
     def run(self):
@@ -141,19 +175,18 @@ class NominalPlanning(TestScenario):
         # todo: add check flight intent was not planned
 
     def _activate_first_flight(self):
-        first_flight_activated = self.first_flight.get_mutated("activated")
         _ = activate_flight_intent(
             self,
             "Activate first flight",
             self.uss1,
             self.first_flight_id,
-            first_flight_activated.request,
+            self.first_flight_activated.request,
         )
 
         validate_shared_operational_intent(
             self,
             "Validate flight sharing",
-            first_flight_activated.request,
+            self.first_flight_activated.request,
             self.first_flight_op_intent_id,
         )
 

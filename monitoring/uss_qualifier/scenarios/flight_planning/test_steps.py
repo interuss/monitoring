@@ -47,11 +47,6 @@ def clear_area(
     for flight_intent in flight_intents:
         volumes += flight_intent.request.operational_intent.volumes
         volumes += flight_intent.request.operational_intent.off_nominal_volumes
-        for mutation in flight_intent.mutations.values():
-            if mutation.has_field_with_value("volumes"):
-                volumes += mutation.volumes
-            if mutation.has_field_with_value("off_nominal_volumes"):
-                volumes += mutation.off_nominal_volumes
     extent = bounding_vol4(volumes)
     for uss in flight_planners:
         with scenario.check("Area cleared successfully", [uss.participant_id]) as check:

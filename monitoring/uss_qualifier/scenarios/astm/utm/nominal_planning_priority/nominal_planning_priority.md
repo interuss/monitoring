@@ -14,15 +14,14 @@ with higher priority.
 ## Resources
 
 ### flight_intents
-FlightIntentsResource that provides at least 2 flight intents:
-- Flight 1: will be planned normally
-    - Mutations:
-        - `activated`: state mutation `Activated`
-- Flight 2: will be planned on top of flight 1
-    - Mutations:
-        - `activated`: state mutation `Activated`
-    - must intersect flight 1
-    - must have higher priority than flight 1
+FlightIntentsResource that provides the 4 following flight intents:
+- `first_flight`: will be planned normally
+  - `first_flight_activated`: state mutation `Activated`
+- `priority_flight`: will be planned on top of `first_flight`
+  - `priority_flight_activated`: state mutation `Activated`
+  - must intersect `first_flight`
+  - must have higher priority than `first_flight`
+
 
 ### uss1
 
@@ -30,7 +29,7 @@ FlightPlannerResource that will successfully plan the first flight.
 
 ### uss2
 
-FlightPlannerResouce that will successfully plan the second, higher-priority flight over the first one.
+FlightPlannerResource that will successfully plan the second, higher-priority flight over the first one.
 
 ### dss
 

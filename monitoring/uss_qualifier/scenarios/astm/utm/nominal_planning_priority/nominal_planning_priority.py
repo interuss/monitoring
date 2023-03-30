@@ -1,5 +1,8 @@
 from typing import Optional
 
+from uas_standards.astm.f3548.v21.api import OperationalIntentState
+
+from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     Capability,
 )
@@ -35,11 +38,15 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
 
 class NominalPlanningPriority(TestScenario):
     first_flight: FlightIntent
+    first_flight_activated: FlightIntent
     first_flight_id: Optional[str] = None
     first_flight_op_intent_id: Optional[str] = None
+
     priority_flight: FlightIntent
+    priority_flight_activated: FlightIntent
     priority_flight_id: Optional[str] = None
     priority_flight_op_intent_id: Optional[str] = None
+
     uss1: FlightPlanner
     uss2: FlightPlanner
     dss: DSSInstance
@@ -57,26 +64,52 @@ class NominalPlanningPriority(TestScenario):
         self.dss = dss.dss
 
         flight_intents = flight_intents.get_flight_intents()
-        if len(flight_intents) < 2:
-            raise ValueError(
-                f"`{self.me()}` TestScenario requires at least 2 flight_intents; found {len(flight_intents)}"
+        try:
+            (
+                self.first_flight,
+                self.first_flight_activated,
+                self.priority_flight,
+                self.priority_flight_activated,
+            ) = (
+                flight_intents["first_flight"],
+                flight_intents["first_flight_activated"],
+                flight_intents["priority_flight"],
+                flight_intents["priority_flight_activated"],
             )
 
-        (self.first_flight, self.priority_flight) = flight_intents
-        if (
-            "activated" not in self.first_flight.mutations
-            or "activated" not in self.priority_flight.mutations
-        ):
-            raise ValueError(
-                f"`{self.me()}` TestScenario requires both flights to have a 'activated' mutation"
-            )
+            assert (
+                self.first_flight.request.operational_intent.state
+                == OperationalIntentState.Accepted
+            ), "first_flight must have state Accepted"
+            assert (
+                self.first_flight_activated.request.operational_intent.state
+                == OperationalIntentState.Activated
+            ), "first_flight_activated must have state Activated"
+            assert (
+                self.priority_flight.request.operational_intent.state
+                == OperationalIntentState.Accepted
+            ), "priority_flight must have state Accepted"
+            assert (
+                self.priority_flight_activated.request.operational_intent.state
+                == OperationalIntentState.Activated
+            ), "priority_flight_activated must have state Activated"
 
-        if (
-            self.priority_flight.request.operational_intent.priority
-            <= self.first_flight.request.operational_intent.priority
-        ):
+            assert (
+                self.priority_flight.request.operational_intent.priority
+                > self.first_flight.request.operational_intent.priority
+            ), "priority_flight must have higher priority than first_flight"
+            assert scd.vol4s_intersect(
+                self.first_flight.request.operational_intent.volumes,
+                self.priority_flight.request.operational_intent.volumes,
+            ), "flights must have intersecting volumes"
+
+        except KeyError as e:
             raise ValueError(
-                f"`{self.me()}` TestScenario requires priority flight to be higher priority than the first flight"
+                f"`{self.me()}` TestScenario requirements for flight_intents not met: missing flight intent {e}"
+            )
+        except AssertionError as e:
+            raise ValueError(
+                f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
 
     def run(self):
@@ -161,30 +194,28 @@ class NominalPlanningPriority(TestScenario):
         )
 
     def _activate_priority_flight(self):
-        priority_flight_activated = self.priority_flight.get_mutated("activated")
         _ = activate_flight_intent(
             self,
             "Activate priority flight",
             self.uss2,
             self.priority_flight_id,
-            priority_flight_activated.request,
+            self.priority_flight_activated.request,
         )
 
         validate_shared_operational_intent(
             self,
             "Validate flight sharing",
-            priority_flight_activated.request,
+            self.priority_flight_activated.request,
             self.priority_flight_op_intent_id,
         )
 
     def _activate_first_flight_attempt(self):
-        first_flight_activated = self.first_flight.get_mutated("activated")
         _ = activate_priority_conflict_flight_intent(
             self,
             "Activate first flight with higher priority conflict",
             self.uss1,
             self.first_flight_id,
-            first_flight_activated.request,
+            self.first_flight_activated.request,
         )
 
         validate_shared_operational_intent(
