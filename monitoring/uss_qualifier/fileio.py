@@ -264,7 +264,8 @@ def _replace_refs(
             allof_parent_path = ".".join(path.split(".")[0:-1])
             if allof_parent_path + ".allOf" in allof_paths:
                 allof_parent_content = [
-                    m.value for m in bc_jsonpath_ng.parse(allof_parent_path).find(content)
+                    m.value
+                    for m in bc_jsonpath_ng.parse(allof_parent_path).find(content)
                 ]
                 if len(allof_parent_content) != 1:
                     raise RuntimeError(
