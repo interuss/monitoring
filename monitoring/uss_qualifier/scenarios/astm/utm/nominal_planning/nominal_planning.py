@@ -40,7 +40,6 @@ class NominalPlanning(TestScenario):
     first_flight: FlightIntent
     first_flight_activated: FlightIntent
     first_flight_id: Optional[str] = None
-    first_flight_op_intent_id: Optional[str] = None
     conflicting_flight: FlightIntent
     uss1: FlightPlanner
     uss2: FlightPlanner
@@ -155,13 +154,12 @@ class NominalPlanning(TestScenario):
         resp, self.first_flight_id = plan_flight_intent(
             self, "Plan flight intent", self.uss1, self.first_flight.request
         )
-        self.first_flight_op_intent_id = resp.operational_intent_id
 
         validate_shared_operational_intent(
             self,
             "Validate flight sharing",
             self.first_flight.request,
-            self.first_flight_op_intent_id,
+            resp.operational_intent_id,
         )
 
     def _attempt_second_flight(self):
@@ -175,7 +173,7 @@ class NominalPlanning(TestScenario):
         # todo: add check flight intent was not planned
 
     def _activate_first_flight(self):
-        _ = activate_flight_intent(
+        resp = activate_flight_intent(
             self,
             "Activate first flight",
             self.uss1,
@@ -187,7 +185,7 @@ class NominalPlanning(TestScenario):
             self,
             "Validate flight sharing",
             self.first_flight_activated.request,
-            self.first_flight_op_intent_id,
+            resp.operational_intent_id,
         )
 
     def cleanup(self):

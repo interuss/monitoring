@@ -45,7 +45,6 @@ class NominalPlanningPriority(TestScenario):
     priority_flight: FlightIntent
     priority_flight_activated: FlightIntent
     priority_flight_id: Optional[str] = None
-    priority_flight_op_intent_id: Optional[str] = None
 
     uss1: FlightPlanner
     uss2: FlightPlanner
@@ -189,17 +188,16 @@ class NominalPlanningPriority(TestScenario):
         resp, self.priority_flight_id = plan_flight_intent(
             self, "Plan flight intent", self.uss2, self.priority_flight.request
         )
-        self.priority_flight_op_intent_id = resp.operational_intent_id
 
         validate_shared_operational_intent(
             self,
             "Validate flight sharing",
             self.priority_flight.request,
-            self.priority_flight_op_intent_id,
+            resp.operational_intent_id,
         )
 
     def _activate_priority_flight(self):
-        _ = activate_flight_intent(
+        resp = activate_flight_intent(
             self,
             "Activate priority flight",
             self.uss2,
@@ -211,7 +209,7 @@ class NominalPlanningPriority(TestScenario):
             self,
             "Validate flight sharing",
             self.priority_flight_activated.request,
-            self.priority_flight_op_intent_id,
+            resp.operational_intent_id,
         )
 
     def _activate_first_flight_attempt(self):
