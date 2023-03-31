@@ -22,18 +22,24 @@ FlightIntentID = str
 To be used only within uss_qualifier (not visible to participants under test) to select an appropriate flight intent from the collection."""
 
 
+class DeltaFlightIntent(ImplicitDict):
+    """Represents an intent expressed as identical to another intent except for some specific changes."""
+
+    source: FlightIntentID
+    """Base the flight intent for this element of a FlightIntentCollection on the element of the collection identified by this field."""
+
+    mutation: Optional[dict]
+    """For each subfield specified in this object, override the value in the corresponding subfield of the flight intent for this element with the specified value."""
+
+
 class FlightIntentCollectionElement(ImplicitDict):
-    """Definition of a single flight intent within a FlightIntentCollection.  Exactly `full_intent` OR [`delta_source` AND `delta_mutation`] must be specified.
-    A delta flight intent represents an intent expressed as identical to another intent except for some specific changes."""
+    """Definition of a single flight intent within a FlightIntentCollection.  Exactly one field must be specified."""
 
     full: Optional[FlightIntent]
     """If specified, the full definition of the flight intent."""
 
-    delta_source: Optional[FlightIntentID]
-    """If specified alongside delta_mutation, base the flight intent for this element of the collection on the element of the collection identified by this field."""
-
-    delta_mutation: Optional[dict]
-    """If specified alongside delta_source, for each subfield specified in this object, override the value in the corresponding subfield of the flight intent for this element with the specified value."""
+    delta: Optional[DeltaFlightIntent]
+    """If specified, a flight intent based on another flight intent, but with some changes."""
 
 
 class FlightIntentCollection(ImplicitDict):

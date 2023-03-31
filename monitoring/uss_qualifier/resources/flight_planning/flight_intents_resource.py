@@ -42,16 +42,15 @@ class FlightIntentsResource(Resource[FlightIntentsSpecification]):
                 )
 
             elif (
-                intent_orig.has_field_with_value("delta_source")
-                and intent_orig.delta_source in self._intent_collection.intents
+                intent_orig.has_field_with_value("delta")
+                and intent_orig.delta.source in self._intent_collection.intents
                 and self._intent_collection.intents[
-                    intent_orig.delta_source
+                    intent_orig.delta.source
                 ].has_field_with_value("full")
-                and intent_orig.has_field_with_value("delta_mutation")
             ):
                 intent = apply_overrides(
-                    self._intent_collection.intents[intent_orig.delta_source].full,
-                    intent_orig.delta_mutation,
+                    self._intent_collection.intents[intent_orig.delta.source].full,
+                    intent_orig.delta.mutation,
                 )
 
             else:
