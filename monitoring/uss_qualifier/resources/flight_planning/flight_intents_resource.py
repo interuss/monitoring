@@ -30,44 +30,54 @@ class FlightIntentsResource(Resource[FlightIntentsSpecification]):
         """Resolve the underlying delta flight intents and shift appropriately times."""
 
         t0 = arrow.utcnow() + self._planning_time
-        intents: Dict[FlightIntentID, FlightIntent] = {}
 
-        for intent_id, intent_orig in self._intent_collection.intents.items():
-            intent: FlightIntent
+        # process intents in order of dependency
+        processed_intents: Dict[FlightIntentID, FlightIntent] = {}
+        unprocessed_intent_ids = list(self._intent_collection.intents.keys())
 
-            # copy intent and resolve delta
-            if intent_orig.has_field_with_value("full"):
-                intent = ImplicitDict.parse(
-                    json.loads(json.dumps(intent_orig.full)), FlightIntent
+        while unprocessed_intent_ids:
+            nb_processed = 0
+            for intent_id in unprocessed_intent_ids:
+                unprocessed_intent = self._intent_collection.intents[intent_id]
+                processed_intent: FlightIntent
+
+                # copy intent and resolve delta
+                if unprocessed_intent.has_field_with_value("full"):
+                    processed_intent = ImplicitDict.parse(
+                        json.loads(json.dumps(unprocessed_intent.full)), FlightIntent
+                    )
+                elif (
+                    unprocessed_intent.has_field_with_value("delta")
+                    and unprocessed_intent.delta.source in processed_intents
+                ):
+                    processed_intent = apply_overrides(
+                        processed_intents[unprocessed_intent.delta.source],
+                        unprocessed_intent.delta.mutation,
+                    )
+                else:
+                    raise ValueError(f"{intent_id} is invalid")
+
+                # shift times
+                dt = t0 - processed_intent.reference_time.datetime
+                for volume in (
+                    processed_intent.request.operational_intent.volumes
+                    + processed_intent.request.operational_intent.off_nominal_volumes
+                ):
+                    volume.time_start.value = StringBasedDateTime(
+                        volume.time_start.value.datetime + dt
+                    )
+                    volume.time_end.value = StringBasedDateTime(
+                        volume.time_end.value.datetime + dt
+                    )
+
+                nb_processed += 1
+                processed_intents[intent_id] = processed_intent
+                unprocessed_intent_ids.remove(intent_id)
+
+            if nb_processed == 0 and unprocessed_intent_ids:
+                raise ValueError(
+                    "Unresolvable dependency detected between intents: "
+                    + ", ".join(i_id for i_id in unprocessed_intent_ids)
                 )
 
-            elif (
-                intent_orig.has_field_with_value("delta")
-                and intent_orig.delta.source in self._intent_collection.intents
-                and self._intent_collection.intents[
-                    intent_orig.delta.source
-                ].has_field_with_value("full")
-            ):
-                intent = apply_overrides(
-                    self._intent_collection.intents[intent_orig.delta.source].full,
-                    intent_orig.delta.mutation,
-                )
-
-            else:
-                raise ValueError(f"{intent_id} is invalid")
-
-            # shift times
-            dt = t0 - intent.reference_time.datetime
-            for volume in (
-                intent.request.operational_intent.volumes
-                + intent.request.operational_intent.off_nominal_volumes
-            ):
-                volume.time_start.value = StringBasedDateTime(
-                    volume.time_start.value.datetime + dt
-                )
-                volume.time_end.value = StringBasedDateTime(
-                    volume.time_end.value.datetime + dt
-                )
-
-            intents[intent_id] = intent
-        return intents
+        return processed_intents
