@@ -145,7 +145,7 @@ class NominalPlanning(TestScenario):
         clear_area(
             self,
             "Area clearing",
-            [self.first_flight, self.conflicting_flight],
+            [self.first_flight, self.first_flight_activated, self.conflicting_flight],
             [self.uss1, self.uss2],
         )
 
