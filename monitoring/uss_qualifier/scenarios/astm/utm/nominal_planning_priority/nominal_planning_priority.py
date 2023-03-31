@@ -161,7 +161,12 @@ class NominalPlanningPriority(TestScenario):
         clear_area(
             self,
             "Area clearing",
-            [self.first_flight, self.first_flight_activated, self.priority_flight, self.priority_flight_activated],
+            [
+                self.first_flight,
+                self.first_flight_activated,
+                self.priority_flight,
+                self.priority_flight_activated,
+            ],
             [self.uss1, self.uss2],
         )
 
