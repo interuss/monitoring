@@ -17,7 +17,9 @@ class FlightIntent(ImplicitDict):
 
 
 FlightIntentID = str
-"""Identifier for a flight intent within a collection of flight intents."""
+"""Identifier for a flight intent within a collection of flight intents.
+
+To be used only within uss_qualifier (not visible to participants under test) to select an appropriate flight intent from the collection."""
 
 
 class FlightIntentCollectionElement(ImplicitDict):
