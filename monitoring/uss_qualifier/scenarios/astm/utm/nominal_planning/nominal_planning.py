@@ -1,13 +1,18 @@
 from typing import Optional
 
+from uas_standards.astm.f3548.v21.api import OperationalIntentState
+
+from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    InjectFlightRequest,
     Capability,
 )
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
+)
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
+    FlightIntent,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlanner,
@@ -32,10 +37,10 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
 
 
 class NominalPlanning(TestScenario):
-    first_flight: InjectFlightRequest
-    first_flight_id: Optional[str]
-    conflicting_flight: InjectFlightRequest
-    first_flight_activated: InjectFlightRequest
+    first_flight: FlightIntent
+    first_flight_activated: FlightIntent
+    first_flight_id: Optional[str] = None
+    conflicting_flight: FlightIntent
     uss1: FlightPlanner
     uss2: FlightPlanner
     dss: DSSInstance
@@ -50,20 +55,50 @@ class NominalPlanning(TestScenario):
         super().__init__()
         self.uss1 = uss1.flight_planner
         self.uss2 = uss2.flight_planner
+        self.dss = dss.dss
 
         flight_intents = flight_intents.get_flight_intents()
-        if len(flight_intents) < 3:
-            raise ValueError(
-                f"`{self.me()}` TestScenario requires at least 3 flight_intents; found {len(flight_intents)}"
+        try:
+            (
+                self.first_flight,
+                self.first_flight_activated,
+                self.conflicting_flight,
+            ) = (
+                flight_intents["first_flight"],
+                flight_intents["first_flight_activated"],
+                flight_intents["conflicting_flight"],
             )
-        (
-            self.first_flight,
-            self.conflicting_flight,
-            self.first_flight_activated,
-        ) = flight_intents
-        self.first_flight_id = None
 
-        self.dss = dss.dss
+            assert (
+                self.first_flight.request.operational_intent.state
+                == OperationalIntentState.Accepted
+            ), "first_flight must have state Accepted"
+            assert (
+                self.first_flight_activated.request.operational_intent.state
+                == OperationalIntentState.Activated
+            ), "first_flight_activated must have state Activated"
+            assert (
+                self.conflicting_flight.request.operational_intent.state
+                == OperationalIntentState.Accepted
+            ), "priority_flight must have state Accepted"
+
+            assert (
+                self.first_flight.request.operational_intent.priority
+                == self.conflicting_flight.request.operational_intent.priority
+            ), "flights must have the same priority"
+            assert scd.vol4s_intersect(
+                self.first_flight.request.operational_intent.volumes,
+                self.conflicting_flight.request.operational_intent.volumes,
+            ), "flights must have intersecting volumes"
+
+        except KeyError as e:
+            raise ValueError(
+                f"`{self.me()}` TestScenario requirements for flight_intents not met: missing flight intent {e}"
+            )
+        except AssertionError as e:
+            raise ValueError(
+                f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
+            )
 
     def run(self):
         self.begin_test_scenario()
@@ -109,7 +144,7 @@ class NominalPlanning(TestScenario):
         clear_area(
             self,
             "Area clearing",
-            [self.first_flight, self.conflicting_flight, self.first_flight_activated],
+            [self.first_flight, self.first_flight_activated, self.conflicting_flight],
             [self.uss1, self.uss2],
         )
 
@@ -117,23 +152,25 @@ class NominalPlanning(TestScenario):
 
     def _plan_first_flight(self):
         resp, self.first_flight_id = plan_flight_intent(
-            self, "Plan flight intent", self.uss1, self.first_flight
+            self, "Plan flight intent", self.uss1, self.first_flight.request
         )
 
         validate_shared_operational_intent(
             self,
             "Validate flight sharing",
-            self.first_flight,
+            self.first_flight.request,
             resp.operational_intent_id,
         )
 
     def _attempt_second_flight(self):
-        resp = plan_conflict_flight_intent(
+        _ = plan_conflict_flight_intent(
             self,
             "Plan second flight with non-permitted equal priority conflict",
             self.uss2,
-            self.conflicting_flight,
+            self.conflicting_flight.request,
         )
+
+        # todo: add check flight intent was not planned
 
     def _activate_first_flight(self):
         resp = activate_flight_intent(
@@ -141,13 +178,13 @@ class NominalPlanning(TestScenario):
             "Activate first flight",
             self.uss1,
             self.first_flight_id,
-            self.first_flight_activated,
+            self.first_flight_activated.request,
         )
 
         validate_shared_operational_intent(
             self,
             "Validate flight sharing",
-            self.first_flight_activated,
+            self.first_flight_activated.request,
             resp.operational_intent_id,
         )
 

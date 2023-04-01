@@ -1,8 +1,7 @@
-from typing import List
+from typing import List, Dict
 
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    InjectFlightRequest,
     InjectFlightResult,
     Capability,
 )
@@ -11,6 +10,9 @@ from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
     FlightPlannersResource,
+)
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
+    FlightIntent,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlanner,
@@ -28,7 +30,8 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
 
 
 class Validation(TestScenario):
-    flight_intents: List[InjectFlightRequest]
+    invalid_flight_intents: List[FlightIntent]
+    valid_flight_intent: FlightIntent
     ussp: FlightPlanner
 
     def __init__(
@@ -40,25 +43,31 @@ class Validation(TestScenario):
         self.ussp = flight_planner.flight_planner
 
         intents = flight_intents.get_flight_intents()
-        if len(intents) < 2:
+        if len(intents) < 2 or "valid_flight_auth" not in intents:
             raise ValueError(
-                f"`{self.me()}` TestScenario requires at least 2 flight_intents; found {len(intents)}"
+                f"`{self.me()}` TestScenario requires at least 2 flight_intents and valid_flight_auth; found {len(intents)}"
             )
-        for i, flight_intent in enumerate(intents[0:-1]):
+
+        self.invalid_flight_intents = []
+        for fID, flight_intent in intents.items():
             problems = problems_with_flight_authorisation(
-                flight_intent.flight_authorisation
+                flight_intent.request.flight_authorisation
             )
-            if not problems:
-                raise ValueError(
-                    f"`{self.me()}` TestScenario requires all flight intents except the last to have invalid flight authorisation data.  Instead, intent {i+1}/{len(intents)} had valid flight authorisation data."
-                )
-        problems = problems_with_flight_authorisation(intents[-1].flight_authorisation)
-        if problems:
-            problems = ", ".join(problems)
-            raise ValueError(
-                f"`{self.me()}` TestScenario requires the last flight intent to be valid.  Instead, the flight authorisation data had: {problems}"
-            )
-        self.flight_intents = intents
+
+            if fID == "valid_flight_auth":
+                self.valid_flight_intent = flight_intent
+                if problems:
+                    problems = ", ".join(problems)
+                    raise ValueError(
+                        f"`{self.me()}` TestScenario requires valid_flight_auth to be valid.  Instead, the flight authorisation data had: {problems}"
+                    )
+
+            else:
+                self.invalid_flight_intents.append(flight_intent)
+                if not problems:
+                    raise ValueError(
+                        f"`{self.me()}` TestScenario requires all flight intents except the last to have invalid flight authorisation data.  Instead, intent {fID} had valid flight authorisation data."
+                    )
 
     def run(self):
         self.begin_test_scenario()
@@ -95,7 +104,7 @@ class Validation(TestScenario):
         clear_area(
             self,
             "Area clearing",
-            self.flight_intents,
+            [self.valid_flight_intent, *self.invalid_flight_intents],
             [self.ussp],
         )
 
@@ -104,10 +113,12 @@ class Validation(TestScenario):
     def _attempt_invalid_flights(self) -> bool:
         self.begin_test_step("Inject invalid flight intents")
 
-        for flight_intent in self.flight_intents[0:-1]:
+        for flight_intent in self.invalid_flight_intents:
             with self.check("Incorrectly planned", [self.ussp.participant_id]) as check:
                 try:
-                    resp, query, flight_id = self.ussp.request_flight(flight_intent)
+                    resp, query, flight_id = self.ussp.request_flight(
+                        flight_intent.request
+                    )
                 except QueryError as e:
                     for q in e.queries:
                         self.record_query(q)
@@ -121,7 +132,7 @@ class Validation(TestScenario):
                 if resp.result == InjectFlightResult.Planned:
                     problems = ", ".join(
                         problems_with_flight_authorisation(
-                            flight_intent.flight_authorisation
+                            flight_intent.request.flight_authorisation
                         )
                     )
                     check.record_failed(
@@ -145,7 +156,10 @@ class Validation(TestScenario):
 
     def _plan_valid_flight(self) -> bool:
         resp, _ = plan_flight_intent(
-            self, "Plan valid flight intent", self.ussp, self.flight_intents[-1]
+            self,
+            "Plan valid flight intent",
+            self.ussp,
+            self.valid_flight_intent.request,
         )
         if resp is None:
             return False
