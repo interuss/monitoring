@@ -34,6 +34,9 @@ class FlightPlannerConfiguration(ImplicitDict):
     timeout_seconds: Optional[float] = None
     """Number of seconds to allow for requests to this flight planner.  If None, use default."""
 
+    allows_same_priority_intersections: bool
+    """True if the regulation under which the flight planner is permits equal priority conflicts."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         try:

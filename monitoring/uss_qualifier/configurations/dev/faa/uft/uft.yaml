@@ -18,9 +18,11 @@ v1:
                             # uss1 is the mock_uss directly exposing scdsc functionality
                             - participant_id: uss8074
                               injection_base_url: http://host.docker.internal:8074/scdsc
+                              allows_same_priority_intersections: false
                             # uss2 uses atproxy, with requests being fulfilled by mock_uss with atproxy_client functionality enabled
                             - participant_id: uss8075
                               injection_base_url: http://host.docker.internal:8075/scd
+                              allows_same_priority_intersections: false
                 scd_dss:
                     resource_type: resources.astm.f3548.v21.DSSInstanceResource
                     dependencies:

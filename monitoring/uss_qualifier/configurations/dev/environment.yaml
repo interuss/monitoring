@@ -46,9 +46,11 @@ f3548:
                 # uss1 is the mock_uss directly exposing scdsc functionality
                 -   participant_id: uss1
                     injection_base_url: http://host.docker.internal:8074/scdsc
+                    allows_same_priority_intersections: false
                 # uss2 uses atproxy, with requests being fulfilled by mock_uss with atproxy_client functionality enabled
                 -   participant_id: uss2
                     injection_base_url: http://host.docker.internal:8075/scd
+                    allows_same_priority_intersections: false
     dss:
         resource_type: resources.astm.f3548.v21.DSSInstanceResource
         dependencies:
@@ -66,6 +68,7 @@ f3548_single_scenario:
             flight_planner:
                 participant_id: uss1
                 injection_base_url: http://host.docker.internal:8074/scdsc
+                allows_same_priority_intersections: false
     uss2:
         resource_type: resources.flight_planning.FlightPlannerResource
         dependencies:
@@ -74,3 +77,4 @@ f3548_single_scenario:
             flight_planner:
                 participant_id: uss2
                 injection_base_url: http://host.docker.internal:8074/scdsc
+                allows_same_priority_intersections: false
