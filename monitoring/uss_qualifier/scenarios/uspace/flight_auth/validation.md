@@ -14,7 +14,7 @@ creation when all fields are valid.
 
 ### flight_intents
 
-FlightIntentsResource that provides at least two flight intents.  The last flight intent is expected to be valid and should be planned successfully.  All preceding flight intents must have some problem with the flight authorisation data such that they should be rejected.
+FlightIntentsResource that provides at least two flight intents. The flight intent `valid_flight_intent` is expected to be valid and should be planned successfully.  All other flight intents must have some problem with the flight authorisation data such that they should be rejected.
 
 ### flight_planner
 

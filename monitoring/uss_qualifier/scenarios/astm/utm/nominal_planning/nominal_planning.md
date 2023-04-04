@@ -14,8 +14,12 @@ intent.
 ## Resources
 
 ### flight_intents
-
-FlightIntentsResource that provides at least 2 flight intents.  The first flight intent will be used for the successfully-planned flight and the second flight will be used for the failed flight.  Therefore, the second flight must intersect the first flight.
+FlightIntentsResource that provides the 3 following flight intents:
+- `first_flight`: used for the successfully-planned flight
+  - `first_flight_activated`: state mutation `Activated`
+- `conflicting_flight`: used for the failed flight
+  - must intersect `first_flight`
+  - must have priority equal to `first_flight`
 
 ### uss1
 

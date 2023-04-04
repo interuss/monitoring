@@ -14,8 +14,14 @@ with higher priority.
 ## Resources
 
 ### flight_intents
+FlightIntentsResource that provides the 4 following flight intents:
+- `first_flight`: will be planned normally
+  - `first_flight_activated`: state mutation `Activated`
+- `priority_flight`: will be planned on top of `first_flight`
+  - `priority_flight_activated`: state mutation `Activated`
+  - must intersect `first_flight`
+  - must have higher priority than `first_flight`
 
-FlightIntentsResource that provides at least 2 flight intents.  The first flight intent will be planned normally and then the second flight will be planned on top of the first flight.  Therefore, the second flight must intersect the first flight, and the second flight must have higher priority than the first flight.
 
 ### uss1
 
@@ -23,7 +29,7 @@ FlightPlannerResource that will successfully plan the first flight.
 
 ### uss2
 
-FlightPlannerResouce that will successfully plan the second, higher-priority flight over the first one.
+FlightPlannerResource that will successfully plan the second, higher-priority flight over the first one.
 
 ### dss
 
@@ -85,6 +91,8 @@ The high-priority flight intent should be successfully activated by the first fl
 
 In this step, the first USS fails to activate the flight it previously created as the second USS planned and activated
 a conflicting higher priority flight in the meantime.
+
+### [Validate first flight not activated test step](../validate_shared_operational_intent.md)
 
 ## Cleanup
 

@@ -1,19 +1,23 @@
 from datetime import timedelta
 import json
-from typing import List
+from typing import Dict
 
 import arrow
+import jsonpath_ng.ext
 from implicitdict import ImplicitDict, StringBasedDateTime
 
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    InjectFlightRequest,
-)
 from monitoring.uss_qualifier.fileio import load_dict_with_references
+from monitoring.uss_qualifier.resources.overrides import apply_overrides
 from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntentCollection,
     FlightIntentsSpecification,
+    FlightIntent,
+    FlightIntentID,
 )
+
+
+_time_finder = jsonpath_ng.ext.parse("$..[time_start,time_end].value.`parent`")
 
 
 class FlightIntentsResource(Resource[FlightIntentsSpecification]):
@@ -26,27 +30,65 @@ class FlightIntentsResource(Resource[FlightIntentsSpecification]):
         )
         self._planning_time = specification.planning_time.timedelta
 
-    def get_flight_intents(self) -> List[InjectFlightRequest]:
+    def get_flight_intents(self) -> Dict[FlightIntentID, FlightIntent]:
+        """Resolve the underlying delta flight intents and shift appropriately times."""
+
         t0 = arrow.utcnow() + self._planning_time
 
-        intents: List[InjectFlightRequest] = []
+        # process intents in order of dependency
+        processed_intents: Dict[FlightIntentID, FlightIntent] = {}
+        unprocessed_intent_ids = list(self._intent_collection.intents.keys())
 
-        for intent in self._intent_collection.intents:
-            dt = t0 - intent.reference_time.datetime
-            req: InjectFlightRequest = ImplicitDict.parse(
-                json.loads(json.dumps(intent.request)), InjectFlightRequest
-            )
+        while unprocessed_intent_ids:
+            nb_processed = 0
+            for intent_id in unprocessed_intent_ids:
+                unprocessed_intent = self._intent_collection.intents[intent_id]
+                processed_intent: FlightIntent
 
-            for volume in (
-                req.operational_intent.volumes
-                + req.operational_intent.off_nominal_volumes
-            ):
-                volume.time_start.value = StringBasedDateTime(
-                    volume.time_start.value.datetime + dt
+                # copy intent and resolve delta
+                if unprocessed_intent.has_field_with_value("full"):
+                    processed_intent = ImplicitDict.parse(
+                        json.loads(json.dumps(unprocessed_intent.full)), FlightIntent
+                    )
+                    times_to_shift = [
+                        m.value for m in _time_finder.find(processed_intent)
+                    ]
+                elif (
+                    unprocessed_intent.has_field_with_value("delta")
+                    and unprocessed_intent.delta.source in processed_intents
+                ):
+                    processed_intent = ImplicitDict.parse(
+                        apply_overrides(
+                            processed_intents[unprocessed_intent.delta.source],
+                            unprocessed_intent.delta.mutation,
+                        ),
+                        FlightIntent,
+                    )
+                    times_to_shift = []
+                    for unprocessed_match in _time_finder.find(
+                        unprocessed_intent.delta.mutation
+                    ):
+                        processed_matches = unprocessed_match.full_path.find(
+                            processed_intent
+                        )
+                        if processed_matches:
+                            times_to_shift.append(processed_matches[0].value)
+                else:
+                    raise ValueError(f"{intent_id} is invalid")
+
+                # shift times
+                dt = t0 - processed_intent.reference_time.datetime
+                for t in times_to_shift:
+                    t.value = StringBasedDateTime(t.value.datetime + dt)
+
+                nb_processed += 1
+                processed_intents[intent_id] = processed_intent
+                unprocessed_intent_ids.remove(intent_id)
+
+            if nb_processed == 0 and unprocessed_intent_ids:
+                raise ValueError(
+                    "Unresolvable dependency detected between intents: "
+                    + ", ".join(i_id for i_id in unprocessed_intent_ids)
                 )
-                volume.time_end.value = StringBasedDateTime(
-                    volume.time_end.value.datetime + dt
-                )
-            intents.append(req)
 
-        return intents
+        return processed_intents
