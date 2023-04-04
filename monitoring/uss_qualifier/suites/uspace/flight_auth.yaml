@@ -35,3 +35,26 @@ actions:
       roles:
       - flight_planner
   on_failure: Continue
+participant_badges:
+    - id: no_failures
+      name: Fails No Existing Tests
+      description: Until testing coverage is sufficiently complete to verify all intended requirements for particular roles, this badge may be useful in communicating that the participant has passed all existing applicable tests for their role and capabilities.  This badge should be removed once test coverage extends to all intended requirements.
+      grant_condition:
+          all_conditions:
+                conditions:
+                    - no_failed_checks: {}
+                    - badge_granted:
+                          badge_id: no_failures
+                          # Look for the no_failures badge in any child action that is a suites.astm.utm.f3548_21 test suite
+                          badge_location: '$.actions[?(@.test_suite)].test_suite[?(@.suite_type=="suites.astm.utm.f3548_21")]'
+                          #                ^ Root element is the report for the test suite in which this badge is defined (the test suite defined by this YAML file)
+                          #                  ^ Select the value corresponding to the "actions" key
+                          #                         ^ Keep only the items (in "actions") which have a "test_suite" key
+                          #                                            ^ Select the value corresponding to the "test_suite" key (type is TestSuiteReport)
+                          #                                                     ^ Keep only the items whose "suite_type" key has a value of "suites.astm.utm.f3548_21"
+
+                          # Alternately, look for the no_failures badge in any *descendant* test suite that is a suites.astm.utm.f3548_21 type
+                          # badge_location: '$..*[?(@.suite_type=="suites.astm.utm.f3548_21")]'
+
+                          # Alternately, look for the no_failures badge in the specific location where the F3548-21 test suite is
+                          # badge_location: '$.actions[0].test_suite'

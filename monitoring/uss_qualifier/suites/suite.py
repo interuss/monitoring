@@ -14,6 +14,7 @@ from monitoring.monitorlib.inspection import (
     get_module_object_by_name,
     import_submodules,
 )
+from monitoring.uss_qualifier.reports.badges import condition_satisfied_for_test_suite
 from monitoring.uss_qualifier.reports.report import (
     ActionGeneratorReport,
     TestScenarioReport,
@@ -201,6 +202,39 @@ class TestSuite(object):
                     )
         report.successful = success
         report.end_time = StringBasedDateTime(datetime.utcnow())
+
+        # Grant badges earned by participants
+        if (
+            "participant_badges" in self.definition
+            and self.definition.participant_badges
+        ):
+            all_participants = report.all_participants()
+            report.badges_granted = {p: [] for p in all_participants}
+            for badge in self.definition.participant_badges:
+                for participant_id in all_participants:
+                    try:
+                        if condition_satisfied_for_test_suite(
+                            badge.grant_condition, participant_id, report
+                        ):
+                            logger.info(
+                                "Test suite {} granted {} badge '{}' to {}",
+                                self.declaration.type_name,
+                                badge.id,
+                                badge.name,
+                                participant_id,
+                            )
+                            report.badges_granted[participant_id].append(badge.id)
+                    except ValueError as e:
+                        logger.error(
+                            "Error checking for {} badge '{}' in test suite {}: {}\nBadge definition: {}",
+                            badge.id,
+                            badge.name,
+                            self.declaration.type_name,
+                            str(e),
+                            json.dumps(badge, indent=2),
+                        )
+                        break
+
         return report
 
 

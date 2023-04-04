@@ -20,3 +20,28 @@ actions:
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances
     on_failure: Continue
+participant_badges:
+    - id: service_provider
+      name: NetRID Service Provider
+      description: Participant fulfills testable requirements necessary to act as a NetRID Service Provider according to F3411-19.
+      grant_condition:
+          requirements_checked:
+              checked:
+                  requirement_sets:
+                      - "astm.f3411.v19.service_provider#Tested by automated tests"
+    - id: display_provider
+      name: NetRID Display Provider
+      description: Participant fulfills testable requirements necessary to act as a NetRID Display Provider according to F3411-19.
+      grant_condition:
+          requirements_checked:
+            checked:
+                requirement_sets:
+                    - "astm.f3411.v19.display_provider#Automated verification"
+    - id: dss_operator
+      name: NetRID DSS Operator
+      description: Participant fulfills testable requirements necessary to act operate a NetRID Discovery and Synchronization Service instance according to F3411-19.
+      grant_condition:
+          requirements_checked:
+            checked:
+                requirement_sets:
+                    - "astm.f3411.v19.dss_provider#Automated verification"

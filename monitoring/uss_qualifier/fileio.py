@@ -3,7 +3,7 @@ import json
 import os
 from typing import Tuple, Optional, Dict, List, Union
 
-import jsonpath_ng
+import bc_jsonpath_ng
 import requests
 import yaml
 
@@ -235,7 +235,7 @@ def _replace_refs(
     cache: Optional[Dict[str, dict]] = None,
 ) -> None:
     for path in ref_parent_paths:
-        parent = [m.value for m in jsonpath_ng.parse(path).find(content)]
+        parent = [m.value for m in bc_jsonpath_ng.parse(path).find(content)]
         if len(parent) != 1:
             raise RuntimeError(
                 f'Unexpectedly found {len(parent)} matches for $ref parent JSON Path "{path}"'
@@ -247,7 +247,7 @@ def _replace_refs(
                 ref_path, context_file_name, cache
             )
         else:
-            ref_json_path = jsonpath_ng.parse(
+            ref_json_path = bc_jsonpath_ng.parse(
                 ref_path.replace("#", "$").replace("/", ".")
             )
             ref_content = [m.value for m in ref_json_path.find(content)]
@@ -264,7 +264,8 @@ def _replace_refs(
             allof_parent_path = ".".join(path.split(".")[0:-1])
             if allof_parent_path + ".allOf" in allof_paths:
                 allof_parent_content = [
-                    m.value for m in jsonpath_ng.parse(allof_parent_path).find(content)
+                    m.value
+                    for m in bc_jsonpath_ng.parse(allof_parent_path).find(content)
                 ]
                 if len(allof_parent_content) != 1:
                     raise RuntimeError(

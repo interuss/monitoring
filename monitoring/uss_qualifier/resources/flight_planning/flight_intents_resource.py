@@ -3,7 +3,7 @@ import json
 from typing import Dict
 
 import arrow
-import jsonpath_ng.ext
+import bc_jsonpath_ng.ext
 from implicitdict import ImplicitDict, StringBasedDateTime
 
 from monitoring.uss_qualifier.fileio import load_dict_with_references
@@ -17,7 +17,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
 )
 
 
-_time_finder = jsonpath_ng.ext.parse("$..[time_start,time_end].value.`parent`")
+_time_finder = bc_jsonpath_ng.ext.parse("$..[time_start,time_end].value.`parent`")
 
 
 class FlightIntentsResource(Resource[FlightIntentsSpecification]):
