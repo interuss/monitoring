@@ -105,3 +105,7 @@ def generate_tested_requirements(report: TestRunReport, roles: List[TestedRole])
 
     template = env.get_template("tested_requirements.html")
     return template.render(content=content)
+
+
+def make_report_html(report: TestRunReport) -> str:
+    raise NotImplementedError()
