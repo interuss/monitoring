@@ -233,7 +233,7 @@ def plan_flight_intent(
     """
     if flight_intent.operational_intent.state != OperationalIntentState.Accepted:
         raise ValueError(
-            f"operational intent state is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
+            f"Error in test data: operational intent state for plan_flight_intent test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
         )
 
     return submit_flight_intent(
@@ -263,7 +263,7 @@ def activate_flight_intent(
     """
     if flight_intent.operational_intent.state != OperationalIntentState.Activated:
         raise ValueError(
-            f"operational intent state is expected to be `Activated`, got {flight_intent.operational_intent.state}"
+            f"Error in test data: operational intent state for activate_flight_intent test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `Activated`, got {flight_intent.operational_intent.state}"
         )
 
     return submit_flight_intent(
@@ -294,7 +294,7 @@ def modify_planned_flight_intent(
     """
     if flight_intent.operational_intent.state != OperationalIntentState.Accepted:
         raise ValueError(
-            f"operational intent state is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
+            f"Error in test data: operational intent state for modify_planned_flight_intent test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
         )
 
     return submit_flight_intent(
@@ -325,7 +325,7 @@ def modify_activated_flight_intent(
     """
     if flight_intent.operational_intent.state != OperationalIntentState.Activated:
         raise ValueError(
-            f"operational intent state is expected to be `Activated`, got {flight_intent.operational_intent.state}"
+            f"Error in test data: operational intent state for modify_activated_flight_intent test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `Activated`, got {flight_intent.operational_intent.state}"
         )
 
     return submit_flight_intent(
@@ -375,27 +375,27 @@ def submit_flight_intent(
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
         scenario.record_query(query)
-
-        for unexpected_result, failed_test_check in failed_checks.items():
-            with scenario.check(
-                failed_test_check, [flight_planner.participant_id]
-            ) as failed_check:
-                if resp.result == unexpected_result:
-                    failed_check.record_failed(
-                        summary=f"Flight unexpectedly {resp.result}",
-                        severity=Severity.High,
-                        details=f'{flight_planner.participant_id} indicated {resp.result}, explicitly failing this check: "{resp.notes}"',
-                        query_timestamps=[query.request.timestamp],
-                    )
+        notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
 
         if resp.result in expected_results:
             scenario.end_test_step()
             return resp, flight_id
         else:
+            for unexpected_result, failed_test_check in failed_checks.items():
+                with scenario.check(
+                    failed_test_check, [flight_planner.participant_id]
+                ) as specific_failed_check:
+                    if resp.result == unexpected_result:
+                        specific_failed_check.record_failed(
+                            summary=f"Flight unexpectedly {resp.result}",
+                            severity=Severity.High,
+                            details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}{notes_suffix}',
+                            query_timestamps=[query.request.timestamp],
+                        )
             check.record_failed(
                 summary=f"Flight unexpectedly {resp.result}",
                 severity=Severity.High,
-                details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}: "{resp.notes}"',
+                details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}{notes_suffix}',
                 query_timestamps=[query.request.timestamp],
             )
 
@@ -433,6 +433,7 @@ def delete_flight_intent(
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
         scenario.record_query(query)
+        notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
 
         if resp.result == DeleteFlightResult.Closed:
             scenario.end_test_step()
@@ -441,7 +442,7 @@ def delete_flight_intent(
             check.record_failed(
                 summary=f"Flight deletion attempt unexpectedly {resp.result}",
                 severity=Severity.High,
-                details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {DeleteFlightResult.Closed}: "{resp.notes}"',
+                details=f"{flight_planner.participant_id} indicated {resp.result} rather than the expected {DeleteFlightResult.Closed}{notes_suffix}",
                 query_timestamps=[query.request.timestamp],
             )
 

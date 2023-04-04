@@ -114,7 +114,7 @@ class Validation(TestScenario):
         self.begin_test_step("Inject invalid flight intents")
 
         for flight_intent in self.invalid_flight_intents:
-            with self.check("Incorrectly planned", [self.ussp.participant_id]) as check:
+            with self.check("Failure", [self.ussp.participant_id]) as failure_check:
                 try:
                     resp, query, flight_id = self.ussp.request_flight(
                         flight_intent.request
@@ -129,21 +129,25 @@ class Validation(TestScenario):
                         query_timestamps=[q.request.timestamp for q in e.queries],
                     )
                 self.record_query(query)
-                if resp.result == InjectFlightResult.Planned:
-                    problems = ", ".join(
-                        problems_with_flight_authorisation(
-                            flight_intent.request.flight_authorisation
+
+                with self.check(
+                    "Incorrectly planned", [self.ussp.participant_id]
+                ) as check:
+                    if resp.result == InjectFlightResult.Planned:
+                        problems = ", ".join(
+                            problems_with_flight_authorisation(
+                                flight_intent.request.flight_authorisation
+                            )
                         )
-                    )
-                    check.record_failed(
-                        summary="Flight planned with invalid flight authorisation",
-                        severity=Severity.Medium,
-                        details=f"Flight intent resulted in successful flight planning even though the flight authorisation had: {problems}",
-                        query_timestamps=[query.request.timestamp],
-                    )
-            with self.check("Failure", [self.ussp.participant_id]) as check:
+                        check.record_failed(
+                            summary="Flight planned with invalid flight authorisation",
+                            severity=Severity.Medium,
+                            details=f"Flight intent resulted in successful flight planning even though the flight authorisation had: {problems}",
+                            query_timestamps=[query.request.timestamp],
+                        )
+
                 if resp.result == InjectFlightResult.Failed:
-                    check.record_failed(
+                    failure_check.record_failed(
                         summary="Failed to create flight",
                         severity=Severity.Medium,
                         details=f'{self.ussp.participant_id} Failed to process the user flight intent: "{resp.notes}"',
