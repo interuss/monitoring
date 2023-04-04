@@ -18,7 +18,10 @@ from monitoring.uss_qualifier.configurations.configuration import (
     ArtifactsConfiguration,
     ReportConfiguration,
 )
-from monitoring.uss_qualifier.reports.documents import generate_tested_requirements
+from monitoring.uss_qualifier.reports.documents import (
+    generate_tested_requirements,
+    make_report_html,
+)
 from monitoring.uss_qualifier.reports.graphs import make_graph
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
 from monitoring.uss_qualifier.resources.resource import create_resources

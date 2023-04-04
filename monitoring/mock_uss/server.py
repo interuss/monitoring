@@ -49,10 +49,8 @@ class MockUSS(flask.Flask):
 
     jinja_loader = FileSystemLoader(
         [
-            os.path.abspath(os.path.join(os.path.dirname(__file__), "templates")),
-            os.path.abspath(
-                os.path.join(os.path.dirname(__file__), "../monitorlib/html/templates")
-            ),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), relpath))
+            for relpath in ("templates", "../monitorlib/html/templates")
         ]
     )
 
