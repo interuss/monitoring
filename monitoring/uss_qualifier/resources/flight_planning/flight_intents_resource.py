@@ -3,6 +3,7 @@ import json
 from typing import Dict
 
 import arrow
+import jsonpath_ng.ext
 from implicitdict import ImplicitDict, StringBasedDateTime
 
 from monitoring.uss_qualifier.fileio import load_dict_with_references
@@ -14,6 +15,9 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntent,
     FlightIntentID,
 )
+
+
+_time_finder = jsonpath_ng.ext.parse("$..[time_start,time_end].value.`parent`")
 
 
 class FlightIntentsResource(Resource[FlightIntentsSpecification]):
@@ -46,29 +50,36 @@ class FlightIntentsResource(Resource[FlightIntentsSpecification]):
                     processed_intent = ImplicitDict.parse(
                         json.loads(json.dumps(unprocessed_intent.full)), FlightIntent
                     )
+                    times_to_shift = [
+                        m.value for m in _time_finder.find(processed_intent)
+                    ]
                 elif (
                     unprocessed_intent.has_field_with_value("delta")
                     and unprocessed_intent.delta.source in processed_intents
                 ):
-                    processed_intent = apply_overrides(
-                        processed_intents[unprocessed_intent.delta.source],
-                        unprocessed_intent.delta.mutation,
+                    processed_intent = ImplicitDict.parse(
+                        apply_overrides(
+                            processed_intents[unprocessed_intent.delta.source],
+                            unprocessed_intent.delta.mutation,
+                        ),
+                        FlightIntent,
                     )
+                    times_to_shift = []
+                    for unprocessed_match in _time_finder.find(
+                        unprocessed_intent.delta.mutation
+                    ):
+                        processed_matches = unprocessed_match.full_path.find(
+                            processed_intent
+                        )
+                        if processed_matches:
+                            times_to_shift.append(processed_matches[0].value)
                 else:
                     raise ValueError(f"{intent_id} is invalid")
 
                 # shift times
                 dt = t0 - processed_intent.reference_time.datetime
-                for volume in (
-                    processed_intent.request.operational_intent.volumes
-                    + processed_intent.request.operational_intent.off_nominal_volumes
-                ):
-                    volume.time_start.value = StringBasedDateTime(
-                        volume.time_start.value.datetime + dt
-                    )
-                    volume.time_end.value = StringBasedDateTime(
-                        volume.time_end.value.datetime + dt
-                    )
+                for t in times_to_shift:
+                    t.value = StringBasedDateTime(t.value.datetime + dt)
 
                 nb_processed += 1
                 processed_intents[intent_id] = processed_intent
