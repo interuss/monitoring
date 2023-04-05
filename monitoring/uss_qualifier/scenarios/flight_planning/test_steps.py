@@ -1,3 +1,4 @@
+import inspect
 from datetime import datetime
 from typing import List, Union, Optional, Tuple, Iterable, Set, Dict
 
@@ -216,6 +217,20 @@ def check_capabilities(
     return True
 
 
+def expect_flight_intent_state(
+    flight_intent: InjectFlightRequest,
+    expected_state: OperationalIntentState,
+    scenario: TestScenarioType,
+    test_step: str,
+) -> None:
+    """Confirm that provided flight intent test data has the expected state or raise a ValueError."""
+    if flight_intent.operational_intent.state != expected_state:
+        function_name = str(inspect.stack()[1][3])
+        raise ValueError(
+            f"Error in test data: operational intent state for {function_name} during test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `Accepted`, but got `{flight_intent.operational_intent.state}` instead"
+        )
+
+
 def plan_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
@@ -231,10 +246,9 @@ def plan_flight_intent(
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
     """
-    if flight_intent.operational_intent.state != OperationalIntentState.Accepted:
-        raise ValueError(
-            f"Error in test data: operational intent state for plan_flight_intent test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
-        )
+    expect_flight_intent_state(
+        flight_intent, OperationalIntentState.Accepted, scenario, test_step
+    )
 
     return submit_flight_intent(
         scenario,
@@ -261,10 +275,9 @@ def activate_flight_intent(
 
     Returns: The injection response.
     """
-    if flight_intent.operational_intent.state != OperationalIntentState.Activated:
-        raise ValueError(
-            f"Error in test data: operational intent state for activate_flight_intent test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `Activated`, got {flight_intent.operational_intent.state}"
-        )
+    expect_flight_intent_state(
+        flight_intent, OperationalIntentState.Activated, scenario, test_step
+    )
 
     return submit_flight_intent(
         scenario,
@@ -292,10 +305,9 @@ def modify_planned_flight_intent(
 
     Returns: The injection response.
     """
-    if flight_intent.operational_intent.state != OperationalIntentState.Accepted:
-        raise ValueError(
-            f"Error in test data: operational intent state for modify_planned_flight_intent test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `Accepted`, got {flight_intent.operational_intent.state}"
-        )
+    expect_flight_intent_state(
+        flight_intent, OperationalIntentState.Accepted, scenario, test_step
+    )
 
     return submit_flight_intent(
         scenario,
@@ -323,10 +335,9 @@ def modify_activated_flight_intent(
 
     Returns: The injection response.
     """
-    if flight_intent.operational_intent.state != OperationalIntentState.Activated:
-        raise ValueError(
-            f"Error in test data: operational intent state for modify_activated_flight_intent test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `Activated`, got {flight_intent.operational_intent.state}"
-        )
+    expect_flight_intent_state(
+        flight_intent, OperationalIntentState.Activated, scenario, test_step
+    )
 
     return submit_flight_intent(
         scenario,
@@ -377,21 +388,22 @@ def submit_flight_intent(
         scenario.record_query(query)
         notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
 
+        for unexpected_result, failed_test_check in failed_checks.items():
+            with scenario.check(
+                failed_test_check, [flight_planner.participant_id]
+            ) as specific_failed_check:
+                if resp.result == unexpected_result:
+                    specific_failed_check.record_failed(
+                        summary=f"Flight unexpectedly {resp.result}",
+                        severity=Severity.High,
+                        details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}{notes_suffix}',
+                        query_timestamps=[query.request.timestamp],
+                    )
+
         if resp.result in expected_results:
             scenario.end_test_step()
             return resp, flight_id
         else:
-            for unexpected_result, failed_test_check in failed_checks.items():
-                with scenario.check(
-                    failed_test_check, [flight_planner.participant_id]
-                ) as specific_failed_check:
-                    if resp.result == unexpected_result:
-                        specific_failed_check.record_failed(
-                            summary=f"Flight unexpectedly {resp.result}",
-                            severity=Severity.High,
-                            details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}{notes_suffix}',
-                            query_timestamps=[query.request.timestamp],
-                        )
             check.record_failed(
                 summary=f"Flight unexpectedly {resp.result}",
                 severity=Severity.High,
