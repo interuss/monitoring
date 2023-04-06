@@ -53,10 +53,12 @@ class FlightIntentsResource(Resource[FlightIntentsSpecification]):
                     times_to_shift = [
                         m.value for m in _time_finder.find(processed_intent)
                     ]
-                elif (
-                    unprocessed_intent.has_field_with_value("delta")
-                    and unprocessed_intent.delta.source in processed_intents
-                ):
+
+                elif unprocessed_intent.has_field_with_value("delta"):
+                    if unprocessed_intent.delta.source not in processed_intents:
+                        # delta source has not been processed yet
+                        continue
+
                     processed_intent = ImplicitDict.parse(
                         apply_overrides(
                             processed_intents[unprocessed_intent.delta.source],
@@ -73,6 +75,7 @@ class FlightIntentsResource(Resource[FlightIntentsSpecification]):
                         )
                         if processed_matches:
                             times_to_shift.append(processed_matches[0].value)
+
                 else:
                     raise ValueError(f"{intent_id} is invalid")
 
