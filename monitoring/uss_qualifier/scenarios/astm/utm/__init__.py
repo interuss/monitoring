@@ -1,3 +1,4 @@
 from .nominal_planning.nominal_planning import NominalPlanning
-from .nominal_planning_priority.nominal_planning_priority import NominalPlanningPriority
-from .nominal_planning_priority.conflict_higher_priority import ConflictHigherPriority
+from .nominal_planning.conflict_higher_priority.conflict_higher_priority import (
+    ConflictHigherPriority,
+)

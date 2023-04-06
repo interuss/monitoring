@@ -76,10 +76,10 @@ higher priority. As such it should be rejected per **[astm.f3548.v21.SCD0015](..
 
 TODO: add validation test step that op intent for flight 1 was not created
 
-
-## Attempt to modify planned flight in conflict test case
 ### [Delete flight 2 test step](../../../../flight_planning/delete_flight_intent.md)
 
+
+## Attempt to modify planned flight in conflict test case
 ### [Plan flight 1 test step](../../../../flight_planning/plan_flight_intent.md)
 The first flight should be successfully planned by the tested USS.
 
@@ -92,7 +92,7 @@ The test driver attempts to modify flight 1 via the tested USS, which is planned
 However, it conflicts with flight 2, which is of higher priority and was planned in the meantime.
 As such it should be rejected per **[astm.f3548.v21.SCD0020](../../../../../requirements/astm/f3548/v21.md)**.
 
-### [Validate flight 1 sharing test step](../../validate_shared_operational_intent.md)
+### [Validate flight 1 not modified test step](../../validate_shared_operational_intent.md)
 The first flight should not have been modified.
 
 ### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
@@ -104,7 +104,7 @@ The test driver attempts to activate planned flight 1, however, it conflicts wit
 higher priority.
 As such it should be rejected per **[astm.f3548.v21.SCD0025](../../../../../requirements/astm/f3548/v21.md)**.
 
-### [Validate flight 1 sharing test step](../../validate_shared_operational_intent.md)
+### [Validate flight 1 not activated test step](../../validate_shared_operational_intent.md)
 The first flight should not have been activated.
 
 
@@ -143,7 +143,7 @@ The test driver attempts to modify flight 1 so that it becomes in conflict with 
 However, because the conflict did not exist when the modification was initiated, it should be rejected
 per **[astm.f3548.v21.SCD0030](../../../../../requirements/astm/f3548/v21.md)**.
 
-### [Validate flight 1 sharing test step](../../validate_shared_operational_intent.md)
+### [Validate flight 1 not modified test step](../../validate_shared_operational_intent.md)
 The first flight should not have been modified.
 
 ### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)

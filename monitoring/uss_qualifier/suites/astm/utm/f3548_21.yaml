@@ -40,41 +40,18 @@ actions:
     specification:
       action_to_repeat:
         test_scenario:
-          scenario_type: scenarios.astm.utm.NominalPlanningPriority
+          scenario_type: scenarios.astm.utm.ConflictHigherPriority
           resources:
             flight_intents: priority_preemption_flights
-            uss1: uss1
-            uss2: uss2
+            tested_uss: uss1
+            control_uss: uss2
             dss: dss
         on_failure: Continue
       combination_selector_source: priority_planning_selector
       flight_planners_source: flight_planners
       roles:
-      - uss1
-      - uss2
-  on_failure: Continue
-- action_generator:
-  generator_type: action_generators.flight_planning.FlightPlannerCombinations
-  resources:
-    flight_planners: flight_planners
-    priority_planning_selector: priority_planning_selector?
-    priority_preemption_flights: priority_preemption_flights
-    dss: dss
-  specification:
-    action_to_repeat:
-      test_scenario:
-        scenario_type: scenarios.astm.utm.ConflictHigherPriority
-        resources:
-          flight_intents: priority_preemption_flights
-          tested_uss: uss1
-          control_uss: uss2
-          dss: dss
-      on_failure: Continue
-    combination_selector_source: priority_planning_selector
-    flight_planners_source: flight_planners
-    roles:
-      - uss1
-      - uss2
+        - uss1
+        - uss2
   on_failure: Continue
 participant_badges:
   - id: scd

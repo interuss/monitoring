@@ -1,6 +1,6 @@
 {
   "intents": {
-    "first_flight": {
+    "flight_1_planned_time_range_A": {
       "full": {
         "reference_time": "2023-02-12T10:34:14.483425+00:00",
         "request": {
@@ -273,9 +273,9 @@
         }
       }
     },
-    "first_flight_activated": {
+    "flight_1_activated_time_range_A": {
       "delta": {
-        "source": "first_flight",
+        "source": "flight_1_planned_time_range_A",
         "mutation": {
           "request": {
             "operational_intent": {
@@ -285,9 +285,9 @@
         }
       }
     },
-    "first_flight_time_range_A_extended": {
+    "flight_1_planned_time_range_A_extended": {
       "delta": {
-        "source": "first_flight",
+        "source": "flight_1_planned_time_range_A",
         "mutation": {
           "request": {
             "operational_intent": {
@@ -304,9 +304,21 @@
         }
       }
     },
-    "first_flight_time_range_B": {
+    "flight_1_activated_time_range_A_extended": {
       "delta": {
-        "source": "first_flight",
+        "source": "flight_1_planned_time_range_A_extended",
+        "mutation": {
+          "request": {
+            "operational_intent": {
+              "state": "Activated"
+            }
+          }
+        }
+      }
+    },
+    "flight_1_activated_time_range_B": {
+      "delta": {
+        "source": "flight_1_activated_time_range_A_extended",
         "mutation": {
           "request": {
             "operational_intent": {
@@ -327,7 +339,7 @@
         }
       }
     },
-    "priority_flight": {
+    "flight_2_planned_time_range_A": {
       "full": {
         "reference_time": "2023-02-12T10:34:14.483425+00:00",
         "request": {
@@ -648,9 +660,9 @@
         }
       }
     },
-    "priority_flight_activated": {
+    "flight_2_activated_time_range_A": {
       "delta": {
-        "source": "priority_flight",
+        "source": "flight_2_planned_time_range_A",
         "mutation": {
           "request": {
             "operational_intent": {
@@ -660,9 +672,9 @@
         }
       }
     },
-    "priority_flight_time_range_B": {
+    "flight_2_activated_time_range_B": {
       "delta": {
-        "source": "priority_flight",
+        "source": "flight_2_activated_time_range_A",
         "mutation": {
           "request": {
             "operational_intent": {
