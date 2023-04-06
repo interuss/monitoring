@@ -1,4 +1,4 @@
-# Nominal planning with priority: conflict with higher priority test scenario
+# Nominal planning: conflict with higher priority test scenario
 
 ## Description
 This test aims to test the strategic coordination requirements that relate to the prioritization scenarios where there
@@ -19,20 +19,20 @@ It involves a tested USS and a control USS through which conflicting flights are
 FlightIntentsResource that provides the 8 following flight intents:
 
 - For flight 1:
-  - `flight_1_planned_time_range_A`: used for the test lower priority flight
-    - original time range `time_range_A` (e.g. 1pm to 2pm)
-  - `flight_1_planned_time_range_A_extended`: mutation of volume in time to extend original time range (e.g. 12pm to 2pm)
-  - `flight_1_activated_time_range_A`: state mutation `Activated`
-  - `flight_1_activated_time_range_A_extended`: mutation of volume in time to extend original time range (e.g. 12pm to 2pm)
-  - `flight_1_activated_time_range_B`: mutation of volume in time to not intersect with `time_range_A` or `time_range_A_extended` (e.g. 4pm to 5pm)
+    - `flight_1_planned_time_range_A`: used for the test lower priority flight
+        - original time range `time_range_A` (e.g. 1pm to 2pm)
+    - `flight_1_planned_time_range_A_extended`: mutation of volume in time to extend original time range (e.g. 12pm to 2pm)
+    - `flight_1_activated_time_range_A`: state mutation `Activated`
+    - `flight_1_activated_time_range_A_extended`: mutation of volume in time to extend original time range (e.g. 12pm to 2pm)
+    - `flight_1_activated_time_range_B`: mutation of volume in time to not intersect with `time_range_A` or `time_range_A_extended` (e.g. 4pm to 5pm)
 
 - For flight 2:
-  - `flight_2_planned_time_range_A`: used for the higher priority flight
-    - original time range `time_range_A` (e.g. 1pm to 2pm)
-    - must have higher priority than flight 1
-    - must intersect flight 1 in space
-  - `flight_2_activated_time_range_A`: state mutation `Activated`
-  - `flight_2_activated_time_range_B`: mutation of volume in time to not intersect with `time_range_A` or `time_range_A_extended` (e.g. 4pm to 5pm)
+    - `flight_2_planned_time_range_A`: used for the higher priority flight
+        - original time range `time_range_A` (e.g. 1pm to 2pm)
+        - must have higher priority than flight 1
+        - must intersect flight 1 in space
+    - `flight_2_activated_time_range_A`: state mutation `Activated`
+    - `flight_2_activated_time_range_B`: mutation of volume in time to not intersect with `time_range_A` or `time_range_A_extended` (e.g. 4pm to 5pm)
 
 ### tested_uss
 FlightPlannerResource that is under test and will manage the first lower priority flight.
