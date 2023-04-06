@@ -179,6 +179,8 @@ class NominalPlanningPriority(TestScenario):
 
         validate_shared_operational_intent(
             self,
+            self.uss1,
+            self.dss,
             "Validate flight sharing",
             self.first_flight.request,
             self.first_flight_op_intent_id,
@@ -191,6 +193,8 @@ class NominalPlanningPriority(TestScenario):
 
         validate_shared_operational_intent(
             self,
+            self.uss2,
+            self.dss,
             "Validate flight sharing",
             self.priority_flight.request,
             resp.operational_intent_id,
@@ -207,6 +211,8 @@ class NominalPlanningPriority(TestScenario):
 
         validate_shared_operational_intent(
             self,
+            self.uss2,
+            self.dss,
             "Validate flight sharing",
             self.priority_flight_activated.request,
             resp.operational_intent_id,
@@ -223,6 +229,8 @@ class NominalPlanningPriority(TestScenario):
 
         validate_shared_operational_intent(
             self,
+            self.uss1,
+            self.dss,
             "Validate first flight not activated",
             self.first_flight.request,
             self.first_flight_op_intent_id,
