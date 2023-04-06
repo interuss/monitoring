@@ -153,6 +153,41 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 200,
             )
 
+    # Validate max number of vertices
+    nb_vertices = 0
+    for volume in (
+        req_body.operational_intent.volumes
+        + req_body.operational_intent.off_nominal_volumes
+    ):
+        if volume.volume.has_field_with_value("outline_polygon"):
+            nb_vertices += len(volume.volume.outline_polygon.vertices)
+        if volume.volume.has_field_with_value("outline_circle"):
+            nb_vertices += 1
+
+    if nb_vertices > 10000:
+        return (
+            InjectFlightResponse(
+                result=InjectFlightResult.Rejected,
+                notes="Too many vertices across volumes of operational intent (max 10000)",
+            ),
+            200,
+        )
+
+    # Validate max planning horizon for creation
+    start_time = scd.start_of(req_body.operational_intent.volumes)
+    time_delta = start_time - datetime.now(tz=start_time.tzinfo)
+    if (
+        time_delta.days > 30
+        and req_body.operational_intent.state == OperationalIntentState.Accepted
+    ):
+        return (
+            InjectFlightResponse(
+                result=InjectFlightResult.Rejected,
+                notes="Operational intent to plan is too far away in time (max 30 days)",
+            ),
+            200,
+        )
+
     # Check if this is an existing flight being modified
     deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
     while True:
