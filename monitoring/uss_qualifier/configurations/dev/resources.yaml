@@ -54,6 +54,11 @@ che_flight_intents:
         specification:
             planning_time: '0:05:00'
             file_source: test_data.che.flight_intents.priority_preemption
+    invalid_flight_intents:
+      resource_type: resources.flight_planning.FlightIntentsResource
+      specification:
+        planning_time: '0:05:00'
+        file_source: test_data.che.flight_intents.invalid_flight_intents
 
 kentland_flight_intents:
     conflicting_flights:
@@ -66,6 +71,7 @@ kentland_flight_intents:
         specification:
             planning_time: '0:05:00'
             file_source: test_data.usa.kentland.flight_intents.priority_preemption
+    # TODO: add invalid_flight_intents test data for kentland
 
 f3548_che:
     allOf:
