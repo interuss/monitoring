@@ -169,7 +169,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         return (
             InjectFlightResponse(
                 result=InjectFlightResult.Rejected,
-                notes="Too many vertices across volumes of operational intent (max 10000)",
+                notes=f"Too many vertices across volumes of operational intent (max OiMaxVertices={OiMaxVertices})",
             ),
             200,
         )
@@ -184,7 +184,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         return (
             InjectFlightResponse(
                 result=InjectFlightResult.Rejected,
-                notes="Operational intent to plan is too far away in time (max 30 days)",
+                notes=f"Operational intent to plan is too far away in time (max OiMaxPlanHorizonDays={OiMaxPlanHorizonDays})",
             ),
             200,
         )
