@@ -7,6 +7,7 @@ import uuid
 import flask
 from loguru import logger
 import requests.exceptions
+from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays, OiMaxVertices
 
 from monitoring.mock_uss.config import KEY_BASE_URL, KEY_BEHAVIOR_LOCALITY
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
@@ -164,7 +165,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         if volume.volume.has_field_with_value("outline_circle"):
             nb_vertices += 1
 
-    if nb_vertices > 10000:
+    if nb_vertices > OiMaxVertices:
         return (
             InjectFlightResponse(
                 result=InjectFlightResult.Rejected,
@@ -177,7 +178,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
     start_time = scd.start_of(req_body.operational_intent.volumes)
     time_delta = start_time - datetime.now(tz=start_time.tzinfo)
     if (
-        time_delta.days > 30
+        time_delta.days > OiMaxPlanHorizonDays
         and req_body.operational_intent.state == OperationalIntentState.Accepted
     ):
         return (
