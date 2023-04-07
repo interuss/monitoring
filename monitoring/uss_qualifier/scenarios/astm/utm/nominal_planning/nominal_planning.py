@@ -157,6 +157,8 @@ class NominalPlanning(TestScenario):
 
         validate_shared_operational_intent(
             self,
+            self.uss1,
+            self.dss,
             "Validate flight sharing",
             self.first_flight.request,
             resp.operational_intent_id,
@@ -183,6 +185,8 @@ class NominalPlanning(TestScenario):
 
         validate_shared_operational_intent(
             self,
+            self.uss1,
+            self.dss,
             "Validate flight sharing",
             self.first_flight_activated.request,
             resp.operational_intent_id,

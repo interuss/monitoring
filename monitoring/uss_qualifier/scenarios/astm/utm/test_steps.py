@@ -6,6 +6,10 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
 )
 from monitoring.uss_qualifier.common_data_definitions import Severity
+from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
+from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
+    FlightPlanner,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.evaluation import (
     validate_op_intent_details,
 )
@@ -14,6 +18,8 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 def validate_shared_operational_intent(
     scenario: TestScenarioType,
+    flight_planner: FlightPlanner,
+    dss: DSSInstance,
     test_step: str,
     flight_intent: InjectFlightRequest,
     op_intent_id: str,
@@ -31,9 +37,9 @@ def validate_shared_operational_intent(
         flight_intent.operational_intent.volumes
         + flight_intent.operational_intent.off_nominal_volumes
     )
-    op_intent_refs, query = scenario.dss.find_op_intent(extent)
+    op_intent_refs, query = dss.find_op_intent(extent)
     scenario.record_query(query)
-    with scenario.check("DSS response", [scenario.dss.participant_id]) as check:
+    with scenario.check("DSS response", [dss.participant_id]) as check:
         if query.status_code != 200:
             check.record_failed(
                 summary="Failed to query DSS for operational intents",
@@ -49,34 +55,34 @@ def validate_shared_operational_intent(
         if op_intent_ref.id == op_intent_id
     ]
     with scenario.check(
-        "Operational intent shared correctly", [scenario.uss1.participant_id]
+        "Operational intent shared correctly", [flight_planner.participant_id]
     ) as check:
         if not matching_op_intent_refs:
             check.record_failed(
                 summary="Operational intent reference not found in DSS",
                 severity=Severity.High,
-                details=f"USS {scenario.uss1.participant_id} indicated that it created an operational intent with ID {op_intent_id}, but no operational intent references with that ID were found in the DSS in the area of the flight intent",
+                details=f"USS {flight_planner.participant_id} indicated that it created an operational intent with ID {op_intent_id}, but no operational intent references with that ID were found in the DSS in the area of the flight intent",
                 query_timestamps=[query.request.timestamp],
             )
             return False
     op_intent_ref = matching_op_intent_refs[0]
 
-    op_intent, query = scenario.dss.get_full_op_intent(op_intent_ref)
+    op_intent, query = dss.get_full_op_intent(op_intent_ref)
     scenario.record_query(query)
     with scenario.check(
-        "Operational intent details retrievable", [scenario.uss1.participant_id]
+        "Operational intent details retrievable", [flight_planner.participant_id]
     ) as check:
         if query.status_code != 200:
             check.record_failed(
                 summary="Operational intent details could not be retrieved from USS",
                 severity=Severity.High,
-                details=f"Received status code {query.status_code} from {scenario.uss1.participant_id} when querying for details of operational intent {op_intent_id}",
+                details=f"Received status code {query.status_code} from {flight_planner.participant_id} when querying for details of operational intent {op_intent_id}",
                 query_timestamps=[query.request.timestamp],
             )
             return False
 
     with scenario.check(
-        "Operational intent details data format", [scenario.uss1.participant_id]
+        "Operational intent details data format", [flight_planner.participant_id]
     ) as check:
         errors = schema_validation.validate(
             schema_validation.F3548_21.OpenAPIPath,
@@ -98,7 +104,7 @@ def validate_shared_operational_intent(
         op_intent.details, flight_intent.operational_intent.priority, extent
     )
     with scenario.check(
-        "Correct operational intent details", [scenario.uss1.participant_id]
+        "Correct operational intent details", [flight_planner.participant_id]
     ) as check:
         if error_text:
             check.record_failed(
@@ -109,7 +115,9 @@ def validate_shared_operational_intent(
             )
             return False
 
-    with scenario.check("Off-nominal volumes", [scenario.uss1.participant_id]) as check:
+    with scenario.check(
+        "Off-nominal volumes", [flight_planner.participant_id]
+    ) as check:
         if (
             op_intent.reference.state == OperationalIntentState.Accepted
             or op_intent.reference.state == OperationalIntentState.Activated
@@ -132,7 +140,7 @@ def validate_shared_operational_intent(
             return len(v4.volume.outline_polygon.vertices)
 
     n_vertices = sum(volume_vertices(v) for v in all_volumes)
-    with scenario.check("Vertices", [scenario.uss1.participant_id]) as check:
+    with scenario.check("Vertices", [flight_planner.participant_id]) as check:
         if n_vertices > 10000:
             check.record_failed(
                 summary="Too many vertices",
