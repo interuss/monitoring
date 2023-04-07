@@ -189,6 +189,19 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             200,
         )
 
+    # Validate no off_nominal_volumes if in Accepted or Activated state
+    if len(req_body.operational_intent.off_nominal_volumes) > 0 and (
+        req_body.operational_intent.state == OperationalIntentState.Accepted
+        or req_body.operational_intent.state == OperationalIntentState.Activated
+    ):
+        return (
+            InjectFlightResponse(
+                result=InjectFlightResult.Rejected,
+                notes=f"Operational intent specifies an off-nominal volume while being in {req_body.operational_intent.state} state",
+            ),
+            200,
+        )
+
     # Check if this is an existing flight being modified
     deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
     while True:
