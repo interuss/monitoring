@@ -10,6 +10,7 @@ from typing import Callable, Dict, Optional, Tuple
 
 import arrow
 import flask
+from jinja2 import FileSystemLoader
 from loguru import logger
 
 from implicitdict import StringBasedDateTime, StringBasedTimeDelta
@@ -45,6 +46,13 @@ class MockUSS(flask.Flask):
     _pid: int
     _one_time_tasks: Dict[str, OneTimeServerTask]
     _periodic_tasks: Dict[str, PeriodicServerTask]
+
+    jinja_loader = FileSystemLoader(
+        [
+            os.path.abspath(os.path.join(os.path.dirname(__file__), relpath))
+            for relpath in ("templates", "../monitorlib/html/templates")
+        ]
+    )
 
     def __init__(self, *args, **kwargs):
         self._pid = os.getpid()
@@ -249,7 +257,8 @@ class MockUSS(flask.Flask):
                         )
                     else:
                         dt = MAX_PERIODIC_LATENCY
-                    time.sleep(dt.total_seconds())
+                    if dt.total_seconds() > 0:
+                        time.sleep(dt.total_seconds())
         except Exception as e:
             logger.error(
                 f"Shutting down mock_uss due to {type(e).__name__} error while executing '{task_to_execute}' periodic task: {str(e)}\n{_get_trace(e)}"
