@@ -22,6 +22,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     validate_shared_operational_intent,
+    ValidateNotSharedOperationalIntent,
 )
 from monitoring.uss_qualifier.scenarios.flight_planning.prioritization_test_steps import (
     activate_priority_conflict_flight_intent,
@@ -235,12 +236,19 @@ class ConflictHigherPriority(TestScenario):
             self.flight_2_planned_time_range_A.request,
         )
 
-        _ = plan_priority_conflict_flight_intent(
+        with ValidateNotSharedOperationalIntent(
             self,
-            "Attempt to plan flight 1",
             self.tested_uss,
+            self.dss,
+            "Validate flight 1 not shared",
             self.flight_1_planned_time_range_A.request,
-        )
+        ):
+            _ = plan_priority_conflict_flight_intent(
+                self,
+                "Attempt to plan flight 1",
+                self.tested_uss,
+                self.flight_1_planned_time_range_A.request,
+            )
 
         validate_shared_operational_intent(
             self,
@@ -250,8 +258,6 @@ class ConflictHigherPriority(TestScenario):
             self.flight_2_planned_time_range_A.request,
             resp_flight_2.operational_intent_id,
         )
-
-        # TODO: add validation test step that op intent for flight 1 was not created
 
         _ = delete_flight_intent(
             self, "Delete flight 2", self.control_uss, self.flight_2_id

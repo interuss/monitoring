@@ -72,9 +72,9 @@ The higher priority flight should be successfully planned by the control USS.
 The test driver attempts to plan the flight 1 via the tested USS. However, it conflicts with flight 2, which is of
 higher priority. As such it should be rejected per **[astm.f3548.v21.SCD0015](../../../../../requirements/astm/f3548/v21.md)**.
 
-### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
+### [Validate flight 1 not shared test step](../../validate_not_shared_operational_intent.md)
 
-TODO: add validation test step that op intent for flight 1 was not created
+### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
 
 ### [Delete flight 2 test step](../../../../flight_planning/delete_flight_intent.md)
 
