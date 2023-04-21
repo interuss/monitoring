@@ -43,6 +43,11 @@ class TestedRolesConfiguration(ImplicitDict):
     """Roles (and participants filling those roles) tested by the test run"""
 
 
+class ReportHTMLConfiguration(ImplicitDict):
+    html_path: str
+    """Path of HTML file to contain an HTML rendering of the test report"""
+
+
 class GraphConfiguration(ImplicitDict):
     gv_path: str
     """Path of GraphViz (.gv) text file to contain a visualization of the test run"""
@@ -59,6 +64,9 @@ class ReportConfiguration(ImplicitDict):
 class ArtifactsConfiguration(ImplicitDict):
     report: Optional[ReportConfiguration] = None
     """Configuration for report generation"""
+
+    report_html: Optional[ReportHTMLConfiguration] = None
+    """If specified, configuration describing how an HTML version of the report should be generated"""
 
     graph: Optional[GraphConfiguration] = None
     """If specified, configuration describing a desired graph visualization summarizing the test run"""

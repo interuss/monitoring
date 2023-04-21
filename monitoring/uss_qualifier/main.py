@@ -18,7 +18,10 @@ from monitoring.uss_qualifier.configurations.configuration import (
     ArtifactsConfiguration,
     ReportConfiguration,
 )
-from monitoring.uss_qualifier.reports.documents import generate_tested_requirements
+from monitoring.uss_qualifier.reports.documents import (
+    generate_tested_requirements,
+    make_report_html,
+)
 from monitoring.uss_qualifier.reports.graphs import make_graph
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
 from monitoring.uss_qualifier.resources.resource import create_resources
@@ -128,6 +131,13 @@ def main() -> int:
             logger.info("Writing report to {}", config.artifacts.report.report_path)
             with open(config.artifacts.report.report_path, "w") as f:
                 json.dump(report, f, indent=2)
+
+        if config.artifacts.report_html:
+            logger.info(
+                "Writing HTML report to {}", config.artifacts.report_html.html_path
+            )
+            with open(config.artifacts.report_html.html_path, "w") as f:
+                f.write(make_report_html(report))
 
         if config.artifacts.graph:
             logger.info(

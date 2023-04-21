@@ -4,6 +4,7 @@ from typing import List, Dict
 from jinja2 import Environment, PackageLoader
 
 from monitoring.uss_qualifier.configurations.configuration import TestedRole
+from monitoring.uss_qualifier.reports import jinja_env
 from monitoring.uss_qualifier.reports.report import ParticipantID, TestRunReport
 from monitoring.uss_qualifier.requirements.documentation import (
     RequirementSet,
@@ -68,7 +69,6 @@ def _make_tables(roles: List[TestedRole]) -> List[TestedRequirementsTable]:
 
 
 def generate_tested_requirements(report: TestRunReport, roles: List[TestedRole]) -> str:
-    env = Environment(loader=PackageLoader(__name__))
     tables = _make_tables(roles)
     requirements = evaluate_requirements(report)
     tested_reqs_by_id = {tr.requirement_id: tr for tr in requirements}
@@ -87,7 +87,7 @@ def generate_tested_requirements(report: TestRunReport, roles: List[TestedRole])
                     TestedRequirement(requirement_id=r, participant_performance={})
                 )
         content += _render_requirement_table(
-            env,
+            jinja_env,
             table_reqs,
             table.participants,
             table.requirement_set.name,
@@ -97,11 +97,16 @@ def generate_tested_requirements(report: TestRunReport, roles: List[TestedRole])
         tr for tr in requirements if tr.requirement_id in unclassified_reqs
     ]
     content += _render_requirement_table(
-        env,
+        jinja_env,
         unclassified_tested_requirements,
         _all_participants(unclassified_tested_requirements),
         "Unclassified requirements",
     )
 
-    template = env.get_template("tested_requirements.html")
+    template = jinja_env.get_template("tested_requirements.html")
     return template.render(content=content)
+
+
+def make_report_html(report: TestRunReport) -> str:
+    template = jinja_env.get_template("report.html")
+    return template.render(report=report)

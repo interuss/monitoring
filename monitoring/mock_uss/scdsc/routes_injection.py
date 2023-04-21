@@ -7,6 +7,7 @@ import uuid
 import flask
 from loguru import logger
 import requests.exceptions
+from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays, OiMaxVertices
 
 from monitoring.mock_uss.config import KEY_BASE_URL, KEY_BEHAVIOR_LOCALITY
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
@@ -152,6 +153,54 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 ),
                 200,
             )
+
+    # Validate max number of vertices
+    nb_vertices = 0
+    for volume in (
+        req_body.operational_intent.volumes
+        + req_body.operational_intent.off_nominal_volumes
+    ):
+        if volume.volume.has_field_with_value("outline_polygon"):
+            nb_vertices += len(volume.volume.outline_polygon.vertices)
+        if volume.volume.has_field_with_value("outline_circle"):
+            nb_vertices += 1
+
+    if nb_vertices > OiMaxVertices:
+        return (
+            InjectFlightResponse(
+                result=InjectFlightResult.Rejected,
+                notes=f"Too many vertices across volumes of operational intent (max OiMaxVertices={OiMaxVertices})",
+            ),
+            200,
+        )
+
+    # Validate max planning horizon for creation
+    start_time = scd.start_of(req_body.operational_intent.volumes)
+    time_delta = start_time - datetime.now(tz=start_time.tzinfo)
+    if (
+        time_delta.days > OiMaxPlanHorizonDays
+        and req_body.operational_intent.state == OperationalIntentState.Accepted
+    ):
+        return (
+            InjectFlightResponse(
+                result=InjectFlightResult.Rejected,
+                notes=f"Operational intent to plan is too far away in time (max OiMaxPlanHorizonDays={OiMaxPlanHorizonDays})",
+            ),
+            200,
+        )
+
+    # Validate no off_nominal_volumes if in Accepted or Activated state
+    if len(req_body.operational_intent.off_nominal_volumes) > 0 and (
+        req_body.operational_intent.state == OperationalIntentState.Accepted
+        or req_body.operational_intent.state == OperationalIntentState.Activated
+    ):
+        return (
+            InjectFlightResponse(
+                result=InjectFlightResult.Rejected,
+                notes=f"Operational intent specifies an off-nominal volume while being in {req_body.operational_intent.state} state",
+            ),
+            200,
+        )
 
     # Check if this is an existing flight being modified
     deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
