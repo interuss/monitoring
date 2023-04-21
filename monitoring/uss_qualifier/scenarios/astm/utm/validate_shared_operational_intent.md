@@ -20,7 +20,7 @@ If the operational intent details response does not validate against [the GetOpe
 
 ## Correct operational intent details check
 
-If the operational intent details reported by the USS do not match the user's flight intent, this check will fail per **interuss.automated_testing.flight_planning.ExpectedBehavior**.
+If the operational intent details reported by the USS do not match the user's flight intent, this check will fail per **astm.f3548.v21.OPIN0025**.
 
 ## Off-nominal volumes check
 
