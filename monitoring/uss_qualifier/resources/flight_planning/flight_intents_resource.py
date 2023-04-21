@@ -49,12 +49,9 @@ class FlightIntentsResource(Resource[FlightIntentsSpecification]):
                         # delta source has not been processed yet
                         continue
 
-                    processed_intent = ImplicitDict.parse(
-                        apply_overrides(
-                            processed_intents[unprocessed_intent.delta.source],
-                            unprocessed_intent.delta.mutation,
-                        ),
-                        FlightIntent,
+                    processed_intent = apply_overrides(
+                        processed_intents[unprocessed_intent.delta.source],
+                        unprocessed_intent.delta.mutation,
                     )
                 else:
                     raise ValueError(f"{intent_id} is invalid")

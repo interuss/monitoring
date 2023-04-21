@@ -13,7 +13,10 @@ def apply_overrides(base_object: ImplicitDictType, overrides: dict) -> ImplicitD
         json.loads(json.dumps(base_object)),
         type(base_object),
     )
-    return _apply_overrides(cpy, overrides)
+    return ImplicitDict.parse(
+        _apply_overrides(cpy, overrides),
+        type(base_object),
+    )
 
 
 def _apply_overrides(base_object, overrides):
