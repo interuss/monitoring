@@ -1,5 +1,5 @@
 intents:
-  first_flight:
+  flight_1_planned_time_range_A:
     full:
       reference_time: '2023-01-01T00:00:00+00:00'
       request:
@@ -61,15 +61,48 @@ intents:
           uas_id: ''
           uas_type_certificate: ''
 
-  first_flight_activated:
+  flight_1_activated_time_range_A:
     delta:
-      source: first_flight
+      source: flight_1_planned_time_range_A
       mutation:
         request:
           operational_intent:
             state: Activated
 
-  priority_flight:
+  flight_1_planned_time_range_A_extended:
+    delta:
+      source: flight_1_planned_time_range_A
+      mutation:
+        request:
+          operational_intent:
+            volumes:
+              - time_start:
+                  value: '2023-01-01T00:02:00+00:00'
+                  format: RFC3339
+
+  flight_1_activated_time_range_A_extended:
+    delta:
+      source: flight_1_planned_time_range_A_extended
+      mutation:
+        request:
+          operational_intent:
+            state: Activated
+
+  flight_1_activated_time_range_B:
+    delta:
+      source: flight_1_activated_time_range_A_extended
+      mutation:
+        request:
+          operational_intent:
+            volumes:
+              - time_start:
+                  value: '2023-01-01T00:09:00+00:00'
+                  format: RFC3339
+                time_end:
+                  value: '2023-01-01T00:10:00+00:00'
+                  format: RFC3339
+
+  flight_2_planned_time_range_A:
     full:
       reference_time: '2023-01-01T00:00:00+00:00'
       request:
@@ -121,10 +154,24 @@ intents:
           uas_id: ''
           uas_type_certificate: ''
 
-  priority_flight_activated:
+  flight_2_activated_time_range_A:
     delta:
-      source: priority_flight
+      source: flight_2_planned_time_range_A
       mutation:
         request:
           operational_intent:
             state: Activated
+
+  flight_2_activated_time_range_B:
+    delta:
+      source: flight_2_activated_time_range_A
+      mutation:
+        request:
+          operational_intent:
+            volumes:
+              - time_start:
+                  value: '2023-01-01T00:09:00+00:00'
+                  format: RFC3339
+                time_end:
+                  value: '2023-01-01T00:10:00+00:00'
+                  format: RFC3339

@@ -1,6 +1,6 @@
 @startuml
 center header ASTM Strategic Coordination
-title Nominal planning with priority: conflict with higher priority
+title Nominal planning: conflict with higher priority
 
 participant "DSS"
 participant "Test Driver" as TD
@@ -20,10 +20,10 @@ TD <- DSS: 200 Ok - returns Operational Intent Reference 2 managed by Control US
 TD -> C_USS: GET /uss/v1/operational_intents/{opintent2}
 TD <- C_USS: 200 Ok - returns Operational Intent 2
 
-== Attempt to modify planned flight in conflict ==
 TD -> C_USS: DELETE /inject/flight/{flight2}
 TD <- C_USS: 200 Ok - Operational Intent 2 deleted\n{"result": "Closed"}
 
+== Attempt to modify planned flight in conflict ==
 TD -> T_USS: PUT /inject/flight/{flight1}\n{"state": "Accepted", "priority": //low//, "volumes": //time_range_A//}
 TD <- T_USS: 200 Ok - Operational Intent 1 created\n{"result": "Planned"}
 
