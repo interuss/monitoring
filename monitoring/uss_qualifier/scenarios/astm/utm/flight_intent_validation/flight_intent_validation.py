@@ -32,6 +32,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights,
     activate_flight_intent,
     submit_flight_intent,
+    delete_flight_intent,
 )
 
 
@@ -151,9 +152,13 @@ class FlightIntentValidation(TestScenario):
         self.end_test_case()
 
         self.begin_test_case(
-            "Attempt to specify off-nominal volume in Accepted and Activates states"
+            "Attempt to specify off-nominal volume in Accepted and Activated states"
         )
         self._attempt_invalid_offnominal()
+        self.end_test_case()
+
+        self.begin_test_case("Validate transition to Ended state after cancellation")
+        self._validate_ended_cancellation()
         self.end_test_case()
 
         self.end_test_scenario()
@@ -270,6 +275,34 @@ class FlightIntentValidation(TestScenario):
             self.valid_activated.request,
             valid_flight_op_intent_id,
         )
+
+        _ = delete_flight_intent(
+            self, "Delete valid flight intent", self.tested_uss, valid_flight_id
+        )
+
+    def _validate_ended_cancellation(self):
+        with ValidateNotSharedOperationalIntent(
+            self,
+            self.tested_uss,
+            self.dss,
+            "Validate flight intent is non-discoverable",
+            self.valid_flight.request,
+        ):
+            resp, flight_id = plan_flight_intent(
+                self, "Plan flight intent", self.tested_uss, self.valid_flight.request
+            )
+            validate_shared_operational_intent(
+                self,
+                self.tested_uss,
+                self.dss,
+                "Validate flight intent shared correctly",
+                self.valid_flight.request,
+                resp.operational_intent_id,
+            )
+
+            _ = delete_flight_intent(
+                self, "Cancel flight intent", self.tested_uss, flight_id
+            )
 
     def cleanup(self):
         self.begin_cleanup()
