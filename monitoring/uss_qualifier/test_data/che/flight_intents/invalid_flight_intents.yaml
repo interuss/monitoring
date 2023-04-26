@@ -116,24 +116,6 @@ intents:
                       - lat: 46.193174
                         lng: 6.196925
 
-  valid_very_close:
-    delta:
-      source: valid_flight
-      mutation:
-        request:
-          operational_intent:
-            volumes:
-              - volume:
-                  outline_polygon:
-                    # polygon is very close but does not overlap with polygon of valid_flight, distance between first vertex of each is 1.112cm
-                    vertices:
-                      - lat: 46.1929646
-                        lng: 6.1965395
-                      - lat: 46.193236
-                        lng: 6.196235
-                      - lat: 46.193174
-                        lng: 6.196925
-
   invalid_too_many_vertices:
     delta:
       source: valid_flight

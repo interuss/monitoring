@@ -48,7 +48,6 @@ class FlightIntentValidation(TestScenario):
 
     # TODO: add the following intents for next tests
     #  valid_conflict_tiny_overlap: FlightIntent
-    #  valid_very_close: FlightIntent
 
     tested_uss: FlightPlanner
     dss: DSSInstance
@@ -74,7 +73,6 @@ class FlightIntentValidation(TestScenario):
                 self.invalid_activated_offnominal,
                 # TODO: add the following intents for next tests
                 #  self.valid_conflict_tiny_overlap,
-                #  self.valid_very_close,
             ) = (
                 flight_intents["valid_flight"],
                 flight_intents["valid_activated"],
@@ -84,7 +82,6 @@ class FlightIntentValidation(TestScenario):
                 flight_intents["invalid_activated_offnominal"],
                 # TODO: add the following intents for next tests
                 #  flight_intents["valid_conflict_tiny_overlap"],
-                #  flight_intents["valid_very_close"],
             )
 
             assert (
@@ -203,7 +200,6 @@ class FlightIntentValidation(TestScenario):
                 self.invalid_too_many_vertices,
                 # TODO: add the following intents for next tests
                 #  self.valid_conflict_tiny_overlap,
-                #  self.valid_very_close,
             ],
             [self.tested_uss],
         )

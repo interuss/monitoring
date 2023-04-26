@@ -21,7 +21,6 @@ FlightIntentsResource that provides the following flight intents:
     - `invalid_activated_offnominal`: state mutation `Activated`
   - `invalid_too_far_away`: reference time mutation: reference time pulled back so that it is like the operational intent is attempted to be planned more than OiMaxPlanHorizon = 30 days ahead of time
   - `valid_conflict_tiny_overlap`: volumes mutation: has a volume that overlaps with `valid_op_intent` just above IntersectionMinimumPrecision = 1cm in a way that must result as a conflict
-  - `valid_very_close`: volumes mutation: has a volume that is distant from `valid_op_intent` just above IntersectionMinimumPrecision = 1cm in a way that would result as a conflict if they actually intersected
   - `invalid_too_many_vertices`: volumes mutation: has more than OiMaxVertices = 10000 vertices in total across its volumes
 
 ### tested_uss
