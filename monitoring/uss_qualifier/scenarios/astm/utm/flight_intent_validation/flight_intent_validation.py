@@ -22,6 +22,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     validate_shared_operational_intent,
+    ValidateNotSharedOperationalIntent,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
@@ -185,28 +186,40 @@ class FlightIntentValidation(TestScenario):
         return True
 
     def _attempt_invalid(self):
-        resp, _ = submit_flight_intent(
+        with ValidateNotSharedOperationalIntent(
             self,
-            "Attempt to plan flight intent too far ahead of time",
-            "Incorrectly planned",
-            {InjectFlightResult.Rejected},
-            {InjectFlightResult.Failed: "Failure"},
             self.tested_uss,
+            self.dss,
+            "Validate flight intent too far ahead of time not planned",
             self.invalid_too_far_away.request,
-        )
-        # TODO: validate not planned
+        ):
+            resp, _ = submit_flight_intent(
+                self,
+                "Attempt to plan flight intent too far ahead of time",
+                "Incorrectly planned",
+                {InjectFlightResult.Rejected},
+                {InjectFlightResult.Failed: "Failure"},
+                self.tested_uss,
+                self.invalid_too_far_away.request,
+            )
 
     def _attempt_invalid_offnominal(self):
-        resp, _ = submit_flight_intent(
+        with ValidateNotSharedOperationalIntent(
             self,
-            "Attempt to plan flight with an off-nominal volume",
-            "Incorrectly planned",
-            {InjectFlightResult.Rejected},
-            {InjectFlightResult.Failed: "Failure"},
             self.tested_uss,
+            self.dss,
+            "Validate flight intent with an off-nominal volume not planned",
             self.invalid_accepted_offnominal.request,
-        )
-        # TODO: validate not planned
+        ):
+            resp, _ = submit_flight_intent(
+                self,
+                "Attempt to plan flight with an off-nominal volume",
+                "Incorrectly planned",
+                {InjectFlightResult.Rejected},
+                {InjectFlightResult.Failed: "Failure"},
+                self.tested_uss,
+                self.invalid_accepted_offnominal.request,
+            )
 
         resp, valid_flight_id = plan_flight_intent(
             self, "Plan valid flight intent", self.tested_uss, self.valid_flight.request

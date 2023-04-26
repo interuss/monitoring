@@ -52,8 +52,6 @@ The tested USS is requested to remove all flights from the area under test.
 The user flight intent that the test driver attempts to plan has a reference time that is more than
 OiMaxPlanHorizon = 30 days ahead of time from the actual intent. As such, the planning attempt should be rejected.
 
-TODO: add check that intent was not planned at DSS
-
 #### Incorrectly planned check
 If the USS successfully plans the flight or otherwise fails to indicate a rejection, it means that it failed to validate
 the intent provided.  Therefore, this check will fail if the USS indicates success in creating the flight from the user
@@ -64,13 +62,13 @@ All flight intent data provided was complete and correct. It should have been pr
 to reject or accept the flight. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
+### [Validate flight intent too far ahead of time not planned test step](../validate_not_shared_operational_intent.md)
+
 
 ## Attempt to specify off-nominal volume in Accepted and Activates states test case
 ### Attempt to plan flight with an off-nominal volume test step
 The user flight intent that the test driver attempts to plan has an off-nominal volume.
 As such, the planning attempt should be rejected.
-
-TODO: add check that intent was not planned at DSS
 
 #### Incorrectly planned check
 If the USS successfully plans the flight or otherwise fails to indicate a rejection, it means that it failed to validate
@@ -81,6 +79,9 @@ flight intent, per **[astm.f3548.v21.OPIN0015](../../../../requirements/astm/f35
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
 to reject or accept the flight. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
+
+### [Validate flight intent with an off-nominal volume not planned test step](../validate_not_shared_operational_intent.md)
+
 
 ### [Plan valid flight intent test step](../../../flight_planning/plan_flight_intent.md)
 The valid flight intent should be successfully planned by the flight planner.
