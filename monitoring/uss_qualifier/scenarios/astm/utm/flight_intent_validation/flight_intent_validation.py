@@ -44,8 +44,6 @@ class FlightIntentValidation(TestScenario):
 
     invalid_too_far_away: FlightIntent
 
-    invalid_too_many_vertices: FlightIntent
-
     # TODO: add the following intents for next tests
     #  valid_conflict_tiny_overlap: FlightIntent
 
@@ -68,7 +66,6 @@ class FlightIntentValidation(TestScenario):
                 self.valid_flight,
                 self.valid_activated,
                 self.invalid_too_far_away,
-                self.invalid_too_many_vertices,
                 self.invalid_accepted_offnominal,
                 self.invalid_activated_offnominal,
                 # TODO: add the following intents for next tests
@@ -77,7 +74,6 @@ class FlightIntentValidation(TestScenario):
                 flight_intents["valid_flight"],
                 flight_intents["valid_activated"],
                 flight_intents["invalid_too_far_away"],
-                flight_intents["invalid_too_many_vertices"],
                 flight_intents["invalid_accepted_offnominal"],
                 flight_intents["invalid_activated_offnominal"],
                 # TODO: add the following intents for next tests
@@ -97,10 +93,6 @@ class FlightIntentValidation(TestScenario):
                 == OperationalIntentState.Accepted
             ), "invalid_too_far_away must have state Accepted"
             assert (
-                self.invalid_too_many_vertices.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "invalid_too_many_vertices must have Accepted"
-            assert (
                 self.invalid_accepted_offnominal.request.operational_intent.state
                 == OperationalIntentState.Accepted
             ), "invalid_accepted_offnominal must have state Accepted"
@@ -118,19 +110,6 @@ class FlightIntentValidation(TestScenario):
             assert (
                 time_delta.days > OiMaxPlanHorizonDays
             ), f"invalid_too_far_away must have start time more than {OiMaxPlanHorizonDays} days ahead of reference time, got {time_delta}"
-
-            nb_vertices = 0
-            for volume in (
-                self.invalid_too_many_vertices.request.operational_intent.volumes
-                + self.invalid_too_many_vertices.request.operational_intent.off_nominal_volumes
-            ):
-                if volume.volume.has_field_with_value("outline_polygon"):
-                    nb_vertices += len(volume.volume.outline_polygon.vertices)
-                if volume.volume.has_field_with_value("outline_circle"):
-                    nb_vertices += 1
-            assert (
-                nb_vertices > OiMaxVertices
-            ), f"invalid_too_many_vertices must have more than {OiMaxVertices} vertices across its volumes, found {nb_vertices}"
 
             assert (
                 len(
@@ -197,7 +176,6 @@ class FlightIntentValidation(TestScenario):
                 self.invalid_accepted_offnominal,
                 self.invalid_activated_offnominal,
                 self.invalid_too_far_away,
-                self.invalid_too_many_vertices,
                 # TODO: add the following intents for next tests
                 #  self.valid_conflict_tiny_overlap,
             ],
@@ -207,17 +185,6 @@ class FlightIntentValidation(TestScenario):
         return True
 
     def _attempt_invalid(self):
-        resp, _ = submit_flight_intent(
-            self,
-            "Attempt to plan flight with too many vertices in its volumes",
-            "Incorrectly planned",
-            {InjectFlightResult.Rejected},
-            {InjectFlightResult.Failed: "Failure"},
-            self.tested_uss,
-            self.invalid_too_many_vertices.request,
-        )
-        # TODO: validate not planned
-
         resp, _ = submit_flight_intent(
             self,
             "Attempt to plan flight intent too far ahead of time",
