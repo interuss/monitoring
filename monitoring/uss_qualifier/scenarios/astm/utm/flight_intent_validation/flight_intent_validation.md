@@ -17,7 +17,6 @@ Notably the following requirements:
 FlightIntentsResource that provides the following flight intents:
 - `valid_flight`: a valid operational intent upon which other invalid ones are derived, in `Accepted` state
   - `valid_activated`: state mutation `Activated`
-    - `valid_ended`: state mutation `Ended`
   - `invalid_accepted_offnominal`: off-nominal volumes mutation: has (any valid) off-nominal volume
     - `invalid_activated_offnominal`: state mutation `Activated`
   - `invalid_too_far_away`: reference time mutation: reference time pulled back so that it is like the operational intent is attempted to be planned more than OiMaxPlanHorizon = 30 days ahead of time
