@@ -8,11 +8,11 @@ This step verifies that a created flight is shared properly per ASTM F3548-21 by
 
 ## Operational intent shared correctly check
 
-If a reference to the operational intent for the flight is not found in the DSS, this check will fail per **astm.f3548.v21.USS0005**.
+If a reference to the operational intent for the flight is not found in the DSS, this check will fail per **astm.f3548.v21.USS0005** and **astm.f3548.v21.OPIN0025**.
 
 ## Operational intent details retrievable check
 
-If the operational intent details for the flight cannot be retrieved from the USS, this check will fail per **astm.f3548.v21.USS0105**.
+If the operational intent details for the flight cannot be retrieved from the USS, this check will fail per **astm.f3548.v21.USS0105** and **astm.f3548.v21.OPIN0025**.
 
 ## Operational intent details data format check
 
@@ -20,7 +20,7 @@ If the operational intent details response does not validate against [the GetOpe
 
 ## Correct operational intent details check
 
-If the operational intent details reported by the USS do not match the user's flight intent, this check will fail per **astm.f3548.v21.OPIN0025**.
+If the operational intent details reported by the USS do not match the user's flight intent, this check will fail per **interuss.automated_testing.flight_planning.ExpectedBehavior** and **astm.f3548.v21.OPIN0025**.
 
 ## Off-nominal volumes check
 
