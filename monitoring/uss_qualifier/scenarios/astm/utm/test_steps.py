@@ -1,7 +1,13 @@
-from monitoring.monitorlib import schema_validation
+from typing import List, Set
+
+from monitoring.monitorlib import schema_validation, fetch
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
-from monitoring.monitorlib.scd import bounding_vol4
+from monitoring.monitorlib.scd import (
+    bounding_vol4,
+    OperationalIntentReference,
+    Volume4D,
+)
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
 )
@@ -14,6 +20,71 @@ from monitoring.uss_qualifier.scenarios.astm.utm.evaluation import (
     validate_op_intent_details,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
+
+
+class ValidateNotSharedOperationalIntent(object):
+    """Validate that an operational intent information was not shared with the DSS by comparing the operational intents
+    found in the area of the flight intent before and after the planning attempt.
+    This assumes an area lock on the extent of the flight intent.
+
+    This class is meant to be used within a `with` statement.
+    It implements the test step described in validate_not_shared_operational_intent.md.
+    """
+
+    _scenario: TestScenarioType
+    _flight_planner: FlightPlanner
+    _dss: DSSInstance
+    _test_step: str
+
+    _flight_intent_extent: Volume4D
+    _initial_op_intent_refs: List[OperationalIntentReference]
+    _initial_query: fetch.Query
+
+    def __init__(
+        self,
+        scenario: TestScenarioType,
+        flight_planner: FlightPlanner,
+        dss: DSSInstance,
+        test_step: str,
+        flight_intent: InjectFlightRequest,
+    ):
+        self._scenario = scenario
+        self._flight_planner = flight_planner
+        self._dss = dss
+        self._test_step = test_step
+
+        self._flight_intent_extent = bounding_vol4(
+            flight_intent.operational_intent.volumes
+            + flight_intent.operational_intent.off_nominal_volumes
+        )
+
+    def __enter__(self):
+        self._initial_op_intent_refs, self._initial_query = self._dss.find_op_intent(
+            self._flight_intent_extent
+        )
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._scenario.begin_test_step(self._test_step)
+        self._scenario.record_query(self._initial_query)
+
+        op_intent_refs, query = self._dss.find_op_intent(self._flight_intent_extent)
+        self._scenario.record_query(query)
+
+        oi_ids_delta = {oi_ref.id for oi_ref in op_intent_refs} - {
+            oi_ref.id for oi_ref in self._initial_op_intent_refs
+        }
+        with self._scenario.check(
+            "Operational intent not shared", [self._flight_planner.participant_id]
+        ) as check:
+            if len(oi_ids_delta) > 0:
+                check.record_failed(
+                    summary="Operational intent reference was incorrectly shared with DSS",
+                    severity=Severity.High,
+                    details=f"USS {self._flight_planner.participant_id} was not supposed to share an operational intent with the DSS, but new operational intent(s) with ID(s) {oi_ids_delta} were found",
+                    query_timestamps=[query.request.timestamp],
+                )
+
+        self._scenario.end_test_step()
 
 
 def validate_shared_operational_intent(

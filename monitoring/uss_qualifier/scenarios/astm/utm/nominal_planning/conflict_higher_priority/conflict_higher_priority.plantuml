@@ -11,9 +11,13 @@ participant "Control USS\n(flight 2)" as C_USS
 TD -> C_USS: PUT /inject/flight/{flight2}\n{"state": "Accepted", "priority": //high//, "volumes": //time_range_A//}
 TD <- C_USS: 200 Ok - Operational Intent 2 created\n{"result": "Planned"}
 
+TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume of flight 1
+TD <- DSS: 200 Ok
 TD -> T_USS: PUT /inject/flight/{flight1}\n{"state": "Accepted", "priority": //low//, "volumes": //time_range_A//}
 TD <- T_USS: 200 Ok - Planning rejected\n{"result": "ConflictWithFlight"}
 note left: Per ""astm.f3548.v21.SCD0015""
+TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing volume of flight 1
+TD <- DSS: 200 Ok - no additional operational intent found
 
 TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
 TD <- DSS: 200 Ok - returns Operational Intent Reference 2 managed by Control USS
