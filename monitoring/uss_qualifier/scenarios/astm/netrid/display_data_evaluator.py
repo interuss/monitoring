@@ -493,7 +493,7 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     summary="Could not query ISAs from DSS",
                     severity=Severity.Medium,
-                    details=f"Query to {self._dss.participant_id}'s DSS at {dp_observation.dss_isa_query.query.request.url} failed {dp_observation.dss_isa_query.query.status_code}",
+                    details=f"Query to {self._dss.participant_id}'s DSS at {sp_observation.dss_isa_query.query.request.url} failed {sp_observation.dss_isa_query.query.status_code}",
                     participants=[self._dss.participant_id],
                     query_timestamps=[
                         sp_observation.dss_isa_query.query.request.initiated_at.datetime
