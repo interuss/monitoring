@@ -1,5 +1,5 @@
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
-from uas_standards.astm.f3548.v21.constants import OiMaxVertices, OiMaxPlanHorizonDays
+from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays
 
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
@@ -46,8 +46,7 @@ class FlightIntentValidation(TestScenario):
 
     invalid_too_far_away: FlightIntent
 
-    # TODO: add the following intents for next tests
-    #  valid_conflict_tiny_overlap: FlightIntent
+    valid_conflict_tiny_overlap: FlightIntent
 
     tested_uss: FlightPlanner
     dss: DSSInstance
@@ -70,16 +69,14 @@ class FlightIntentValidation(TestScenario):
                 self.invalid_too_far_away,
                 self.invalid_accepted_offnominal,
                 self.invalid_activated_offnominal,
-                # TODO: add the following intents for next tests
-                #  self.valid_conflict_tiny_overlap,
+                self.valid_conflict_tiny_overlap,
             ) = (
                 flight_intents["valid_flight"],
                 flight_intents["valid_activated"],
                 flight_intents["invalid_too_far_away"],
                 flight_intents["invalid_accepted_offnominal"],
                 flight_intents["invalid_activated_offnominal"],
-                # TODO: add the following intents for next tests
-                #  flight_intents["valid_conflict_tiny_overlap"],
+                flight_intents["valid_conflict_tiny_overlap"],
             )
 
             assert (
@@ -102,6 +99,10 @@ class FlightIntentValidation(TestScenario):
                 self.invalid_activated_offnominal.request.operational_intent.state
                 == OperationalIntentState.Activated
             ), "invalid_activated_offnominal must have state Activated"
+            assert (
+                self.valid_conflict_tiny_overlap.request.operational_intent.state
+                == OperationalIntentState.Accepted
+            ), "valid_conflict_tiny_overlap must have state Accepted"
 
             time_delta = (
                 scd.start_of(
@@ -125,6 +126,11 @@ class FlightIntentValidation(TestScenario):
                 )
                 > 0
             ), "invalid_activated_offnominal must have at least one off-nominal volume"
+
+            assert scd.vol4s_intersect(
+                self.valid_flight.request.operational_intent.volumes,
+                self.valid_conflict_tiny_overlap.request.operational_intent.volumes,
+            ), "valid_flight and valid_conflict_tiny_overlap must intersect"
 
         except KeyError as e:
             raise ValueError(
@@ -161,6 +167,10 @@ class FlightIntentValidation(TestScenario):
         self._validate_ended_cancellation()
         self.end_test_case()
 
+        self.begin_test_case("Validate precision of intersection computations")
+        self._validate_precision_intersection()
+        self.end_test_case()
+
         self.end_test_scenario()
 
     def _setup(self) -> bool:
@@ -182,8 +192,7 @@ class FlightIntentValidation(TestScenario):
                 self.invalid_accepted_offnominal,
                 self.invalid_activated_offnominal,
                 self.invalid_too_far_away,
-                # TODO: add the following intents for next tests
-                #  self.valid_conflict_tiny_overlap,
+                self.valid_conflict_tiny_overlap,
             ],
             [self.tested_uss],
         )
@@ -302,6 +311,31 @@ class FlightIntentValidation(TestScenario):
 
             _ = delete_flight_intent(
                 self, "Cancel flight intent", self.tested_uss, flight_id
+            )
+
+    def _validate_precision_intersection(self):
+        _, _ = plan_flight_intent(
+            self,
+            "Plan control flight intent",
+            self.tested_uss,
+            self.valid_flight.request,
+        )
+
+        with ValidateNotSharedOperationalIntent(
+            self,
+            self.tested_uss,
+            self.dss,
+            "Validate conflicting flight not planned",
+            self.valid_conflict_tiny_overlap.request,
+        ):
+            resp, _ = submit_flight_intent(
+                self,
+                "Attempt to plan flight conflicting by a tiny overlap",
+                "Incorrectly planned",
+                {InjectFlightResult.ConflictWithFlight},
+                {InjectFlightResult.Failed: "Failure"},
+                self.tested_uss,
+                self.valid_conflict_tiny_overlap.request,
             )
 
     def cleanup(self):
