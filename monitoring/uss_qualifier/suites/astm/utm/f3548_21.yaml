@@ -4,9 +4,31 @@ resources:
   dss: resources.astm.f3548.v21.DSSInstanceResource
   conflicting_flights: resources.flight_planning.FlightIntentsResource
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
+  invalid_flight_intents: resources.flight_planning.FlightIntentsResource
   nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   priority_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
 actions:
+- action_generator:
+    generator_type: action_generators.flight_planning.FlightPlannerCombinations
+    resources:
+      flight_planners: flight_planners
+      flight_intent_validation_selector: flight_intent_validation_selector?
+      invalid_flight_intents: invalid_flight_intents
+      dss: dss
+    specification:
+      action_to_repeat:
+        test_scenario:
+          scenario_type: scenarios.astm.utm.FlightIntentValidation
+          resources:
+            flight_intents: invalid_flight_intents
+            tested_uss: uss1
+            dss: dss
+        on_failure: Continue
+      combination_selector_source: flight_intent_validation_selector
+      flight_planners_source: flight_planners
+      roles:
+        - uss1
+  on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:

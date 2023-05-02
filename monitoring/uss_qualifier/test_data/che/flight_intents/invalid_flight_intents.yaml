@@ -1,0 +1,117 @@
+intents:
+  valid_flight:
+    full:
+      reference_time: '2023-02-12T10:34:14.681217+00:00'
+      request:
+        operational_intent:
+          volumes:
+            - volume:
+                outline_polygon:
+                  vertices:
+                    - lat: 46.1929645
+                      lng: 6.1965395
+                    - lat: 46.192911
+                      lng: 6.196423
+                    - lat: 46.192918
+                      lng: 6.196678
+                altitude_lower:
+                  value: 605
+                  reference: W84
+                  units: M
+                altitude_upper:
+                  value: 635
+                  reference: W84
+                  units: M
+              time_start:
+                value: '2023-02-12T10:37:05.359502+00:00'
+                format: RFC3339
+              time_end:
+                value: '2023-02-12T10:42:05.359502+00:00'
+                format: RFC3339
+          state: Accepted
+          off_nominal_volumes: [ ]
+          priority: 0
+        flight_authorisation:
+          uas_serial_number: 1AF49UL5CC5J6K
+          operation_category: Open
+          operation_mode: Vlos
+          uas_class: C0
+          identification_technologies:
+            - ASTMNetRID
+          connectivity_methods:
+            - cellular
+          endurance_minutes: 30
+          emergency_procedure_url: https://uav.example.com/emergency
+          operator_id: CHEo5kut30e0mt01-qwe
+
+  valid_activated:
+    delta:
+      source: valid_flight
+      mutation:
+        request:
+          operational_intent:
+            state: Activated
+
+  invalid_accepted_offnominal:
+    delta:
+      source: valid_flight
+      mutation:
+        request:
+          operational_intent:
+            off_nominal_volumes:
+              - volume:
+                  outline_polygon:
+                    vertices:
+                      - lat: 46.1929645
+                        lng: 6.1965395
+                      - lat: 46.192911
+                        lng: 6.196423
+                      - lat: 46.192918
+                        lng: 6.196678
+                  altitude_lower:
+                    value: 605
+                    reference: W84
+                    units: M
+                  altitude_upper:
+                    value: 635
+                    reference: W84
+                    units: M
+                time_start:
+                  value: '2023-02-12T10:42:05.359502+00:00'
+                  format: RFC3339
+                time_end:
+                  value: '2023-02-12T10:57:05.359502+00:00'
+                  format: RFC3339
+
+  invalid_activated_offnominal:
+    delta:
+      source: invalid_accepted_offnominal
+      mutation:
+        request:
+          operational_intent:
+            state: Activated
+
+  invalid_too_far_away:
+    delta:
+      source: valid_flight
+      mutation:
+        # reference time pulled back of 32 days > OiMaxPlanHorizon = 30 days
+        reference_time: '2023-01-10T10:34:14.681217+00:00'
+
+  valid_conflict_tiny_overlap:
+    delta:
+      source: valid_flight
+      mutation:
+        request:
+          operational_intent:
+            volumes:
+              - volume:
+                  outline_polygon:
+                    # polygon overlaps with polygon of valid_flight, distance between first vertex of each is 1.112cm
+                    vertices:
+                      - lat: 46.1929644
+                        lng: 6.1965395
+                      - lat: 46.193236
+                        lng: 6.196235
+                      - lat: 46.193174
+                        lng: 6.196925

@@ -13,6 +13,7 @@ v1:
           flight_planners: flight_planners
           conflicting_flights: conflicting_flights
           priority_preemption_flights: priority_preemption_flights
+          invalid_flight_intents: invalid_flight_intents
           dss: dss
 
     # This block defines all the resources available in the resource pool.
@@ -56,6 +57,13 @@ v1:
           specification:
             planning_time: '0:05:00'
             file_source: test_data.che.flight_intents.priority_preemption
+
+        # Details of flights with invalid operational intents (used in flight intent validation scenario)
+        invalid_flight_intents:
+          resource_type: resources.flight_planning.FlightIntentsResource
+          specification:
+            planning_time: '0:05:00'
+            file_source: test_data.che.flight_intents.invalid_flight_intents
 
         # Location of DSS instance that can be used to verify flight planning outcomes
         dss:
