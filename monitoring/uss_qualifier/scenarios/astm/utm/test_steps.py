@@ -94,14 +94,11 @@ def validate_shared_operational_intent(
     test_step: str,
     flight_intent: InjectFlightRequest,
     op_intent_id: str,
-) -> bool:
+):
     """Validate that operational intent information was correctly shared for a flight intent.
 
     This function implements the test step described in
     validate_shared_operational_intent.md.
-
-    Returns:
-      False if the scenario should stop, True otherwise.
     """
     scenario.begin_test_step(test_step)
     extent = bounding_vol4(
@@ -118,7 +115,6 @@ def validate_shared_operational_intent(
                 details=f"Received status code {query.status_code} from the DSS",
                 query_timestamps=[query.request.timestamp],
             )
-            return False
 
     matching_op_intent_refs = [
         op_intent_ref
@@ -135,7 +131,6 @@ def validate_shared_operational_intent(
                 details=f"USS {flight_planner.participant_id} indicated that it created an operational intent with ID {op_intent_id}, but no operational intent references with that ID were found in the DSS in the area of the flight intent",
                 query_timestamps=[query.request.timestamp],
             )
-            return False
     op_intent_ref = matching_op_intent_refs[0]
 
     op_intent, query = dss.get_full_op_intent(op_intent_ref)
@@ -150,7 +145,6 @@ def validate_shared_operational_intent(
                 details=f"Received status code {query.status_code} from {flight_planner.participant_id} when querying for details of operational intent {op_intent_id}",
                 query_timestamps=[query.request.timestamp],
             )
-            return False
 
     with scenario.check(
         "Operational intent details data format", [flight_planner.participant_id]
@@ -184,7 +178,6 @@ def validate_shared_operational_intent(
                 details=error_text,
                 query_timestamps=[query.request.timestamp],
             )
-            return False
 
     with scenario.check(
         "Off-nominal volumes", [flight_planner.participant_id]
