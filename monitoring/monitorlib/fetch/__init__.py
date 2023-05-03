@@ -201,7 +201,7 @@ def query_and_describe(
     if "timeout" not in req_kwargs:
         req_kwargs["timeout"] = TIMEOUTS
 
-    # Note: retry logic could be attached to the `client` Session my `mount`ing an HTTPAdapter with custom
+    # Note: retry logic could be attached to the `client` Session by `mount`ing an HTTPAdapter with custom
     # `max_retries`, however we do not want to mutate the provided Session.  Instead, retry only on errors we explicitly
     # consider retryable.
     for attempt in range(ATTEMPTS):
