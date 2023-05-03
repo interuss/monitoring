@@ -444,11 +444,11 @@ def op_intent_transition_valid(
         OperationalIntentState.Nonconforming,
         OperationalIntentState.Contingent,
     }
-    if (transition_from is not None and transition_from not in valid_states):
+    if transition_from is not None and transition_from not in valid_states:
         raise ValueError(
             f"Cannot transition from state {transition_from} as it is an invalid operational intent state"
         )
-    if (transition_to is not None and transition_to not in valid_states):
+    if transition_to is not None and transition_to not in valid_states:
         raise ValueError(
             f"Cannot transition to state {transition_to} as it is an invalid operational intent state"
         )
