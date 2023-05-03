@@ -14,7 +14,9 @@ from monitoring.monitorlib.inspection import (
     get_module_object_by_name,
     import_submodules,
 )
-from monitoring.uss_qualifier.reports.badges import condition_satisfied_for_test_suite
+from monitoring.uss_qualifier.reports.capabilities import (
+    condition_satisfied_for_test_suite,
+)
 from monitoring.uss_qualifier.reports.report import (
     ActionGeneratorReport,
     TestScenarioReport,
@@ -203,35 +205,37 @@ class TestSuite(object):
         report.successful = success
         report.end_time = StringBasedDateTime(datetime.utcnow())
 
-        # Grant badges earned by participants
+        # Evaluate participants' verified capabilities
         if (
-            "participant_badges" in self.definition
-            and self.definition.participant_badges
+            "participant_verifiable_capabilities" in self.definition
+            and self.definition.participant_verifiable_capabilities
         ):
             all_participants = report.all_participants()
-            report.badges_granted = {p: [] for p in all_participants}
-            for badge in self.definition.participant_badges:
+            report.capabilities_verified = {p: [] for p in all_participants}
+            for capability in self.definition.participant_verifiable_capabilities:
                 for participant_id in all_participants:
                     try:
                         if condition_satisfied_for_test_suite(
-                            badge.grant_condition, participant_id, report
+                            capability.verification_condition, participant_id, report
                         ):
                             logger.info(
-                                "Test suite {} granted {} badge '{}' to {}",
+                                "Test suite {} verified {} capability '{}' for {}",
                                 self.declaration.type_name,
-                                badge.id,
-                                badge.name,
+                                capability.id,
+                                capability.name,
                                 participant_id,
                             )
-                            report.badges_granted[participant_id].append(badge.id)
+                            report.capabilities_verified[participant_id].append(
+                                capability.id
+                            )
                     except ValueError as e:
                         logger.error(
-                            "Error checking for {} badge '{}' in test suite {}: {}\nBadge definition: {}",
-                            badge.id,
-                            badge.name,
+                            "Error verifying {} capability '{}' in test suite {}: {}\nCapability definition: {}",
+                            capability.id,
+                            capability.name,
                             self.declaration.type_name,
                             str(e),
-                            json.dumps(badge, indent=2),
+                            json.dumps(capability, indent=2),
                         )
                         break
 

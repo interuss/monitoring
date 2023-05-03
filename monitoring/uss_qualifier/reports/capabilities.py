@@ -3,14 +3,14 @@ from typing import Dict, Callable, TypeVar, Type
 import bc_jsonpath_ng.ext
 
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
-from monitoring.uss_qualifier.reports.badge_definitions import (
+from monitoring.uss_qualifier.reports.capability_definitions import (
     AllConditions,
     SpecificCondition,
     AnyCondition,
     NoFailedChecksCondition,
     RequirementsCheckedCondition,
-    BadgeGrantedCondition,
-    BadgeGrantCondition,
+    CapabilityVerifiedCondition,
+    CapabilityVerificationCondition,
 )
 from monitoring.uss_qualifier.reports.report import TestSuiteReport
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
@@ -19,36 +19,36 @@ from monitoring.uss_qualifier.requirements.documentation import (
 )
 
 SpecificConditionType = TypeVar("SpecificConditionType", bound=SpecificCondition)
-_badge_condition_evaluators: Dict[
+_capability_condition_evaluators: Dict[
     Type, Callable[[SpecificConditionType, ParticipantID, TestSuiteReport], bool]
 ] = {}
 
 
-def badge_condition_evaluator(condition_type: Type):
-    """Decorator to label a function that evaluates a specific condition for granting a badge.
+def capability_condition_evaluator(condition_type: Type):
+    """Decorator to label a function that evaluates a specific condition for verifying a capability.
 
     Args:
-        condition_type: A Type that inherits from badge_definitions.SpecificCondition.
+        condition_type: A Type that inherits from capability_definitions.SpecificCondition.
     """
 
     def register_evaluator(func):
-        _badge_condition_evaluators[condition_type] = func
+        _capability_condition_evaluators[condition_type] = func
         return func
 
     return register_evaluator
 
 
 def condition_satisfied_for_test_suite(
-    grant_condition: BadgeGrantCondition,
+    grant_condition: CapabilityVerificationCondition,
     participant_id: ParticipantID,
     report: TestSuiteReport,
 ) -> bool:
-    """Determine if a condition for granting a badge is satisfied based on a Test Suite report.
+    """Determine if a condition for verifying a capability is satisfied based on a Test Suite report.
 
     Args:
-        grant_condition: Badge-granting condition to check.
-        participant_id: Participant for which the badge would be granted.
-        report: Test Suite report upon which the badge (and grant condition) are based.
+        grant_condition: Capability-verifying condition to check.
+        participant_id: Participant for which the capability would be verified.
+        report: Test Suite report upon which the capability (and verification condition) are based.
 
     Returns: True if the condition was satisfied, False if not.
     """
@@ -59,15 +59,15 @@ def condition_satisfied_for_test_suite(
     ]
     if not populated_fields:
         raise ValueError(
-            "No specific condition specified for grant_condition in BadgeGrantCondition"
+            "No specific condition specified for grant_condition in CapabilityVerificationCondition"
         )
     if len(populated_fields) > 1:
         raise ValueError(
-            "Multiple conditions specified for grant_condition in BadgeGrantCondition: "
+            "Multiple conditions specified for grant_condition in CapabilityVerificationCondition: "
             + ", ".join(populated_fields)
         )
     specific_condition = grant_condition[populated_fields[0]]
-    condition_evaluator = _badge_condition_evaluators.get(
+    condition_evaluator = _capability_condition_evaluators.get(
         type(specific_condition), None
     )
     if condition_evaluator is None:
@@ -77,7 +77,7 @@ def condition_satisfied_for_test_suite(
     return condition_evaluator(specific_condition, participant_id, report)
 
 
-@badge_condition_evaluator(AllConditions)
+@capability_condition_evaluator(AllConditions)
 def evaluate_all_conditions_condition(
     condition: AllConditions, participant_id: ParticipantID, report: TestSuiteReport
 ) -> bool:
@@ -87,7 +87,7 @@ def evaluate_all_conditions_condition(
     return True
 
 
-@badge_condition_evaluator(AnyCondition)
+@capability_condition_evaluator(AnyCondition)
 def evaluate_any_condition_condition(
     condition: AnyCondition, participant_id: ParticipantID, report: TestSuiteReport
 ) -> bool:
@@ -97,7 +97,7 @@ def evaluate_any_condition_condition(
     return False
 
 
-@badge_condition_evaluator(NoFailedChecksCondition)
+@capability_condition_evaluator(NoFailedChecksCondition)
 def evaluate_no_failed_checks_condition(
     condition: NoFailedChecksCondition,
     participant_id: ParticipantID,
@@ -108,7 +108,7 @@ def evaluate_no_failed_checks_condition(
     return True
 
 
-@badge_condition_evaluator(RequirementsCheckedCondition)
+@capability_condition_evaluator(RequirementsCheckedCondition)
 def evaluate_requirements_checked_conditions(
     condition: RequirementsCheckedCondition,
     participant_id: ParticipantID,
@@ -124,19 +124,21 @@ def evaluate_requirements_checked_conditions(
     return all(req_checked.values())
 
 
-@badge_condition_evaluator(BadgeGrantedCondition)
-def evaluate_badge_granted_condition(
-    condition: BadgeGrantedCondition,
+@capability_condition_evaluator(CapabilityVerifiedCondition)
+def evaluate_capability_verified_condition(
+    condition: CapabilityVerifiedCondition,
     participant_id: ParticipantID,
     report: TestSuiteReport,
 ) -> bool:
-    path = condition.badge_location if "badge_location" in condition else "$"
+    path = condition.capability_location if "capability_location" in condition else "$"
     matching_reports = bc_jsonpath_ng.ext.parse(path).find(report)
     result = False
     for matching_report in matching_reports:
         if isinstance(matching_report.value, TestSuiteReport):
-            badges = matching_report.value.badges_granted.get(participant_id, set())
-            if condition.badge_id in badges:
+            capabilities = matching_report.value.capabilities_verified.get(
+                participant_id, set()
+            )
+            if condition.capability_id in capabilities:
                 result = True
             else:
                 return False
