@@ -6,6 +6,7 @@ from implicitdict import ImplicitDict, StringBasedDateTime
 import arrow
 import s2sphere
 import shapely.geometry
+from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
 from monitoring.monitorlib import geo
 
@@ -431,3 +432,57 @@ def vol4s_intersect(vol4s_1: List[Volume4D], vol4s_2: List[Volume4D]) -> bool:
             if vol4_intersect(v1, v2):
                 return True
     return False
+
+
+def op_intent_transition_valid(
+    transition_from: Optional[OperationalIntentState],
+    transition_to: Optional[OperationalIntentState],
+) -> bool:
+    valid_states = {
+        OperationalIntentState.Accepted,
+        OperationalIntentState.Activated,
+        OperationalIntentState.Nonconforming,
+        OperationalIntentState.Contingent,
+    }
+    if transition_from is not None and transition_from not in valid_states:
+        raise ValueError(
+            f"Cannot transition from state {transition_from} as it is an invalid operational intent state"
+        )
+    if transition_to is not None and transition_to not in valid_states:
+        raise ValueError(
+            f"Cannot transition to state {transition_to} as it is an invalid operational intent state"
+        )
+
+    if transition_from is None:
+        return transition_to == OperationalIntentState.Accepted
+
+    elif transition_from == OperationalIntentState.Accepted:
+        return transition_to in {
+            None,
+            OperationalIntentState.Accepted,
+            OperationalIntentState.Activated,
+            OperationalIntentState.Nonconforming,
+            OperationalIntentState.Contingent,
+        }
+
+    elif transition_from == OperationalIntentState.Activated:
+        return transition_to in {
+            None,
+            OperationalIntentState.Activated,
+            OperationalIntentState.Nonconforming,
+            OperationalIntentState.Contingent,
+        }
+
+    elif transition_from == OperationalIntentState.Nonconforming:
+        return transition_to in {
+            None,
+            OperationalIntentState.Nonconforming,
+            OperationalIntentState.Activated,
+            OperationalIntentState.Contingent,
+        }
+
+    elif transition_from == OperationalIntentState.Contingent:
+        return transition_to in {None, OperationalIntentState.Contingent}
+
+    else:
+        return False

@@ -16,6 +16,7 @@ from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
 from monitoring.monitorlib import scd, versioning
 from monitoring.monitorlib.clients import scd as scd_client
 from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.scd import op_intent_transition_valid
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
     InjectFlightResponse,
@@ -228,6 +229,22 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             raise RuntimeError(
                 f"Deadlock in inject_flight while attempting to gain access to flight {flight_id}"
             )
+
+    # Check the transition is valid
+    state_transition_from = (
+        OperationalIntentState(existing_flight.op_intent_reference.state)
+        if existing_flight
+        else None
+    )
+    state_transition_to = OperationalIntentState(req_body.operational_intent.state)
+    if not op_intent_transition_valid(state_transition_from, state_transition_to):
+        return (
+            InjectFlightResponse(
+                result=InjectFlightResult.Rejected,
+                notes=f"Operational intent state transition from {state_transition_from} to {state_transition_to} is invalid",
+            ),
+            200,
+        )
 
     step_name = "performing unknown operation"
     try:
