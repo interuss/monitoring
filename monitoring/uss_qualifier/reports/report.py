@@ -11,7 +11,7 @@ from monitoring.uss_qualifier.configurations.configuration import (
     ParticipantID,
 )
 from monitoring.uss_qualifier.fileio import FileReference
-from monitoring.uss_qualifier.reports.badge_definitions import BadgeID
+from monitoring.uss_qualifier.reports.capability_definitions import CapabilityID
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 
 
@@ -387,8 +387,8 @@ class TestSuiteReport(ImplicitDict):
     successful: bool = False
     """True iff test suite completed normally with no failed checks"""
 
-    badges_granted: Optional[Dict[ParticipantID, List[BadgeID]]]
-    """If badges are defined by this suite, the list of badges earned by each participant."""
+    capabilities_verified: Optional[Dict[ParticipantID, List[CapabilityID]]]
+    """If capabilities are defined by this suite, the list of capabilities verified for each participant."""
 
     def has_critical_problem(self) -> bool:
         return any(a.has_critical_problem() for a in self.actions)
