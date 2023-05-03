@@ -15,3 +15,44 @@ actions:
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances
     on_failure: Continue
+participant_badges:
+  - id: service_provider
+    name: NetRID Service Provider
+    description: Participant fulfills testable requirements necessary to act as a NetRID Service Provider according to F3411-22a.
+    grant_condition:
+      requirements_checked:
+        checked:
+          requirement_sets:
+            - "astm.f3411.v22a.service_provider#Automated verification"
+  - id: service_provider_intent_based
+    name: NetRID Service Provider with intent-based network participant support capability
+    description: Participant fulfills testable requirements necessary to provide Intent-based participant support capability according to F3411-22a.
+    grant_condition:
+      requirements_checked:
+        checked:
+          requirement_sets:
+            - "astm.f3411.v22a.service_provider#Intent-based participant support capability"
+  - id: service_provider_extrapolation
+    name: NetRID Service Provider with position extrapolation capability
+    description: Participant fulfills testable requirements necessary to provide position extrapolation capability according to F3411-22a.
+    grant_condition:
+      requirements_checked:
+        checked:
+          requirement_sets:
+            - "astm.f3411.v22a.service_provider#Position extrapolation capability"
+  - id: display_provider
+    name: NetRID Display Provider
+    description: NetRID Display Provider
+    grant_condition:
+      requirements_checked:
+        checked:
+          requirement_sets:
+            - "astm.f3411.v22a.display_provider#Automated verification"
+  - id: dss_operator
+    name: NetRID DSS Operator
+    description: Participant fulfills testable requirements necessary to act operate a NetRID Discovery and Synchronization Service instance according to F3411-22a.
+    grant_condition:
+      requirements_checked:
+        checked:
+          requirement_sets:
+            - "astm.f3411.v22a.dss_provider#Automated verification"

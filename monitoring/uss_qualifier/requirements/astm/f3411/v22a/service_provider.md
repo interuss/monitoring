@@ -17,12 +17,6 @@ All Service Provider Role requirements can be verified by automation.
 * **astm.f3411.v22a.NET0030**
 * **astm.f3411.v22a.NET0040**
 
-#### Operator of Intent-Based Network Participant to Net-RID Service Provider Requirements
-
-* **astm.f3411.v22a.NET0110**
-* **astm.f3411.v22a.NET0120**
-* **astm.f3411.v22a.NET0130**
-
 #### Net-RID Service Provider to Net-RID Display Provider Requirements
 
 * **astm.f3411.v22a.NET0210**
@@ -30,10 +24,7 @@ All Service Provider Role requirements can be verified by automation.
 * **astm.f3411.v22a.NET0250**
 * **astm.f3411.v22a.NET0260**
 * **astm.f3411.v22a.NET0270**
-* **astm.f3411.v22a.NET0280**
 * **astm.f3411.v22a.NET0290**
-* **astm.f3411.v22a.NET0300**
-* **astm.f3411.v22a.NET0310**
 * **astm.f3411.v22a.NET0320**
 * **astm.f3411.v22a.NET0340**
 
@@ -50,3 +41,23 @@ All Service Provider Role requirements can be verified by automation.
 
 * **astm.f3411.v22a.NET0710**
 * **astm.f3411.v22a.NET0740**
+
+## Intent-based participant support capability
+
+### Network Compliance Matrix
+
+#### Operator of Intent-Based Network Participant to Net-RID Service Provider Requirements
+
+* **astm.f3411.v22a.NET0110**
+* **astm.f3411.v22a.NET0120**
+* **astm.f3411.v22a.NET0130**
+
+## Position extrapolation capability
+
+### Network Compliance Matrix
+
+#### Net-RID Service Provider to Net-RID Display Provider Requirements
+
+* **astm.f3411.v22a.NET0280**
+* **astm.f3411.v22a.NET0300**
+* **astm.f3411.v22a.NET0310**
