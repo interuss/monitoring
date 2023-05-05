@@ -46,7 +46,8 @@ participant_verifiable_capabilities:
                 conditions:
                     - no_failed_checks: {}
                     - capability_verified:
-                          capability_id: no_failures
+                          capability_ids:
+                            - no_failures
                           # Look for the no_failures capability in any child action that is a suites.astm.utm.f3548_21 test suite
                           capability_location: '$.actions[?(@.test_suite)].test_suite[?(@.suite_type=="suites.astm.utm.f3548_21")]'
                           #                     ^ Root element is the report for the test suite in which this capability is defined (the test suite defined by this YAML file)

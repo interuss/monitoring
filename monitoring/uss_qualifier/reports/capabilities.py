@@ -135,10 +135,11 @@ def evaluate_capability_verified_condition(
     result = False
     for matching_report in matching_reports:
         if isinstance(matching_report.value, TestSuiteReport):
-            capabilities = matching_report.value.capabilities_verified.get(
+            capabilities_verified = matching_report.value.capabilities_verified.get(
                 participant_id, set()
             )
-            if condition.capability_id in capabilities:
+            capability_checks = [capability_id in capabilities_verified for capability_id in condition.capability_ids]
+            if capability_checks and all(capability_checks):
                 result = True
             else:
                 return False
