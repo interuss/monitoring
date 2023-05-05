@@ -42,9 +42,9 @@ All Service Provider Role requirements can be verified by automation.
 * **astm.f3411.v22a.NET0710**
 * **astm.f3411.v22a.NET0740**
 
-## Intent-based participant support capability
+## Capabilities
 
-### Network Compliance Matrix
+### Intent-based participant support
 
 #### Operator of Intent-Based Network Participant to Net-RID Service Provider Requirements
 
@@ -52,12 +52,36 @@ All Service Provider Role requirements can be verified by automation.
 * **astm.f3411.v22a.NET0120**
 * **astm.f3411.v22a.NET0130**
 
-## Position extrapolation capability
-
-### Network Compliance Matrix
+### Position extrapolation
 
 #### Net-RID Service Provider to Net-RID Display Provider Requirements
 
 * **astm.f3411.v22a.NET0280**
 * **astm.f3411.v22a.NET0300**
 * **astm.f3411.v22a.NET0310**
+
+### Additional information provider
+
+#### Operator ID
+
+  * **astm.f3411.v22a.Table1,9**
+
+#### UAS ID Serial Number
+
+  * **astm.f3411.v22a.Table1,1.1**
+
+#### Height
+
+  * **astm.f3411.v22a.Table1,14**
+
+#### Operator Latitude
+
+  * **astm.f3411.v22a.Table1,23**
+
+#### Operator Longitude
+
+  * **astm.f3411.v22a.Table1,24**
+
+#### Operational Status
+
+  * **astm.f3411.v22a.Table1,7**
