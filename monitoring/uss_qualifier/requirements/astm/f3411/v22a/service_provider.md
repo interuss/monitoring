@@ -6,7 +6,7 @@ This file describes the set of ASTM F3411-22a requirements with which a USS fulf
 
 All Service Provider Role requirements can be verified by automation.
 
-## Automated verification
+## Mandatory requirements
 
 ### Network Compliance Matrix
 

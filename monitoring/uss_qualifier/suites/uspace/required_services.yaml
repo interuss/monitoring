@@ -24,7 +24,7 @@ actions:
       dss: dss
   on_failure: Continue
 - test_suite:
-    suite_type: suites.astm.netrid.f3411_19
+    suite_type: suites.uspace.network_identification
     resources:
       flights_data: flights_data
       service_providers: service_providers
@@ -38,3 +38,14 @@ participant_verifiable_capabilities:
       description: Participant fulfills all implemented tests for all testable requirements necessary to provide all required services in U-space.  Note that this test suite is not yet complete, so this capability is not yet a good indication that all testable requirements have been met.
       verification_condition:
           no_failed_checks: {}
+    - id: network_identification_service
+      name: U-space Network Identification Service
+      description: Participant successfuly passed all tests of all requirements to provide a U-Space Network Identification service.
+      verification_condition:
+        all_conditions:
+          conditions:
+            - capability_verified:
+                capability_ids:
+                  - service_provider
+                  - display_provider
+                capability_location: '$.actions[?(@.test_suite)].test_suite[?(@.suite_type=="suites.uspace.network_identification")]'

@@ -10,7 +10,7 @@ This file describes the set of ASTM F3411-22a requirements with which a USS fulf
 
 * **astm.f3411.v22a.NET0330**
 
-## Automated verification
+## Mandatory requirements
 
 ### Network Compliance Matrix
 
