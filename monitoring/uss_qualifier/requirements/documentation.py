@@ -79,7 +79,7 @@ def _length_of_section(values, start_of_section: int) -> int:
         if isinstance(values[c], marko.block.Heading) and values[c].level == level:
             return c - start_of_section - 1
         c += 1
-    return c - start_of_section # end of file
+    return c - start_of_section  # end of file
 
 
 def _find_section(values, section_title: str) -> int:
