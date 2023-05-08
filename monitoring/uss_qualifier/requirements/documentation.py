@@ -77,9 +77,9 @@ def _length_of_section(values, start_of_section: int) -> int:
     c = start_of_section + 1
     while c < len(values):
         if isinstance(values[c], marko.block.Heading) and values[c].level == level:
-            return c - start_of_section - 1
+            break
         c += 1
-    return c - start_of_section # end of file
+    return c - start_of_section - 1
 
 
 def _find_section(values, section_title: str) -> int:
@@ -136,6 +136,7 @@ def _load_requirement_set(requirement_set_id: RequirementSetID) -> RequirementSe
 
     anchor = requirement_set_id.anchor
     requirement_set_name = f"{file_level_name}: {anchor}" if anchor else file_level_name
+
     if anchor:
         start_index = _find_section(doc.children, anchor)
         if start_index == -1:
