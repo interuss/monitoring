@@ -1,10 +1,10 @@
 import datetime
 import json
 import traceback
-from types import MappingProxyType
 from typing import Dict, Optional, List
 
 import flask
+from loguru import logger
 import requests
 import urllib3
 import yaml
@@ -15,6 +15,9 @@ from monitoring.monitorlib import infrastructure
 
 
 TIMEOUTS = (5, 25)  # Timeouts of `connect` and `read` in seconds
+ATTEMPTS = (
+    2  # Number of attempts to query when experiencing a retryable error like a timeout
+)
 
 
 class RequestDescription(ImplicitDict):
@@ -197,12 +200,35 @@ def query_and_describe(
     req_kwargs = kwargs.copy()
     if "timeout" not in req_kwargs:
         req_kwargs["timeout"] = TIMEOUTS
-    t0 = datetime.datetime.utcnow()
-    try:
-        return describe_query(client.request(verb, url, **req_kwargs), t0)
-    except (requests.RequestException, urllib3.exceptions.ReadTimeoutError) as e:
-        msg = "{}: {}".format(type(e).__name__, str(e))
-    t1 = datetime.datetime.utcnow()
+
+    # Note: retry logic could be attached to the `client` Session by `mount`ing an HTTPAdapter with custom
+    # `max_retries`, however we do not want to mutate the provided Session.  Instead, retry only on errors we explicitly
+    # consider retryable.
+    for attempt in range(ATTEMPTS):
+        t0 = datetime.datetime.utcnow()
+        try:
+            return describe_query(client.request(verb, url, **req_kwargs), t0)
+        except (requests.Timeout, urllib3.exceptions.ReadTimeoutError) as e:
+            logger.warning(
+                "query_and_describe attempt {} to {} {} failed with timeout {}: {}",
+                attempt + 1,
+                verb,
+                url,
+                type(e).__name__,
+                str(e),
+            )
+        except requests.RequestException as e:
+            logger.warning(
+                "query_and_describe attempt {} to {} {} failed with non-retryable RequestException {}: {}",
+                attempt + 1,
+                verb,
+                url,
+                type(e).__name__,
+                str(e),
+            )
+            break
+        finally:
+            t1 = datetime.datetime.utcnow()
 
     # Reconstruct request similar to the one in the query (which is not
     # accessible at this point)
