@@ -138,7 +138,10 @@ def evaluate_capability_verified_condition(
             capabilities_verified = matching_report.value.capabilities_verified.get(
                 participant_id, set()
             )
-            capability_checks = [capability_id in capabilities_verified for capability_id in condition.capability_ids]
+            capability_checks = [
+                capability_id in capabilities_verified
+                for capability_id in condition.capability_ids
+            ]
             if capability_checks and all(capability_checks):
                 result = True
             else:
