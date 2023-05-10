@@ -45,7 +45,7 @@ class NoFailedChecksCondition(SpecificCondition):
 
 class CapabilityVerifiedCondition(SpecificCondition):
     """Condition will be satisfied when the specified capability is verified. Note that a capability
-    without requirement will evaluate to false."""
+    verified by an empty list of requirements will evaluate to false."""
 
     capability_id: CapabilityID
     """Identifier of capability that must be verified for this condition to be satisfied."""
