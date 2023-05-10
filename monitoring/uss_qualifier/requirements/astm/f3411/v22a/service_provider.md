@@ -23,6 +23,20 @@ All Service Provider Role requirements can be verified by automation.
 * **astm.f3411.v22a.NET0220**
 * **astm.f3411.v22a.NET0250**
 * **astm.f3411.v22a.NET0260**
+  * **astm.f3411.v22a.NET0260,Table1,1**
+  * **astm.f3411.v22a.NET0260,Table1,2**
+  * **astm.f3411.v22a.NET0260,Table1,4**
+  * **astm.f3411.v22a.NET0260,Table1,5**
+  * **astm.f3411.v22a.NET0260,Table1,6**
+  * **astm.f3411.v22a.NET0260,Table1,10**
+  * **astm.f3411.v22a.NET0260,Table1,11**
+  * **astm.f3411.v22a.NET0260,Table1,12**
+  * **astm.f3411.v22a.NET0260,Table1,16**
+  * **astm.f3411.v22a.NET0260,Table1,17**
+  * **astm.f3411.v22a.NET0260,Table1,18**
+  * **astm.f3411.v22a.NET0260,Table1,19**
+  * **astm.f3411.v22a.NET0260,Table1,20**
+  * **astm.f3411.v22a.NET0260,Table1,21**
 * **astm.f3411.v22a.NET0270**
 * **astm.f3411.v22a.NET0290**
 * **astm.f3411.v22a.NET0320**
@@ -64,24 +78,24 @@ All Service Provider Role requirements can be verified by automation.
 
 #### Operator ID
 
-  * **astm.f3411.v22a.Table1,9**
+  * **astm.f3411.v22a.NET0260,Table1,9**
 
 #### UAS ID Serial Number
 
-  * **astm.f3411.v22a.Table1,1.1**
+  * **astm.f3411.v22a.NET0260,Table1,1.1**
 
 #### Height
 
-  * **astm.f3411.v22a.Table1,14**
+  * **astm.f3411.v22a.NET0260,Table1,14**
 
 #### Operator Latitude
 
-  * **astm.f3411.v22a.Table1,23**
+  * **astm.f3411.v22a.NET0260,Table1,23**
 
 #### Operator Longitude
 
-  * **astm.f3411.v22a.Table1,24**
+  * **astm.f3411.v22a.NET0260,Table1,24**
 
 #### Operational Status
 
-  * **astm.f3411.v22a.Table1,7**
+  * **astm.f3411.v22a.NET0260,Table1,7**
