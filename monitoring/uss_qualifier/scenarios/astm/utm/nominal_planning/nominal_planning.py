@@ -179,8 +179,8 @@ class NominalPlanning(TestScenario):
             self,
             "Activate first flight",
             self.uss1,
-            self.first_flight_id,
             self.first_flight_activated.request,
+            self.first_flight_id,
         )
 
         validate_shared_operational_intent(

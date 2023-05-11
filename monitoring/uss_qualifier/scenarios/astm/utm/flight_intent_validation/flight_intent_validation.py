@@ -262,8 +262,8 @@ class FlightIntentValidation(TestScenario):
             self,
             "Activate valid flight intent",
             self.tested_uss,
-            valid_flight_id,
             self.valid_activated.request,
+            valid_flight_id,
         )
         valid_flight_op_intent_id = resp.operational_intent_id
 

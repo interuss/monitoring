@@ -49,8 +49,8 @@ def modify_planned_priority_conflict_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_id: str,
     flight_intent: InjectFlightRequest,
+    flight_id: str,
 ) -> InjectFlightResponse:
     """Attempt to modify a planned flight intent that should result in a conflict with a higher priority flight intent.
 
@@ -79,8 +79,8 @@ def activate_priority_conflict_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_id: str,
     flight_intent: InjectFlightRequest,
+    flight_id: Optional[str] = None,
 ) -> InjectFlightResponse:
     """Attempt to activate a flight intent that should result in a conflict with a higher priority flight intent.
 
@@ -109,8 +109,8 @@ def modify_activated_priority_conflict_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_id: str,
     flight_intent: InjectFlightRequest,
+    flight_id: str,
 ) -> InjectFlightResponse:
     """Attempt to modify an activated flight intent that should result in a conflict with a higher priority flight intent.
 
@@ -167,8 +167,8 @@ def modify_planned_conflict_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_id: str,
     flight_intent: InjectFlightRequest,
+    flight_id: str,
 ) -> InjectFlightResponse:
     """Attempt to modify a planned flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
@@ -197,8 +197,8 @@ def activate_conflict_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_id: str,
     flight_intent: InjectFlightRequest,
+    flight_id: Optional[str] = None,
 ) -> InjectFlightResponse:
     """Attempt to activate a flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
@@ -227,8 +227,8 @@ def modify_activated_conflict_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_id: str,
     flight_intent: InjectFlightRequest,
+    flight_id: str,
 ) -> InjectFlightResponse:
     """Attempt to modify an activated flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
@@ -287,8 +287,8 @@ def modify_planned_permitted_conflict_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_id: str,
     flight_intent: InjectFlightRequest,
+    flight_id: str,
 ) -> InjectFlightResponse:
     """Modify a planned flight intent that has a permitted equal priority conflict with another flight intent, that should result in success.
 
@@ -317,8 +317,8 @@ def activate_permitted_conflict_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_id: str,
     flight_intent: InjectFlightRequest,
+    flight_id: Optional[str] = None,
 ) -> InjectFlightResponse:
     """Activate a flight intent that has a permitted equal priority conflict with another flight intent, that should result in success.
 
@@ -347,8 +347,8 @@ def modify_activated_permitted_conflict_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_id: str,
     flight_intent: InjectFlightRequest,
+    flight_id: str,
 ) -> InjectFlightResponse:
     """Modify an activated flight intent that has a permitted equal priority conflict with another flight intent, that should result in success.
 

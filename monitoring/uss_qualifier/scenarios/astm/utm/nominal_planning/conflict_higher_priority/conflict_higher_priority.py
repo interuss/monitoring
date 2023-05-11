@@ -144,7 +144,7 @@ class ConflictHigherPriority(TestScenario):
             assert not scd.vol4s_intersect(
                 self.flight_1_planned_time_range_A.request.operational_intent.volumes,
                 self.flight_1_activated_time_range_B.request.operational_intent.volumes,
-            ), "flight_1_planned_time_range_A and flight_1_planned_time_range_B must not intersect"
+            ), "flight_1_planned_time_range_A and flight_1_activated_time_range_B must not intersect"
 
         except KeyError as e:
             raise ValueError(
@@ -283,8 +283,8 @@ class ConflictHigherPriority(TestScenario):
             self,
             "Attempt to modify planned flight 1 in conflict",
             self.tested_uss,
-            self.flight_1_id,
             self.flight_1_planned_time_range_A_extended.request,
+            self.flight_1_id,
         )
 
         validate_shared_operational_intent(
@@ -311,8 +311,8 @@ class ConflictHigherPriority(TestScenario):
             self,
             "Attempt to activate conflicting flight 1",
             self.tested_uss,
-            self.flight_1_id,
             self.flight_1_activated_time_range_A.request,
+            self.flight_1_id,
         )
 
         validate_shared_operational_intent(
@@ -334,8 +334,8 @@ class ConflictHigherPriority(TestScenario):
             self,
             "Activate flight 1",
             self.tested_uss,
-            self.flight_1_id,
             self.flight_1_activated_time_range_A.request,
+            self.flight_1_id,
         )
 
         _, self.flight_2_id = plan_flight_intent(
@@ -349,16 +349,16 @@ class ConflictHigherPriority(TestScenario):
             self,
             "Activate flight 2",
             self.control_uss,
-            self.flight_2_id,
             self.flight_2_activated_time_range_A.request,
+            self.flight_2_id,
         )
 
         resp_flight_1 = modify_activated_flight_intent(
             self,
             "Modify activated flight 1 in conflict with activated flight 2",
             self.tested_uss,
-            self.flight_1_id,
             self.flight_1_activated_time_range_A_extended.request,
+            self.flight_1_id,
         )
 
         validate_shared_operational_intent(
@@ -385,16 +385,16 @@ class ConflictHigherPriority(TestScenario):
             self,
             "Modify activated flight 2 to not conflict with activated flight 1",
             self.control_uss,
-            self.flight_2_id,
             self.flight_2_activated_time_range_B.request,
+            self.flight_2_id,
         )
 
         _ = modify_activated_priority_conflict_flight_intent(
             self,
             "Attempt to modify activated flight 1 in conflict",
             self.tested_uss,
-            self.flight_1_id,
             self.flight_1_activated_time_range_B.request,
+            self.flight_1_id,
         )
 
         validate_shared_operational_intent(
