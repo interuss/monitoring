@@ -312,7 +312,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 )
             ):
                 logger.debug(
-                    f"[inject_flight:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with higher-priority operational intents (if Activated ; past version of the flight was already in conflict (i.e. conflict is pre-existing) ; this is a modification)"
+                    f"[inject_flight:{flight_id}] intersection with {op_intent.reference.id} not considered: modification of Activated operational intent with a pre-existing conflict"
                 )
                 continue
 
