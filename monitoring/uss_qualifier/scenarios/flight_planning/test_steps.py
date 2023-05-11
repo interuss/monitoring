@@ -265,8 +265,8 @@ def activate_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_id: str,
     flight_intent: InjectFlightRequest,
+    flight_id: Optional[str] = None,
 ) -> InjectFlightResponse:
     """Activate a flight intent that should result in success.
 
@@ -295,8 +295,8 @@ def modify_planned_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_id: str,
     flight_intent: InjectFlightRequest,
+    flight_id: str,
 ) -> InjectFlightResponse:
     """Modify a planned flight intent that should result in success.
 
@@ -325,8 +325,8 @@ def modify_activated_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_id: str,
     flight_intent: InjectFlightRequest,
+    flight_id: str,
 ) -> InjectFlightResponse:
     """Modify an activated flight intent that should result in success.
 
