@@ -279,10 +279,14 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 existing_flight
                 and existing_flight.op_intent_reference.id == op_intent.reference.id
             ):
-                # Don't consider intersections with a past version of this flight
+                logger.debug(
+                    f"[inject_flight:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with a past version of this flight"
+                )
                 continue
             if req_body.operational_intent.priority > op_intent.details.priority:
-                # Don't consider intersections with lower-priority operational intents
+                logger.debug(
+                    f"[inject_flight:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with lower-priority operational intents"
+                )
                 continue
             if (
                 req_body.operational_intent.priority == op_intent.details.priority
@@ -290,35 +294,29 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                     req_body.operational_intent.priority
                 )
             ):
-                # Don't consider intersections with same-priority operational intents if they're allowed
+                logger.debug(
+                    f"[inject_flight:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with same-priority operational intents (if allowed)"
+                )
                 continue
 
-            v2a = op_intent.details.volumes
-            v2b = op_intent.details.off_nominal_volumes
+            v2 = op_intent.details.volumes + op_intent.details.off_nominal_volumes
 
             if (
                 existing_flight
                 and existing_flight.op_intent_reference.state
                 == OperationalIntentState.Activated
-                and op_intent.reference.state == OperationalIntentState.Activated
                 and req_body.operational_intent.state
                 == OperationalIntentState.Activated
                 and (
-                    scd.vol4s_intersect(
-                        existing_flight.op_intent_injection.volumes, v2a
-                    )
-                    or scd.vol4s_intersect(
-                        existing_flight.op_intent_injection.volumes, v2b
-                    )
+                    scd.vol4s_intersect(existing_flight.op_intent_injection.volumes, v2)
                 )
             ):
-                # Don't consider intersections with higher-priority operational intents if:
-                # - both are Activated, and
-                # - if past version of the flight was already in conflict (i.e. conflict is pre-existing), and
-                # - if this is a modification
+                logger.debug(
+                    f"[inject_flight:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with higher-priority operational intents (if Activated ; past version of the flight was already in conflict (i.e. conflict is pre-existing) ; this is a modification)"
+                )
                 continue
 
-            if scd.vol4s_intersect(v1, v2a) or scd.vol4s_intersect(v1, v2b):
+            if scd.vol4s_intersect(v1, v2):
                 notes = f"Requested flight (priority {req_body.operational_intent.priority}) intersected {op_intent.reference.manager}'s operational intent {op_intent.reference.id} (priority {op_intent.details.priority})"
                 return (
                     InjectFlightResponse(
@@ -332,7 +330,8 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         logger.debug(f"[inject_flight:{flight_id}] Sharing operational intent with DSS")
         base_url = "{}/mock/scd".format(webapp.config[KEY_BASE_URL])
         req = scd.PutOperationalIntentReferenceParameters(
-            extents=req_body.operational_intent.volumes,
+            extents=req_body.operational_intent.volumes
+            + req_body.operational_intent.off_nominal_volumes,
             key=[op.reference.ovn for op in op_intents],
             state=req_body.operational_intent.state,
             uss_base_url=base_url,

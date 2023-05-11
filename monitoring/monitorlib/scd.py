@@ -152,7 +152,7 @@ class ImplicitSubscriptionParameters(ImplicitDict):
 
 
 class PutOperationalIntentReferenceParameters(ImplicitDict):
-    extents: Volume4D
+    extents: List[Volume4D]
     key: List[str]
     state: str
     uss_base_url: str
