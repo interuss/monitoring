@@ -81,7 +81,7 @@ Flight 2 on time range B should be successfully activated by the control USS.
 ### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
 Validate that flight 2 is activated on time range B.
 
-### [Attempt to plan flight 1 test step](../../../../flight_planning/plan_priority_conflict_flight_intent.md)
+### [Attempt to plan flight 1 test step](../../../../flight_planning/plan_conflict_flight_intent.md)
 The test driver attempts to plan the flight 1 on time range B via the tested USS. However, it conflicts with flight 2
 which is of equal priority but came first. As such it should be rejected
 per **[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**.
