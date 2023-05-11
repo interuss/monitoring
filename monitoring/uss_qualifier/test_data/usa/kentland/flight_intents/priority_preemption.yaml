@@ -88,9 +88,9 @@ intents:
           operational_intent:
             state: Activated
 
-  flight_1_activated_time_range_B:
+  flight_1_planned_time_range_B:
     delta:
-      source: flight_1_activated_time_range_A_extended
+      source: flight_1_planned_time_range_A
       mutation:
         request:
           operational_intent:
@@ -101,6 +101,14 @@ intents:
                 time_end:
                   value: '2023-01-01T00:10:00+00:00'
                   format: RFC3339
+
+  flight_1_activated_time_range_B:
+    delta:
+      source: flight_1_planned_time_range_B
+      mutation:
+        request:
+          operational_intent:
+            state: Activated
 
   flight_2_planned_time_range_A:
     full:
@@ -174,4 +182,59 @@ intents:
                   format: RFC3339
                 time_end:
                   value: '2023-01-01T00:10:00+00:00'
+                  format: RFC3339
+
+  flight_2_equal_prio_planned_time_range_B:
+    delta:
+      source: flight_2_activated_time_range_B
+      mutation:
+        request:
+          operational_intent:
+            state: Accepted
+            priority: 0
+
+  flight_2_equal_prio_activated_time_range_B:
+    delta:
+      source: flight_2_equal_prio_planned_time_range_B
+      mutation:
+        request:
+          operational_intent:
+            state: Activated
+
+  flight_2_equal_prio_nonconforming_time_range_A:
+    delta:
+      source: flight_2_equal_prio_activated_time_range_B
+      mutation:
+        request:
+          operational_intent:
+            state: Nonconforming
+            off_nominal_volumes:
+              - volume:
+                  outline_polygon:
+                    vertices:
+                      - lat: 37.19389846157564
+                        lng: -80.57843722762006
+                      - lat: 37.19542873284961
+                        lng: -80.57744077506473
+                      - lat: 37.19621141165609
+                        lng: -80.578531141435
+                      - lat: 37.19610765396546
+                        lng: -80.57910946528506
+                      - lat: 37.19626017503177
+                        lng: -80.57953226320937
+                      - lat: 37.19516471659203
+                        lng: -80.58067042878767
+                  altitude_lower:
+                    value: 483
+                    reference: W84
+                    units: M
+                  altitude_upper:
+                    value: 519
+                    reference: W84
+                    units: M
+                time_start:
+                  value: '2023-01-01T00:02:00+00:00'
+                  format: RFC3339
+                time_end:
+                  value: '2023-01-01T00:12:15+00:00'
                   format: RFC3339
