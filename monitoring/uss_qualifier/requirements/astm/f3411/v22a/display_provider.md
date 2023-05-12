@@ -31,20 +31,6 @@ This file describes the set of ASTM F3411-22a requirements with which a USS fulf
 * **astm.f3411.v22a.NET0450**
 * **astm.f3411.v22a.NET0460**
 * **astm.f3411.v22a.NET0470**
-  * **astm.f3411.v22a.NET0470,Table1,1**
-  * **astm.f3411.v22a.NET0470,Table1,2**
-  * **astm.f3411.v22a.NET0470,Table1,4**
-  * **astm.f3411.v22a.NET0470,Table1,5**
-  * **astm.f3411.v22a.NET0470,Table1,6**
-  * **astm.f3411.v22a.NET0470,Table1,10**
-  * **astm.f3411.v22a.NET0470,Table1,11**
-  * **astm.f3411.v22a.NET0470,Table1,12**
-  * **astm.f3411.v22a.NET0470,Table1,16**
-  * **astm.f3411.v22a.NET0470,Table1,17**
-  * **astm.f3411.v22a.NET0470,Table1,18**
-  * **astm.f3411.v22a.NET0470,Table1,19**
-  * **astm.f3411.v22a.NET0470,Table1,20**
-  * **astm.f3411.v22a.NET0470,Table1,21**
 * **astm.f3411.v22a.NET0480**
 * **astm.f3411.v22a.NET0490**
 
@@ -61,17 +47,87 @@ This file describes the set of ASTM F3411-22a requirements with which a USS fulf
 
 ### Additional information transmission
 
-#### Operator ID transmitter
+#### UAS ID transmitter
 
-  * **astm.f3411.v22a.NET0470,Table1,9**
+  * **astm.f3411.v22a.NET0470,Table1,1**
 
 #### UAS ID Serial Number transmitter
 
   * **astm.f3411.v22a.NET0470,Table1,1.1**
 
+#### UAS ID Registration ID transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,1.2**
+
+#### UAS ID UTM (UUID) transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,1.3**
+
+#### UAS ID Specific Session ID transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,1.4**
+
+#### UA Type transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,2**
+
+#### UA Classification transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,3**
+
+#### UA Classification Type transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,4**
+
+#### Timestamp transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,5**
+
+#### Timestamp Accuracy transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,6**
+
+#### Operational Status transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,7**
+
+#### Operational Description transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,8**
+
+#### Operator ID transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,9**
+
+#### Current Position transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,10**
+  * **astm.f3411.v22a.NET0470,Table1,11**
+
+#### Geodetic Altitude transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,12**
+
+#### Pressure Altitude transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,13**
+
 #### Height transmitter
 
   * **astm.f3411.v22a.NET0470,Table1,14**
+  * **astm.f3411.v22a.NET0470,Table1,15**
+
+#### Geodetic Vertical Accuracy transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,16**
+
+#### Horizontal Accuracy transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,17**
+
+#### Speed Accuracy transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,18**
 
 #### Track Direction transmitter
 
@@ -81,11 +137,53 @@ This file describes the set of ASTM F3411-22a requirements with which a USS fulf
 
   * **astm.f3411.v22a.NET0470,Table1,20**
 
+#### Vertical Speed transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,21**
+
+#### Auth Data transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,22**
+
 #### Operator Position transmitter
 
   * **astm.f3411.v22a.NET0470,Table1,23**
   * **astm.f3411.v22a.NET0470,Table1,24**
 
-#### Operational Status transmitter
+#### Operator Altitude transmitter
 
-  * **astm.f3411.v22a.NET0470,Table1,7**
+  * **astm.f3411.v22a.NET0470,Table1,25**
+
+#### Operator Location Type transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,26**
+
+#### Operating Area Radius transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,27**
+  * **astm.f3411.v22a.NET0470,Table1,29**
+
+#### Operating Area Polygon transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,28**
+  * **astm.f3411.v22a.NET0470,Table1,29**
+
+#### Operating Area Count transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,30**
+
+#### Operating Area Floor transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,31**
+
+#### Operating Area Ceiling transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,32**
+
+#### Operating Area Start transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,33**
+
+#### Operating Area End transmitter
+
+  * **astm.f3411.v22a.NET0470,Table1,34**
