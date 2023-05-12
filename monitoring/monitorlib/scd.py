@@ -454,7 +454,10 @@ def op_intent_transition_valid(
         )
 
     if transition_from is None:
-        return transition_to == OperationalIntentState.Accepted
+        return transition_to in {
+            OperationalIntentState.Accepted,
+            OperationalIntentState.Activated,
+        }
 
     elif transition_from == OperationalIntentState.Accepted:
         return transition_to in {
