@@ -50,7 +50,7 @@ participant_verifiable_capabilities:
             checked:
               requirement_sets:
                 - "astm.f3411.v22a.service_provider#Position extrapolation"
-  - id: service_provider_operator_id_field
+  - id: service_provider_operator_id_provider
     name: NetRID Service Provider providing operator id data field
     description: Participant fulfills testable requirements necessary to provide operator id data field according to F3411-22a.
     verification_condition:
@@ -62,8 +62,8 @@ participant_verifiable_capabilities:
         - requirements_checked:
             checked:
               requirement_sets:
-                - "astm.f3411.v22a.service_provider#Operator ID"
-  - id: service_provider_uas_id_serial_number_field
+                - "astm.f3411.v22a.service_provider#Operator ID provider"
+  - id: service_provider_uas_id_serial_number_provider
     name: NetRID Service Provider providing UAS ID serial number data field
     description: Participant fulfills testable requirements necessary to provide UAS ID serial number (option 1) data field according to F3411-22a.
     verification_condition:
@@ -75,8 +75,8 @@ participant_verifiable_capabilities:
         - requirements_checked:
             checked:
               requirement_sets:
-                - "astm.f3411.v22a.service_provider#UAS ID Serial Number"
-  - id: service_provider_height_field
+                - "astm.f3411.v22a.service_provider#UAS ID Serial Number provider"
+  - id: service_provider_height_provider
     name: NetRID Service Provider providing height data field
     description: Participant fulfills testable requirements necessary to provide height data field according to F3411-22a.
     verification_condition:
@@ -88,10 +88,10 @@ participant_verifiable_capabilities:
         - requirements_checked:
             checked:
               requirement_sets:
-                - "astm.f3411.v22a.service_provider#Height"
-  - id: service_provider_operator_latitude_field
-    name: NetRID Service Provider providing operator latitude data field
-    description: Participant fulfills testable requirements necessary to provide operator latitude data field according to F3411-22a.
+                - "astm.f3411.v22a.service_provider#Height provider"
+  - id: service_provider_operator_position_provider
+    name: NetRID Service Provider providing operator latitude and longitude data fields
+    description: Participant fulfills testable requirements necessary to provide operator latitude and longitude data fields according to F3411-22a.
     verification_condition:
       all_conditions:
         conditions:
@@ -101,21 +101,8 @@ participant_verifiable_capabilities:
         - requirements_checked:
             checked:
               requirement_sets:
-                - "astm.f3411.v22a.service_provider#Operator Latitude"
-  - id: service_provider_operator_longitude_field
-    name: NetRID Service Provider providing operator longitude data field
-    description: Participant fulfills testable requirements necessary to provide operator longitude data field according to F3411-22a.
-    verification_condition:
-      all_conditions:
-        conditions:
-        - capability_verified:
-            capability_ids:
-              - service_provider
-        - requirements_checked:
-            checked:
-              requirement_sets:
-                - "astm.f3411.v22a.service_provider#Operator Longitude"
-  - id: service_provider_operational_status_field
+                - "astm.f3411.v22a.service_provider#Operator Position provider"
+  - id: service_provider_operational_status_provider
     name: NetRID Service Provider providing operational status data field
     description: Participant fulfills testable requirements necessary to provide operational status data field according to F3411-22a.
     verification_condition:
@@ -127,7 +114,7 @@ participant_verifiable_capabilities:
         - requirements_checked:
             checked:
               requirement_sets:
-                - "astm.f3411.v22a.service_provider#Operational Status"
+                - "astm.f3411.v22a.service_provider#Operational Status provider"
 
   - id: display_provider
     name: NetRID Display Provider
@@ -137,7 +124,7 @@ participant_verifiable_capabilities:
         checked:
           requirement_sets:
             - "astm.f3411.v22a.display_provider#Mandatory requirements"
-  - id: display_provider_operator_id_field
+  - id: display_provider_operator_id_transmitter
     name: NetRID Display Provider transmitting operator id data field
     description: Participant fulfills testable requirements necessary to transmit operator id data field according to F3411-22a.
     verification_condition:
@@ -149,8 +136,8 @@ participant_verifiable_capabilities:
         - requirements_checked:
             checked:
               requirement_sets:
-                - "astm.f3411.v22a.display_provider#Operator ID"
-  - id: display_provider_uas_id_serial_number_field
+                - "astm.f3411.v22a.display_provider#Operator ID transmitter"
+  - id: display_provider_uas_id_serial_number_transmitter
     name: NetRID Display Provider transmitting UAS ID serial number data field
     description: Participant fulfills testable requirements necessary to transmit UAS ID serial number (option 1) data field according to F3411-22a.
     verification_condition:
@@ -162,8 +149,8 @@ participant_verifiable_capabilities:
         - requirements_checked:
             checked:
               requirement_sets:
-                - "astm.f3411.v22a.display_provider#UAS ID Serial Number"
-  - id: display_provider_height_field
+                - "astm.f3411.v22a.display_provider#UAS ID Serial Number transmitter"
+  - id: display_provider_height_transmitter
     name: NetRID Display Provider transmitting height data field
     description: Participant fulfills testable requirements necessary to transmit height data field according to F3411-22a.
     verification_condition:
@@ -175,8 +162,8 @@ participant_verifiable_capabilities:
         - requirements_checked:
             checked:
               requirement_sets:
-                - "astm.f3411.v22a.display_provider#Height"
-  - id: display_provider_track_direction_field
+                - "astm.f3411.v22a.display_provider#Height transmitter"
+  - id: display_provider_track_direction_transmitter
     name: NetRID Display Provider transmitting track direction data field
     description: Participant fulfills testable requirements necessary to transmit track direction data field according to F3411-22a.
     verification_condition:
@@ -188,8 +175,8 @@ participant_verifiable_capabilities:
         - requirements_checked:
             checked:
               requirement_sets:
-                - "astm.f3411.v22a.display_provider#Track Direction"
-  - id: display_provider_speed_field
+                - "astm.f3411.v22a.display_provider#Track Direction transmitter"
+  - id: display_provider_speed_transmitter
     name: NetRID Display Provider transmitting speed data field
     description: Participant fulfills testable requirements necessary to transmit speed data field according to F3411-22a.
     verification_condition:
@@ -201,10 +188,10 @@ participant_verifiable_capabilities:
         - requirements_checked:
             checked:
               requirement_sets:
-                - "astm.f3411.v22a.display_provider#Speed"
-  - id: display_provider_operator_latitude_field
-    name: NetRID Display Provider transmitting operator latitude data field
-    description: Participant fulfills testable requirements necessary to transmit operator latitude data field according to F3411-22a.
+                - "astm.f3411.v22a.display_provider#Speed transmitter"
+  - id: display_provider_operator_position_transmitter
+    name: NetRID Display Provider transmitting operator latitude and longitude data fields
+    description: Participant fulfills testable requirements necessary to transmit operator latitude and longitude data fields according to F3411-22a.
     verification_condition:
       all_conditions:
         conditions:
@@ -214,21 +201,8 @@ participant_verifiable_capabilities:
         - requirements_checked:
             checked:
               requirement_sets:
-                - "astm.f3411.v22a.display_provider#Operator Latitude"
-  - id: display_provider_operator_longitude_field
-    name: NetRID Display Provider transmitting operator longitude data field
-    description: Participant fulfills testable requirements necessary to transmit operator longitude data field according to F3411-22a.
-    verification_condition:
-      all_conditions:
-        conditions:
-        - capability_verified:
-            capability_ids:
-              - display_provider
-        - requirements_checked:
-            checked:
-              requirement_sets:
-                - "astm.f3411.v22a.display_provider#Operator Longitude"
-  - id: display_provider_operational_status_field
+                - "astm.f3411.v22a.display_provider#Operator Position transmitter"
+  - id: display_provider_operational_status_transmitter
     name: NetRID Display Provider transmitting operational status data field
     description: Participant fulfills testable requirements necessary to transmit operational status data field according to F3411-22a.
     verification_condition:
@@ -240,7 +214,7 @@ participant_verifiable_capabilities:
         - requirements_checked:
             checked:
               requirement_sets:
-                - "astm.f3411.v22a.display_provider#Operational Status"
+                - "astm.f3411.v22a.display_provider#Operational Status transmitter"
 
   - id: dss_operator
     name: NetRID DSS Operator

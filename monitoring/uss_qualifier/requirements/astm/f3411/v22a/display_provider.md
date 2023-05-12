@@ -57,38 +57,35 @@ This file describes the set of ASTM F3411-22a requirements with which a USS fulf
 * **astm.f3411.v22a.NET0720**
 * **astm.f3411.v22a.NET0730**
 
-## Capabilities
+## Additional Capabilities
 
-### Additional information transmitter
+### Additional information transmission
 
-#### Operator ID
+#### Operator ID transmitter
 
   * **astm.f3411.v22a.NET0470,Table1,9**
 
-#### UAS ID Serial Number
+#### UAS ID Serial Number transmitter
 
   * **astm.f3411.v22a.NET0470,Table1,1.1**
 
-#### Height
+#### Height transmitter
 
   * **astm.f3411.v22a.NET0470,Table1,14**
 
-#### Track Direction
+#### Track Direction transmitter
 
   * **astm.f3411.v22a.NET0470,Table1,19**
 
-#### Speed
+#### Speed transmitter
 
   * **astm.f3411.v22a.NET0470,Table1,20**
 
-#### Operator Latitude
+#### Operator Position transmitter
 
   * **astm.f3411.v22a.NET0470,Table1,23**
-
-#### Operator Longitude
-
   * **astm.f3411.v22a.NET0470,Table1,24**
 
-#### Operational Status
+#### Operational Status transmitter
 
   * **astm.f3411.v22a.NET0470,Table1,7**

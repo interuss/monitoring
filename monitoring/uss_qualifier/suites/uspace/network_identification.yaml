@@ -26,18 +26,16 @@ participant_verifiable_capabilities:
         - no_failed_checks: {}
         - capability_verified:
             capability_ids:
-              - service_provider_operator_id_field # Operator Registration
-              - service_provider_uas_id_serial_number_field # Serial Number
-              - service_provider_height_field # Height
-              - service_provider_operator_latitude_field # Operator Location
-              - service_provider_operational_status_field # Operational Status
-              - service_provider_operator_longitude_field # Operator Location
-              - display_provider_operator_id_field # Operator Registration
-              - display_provider_uas_id_serial_number_field # Serial Number
-              - display_provider_height_field # Height
-              - display_provider_track_direction_field # Track
-              - display_provider_speed_field # Speed
-              - display_provider_operator_latitude_field # Operator Location
-              - display_provider_operator_longitude_field # Operator Location
-              - display_provider_operational_status_field # Operational Status
+              - service_provider_operator_id_provider # Operator Registration
+              - service_provider_uas_id_serial_number_provider # Serial Number
+              - service_provider_height_provider # Height
+              - service_provider_operator_position_provider # Operator Location
+              - service_provider_operational_status_provider # Operational Status
+              - display_provider_operator_id_transmitter # Operator Registration
+              - display_provider_uas_id_serial_number_transmitter # Serial Number
+              - display_provider_height_transmitter # Height
+              - display_provider_track_direction_transmitter # Track
+              - display_provider_speed_transmitter # Speed
+              - display_provider_operator_position_transmitter # Operator Location
+              - display_provider_operational_status_transmitter # Operational Status
             capability_location: '$.actions[?(@.test_suite)].test_suite[?(@.suite_type=="suites.astm.utm.f3411_v22a")]'

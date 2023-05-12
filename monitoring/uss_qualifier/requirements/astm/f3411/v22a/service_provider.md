@@ -56,7 +56,7 @@ All Service Provider Role requirements can be verified by automation.
 * **astm.f3411.v22a.NET0710**
 * **astm.f3411.v22a.NET0740**
 
-## Capabilities
+## Additional Capabilities
 
 ### Intent-based participant support
 
@@ -74,28 +74,25 @@ All Service Provider Role requirements can be verified by automation.
 * **astm.f3411.v22a.NET0300**
 * **astm.f3411.v22a.NET0310**
 
-### Additional information provider
+### Additional information provision
 
-#### Operator ID
+#### Operator ID provider
 
   * **astm.f3411.v22a.NET0260,Table1,9**
 
-#### UAS ID Serial Number
+#### UAS ID Serial Number provider
 
   * **astm.f3411.v22a.NET0260,Table1,1.1**
 
-#### Height
+#### Height provider
 
   * **astm.f3411.v22a.NET0260,Table1,14**
 
-#### Operator Latitude
+#### Operator Position provider
 
   * **astm.f3411.v22a.NET0260,Table1,23**
-
-#### Operator Longitude
-
   * **astm.f3411.v22a.NET0260,Table1,24**
 
-#### Operational Status
+#### Operational Status provider
 
   * **astm.f3411.v22a.NET0260,Table1,7**
