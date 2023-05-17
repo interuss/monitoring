@@ -18,7 +18,7 @@ This scenario skips execution and completes successfully at the setup case if a 
 
 ## Resources
 ### flight_intents
-If the tested USS does permit conflict with equal priority, the FlightIntentsResource must be None to prevent the
+If the jurisdiction in which these tests are being conducted does not have a priority level at which conflicts are not allowed, the FlightIntentsResource must be None to prevent the
 execution of the test.
 
 Otherwise, the FlightIntentsResource must provide the following flight intents:
