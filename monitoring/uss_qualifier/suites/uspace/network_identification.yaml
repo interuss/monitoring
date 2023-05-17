@@ -1,0 +1,45 @@
+name: U-Space network identification
+resources:
+  flights_data: resources.netrid.FlightDataResource
+  service_providers: resources.netrid.NetRIDServiceProviders
+  observers: resources.netrid.NetRIDObserversResource
+  evaluation_configuration: resources.netrid.EvaluationConfigurationResource
+  dss_instances: resources.astm.f3411.DSSInstancesResource
+
+actions:
+- test_suite:
+    suite_type: suites.astm.netrid.f3411_22a
+    resources:
+      flights_data: flights_data
+      service_providers: service_providers
+      observers: observers
+      evaluation_configuration: evaluation_configuration
+      dss_instances: dss_instances
+  on_failure: Continue
+participant_verifiable_capabilities:
+- id: uspace_netrid_service_provider
+  name: U-Space NetRID Service Provider
+  description: Participant fulfills testable requirements necessary to act as a provider of the mandatory NetRID U-space service via the use of ASTM F3411-22a as the primary means of compliance.
+  verification_condition:
+    all_conditions:
+      conditions:
+        - no_failed_checks: {}
+        - capability_verified:
+            capability_ids:
+              - service_provider
+              - display_provider
+              - service_provider_operator_id_provider # Operator Registration
+              - service_provider_uas_id_serial_number_provider # Serial Number
+              - service_provider_height_provider # Height
+              - service_provider_operator_position_provider # Operator Location
+              - service_provider_operational_status_provider # Operational Status
+              - display_provider_operator_id_transmitter # Operator Registration
+              - display_provider_uas_id_serial_number_transmitter # Serial Number
+              - display_provider_current_position_transmitter # UA Position
+              - display_provider_height_transmitter # Height
+              - display_provider_timestamp_transmitter # Timestamp
+              - display_provider_track_direction_transmitter # Track
+              - display_provider_speed_transmitter # Speed
+              - display_provider_operator_position_transmitter # Operator Location
+              - display_provider_operational_status_transmitter # Operational Status
+            capability_location: '$.actions[?(@.test_suite)].test_suite[?(@.suite_type=="suites.astm.utm.f3411_v22a")]'

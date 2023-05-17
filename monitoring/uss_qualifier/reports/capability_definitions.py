@@ -46,8 +46,8 @@ class NoFailedChecksCondition(SpecificCondition):
 class CapabilityVerifiedCondition(SpecificCondition):
     """Condition will be satisfied when the specified capability is verified."""
 
-    capability_id: CapabilityID
-    """Identifier of capability that must be verified for this condition to be satisfied."""
+    capability_ids: List[CapabilityID]
+    """List of identifier of capability that must be verified for this condition to be satisfied."""
 
     capability_location: Optional[JSONPathExpression]
     """Location of report to inspect for the verification of the specified capability, relative to the report in which
