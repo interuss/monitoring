@@ -10,8 +10,7 @@ there exists a conflict with an equal priority flight that is not permitted by r
 
 It involves a tested USS and a control USS through which conflicting flights are injected.
 
-Do note that it is the regulation defines whether equal priority conflicts are permitted or not, and if they are, this
-test stops its execution at the setup case without failing.
+This scenario skips execution and completes successfully at the setup case if a resource containing equal priority flight intents where conflicts are not allow is not provided, such as if a jurisdiction does not have any priority levels at which conflicts are not allowed.
 
 
 ## Sequence
