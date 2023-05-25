@@ -201,6 +201,7 @@ def query_and_describe(
     if "timeout" not in req_kwargs:
         req_kwargs["timeout"] = TIMEOUTS
 
+    failures = []
     # Note: retry logic could be attached to the `client` Session by `mount`ing an HTTPAdapter with custom
     # `max_retries`, however we do not want to mutate the provided Session.  Instead, retry only on errors we explicitly
     # consider retryable.
@@ -209,23 +210,26 @@ def query_and_describe(
         try:
             return describe_query(client.request(verb, url, **req_kwargs), t0)
         except (requests.Timeout, urllib3.exceptions.ReadTimeoutError) as e:
-            logger.warning(
-                "query_and_describe attempt {} to {} {} failed with timeout {}: {}",
+            failure_message = "query_and_describe attempt {} to {} {} failed with timeout {}: {}".format(
                 attempt + 1,
                 verb,
                 url,
                 type(e).__name__,
-                str(e),
-            )
+                str(e))
+            logger.warning(failure_message)
+            failures.append(failure_message)
         except requests.RequestException as e:
-            logger.warning(
-                "query_and_describe attempt {} to {} {} failed with non-retryable RequestException {}: {}",
+            failure_message = "query_and_describe attempt {} to {} {} failed with non-retryable RequestException {}: {}".format(
                 attempt + 1,
                 verb,
                 url,
                 type(e).__name__,
-                str(e),
+                str(e))
+            logger.warning(
+                failure_message
             )
+            failures.append(failure_message)
+
             break
         finally:
             t1 = datetime.datetime.utcnow()
@@ -241,7 +245,7 @@ def query_and_describe(
         request=describe_request(prepped_req, t0),
         response=ResponseDescription(
             code=None,
-            failure=msg,
+            failure="\n".join(failures),
             elapsed_s=(t1 - t0).total_seconds(),
             reported=StringBasedDateTime(t1),
         ),
