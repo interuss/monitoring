@@ -211,23 +211,15 @@ def query_and_describe(
             return describe_query(client.request(verb, url, **req_kwargs), t0)
         except (requests.Timeout, urllib3.exceptions.ReadTimeoutError) as e:
             failure_message = "query_and_describe attempt {} to {} {} failed with timeout {}: {}".format(
-                attempt + 1,
-                verb,
-                url,
-                type(e).__name__,
-                str(e))
+                attempt + 1, verb, url, type(e).__name__, str(e)
+            )
             logger.warning(failure_message)
             failures.append(failure_message)
         except requests.RequestException as e:
             failure_message = "query_and_describe attempt {} to {} {} failed with non-retryable RequestException {}: {}".format(
-                attempt + 1,
-                verb,
-                url,
-                type(e).__name__,
-                str(e))
-            logger.warning(
-                failure_message
+                attempt + 1, verb, url, type(e).__name__, str(e)
             )
+            logger.warning(failure_message)
             failures.append(failure_message)
 
             break
