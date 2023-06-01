@@ -34,7 +34,6 @@ def parseArgs() -> argparse.Namespace:
     parser.add_argument(
         "--config",
         help="Configuration string according to monitoring/uss_qualifier/configurations/README.md",
-        required=True,
     )
 
     parser.add_argument(
