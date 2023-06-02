@@ -108,6 +108,8 @@ def test_create_sub(ids, scd_api, scd_session):
         data["subscription"]["time_end"]["value"], req["extents"]["time_end"]["value"]
     )
     _check_sub1(data, ids(SUB_TYPE), scd_api)
+    assert "constraint_references" not in data
+    assert isinstance(data["operational_intent_references"], list) == True
 
 
 @for_api_versions(scd.API_0_3_17)
@@ -174,6 +176,8 @@ def test_mutate_sub(ids, scd_api, scd_session):
     assert_datetimes_are_equal(
         data["subscription"]["time_end"]["value"], req["extents"]["time_end"]["value"]
     )
+    assert isinstance(data["constraint_references"], list) == True
+    assert isinstance(data["operational_intent_references"], list) == True
 
 
 @for_api_versions(scd.API_0_3_17)
