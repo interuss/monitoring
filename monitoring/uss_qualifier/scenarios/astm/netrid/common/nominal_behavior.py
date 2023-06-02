@@ -7,6 +7,7 @@ import arrow
 from implicitdict import ImplicitDict
 from loguru import logger
 from requests.exceptions import RequestException
+from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 
 from monitoring.monitorlib.rid_automated_testing.injection_api import (
     CreateTestParameters,
@@ -35,7 +36,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.injection import (
 from uas_standards.interuss.automated_testing.rid.v1.injection import ChangeTestResponse
 
 
-class NominalBehavior(TestScenario):
+class NominalBehavior(GenericTestScenario):
     _flights_data: FlightDataResource
     _service_providers: NetRIDServiceProviders
     _observers: NetRIDObserversResource

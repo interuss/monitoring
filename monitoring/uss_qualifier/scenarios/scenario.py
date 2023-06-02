@@ -141,12 +141,10 @@ class PendingCheck(object):
         self._step_report.passed_checks.append(passed_check)
 
 
-class TestScenario(ABC):
-    """Instance of a test scenario, ready to run after construction.
+class GenericTestScenario(ABC):
+    """Generic Test Scenario allowing mutualization of test scenario implementation.
 
-    Concrete subclasses of TestScenario must:
-      1) Implement a constructor that accepts only parameters with types that are subclasses of Resource
-      2) Call TestScenario.__init__ from the subclass's __init__
+    Inherit from TestScenario class to define a test scenario ready to run.
     """
 
     declaration: TestScenarioDeclaration
@@ -431,6 +429,17 @@ class TestScenario(ABC):
                     self._scenario_report.successful = False
 
         return self._scenario_report
+
+
+class TestScenario(GenericTestScenario):
+    """Instance of a test scenario, ready to run after construction.
+
+    Concrete subclasses of TestScenario must:
+      1) Implement a constructor that accepts only parameters with types that are subclasses of Resource
+      2) Call TestScenario.__init__ from the subclass's __init__
+    """
+
+    pass
 
 
 TestScenarioType = TypeVar("TestScenarioType", bound=TestScenario)
