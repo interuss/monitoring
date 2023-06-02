@@ -17,19 +17,25 @@ class SpecificCondition(ImplicitDict):
 
 
 class AllConditions(SpecificCondition):
-    """Condition will only be satisfied when all specified conditions are satisfied."""
+    """Condition will only be satisfied when all specified conditions are satisfied.
+
+    Note that an empty list of conditions will result in a successful evaluation."""
 
     conditions: List[CapabilityVerificationCondition]
 
 
 class AnyCondition(SpecificCondition):
-    """Condition will be satisfied when any of the specified conditions are satisfied."""
+    """Condition will be satisfied when any of the specified conditions are satisfied.
+
+    Note that an empty list of conditions will result in an unsuccessful evaluation."""
 
     conditions: List[CapabilityVerificationCondition]
 
 
 class RequirementsCheckedCondition(SpecificCondition):
-    """Condition will only be satisfied if at least one successful check exists for all specified requirements."""
+    """Condition will only be satisfied if at least one successful check exists for all specified requirements.
+
+    Note that an empty collection of requirements will result in an unsuccessful evaluation."""
 
     checked: RequirementCollection
     """Each requirement contained within this collection must be covered by at least one successful check."""
@@ -44,7 +50,9 @@ class NoFailedChecksCondition(SpecificCondition):
 
 
 class CapabilityVerifiedCondition(SpecificCondition):
-    """Condition will be satisfied when the specified capability is verified."""
+    """Condition will be satisfied when the specified capability is verified.
+
+    Note that a capability which do not declare any requirement will result in an unsuccessful evaluation."""
 
     capability_ids: List[CapabilityID]
     """List of identifier of capability that must be verified for this condition to be satisfied."""

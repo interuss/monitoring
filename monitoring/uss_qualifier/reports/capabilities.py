@@ -121,7 +121,8 @@ def evaluate_requirements_checked_conditions(
         for req_id in passed_check.requirements:
             if req_id in req_checked:
                 req_checked[req_id] = True
-    return all(req_checked.values())
+    outcomes = req_checked.values()
+    return outcomes and all(outcomes)
 
 
 @capability_condition_evaluator(CapabilityVerifiedCondition)
