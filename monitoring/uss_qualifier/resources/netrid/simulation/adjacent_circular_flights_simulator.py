@@ -44,6 +44,7 @@ class AdjacentCircularFlightsSimulator:
         ValueError: If bounding box has more area than a 500m x 500m square.
         """
         self.reference_time = arrow.get(config.reference_time.datetime)
+        self.flight_start_shift_time = config.flight_start_shift
         if config.random_seed is None:
             self.random = random
         else:
@@ -307,9 +308,8 @@ class AdjacentCircularFlightsSimulator:
         for j in range(duration):
             timestamp = timestamp.shift(seconds=time_increment_seconds)
 
-            timestamp_isoformat = timestamp.isoformat()
-
             for k in range(num_flights):
+                timestamp_isoformat = timestamp.shift(seconds=k*self.flight_start_shift_time).isoformat()
                 list_end = (
                     flight_track_details[k]["track_length"] - flight_current_index[k]
                 )
@@ -357,7 +357,6 @@ class AdjacentCircularFlightsSimulator:
                 aircraft_type="Helicopter",
             )
             flights.append(flight)
-
         self.flights = flights
 
 
