@@ -109,7 +109,7 @@ def test_create_sub(ids, scd_api, scd_session):
     )
     _check_sub1(data, ids(SUB_TYPE), scd_api)
     assert "constraint_references" not in data
-    assert isinstance(data["operational_intent_references"], list) == True
+    assert isinstance(data["operational_intent_references"], list)
 
 
 @for_api_versions(scd.API_0_3_17)
