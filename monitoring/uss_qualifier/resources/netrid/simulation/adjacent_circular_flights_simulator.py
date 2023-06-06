@@ -309,7 +309,9 @@ class AdjacentCircularFlightsSimulator:
             timestamp = timestamp.shift(seconds=time_increment_seconds)
 
             for k in range(num_flights):
-                timestamp_isoformat = timestamp.shift(seconds=k*self.flight_start_shift_time).isoformat()
+                timestamp_isoformat = timestamp.shift(
+                    seconds=k * self.flight_start_shift_time
+                ).isoformat()
                 list_end = (
                     flight_track_details[k]["track_length"] - flight_current_index[k]
                 )
