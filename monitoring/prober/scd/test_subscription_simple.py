@@ -177,7 +177,7 @@ def test_mutate_sub(ids, scd_api, scd_session):
     assert_datetimes_are_equal(
         data["subscription"]["time_end"]["value"], req["extents"]["time_end"]["value"]
     )
-    assert isinstance(data["constraint_references"], list) == True
+    assert isinstance(data["constraint_references"], list)
     assert "operational_intent_references" not in data
 
 
