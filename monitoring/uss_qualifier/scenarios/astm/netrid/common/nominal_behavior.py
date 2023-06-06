@@ -7,6 +7,7 @@ import arrow
 from implicitdict import ImplicitDict
 from loguru import logger
 from requests.exceptions import RequestException
+from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 
 from monitoring.monitorlib.rid_automated_testing.injection_api import (
@@ -118,7 +119,7 @@ class NominalBehavior(GenericTestScenario):
                         f"Expected response code 200 but received {query.status_code} instead"
                     )
                 if "json" not in query.response:
-                    raise ValueError(f"Response did not contain a JSON body")
+                    raise ValueError("Response did not contain a JSON body")
                 changed_test: ChangeTestResponse = ImplicitDict.parse(
                     query.response.json, ChangeTestResponse
                 )
@@ -145,7 +146,7 @@ class NominalBehavior(GenericTestScenario):
                     InjectedFlight(
                         uss_participant_id=target.participant_id,
                         test_id=test_id,
-                        flight=flight,
+                        flight=TestFlight(flight),
                         query_timestamp=query.request.timestamp,
                     )
                 )
@@ -177,11 +178,13 @@ class NominalBehavior(GenericTestScenario):
         )
 
     def _poll_during_flights(self):
+        config = self._evaluation_configuration.configuration
+
         # Evaluate observed RID system states
         evaluator = display_data_evaluator.RIDObservationEvaluator(
             self,
             self._injected_flights,
-            self._evaluation_configuration.configuration,
+            config,
             self._rid_version,
             self._dss_pool.dss_instances[0] if self._dss_pool else None,
         )
@@ -193,12 +196,27 @@ class NominalBehavior(GenericTestScenario):
                 f"Cannot evaluate RID system: injected test flights ended at {t_end}, which is before now ({t_now})"
             )
 
+        logger.debug("Polling from {t_now} until {t_end}")
+        for f in self._injected_flights:
+            span = f.flight.get_span()
+            logger.debug(
+                f"Flight {f.uss_participant_id}/{f.flight.injection_id} {span[0].isoformat()} to {span[1].isoformat()}",
+            )
+
         t_next = arrow.utcnow()
-        dt = self._evaluation_configuration.configuration.min_polling_interval.timedelta
+        dt = config.min_polling_interval.timedelta
         while arrow.utcnow() < t_end:
-            # Evaluate the system at an instant in time
-            rect = self._virtual_observer.get_query_rect()
-            evaluator.evaluate_system_instantaneously(self._observers.observers, rect)
+            # Evaluate the system at an instant in time for various areas
+            diagonals_m = [
+                self._rid_version.max_diagonal_km * 1000 + 500,  # too large
+                self._rid_version.max_diagonal_km * 1000 - 100,  # clustered
+                self._rid_version.max_details_diagonal_km * 1000 - 100,  # details
+            ]
+            for diagonal_m in diagonals_m:
+                rect = self._virtual_observer.get_query_rect(diagonal_m)
+                evaluator.evaluate_system_instantaneously(
+                    self._observers.observers, rect
+                )
 
             # Wait until minimum polling interval elapses
             while t_next < arrow.utcnow():

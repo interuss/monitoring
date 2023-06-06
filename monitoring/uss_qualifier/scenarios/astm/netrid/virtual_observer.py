@@ -47,7 +47,9 @@ class VirtualObserver(object):
         self._min_query_diagonal_m = min_query_diagonal_m
         self._relevant_past_data_period = relevant_past_data_period
 
-    def get_query_rect(self) -> LatLngRect:
+    def get_query_rect(self, diagonal_m: float = None) -> LatLngRect:
+        if not diagonal_m or diagonal_m < self._min_query_diagonal_m:
+            diagonal_m = self._min_query_diagonal_m
         t_now = arrow.utcnow().datetime
         if (
             self._last_rect
@@ -57,9 +59,7 @@ class VirtualObserver(object):
             rect = self._last_rect
         else:
             t_min = t_now - self._relevant_past_data_period
-            rect = self._injected_flights.get_query_rect(
-                t_min, t_now, self._min_query_diagonal_m
-            )
+            rect = self._injected_flights.get_query_rect(t_min, t_now, diagonal_m)
             self._last_rect = rect
         return rect
 

@@ -119,6 +119,19 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 
 **[astm.f3411.v19.NET0430](../../../../requirements/astm/f3411/v19.md)** require that a NetRID Display Provider reject a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
 
+#### Clustering count check
+
+For a display area with a diagonal greather than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v19.NET0480](../../../../requirements/astm/f3411/v19.md)** requires that a Display provider shall cluster UAs in close proximity to each other using a circular or polygonal.
+A count of UAs should be associated to the cluster.
+
+#### Clustering area coverage check
+
+Per **[astm.f3411.v19.NET0480](../../../../requirements/astm/f3411/v19.md)**, when a Display Provider clusters UAs, area of clusters shall cover no less than *NetMinClusterSize* percent of the display area size.
+
+#### Cluster obfuscation check
+
+Per **[astm.f3411.v19.NET0490](../../../../requirements/astm/f3411/v19.md)**, for a display area with a diagonal greater than *DetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, a Display Provider shall reduce the precision of location information for individual flights.
+
 ## Cleanup
 
 The cleanup phase of this test scenario attempts to remove injected data from all SPs.
