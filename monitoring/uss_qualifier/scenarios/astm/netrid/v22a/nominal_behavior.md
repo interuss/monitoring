@@ -122,7 +122,7 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 #### Clustering count check
 
 For a display area with a diagonal greater than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v22a.NET0480](../../../../requirements/astm/f3411/v22a.md)** requires that a Display provider shall cluster UAs in close proximity to each other using a circular or polygonal.
-A count of UAs should be associated to the cluster.
+Taking into account the propagation time of the injected flights, if the total number of clustered UAs when this value is expected to be stable is not correct, this test will fail.
 
 ## Cleanup
 
