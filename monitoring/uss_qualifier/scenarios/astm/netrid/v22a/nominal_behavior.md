@@ -121,16 +121,8 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 
 #### Clustering count check
 
-For a display area with a diagonal greather than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v22a.NET0480](../../../../requirements/astm/f3411/v22a.md)** requires that a Display provider shall cluster UAs in close proximity to each other using a circular or polygonal.
+For a display area with a diagonal greater than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v22a.NET0480](../../../../requirements/astm/f3411/v22a.md)** requires that a Display provider shall cluster UAs in close proximity to each other using a circular or polygonal.
 A count of UAs should be associated to the cluster.
-
-#### Clustering area coverage check
-
-Per **[astm.f3411.v22a.NET0480](../../../../requirements/astm/f3411/v22a.md)**, when a Display Provider clusters UAs, area of clusters shall cover no less than *NetMinClusterSize* percent of the display area size.
-
-#### Cluster obfuscation check
-
-Per **[astm.f3411.v22a.NET0490](../../../../requirements/astm/f3411/v22a.md)**, for a display area with a diagonal greater than *DetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, a Display Provider shall reduce the precision of location information for individual flights.
 
 ## Cleanup
 
