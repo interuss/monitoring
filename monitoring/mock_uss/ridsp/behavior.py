@@ -1,3 +1,4 @@
+from time import sleep
 from typing import Optional
 
 from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
@@ -11,6 +12,7 @@ class ServiceProviderBehavior(ImplicitDict):
     switch_latitude_and_longitude_when_reporting: Optional[bool] = False
     use_agl_instead_of_wgs84_for_altitude: Optional[bool] = False
     use_feet_instead_of_meters_for_altitude: Optional[bool] = False
+    delay_flight_report_s: Optional[int] = 0
 
 
 def adjust_reported_flight(
@@ -52,5 +54,8 @@ def adjust_reported_flight(
         if adjusted.has_field_with_value("recent_positions"):
             for p in adjusted.recent_positions:
                 p.position.alt *= FEET_PER_METER
+
+    if behavior.delay_flight_report_s > 0:
+        sleep(behavior.delay_flight_report_s)
 
     return adjusted
