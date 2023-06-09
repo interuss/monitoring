@@ -34,7 +34,6 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFlight
 
-
 DISTANCE_TOLERANCE_M = 0.01
 COORD_TOLERANCE_DEG = 360 / geo.EARTH_CIRCUMFERENCE_M * DISTANCE_TOLERANCE_M
 
@@ -275,7 +274,7 @@ class RIDObservationEvaluator(object):
                 observer, rect, diagonal_km, query
             )
         elif diagonal_km > self._rid_version.max_details_diagonal_km:
-            self._evaluate_clusters_observation()
+            self._evaluate_clusters_observation(observer, rect, observation, query)
         else:
             self._evaluate_normal_observation(
                 observer,
@@ -473,9 +472,105 @@ class RIDObservationEvaluator(object):
                     query_timestamps=[query.request.timestamp],
                 )
 
-    def _evaluate_clusters_observation(self) -> None:
-        # TODO: Check cluster sizing, aircraft counts, etc
-        pass
+    def _classify_clustered_presence(
+        self,
+        rect: s2sphere.LatLngRect,
+        query: fetch.Query,
+    ) -> List[InjectedFlight]:
+        present = []
+        uncertain = []
+
+        t_initiated = query.request.timestamp
+        t_response = query.response.reported.datetime
+
+        for expected_flight in self._injected_flights:
+            timestamps = [
+                arrow.get(t.timestamp) for t in expected_flight.flight.telemetry
+            ]
+            t_min = min(timestamps).datetime
+            t_max = max(timestamps).datetime
+
+            if (
+                len(expected_flight.flight.select_relevant_states(rect, t_min, t_max))
+                == 0
+            ):
+                # Not in area of interest
+                continue
+
+            if t_response < t_min:
+                # This flight should definitely not have been observed (it starts in the future)
+                continue
+            elif (
+                t_response
+                > t_max
+                + self._rid_version.realtime_period
+                + self._config.max_propagation_latency.timedelta
+            ):
+                # This flight should not have been observed (it was too far in the past)
+                continue
+            elif (
+                t_min + self._config.max_propagation_latency.timedelta
+                < t_initiated
+                < t_max
+                + self._rid_version.realtime_period
+                - self._config.max_propagation_latency.timedelta
+            ):
+                # This flight should definitely have been observed
+                present.append(expected_flight)
+            else:
+                uncertain.append(expected_flight)
+
+        return present, uncertain
+
+    def _evaluate_clusters_observation(
+        self,
+        observer: RIDSystemObserver,
+        rect: s2sphere.LatLngRect,
+        observation: Optional[GetDisplayDataResponse],
+        query: fetch.Query,
+    ):
+
+        with self._test_scenario.check(
+            "Clustering count",
+            [observer.participant_id],
+        ) as check:
+            # TODO: Improve precision of the check by identifying possible flights per cluster
+            clustered_flight_count = sum(
+                [c.number_of_flights for c in observation.clusters]
+            )
+
+            expected, uncertain = self._classify_clustered_presence(rect, query)
+            expected_count = len(expected)
+            uncertain_count = len(uncertain)
+            max_present_count = expected_count + uncertain_count
+            logger.debug(
+                f"Expecting {f'{expected_count} up to {max_present_count}' if expected_count != max_present_count else f'{expected_count}'} "
+                + f"clustered flight(s). {clustered_flight_count} clustered flight(s) observed."
+            )
+
+            if clustered_flight_count < expected_count - uncertain_count:
+                # Missing flight
+                check.record_failed(
+                    summary="Error while evaluating clustered area view. Missing flight",
+                    severity=Severity.Medium,
+                    details=f"{expected_count-clustered_flight_count} (~{uncertain_count}) missing flight(s)",
+                )
+            elif clustered_flight_count > expected_count + uncertain_count:
+                # Unexpected flight
+                check.record_failed(
+                    summary="Error while evaluating clustered area view. Unexpected flight",
+                    severity=Severity.Medium,
+                    details=f"{clustered_flight_count-expected_count} (~{uncertain_count}) unexpected flight(s)",
+                )
+            elif clustered_flight_count == expected_count:
+                # ok
+                # TODO: If clustered flight count equals 1, check for obfuscation NET0490
+                pass
+            else:
+                # uncertain
+                pass
+
+        # TODO: Add Clustering area covering check (NET0480)
 
     def _evaluate_sp_observation(
         self,
