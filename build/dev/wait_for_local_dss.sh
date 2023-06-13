@@ -1,7 +1,20 @@
 #!/bin/bash
 
-OAUTH_CONTAINER="dss_sandbox_local-dss-dummy-oauth_1"
-CORE_SERVICE_CONTAINER="dss_sandbox_local-dss-core-service_1"
+compose_version=$(docker compose version --short | awk '{print 2}')
+if [[ $compose_version == 1 ]]; then
+  # Docker Compose V1
+  OAUTH_CONTAINER="dss_sandbox_local-dss-dummy-oauth_1"
+  CORE_SERVICE_CONTAINER="dss_sandbox_local-dss-core-service_1"
+elif [[ $compose_version == 2 ]]; then
+  # Docker Compose V2
+  OAUTH_CONTAINER="dss_sandbox-local-dss-dummy-oauth-1"
+  CORE_SERVICE_CONTAINER="dss_sandbox-local-dss-core-service-1"
+else
+  # Unsupported Docker Version.
+  echo "Unsupported Docker Compose version: $compose_version"
+  exit 1
+fi
+
 declare -a localhost_containers=("$OAUTH_CONTAINER" "$CORE_SERVICE_CONTAINER")
 
 for container_name in "${localhost_containers[@]}"; do
