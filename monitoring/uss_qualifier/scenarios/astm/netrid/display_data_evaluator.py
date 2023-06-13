@@ -273,7 +273,21 @@ class RIDObservationEvaluator(object):
             self._evaluate_area_too_large_observation(
                 observer, rect, diagonal_km, query
             )
-        elif diagonal_km > self._rid_version.max_details_diagonal_km:
+            return
+
+        with self._test_scenario.check(
+            "Successful observation", [observer.participant_id]
+        ) as check:
+            if observation is None:
+                check.record_failed(
+                    summary="Observation failed",
+                    details=f"When queried for an observation in {_rect_str(rect)}, {observer.participant_id} returned code {query.status_code}",
+                    severity=Severity.Medium,
+                    query_timestamps=[query.request.timestamp],
+                )
+                return
+
+        if diagonal_km > self._rid_version.max_details_diagonal_km:
             self._evaluate_clusters_observation(observer, rect, observation, query)
         else:
             self._evaluate_normal_observation(
@@ -288,24 +302,10 @@ class RIDObservationEvaluator(object):
         self,
         observer: RIDSystemObserver,
         rect: s2sphere.LatLngRect,
-        observation: Optional[GetDisplayDataResponse],
+        observation: GetDisplayDataResponse,
         query: fetch.Query,
         verified_sps: Set[str],
     ) -> None:
-        with self._test_scenario.check(
-            "Successful observation", [observer.participant_id]
-        ) as check:
-            if observation is None:
-                check.record_failed(
-                    summary="Observation failed",
-                    details=f"When queried for an observation in {_rect_str(rect)}, {observer.participant_id} returned code {query.status_code}",
-                    severity=Severity.Medium,
-                    query_timestamps=[query.request.timestamp],
-                )
-                return
-            else:
-                check.record_passed()
-
         # Make sure we didn't get duplicate flight IDs
         flights_by_id = {}
         for observed_flight in observation.flights:
@@ -526,19 +526,26 @@ class RIDObservationEvaluator(object):
         self,
         observer: RIDSystemObserver,
         rect: s2sphere.LatLngRect,
-        observation: Optional[GetDisplayDataResponse],
+        observation: GetDisplayDataResponse,
         query: fetch.Query,
     ):
-        with self._test_scenario.check("Minimal display area of clusters", [observer.participant_id]) as check:
+        with self._test_scenario.check(
+            "Minimal display area of clusters", [observer.participant_id]
+        ) as check:
             view_area_sqm = geo.area_of_latlngrect(rect)
-            for c in observation.clusters:
-                cluster_area_sqm_percent = c.area_sqm / view_area_sqm * 100
-                logger.debug(f"Cluster covers {c.area_sqm} sqm and the view area is {view_area_sqm} sqm. Cluster area is {cluster_area_sqm_percent} % of the view area.")
-                if c.area_sqm < view_area_sqm * self._rid_version.min_cluster_size_percent / 100:
+            for cluster in observation.clusters:
+                cluster_area_sqm_percent = cluster.area_sqm / view_area_sqm * 100
+                logger.debug(
+                    f"Cluster covers {cluster.area_sqm} sqm and the view area is {view_area_sqm} sqm. Cluster area is {cluster_area_sqm_percent} % of the view area."
+                )
+                if (
+                    cluster.area_sqm
+                    < view_area_sqm * self._rid_version.min_cluster_size_percent / 100
+                ):
                     check.record_failed(
                         summary="Error while evaluating clusters. Cluster is smaller than ",
                         severity=Severity.Medium,
-                        details=f"Cluster covers {c.area_sqm} sqm and the view area is {view_area_sqm} sqm. Cluster area is {cluster_area_sqm_percent} % of the view area and is less than the required {self._rid_version.min_cluster_size_percent} %",
+                        details=f"Cluster covers {cluster.area_sqm} sqm and the view area is {view_area_sqm} sqm. Cluster area is {cluster_area_sqm_percent} % of the view area and is less than the required {self._rid_version.min_cluster_size_percent} %",
                     )
 
         with self._test_scenario.check(
