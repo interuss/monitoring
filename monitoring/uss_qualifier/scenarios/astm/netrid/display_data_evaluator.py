@@ -543,9 +543,9 @@ class RIDObservationEvaluator(object):
                     < view_area_sqm * self._rid_version.min_cluster_size_percent / 100
                 ):
                     check.record_failed(
-                        summary="Error while evaluating clusters. Cluster is smaller than ",
+                        summary=f"Cluster display area is smaller than {self._rid_version.min_cluster_size_percent} % of the view area required",
                         severity=Severity.Medium,
-                        details=f"Cluster covers {cluster.area_sqm} sqm and the view area is {view_area_sqm} sqm. Cluster area is {cluster_area_sqm_percent} % of the view area and is less than the required {self._rid_version.min_cluster_size_percent} %",
+                        details=f"Cluster covers {cluster.area_sqm} sqm and the view area is {view_area_sqm} sqm. Cluster area covers {cluster_area_sqm_percent} % of the view area and is less than the required {self._rid_version.min_cluster_size_percent} %",
                     )
 
         with self._test_scenario.check(
