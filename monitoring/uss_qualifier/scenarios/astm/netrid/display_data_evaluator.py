@@ -529,6 +529,17 @@ class RIDObservationEvaluator(object):
         observation: Optional[GetDisplayDataResponse],
         query: fetch.Query,
     ):
+        with self._test_scenario.check("Minimal display area of clusters", [observer.participant_id]) as check:
+            view_area_sqm = geo.area_of_latlngrect(rect)
+            for c in observation.clusters:
+                cluster_area_sqm_percent = c.area_sqm / view_area_sqm * 100
+                logger.debug(f"Cluster covers {c.area_sqm} sqm and the view area is {view_area_sqm} sqm. Cluster area is {cluster_area_sqm_percent} % of the view area.")
+                if c.area_sqm < view_area_sqm * self._rid_version.min_cluster_size_percent / 100:
+                    check.record_failed(
+                        summary="Error while evaluating clusters. Cluster is smaller than ",
+                        severity=Severity.Medium,
+                        details=f"Cluster covers {c.area_sqm} sqm and the view area is {view_area_sqm} sqm. Cluster area is {cluster_area_sqm_percent} % of the view area and is less than the required {self._rid_version.min_cluster_size_percent} %",
+                    )
 
         with self._test_scenario.check(
             "Clustering count",
@@ -569,8 +580,6 @@ class RIDObservationEvaluator(object):
             else:
                 # uncertain
                 pass
-
-        # TODO: Add Clustering area covering check (NET0480)
 
     def _evaluate_sp_observation(
         self,

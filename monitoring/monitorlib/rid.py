@@ -81,3 +81,12 @@ class RIDVersion(str, Enum):
             return v22a.constants.NetDetailsMaxDisplayAreaDiagonalKm
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
+
+    @property
+    def min_cluster_size_percent(self) -> float:
+        if self == RIDVersion.f3411_19:
+            return v19.constants.NetMinClusterSizePercent
+        elif self == RIDVersion.f3411_22a:
+            return v22a.constants.NetMinClusterSizePercent
+        else:
+            raise ValueError("Unsupported RID version '{}'".format(self))
