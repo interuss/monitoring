@@ -539,8 +539,8 @@ class RIDObservationEvaluator(object):
                     f"Cluster covers {cluster.area_sqm} sqm and the view area is {view_area_sqm} sqm. Cluster area is {cluster_area_sqm_percent} % of the view area."
                 )
                 if (
-                    cluster.area_sqm
-                    < view_area_sqm * self._rid_version.min_cluster_size_percent / 100
+                    cluster_area_sqm_percent
+                    < self._rid_version.min_cluster_size_percent
                 ):
                     check.record_failed(
                         summary=f"Cluster display area is smaller than {self._rid_version.min_cluster_size_percent} % of the view area required",

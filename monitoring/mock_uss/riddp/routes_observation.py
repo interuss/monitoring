@@ -150,7 +150,7 @@ def riddp_display_data() -> Tuple[str, int]:
         response = observation_api.GetDisplayDataResponse(flights=flights)
     else:
         # Construct clusters response
-        clusters = clustering.make_clusters(flights, view.lo(), view.hi())
+        clusters = clustering.make_clusters(flights, view.lo(), view.hi(), rid_version)
         response = observation_api.GetDisplayDataResponse(clusters=clusters)
     return flask.jsonify(response)
 

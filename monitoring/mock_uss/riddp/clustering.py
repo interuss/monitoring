@@ -1,10 +1,15 @@
+import math
 import random
 from typing import List
+from loguru import logger
 
 import s2sphere
+from s2sphere import LatLngRect
 
 from monitoring.monitorlib import geo
 from implicitdict import ImplicitDict
+
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing import observation_api
 
 
@@ -24,6 +29,15 @@ class Cluster(ImplicitDict):
     y_max: float
     points: List[Point]
 
+    def width(self):
+        return math.fabs(self.x_max - self.x_min)
+
+    def height(self):
+        return math.fabs(self.y_max - self.y_min)
+
+    def area(self):
+        return self.width() * self.height()
+
     def randomize(self):
         u_min = min(p.x for p in self.points)
         v_min = min(p.y for p in self.points)
@@ -37,11 +51,23 @@ class Cluster(ImplicitDict):
             points=self.points,
         )
 
+    def extend_size(self, min_area_size: float):
+        scale = min_area_size / self.area()
+
+        return Cluster(
+            x_min=self.x_min - math.sqrt(scale) * self.width(),
+            x_max=self.x_max + math.sqrt(scale) * self.width(),
+            y_min=self.y_min - math.sqrt(scale) * self.height(),
+            y_max=self.y_max + math.sqrt(scale) * self.height(),
+            points=self.points,
+        )
+
 
 def make_clusters(
     flights: List[observation_api.Flight],
     view_min: s2sphere.LatLng,
     view_max: s2sphere.LatLng,
+    rid_version: RIDVersion,
 ) -> List[observation_api.Cluster]:
     if not flights:
         return []
@@ -65,24 +91,36 @@ def make_clusters(
 
     # TODO: subdivide cluster into many clusters
 
+    view_area_sqm = geo.area_of_latlngrect(LatLngRect(view_min, view_max))
+
     result: List[observation_api.Cluster] = []
     for cluster in clusters:
         cluster = (
             cluster.randomize()
         )  # TODO: Set random seed according to view extents so a static view will have static cluster subdivisions
-        p1 = geo.unflatten(view_min, (cluster.x_min, cluster.y_min))
-        p2 = geo.unflatten(view_min, (cluster.x_max, cluster.y_max))
+
+        min_cluster_area = view_area_sqm * rid_version.min_cluster_size_percent / 100
+        if cluster.area() < min_cluster_area:
+            # Extend cluster to the minimum area size required by NET0480
+            cluster = cluster.extend_size(min_cluster_area)
+
+        corners = LatLngRect(
+            geo.unflatten(view_min, (cluster.x_min, cluster.y_min)),
+            geo.unflatten(view_min, (cluster.x_max, cluster.y_max)),
+        )
         result.append(
             observation_api.Cluster(
                 corners=[
                     observation_api.Position(
-                        lat=p1.lat().degrees, lng=p1.lng().degrees
+                        lat=corners.lat_lo().degrees,
+                        lng=corners.lng_lo().degrees,
                     ),
                     observation_api.Position(
-                        lat=p2.lat().degrees, lng=p2.lng().degrees
+                        lat=corners.lat_hi().degrees,
+                        lng=corners.lng_hi().degrees,
                     ),
                 ],
-                area_sqm=geo.area_of_latlngrect(s2sphere.LatLngRect(p1, p2)),
+                area_sqm=geo.area_of_latlngrect(corners),
                 number_of_flights=len(cluster.points),
             )
         )
