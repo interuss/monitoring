@@ -108,6 +108,8 @@ def test_create_sub(ids, scd_api, scd_session):
         data["subscription"]["time_end"]["value"], req["extents"]["time_end"]["value"]
     )
     _check_sub1(data, ids(SUB_TYPE), scd_api)
+    assert "constraint_references" not in data
+    assert isinstance(data["operational_intent_references"], list)
 
 
 @for_api_versions(scd.API_0_3_17)
@@ -156,6 +158,7 @@ def test_mutate_sub(ids, scd_api, scd_session):
 
     req = _make_sub1_req(scd_api)
     req["notify_for_constraints"] = True
+    req["notify_for_operational_intents"] = False
 
     if scd_api == scd.API_0_3_17:
         resp = scd_session.put(
@@ -174,6 +177,8 @@ def test_mutate_sub(ids, scd_api, scd_session):
     assert_datetimes_are_equal(
         data["subscription"]["time_end"]["value"], req["extents"]["time_end"]["value"]
     )
+    assert isinstance(data["constraint_references"], list)
+    assert "operational_intent_references" not in data
 
 
 @for_api_versions(scd.API_0_3_17)
