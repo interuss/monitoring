@@ -17,7 +17,7 @@ services:
     restart: always
 
   local-dss-rid-bootstrapper:
-    image: interuss/dss:v0.7.0
+    image: interuss/dss:v0.8.0-rc2
     volumes:
       - local-dss-data:/var/local-dss-data
       - $PWD/startup:/startup:ro
@@ -26,7 +26,7 @@ services:
       - local-dss-crdb
 
   local-dss-scd-bootstrapper:
-    image: interuss/dss:v0.7.0
+    image: interuss/dss:v0.8.0-rc2
     volumes:
       - local-dss-data:/var/local-dss-data
       - $PWD/startup:/startup:ro
@@ -35,7 +35,7 @@ services:
       - local-dss-crdb
 
   local-dss-core-service:
-    image: interuss/dss:v0.7.0
+    image: interuss/dss:v0.8.0-rc2
     volumes:
       - $PWD/../test-certs:/var/test-certs:ro
       - local-dss-data:/var/local-dss-data
