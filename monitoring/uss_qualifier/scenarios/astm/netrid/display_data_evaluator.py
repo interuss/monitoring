@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Union, Set
+from typing import List, Optional, Dict, Union, Set, Tuple
 
 import arrow
 from loguru import logger
@@ -476,7 +476,7 @@ class RIDObservationEvaluator(object):
         self,
         rect: s2sphere.LatLngRect,
         query: fetch.Query,
-    ) -> List[InjectedFlight]:
+    ) -> Tuple[List[InjectedFlight], List[InjectedFlight]]:
         present = []
         uncertain = []
 
