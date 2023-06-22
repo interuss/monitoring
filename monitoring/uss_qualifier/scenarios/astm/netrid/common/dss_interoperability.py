@@ -25,7 +25,7 @@ from monitoring.uss_qualifier.reports.report import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
     DSSInstancesResource,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from uas_standards.astm.f3411.v19.constants import Scope
 
 VERTICES = [
@@ -103,7 +103,7 @@ def _extract_sub_ids_from_isa_put_response(response: dict) -> Set[str]:
     return returned_subs
 
 
-class DSSInteroperability(TestScenario):
+class DSSInteroperability(GenericTestScenario):
     _primary_dss_instance: ParticipantID
     _other_dss_instances: List[ParticipantID]
     _dss_map: Dict[ParticipantID, UTMClientSession]
