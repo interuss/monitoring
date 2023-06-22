@@ -34,7 +34,7 @@ A resources.astm.f3411.DSSInstancesResource containing at least two DSS instance
 
 ## Sequence diagram
 
-![Sequence diagram for interoperability test](dss_interoperability_test.png)
+![Sequence diagram for interoperability test](../common/dss_interoperability_test.png)
 
 ## Interoperability sequence test case
 
