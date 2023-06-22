@@ -5,6 +5,7 @@ import arrow
 from loguru import logger
 import math
 import s2sphere
+from s2sphere import LatLng, LatLngRect
 
 from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.fetch.rid import (
@@ -18,6 +19,7 @@ from uas_standards.interuss.automated_testing.rid.v1.injection import RIDAircraf
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     Flight,
     GetDisplayDataResponse,
+    Cluster,
 )
 
 from monitoring.monitorlib import fetch, geo, schema_validation
@@ -581,12 +583,58 @@ class RIDObservationEvaluator(object):
                     details=f"{clustered_flight_count-expected_count} (~{uncertain_count}) unexpected flight(s)",
                 )
             elif clustered_flight_count == expected_count:
-                # ok
-                # TODO: If clustered flight count equals 1, check for obfuscation NET0490
-                pass
+                # ok: evaluate clusters that are actually obfuscated flights
+                obfuscated_clusters = [
+                    c for c in observation.clusters if c.number_of_flights == 1
+                ]
+                self._evaluate_obfuscated_clusters_observation(
+                    observer, obfuscated_clusters, expected + uncertain
+                )
+
             else:
                 # uncertain
                 pass
+
+    def _evaluate_obfuscated_clusters_observation(
+        self,
+        observer: RIDSystemObserver,
+        obfuscated_clusters: List[Cluster],
+        candidate_flights: List[InjectedFlight],
+    ) -> None:
+        # TODO: check that the cluster area has a radius or distance to the
+        #  polygon edge of no less than [NetMinObfuscationDistance]
+
+        # get the center of all clusters that are actually an obfuscated flight
+        cluster_centers = [
+            LatLngRect.from_point_pair(
+                LatLng.from_degrees(c.corners[0].lat, c.corners[0].lng),
+                LatLng.from_degrees(c.corners[1].lat, c.corners[1].lng),
+            ).get_center()
+            for c in obfuscated_clusters
+        ]
+
+        with self._test_scenario.check(
+            "Individual flights obfuscation",
+            [observer.participant_id],
+        ) as check:
+            for center in cluster_centers:
+                for injected_flight in candidate_flights:
+                    for tel in injected_flight.flight.telemetry:
+                        flight_pos = LatLng.from_degrees(
+                            tel.position.lat, tel.position.lng
+                        )
+                        distance = (
+                            center.get_distance(flight_pos).degrees
+                            * geo.EARTH_CIRCUMFERENCE_M
+                            / 360
+                        )
+                        if distance <= DISTANCE_TOLERANCE_M:
+                            # Flight was not obfuscated
+                            check.record_failed(
+                                summary="Error while evaluating obfuscation of individual flights. Flight was not obfuscated: it is at the center of the cluster.",
+                                severity=Severity.Medium,
+                                details=f"Flight {injected_flight.flight.injection_id}: distance between cluster center ({center}) and flight telemetry position ({flight_pos} at {tel.timestamp}) is {distance} meters.",
+                            )
 
     def _evaluate_sp_observation(
         self,
