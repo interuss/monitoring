@@ -37,7 +37,7 @@ mkdir -p "$OUTPUT_DIR"
 if ! docker run --link "$OAUTH_CONTAINER":oauth \
 	--link "$CORE_SERVICE_CONTAINER":core-service \
 	-u "$(id -u):$(id -g)" \
-	--network dss_sandbox_default \
+	--network dss_sandbox-default \
 	-v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \
 	-w /app/monitoring/prober \
 	interuss/monitoring \
