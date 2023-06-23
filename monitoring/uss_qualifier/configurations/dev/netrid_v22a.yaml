@@ -18,7 +18,7 @@ v1:
                     specification:
                         service_providers:
                             - participant_id: uss1
-                              injection_base_url: http://host.docker.internal:8071/ridsp/injection
+                              injection_base_url: http://host.docker.internal:8081/ridsp/injection # USS mock ridsp_v22a
                 observers:
                     resource_type: resources.netrid.NetRIDObserversResource
                     dependencies:
@@ -26,7 +26,7 @@ v1:
                     specification:
                         observers:
                             - participant_id: uss2
-                              observation_base_url: http://host.docker.internal:8073/riddp/observation
+                              observation_base_url: http://host.docker.internal:8083/riddp/observation # USS mock riddp_v22a
                 observation_evaluation_configuration:
                     resource_type: resources.netrid.EvaluationConfigurationResource
                     specification: {}
