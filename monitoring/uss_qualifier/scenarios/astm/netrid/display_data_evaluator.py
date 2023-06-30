@@ -678,9 +678,7 @@ class RIDObservationEvaluator(object):
                     if flight_in_cluster:
                         break
 
-                    flight_pos = LatLng.from_degrees(
-                        tel.position.lat, tel.position.lng
-                    )
+                    flight_pos = LatLng.from_degrees(tel.position.lat, tel.position.lng)
                     for cluster_rect in cluster_rects:
                         if cluster_rect.contains(flight_pos):
                             flight_in_cluster = True
