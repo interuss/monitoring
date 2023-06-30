@@ -588,7 +588,7 @@ class RIDObservationEvaluator(object):
                     c for c in observation.clusters if c.number_of_flights == 1
                 ]
                 self._evaluate_obfuscated_clusters_observation(
-                    observer, obfuscated_clusters, expected + uncertain
+                    observer, obfuscated_clusters, expected, uncertain
                 )
 
             else:
@@ -599,26 +599,59 @@ class RIDObservationEvaluator(object):
         self,
         observer: RIDSystemObserver,
         obfuscated_clusters: List[Cluster],
-        candidate_flights: List[InjectedFlight],
+        expected_flights: List[InjectedFlight],
+        uncertain_flights: List[InjectedFlight],
     ) -> None:
-        # TODO: check that the cluster area has a radius or distance to the
-        #  polygon edge of no less than [NetMinObfuscationDistance]
-
-        # get the center of all clusters that are actually an obfuscated flight
-        cluster_centers = [
+        cluster_rects: List[LatLngRect] = [
             LatLngRect.from_point_pair(
                 LatLng.from_degrees(c.corners[0].lat, c.corners[0].lng),
                 LatLng.from_degrees(c.corners[1].lat, c.corners[1].lng),
-            ).get_center()
+            )
             for c in obfuscated_clusters
         ]
+
+        with self._test_scenario.check(
+            "Minimum obfuscation distance",
+            [observer.participant_id],
+        ) as check:
+            # check that the cluster bounds comply with the minimum obfuscation distance to the edge
+            for cluster_rect in cluster_rects:
+                center = cluster_rect.get_center()
+                corner = cluster_rect.hi()
+
+                lng_edge = LatLng.from_angles(center.lat(), corner.lng())
+                lng_distance_m = (
+                    center.get_distance(lng_edge).degrees
+                    * geo.EARTH_CIRCUMFERENCE_M
+                    / 360
+                )
+
+                lat_edge = LatLng.from_angles(corner.lat(), center.lng())
+                lat_distance_m = (
+                    center.get_distance(lat_edge).degrees
+                    * geo.EARTH_CIRCUMFERENCE_M
+                    / 360
+                )
+
+                if (
+                    lng_distance_m < observer.rid_version.min_obfuscation_distance_m
+                    or lat_distance_m < observer.rid_version.min_obfuscation_distance_m
+                ):
+                    # Cluster has a too small distance to the edge
+                    check.record_failed(
+                        summary="Error while evaluating obfuscation of individual flights. Cluster does not comply with the minimum obfuscation distance.",
+                        severity=Severity.Medium,
+                        details=f"Cluster {cluster_rect}: too small distance to the edge. Distance at longitude: {lng_distance_m}m, distance at latitude: {lat_distance_m}m, minimum: {observer.rid_version.min_obfuscation_distance_m}m.",
+                    )
 
         with self._test_scenario.check(
             "Individual flights obfuscation",
             [observer.participant_id],
         ) as check:
-            for center in cluster_centers:
-                for injected_flight in candidate_flights:
+
+            # check that no expected or uncertain flight is at the center of the cluster
+            for center in [rect.get_center() for rect in cluster_rects]:
+                for injected_flight in expected_flights + uncertain_flights:
                     for tel in injected_flight.flight.telemetry:
                         flight_pos = LatLng.from_degrees(
                             tel.position.lat, tel.position.lng
@@ -635,6 +668,31 @@ class RIDObservationEvaluator(object):
                                 severity=Severity.Medium,
                                 details=f"Flight {injected_flight.flight.injection_id}: distance between cluster center ({center}) and flight telemetry position ({flight_pos} at {tel.timestamp}) is {distance} meters.",
                             )
+
+            # check that all expected flights are enclosed in a cluster, i.e. at least one of their telemetry points is enclosed in a cluster
+            for injected_flight in expected_flights:
+                flight_in_cluster = False
+                for tel in injected_flight.flight.telemetry:
+
+                    # go to next flight if the flight has already been validated by a previous telemetry point
+                    if flight_in_cluster:
+                        break
+
+                    flight_pos = LatLng.from_degrees(
+                        tel[0].position.lat, tel[0].position.lng
+                    )
+                    for cluster_rect in cluster_rects:
+                        if cluster_rect.contains(flight_pos):
+                            flight_in_cluster = True
+                            break
+
+                if not flight_in_cluster:
+                    # Flight has no telemetry point belonging to a cluster
+                    check.record_failed(
+                        summary="Error while evaluating obfuscation of individual flights. Flight was outside of all clusters.",
+                        severity=Severity.Medium,
+                        details=f"Flight {injected_flight.flight.injection_id}: has no telemetry position that belong to a cluster.",
+                    )
 
     def _evaluate_sp_observation(
         self,
