@@ -123,13 +123,9 @@ def make_clusters(
             cluster.randomize()
         )  # TODO: Set random seed according to view extents so a static view will have static cluster subdivisions
 
-        if len(cluster.points) == 1:
-            cluster = cluster.extend_dimensions(rid_version.min_obfuscation_distance_m)
-        else:
-            min_cluster_area = (
-                view_area_sqm * rid_version.min_cluster_size_percent / 100
-            )
-            cluster = cluster.extend_size(min_cluster_area)
+        cluster = cluster.extend_dimensions(rid_version.min_obfuscation_distance_m)
+        min_cluster_area = view_area_sqm * rid_version.min_cluster_size_percent / 100
+        cluster = cluster.extend_size(min_cluster_area)
 
         corners = LatLngRect(
             geo.unflatten(view_min, (cluster.x_min, cluster.y_min)),
