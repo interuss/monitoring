@@ -51,22 +51,22 @@ class Cluster(ImplicitDict):
             points=self.points,
         )
 
-    def extend_size(self, min_area_size: float, min_distance_to_edge: float):
-        cluster = self
-        if cluster.area() < min_area_size:
-            # Extend cluster to the minimum area size required by NET0480
-            scale = math.sqrt(min_area_size / cluster.area()) / 2
-            cluster = Cluster(
-                x_min=cluster.x_min - scale * cluster.width(),
-                x_max=cluster.x_max + scale * cluster.width(),
-                y_min=cluster.y_min - scale * cluster.height(),
-                y_max=cluster.y_max + scale * cluster.height(),
-                points=cluster.points,
-            )
+    def extend_size(self, min_area_size: float):
+        """Extend cluster to the minimum area size required by NET0480"""
+        scale = math.sqrt(min_area_size / self.area()) / 2
+        return Cluster(
+            x_min=self.x_min - scale * self.width(),
+            x_max=self.x_max + scale * self.width(),
+            y_min=self.y_min - scale * self.height(),
+            y_max=self.y_max + scale * self.height(),
+            points=self.points,
+        )
 
-        if cluster.width() < 2 * min_distance_to_edge:
-            # Extend cluster width to the minimum distance to edge required by NET0490
-            delta = 2 * min_distance_to_edge - cluster.width()
+    def extend_dimensions(self, min_dimensions: float):
+        """Extend cluster height and width to the minimum dimensions required by NET0490"""
+        cluster = self
+        if cluster.width() < 2 * min_dimensions:
+            delta = 2 * min_dimensions - cluster.width()
             cluster = Cluster(
                 x_min=cluster.x_min - delta / 2,
                 x_max=cluster.x_max + delta / 2,
@@ -75,9 +75,8 @@ class Cluster(ImplicitDict):
                 points=cluster.points,
             )
 
-        if cluster.height() < 2 * min_distance_to_edge:
-            # Extend cluster height to the minimum distance to edge required by NET0490
-            delta = 2 * min_distance_to_edge - cluster.height()
+        if cluster.height() < 2 * min_dimensions:
+            delta = 2 * min_dimensions - cluster.height()
             cluster = Cluster(
                 x_min=cluster.x_min,
                 x_max=cluster.x_max,
@@ -124,10 +123,13 @@ def make_clusters(
             cluster.randomize()
         )  # TODO: Set random seed according to view extents so a static view will have static cluster subdivisions
 
-        min_cluster_area = view_area_sqm * rid_version.min_cluster_size_percent / 100
-        cluster = cluster.extend_size(
-            min_cluster_area, rid_version.min_obfuscation_distance_m
-        )
+        if len(cluster.points) == 1:
+            cluster = cluster.extend_dimensions(rid_version.min_obfuscation_distance_m)
+        else:
+            min_cluster_area = (
+                view_area_sqm * rid_version.min_cluster_size_percent / 100
+            )
+            cluster = cluster.extend_size(min_cluster_area)
 
         corners = LatLngRect(
             geo.unflatten(view_min, (cluster.x_min, cluster.y_min)),
