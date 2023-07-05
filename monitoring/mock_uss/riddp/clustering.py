@@ -43,11 +43,14 @@ class Cluster(ImplicitDict):
         v_min = min(p.y for p in self.points)
         u_max = max(p.x for p in self.points)
         v_max = max(p.y for p in self.points)
+
+        x_offset = random.uniform(-u_max, u_min)
+        y_offset = random.uniform(-v_max, v_min)
         return Cluster(
-            x_min=self.x_min + (u_min - self.x_min) * random.random(),
-            y_min=self.y_min + (v_min - self.y_min) * random.random(),
-            x_max=u_max + (self.x_max - u_max) * random.random(),
-            y_max=v_max + (self.y_max - v_max) * random.random(),
+            x_min=self.x_min + x_offset,
+            y_min=self.y_min + y_offset,
+            x_max=self.x_max + x_offset,
+            y_max=self.y_max + y_offset,
             points=self.points,
         )
 
