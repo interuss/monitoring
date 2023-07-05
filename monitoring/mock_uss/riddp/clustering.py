@@ -52,14 +52,17 @@ class Cluster(ImplicitDict):
         )
 
     def extend_size(self, min_area_size: float):
-        scale = math.sqrt(min_area_size / self.area()) / 2
-        return Cluster(
-            x_min=self.x_min - scale * self.width(),
-            x_max=self.x_max + scale * self.width(),
-            y_min=self.y_min - scale * self.height(),
-            y_max=self.y_max + scale * self.height(),
-            points=self.points,
-        )
+        if self.area() < min_area_size:
+            scale = math.sqrt(min_area_size / self.area()) / 2
+            return Cluster(
+                x_min=self.x_min - scale * self.width(),
+                x_max=self.x_max + scale * self.width(),
+                y_min=self.y_min - scale * self.height(),
+                y_max=self.y_max + scale * self.height(),
+                points=self.points,
+            )
+        else:
+            return self
 
     def extend_dimensions(self, min_dimensions: float):
         cluster = self
