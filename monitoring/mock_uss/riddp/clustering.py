@@ -52,7 +52,6 @@ class Cluster(ImplicitDict):
         )
 
     def extend_size(self, min_area_size: float):
-        """Extend cluster to the minimum area size required by NET0480"""
         scale = math.sqrt(min_area_size / self.area()) / 2
         return Cluster(
             x_min=self.x_min - scale * self.width(),
@@ -63,10 +62,9 @@ class Cluster(ImplicitDict):
         )
 
     def extend_dimensions(self, min_dimensions: float):
-        """Extend cluster height and width to the minimum dimensions required by NET0490"""
         cluster = self
-        if cluster.width() < 2 * min_dimensions:
-            delta = 2 * min_dimensions - cluster.width()
+        if cluster.width() < min_dimensions:
+            delta = min_dimensions - cluster.width()
             cluster = Cluster(
                 x_min=cluster.x_min - delta / 2,
                 x_max=cluster.x_max + delta / 2,
@@ -75,8 +73,8 @@ class Cluster(ImplicitDict):
                 points=cluster.points,
             )
 
-        if cluster.height() < 2 * min_dimensions:
-            delta = 2 * min_dimensions - cluster.height()
+        if cluster.height() < min_dimensions:
+            delta = min_dimensions - cluster.height()
             cluster = Cluster(
                 x_min=cluster.x_min,
                 x_max=cluster.x_max,
@@ -119,13 +117,17 @@ def make_clusters(
 
     result: List[observation_api.Cluster] = []
     for cluster in clusters:
+        # Extend cluster height and width to the minimum dimensions required by NET0490
+        cluster = cluster.extend_dimensions(2 * rid_version.min_obfuscation_distance_m)
+
+        # Extend cluster to the minimum area size required by NET0480
+        min_cluster_area = view_area_sqm * rid_version.min_cluster_size_percent / 100
+        cluster = cluster.extend_size(min_cluster_area)
+
+        # Offset cluster
         cluster = (
             cluster.randomize()
         )  # TODO: Set random seed according to view extents so a static view will have static cluster subdivisions
-
-        cluster = cluster.extend_dimensions(rid_version.min_obfuscation_distance_m)
-        min_cluster_area = view_area_sqm * rid_version.min_cluster_size_percent / 100
-        cluster = cluster.extend_size(min_cluster_area)
 
         corners = LatLngRect(
             geo.unflatten(view_min, (cluster.x_min, cluster.y_min)),
