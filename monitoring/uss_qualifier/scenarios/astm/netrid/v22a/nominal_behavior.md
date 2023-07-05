@@ -122,7 +122,8 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 #### Minimum obfuscation distance check
 
 For a display area with a diagonal greater than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v22a.NET0490](../../../../requirements/astm/f3411/v22a.md)** requires that a Display provider shall obfuscate individual UAs within a cluster.
-If a cluster with a single flight has a distance to its edge smaller than *NetMinObfuscationDistance*, this test will fail.
+If a cluster with a single flight has a width or height smaller than 2 * *NetMinObfuscationDistance* (meaning that the USS did not buffer the single point by *NetMinObfuscationDistance* in all directions when forming the cluster bounds), this test will fail.
+If a cluster with more than a single flight has a width or height smaller than 2 * *NetMinObfuscationDistance*, this test will fail as well. A larger width or height might still be incorrect, but the test cannot at the moment determine this.
 
 #### Individual flights obfuscation check
 
