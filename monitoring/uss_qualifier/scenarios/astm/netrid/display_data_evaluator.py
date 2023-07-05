@@ -583,7 +583,12 @@ class RIDObservationEvaluator(object):
                     details=f"{clustered_flight_count-expected_count} (~{uncertain_count}) unexpected flight(s)",
                 )
             elif clustered_flight_count == expected_count:
-                # ok: evaluate clusters that are actually obfuscated flights
+                # evaluate cluster obfuscation distance
+                self._evaluate_clusters_obfuscation_distance(
+                    observer, observation.clusters
+                )
+
+                # evaluate clusters that are actually obfuscated flights
                 obfuscated_clusters = [
                     c for c in observation.clusters if c.number_of_flights == 1
                 ]
@@ -594,6 +599,41 @@ class RIDObservationEvaluator(object):
             else:
                 # uncertain
                 pass
+
+    def _evaluate_clusters_obfuscation_distance(
+        self,
+        observer: RIDSystemObserver,
+        clusters: List[Cluster],
+    ) -> None:
+        # TODO: Improve this check by using the positions of the flights to compute the minimum obfuscation distance.
+        #  For this we need the assignment of flights per cluster. Currently this checks only if the cluster has
+        #  dimensions smaller than the minimum obfuscation distance.
+        #  (see https://github.com/interuss/monitoring/pull/121#discussion_r1248356023)
+
+        with self._test_scenario.check(
+            "Minimum obfuscation distance",
+            [observer.participant_id],
+        ) as check:
+            cluster_rects: List[LatLngRect] = [
+                LatLngRect.from_point_pair(
+                    LatLng.from_degrees(c.corners[0].lat, c.corners[0].lng),
+                    LatLng.from_degrees(c.corners[1].lat, c.corners[1].lng),
+                )
+                for c in clusters
+            ]
+
+            for c_idx, cluster_rect in enumerate(cluster_rects):
+                cluster_width, cluster_height = geo.flatten(
+                    cluster_rect.lo(), cluster_rect.hi()
+                )
+                min_dim = 2 * observer.rid_version.min_obfuscation_distance_m
+                if cluster_height < min_dim or cluster_width < min_dim:
+                    # Cluster has a too small distance to the edge
+                    check.record_failed(
+                        summary="Error while evaluating cluster obfuscation. Cluster does not comply with the minimum obfuscation distance.",
+                        severity=Severity.Medium,
+                        details=f"Cluster {clusters[c_idx].corners} ({clusters[c_idx].number_of_flights} flights): too small dimensions. Height: {cluster_height}m, width: {cluster_width}m, minimum: {min_dim}m.",
+                    )
 
     def _evaluate_obfuscated_clusters_observation(
         self,
@@ -609,40 +649,6 @@ class RIDObservationEvaluator(object):
             )
             for c in obfuscated_clusters
         ]
-
-        with self._test_scenario.check(
-            "Minimum obfuscation distance",
-            [observer.participant_id],
-        ) as check:
-            # check that the cluster bounds comply with the minimum obfuscation distance to the edge
-            for cluster_rect in cluster_rects:
-                center = cluster_rect.get_center()
-                corner = cluster_rect.hi()
-
-                lng_edge = LatLng.from_angles(center.lat(), corner.lng())
-                lng_distance_m = (
-                    center.get_distance(lng_edge).degrees
-                    * geo.EARTH_CIRCUMFERENCE_M
-                    / 360
-                )
-
-                lat_edge = LatLng.from_angles(corner.lat(), center.lng())
-                lat_distance_m = (
-                    center.get_distance(lat_edge).degrees
-                    * geo.EARTH_CIRCUMFERENCE_M
-                    / 360
-                )
-
-                if (
-                    lng_distance_m < observer.rid_version.min_obfuscation_distance_m
-                    or lat_distance_m < observer.rid_version.min_obfuscation_distance_m
-                ):
-                    # Cluster has a too small distance to the edge
-                    check.record_failed(
-                        summary="Error while evaluating obfuscation of individual flights. Cluster does not comply with the minimum obfuscation distance.",
-                        severity=Severity.Medium,
-                        details=f"Cluster {cluster_rect}: too small distance to the edge. Distance at longitude: {lng_distance_m}m, distance at latitude: {lat_distance_m}m, minimum: {observer.rid_version.min_obfuscation_distance_m}m.",
-                    )
 
         with self._test_scenario.check(
             "Individual flights obfuscation",
