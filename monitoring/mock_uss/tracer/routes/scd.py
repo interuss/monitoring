@@ -12,6 +12,7 @@ from ..template import _print_time_range
 
 RESULT = ("", 204)
 
+
 @webapp.route("/tracer/f3548v21/uss/v1/operational_intents", methods=["POST"])
 def tracer_scd_v21_operation_notification() -> Tuple[str, int]:
     """Implements SCD Operation notification receiver."""
