@@ -1,13 +1,16 @@
 import argparse
 import datetime
 import shlex
+from typing import List, Dict
 
 import s2sphere
 
 from monitoring import mock_uss
+from monitoring.mock_uss.config import KEY_DSS_URL
+from monitoring.mock_uss.tracer.config import KEY_RID_VERSION
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib import auth, infrastructure, geo
 from monitoring.mock_uss import webapp, tracer
-import monitoring.mock_uss.tracer.config
 from monitoring.mock_uss.tracer import tracerlog
 
 
@@ -25,13 +28,13 @@ class ResourceSet(object):
 
     def __init__(
         self,
-        dss_client: infrastructure.UTMClientSession,
+        dss_clients: Dict[str, infrastructure.UTMClientSession],
         area: s2sphere.LatLngRect,
         logger: tracerlog.Logger,
         start_time: datetime.datetime,
         end_time: datetime.datetime,
     ):
-        self.dss_client = dss_client
+        self.dss_clients = dss_clients
         self.area = area
         self.logger = logger
         self.start_time = start_time
@@ -102,9 +105,22 @@ class ResourceSet(object):
         adapter: auth.AuthAdapter = auth.make_auth_adapter(
             webapp.config[mock_uss.config.KEY_AUTH_SPEC]
         )
-        dss_client = infrastructure.UTMClientSession(
-            webapp.config[mock_uss.config.KEY_DSS_URL], adapter
-        )
+
+        if webapp.config[KEY_RID_VERSION] == RIDVersion.f3411_19:
+            _dss_rid_base_url = webapp.config[KEY_DSS_URL]
+        elif webapp.config[KEY_RID_VERSION] == RIDVersion.f3411_22a:
+            _dss_rid_base_url = webapp.config[KEY_DSS_URL] + "/rid/v2"
+        else:
+            raise NotImplementedError(
+                f"Cannot construct DSS base URL using RID version {webapp.config[KEY_RID_VERSION]}"
+            )
+        _dss_scd_base_url = webapp.config[KEY_DSS_URL]
+
+        dss_clients = {
+            "rid": infrastructure.UTMClientSession(_dss_rid_base_url, adapter),
+            "scd": infrastructure.UTMClientSession(_dss_scd_base_url, adapter),
+        }
+
         area: s2sphere.LatLngRect = geo.make_latlng_rect(args.area)
         start_time = datetime.datetime.fromisoformat(args.start_time)
         end_time = start_time + datetime.timedelta(hours=args.trace_hours)
@@ -122,4 +138,4 @@ class ResourceSet(object):
             if args.output_folder
             else None
         )
-        return ResourceSet(dss_client, area, logger, start_time, end_time)
+        return ResourceSet(dss_clients, area, logger, start_time, end_time)

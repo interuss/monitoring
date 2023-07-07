@@ -99,3 +99,11 @@ class RIDVersion(str, Enum):
             return v22a.constants.NetMinObfuscationDistanceM
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
+
+    def short_name(self) -> str:
+        if self == RIDVersion.f3411_19:
+            return "v19"
+        elif self == RIDVersion.f3411_22a:
+            return "v22a"
+        else:
+            return "unknown"
