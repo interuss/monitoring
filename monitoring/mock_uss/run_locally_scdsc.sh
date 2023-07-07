@@ -9,9 +9,9 @@ AUTH="DummyOAuth(http://host.docker.internal:8085/token,uss1)"
 DSS="http://host.docker.internal:8082"
 PUBLIC_KEY="/var/test-certs/auth2.pem"
 AUD=${MOCK_USS_TOKEN_AUDIENCE:-localhost,host.docker.internal}
-container_name="mock_uss_scdsc"
+CONTAINER_NAME=${CONTAINER_NAME:-"mock_uss_scdsc${PORT}"}
 
-PORT=8074
+PORT=${PORT:-8074}
 BASE_URL="http://${MOCK_USS_TOKEN_AUDIENCE:-host.docker.internal}:${PORT}"
 
 if [ "$CI" == "true" ]; then
@@ -20,10 +20,10 @@ else
   docker_args="-it"
 fi
 
-docker container rm -f ${container_name} || echo "No pre-existing ${container_name} container to remove"
+docker container rm -f "${CONTAINER_NAME}" || echo "No pre-existing "${container_name}" container to remove"
 
 # shellcheck disable=SC2086
-docker run ${docker_args} --name ${container_name} \
+docker run ${docker_args} --name "${CONTAINER_NAME}" \
   -e MOCK_USS_AUTH_SPEC="${AUTH}" \
   -e MOCK_USS_DSS_URL="${DSS}" \
   -e MOCK_USS_PUBLIC_KEY="${PUBLIC_KEY}" \

@@ -29,6 +29,8 @@ Steps:
 
 Steps:
 
-* test_docker_fully_mocked.sh
+* test_docker_fully_mocked.sh with following configurations:
+1. U-Space (configurations.dev.uspace)
+2. ASTM NETRID v19 (configurations.dev.netrid_v19
 
 ### prober tests (`make test` in monitoring/prober)
