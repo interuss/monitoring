@@ -24,11 +24,12 @@ PORT=${PORT:-8078}
 AUTH="DummyOAuth(http://host.docker.internal:8085/token,tracer)"
 DSS=${MOCK_USS_DSS_URL:-"http://host.docker.internal:8082"}
 PUBLIC_KEY="/var/test-certs/auth2.pem"
-AUD=${MOCK_USS_TOKEN_AUDIENCE:-host.docker.internal:${PORT}}
+AUD=${MOCK_USS_TOKEN_AUDIENCE:-localhost,host.docker.internal}
+
 RID_VERSION=${MOCK_USS_RID_VERSION:-"F3411-19"}
 CONTAINER_NAME=${MOCK_CONTAINER_NAME:-"mock_uss_tracer"}
 
-BASE_URL="http://${AUD:-host.docker.internal}"
+BASE_URL="http://${MOCK_USS_TOKEN_AUDIENCE:-host.docker.internal}:${PORT}"
 
 if [ "$CI" == "true" ]; then
   docker_args="--add-host host.docker.internal:host-gateway" # Required to reach other containers in Ubuntu (used for Github Actions)

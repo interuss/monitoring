@@ -48,6 +48,8 @@ def tracer_rid_isa_notification(id: str) -> Tuple[str, int]:
         json = flask.request.json
         if json is None:
             raise ValueError("Request did not contain a JSON payload")
+
+        # TODO: Use mutate.rid.ISAChangeNotification when fully implemented. See https://github.com/interuss/monitoring/pull/123/files/553f46b374623e3734634bb277548e06a2457cd6#r1255701016
         if RID_VERSION == RIDVersion.f3411_19:
             notification = ImplicitDict.parse(
                 json, PutIdentificationServiceAreaNotificationParametersV19
