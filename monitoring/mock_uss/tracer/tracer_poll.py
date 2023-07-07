@@ -4,6 +4,8 @@ import sys
 from typing import Optional
 
 from implicitdict import ImplicitDict
+
+from monitoring.mock_uss.tracer.config import KEY_RID_VERSION
 from monitoring.monitorlib import versioning
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import diff, polling
@@ -16,6 +18,8 @@ from monitoring.monitorlib.multiprocessing import SynchronizedValue
 TASK_POLL_ISAS = "tracer poll ISAs"
 TASK_POLL_OPS = "tracer poll ops"
 TASK_POLL_CONSTRAINTS = "tracer poll constraints"
+
+RID_VERSION = webapp.config[KEY_RID_VERSION]
 
 
 class PollingStatus(ImplicitDict):
@@ -71,7 +75,7 @@ def poll_isas() -> datetime:
 
     log_name = "poll_isas"
     t0 = datetime.datetime.utcnow()
-    result = polling.poll_rid_isas(resources, resources.area)
+    result = polling.poll_rid_isas(resources, resources.area, RID_VERSION)
     t1 = datetime.datetime.utcnow()
 
     log_new = False

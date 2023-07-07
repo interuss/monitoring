@@ -13,13 +13,15 @@ def indent(s: str, level: int) -> str:
     return "\n".join(" " * level + line for line in s.split("\n"))
 
 
-def poll_rid_isas(resources: ResourceSet, box: s2sphere.LatLngRect) -> Any:
+def poll_rid_isas(
+    resources: ResourceSet, box: s2sphere.LatLngRect, rid_version: RIDVersion
+) -> Any:
     return fetch.rid.isas(
         box,
         resources.start_time,
         resources.end_time,
-        RIDVersion.f3411_19,
-        resources.dss_client,
+        rid_version,
+        resources.dss_clients["rid"],
     )
 
 
@@ -29,7 +31,7 @@ def poll_scd_operations(resources: ResourceSet) -> Any:
             str, fetch.scd.FetchedEntity
         ] = {}
     return fetch.scd.operations(
-        resources.dss_client,
+        resources.dss_clients["scd"],
         resources.area,
         resources.start_time,
         resources.end_time,
@@ -41,7 +43,7 @@ def poll_scd_constraints(resources: ResourceSet) -> Any:
     if "constraints" not in resources.scd_cache:
         resources.scd_cache["constraints"]: Dict[str, fetch.scd.FetchedEntity] = {}
     return fetch.scd.constraints(
-        resources.dss_client,
+        resources.dss_clients["scd"],
         resources.area,
         resources.start_time,
         resources.end_time,

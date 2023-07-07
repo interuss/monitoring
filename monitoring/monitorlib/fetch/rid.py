@@ -432,7 +432,7 @@ class FetchedISAs(RIDQuery):
         if self.rid_version == RIDVersion.f3411_19:
             return self._v19_response != other._v19_response
         elif self.rid_version == RIDVersion.f3411_22a:
-            return self._v22_response != other._v22_response
+            return self._v22a_response != other._v22a_response
         else:
             raise NotImplementedError(
                 f"Cannot compare ISAs using RID version {self.rid_version}"
