@@ -54,40 +54,45 @@ class Cluster(ImplicitDict):
             points=self.points,
         )
 
-    def extend_size(self, min_area_size: float):
-        if self.area() < min_area_size:
-            scale = math.sqrt(min_area_size / self.area()) / 2
-            return Cluster(
+    def extend(self, rid_version: RIDVersion, view_area_sqm: float):
+        """Extend cluster size and dimensions to the minimum required"""
+
+        cluster = self
+
+        # Extend cluster width to match the minimum distance required by NET0490
+        if cluster.width() < 2 * rid_version.min_obfuscation_distance_m:
+            delta = rid_version.min_obfuscation_distance_m - cluster.width() / 2
+            cluster = Cluster(
+                x_min=cluster.x_min - delta,
+                x_max=cluster.x_max + delta,
+                y_min=cluster.y_min,
+                y_max=cluster.y_max,
+                points=cluster.points,
+            )
+
+        # Extend cluster height to match the minimum distance required by NET0490
+        if cluster.height() < 2 * rid_version.min_obfuscation_distance_m:
+            delta = rid_version.min_obfuscation_distance_m - cluster.height() / 2
+            cluster = Cluster(
+                x_min=cluster.x_min,
+                x_max=cluster.x_max,
+                y_min=cluster.y_min - delta,
+                y_max=cluster.y_max + delta,
+                points=cluster.points,
+            )
+
+        # Extend cluster to the minimum area size required by NET0480
+        min_cluster_area = view_area_sqm * rid_version.min_cluster_size_percent / 100
+        if self.area() < min_cluster_area:
+            scale = math.sqrt(min_cluster_area / self.area()) / 2
+            cluster = Cluster(
                 x_min=self.x_min - scale * self.width(),
                 x_max=self.x_max + scale * self.width(),
                 y_min=self.y_min - scale * self.height(),
                 y_max=self.y_max + scale * self.height(),
                 points=self.points,
             )
-        else:
-            return self
 
-    def extend_dimensions(self, min_dimensions: float):
-        cluster = self
-        if cluster.width() < min_dimensions:
-            delta = min_dimensions - cluster.width()
-            cluster = Cluster(
-                x_min=cluster.x_min - delta / 2,
-                x_max=cluster.x_max + delta / 2,
-                y_min=cluster.y_min,
-                y_max=cluster.y_max,
-                points=cluster.points,
-            )
-
-        if cluster.height() < min_dimensions:
-            delta = min_dimensions - cluster.height()
-            cluster = Cluster(
-                x_min=cluster.x_min,
-                x_max=cluster.x_max,
-                y_min=cluster.y_min - delta / 2,
-                y_max=cluster.y_max + delta / 2,
-                points=cluster.points,
-            )
         return cluster
 
 
@@ -123,12 +128,7 @@ def make_clusters(
 
     result: List[observation_api.Cluster] = []
     for cluster in clusters:
-        # Extend cluster height and width to the minimum dimensions required by NET0490
-        cluster = cluster.extend_dimensions(2 * rid_version.min_obfuscation_distance_m)
-
-        # Extend cluster to the minimum area size required by NET0480
-        min_cluster_area = view_area_sqm * rid_version.min_cluster_size_percent / 100
-        cluster = cluster.extend_size(min_cluster_area)
+        cluster = cluster.extend(rid_version, view_area_sqm)
 
         # Offset cluster
         cluster = (
