@@ -43,23 +43,57 @@ class Cluster(ImplicitDict):
         v_min = min(p.y for p in self.points)
         u_max = max(p.x for p in self.points)
         v_max = max(p.y for p in self.points)
+
+        x_offset = random.uniform(-u_max, u_min)
+        y_offset = random.uniform(-v_max, v_min)
         return Cluster(
-            x_min=self.x_min + (u_min - self.x_min) * random.random(),
-            y_min=self.y_min + (v_min - self.y_min) * random.random(),
-            x_max=u_max + (self.x_max - u_max) * random.random(),
-            y_max=v_max + (self.y_max - v_max) * random.random(),
+            x_min=self.x_min + x_offset,
+            y_min=self.y_min + y_offset,
+            x_max=self.x_max + x_offset,
+            y_max=self.y_max + y_offset,
             points=self.points,
         )
 
-    def extend_size(self, min_area_size: float):
-        scale = math.sqrt(min_area_size / self.area()) / 2
-        return Cluster(
-            x_min=self.x_min - scale * self.width(),
-            x_max=self.x_max + scale * self.width(),
-            y_min=self.y_min - scale * self.height(),
-            y_max=self.y_max + scale * self.height(),
-            points=self.points,
-        )
+    def extend(self, rid_version: RIDVersion, view_area_sqm: float):
+        """Extend cluster size and dimensions to the minimum required"""
+
+        cluster = self
+
+        # Extend cluster width to match the minimum distance required by NET0490
+        if cluster.width() < 2 * rid_version.min_obfuscation_distance_m:
+            delta = rid_version.min_obfuscation_distance_m - cluster.width() / 2
+            cluster = Cluster(
+                x_min=cluster.x_min - delta,
+                x_max=cluster.x_max + delta,
+                y_min=cluster.y_min,
+                y_max=cluster.y_max,
+                points=cluster.points,
+            )
+
+        # Extend cluster height to match the minimum distance required by NET0490
+        if cluster.height() < 2 * rid_version.min_obfuscation_distance_m:
+            delta = rid_version.min_obfuscation_distance_m - cluster.height() / 2
+            cluster = Cluster(
+                x_min=cluster.x_min,
+                x_max=cluster.x_max,
+                y_min=cluster.y_min - delta,
+                y_max=cluster.y_max + delta,
+                points=cluster.points,
+            )
+
+        # Extend cluster to the minimum area size required by NET0480
+        min_cluster_area = view_area_sqm * rid_version.min_cluster_size_percent / 100
+        if self.area() < min_cluster_area:
+            scale = math.sqrt(min_cluster_area / self.area()) / 2
+            cluster = Cluster(
+                x_min=self.x_min - scale * self.width(),
+                x_max=self.x_max + scale * self.width(),
+                y_min=self.y_min - scale * self.height(),
+                y_max=self.y_max + scale * self.height(),
+                points=self.points,
+            )
+
+        return cluster
 
 
 def make_clusters(
@@ -94,14 +128,12 @@ def make_clusters(
 
     result: List[observation_api.Cluster] = []
     for cluster in clusters:
+        cluster = cluster.extend(rid_version, view_area_sqm)
+
+        # Offset cluster
         cluster = (
             cluster.randomize()
         )  # TODO: Set random seed according to view extents so a static view will have static cluster subdivisions
-
-        min_cluster_area = view_area_sqm * rid_version.min_cluster_size_percent / 100
-        if cluster.area() < min_cluster_area:
-            # Extend cluster to the minimum area size required by NET0480
-            cluster = cluster.extend_size(min_cluster_area)
 
         corners = LatLngRect(
             geo.unflatten(view_min, (cluster.x_min, cluster.y_min)),
