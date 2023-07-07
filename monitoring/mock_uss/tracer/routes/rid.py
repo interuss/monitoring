@@ -73,7 +73,7 @@ def tracer_rid_isa_notification(id: str) -> Tuple[str, int]:
                 )
 
             logger.info(
-                f"{label} {id} v{version} ({owner}) updated{time_range} -> {log_name}"
+                f"{label} {id} v{version} ({owner}) updated {time_range} -> {log_name}"
             )
         else:
             logger.info(f"{label} {id} ({owner}) deleted -> {log_name}")

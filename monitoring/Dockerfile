@@ -21,8 +21,7 @@ RUN rm -rf __pycache__
 
 ADD ./interfaces /app/interfaces
 ADD ./monitoring /app/monitoring
-COPY ./monitoring/health_check.sh /app/health_check.sh
-RUN chmod 766 /app/health_check.sh
+COPY --chmod=766 ./monitoring/health_check.sh /app/health_check.sh
 WORKDIR /app/monitoring
 
 # Additional preparations for uss_qualifier/webapp
