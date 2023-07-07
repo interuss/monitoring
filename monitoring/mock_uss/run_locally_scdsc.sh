@@ -20,7 +20,7 @@ else
   docker_args="-it"
 fi
 
-docker container rm -f "${CONTAINER_NAME}" || echo "No pre-existing "${container_name}" container to remove"
+docker container rm -f "${CONTAINER_NAME}" || echo "No pre-existing ${CONTAINER_NAME} container to remove"
 
 # shellcheck disable=SC2086
 docker run ${docker_args} --name "${CONTAINER_NAME}" \

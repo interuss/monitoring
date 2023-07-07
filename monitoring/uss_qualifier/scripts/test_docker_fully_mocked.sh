@@ -60,7 +60,7 @@ echo "CONFIG_NAME: $CONFIG_NAME"
 
 echo "Run the standard local tests."
 echo "============="
-monitoring/uss_qualifier/run_locally.sh $CONFIG_NAME
+monitoring/uss_qualifier/run_locally.sh "$CONFIG_NAME"
 
 # Ensure all tests passed
 successful=$(python build/dev/extract_json_field.py report.test_suite.successful < monitoring/uss_qualifier/output/report.json)
