@@ -100,6 +100,7 @@ class RIDVersion(str, Enum):
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
+    @property
     def short_name(self) -> str:
         if self == RIDVersion.f3411_19:
             return "v19"
