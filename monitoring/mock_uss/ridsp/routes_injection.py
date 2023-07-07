@@ -17,7 +17,7 @@ from monitoring.mock_uss.riddp.config import KEY_RID_VERSION
 from monitoring.mock_uss.ridsp import utm_client
 from . import database
 from .database import db
-
+from monitoring.monitorlib import geo
 
 require_config_value(KEY_BASE_URL)
 require_config_value(KEY_RID_VERSION)
@@ -64,7 +64,9 @@ def ridsp_create_test(test_id: str) -> Tuple[str, int]:
             f"Unable to determine base URL for RID version {rid_version}"
         )
     mutated_isa = mutate.put_isa(
-        area=rect,
+        area_vertices=geo.get_latlngrect_vertices(rect),
+        alt_lo=0,
+        alt_hi=3048,
         start_time=t0,
         end_time=t1,
         uss_base_url=uss_base_url,

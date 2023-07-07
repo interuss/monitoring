@@ -13,7 +13,7 @@ from monitoring.mock_uss.tracer.tracer_poll import (
     TASK_POLL_OPS,
     TASK_POLL_CONSTRAINTS,
 )
-from monitoring.monitorlib import ids, versioning
+from monitoring.monitorlib import ids, versioning, geo
 from monitoring.monitorlib import fetch
 import monitoring.monitorlib.fetch.rid
 import monitoring.monitorlib.fetch.scd
@@ -130,7 +130,9 @@ def _subscribe_rid(resources: ResourceSet, uss_base_url: str) -> None:
     _clear_existing_rid_subscription(resources, "old")
 
     create_result = mutate.rid.upsert_subscription(
-        area=resources.area,
+        area_vertices=geo.get_latlngrect_vertices(resources.area),
+        alt_lo=0,
+        alt_hi=3048,
         start_time=resources.start_time,
         end_time=resources.end_time,
         uss_base_url=uss_base_url,
