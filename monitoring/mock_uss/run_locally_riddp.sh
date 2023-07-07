@@ -13,6 +13,7 @@ AUD=${MOCK_USS_TOKEN_AUDIENCE:-localhost,host.docker.internal}
 CONTAINER_NAME=${MOCK_CONTAINER_NAME:-"mock_uss_riddp"}
 
 PORT=${PORT:-8073}
+BASE_URL="http://${MOCK_USS_TOKEN_AUDIENCE:-host.docker.internal}:${PORT}"
 
 if [ "$CI" == "true" ]; then
   docker_args="--add-host host.docker.internal:host-gateway" # Required to reach other containers in Ubuntu (used for Github Actions)
@@ -26,6 +27,7 @@ docker container rm -f "${CONTAINER_NAME}" || echo "No pre-existing ${CONTAINER_
 docker run ${docker_args} --name "${CONTAINER_NAME}" \
   -e MOCK_USS_AUTH_SPEC="${AUTH}" \
   -e MOCK_USS_DSS_URL="${DSS}" \
+  -e MOCK_USS_BASE_URL="${BASE_URL}" \
   -e MOCK_USS_PUBLIC_KEY="${PUBLIC_KEY}" \
   -e MOCK_USS_TOKEN_AUDIENCE="${AUD}" \
   -e MOCK_USS_SERVICES="riddp" \
