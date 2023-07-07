@@ -1,5 +1,9 @@
 from typing import Dict, List, Optional
 import s2sphere
+import datetime
+
+from uas_standards.astm.f3411.v19.api import Volume4D
+from implicitdict import ImplicitDict, StringBasedDateTime
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -11,13 +15,34 @@ def geo_polygon_string(vertices: List[Dict[str, float]]) -> str:
     return ",".join("{},{}".format(v["lat"], v["lng"]) for v in vertices)
 
 
-def vertices_from_latlng_rect(rect: s2sphere.LatLngRect) -> List[Dict[str, float]]:
-    return [
-        {"lat": rect.lat_lo().degrees, "lng": rect.lng_lo().degrees},
-        {"lat": rect.lat_lo().degrees, "lng": rect.lng_hi().degrees},
-        {"lat": rect.lat_hi().degrees, "lng": rect.lng_hi().degrees},
-        {"lat": rect.lat_hi().degrees, "lng": rect.lng_lo().degrees},
-    ]
+def geo_polygon_string_from_s2(vertices: List[s2sphere.LatLng]) -> str:
+    return ",".join("{},{}".format(v.lat().degrees, v.lng().degrees) for v in vertices)
+
+
+def make_volume_4d(
+    vertices: List[s2sphere.LatLng],
+    alt_lo: float,
+    alt_hi: float,
+    start_time: datetime.datetime,
+    end_time: datetime.datetime,
+) -> Volume4D:
+    return ImplicitDict.parse(
+        {
+            "spatial_volume": {
+                "footprint": {
+                    "vertices": [
+                        {"lat": vertex.lat().degrees, "lng": vertex.lng().degrees}
+                        for vertex in vertices
+                    ]
+                },
+                "altitude_lo": alt_lo,
+                "altitude_hi": alt_hi,
+            },
+            "time_start": StringBasedDateTime(start_time),
+            "time_end": StringBasedDateTime(end_time),
+        },
+        Volume4D,
+    )
 
 
 class ISA(dict):
