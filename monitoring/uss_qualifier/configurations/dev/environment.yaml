@@ -74,15 +74,9 @@ f3548:
                 # uss1 is the mock_uss directly exposing scdsc functionality
                 -   participant_id: uss1
                     injection_base_url: http://host.docker.internal:8074/scdsc
-
-                # The atproxy has been disabled since it is suspected to be responsible of issue #28. Replaced by another simple mock_uss
-                # # uss2 uses atproxy, with requests being fulfilled by mock_uss with atproxy_client functionality enabled
-                # -   participant_id: uss2
-                #     injection_base_url: http://host.docker.internal:8075/scd
-
-                # uss2 is the mock_uss directly exposing scdsc functionality
+                # uss2 uses atproxy, with requests being fulfilled by mock_uss with atproxy_client functionality enabled
                 -   participant_id: uss2
-                    injection_base_url: http://host.docker.internal:8094/scdsc
+                    injection_base_url: http://host.docker.internal:8075/scd
 
     dss:
         resource_type: resources.astm.f3548.v21.DSSInstanceResource
