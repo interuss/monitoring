@@ -12,7 +12,7 @@ import uas_standards.astm.f3411.v22a.constants
 import yaml
 from yaml.representer import Representer
 
-from monitoring.monitorlib import fetch, rid_v1
+from monitoring.monitorlib import fetch, rid_v1, rid_v2, geo
 from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
@@ -346,6 +346,14 @@ class RIDQuery(ImplicitDict):
     def status_code(self):
         return self.query.status_code
 
+    @property
+    def success(self) -> bool:
+        return not self.errors
+
+    @property
+    def errors(self) -> List[str]:
+        raise NotImplementedError("RIDQuery.errors must be overriden")
+
 
 class FetchedISAs(RIDQuery):
     """Version-independent representation of a list of F3411 identification service areas."""
@@ -369,33 +377,37 @@ class FetchedISAs(RIDQuery):
         )
 
     @property
-    def error(self) -> Optional[str]:
+    def errors(self) -> List[str]:
         # Overall errors
         if self.status_code != 200:
-            return f"Failed to search ISAs in DSS ({self.status_code})"
+            return [f"Failed to search ISAs in DSS ({self.status_code})"]
 
         if self.query.response.json is None:
-            return "DSS response to search ISAs did not contain valid JSON"
+            return ["DSS response to search ISAs did not contain valid JSON"]
 
         if self.rid_version == RIDVersion.f3411_19:
             try:
                 if not self._v19_response:
-                    return "Unknown error with F3411-19 SearchIdentificationServiceAreasResponse"
+                    return [
+                        "Unknown error with F3411-19 SearchIdentificationServiceAreasResponse"
+                    ]
             except ValueError as e:
-                return f"Error parsing F3411-19 DSS SearchIdentificationServiceAreasResponse: {str(e)}"
+                return [
+                    f"Error parsing F3411-19 DSS SearchIdentificationServiceAreasResponse: {str(e)}"
+                ]
 
         if self.rid_version == RIDVersion.f3411_22a:
             try:
                 if not self._v22a_response:
-                    return "Unknown error with F3411-22a SearchIdentificationServiceAreasResponse"
+                    return [
+                        "Unknown error with F3411-22a SearchIdentificationServiceAreasResponse"
+                    ]
             except ValueError as e:
-                return f"Error parsing F3411-22a DSS SearchIdentificationServiceAreasResponse: {str(e)}"
+                return [
+                    f"Error parsing F3411-22a DSS SearchIdentificationServiceAreasResponse: {str(e)}"
+                ]
 
-        return None
-
-    @property
-    def success(self) -> bool:
-        return self.error is None
+        return []
 
     @property
     def isas(self) -> Dict[str, ISA]:
@@ -424,7 +436,7 @@ class FetchedISAs(RIDQuery):
     def has_different_content_than(self, other: Any) -> bool:
         if not isinstance(other, FetchedISAs):
             return True
-        if self.error != other.error:
+        if self.errors != other.errors:
             return True
         if self.rid_version != other.rid_version:
             return True
@@ -451,7 +463,7 @@ def isas(
     t1 = rid_version.format_time(end_time)
     if rid_version == RIDVersion.f3411_19:
         op = v19.api.OPERATIONS[v19.api.OperationID.SearchIdentificationServiceAreas]
-        area = rid_v1.geo_polygon_string(rid_v1.vertices_from_latlng_rect(box))
+        area = rid_v1.geo_polygon_string_from_s2(geo.get_latlngrect_vertices(box))
         url = f"{dss_base_url}{op.path}?area={area}&earliest_time={t0}&latest_time={t1}"
         return FetchedISAs(
             v19_query=fetch.query_and_describe(
@@ -460,7 +472,7 @@ def isas(
         )
     elif rid_version == RIDVersion.f3411_22a:
         op = v22a.api.OPERATIONS[v22a.api.OperationID.SearchIdentificationServiceAreas]
-        area = rid_v1.geo_polygon_string(rid_v1.vertices_from_latlng_rect(box))
+        area = rid_v2.geo_polygon_string_from_s2(geo.get_latlngrect_vertices(box))
         url = f"{dss_base_url}{op.path}?area={area}&earliest_time={t0}&latest_time={t1}"
         return FetchedISAs(
             v22a_query=fetch.query_and_describe(
@@ -493,10 +505,6 @@ class FetchedUSSFlights(RIDQuery):
             self.v22a_query.response.json,
             v22a.api.GetFlightsResponse,
         )
-
-    @property
-    def success(self) -> bool:
-        return not self.errors
 
     @property
     def errors(self) -> List[str]:
@@ -612,10 +620,6 @@ class FetchedUSSFlightDetails(RIDQuery):
         )
 
     @property
-    def success(self) -> bool:
-        return not self.errors
-
-    @property
     def errors(self) -> List[str]:
         if self.status_code != 200:
             return ["Failed to get flight details ({})".format(self.status_code)]
@@ -701,13 +705,9 @@ class FetchedFlights(ImplicitDict):
     uss_flight_details_queries: Dict[str, FetchedUSSFlightDetails]
 
     @property
-    def success(self):
-        return not self.errors
-
-    @property
     def errors(self) -> List[str]:
         if not self.dss_isa_query.success:
-            return ["Failed to obtain ISAs: " + self.dss_isa_query.error]
+            return self.dss_isa_query.errors
         result = []
         for flights in self.uss_flight_queries.values():
             result.extend(flights.errors)
@@ -784,14 +784,6 @@ class FetchedSubscription(RIDQuery):
             self.v22a_query.response.json,
             v22a.api.GetSubscriptionResponse,
         )
-
-    @property
-    def id(self) -> str:
-        return self.raw.id
-
-    @property
-    def success(self) -> bool:
-        return not self.errors
 
     @property
     def errors(self) -> List[str]:

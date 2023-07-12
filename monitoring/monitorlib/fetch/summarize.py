@@ -35,7 +35,7 @@ def isas(fetched: rid.FetchedISAs) -> Dict:
             isa_key = "{} ({})".format(isa.id, isa.owner)
             summary[isa.flights_url][isa_key] = isa_summary
     else:
-        summary["error"] = fetched.error
+        summary["error"] = fetched.errors
     return summary
 
 

@@ -94,7 +94,7 @@ def riddp_display_data() -> Tuple[str, int]:
     t = arrow.utcnow().datetime
     isa_list: FetchedISAs = fetch.isas(view, t, t, rid_version, utm_client)
     if not isa_list.success:
-        msg = f"Error fetching ISAs from DSS: {isa_list.error}"
+        msg = f"Error fetching ISAs from DSS: {isa_list.errors}"
         logger.error(msg)
         response = ErrorResponse(message=msg)
         response["fetched_isas"] = isa_list

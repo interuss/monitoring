@@ -37,10 +37,6 @@ class ChangedSubscription(RIDQuery):
         )
 
     @property
-    def success(self) -> bool:
-        return not self.errors
-
-    @property
     def errors(self) -> List[str]:
         if self.status_code != 200:
             return ["Failed to mutate subscription ({})".format(self.status_code)]
@@ -82,7 +78,9 @@ class ChangedSubscription(RIDQuery):
 
 
 def upsert_subscription(
-    area: s2sphere.LatLngRect,
+    area_vertices: List[s2sphere.LatLng],
+    alt_lo: float,
+    alt_hi: float,
     start_time: datetime.datetime,
     end_time: datetime.datetime,
     uss_base_url: str,
@@ -94,15 +92,13 @@ def upsert_subscription(
     mutation = "create" if subscription_version is None else "update"
     if rid_version == RIDVersion.f3411_19:
         body = {
-            "extents": {
-                "spatial_volume": {
-                    "footprint": {"vertices": rid_v1.vertices_from_latlng_rect(area)},
-                    "altitude_lo": 0,
-                    "altitude_hi": 3048,
-                },
-                "time_start": start_time.strftime(rid_v1.DATE_FORMAT),
-                "time_end": end_time.strftime(rid_v1.DATE_FORMAT),
-            },
+            "extents": rid_v1.make_volume_4d(
+                area_vertices,
+                alt_lo,
+                alt_hi,
+                start_time,
+                end_time,
+            ),
             "callbacks": {
                 "identification_service_area_url": uss_base_url
                 + v19.api.OPERATIONS[
@@ -124,15 +120,13 @@ def upsert_subscription(
         )
     elif rid_version == RIDVersion.f3411_22a:
         body = {
-            "extents": {
-                "volume": {
-                    "outline_polygon": rid_v2.make_polygon_outline(area),
-                    "altitude_lower": rid_v2.make_altitude(0),
-                    "altitude_upper": rid_v2.make_altitude(3048),
-                },
-                "time_start": rid_v2.make_time(start_time),
-                "time_end": rid_v2.make_time(end_time),
-            },
+            "extents": rid_v2.make_volume_4d(
+                area_vertices,
+                alt_lo,
+                alt_hi,
+                start_time,
+                end_time,
+            ),
             "uss_base_url": uss_base_url,
         }
         if subscription_version is None:
@@ -191,9 +185,11 @@ class ISAChangeNotification(RIDQuery):
     """Version-independent representation of response to a USS notification following an ISA change in the DSS."""
 
     @property
-    def success(self) -> bool:
+    def errors(self) -> List[str]:
         # Tolerate not-strictly-correct 200 response
-        return self.status_code == 204 or self.status_code == 200
+        if self.status_code != 204 and self.status_code != 200:
+            return ["Failed to notify ({})".format(self.status_code)]
+        return []
 
 
 class SubscriberToNotify(ImplicitDict):
@@ -300,10 +296,6 @@ class ChangedISA(RIDQuery):
         )
 
     @property
-    def success(self) -> bool:
-        return not self.errors
-
-    @property
     def errors(self) -> List[str]:
         if self.status_code != 200:
             return ["Failed to mutate ISA ({})".format(self.status_code)]
@@ -375,7 +367,9 @@ class ISAChange(ImplicitDict):
 
 
 def put_isa(
-    area: s2sphere.LatLngRect,
+    area_vertices: List[s2sphere.LatLng],
+    alt_lo: float,
+    alt_hi: float,
     start_time: datetime.datetime,
     end_time: datetime.datetime,
     uss_base_url: str,
@@ -387,15 +381,13 @@ def put_isa(
     mutation = "create" if isa_version is None else "update"
     if rid_version == RIDVersion.f3411_19:
         body = {
-            "extents": {
-                "spatial_volume": {
-                    "footprint": {"vertices": rid_v1.vertices_from_latlng_rect(area)},
-                    "altitude_lo": 0,
-                    "altitude_hi": 3048,
-                },
-                "time_start": start_time.strftime(rid_v1.DATE_FORMAT),
-                "time_end": end_time.strftime(rid_v1.DATE_FORMAT),
-            },
+            "extents": rid_v1.make_volume_4d(
+                area_vertices,
+                alt_lo,
+                alt_hi,
+                start_time,
+                end_time,
+            ),
             "flights_url": uss_base_url
             + v19.api.OPERATIONS[v19.api.OperationID.SearchFlights].path,
         }
@@ -413,15 +405,13 @@ def put_isa(
         )
     elif rid_version == RIDVersion.f3411_22a:
         body = {
-            "extents": {
-                "volume": {
-                    "outline_polygon": rid_v2.make_polygon_outline(area),
-                    "altitude_lower": rid_v2.make_altitude(0),
-                    "altitude_upper": rid_v2.make_altitude(3048),
-                },
-                "time_start": rid_v2.make_time(start_time),
-                "time_end": rid_v2.make_time(end_time),
-            },
+            "extents": rid_v2.make_volume_4d(
+                area_vertices,
+                alt_lo,
+                alt_hi,
+                start_time,
+                end_time,
+            ),
             "uss_base_url": uss_base_url,
         }
         if isa_version is None:
