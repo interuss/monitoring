@@ -9,7 +9,7 @@ AUTH="DummyOAuth(http://host.docker.internal:8085/token,uss1)"
 DSS="http://host.docker.internal:8082"
 PUBLIC_KEY="/var/test-certs/auth2.pem"
 AUD=${MOCK_USS_TOKEN_AUDIENCE:-localhost,host.docker.internal}
-CONTAINER_NAME=${CONTAINER_NAME:-"mock_uss_scdsc${PORT}"}
+CONTAINER_NAME=${CONTAINER_NAME:-"mock_uss_scdsc"}
 
 PORT=${PORT:-8074}
 BASE_URL="http://${MOCK_USS_TOKEN_AUDIENCE:-host.docker.internal}:${PORT}"
