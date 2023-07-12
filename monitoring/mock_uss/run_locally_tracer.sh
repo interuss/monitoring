@@ -26,7 +26,7 @@ DSS=${MOCK_USS_DSS_URL:-"http://host.docker.internal:8082"}
 PUBLIC_KEY="/var/test-certs/auth2.pem"
 AUD=${MOCK_USS_TOKEN_AUDIENCE:-localhost,host.docker.internal}
 
-RID_VERSION=${MOCK_USS_RID_VERSION:-"F3411-19"}
+RID_VERSION=${MOCK_USS_RID_VERSION:-"F3411-22a"}
 CONTAINER_NAME=${MOCK_CONTAINER_NAME:-"mock_uss_tracer"}
 
 BASE_URL="http://${MOCK_USS_TOKEN_AUDIENCE:-host.docker.internal}:${PORT}"
