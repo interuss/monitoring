@@ -73,6 +73,7 @@ collect-local-logs:
 	-sh -c "build/dev/run_locally.sh logs --timestamps" > logs/dss_sandbox_local.log 2>&1
 	-docker logs atproxy > logs/atproxy.log 2>&1
 	-docker logs mock_uss_scdsc > logs/mock_uss_scdsc.log 2>&1
+	-docker logs mock_uss_scdsc2 > logs/mock_uss_scdsc2.log 2>&1
 	-docker logs mock_uss_ridsp > logs/mock_uss_ridsp.log 2>&1
 	-docker logs mock_uss_ridsp_v22a > logs/mock_uss_ridsp_v22a.log 2>&1
 	-docker logs mock_uss_riddp > logs/mock_uss_riddp.log 2>&1

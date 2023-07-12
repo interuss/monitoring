@@ -16,4 +16,11 @@ if [ "$RID_VERSION" = "F3411-19" ]; then
 	RID_EXT="_v19"
 fi
 
-docker container rm -f mock_uss_scdsc mock_uss_ridsp${RID_EXT} mock_uss_riddp${RID_EXT} mock_uss_geoawareness mock_uss_atproxy_client mock_uss_tracer${RID_EXT}
+docker container rm -f \
+mock_uss_scdsc \
+mock_uss_scdsc2 \
+mock_uss_ridsp${RID_EXT} \
+mock_uss_riddp${RID_EXT} \
+mock_uss_geoawareness \
+mock_uss_atproxy_client \
+mock_uss_tracer${RID_EXT}
