@@ -64,6 +64,13 @@ class ValidateNotSharedOperationalIntent(object):
         )
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            self._scenario.record_note(
+                self._flight_planner.participant_id,
+                f"Skipped ValidateNotSharedOperationalIntent due to raised exception ({exc_type}: {exc_val}).",
+            )
+            return
+
         self._scenario.begin_test_step(self._test_step)
         self._scenario.record_query(self._initial_query)
 
