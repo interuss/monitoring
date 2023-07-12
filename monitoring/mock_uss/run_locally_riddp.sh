@@ -12,7 +12,7 @@ PUBLIC_KEY="/var/test-certs/auth2.pem"
 AUD=${MOCK_USS_TOKEN_AUDIENCE:-localhost,host.docker.internal}
 CONTAINER_NAME=${MOCK_CONTAINER_NAME:-"mock_uss_riddp"}
 
-PORT=${PORT:-8073}
+PORT=${PORT:-8083}
 BASE_URL="http://${MOCK_USS_TOKEN_AUDIENCE:-host.docker.internal}:${PORT}"
 
 if [ "$CI" == "true" ]; then

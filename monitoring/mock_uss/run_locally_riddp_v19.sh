@@ -7,5 +7,5 @@ fi
 
 MOCK_CONTAINER_NAME="mock_uss_riddp_v19" \
 MOCK_USS_RID_VERSION="F3411-19" \
-PORT=8083 \
+PORT=8073 \
 "${SCRIPT_DIR}/run_locally_riddp.sh" "$@"
