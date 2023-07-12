@@ -54,10 +54,20 @@ jobs:
       run: |
         cd monitoring/mock_uss
         make test
-    - name: uss_qualifier tests
+    - name: uss_qualifier tests - U-Space Test Suite
       run: |
         cd monitoring/uss_qualifier
         make test
+      env:
+        RID_VERSION: F3411-22a
+        CONFIG_NAME: configurations.dev.local_test
+    - name: uss_qualifier tests - ASTM NetRID F3411-19 Test Suite
+      run: |
+        cd monitoring/uss_qualifier
+        make test
+      env:
+        RID_VERSION: F3411-19
+        CONFIG_NAME: configurations.dev.netrid_v19
     - name: prober tests
       run: |
         cd monitoring/prober

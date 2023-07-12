@@ -13,6 +13,7 @@ from monitoring.mock_uss.tracer.tracer_poll import (
     TASK_POLL_OPS,
     TASK_POLL_CONSTRAINTS,
 )
+from monitoring.mock_uss.tracer.config import KEY_RID_VERSION
 from monitoring.monitorlib import ids, versioning, geo
 from monitoring.monitorlib import fetch
 import monitoring.monitorlib.fetch.rid
@@ -29,6 +30,8 @@ yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
 RID_SUBSCRIPTION_ID_CODE = "tracer RID Subscription"
 SCD_SUBSCRIPTION_ID_CODE = "tracer SCD Subscription"
+
+RID_VERSION = webapp.config[KEY_RID_VERSION]
 
 resources: Optional[ResourceSet] = None
 
@@ -106,9 +109,17 @@ def _subscribe(
     if base_url.endswith("/"):
         base_url = base_url[0:-1]
     if monitor_rid:
-        _subscribe_rid(resources, base_url + "/tracer/f3411v19")
+        if RID_VERSION == RIDVersion.f3411_19:
+            _subscribe_rid(resources, base_url + "/tracer/f3411v19")
+        elif RID_VERSION == RIDVersion.f3411_22a:
+            _subscribe_rid(resources, base_url + "/tracer/f3411v22a/v2")
+        else:
+            raise NotImplementedError(
+                f"Cannot subscribe to DSS using RID version {RID_VERSION}"
+            )
+
     if monitor_scd:
-        _subscribe_scd(resources, base_url)
+        _subscribe_scd(resources, base_url + "/tracer/f3548v21")
 
 
 def _unsubscribe(resources: ResourceSet, monitor_rid: bool, monitor_scd: bool) -> None:
@@ -137,8 +148,8 @@ def _subscribe_rid(resources: ResourceSet, uss_base_url: str) -> None:
         end_time=resources.end_time,
         uss_base_url=uss_base_url,
         subscription_id=_rid_subscription_id(),
-        rid_version=RIDVersion.f3411_19,
-        utm_client=resources.dss_client,
+        rid_version=RID_VERSION,
+        utm_client=resources.dss_clients["rid"],
     )
     resources.logger.log_new(RID_SUBSCRIPTION_KEY, create_result)
     if not create_result.success:
@@ -147,7 +158,7 @@ def _subscribe_rid(resources: ResourceSet, uss_base_url: str) -> None:
 
 def _clear_existing_rid_subscription(resources: ResourceSet, suffix: str) -> None:
     existing_result = fetch.rid.subscription(
-        _rid_subscription_id(), RIDVersion.f3411_19, resources.dss_client
+        _rid_subscription_id(), RID_VERSION, resources.dss_clients["rid"]
     )
     logfile = resources.logger.log_new(
         "{}_{}_get".format(RID_SUBSCRIPTION_KEY, suffix), existing_result
@@ -161,8 +172,8 @@ def _clear_existing_rid_subscription(resources: ResourceSet, suffix: str) -> Non
         del_result = mutate.rid.delete_subscription(
             subscription_id=_rid_subscription_id(),
             subscription_version=existing_result.subscription.version,
-            rid_version=RIDVersion.f3411_19,
-            utm_client=resources.dss_client,
+            rid_version=RID_VERSION,
+            utm_client=resources.dss_clients["rid"],
         )
         logfile = resources.logger.log_new(
             "{}_{}_del".format(RID_SUBSCRIPTION_KEY, suffix), del_result
@@ -185,11 +196,11 @@ def _subscribe_scd(resources: ResourceSet, base_url: str) -> None:
     _clear_existing_scd_subscription(resources, "old")
 
     create_result = mutate.scd.put_subscription(
-        resources.dss_client,
+        resources.dss_clients["scd"],
         resources.area,
         resources.start_time,
         resources.end_time,
-        base_url + "/tracer/f3548v21",
+        base_url,
         _scd_subscription_id(),
     )
     logfile = resources.logger.log_new(SCD_SUBSCRIPTION_KEY, create_result)
@@ -200,7 +211,9 @@ def _subscribe_scd(resources: ResourceSet, base_url: str) -> None:
 
 
 def _clear_existing_scd_subscription(resources: ResourceSet, suffix: str) -> None:
-    get_result = fetch.scd.subscription(resources.dss_client, _scd_subscription_id())
+    get_result = fetch.scd.subscription(
+        resources.dss_clients["scd"], _scd_subscription_id()
+    )
     logfile = resources.logger.log_new(
         "{}_{}_get".format(SCD_SUBSCRIPTION_KEY, suffix), get_result
     )
@@ -211,7 +224,7 @@ def _clear_existing_scd_subscription(resources: ResourceSet, suffix: str) -> Non
 
     if get_result.subscription is not None:
         del_result = mutate.scd.delete_subscription(
-            resources.dss_client,
+            resources.dss_clients["scd"],
             _scd_subscription_id(),
             get_result.subscription.version,
         )

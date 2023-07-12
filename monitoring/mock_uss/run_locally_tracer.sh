@@ -20,13 +20,15 @@ POLL='--rid-isa-poll-interval=15 --scd-operation-poll-interval=15 --scd-constrai
 TRACER_OPTIONS="$AREA $LOGS $MONITOR $POLL"
 
 
+PORT=${PORT:-8078}
 AUTH="DummyOAuth(http://host.docker.internal:8085/token,tracer)"
-DSS="http://host.docker.internal:8082"
+DSS=${MOCK_USS_DSS_URL:-"http://host.docker.internal:8082"}
 PUBLIC_KEY="/var/test-certs/auth2.pem"
 AUD=${MOCK_USS_TOKEN_AUDIENCE:-localhost,host.docker.internal}
-container_name="mock_uss_tracer"
 
-PORT=8078
+RID_VERSION=${MOCK_USS_RID_VERSION:-"F3411-22a"}
+CONTAINER_NAME=${MOCK_CONTAINER_NAME:-"mock_uss_tracer"}
+
 BASE_URL="http://${MOCK_USS_TOKEN_AUDIENCE:-host.docker.internal}:${PORT}"
 
 if [ "$CI" == "true" ]; then
@@ -35,10 +37,10 @@ else
   docker_args="-it"
 fi
 
-docker container rm -f ${container_name} || echo "No pre-existing ${container_name} container to remove"
+docker container rm -f "${CONTAINER_NAME}" || echo "No pre-existing ${CONTAINER_NAME} container to remove"
 
 # shellcheck disable=SC2086
-docker run ${docker_args} --name ${container_name} \
+docker run ${docker_args} --name "${CONTAINER_NAME}" \
   -u "$(id -u):$(id -g)" \
   -e MOCK_USS_AUTH_SPEC="${AUTH}" \
   -e MOCK_USS_DSS_URL="${DSS}" \
@@ -47,6 +49,7 @@ docker run ${docker_args} --name ${container_name} \
   -e MOCK_USS_BASE_URL="${BASE_URL}" \
   -e MOCK_USS_TRACER_OPTIONS="${TRACER_OPTIONS}" \
   -e MOCK_USS_SERVICES="tracer" \
+  -e MOCK_USS_RID_VERSION="${RID_VERSION}" \
   -p ${PORT}:5000 \
   -v "${SCRIPT_DIR}/../../build/test-certs:/var/test-certs:ro" \
   -v "$(pwd)/$OUTPUT_DIR:/app/monitoring/mock_uss/$OUTPUT_DIR" \
