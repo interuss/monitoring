@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Set
 
 from implicitdict import ImplicitDict
 import s2sphere
@@ -74,6 +74,17 @@ class ChangedSubscription(RIDQuery):
         else:
             raise NotImplementedError(
                 f"Cannot retrieve subscription using RID version {self.rid_version}"
+            )
+
+    @property
+    def isas(self) -> List[ISA]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return [ISA(v19_value=isa) for isa in self._v19_response.service_areas]
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return [ISA(v22a_value=isa) for isa in self._v22a_response.service_areas]
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve ISAs using RID version {self.rid_version}"
             )
 
 
@@ -354,6 +365,31 @@ class ChangedISA(RIDQuery):
         else:
             raise NotImplementedError(
                 f"Cannot retrieve subscribers to notify using RID version {self.rid_version}"
+            )
+
+    @property
+    def sub_ids(self) -> Set[str]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return set(
+                [
+                    subscription.subscription_id
+                    for subscriber in self._v19_response.subscribers
+                    for subscription in subscriber.subscriptions
+                    if subscription.subscription_id is not None
+                ]
+            )
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return set(
+                [
+                    subscription.subscription_id
+                    for subscriber in self._v22a_response.subscribers
+                    if subscriber is not None
+                    for subscription in subscriber.subscriptions
+                ]
+            )
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve subscription ids using RID version {self.rid_version}"
             )
 
 

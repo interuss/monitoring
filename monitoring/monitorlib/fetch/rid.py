@@ -95,6 +95,28 @@ class ISA(ImplicitDict):
     def version(self) -> str:
         return self.raw.version
 
+    @property
+    def time_start(self) -> datetime.datetime:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value.time_start.datetime
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_value.time_start.value.datetime
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve time_start using RID version {self.rid_version}"
+            )
+
+    @property
+    def time_end(self) -> datetime.datetime:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value.time_end.datetime
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_value.time_end.value.datetime
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve time_end using RID version {self.rid_version}"
+            )
+
     def query_flights(
         self,
         session: UTMClientSession,
@@ -314,6 +336,10 @@ class Subscription(ImplicitDict):
             )
 
     @property
+    def id(self) -> str:
+        return self.raw.id
+
+    @property
     def version(self) -> str:
         return self.raw.version
 
@@ -353,6 +379,102 @@ class RIDQuery(ImplicitDict):
     @property
     def errors(self) -> List[str]:
         raise NotImplementedError("RIDQuery.errors must be overriden")
+
+
+class FetchedISA(RIDQuery):
+    """Version-independent representation of an ISA read from the DSS."""
+
+    @property
+    def _v19_response(
+        self,
+    ) -> v19.api.GetIdentificationServiceAreaResponse:
+        return ImplicitDict.parse(
+            self.v19_query.response.json,
+            v19.api.GetIdentificationServiceAreaResponse,
+        )
+
+    @property
+    def _v22a_response(
+        self,
+    ) -> v22a.api.GetIdentificationServiceAreaResponse:
+        return ImplicitDict.parse(
+            self.v22a_query.response.json,
+            v22a.api.GetIdentificationServiceAreaResponse,
+        )
+
+    @property
+    def errors(self) -> List[str]:
+        if self.status_code == 404:
+            return ["ISA not present in DSS"]
+        if self.status_code != 200:
+            return [f"Failed to get ISA ({self.status_code})"]
+        if self.query.response.json is None:
+            return ["ISA response did not include valid JSON"]
+
+        if self.rid_version == RIDVersion.f3411_19:
+            try:
+                if not self._v19_response:
+                    return [
+                        "Unknown error with F3411-19 GetIdentificationServiceAreaResponse"
+                    ]
+            except ValueError as e:
+                return [
+                    f"Error parsing F3411-19 USS GetIdentificationServiceAreaResponse: {str(e)}"
+                ]
+
+        if self.rid_version == RIDVersion.f3411_22a:
+            try:
+                if not self._v22a_response:
+                    return [
+                        "Unknown error with F3411-22a GetIdentificationServiceAreaResponse"
+                    ]
+            except ValueError as e:
+                return [
+                    f"Error parsing F3411-22a USS GetIdentificationServiceAreaResponse: {str(e)}"
+                ]
+
+        return []
+
+    @property
+    def isa(self) -> Optional[ISA]:
+        if not self.success:
+            return None
+        if self.rid_version == RIDVersion.f3411_19:
+            return ISA(v19_value=self._v19_response.service_area)
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return ISA(v22a_value=self._v22a_response.service_area)
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve ISA using RID version {self.rid_version}"
+            )
+
+
+def isa(
+    isa_id: str,
+    rid_version: RIDVersion,
+    session: UTMClientSession,
+    dss_base_url: str = "",
+) -> FetchedISA:
+    if rid_version == RIDVersion.f3411_19:
+        op = v19.api.OPERATIONS[v19.api.OperationID.GetIdentificationServiceArea]
+        url = f"{dss_base_url}{op.path}".replace("{id}", isa_id)
+        return FetchedISA(
+            v19_query=fetch.query_and_describe(
+                session, op.verb, url, scope=v19.constants.Scope.Read
+            )
+        )
+    elif rid_version == RIDVersion.f3411_22a:
+        op = v22a.api.OPERATIONS[v22a.api.OperationID.GetIdentificationServiceArea]
+        url = f"{dss_base_url}{op.path}".replace("{id}", isa_id)
+        return FetchedISA(
+            v22a_query=fetch.query_and_describe(
+                session, op.verb, url, scope=v22a.constants.Scope.DisplayProvider
+            )
+        )
+    else:
+        raise NotImplementedError(
+            f"Cannot query DSS for ISA using RID version {rid_version}"
+        )
 
 
 class FetchedISAs(RIDQuery):
@@ -854,8 +976,108 @@ def subscription(
         )
 
 
+class FetchedSubscriptions(RIDQuery):
+    """Version-independent representation of a list of F3411 subscriptions searched from the DSS."""
+
+    @property
+    def _v19_response(
+        self,
+    ) -> v19.api.SearchSubscriptionsResponse:
+        return ImplicitDict.parse(
+            self.v19_query.response.json,
+            v19.api.SearchSubscriptionsResponse,
+        )
+
+    @property
+    def _v22a_response(
+        self,
+    ) -> v22a.api.SearchSubscriptionsResponse:
+        return ImplicitDict.parse(
+            self.v22a_query.response.json,
+            v22a.api.SearchSubscriptionsResponse,
+        )
+
+    @property
+    def errors(self) -> List[str]:
+        # Overall errors
+        if self.status_code != 200:
+            return [f"Failed to search subscriptions in DSS ({self.status_code})"]
+
+        if self.query.response.json is None:
+            return ["DSS response to search subscriptions did not contain valid JSON"]
+
+        if self.rid_version == RIDVersion.f3411_19:
+            try:
+                if not self._v19_response:
+                    return ["Unknown error with F3411-19 SearchSubscriptionsResponse"]
+            except ValueError as e:
+                return [
+                    f"Error parsing F3411-19 DSS SearchSubscriptionsResponse: {str(e)}"
+                ]
+
+        if self.rid_version == RIDVersion.f3411_22a:
+            try:
+                if not self._v22a_response:
+                    return ["Unknown error with F3411-22a SearchSubscriptionsResponse"]
+            except ValueError as e:
+                return [
+                    f"Error parsing F3411-22a DSS SearchSubscriptionsResponse: {str(e)}"
+                ]
+
+        return []
+
+    @property
+    def subscriptions(self) -> Dict[str, Subscription]:
+        if not self.success:
+            return {}
+        if self.rid_version == RIDVersion.f3411_19:
+            return {
+                sub.id: Subscription(v19_value=sub)
+                for sub in self._v19_response.subscriptions
+            }
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return {
+                sub.id: Subscription(v22a_value=sub)
+                for sub in self._v22a_response.subscriptions
+            }
+        else:
+            raise NotImplementedError(
+                f"Cannot search subscriptions using RID version {self.rid_version}"
+            )
+
+
+def subscriptions(
+    area: List[s2sphere.LatLng],
+    rid_version: RIDVersion,
+    session: UTMClientSession,
+    dss_base_url: str = "",
+) -> FetchedSubscriptions:
+    if rid_version == RIDVersion.f3411_19:
+        op = v19.api.OPERATIONS[v19.api.OperationID.SearchSubscriptions]
+        url = f"{dss_base_url}{op.path}?area={rid_v1.geo_polygon_string_from_s2(area)}"
+        return FetchedSubscriptions(
+            v19_query=fetch.query_and_describe(
+                session, op.verb, url, scope=v19.constants.Scope.Read
+            )
+        )
+    elif rid_version == RIDVersion.f3411_22a:
+        op = v22a.api.OPERATIONS[v22a.api.OperationID.SearchSubscriptions]
+        url = f"{dss_base_url}{op.path}?area={rid_v2.geo_polygon_string_from_s2(area)}"
+        return FetchedSubscriptions(
+            v22a_query=fetch.query_and_describe(
+                session, op.verb, url, scope=v22a.constants.Scope.DisplayProvider
+            )
+        )
+    else:
+        raise NotImplementedError(
+            f"Cannot query DSS for subscriptions using RID version {rid_version}"
+        )
+
+
+yaml.add_representer(FetchedISA, Representer.represent_dict)
 yaml.add_representer(FetchedISAs, Representer.represent_dict)
 yaml.add_representer(FetchedUSSFlights, Representer.represent_dict)
 yaml.add_representer(FetchedUSSFlightDetails, Representer.represent_dict)
 yaml.add_representer(FetchedFlights, Representer.represent_dict)
 yaml.add_representer(FetchedSubscription, Representer.represent_dict)
+yaml.add_representer(FetchedSubscriptions, Representer.represent_dict)

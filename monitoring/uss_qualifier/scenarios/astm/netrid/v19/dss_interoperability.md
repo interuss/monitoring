@@ -196,6 +196,10 @@ Action: USS2@DSS*n*: GET Subscriptions using ISA[*P*]’s area
 
 Qualitatively proves: Expired Subscription removed from geographic index on primary DSS
 
+#### Subscriptions queried successfully check
+
+**[astm.f3411.v19.A2-6-1,6](../../../../requirements/astm/f3411/v19.md)**
+
 #### No Subscription[i] 1≤i≤n returned with proper response check
 
 **[astm.f3411.v19.A2-6-1,3d](../../../../requirements/astm/f3411/v19.md)**
