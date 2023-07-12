@@ -196,7 +196,7 @@ class NominalBehavior(GenericTestScenario):
                 f"Cannot evaluate RID system: injected test flights ended at {t_end}, which is before now ({t_now})"
             )
 
-        logger.debug("Polling from {t_now} until {t_end}")
+        logger.debug(f"Polling from {t_now} until {t_end}")
         for f in self._injected_flights:
             span = f.flight.get_span()
             logger.debug(
