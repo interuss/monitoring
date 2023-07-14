@@ -5,7 +5,6 @@ import flask
 from loguru import logger
 import s2sphere
 from uas_standards.astm.f3411.v19.api import ErrorResponse
-from uas_standards.astm.f3411.v19.constants import Scope
 
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
@@ -63,7 +62,7 @@ def _make_flight_observation(
 
 
 @webapp.route("/riddp/observation/display_data", methods=["GET"])
-@requires_scope([Scope.Read])
+@requires_scope([webapp.config[KEY_RID_VERSION].read_scope])
 def riddp_display_data() -> Tuple[str, int]:
     """Implements retrieval of current display data per automated testing API."""
 
@@ -156,7 +155,7 @@ def riddp_display_data() -> Tuple[str, int]:
 
 
 @webapp.route("/riddp/observation/display_data/<flight_id>", methods=["GET"])
-@requires_scope([Scope.Read])
+@requires_scope([webapp.config[KEY_RID_VERSION].read_scope])
 def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
     """Implements get flight details endpoint per automated testing API."""
 

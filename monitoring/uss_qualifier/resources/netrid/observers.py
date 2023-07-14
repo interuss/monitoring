@@ -18,12 +18,13 @@ class RIDSystemObserver(object):
         participant_id: str,
         base_url: str,
         auth_adapter: infrastructure.AuthAdapter,
+        rid_version: RIDVersion,
     ):
         self.session = UTMClientSession(base_url, auth_adapter)
         self.participant_id = participant_id
 
         # TODO: Change observation API to use an InterUSS scope rather than re-using an ASTM scope
-        self.rid_version = RIDVersion.f3411_19
+        self.rid_version = rid_version
 
     def observe_system(
         self, rect: s2sphere.LatLngRect
@@ -73,6 +74,9 @@ class ObserverConfiguration(ImplicitDict):
     participant_id: str
     """Participant ID of the observer providing a view of RID data in the system"""
 
+    rid_version: RIDVersion
+    """Version of ASTM F3411 implemented by this observer"""
+
     observation_base_url: str
     """Base URL for the observer's implementation of the interfaces/automated-testing/rid/observation.yaml API"""
 
@@ -91,7 +95,10 @@ class NetRIDObserversResource(Resource[NetRIDObserversSpecification]):
     ):
         self.observers = [
             RIDSystemObserver(
-                o.participant_id, o.observation_base_url, auth_adapter.adapter
+                o.participant_id,
+                o.observation_base_url,
+                auth_adapter.adapter,
+                o.rid_version,
             )
             for o in specification.observers
         ]
