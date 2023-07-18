@@ -33,7 +33,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection i
 from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
+from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType, PendingCheck
 from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFlight
 
 DISTANCE_TOLERANCE_M = 0.01
@@ -609,20 +609,24 @@ class RIDObservationEvaluator(object):
         #  For this we need the assignment of flights per cluster. Currently this checks only if the cluster has
         #  dimensions smaller than the minimum obfuscation distance.
         #  (see https://github.com/interuss/monitoring/pull/121#discussion_r1248356023)
+        #  Alternatively, or as a first step, some better checks could be performed by checking for situations that are
+        #  wrong for sure. (see https://github.com/interuss/monitoring/pull/121#discussion_r1265972147)
 
-        with self._test_scenario.check(
-            "Minimum obfuscation distance",
-            [observer.participant_id],
-        ) as check:
-            cluster_rects: List[LatLngRect] = [
-                LatLngRect.from_point_pair(
-                    LatLng.from_degrees(c.corners[0].lat, c.corners[0].lng),
-                    LatLng.from_degrees(c.corners[1].lat, c.corners[1].lng),
-                )
-                for c in clusters
-            ]
+        cluster_rects: List[LatLngRect] = [
+            LatLngRect.from_point_pair(
+                LatLng.from_degrees(c.corners[0].lat, c.corners[0].lng),
+                LatLng.from_degrees(c.corners[1].lat, c.corners[1].lng),
+            )
+            for c in clusters
+        ]
 
-            for c_idx, cluster_rect in enumerate(cluster_rects):
+        for c_idx, cluster_rect in enumerate(cluster_rects):
+            with self._test_scenario.check(
+                "Minimal obfuscation distance of individual flights"
+                if clusters[0].number_of_flights == 1
+                else "Minimal obfuscation distance of multiple flights clusters",
+                [observer.participant_id],
+            ) as check:
                 cluster_width, cluster_height = geo.flatten(
                     cluster_rect.lo(), cluster_rect.hi()
                 )
