@@ -33,7 +33,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection i
 from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
+from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType, PendingCheck
 from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFlight
 
 DISTANCE_TOLERANCE_M = 0.01
@@ -583,33 +583,74 @@ class RIDObservationEvaluator(object):
                     details=f"{clustered_flight_count-expected_count} (~{uncertain_count}) unexpected flight(s)",
                 )
             elif clustered_flight_count == expected_count:
-                # ok: evaluate clusters that are actually obfuscated flights
+                # evaluate cluster obfuscation distance
+                self._evaluate_clusters_obfuscation_distance(
+                    observer, observation.clusters
+                )
+
+                # evaluate clusters that are actually obfuscated flights
                 obfuscated_clusters = [
                     c for c in observation.clusters if c.number_of_flights == 1
                 ]
                 self._evaluate_obfuscated_clusters_observation(
-                    observer, obfuscated_clusters, expected + uncertain
+                    observer, obfuscated_clusters, expected, uncertain
                 )
 
             else:
                 # uncertain
                 pass
 
+    def _evaluate_clusters_obfuscation_distance(
+        self,
+        observer: RIDSystemObserver,
+        clusters: List[Cluster],
+    ) -> None:
+        # TODO: Improve this check by using the positions of the flights to compute the minimum obfuscation distance.
+        #  For this we need the assignment of flights per cluster. Currently this checks only if the cluster has
+        #  dimensions smaller than the minimum obfuscation distance.
+        #  (see https://github.com/interuss/monitoring/pull/121#discussion_r1248356023)
+        #  Alternatively, or as a first step, some better checks could be performed by checking for situations that are
+        #  wrong for sure. (see https://github.com/interuss/monitoring/pull/121#discussion_r1265972147)
+
+        cluster_rects: List[LatLngRect] = [
+            LatLngRect.from_point_pair(
+                LatLng.from_degrees(c.corners[0].lat, c.corners[0].lng),
+                LatLng.from_degrees(c.corners[1].lat, c.corners[1].lng),
+            )
+            for c in clusters
+        ]
+
+        for c_idx, cluster_rect in enumerate(cluster_rects):
+            with self._test_scenario.check(
+                "Minimal obfuscation distance of individual flights"
+                if clusters[0].number_of_flights == 1
+                else "Minimal obfuscation distance of multiple flights clusters",
+                [observer.participant_id],
+            ) as check:
+                cluster_width, cluster_height = geo.flatten(
+                    cluster_rect.lo(), cluster_rect.hi()
+                )
+                min_dim = 2 * observer.rid_version.min_obfuscation_distance_m
+                if cluster_height < min_dim or cluster_width < min_dim:
+                    # Cluster has a too small distance to the edge
+                    check.record_failed(
+                        summary="Error while evaluating cluster obfuscation. Cluster does not comply with the minimum obfuscation distance.",
+                        severity=Severity.Medium,
+                        details=f"Cluster {clusters[c_idx].corners} ({clusters[c_idx].number_of_flights} flights): too small dimensions. Height: {cluster_height}m, width: {cluster_width}m, minimum: {min_dim}m.",
+                    )
+
     def _evaluate_obfuscated_clusters_observation(
         self,
         observer: RIDSystemObserver,
         obfuscated_clusters: List[Cluster],
-        candidate_flights: List[InjectedFlight],
+        expected_flights: List[InjectedFlight],
+        uncertain_flights: List[InjectedFlight],
     ) -> None:
-        # TODO: check that the cluster area has a radius or distance to the
-        #  polygon edge of no less than [NetMinObfuscationDistance]
-
-        # get the center of all clusters that are actually an obfuscated flight
-        cluster_centers = [
+        cluster_rects: List[LatLngRect] = [
             LatLngRect.from_point_pair(
                 LatLng.from_degrees(c.corners[0].lat, c.corners[0].lng),
                 LatLng.from_degrees(c.corners[1].lat, c.corners[1].lng),
-            ).get_center()
+            )
             for c in obfuscated_clusters
         ]
 
@@ -617,8 +658,10 @@ class RIDObservationEvaluator(object):
             "Individual flights obfuscation",
             [observer.participant_id],
         ) as check:
-            for center in cluster_centers:
-                for injected_flight in candidate_flights:
+
+            # check that no expected or uncertain flight is at the center of the cluster
+            for center in [rect.get_center() for rect in cluster_rects]:
+                for injected_flight in expected_flights + uncertain_flights:
                     for tel in injected_flight.flight.telemetry:
                         flight_pos = LatLng.from_degrees(
                             tel.position.lat, tel.position.lng
@@ -635,6 +678,29 @@ class RIDObservationEvaluator(object):
                                 severity=Severity.Medium,
                                 details=f"Flight {injected_flight.flight.injection_id}: distance between cluster center ({center}) and flight telemetry position ({flight_pos} at {tel.timestamp}) is {distance} meters.",
                             )
+
+            # check that all expected flights are enclosed in a cluster, i.e. at least one of their telemetry points is enclosed in a cluster
+            for injected_flight in expected_flights:
+                flight_in_cluster = False
+                for tel in injected_flight.flight.telemetry:
+
+                    # go to next flight if the flight has already been validated by a previous telemetry point
+                    if flight_in_cluster:
+                        break
+
+                    flight_pos = LatLng.from_degrees(tel.position.lat, tel.position.lng)
+                    for cluster_rect in cluster_rects:
+                        if cluster_rect.contains(flight_pos):
+                            flight_in_cluster = True
+                            break
+
+                if not flight_in_cluster:
+                    # Flight has no telemetry point belonging to a cluster
+                    check.record_failed(
+                        summary="Error while evaluating obfuscation of individual flights. Flight was outside of all clusters.",
+                        severity=Severity.Medium,
+                        details=f"Flight {injected_flight.flight.injection_id}: has no telemetry position that belong to a cluster.",
+                    )
 
     def _evaluate_sp_observation(
         self,
