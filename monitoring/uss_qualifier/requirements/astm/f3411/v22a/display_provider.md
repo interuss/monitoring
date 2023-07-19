@@ -53,19 +53,19 @@ This file describes the set of ASTM F3411-22a requirements with which a USS fulf
 
 #### UAS ID Serial Number transmitter
 
-  * **astm.f3411.v22a.NET0470,Table1,1.1**
+  * **astm.f3411.v22a.NET0470,Table1,1a**
 
 #### UAS ID Registration ID transmitter
 
-  * **astm.f3411.v22a.NET0470,Table1,1.2**
+  * **astm.f3411.v22a.NET0470,Table1,1b**
 
 #### UAS ID UTM (UUID) transmitter
 
-  * **astm.f3411.v22a.NET0470,Table1,1.3**
+  * **astm.f3411.v22a.NET0470,Table1,1c**
 
 #### UAS ID Specific Session ID transmitter
 
-  * **astm.f3411.v22a.NET0470,Table1,1.4**
+  * **astm.f3411.v22a.NET0470,Table1,1d**
 
 #### UA Type transmitter
 

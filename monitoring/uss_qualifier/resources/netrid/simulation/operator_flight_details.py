@@ -2,6 +2,7 @@ from faker import Faker
 import string
 import random
 import uuid
+from uas_standards.ansi_cta_2063_a import SerialNumber
 
 from uas_standards.astm.f3411.v19.api import LatLngPoint
 
@@ -14,8 +15,7 @@ class OperatorFlightDataGenerator:
         self.random = random
 
     def generate_serial_number(self):
-        value = bytes(self.random.randint(0, 255) for _ in range(16))
-        return str(uuid.UUID(bytes=value, version=4))
+        return str(SerialNumber.generate_valid())
 
     def generate_registration_number(self, prefix="CHE"):
         registration_number = prefix + "".join(
