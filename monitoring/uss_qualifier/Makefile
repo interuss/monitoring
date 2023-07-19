@@ -21,6 +21,10 @@ format: format-documentation
 format-documentation:
 	./scripts/format_test_documentation.sh
 
+.PHONY: unit_test
+unit_test:
+	./scripts/run_unit_tests.sh
+
 .PHONY: test
-test: lint
+test: lint unit_test
 	./scripts/test_docker_fully_mocked.sh

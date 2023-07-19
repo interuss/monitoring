@@ -1,0 +1,29 @@
+from typing import Callable
+from monitoring.uss_qualifier.scenarios.definitions import TestScenarioDeclaration
+from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+
+
+class UnitTestScenario(GenericTestScenario):
+    def __init__(self, step_under_test: Callable[["UnitTestScenario"], None]):
+        super().__init__()
+        self.step_under_test = step_under_test
+        self.declaration = TestScenarioDeclaration(
+            {
+                "scenario_type": "scenario.interuss.unit_test",
+                "allow_undocumented_checks": True,
+            }
+        )
+
+    def run(self):
+        self.begin_test_scenario()
+        self.begin_test_case("Case under test")
+        self.begin_test_step("Step under test")
+        self.step_under_test(self)
+        self.end_test_step()
+        self.end_test_case()
+        self.end_test_scenario()
+
+    def execute_unit_test(self):
+        self.run()
+        self.cleanup()
+        return self

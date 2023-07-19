@@ -1,4 +1,3 @@
-from types import MappingProxyType
 from typing import Dict, Optional
 
 from implicitdict import ImplicitDict
@@ -14,6 +13,11 @@ class TestScenarioDeclaration(ImplicitDict):
     """Mapping of the ID a resource in the test scenario -> the ID a resource is known by in the parent test suite.
 
     The additional argument to concrete test scenario constructor <key> is supplied by the parent suite resource <value>.
+    """
+
+    allow_undocumented_checks: bool = False
+    """When this flag is set to True, it allows undocumented checks to be executed by the scenario.
+    This is primarly intended to simplify internal unit testing.
     """
 
     def __init__(self, *args, **kwargs):
