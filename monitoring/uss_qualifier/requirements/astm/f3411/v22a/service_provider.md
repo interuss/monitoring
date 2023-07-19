@@ -82,7 +82,7 @@ All Service Provider Role requirements can be verified by automation.
 
 #### UAS ID Serial Number provider
 
-  * **astm.f3411.v22a.NET0260,Table1,1.1**
+  * **astm.f3411.v22a.NET0260,Table1,1a**
 
 #### Height provider
 

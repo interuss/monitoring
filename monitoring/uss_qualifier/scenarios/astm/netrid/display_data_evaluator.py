@@ -6,6 +6,9 @@ from loguru import logger
 import math
 import s2sphere
 from s2sphere import LatLng, LatLngRect
+from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
+    RIDCommonDictionaryEvaluator,
+)
 
 from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.fetch.rid import (
@@ -194,6 +197,9 @@ class RIDObservationEvaluator(object):
         dss: Optional[DSSInstance] = None,
     ):
         self._test_scenario = test_scenario
+        self._common_dictionary_evaluator = RIDCommonDictionaryEvaluator(
+            config, self._test_scenario, rid_version
+        )
         self._injected_flights = injected_flights
         self._virtual_observer = VirtualObserver(
             injected_flights=InjectedFlightCollection(injected_flights),
@@ -792,6 +798,10 @@ class RIDObservationEvaluator(object):
                         ),
                         query_timestamps=[details_query.query.request.timestamp],
                     )
+
+            self._common_dictionary_evaluator.evaluate_sp_details_response(
+                details_query, [mapping.injected_flight.uss_participant_id]
+            )
 
     def _evaluate_area_too_large_sp_observation(
         self,

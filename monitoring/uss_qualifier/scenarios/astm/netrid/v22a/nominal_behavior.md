@@ -79,6 +79,14 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 
 **[astm.f3411.v22a.NET0710](../../../../requirements/astm/f3411/v22a.md)** requires a Service Provider to implement the P2P portion of the OpenAPI specification.  This check will fail if the response to the flight details endpoint does not validate against the OpenAPI-specified schema.
 
+#### UAS ID presence in flight details check
+
+**[astm.f3411.v22a.NET0260](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the UAS ID is present in the information sent by the Service Provider. (**[astm.f3411.v22a.NET0260,Table1,1](../../../../requirements/astm/f3411/v22a.md)**)
+
+#### UAS ID (Serial Number format) consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0260](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the UAS ID is in serial number format. (**[astm.f3411.v22a.NET0260,Table1,1a](../../../../requirements/astm/f3411/v22a.md)**)
+
 #### Lingering flight check
 
 **[astm.f3411.v22a.NET0260](../../../../requirements/astm/f3411/v22a.md)** requires a SP to provide flights up to *NetMaxNearRealTimeDataPeriod* in the past, but an SP should preserve privacy and ensure relevancy by not sharing flights that are further in the past than this window.
