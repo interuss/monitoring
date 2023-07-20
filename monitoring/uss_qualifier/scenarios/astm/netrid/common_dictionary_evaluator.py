@@ -70,7 +70,7 @@ class RIDCommonDictionaryEvaluator(object):
             # TODO: Add utm id format check
             # TODO: Add specific session id format check
         else:
-            logger.debug(
+            self._test_scenario.record_note(
                 f"Unsupported version {self._rid_version}: skipping UAS ID evaluation"
             )
 
@@ -87,6 +87,6 @@ class RIDCommonDictionaryEvaluator(object):
                             severity=Severity.Medium,
                         )
         else:
-            logger.debug(
+            self._test_scenario.record_note(
                 f"Unsupported version {self._rid_version}: skipping Operator ID evaluation"
             )
