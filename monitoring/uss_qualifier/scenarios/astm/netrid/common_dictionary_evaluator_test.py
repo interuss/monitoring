@@ -1,7 +1,10 @@
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import RIDCommonDictionaryEvaluator
+from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
+    RIDCommonDictionaryEvaluator,
+)
 from monitoring.uss_qualifier.scenarios.interuss.unit_test import UnitTestScenario
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
+
 
 def _assert_operator_id(value: str, outcome: bool):
     def step_under_test(self: UnitTestScenario):
