@@ -156,6 +156,7 @@ class GenericTestScenario(ABC):
     _case_report: Optional[TestCaseReport] = None
     _current_step: Optional[TestStepDocumentation] = None
     _step_report: Optional[TestStepReport] = None
+    _allow_undocumented_checks = False
 
     def __init__(self):
         self.documentation = get_documentation(self.__class__)
@@ -323,7 +324,7 @@ class GenericTestScenario(ABC):
             check_documentation = available_checks[name]
         else:
             check_list = ", ".join(available_checks)
-            if self.declaration.allow_undocumented_checks:
+            if self._allow_undocumented_checks:
                 check_documentation = TestCheckDocumentation(
                     name=name, applicable_requirements=[]
                 )

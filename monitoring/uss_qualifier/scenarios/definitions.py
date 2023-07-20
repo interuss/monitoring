@@ -15,11 +15,6 @@ class TestScenarioDeclaration(ImplicitDict):
     The additional argument to concrete test scenario constructor <key> is supplied by the parent suite resource <value>.
     """
 
-    allow_undocumented_checks: bool = False
-    """When this flag is set to True, it allows undocumented checks to be executed by the scenario.
-    This is primarly intended to simplify internal unit testing.
-    """
-
     def __init__(self, *args, **kwargs):
         super(TestScenarioDeclaration, self).__init__(*args, **kwargs)
         if "resources" not in self:
