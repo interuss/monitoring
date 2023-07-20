@@ -4,8 +4,15 @@ from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 from monitoring.monitorlib.rid import RIDVersion
+from monitoring.monitorlib.geo import validate_lat, validate_lng
 from uas_standards.ansi_cta_2063_a import SerialNumber
-from uas_standards.astm.f3411.v22a.api import UASID
+from uas_standards.astm.f3411.v22a.api import (
+    UASID,
+    AltitudeReference,
+    AltitudeUnits,
+    OperatorLocation,
+    OperatorLocationAltitude_type,
+)
 from loguru import logger
 
 
@@ -26,7 +33,11 @@ class RIDCommonDictionaryEvaluator(object):
         if self._rid_version == RIDVersion.f3411_22a:
             self.evaluate_uas_id(sp_response.details.v22a_value.uas_id, participants)
             self.evaluate_operator_id(
-                sp_response.details.v22a_value.operator_id, participants
+                sp_response.details.v22a_value.get("operator_id", None), participants
+            )
+            self.evaluate_operator_location(
+                sp_response.details.v22a_value.get("operator_location", None),
+                participants,
             )
 
     def evaluate_uas_id(self, value: Optional[UASID], participants: List[str]):
@@ -89,4 +100,78 @@ class RIDCommonDictionaryEvaluator(object):
         else:
             self._test_scenario.record_note(
                 f"Unsupported version {self._rid_version}: skipping Operator ID evaluation"
+            )
+
+    def evaluate_operator_location(
+        self, value: Optional[OperatorLocation], participants: List[str]
+    ):
+        if self._rid_version == RIDVersion.f3411_22a:
+            if value:
+                with self._test_scenario.check(
+                    "Operator Location consistency with Common Dictionary", participants
+                ) as check:
+                    lat = value.position.lat
+                    try:
+                        lat = validate_lat(lat)
+                    except ValueError:
+                        check.record_failed(
+                            "Operator Location contains an invalid latitude",
+                            details=f"Invalid latitude: {lat}",
+                            severity=Severity.Medium,
+                        )
+                    lng = value.position.lng
+                    try:
+                        lng = validate_lng(lng)
+                    except ValueError:
+                        check.record_failed(
+                            "Operator Location contains an invalid longitude",
+                            details=f"Invalid longitude: {lng}",
+                            severity=Severity.Medium,
+                        )
+
+                alt = value.get("altitude", None)
+                if alt:
+                    with self._test_scenario.check(
+                        "Operator Altitude consistency with Common Dictionary",
+                        participants,
+                    ) as check:
+                        if alt.reference != AltitudeReference.W84:
+                            check.record_failed(
+                                "Operator Altitude shall be based on WGS-84 height above ellipsoid (HAE)",
+                                details=f"Invalid Operator Altitude reference: {alt.reference}",
+                                severity=Severity.Medium,
+                            )
+                        if alt.units != AltitudeUnits.M:
+                            check.record_failed(
+                                "Operator Altitude units shall be provided in meters",
+                                details=f"Invalid Operator Altitude units: {alt.units}",
+                                severity=Severity.Medium,
+                            )
+                        if alt.value != round(alt.value):
+                            check.record_failed(
+                                "Operator Altitude must have a minimum resolution of 1 m.",
+                                details=f"Invalid Operator Altitude: {alt.value}",
+                                severity=Severity.Medium,
+                            )
+
+                    alt_type = value.get("altitude_type", None)
+                    if alt_type:
+                        with self._test_scenario.check(
+                            "Operator Altitude Type consistency with Common Dictionary",
+                            participants,
+                        ) as check:
+                            try:
+                                OperatorLocationAltitude_type(
+                                    alt_type
+                                )  # raise ValueError if alt_type is invalid
+                            except ValueError:
+                                check.record_failed(
+                                    "Operator Location contains an altitude type which is invalid",
+                                    details=f"Invalid altitude type: {alt_type}",
+                                    severity=Severity.Medium,
+                                )
+
+        else:
+            logger.debug(
+                f"Unsupported version {self._rid_version}: skipping Operator Location evaluation"
             )
