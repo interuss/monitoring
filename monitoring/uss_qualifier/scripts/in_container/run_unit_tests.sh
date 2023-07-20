@@ -14,9 +14,4 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
-TEST_FILES=$(find . -name "*_test.py")
-
-# TEST_FILES must be expanded as separated filenames.
-# Therefore SC2086 must be disabled
-# shellcheck disable=SC2086
-pytest -v $TEST_FILES
+pytest
