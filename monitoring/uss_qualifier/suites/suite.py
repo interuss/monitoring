@@ -17,6 +17,9 @@ from monitoring.monitorlib.inspection import (
 from monitoring.uss_qualifier.reports.capabilities import (
     condition_satisfied_for_test_suite,
 )
+from monitoring.uss_qualifier.scenarios.interuss.evaluation_scenario import (
+    ReportEvaluationScenario,
+)
 from monitoring.uss_qualifier.reports.report import (
     ActionGeneratorReport,
     TestScenarioReport,
@@ -145,6 +148,7 @@ class TestSuiteAction(object):
 class TestSuite(object):
     declaration: TestSuiteDeclaration
     definition: TestSuiteDefinition
+    local_resources: Dict[ResourceID, ResourceType]
     actions: List[TestSuiteAction]
 
     def __init__(
@@ -154,7 +158,7 @@ class TestSuite(object):
     ):
         self.declaration = declaration
         self.definition = TestSuiteDefinition.load_from_declaration(declaration)
-        local_resources = {
+        self.local_resources = {
             local_resource_id: resources[parent_resource_id]
             for local_resource_id, parent_resource_id in declaration.resources.items()
         }
@@ -162,20 +166,45 @@ class TestSuite(object):
             is_optional = resource_type.endswith("?")
             if is_optional:
                 resource_type = resource_type[:-1]
-            if not is_optional and resource_id not in local_resources:
+            if not is_optional and resource_id not in self.local_resources:
                 raise ValueError(
                     f'Test suite "{self.definition.name}" is missing resource {resource_id} ({resource_type})'
                 )
-            if resource_id in local_resources and not local_resources[
+            if resource_id in self.local_resources and not self.local_resources[
                 resource_id
             ].is_type(resource_type):
                 raise ValueError(
                     f'Test suite "{self.definition.name}" expected resource {resource_id} to be {resource_type}, but instead it was provided {fullname(resources[resource_id].__class__)}'
                 )
         self.actions = [
-            TestSuiteAction(action=a, resources=local_resources)
+            TestSuiteAction(action=a, resources=self.local_resources)
             for a in self.definition.actions
         ]
+
+    def _make_report_evaluation_action(
+        self, report: TestSuiteReport
+    ) -> TestSuiteAction:
+        """Create the action wrapping the ReportEvaluationScenario and inject the required resources."""
+
+        ReportEvaluationScenario.inject_report_resource(
+            self.definition.report_evaluation_scenario.resources,
+            self.local_resources,
+            report,
+        )
+        action_declaration = ImplicitDict.parse(
+            dict(
+                test_scenario=self.definition.report_evaluation_scenario,
+            ),
+            TestSuiteActionDeclaration,
+        )
+        action = TestSuiteAction(
+            action=action_declaration, resources=self.local_resources
+        )
+        if not issubclass(action.test_scenario.__class__, ReportEvaluationScenario):
+            raise ValueError(
+                f"Scenario type {action.test_scenario.__class__} is not a subclass of the ReportEvaluationScenario base class"
+            )
+        return action
 
     def run(self) -> TestSuiteReport:
         report = TestSuiteReport(
@@ -186,7 +215,16 @@ class TestSuite(object):
             actions=[],
         )
         success = True
-        for a, action in enumerate(self.actions):
+        for a in range(len(self.actions) + 1):
+            if a == len(self.actions):
+                # Execute report evaluation scenario as last action if specified, otherwise break loop
+                if self.definition.has_field_with_value("report_evaluation_scenario"):
+                    action = self._make_report_evaluation_action(report)
+                else:
+                    break
+            else:
+                action = self.actions[a]
+
             action_report = action.run()
             report.actions.append(action_report)
             if action_report.has_critical_problem():
