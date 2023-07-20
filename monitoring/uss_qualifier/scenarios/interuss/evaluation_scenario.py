@@ -6,14 +6,13 @@ from monitoring.uss_qualifier.resources.interuss.report import TestSuiteReportRe
 from monitoring.uss_qualifier.resources.resource import ResourceType
 from monitoring.uss_qualifier.scenarios.scenario import (
     GenericTestScenario,
-    TestScenario,
 )
 
 
 REPORT_RESOURCE_ID: ResourceID = "report_resource"
 
 
-class GenericReportEvaluationScenario(GenericTestScenario):
+class ReportEvaluationScenario(GenericTestScenario):
 
     report: TestSuiteReport
 
@@ -32,7 +31,3 @@ class GenericReportEvaluationScenario(GenericTestScenario):
     ):
         resources_mapping[REPORT_RESOURCE_ID] = REPORT_RESOURCE_ID
         resources[REPORT_RESOURCE_ID] = TestSuiteReportResource(report)
-
-
-class ReportEvaluationScenario(GenericReportEvaluationScenario, TestScenario):
-    pass

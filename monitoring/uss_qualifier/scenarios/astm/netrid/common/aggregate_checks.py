@@ -1,7 +1,7 @@
 from typing import List
 
 from monitoring.uss_qualifier.scenarios.interuss.evaluation_scenario import (
-    GenericReportEvaluationScenario,
+    ReportEvaluationScenario,
 )
 
 from monitoring.uss_qualifier.resources.interuss.report import TestSuiteReportResource
@@ -17,7 +17,7 @@ from monitoring.uss_qualifier.resources.netrid.service_providers import (
 # TODO: implement me
 
 
-class AggregateChecks(GenericReportEvaluationScenario):
+class AggregateChecks(ReportEvaluationScenario):
     _service_providers: List[NetRIDServiceProvider]
     _observers: List[RIDSystemObserver]
 
