@@ -252,6 +252,20 @@ class TestScenarioReport(ImplicitDict):
             for fc in self.cleanup.query_failed_checks(participant_id):
                 yield fc
 
+    def queries(self) -> List[fetch.Query]:
+        queries = list()
+        for case in self.cases:
+            for step in case.steps:
+                if step.has_field_with_value("queries"):
+                    queries.extend(step.queries)
+
+        if self.has_field_with_value("cleanup") and self.cleanup.has_field_with_value(
+            "queries"
+        ):
+            queries.extend(self.cleanup.queries)
+
+        return queries
+
 
 class ActionGeneratorReport(ImplicitDict):
     generator_type: str
@@ -286,6 +300,12 @@ class ActionGeneratorReport(ImplicitDict):
         for action in self.actions:
             for fc in action.query_failed_checks(participant_id):
                 yield fc
+
+    def queries(self) -> List[fetch.Query]:
+        queries = list()
+        for action in self.actions:
+            queries.extend(action.queries())
+        return queries
 
 
 class TestSuiteActionReport(ImplicitDict):
@@ -364,6 +384,9 @@ class TestSuiteActionReport(ImplicitDict):
             lambda report: report.query_failed_checks(participant_id)
         )
 
+    def queries(self) -> List[fetch.Query]:
+        return self._conditional(lambda report: report.queries())
+
 
 class TestSuiteReport(ImplicitDict):
     name: str
@@ -412,6 +435,12 @@ class TestSuiteReport(ImplicitDict):
         for action in self.actions:
             for fc in action.query_failed_checks(participant_id):
                 yield fc
+
+    def queries(self) -> List[fetch.Query]:
+        queries = list()
+        for action in self.actions:
+            queries.extend(action.queries())
+        return queries
 
 
 class TestRunReport(ImplicitDict):
