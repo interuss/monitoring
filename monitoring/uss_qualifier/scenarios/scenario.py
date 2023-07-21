@@ -156,6 +156,7 @@ class GenericTestScenario(ABC):
     _case_report: Optional[TestCaseReport] = None
     _current_step: Optional[TestStepDocumentation] = None
     _step_report: Optional[TestStepReport] = None
+    _allow_undocumented_checks = False  # When this variable is set to True, it allows undocumented checks to be executed by the scenario. This is primarly intended to simplify internal unit testing.
 
     def __init__(self):
         self.documentation = get_documentation(self.__class__)
@@ -319,12 +320,18 @@ class GenericTestScenario(ABC):
     ) -> PendingCheck:
         self._expect_phase({ScenarioPhase.RunningTestStep, ScenarioPhase.CleaningUp})
         available_checks = {c.name: c for c in self._current_step.checks}
-        if name not in available_checks:
+        if name in available_checks:
+            check_documentation = available_checks[name]
+        else:
             check_list = ", ".join(available_checks)
-            raise RuntimeError(
-                f'Test scenario `{self.me()}` was instructed to prepare to record outcome for check "{name}" during test step "{self._current_step.name}" during test case "{self._current_case.name}", but that check is not declared in documentation; declared checks are: {check_list}'
-            )
-        check_documentation = available_checks[name]
+            if self._allow_undocumented_checks:
+                check_documentation = TestCheckDocumentation(
+                    name=name, applicable_requirements=[]
+                )
+            else:
+                raise RuntimeError(
+                    f'Test scenario `{self.me()}` was instructed to prepare to record outcome for check "{name}" during test step "{self._current_step.name}" during test case "{self._current_case.name}", but that check is not declared in documentation; declared checks are: {check_list}'
+                )
         return PendingCheck(
             documentation=check_documentation,
             participants=[] if participants is None else participants,

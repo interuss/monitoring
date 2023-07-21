@@ -25,6 +25,9 @@ class RIDCommonDictionaryEvaluator(object):
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             self.evaluate_uas_id(sp_response.details.v22a_value.uas_id, participants)
+            self.evaluate_operator_id(
+                sp_response.details.v22a_value.operator_id, participants
+            )
 
     def evaluate_uas_id(self, value: Optional[UASID], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
@@ -67,6 +70,23 @@ class RIDCommonDictionaryEvaluator(object):
             # TODO: Add utm id format check
             # TODO: Add specific session id format check
         else:
-            logger.debug(
-                f"Unsupported version {self._rid_version}: skipping uas_id evaluation"
+            self._test_scenario.record_note(
+                f"Unsupported version {self._rid_version}: skipping UAS ID evaluation"
+            )
+
+    def evaluate_operator_id(self, value: Optional[str], participants: List[str]):
+        if self._rid_version == RIDVersion.f3411_22a:
+            if value:
+                with self._test_scenario.check(
+                    "Operator ID consistency with Common Dictionary", participants
+                ) as check:
+                    is_ascii = all([0 <= ord(c) < 128 for c in value])
+                    if not is_ascii:
+                        check.record_failed(
+                            "Operator ID contains non-ascii characters",
+                            severity=Severity.Medium,
+                        )
+        else:
+            self._test_scenario.record_note(
+                f"Unsupported version {self._rid_version}: skipping Operator ID evaluation"
             )
