@@ -9,15 +9,15 @@ after its time of applicability.
 
 ### dss
 
-[`DSSInstanceResource`](../../../../resources/astm/f3411/dss.py) to be tested in this scenario.
+[`DSSInstanceResource`](../../../../../resources/astm/f3411/dss.py) to be tested in this scenario.
 
 ### id_generator
 
-[`IDGeneratorResource`](../../../../resources/interuss/id_generator.py) providing the ISA ID for this scenario.
+[`IDGeneratorResource`](../../../../../resources/interuss/id_generator.py) providing the ISA ID for this scenario.
 
 ### isa
 
-[`ServiceAreaResource`](../../../../resources/netrid/service_area.py) describing an ISA to be created.
+[`ServiceAreaResource`](../../../../../resources/netrid/service_area.py) describing an ISA to be created.
 
 ## Setup test case
 
