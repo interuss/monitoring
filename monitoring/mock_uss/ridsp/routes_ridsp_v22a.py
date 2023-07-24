@@ -97,7 +97,7 @@ def _make_details(p: injection.RIDFlightDetails) -> RIDFlightDetails:
             kwargs[field] = p[field]
     if "operator_location" in p and p.operator_location:
         kwargs["operator_location"] = _make_operator_location(
-            p.operator_location, p.get("operator_altitude", None)
+            p.operator_location, p.get("operator_altitude")
         )
     return RIDFlightDetails(**kwargs)
 

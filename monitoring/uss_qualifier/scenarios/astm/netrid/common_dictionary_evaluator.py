@@ -31,12 +31,12 @@ class RIDCommonDictionaryEvaluator(object):
         self, sp_response: FetchedUSSFlightDetails, participants: List[str]
     ):
         if self._rid_version == RIDVersion.f3411_22a:
-            self.evaluate_uas_id(sp_response.details.v22a_value.uas_id, participants)
+            self.evaluate_uas_id(sp_response.details.v22a_value.get("uas_id"), participants)
             self.evaluate_operator_id(
-                sp_response.details.v22a_value.get("operator_id", None), participants
+                sp_response.details.v22a_value.get("operator_id"), participants
             )
             self.evaluate_operator_location(
-                sp_response.details.v22a_value.get("operator_location", None),
+                sp_response.details.v22a_value.get("operator_location"),
                 participants,
             )
 
@@ -63,7 +63,7 @@ class RIDCommonDictionaryEvaluator(object):
                     )
                     return
 
-            serial_number = value.get("serial_number", None)
+            serial_number = value.get("serial_number")
             if serial_number:
                 with self._test_scenario.check(
                     "UAS ID (Serial Number format) consistency with Common Dictionary",
@@ -129,7 +129,7 @@ class RIDCommonDictionaryEvaluator(object):
                             severity=Severity.Medium,
                         )
 
-                alt = value.get("altitude", None)
+                alt = value.get("altitude")
                 if alt:
                     with self._test_scenario.check(
                         "Operator Altitude consistency with Common Dictionary",
@@ -154,7 +154,7 @@ class RIDCommonDictionaryEvaluator(object):
                                 severity=Severity.Medium,
                             )
 
-                    alt_type = value.get("altitude_type", None)
+                    alt_type = value.get("altitude_type")
                     if alt_type:
                         with self._test_scenario.check(
                             "Operator Altitude Type consistency with Common Dictionary",
