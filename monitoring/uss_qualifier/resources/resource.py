@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-import inspect
-from typing import Dict, Generic, TypeVar
+import json
+from typing import get_type_hints, Dict, Generic, TypeVar
 
 from implicitdict import ImplicitDict
 
@@ -89,19 +89,21 @@ def _make_resource(
             )
         )
 
-    constructor_signature = inspect.signature(resource_type.__init__)
+    constructor_signature = get_type_hints(resource_type.__init__)
     specification_type = None
     constructor_args = {}
-    for arg_name, arg in constructor_signature.parameters.items():
+    for arg_name, arg_type in constructor_signature.items():
+        if arg_name == "return":
+            continue
         if arg_name == "self":
             continue
         if arg_name == "specification":
-            specification_type = arg.annotation
+            specification_type = arg_type
             continue
         if arg_name not in declaration.dependencies:
             raise ValueError(
                 'Resource declaration for {} is missing a source for dependency "{}"'.format(
-                    declaration.resource_type, arg
+                    declaration.resource_type, arg_type
                 )
             )
         if declaration.dependencies[arg_name] not in resource_pool:

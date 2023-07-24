@@ -1,7 +1,7 @@
 import math
 from typing import List, Tuple
 import s2sphere
-
+from implicitdict import ImplicitDict
 
 EARTH_CIRCUMFERENCE_KM = 40075
 EARTH_CIRCUMFERENCE_M = EARTH_CIRCUMFERENCE_KM * 1000
@@ -100,3 +100,27 @@ def get_latlngrect_vertices(rect: s2sphere.LatLngRect) -> List[s2sphere.LatLng]:
         s2sphere.LatLng.from_angles(lat=rect.lat_hi(), lng=rect.lng_hi()),
         s2sphere.LatLng.from_angles(lat=rect.lat_hi(), lng=rect.lng_lo()),
     ]
+
+
+class LatLngBoundingBox(ImplicitDict):
+    """Bounding box in latitude and longitude"""
+
+    lat_min: float
+    """Lower latitude bound (degrees)"""
+
+    lng_min: float
+    """Lower longitude bound (degrees)"""
+
+    lat_max: float
+    """Upper latitude bound (degrees)"""
+
+    lng_max: float
+    """Upper longitude bound (degrees)"""
+
+    def to_vertices(self) -> List[s2sphere.LatLng]:
+        return [
+            s2sphere.LatLng.from_degrees(self.lat_min, self.lng_min),
+            s2sphere.LatLng.from_degrees(self.lat_max, self.lng_min),
+            s2sphere.LatLng.from_degrees(self.lat_max, self.lng_max),
+            s2sphere.LatLng.from_degrees(self.lat_min, self.lng_max),
+        ]

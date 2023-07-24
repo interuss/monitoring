@@ -103,9 +103,7 @@ class NominalBehavior(GenericTestScenario):
                 query = target.submit_test(p, test_id)
             except RequestException as e:
                 stacktrace = "".join(
-                    traceback.format_exception(
-                        etype=type(e), value=e, tb=e.__traceback__
-                    )
+                    traceback.format_exception(type(e), value=e, tb=e.__traceback__)
                 )
                 check.record_failed(
                     summary="Error while trying to inject test flight",
@@ -257,9 +255,7 @@ class NominalBehavior(GenericTestScenario):
                 check.record_passed()
             except (RequestException, ValueError) as e:
                 stacktrace = "".join(
-                    traceback.format_exception(
-                        etype=type(e), value=e, tb=e.__traceback__
-                    )
+                    traceback.format_exception(type(e), value=e, tb=e.__traceback__)
                 )
                 check.record_failed(
                     summary="Error while trying to delete test flight",

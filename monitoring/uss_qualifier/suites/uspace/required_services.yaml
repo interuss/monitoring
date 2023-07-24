@@ -12,6 +12,8 @@ resources:
   observers: resources.netrid.NetRIDObserversResource
   evaluation_configuration: resources.netrid.EvaluationConfigurationResource
   netrid_dss_instances: resources.astm.f3411.DSSInstancesResource
+  id_generator: resources.interuss.IDGeneratorResource
+  service_area: resources.netrid.ServiceAreaResource
 actions:
 - test_suite:
     suite_type: suites.uspace.flight_auth
@@ -31,6 +33,8 @@ actions:
       observers: observers
       evaluation_configuration: evaluation_configuration
       dss_instances: netrid_dss_instances
+      id_generator: id_generator
+      service_area: service_area
   on_failure: Continue
 participant_verifiable_capabilities:
     - id: required_services

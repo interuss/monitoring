@@ -15,6 +15,24 @@ net_rid:
     netrid_observation_evaluation_configuration:
         resource_type: resources.netrid.EvaluationConfigurationResource
         specification: { }
+    id_generator:
+        resource_type: resources.interuss.IDGeneratorResource
+        dependencies:
+            auth_adapter: utm_auth
+        specification:
+            example_audience: localhost
+            example_scope: rid.display_provider
+    service_area:
+        resource_type: resources.netrid.ServiceAreaResource
+        specification:
+            base_url: https://uss.example.com/dummy_base_url
+            footprint:
+                lat_min: 37.1853
+                lng_min: -80.6140
+                lat_max: 37.2148
+                lng_max: -80.5440
+            altitude_min: 0
+            altitude_max: 3048
 
 net_rid_sims:
     adjacent_circular_flights_data:
