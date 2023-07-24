@@ -31,7 +31,9 @@ class RIDCommonDictionaryEvaluator(object):
         self, sp_response: FetchedUSSFlightDetails, participants: List[str]
     ):
         if self._rid_version == RIDVersion.f3411_22a:
-            self.evaluate_uas_id(sp_response.details.v22a_value.get("uas_id"), participants)
+            self.evaluate_uas_id(
+                sp_response.details.v22a_value.get("uas_id"), participants
+            )
             self.evaluate_operator_id(
                 sp_response.details.v22a_value.get("operator_id"), participants
             )
