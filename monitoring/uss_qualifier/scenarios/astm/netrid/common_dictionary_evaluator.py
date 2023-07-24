@@ -26,7 +26,8 @@ class RIDCommonDictionaryEvaluator(object):
         if self._rid_version == RIDVersion.f3411_22a:
             for f in sp_response.flights:
                 self.evaluate_operational_status(
-                    f.v22a_value.get("current_state", {}).get("operational_status"), participants
+                    f.v22a_value.get("current_state", {}).get("operational_status"),
+                    participants,
                 )
 
     def evaluate_sp_details_response(
@@ -42,7 +43,6 @@ class RIDCommonDictionaryEvaluator(object):
             self.evaluate_operator_location(
                 sp_response.details.v22a_value.get("operator_location"), participants
             )
-
 
     def evaluate_uas_id(self, value: Optional[v22a.api.UASID], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
@@ -180,11 +180,14 @@ class RIDCommonDictionaryEvaluator(object):
                 f"Unsupported version {self._rid_version}: skipping Operator Location evaluation"
             )
 
-    def evaluate_operational_status(self, value: Optional[str], participants: List[str]):
+    def evaluate_operational_status(
+        self, value: Optional[str], participants: List[str]
+    ):
         if self._rid_version == RIDVersion.f3411_22a:
             if value:
                 with self._test_scenario.check(
-                    "Operational Status consistency with Common Dictionary", participants
+                    "Operational Status consistency with Common Dictionary",
+                    participants,
                 ) as check:
                     try:
                         v22a.api.RIDOperationalStatus(value)

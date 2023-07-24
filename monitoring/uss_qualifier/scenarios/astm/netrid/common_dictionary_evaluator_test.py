@@ -173,8 +173,8 @@ def _assert_operational_status(value: str, outcome: bool):
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
 
-def test_operational_status():
-    _assert_operational_status("Undeclared", True) # v19 and v22a
-    _assert_operational_status("Emergency", True) # v22a only
-    _assert_operational_status("Invalid", False) # Invalid
 
+def test_operational_status():
+    _assert_operational_status("Undeclared", True)  # v19 and v22a
+    _assert_operational_status("Emergency", True)  # v22a only
+    _assert_operational_status("Invalid", False)  # Invalid

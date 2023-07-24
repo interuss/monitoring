@@ -797,7 +797,10 @@ class RIDObservationEvaluator(object):
                         ),
                         query_timestamps=[flights_query.query.request.timestamp],
                     )
-            self._common_dictionary_evaluator.evaluate_sp_flights_response(sp_observation, participants=[mapping.injected_flight.uss_participant_id])
+            self._common_dictionary_evaluator.evaluate_sp_flights_response(
+                sp_observation,
+                participants=[mapping.injected_flight.uss_participant_id],
+            )
 
         # Check that altitudes match for any observed flights matching injected flights
         for mapping in mappings.values():
