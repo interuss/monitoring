@@ -158,3 +158,23 @@ def test_operator_location():
     ]
     for invalid_location in invalid_locations:
         _assert_operator_location(*invalid_location)
+
+
+def _assert_operational_status(value: str, outcome: bool):
+    def step_under_test(self: UnitTestScenario):
+        evaluator = RIDCommonDictionaryEvaluator(
+            config=EvaluationConfiguration(),
+            test_scenario=self,
+            rid_version=RIDVersion.f3411_22a,
+        )
+
+        evaluator.evaluate_operational_status(value, RIDVersion.f3411_22a)
+
+    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+    assert unit_test_scenario.get_report().successful == outcome
+
+def test_operational_status():
+    _assert_operational_status("Undeclared", True) # v19 and v22a
+    _assert_operational_status("Emergency", True) # v22a only
+    _assert_operational_status("Invalid", False) # Invalid
+
