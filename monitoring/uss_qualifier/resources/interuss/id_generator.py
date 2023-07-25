@@ -8,14 +8,17 @@ from monitoring.uss_qualifier.resources.resource import Resource
 
 class IDGeneratorSpecification(ImplicitDict):
     """Generated IDs contain the client's identity so the appropriate client can clean up any dangling resources.
+
+    Note that this may not be necessary/important with the resolution of https://github.com/interuss/dss/issues/939
+
     To determine the client's identity, an access token is retrieved and the subscriber is read from the obtained token.
     Therefore, the client running uss_qualifier must have the ability to obtain an access token via an auth adapter.
     """
 
-    example_audience: str
+    whoami_audience: str
     """Audience to request for the access token used to determine subscriber identity."""
 
-    example_scope: str
+    whoami_scope: str
     """Scope to request for the access token used to determine subscribe identity.  Must be a scope that the client is
     authorized to obtain."""
 
@@ -29,12 +32,12 @@ class IDGeneratorResource(Resource[IDGeneratorSpecification]):
         auth_adapter: AuthAdapterResource,
     ):
         token = auth_adapter.adapter.issue_token(
-            specification.example_audience, [specification.example_scope]
+            specification.whoami_audience, [specification.whoami_scope]
         )
         payload = jwt.decode(token, options={"verify_signature": False})
         if "sub" not in payload:
             raise ValueError(
-                f"`sub` claim not found in payload of token using {type(auth_adapter).__name__} requesting {specification.example_scope} scope for {specification.example_audience} audience: {token}"
+                f"`sub` claim not found in payload of token using {type(auth_adapter).__name__} requesting {specification.whoami_scope} scope for {specification.whoami_audience} audience: {token}"
             )
         subscriber = payload["sub"]
         self.id_factory = IDFactory(subscriber)
