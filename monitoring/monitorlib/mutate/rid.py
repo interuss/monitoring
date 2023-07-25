@@ -351,17 +351,26 @@ class ChangedISA(RIDQuery):
             )
 
     @property
-    def subscribers(self) -> List[SubscriberToNotify]:
+    def subscribers(self) -> Optional[List[SubscriberToNotify]]:
         if self.rid_version == RIDVersion.f3411_19:
+            if (
+                "subscribers" not in self._v19_response
+                or self._v19_response.subscribers is None
+            ):
+                return None
             return [
                 SubscriberToNotify(v19_value=sub)
                 for sub in self._v19_response.subscribers
             ]
         elif self.rid_version == RIDVersion.f3411_22a:
-            return [
-                SubscriberToNotify(v22a_value=sub)
-                for sub in self._v22a_response.subscribers
-            ]
+            return (
+                [
+                    SubscriberToNotify(v22a_value=sub)
+                    for sub in self._v22a_response.subscribers
+                ]
+                if "subscribers" in self._v22a_response
+                else []
+            )
         else:
             raise NotImplementedError(
                 f"Cannot retrieve subscribers to notify using RID version {self.rid_version}"

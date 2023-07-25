@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import List
 from urllib.parse import urlparse
 
@@ -43,6 +44,26 @@ class DSSInstance(object):
         self.participant_id = participant_id
         self.rid_version = rid_version
         self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
+
+
+class DSSInstanceResource(Resource[DSSInstanceSpecification]):
+    dss_instance: DSSInstance
+
+    def __init__(
+        self, specification: DSSInstanceSpecification, auth_adapter: AuthAdapterResource
+    ):
+        self.dss_instance = DSSInstance(
+            specification.participant_id,
+            specification.base_url,
+            specification.rid_version,
+            auth_adapter.adapter,
+        )
+
+    @classmethod
+    def from_dss_instance(cls, dss_instance: DSSInstance) -> DSSInstanceResource:
+        self = cls.__new__(cls)
+        self.dss_instance = dss_instance
+        return self
 
 
 class DSSInstancesSpecification(ImplicitDict):

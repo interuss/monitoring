@@ -1,1 +1,1 @@
-from .dss import DSSInstancesResource
+from .dss import DSSInstanceResource, DSSInstancesResource

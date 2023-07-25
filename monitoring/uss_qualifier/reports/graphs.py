@@ -1,6 +1,7 @@
 from typing import Optional, List, Set, Tuple, Dict
 
 import graphviz
+from loguru import logger
 
 from implicitdict import ImplicitDict
 
@@ -186,7 +187,11 @@ def _make_action_generator_nodes(
     children: List[NodeName] = []
     for action in report.actions:
         if "test_suite" in action:
-            raise NotImplementedError()
+            # TODO: Support visualization of test suite actions with an action generator
+            logger.warning(
+                "test_suite action is being omitted from the action generator because graph representation of a test suite from an action generator is not yet supported"
+            )
+            new_nodes = []
         elif "test_scenario" in action:
             new_nodes = _make_test_scenario_nodes(
                 None, action.test_scenario, nodes_by_id, namer, True

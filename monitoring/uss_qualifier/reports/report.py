@@ -178,7 +178,7 @@ class ErrorReport(ImplicitDict):
             message=str(e),
             timestamp=StringBasedDateTime(datetime.utcnow()),
             stacktrace="".join(
-                traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+                traceback.format_exception(type(e), value=e, tb=e.__traceback__)
             ),
         )
 
