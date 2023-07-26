@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of this test case"
+    },
+    "documentation_url": {
+      "type": "string",
+      "description": "URL at which this test case is described"
+    },
+    "end_time": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "Time at which the test case completed or encountered an error"
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time at which the test case started"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "$ref": "TestStepReport.json"
+      },
+      "description": "Reports for each of the test steps in this test case"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestCaseReport.json",
+  "description": "monitoring.uss_qualifier.reports.report.TestCaseReport, as defined in monitoring/uss_qualifier/reports/report.py",
+  "required": [
+    "documentation_url",
+    "name",
+    "start_time",
+    "steps"
+  ]
+}

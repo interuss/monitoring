@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "no_failed_checks": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "NoFailedChecksCondition.json"
+        }
+      ]
+    },
+    "any_conditions": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AnyCondition.json"
+        }
+      ]
+    },
+    "requirements_checked": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "RequirementsCheckedCondition.json"
+        }
+      ]
+    },
+    "all_conditions": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AllConditions.json"
+        }
+      ]
+    },
+    "capability_verified": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "CapabilityVerifiedCondition.json"
+        }
+      ]
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/capability_definitions/CapabilityVerificationCondition.json",
+  "description": "Specification of a single condition used to determine whether a capability should be verified.\n\nExactly one field must be specified.\n\nmonitoring.uss_qualifier.reports.capability_definitions.CapabilityVerificationCondition, as defined in monitoring/uss_qualifier/reports/capability_definitions.py"
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the capability."
+    },
+    "verification_condition": {
+      "$ref": "CapabilityVerificationCondition.json",
+      "description": "Condition required in order to verify the capability."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name of the capability."
+    },
+    "id": {
+      "type": "string",
+      "description": "Identifier of this capability, unique at the level in which this capability is defined."
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/capability_definitions/ParticipantCapabilityDefinition.json",
+  "description": "monitoring.uss_qualifier.reports.capability_definitions.ParticipantCapabilityDefinition, as defined in monitoring/uss_qualifier/reports/capability_definitions.py",
+  "required": [
+    "description",
+    "id",
+    "name",
+    "verification_condition"
+  ]
+}

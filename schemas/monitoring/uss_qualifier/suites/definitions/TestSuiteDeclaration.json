@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "suite_definition": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TestSuiteDefinition.json"
+        }
+      ],
+      "description": "Definition of test suite internal to the configuration -- specified instead of `suite_type`."
+    },
+    "resources": {
+      "type": "object",
+      "properties": {
+        "$ref": {
+          "type": "string",
+          "description": "Path to content that replaces the $ref"
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Mapping of the ID a resource will be known by in the child test suite -> the ID a resource is known by in the parent test suite.\n\nThe child suite resource <key> is supplied by the parent suite resource <value>."
+    },
+    "suite_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Type/location of test suite.  Usually expressed as the file name of the suite definition (without extension) qualified relative to the `uss_qualifier` folder"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/suites/definitions/TestSuiteDeclaration.json",
+  "description": "monitoring.uss_qualifier.suites.definitions.TestSuiteDeclaration, as defined in monitoring/uss_qualifier/suites/definitions.py",
+  "required": [
+    "resources"
+  ]
+}
