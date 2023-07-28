@@ -38,7 +38,6 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
 )
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenarioType,
-    PendingCheck,
     TestScenario,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFlight
@@ -421,6 +420,18 @@ class RIDObservationEvaluator(object):
                             f"Extrapolation State: Injected={injected_telemetry_extrapolated}, Observed={observed_telemetry_extrapolated}"
                         ),
                     )
+
+            details, query = observer.observe_flight_details(mapping.observed_flight.id)
+            self._test_scenario.record_query(query)
+
+            self._common_dictionary_evaluator.evaluate_dp_response(
+                details,
+                mapping.injected_flight,
+                participants=[
+                    observer.participant_id,
+                    mapping.injected_flight.uss_participant_id
+                ],
+            )
 
     def _evaluate_flight_presence(
         self,

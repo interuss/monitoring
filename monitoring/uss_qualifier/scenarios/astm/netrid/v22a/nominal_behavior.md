@@ -192,6 +192,11 @@ Taking into account the propagation time of the injected flights, if the total n
 For a display area with a diagonal greather than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v22a.NET0480](../../../../requirements/astm/f3411/v22a.md)** requires that a Display provider shall cluster UAs in close proximity to each other using a circular or polygonal area covering no less than *NetMinClusterSize* percent of the display area size.
 This check validates that the display area of a cluster, measured and provided in square meters by the test harness, is no less than *NetMinClusterSize* percent of the display area.
 
+#### Operator ID consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall (NET0470) provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Operator ID, if present, is valid. (**[astm.f3411.v22a.NET0470,Table1,9](../../../../requirements/astm/f3411/v22a.md)**)
+
+
 ## Cleanup
 
 The cleanup phase of this test scenario attempts to remove injected data from all SPs.

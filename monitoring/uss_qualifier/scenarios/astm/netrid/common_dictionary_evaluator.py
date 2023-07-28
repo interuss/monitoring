@@ -3,7 +3,7 @@ import s2sphere
 from typing import List, Optional
 from monitoring.monitorlib.fetch.rid import (
     FetchedFlights,
-    FlightDetails,
+    FlightDetails
 )
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
@@ -159,6 +159,12 @@ class RIDCommonDictionaryEvaluator(object):
             self.evaluate_operator_location(
                 details.v22a_value.get("operator_location"), participants
             )
+
+    def evaluate_dp_response(self, observed_flight_details: Optional[FlightDetails], injected_flight, participants):
+        self.evaluate_operator_id(
+            observed_flight_details.get("operator_id"),
+            participants,
+        )
 
     def evaluate_uas_id(self, value: Optional[v22a.api.UASID], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:

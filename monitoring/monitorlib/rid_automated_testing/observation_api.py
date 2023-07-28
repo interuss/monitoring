@@ -29,7 +29,8 @@ class Flight(ImplicitDict):
 
 
 class GetDetailsResponse(ImplicitDict):
-    pass
+    operator_id: Optional[str]
+
 
 
 class GetDisplayDataResponse(ImplicitDict):

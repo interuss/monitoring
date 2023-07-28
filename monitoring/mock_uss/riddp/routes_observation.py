@@ -159,9 +159,16 @@ def riddp_display_data() -> Tuple[str, int]:
 @requires_scope([Scope.Read])
 def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
     """Implements get flight details endpoint per automated testing API."""
+    rid_version: RIDVersion = webapp.config[KEY_RID_VERSION]
 
     tx = db.value
-    if flight_id not in tx.flights:
+    flight_info = tx.flights.get(flight_id)
+    if not flight_info:
         return 'Flight "{}" not found'.format(flight_id), 404
 
-    return flask.jsonify(observation_api.GetDetailsResponse())
+    flight_details = fetch.flight_details(flight_info.flights_url, flight_id, True, rid_version, utm_client)
+    return flask.jsonify(
+        observation_api.GetDetailsResponse(
+            operator_id=flight_details.details.operator_id,
+        )
+    )
