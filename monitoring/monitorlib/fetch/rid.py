@@ -321,10 +321,6 @@ class FlightDetails(ImplicitDict):
     def id(self) -> str:
         return self.raw.id
 
-    @property
-    def operator_id(self) -> Optional[str]:
-        return self.raw.operator_id
-
 
 class Subscription(ImplicitDict):
     """Version-independent representation of a F3411 subscription."""

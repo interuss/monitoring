@@ -1,18 +1,21 @@
 import datetime
-import s2sphere
 from typing import List, Optional
+import s2sphere
+
+from uas_standards.ansi_cta_2063_a import SerialNumber
+from uas_standards.astm.f3411 import v22a
+
 from monitoring.monitorlib.fetch.rid import (
-    FetchedFlights,
-    FlightDetails
+    FetchedFlights
 )
+from monitoring.monitorlib.fetch.rid import FlightDetails
+from monitoring.monitorlib.geo import validate_lat, validate_lng
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType, PendingCheck
-from monitoring.monitorlib.rid import RIDVersion
-from monitoring.monitorlib.geo import validate_lat, validate_lng
 from monitoring.monitorlib.fetch.rid import Flight, Position
-from uas_standards.ansi_cta_2063_a import SerialNumber
-from uas_standards.astm.f3411 import v22a
+
 
 # SP responses to /flights endpoint's p99 should be below this:
 SP_FLIGHTS_RESPONSE_TIME_TOLERANCE_SEC = 3
@@ -160,10 +163,15 @@ class RIDCommonDictionaryEvaluator(object):
                 details.v22a_value.get("operator_location"), participants
             )
 
-    def evaluate_dp_response(self, observed_flight_details: Optional[FlightDetails], injected_flight, participants):
+    def evaluate_dp_details(self, observed_details: Optional[FlightDetails], injected_flight, participants):
         self.evaluate_operator_id(
-            observed_flight_details.get("operator_id"),
-            participants,
+            observed_details.get("operator_id"), participants
+        )
+        self.evaluate_uas_id(
+            observed_details.get("uas_id"), participants
+        )
+        self.evaluate_operator_location(
+            observed_details.get("operator_location"), participants
         )
 
     def evaluate_uas_id(self, value: Optional[v22a.api.UASID], participants: List[str]):

@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from implicitdict import ImplicitDict
+from uas_standards.astm.f3411 import v22a
 
 
 # Mirrors of types defined in remote ID automated testing observation API
@@ -28,9 +29,8 @@ class Flight(ImplicitDict):
     recent_paths: Optional[List[Path]]
 
 
-class GetDetailsResponse(ImplicitDict):
-    operator_id: Optional[str]
-
+class GetDetailsResponse(v22a.api.RIDFlightDetails):
+    pass
 
 
 class GetDisplayDataResponse(ImplicitDict):

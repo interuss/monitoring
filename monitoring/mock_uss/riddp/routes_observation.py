@@ -159,16 +159,26 @@ def riddp_display_data() -> Tuple[str, int]:
 @requires_scope([Scope.Read])
 def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
     """Implements get flight details endpoint per automated testing API."""
-    rid_version: RIDVersion = webapp.config[KEY_RID_VERSION]
-
     tx = db.value
     flight_info = tx.flights.get(flight_id)
     if not flight_info:
-        return 'Flight "{}" not found'.format(flight_id), 404
+        return f'Flight "{flight_id}" not found', 404
 
+    rid_version: RIDVersion = webapp.config[KEY_RID_VERSION]
     flight_details = fetch.flight_details(flight_info.flights_url, flight_id, True, rid_version, utm_client)
-    return flask.jsonify(
-        observation_api.GetDetailsResponse(
-            operator_id=flight_details.details.operator_id,
+    if rid_version == RIDVersion.f3411_19:
+        # TODO: Implement details for F3411-19
+        return flask.jsonify(observation_api.GetDetailsResponse(id=flight_id))
+    elif rid_version == RIDVersion.f3411_22a:
+        result = observation_api.GetDetailsResponse(
+                id=flight_id,
+                operator_id=flight_details.details.v22a_value.get("operator_id"),
+                uas_id=flight_details.details.v22a_value.get("uas_id"),
+                operator_location=flight_details.details.v22a_value.get("operator_location"),
+                operational_status=flight_details.details.v22a_value.get("operational_status"),
+            )
+        return flask.jsonify(
+            result
         )
-    )
+    else:
+        return f"Support for RID version {rid_version} not yet implemented", 501
