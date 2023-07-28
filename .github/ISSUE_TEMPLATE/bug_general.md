@@ -29,11 +29,11 @@ If applicable, add screenshots to help explain your problem.  Otherwise, remove 
 OS: [e.g. iOS, Windows, Linux; include version and/or other information if it may be relevant]
 
 **Codebase information**
-Output of `git log -n 1`:
+*Output of `git log -n 1`*:
 
 [paste output of `git log -n 1` command here]
 
-Output of `git status`:
+*Output of `git status`*:
 
 [paste output of `git status` command here]
 
