@@ -1,19 +1,12 @@
 from typing import List, Optional
-from monitoring.monitorlib.fetch.rid import FetchedUSSFlightDetails
+from monitoring.monitorlib.fetch.rid import FetchedUSSFlightDetails, FetchedUSSFlights
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.geo import validate_lat, validate_lng
 from uas_standards.ansi_cta_2063_a import SerialNumber
-from uas_standards.astm.f3411.v22a.api import (
-    UASID,
-    AltitudeReference,
-    AltitudeUnits,
-    OperatorLocation,
-    OperatorLocationAltitude_type,
-)
-from loguru import logger
+from uas_standards.astm.f3411 import v22a
 
 
 class RIDCommonDictionaryEvaluator(object):
@@ -27,6 +20,16 @@ class RIDCommonDictionaryEvaluator(object):
         self._test_scenario = test_scenario
         self._rid_version = rid_version
 
+    def evaluate_sp_flights_response(
+        self, sp_response: FetchedUSSFlights, participants: List[str]
+    ):
+        if self._rid_version == RIDVersion.f3411_22a:
+            for f in sp_response.flights:
+                self.evaluate_operational_status(
+                    f.v22a_value.get("current_state", {}).get("operational_status"),
+                    participants,
+                )
+
     def evaluate_sp_details_response(
         self, sp_response: FetchedUSSFlightDetails, participants: List[str]
     ):
@@ -38,11 +41,10 @@ class RIDCommonDictionaryEvaluator(object):
                 sp_response.details.v22a_value.get("operator_id"), participants
             )
             self.evaluate_operator_location(
-                sp_response.details.v22a_value.get("operator_location"),
-                participants,
+                sp_response.details.v22a_value.get("operator_location"), participants
             )
 
-    def evaluate_uas_id(self, value: Optional[UASID], participants: List[str]):
+    def evaluate_uas_id(self, value: Optional[v22a.api.UASID], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
             formats_keys = [
                 "serial_number",
@@ -53,7 +55,7 @@ class RIDCommonDictionaryEvaluator(object):
             formats_count = (
                 0
                 if value is None
-                else sum([0 if value.get(v, None) is None else 1 for v in formats_keys])
+                else sum([0 if value.get(v) is None else 1 for v in formats_keys])
             )
             with self._test_scenario.check(
                 "UAS ID presence in flight details", participants
@@ -105,7 +107,7 @@ class RIDCommonDictionaryEvaluator(object):
             )
 
     def evaluate_operator_location(
-        self, value: Optional[OperatorLocation], participants: List[str]
+        self, value: Optional[v22a.api.OperatorLocation], participants: List[str]
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             if value:
@@ -137,13 +139,13 @@ class RIDCommonDictionaryEvaluator(object):
                         "Operator Altitude consistency with Common Dictionary",
                         participants,
                     ) as check:
-                        if alt.reference != AltitudeReference.W84:
+                        if alt.reference != v22a.api.AltitudeReference.W84:
                             check.record_failed(
                                 "Operator Altitude shall be based on WGS-84 height above ellipsoid (HAE)",
                                 details=f"Invalid Operator Altitude reference: {alt.reference}",
                                 severity=Severity.Medium,
                             )
-                        if alt.units != AltitudeUnits.M:
+                        if alt.units != v22a.api.AltitudeUnits.M:
                             check.record_failed(
                                 "Operator Altitude units shall be provided in meters",
                                 details=f"Invalid Operator Altitude units: {alt.units}",
@@ -163,7 +165,7 @@ class RIDCommonDictionaryEvaluator(object):
                             participants,
                         ) as check:
                             try:
-                                OperatorLocationAltitude_type(
+                                v22a.api.OperatorLocationAltitude_type(
                                     alt_type
                                 )  # raise ValueError if alt_type is invalid
                             except ValueError:
@@ -174,6 +176,28 @@ class RIDCommonDictionaryEvaluator(object):
                                 )
 
         else:
-            logger.debug(
+            self._test_scenario.record_note(
                 f"Unsupported version {self._rid_version}: skipping Operator Location evaluation"
+            )
+
+    def evaluate_operational_status(
+        self, value: Optional[str], participants: List[str]
+    ):
+        if self._rid_version == RIDVersion.f3411_22a:
+            if value:
+                with self._test_scenario.check(
+                    "Operational Status consistency with Common Dictionary",
+                    participants,
+                ) as check:
+                    try:
+                        v22a.api.RIDOperationalStatus(value)
+                    except ValueError:
+                        check.record_failed(
+                            "Operational Status is invalid",
+                            details=f"Invalid Operational Status: {value}",
+                            severity=Severity.Medium,
+                        )
+        else:
+            self._test_scenario.record_note(
+                f"Unsupported version {self._rid_version}: skipping Operational Status evaluation"
             )
