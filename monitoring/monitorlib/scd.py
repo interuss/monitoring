@@ -1,5 +1,6 @@
 import math
 from datetime import datetime, timedelta
+from enum import Enum
 from typing import Dict, List, Optional, Tuple, Literal
 from implicitdict import ImplicitDict, StringBasedDateTime
 
@@ -89,11 +90,19 @@ class Circle(ImplicitDict):
     radius: Radius
 
 
+class AltitudeDatum(str, Enum):
+    W84 = "W84"
+    """WGS84 reference ellipsoid"""
+
+    SFC = "SFC"
+    """Surface of the ground"""
+
+
 class Altitude(ImplicitDict):
     """A class to hold altitude information"""
 
     value: float
-    reference: Literal["W84"]
+    reference: AltitudeDatum
     units: str
 
 
