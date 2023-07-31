@@ -1,14 +1,12 @@
 import arrow
 
+from monitoring.monitorlib.geotemporal import resolve_volume4d
 from monitoring.uss_qualifier.resources.interuss.geospatial_map import (
     FeatureCheckTableResource,
 )
 from monitoring.uss_qualifier.resources.interuss.geospatial_map.definitions import (
     FeatureCheckTable,
     ExpectedFeatureCheckResult,
-)
-from monitoring.uss_qualifier.resources.interuss.geospatial_map.feature_check_table import (
-    resolve_volume4d,
 )
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestStepDocumentation,
