@@ -7,13 +7,13 @@ from monitoring.monitorlib.geotemporal import Volume4DTemplate
 
 class ExpectedFeatureCheckResult(str, Enum):
     Block = "Block"
-    """When a service provider being tested as a geo-awareness map provider is queried for whether any features are present for the specified volumes that would cause the flight described in this feature check to be blocked, the service provider must respond affirmatively; responding negatively will cause a failed check."""
+    """When a service provider being tested as a geospatial map provider is queried for whether any features are present for the specified volumes that would cause the flight described in this feature check to be blocked, the service provider must respond affirmatively; responding negatively will cause a failed check."""
 
     Advise = "Advise"
-    """When a service provider being tested as a geo-awareness map provider is queried for whether any features are present for the specified volumes that would provide an advisory to the viewer viewing a map relevant to the planning of the flight described in this feature check, the service provider must respond affirmatively; responding negatively will cause a failed check.  The service provider does not need to include the content or number of advisories in its response."""
+    """When a service provider being tested as a geospatial map provider is queried for whether any features are present for the specified volumes that would provide an advisory to the viewer viewing a map relevant to the planning of the flight described in this feature check, the service provider must respond affirmatively; responding negatively will cause a failed check.  The service provider does not need to include the content or number of advisories in its response."""
 
     Neither = "Neither"
-    """When a service provider being tested as a geo-awareness map provider is queried for whether any features matching the other criteria in this feature check and causing a “block” or “advise” per above are present with the specified criteria, the service provider must respond negatively; responding affirmatively will cause a failed check."""
+    """When a service provider being tested as a geospatial map provider is queried for whether any features matching the other criteria in this feature check and causing a “block” or “advise” per above are present with the specified criteria, the service provider must respond negatively; responding affirmatively will cause a failed check."""
 
 
 class FeatureCheck(ImplicitDict):
