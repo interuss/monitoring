@@ -17,7 +17,13 @@ resources:
   netrid_dss_instances_v22a: resources.astm.f3411.DSSInstancesResource
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
+  flight_check_table: resources.interuss.flight_authorization.FlightCheckTableResource
 actions:
+- test_scenario:
+    scenario_type: scenarios.interuss.flight_authorization.GeneralFlightAuthorization
+    resources:
+      table: flight_check_table
+    on_failure: Abort
 - test_suite:
     suite_type: suites.interuss.generate_test_data
     resources:
@@ -25,7 +31,7 @@ actions:
       adjacent_circular_storage_config: adjacent_circular_storage_config
       kml_flights_data: kml_flights_data
       kml_storage_config: kml_storage_config
-  on_failure: Continue
+    on_failure: Continue
 - test_suite:
     suite_type: suites.uspace.required_services
     resources:

@@ -2,6 +2,7 @@ all:
     allOf:
         -   $ref: '#/uspace'
         -   $ref: '#/net_rid_sims'
+        -   $ref: '#/general_flight_authorization'
 
 uspace:
     allOf:
@@ -119,6 +120,78 @@ f3548_single_scenario:
     allOf:
         -   $ref: '#/f3548_che'
         -   $ref: 'environment.yaml#/f3548_single_scenario'
+
+general_flight_authorization:
+  flight_check_table:
+    resource_type: resources.interuss.flight_authorization.FlightCheckTableResource
+    specification:
+      table:
+        rows:
+          - flight_check_id: TEST_001
+            requirement_ids:
+              - REQ_002
+              - REQ_007
+            description: The first test step defined by the test designer
+            operation_rule_set: Rules1
+            volumes:
+              - outline_circle:
+                  center:
+                    lng: 7.4774
+                    lat: 46.9749
+                  radius:
+                    value: 100
+                    units: M
+                altitude_lower:
+                  value: 0
+                  units: M
+                  reference: SFC
+                altitude_upper:
+                  value: 100
+                  units: M
+                  reference: SFC
+                start_time:
+                  test_time: {}
+                end_time:
+                  offset_from:
+                    starting_from:
+                      next_day:
+                        starting_from:
+                          test_time: {}
+                        days_of_the_week: ["M", "F"]
+                    offset: 12h
+            acceptance_expectation: MustBeAccepted
+          - flight_check_id: TEST_002
+            requirement_ids:
+              - REQ_001
+              - REQ_003
+              - REQ_004
+            description: The second test step defined by the test designer
+            operation_rule_set: Rules1
+            volumes:
+              - outline_circle:
+                  center:
+                    lng: 7.4774
+                    lat: 46.9749
+                  radius:
+                    value: 100
+                    units: M
+                altitude_lower:
+                  value: 50
+                  units: M
+                  reference: SFC
+                altitude_upper:
+                  value: 5000
+                  units: FT
+                  reference: W84
+                start_time:
+                  next_day:
+                    starting_from:
+                      offset_from:
+                        starting_from:
+                          test_time: {}
+                        offset: 12h
+                duration: 5m
+            conditions_expectation: MustBePresent
 
 common:
     $ref: 'environment.yaml#/common'

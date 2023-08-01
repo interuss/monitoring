@@ -286,7 +286,19 @@ class GenericTestScenario(ABC):
             raise RuntimeError(
                 f'Test scenario `{self.me()}` was instructed to begin_test_step "{name}" during test case "{self._current_case.name}", but that test step is not declared in documentation; declared steps are: {step_list}'
             )
-        self._current_step = available_steps[name]
+        self._begin_test_step(available_steps[name])
+
+    def begin_dynamic_test_step(self, step: TestStepDocumentation) -> None:
+        self._expect_phase(ScenarioPhase.ReadyForTestStep)
+        available_steps = {c.name: c for c in self._current_case.steps}
+        if "Dynamic" not in available_steps:
+            raise RuntimeError(
+                f'Test scenario `{self.me()}` was instructed to begin_dynamic_test_step "{step.name}" during test case "{self._current_case.name}", but there is no "Dynamic test step" desclared in documentation.'
+            )
+        self._begin_test_step(step)
+
+    def _begin_test_step(self, step: TestStepDocumentation) -> None:
+        self._current_step = step
         self._step_report = TestStepReport(
             name=self._current_step.name,
             documentation_url=self._current_step.url,
