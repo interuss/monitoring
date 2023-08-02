@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "requirement_id": {
+      "type": "string",
+      "description": "Identity of the requirement"
+    },
+    "participant_performance": {
+      "type": "object",
+      "properties": {
+        "$ref": {
+          "type": "string",
+          "description": "Path to content that replaces the $ref"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "ParticipantRequirementPerformance.json"
+      },
+      "description": "The performance of each involved participant on the requirement"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/scenarios/documentation/requirements/TestedRequirement.json",
+  "description": "monitoring.uss_qualifier.scenarios.documentation.requirements.TestedRequirement, as defined in monitoring/uss_qualifier/scenarios/documentation/requirements.py",
+  "required": [
+    "participant_performance",
+    "requirement_id"
+  ]
+}

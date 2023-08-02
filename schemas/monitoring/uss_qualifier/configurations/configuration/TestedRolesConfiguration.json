@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "report_path": {
+      "type": "string",
+      "description": "Path of HTML file to contain a requirements-based summary of the test report"
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "$ref": "TestedRole.json"
+      },
+      "description": "Roles (and participants filling those roles) tested by the test run"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/TestedRolesConfiguration.json",
+  "description": "monitoring.uss_qualifier.configurations.configuration.TestedRolesConfiguration, as defined in monitoring/uss_qualifier/configurations/configuration.py",
+  "required": [
+    "report_path",
+    "roles"
+  ]
+}

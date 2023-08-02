@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "$ref": "CapabilityVerificationCondition.json"
+      }
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/capability_definitions/AnyCondition.json",
+  "description": "Condition will be satisfied when any of the specified conditions are satisfied.\n\nNote that an empty list of conditions will result in an unsuccessful evaluation.\n\nmonitoring.uss_qualifier.reports.capability_definitions.AnyCondition, as defined in monitoring/uss_qualifier/reports/capability_definitions.py",
+  "required": [
+    "conditions"
+  ]
+}

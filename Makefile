@@ -10,11 +10,11 @@ else
 endif
 
 .PHONY: format
-format:
+format: json-schema
 	cd monitoring && make format
 
 .PHONY: lint
-lint: python-lint shell-lint
+lint: python-lint shell-lint json-schema-lint
 
 .PHONY: check-hygiene
 check-hygiene: python-lint hygiene validate-uss-qualifier-docs shell-lint
@@ -35,6 +35,14 @@ validate-uss-qualifier-docs:
 shell-lint:
 	echo "===== Checking DSS shell lint except monitoring =====" && find . -name '*.sh' | grep -v '^./interfaces/astm-utm' | grep -v '^./monitoring' | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck
 	cd monitoring && make shell-lint
+
+.PHONY: json-schema
+json-schema:
+	cd schemas && make format
+
+.PHONY: json-schema-lint
+json-schema-lint:
+	cd schemas && make lint
 
 # This mirrors the hygiene-tests continuous integration workflow job (.github/workflows/ci.yml)
 .PHONY: hygiene-tests

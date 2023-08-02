@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "successes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of passed checks involving the requirement"
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of failed checks involving the requirement"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/scenarios/documentation/requirements/ParticipantRequirementPerformance.json",
+  "description": "monitoring.uss_qualifier.scenarios.documentation.requirements.ParticipantRequirementPerformance, as defined in monitoring/uss_qualifier/scenarios/documentation/requirements.py",
+  "required": [
+    "failures",
+    "successes"
+  ]
+}

@@ -1,12 +1,14 @@
 import inspect
 import os
-from typing import List, Dict, Type
+from typing import List, Dict, Type, Any, Optional
 
 import marko
 import marko.element
 import marko.inline
 
+import monitoring
 from monitoring import uss_qualifier as uss_qualifier_module
+from monitoring.monitorlib import versioning
 from monitoring.monitorlib.inspection import fullname, get_module_object_by_name
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestStepDocumentation,
@@ -15,6 +17,7 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestScenarioDocumentation,
 )
 
+_REPO_ROOT = os.path.split(os.path.split(inspect.getfile(monitoring))[0])[0]
 RESOURCES_HEADING = "resources"
 CLEANUP_HEADING = "cleanup"
 TEST_SCENARIO_SUFFIX = " test scenario"
@@ -47,6 +50,14 @@ def _text_of(value) -> str:
         )
 
 
+def _url_of(abspath: str) -> str:
+    relpath = os.path.relpath(abspath, start=_REPO_ROOT)
+    version = versioning.get_commit_hash()
+    if version == "unknown":
+        version = "main"
+    return f"https://github.com/interuss/monitoring/blob/{version}/{relpath}"
+
+
 def _length_of_section(values, start_of_section: int) -> int:
     level = values[start_of_section].level
     c = start_of_section + 1
@@ -57,8 +68,11 @@ def _length_of_section(values, start_of_section: int) -> int:
     return c - start_of_section - 1
 
 
-def _parse_test_check(values) -> TestCheckDocumentation:
+def _parse_test_check(
+    values, doc_filename: str, anchors: Dict[Any, str]
+) -> TestCheckDocumentation:
     name = _text_of(values[0])[0 : -len(TEST_CHECK_SUFFIX)]
+    url = _url_of(doc_filename + anchors[values[0]])
 
     reqs: List[str] = []
     c = 1
@@ -69,7 +83,7 @@ def _parse_test_check(values) -> TestCheckDocumentation:
                     reqs.append(_text_of(child))
         c += 1
 
-    return TestCheckDocumentation(name=name, applicable_requirements=reqs)
+    return TestCheckDocumentation(name=name, url=url, applicable_requirements=reqs)
 
 
 def _get_linked_test_step(
@@ -95,18 +109,22 @@ def _get_linked_test_step(
                 f'The first line of "{absolute_path}" must be a level-1 heading with the name of the test step + "{TEST_STEP_SUFFIX}" (e.g., "# Successful flight injection{TEST_STEP_SUFFIX}")'
             )
 
+        anchors = _get_anchors(doc)
         values = doc.children
         dc = _length_of_section(values, 0)
         _test_step_cache[absolute_path] = _parse_test_step(
-            values[0 : dc + 1], doc_filename
+            values[0 : dc + 1], absolute_path, anchors
         )
     return _test_step_cache[absolute_path]
 
 
-def _parse_test_step(values, doc_filename: str) -> TestStepDocumentation:
+def _parse_test_step(
+    values, doc_filename: str, anchors: Dict[Any, str]
+) -> TestStepDocumentation:
     name = _text_of(values[0])
     if name.lower().endswith(TEST_STEP_SUFFIX):
         name = name[0 : -len(TEST_STEP_SUFFIX)]
+    url = _url_of(doc_filename + anchors[values[0]])
 
     if values[0].children and isinstance(
         values[0].children[0], marko.block.inline.Link
@@ -121,38 +139,43 @@ def _parse_test_step(values, doc_filename: str) -> TestStepDocumentation:
     checks: List[TestCheckDocumentation] = []
     c = 1
     while c < len(values):
-        if isinstance(values[c], marko.block.Heading) and _text_of(
-            values[c]
-        ).lower().endswith(TEST_CHECK_SUFFIX):
-            # Start of a test step section
-            dc = _length_of_section(values, c)
-            check = _parse_test_check(values[c : c + dc + 1])
-            checks.append(check)
-            c += dc
+        if isinstance(values[c], marko.block.Heading):
+            if _text_of(values[c]).lower().endswith(TEST_CHECK_SUFFIX):
+                # Start of a test step section
+                dc = _length_of_section(values, c)
+                check = _parse_test_check(values[c : c + dc + 1], doc_filename, anchors)
+                checks.append(check)
+                c += dc
+            else:
+                c += 1
         else:
             c += 1
+    return TestStepDocumentation(name=name, url=url, checks=checks)
 
-    return TestStepDocumentation(name=name, checks=checks)
 
-
-def _parse_test_case(values, doc_filename: str) -> TestCaseDocumentation:
+def _parse_test_case(
+    values, doc_filename: str, anchors: Dict[Any, str]
+) -> TestCaseDocumentation:
     name = _text_of(values[0])[0 : -len(TEST_CASE_SUFFIX)]
+
+    url = _url_of(doc_filename + anchors[values[0]])
 
     steps: List[TestStepDocumentation] = []
     c = 1
     while c < len(values):
-        if isinstance(values[c], marko.block.Heading) and _text_of(
-            values[c]
-        ).lower().endswith(TEST_STEP_SUFFIX):
-            # Start of a test step section
-            dc = _length_of_section(values, c)
-            step = _parse_test_step(values[c : c + dc + 1], doc_filename)
-            steps.append(step)
-            c += dc
+        if isinstance(values[c], marko.block.Heading):
+            if _text_of(values[c]).lower().endswith(TEST_STEP_SUFFIX):
+                # Start of a test step section
+                dc = _length_of_section(values, c)
+                step = _parse_test_step(values[c : c + dc + 1], doc_filename, anchors)
+                steps.append(step)
+                c += dc
+            else:
+                c += 1
         else:
             c += 1
 
-    return TestCaseDocumentation(name=name, steps=steps)
+    return TestCaseDocumentation(name=name, steps=steps, url=url)
 
 
 def _parse_resources(values) -> List[str]:
@@ -174,6 +197,30 @@ def get_documentation_filename(scenario: Type) -> str:
     return os.path.splitext(inspect.getfile(scenario))[0] + ".md"
 
 
+def _get_anchors(
+    value, header_counts: Optional[Dict[str, int]] = None
+) -> Dict[Any, str]:
+    if header_counts is None:
+        header_counts = {}
+    anchors = {}
+
+    if isinstance(value, marko.block.Heading):
+        base_anchor = "#" + _text_of(value).lower().replace(" ", "-")
+        if base_anchor not in header_counts:
+            anchors[value] = base_anchor
+        else:
+            anchors[value] = f"{base_anchor}-{header_counts[base_anchor]}"
+        header_counts[base_anchor] = header_counts.get(base_anchor, 0) + 1
+
+    if hasattr(value, "children"):
+        for child in value.children:
+            subanchors = _get_anchors(child, header_counts)
+            for k, v in subanchors.items():
+                anchors[k] = v
+
+    return anchors
+
+
 def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
     # Load the .md file matching the Python file where this scenario type is defined
     doc_filename = get_documentation_filename(scenario)
@@ -185,6 +232,8 @@ def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
         )
     with open(doc_filename, "r") as f:
         doc = marko.parse(f.read())
+    url = _url_of(doc_filename)
+    anchors = _get_anchors(doc)
 
     # Extract the scenario name from the first top-level header
     if (
@@ -193,8 +242,8 @@ def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
         or not _text_of(doc.children[0]).lower().endswith(TEST_SCENARIO_SUFFIX)
     ):
         raise ValueError(
-            'The first line of {} must be a level-1 heading with the name of the scenario + "{}" (e.g., "# ASTM NetRID nominal behavior test scenario")'.format(
-                doc_filename, TEST_SCENARIO_SUFFIX
+            'The first line of {} must be a level-1 heading with the name of the scenario + "{}" (e.g., "# ASTM NetRID nominal behavior{}")'.format(
+                doc_filename, TEST_SCENARIO_SUFFIX, TEST_SCENARIO_SUFFIX
             )
         )
     scenario_name = _text_of(doc.children[0])[0 : -len(TEST_SCENARIO_SUFFIX)]
@@ -209,7 +258,9 @@ def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
             c += 1
             continue
 
-        if _text_of(doc.children[c]).lower().strip() == RESOURCES_HEADING:
+        header_text = _text_of(doc.children[c])
+
+        if header_text.lower().strip() == RESOURCES_HEADING:
             # Start of the Resources section
             if resources is not None:
                 raise ValueError(
@@ -218,30 +269,33 @@ def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
             dc = _length_of_section(doc.children, c)
             resources = _parse_resources(doc.children[c : c + dc + 1])
             c += dc
-        elif _text_of(doc.children[c]).lower().strip() == CLEANUP_HEADING:
+        elif header_text.lower().strip() == CLEANUP_HEADING:
             # Start of the Cleanup section
             if cleanup is not None:
                 raise ValueError(
                     'Only one major section may be titled "{CLEANUP_HEADING}"'
                 )
             dc = _length_of_section(doc.children, c)
-            cleanup = _parse_test_step(doc.children[c : c + dc + 1], doc_filename)
+            cleanup = _parse_test_step(
+                doc.children[c : c + dc + 1], doc_filename, anchors
+            )
             c += dc
-        elif _text_of(doc.children[c]).lower().endswith(TEST_CASE_SUFFIX):
+        elif header_text.lower().endswith(TEST_CASE_SUFFIX):
             # Start of a test case section
             dc = _length_of_section(doc.children, c)
-            test_case = _parse_test_case(doc.children[c : c + dc + 1], doc_filename)
+            test_case = _parse_test_case(
+                doc.children[c : c + dc + 1], doc_filename, anchors
+            )
             test_cases.append(test_case)
             c += dc
         else:
             c += 1
 
     kwargs = {
-        # TODO: Populate the documentation URLs
         "name": scenario_name,
         "cases": test_cases,
         "resources": resources,
-        "url": "",
+        "url": url,
     }
     if cleanup is not None:
         kwargs["cleanup"] = cleanup
