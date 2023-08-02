@@ -107,7 +107,7 @@ class GeneralFlightAuthorization(TestScenario):
             # TODO: Attempt to plan flight in USSs under test
             self.record_note(
                 "flight_planning",
-                f"TODO: Attempt to plan flight in USSs for {row.operation_rule_set} where flight plan {row.acceptance_expectation} and conditions {row.conditions_expectation}, from {concrete_volumes[0].time_start} to {concrete_volumes[0].time_end}",
+                f"TODO: Attempt to plan flight in USSs where flight plan {row.acceptance_expectation} and conditions {row.conditions_expectation}, from {concrete_volumes[0].time_start} to {concrete_volumes[0].time_end}",
             )
 
             if row.acceptance_expectation == AcceptanceExpectation.MustBeAccepted:
