@@ -2,7 +2,7 @@
 
 ## Description
 
-This test acts as a user using a USS's flight planning/authorization interface and attempts to plan/authorize different flights according to the Flight Check Table provided by the test designer (see `table` resource below), expecting these attempts to succeed or fail with or without advisories/conditions as defined by the test designer.  For instance, the test designer may include a Flight Check in their Flight Check table in an area known to be restricted, and then expect the planning/authorization attempt to fail.  But, when a similar plan/authorization is requrested in an area that is known to be free of restrictions, this test would be expected to successfully plan/authorize a flight there.  More information may be seen [here](https://github.com/interuss/tsc/pull/7).
+This test acts as a user using a USS's flight planning/authorization interface and attempts to plan/authorize different flights according to the Flight Check Table provided by the test designer (see `table` resource below), expecting these attempts to succeed or fail with or without advisories/conditions as defined by the test designer.  For instance, the test designer may include a Flight Check in their Flight Check table in an area known to be restricted, and then expect the planning/authorization attempt to fail.  But, when a similar plan/authorization is requested in an area that is known to be free of restrictions, this test would be expected to successfully plan/authorize a flight there.  More information may be seen [here](https://github.com/interuss/tsc/pull/7).
 
 ## Resources
 
