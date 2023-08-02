@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "name": {
+      "type": "string"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "$ref": "TestCaseDocumentation.json"
+      }
+    },
+    "url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cleanup": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TestStepDocumentation.json"
+        }
+      ]
+    },
+    "resources": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/scenarios/documentation/definitions/TestScenarioDocumentation.json",
+  "description": "monitoring.uss_qualifier.scenarios.documentation.definitions.TestScenarioDocumentation, as defined in monitoring/uss_qualifier/scenarios/documentation/definitions.py",
+  "required": [
+    "cases",
+    "name"
+  ]
+}

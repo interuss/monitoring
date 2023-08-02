@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Participants that may not have met the relevant requirements if this check had failed"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the check that passed"
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Requirements that would not have been met if this check had failed"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/PassedCheck.json",
+  "description": "monitoring.uss_qualifier.reports.report.PassedCheck, as defined in monitoring/uss_qualifier/reports/report.py",
+  "required": [
+    "name",
+    "participants",
+    "requirements"
+  ]
+}

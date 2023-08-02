@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "capability_location": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Location of report to inspect for the verification of the specified capability, relative to the report in which\nthe capability is defined.  Implicit default value is \"$\" (look for verified capability in the report in which the\ndependant capability is defined).\n\nIf this location resolves to multiple TestSuiteReports, then the capability must be verified in all resolved reports\nin order for this condition to be satisfied.  When this location resolves to artifacts that are not\nTestSuiteReports, those artifacts will be ignored.\n\nNote that capabilities are verified in the order they are defined.  So, if capability B defined in a particular\nlocation depends on whether capability A in that same location is granted, capability A must be defined before\ncapability B is defined.  Also note that capability verifications are computed as test components are completed.\nSince a parent test component (e.g., test suite) is not complete until all of its child components are complete, a\ndescendant test component's capability condition cannot depend on whether an ancestor's (e.g., parent's) capability\nis verified."
+    },
+    "capability_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of identifier of capability that must be verified for this condition to be satisfied."
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/capability_definitions/CapabilityVerifiedCondition.json",
+  "description": "Condition will be satisfied when the specified capability is verified.\n\nNote that a capability which do not declare any requirement will result in an unsuccessful evaluation.\n\nmonitoring.uss_qualifier.reports.capability_definitions.CapabilityVerifiedCondition, as defined in monitoring/uss_qualifier/reports/capability_definitions.py",
+  "required": [
+    "capability_ids"
+  ]
+}

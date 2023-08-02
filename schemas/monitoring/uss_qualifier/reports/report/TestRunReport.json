@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "baseline_signature": {
+      "type": "string",
+      "description": "Signature of the test run including codebase version and all file signatures except excluded environmental files.\n\nThis field can be used to identify that a particular expected test baseline (codebase, all non-environmental inputs)\nwas run.  The value of this field is computed from codebase_version and all elements of file_signatures that are not\nexplicitly excluded as environmental configuration."
+    },
+    "codebase_version": {
+      "type": "string",
+      "description": "Version of codebase used to run uss_qualifier"
+    },
+    "commit_hash": {
+      "type": "string",
+      "description": "Full commit hash of codebase used to run uss_qualifier"
+    },
+    "report": {
+      "$ref": "TestSuiteActionReport.json",
+      "description": "Report produced by configured test action"
+    },
+    "configuration": {
+      "$ref": "../../configurations/configuration/TestConfiguration.json",
+      "description": "Configuration used to run uss_qualifier"
+    },
+    "file_signatures": {
+      "type": "object",
+      "properties": {
+        "$ref": {
+          "type": "string",
+          "description": "Path to content that replaces the $ref"
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Mapping between the names of files loaded during test run and the SHA-1 hashes of those files' content."
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestRunReport.json",
+  "description": "monitoring.uss_qualifier.reports.report.TestRunReport, as defined in monitoring/uss_qualifier/reports/report.py",
+  "required": [
+    "baseline_signature",
+    "codebase_version",
+    "commit_hash",
+    "configuration",
+    "file_signatures",
+    "report"
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the check that failed"
+    },
+    "documentation_url": {
+      "type": "string",
+      "description": "URL at which the check which failed is described"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Human-readable summary of the issue"
+    },
+    "details": {
+      "type": "string",
+      "description": "Human-readable description of the issue"
+    },
+    "query_report_timestamps": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "description": "List of the `report` timestamp field for queries relevant to this failed check"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "Critical",
+        "High",
+        "Medium",
+        "Low"
+      ],
+      "description": "How severe the issue is"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Participants that may not meet the relevant requirements due to this failed check"
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Requirements that are not met due to this failed check"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time the issue was discovered"
+    },
+    "additional_data": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Additional data, structured according to the checks' needs, that may be relevant for understanding this failed check"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/FailedCheck.json",
+  "description": "monitoring.uss_qualifier.reports.report.FailedCheck, as defined in monitoring/uss_qualifier/reports/report.py",
+  "required": [
+    "details",
+    "documentation_url",
+    "name",
+    "participants",
+    "requirements",
+    "severity",
+    "summary",
+    "timestamp"
+  ]
+}

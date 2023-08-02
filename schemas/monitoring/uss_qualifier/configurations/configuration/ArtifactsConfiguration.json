@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "report_html": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ReportHTMLConfiguration.json"
+        }
+      ],
+      "description": "If specified, configuration describing how an HTML version of the report should be generated"
+    },
+    "report": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ReportConfiguration.json"
+        }
+      ],
+      "description": "Configuration for report generation"
+    },
+    "tested_roles": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TestedRolesConfiguration.json"
+        }
+      ],
+      "description": "If specified, configuration describing a desired report summarizing tested requirements for each specified participant and role"
+    },
+    "graph": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "GraphConfiguration.json"
+        }
+      ],
+      "description": "If specified, configuration describing a desired graph visualization summarizing the test run"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/ArtifactsConfiguration.json",
+  "description": "monitoring.uss_qualifier.configurations.configuration.ArtifactsConfiguration, as defined in monitoring/uss_qualifier/configurations/configuration.py"
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "test_scenario": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TestScenarioReport.json"
+        }
+      ],
+      "description": "If this action was a test scenario, this field will hold its report"
+    },
+    "action_generator": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ActionGeneratorReport.json"
+        }
+      ],
+      "description": "If this action was an action generator, this field will hold its report"
+    },
+    "test_suite": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TestSuiteReport.json"
+        }
+      ],
+      "description": "If this action was a test suite, this field will hold its report"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestSuiteActionReport.json",
+  "description": "monitoring.uss_qualifier.reports.report.TestSuiteActionReport, as defined in monitoring/uss_qualifier/reports/report.py"
+}

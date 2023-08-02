@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "checked": {
+      "$ref": "../../requirements/definitions/RequirementCollection.json",
+      "description": "Each requirement contained within this collection must be covered by at least one successful check."
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/capability_definitions/RequirementsCheckedCondition.json",
+  "description": "Condition will only be satisfied if at least one successful check exists for all specified requirements.\n\nNote that an empty collection of requirements will result in an unsuccessful evaluation.\n\nmonitoring.uss_qualifier.reports.capability_definitions.RequirementsCheckedCondition, as defined in monitoring/uss_qualifier/reports/capability_definitions.py",
+  "required": [
+    "checked"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the test suite"
+    },
+    "report_evaluation_scenario": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../../scenarios/definitions/TestScenarioDeclaration.json"
+        }
+      ],
+      "description": "The scenario executed after all the actions that evaluates the test suite report. Must be a ReportEvaluationScenario."
+    },
+    "participant_verifiable_capabilities": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "../../reports/capability_definitions/ParticipantCapabilityDefinition.json"
+      },
+      "description": "Definitions of capabilities verified by this test suite for individual participants."
+    },
+    "resources": {
+      "type": "object",
+      "properties": {
+        "$ref": {
+          "type": "string",
+          "description": "Path to content that replaces the $ref"
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Enumeration of the resources used by this test suite"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "TestSuiteActionDeclaration.json"
+      },
+      "description": "The actions to take when running the test suite.  Components will be executed in order."
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/suites/definitions/TestSuiteDefinition.json",
+  "description": "Schema for the definition of a test suite, analogous to the Python TestScenario subclass for scenarios\n\nmonitoring.uss_qualifier.suites.definitions.TestSuiteDefinition, as defined in monitoring/uss_qualifier/suites/definitions.py",
+  "required": [
+    "actions",
+    "name",
+    "resources"
+  ]
+}
