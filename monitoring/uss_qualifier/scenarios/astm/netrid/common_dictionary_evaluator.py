@@ -63,6 +63,12 @@ class RIDCommonDictionaryEvaluator(object):
                     f.v22a_value.get("current_state", {}).get("operational_status"),
                     participants,
                 )
+        for f in observed_flights.flights:
+            self._evaluate_operational_status(
+                f.raw.get("current_state", {}).get("operational_status"),
+                participants,
+            )
+
 
     def _evaluate_recent_position_time(
         self, p: Position, query_time: datetime.datetime, check: PendingCheck
@@ -154,25 +160,20 @@ class RIDCommonDictionaryEvaluator(object):
                 fail_check()
 
     def evaluate_sp_details(self, details: FlightDetails, participants: List[str]):
-        if self._rid_version == RIDVersion.f3411_22a:
-            self.evaluate_uas_id(details.v22a_value.get("uas_id"), participants)
-            self.evaluate_operator_id(
-                details.v22a_value.get("operator_id"), participants
-            )
-            self.evaluate_operator_location(
-                details.v22a_value.get("operator_location"), participants
-            )
+        self._evaluate_uas_id(details.raw.get("uas_id"), participants)
+        self._evaluate_operator_id(details.raw.get("operator_id"), participants)
+        self._evaluate_operator_location(details.raw.get("operator_location"), participants)
 
     def evaluate_dp_details(
-        self, observed_details: Optional[FlightDetails], injected_flight, participants
+        self, observed_details: Optional[FlightDetails], participants: List[str]
     ):
-        self.evaluate_operator_id(observed_details.get("operator_id"), participants)
-        self.evaluate_uas_id(observed_details.get("uas_id"), participants)
-        self.evaluate_operator_location(
+        self._evaluate_operator_id(observed_details.get("operator_id"), participants)
+        self._evaluate_uas_id(observed_details.get("uas_id"), participants)
+        self._evaluate_operator_location(
             observed_details.get("operator_location"), participants
         )
 
-    def evaluate_uas_id(self, value: Optional[v22a.api.UASID], participants: List[str]):
+    def _evaluate_uas_id(self, value: Optional[v22a.api.UASID], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
             formats_keys = [
                 "serial_number",
@@ -219,7 +220,7 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping UAS ID evaluation",
             )
 
-    def evaluate_operator_id(self, value: Optional[str], participants: List[str]):
+    def _evaluate_operator_id(self, value: Optional[str], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
             if value:
                 with self._test_scenario.check(
@@ -237,7 +238,7 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping Operator ID evaluation",
             )
 
-    def evaluate_operator_location(
+    def _evaluate_operator_location(
         self, value: Optional[v22a.api.OperatorLocation], participants: List[str]
     ):
         if self._rid_version == RIDVersion.f3411_22a:
@@ -312,7 +313,7 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping Operator Location evaluation",
             )
 
-    def evaluate_operational_status(
+    def _evaluate_operational_status(
         self, value: Optional[str], participants: List[str]
     ):
         if self._rid_version == RIDVersion.f3411_22a:

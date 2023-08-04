@@ -426,7 +426,6 @@ class RIDObservationEvaluator(object):
 
             self._common_dictionary_evaluator.evaluate_dp_details(
                 details,
-                mapping.injected_flight,
                 participants=[
                     observer.participant_id,
                     mapping.injected_flight.uss_participant_id,

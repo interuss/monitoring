@@ -24,7 +24,7 @@ def _assert_operator_id(value: str, outcome: bool):
             test_scenario=self,
             rid_version=RIDVersion.f3411_22a,
         )
-        evaluator.evaluate_operator_id(value, [])
+        evaluator._evaluate_operator_id(value, [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
@@ -47,7 +47,7 @@ def _assert_operator_location(
             test_scenario=self,
             rid_version=RIDVersion.f3411_22a,
         )
-        evaluator.evaluate_operator_location(value, [])
+        evaluator._evaluate_operator_location(value, [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert (
@@ -177,7 +177,7 @@ def _assert_operational_status(value: str, outcome: bool):
             rid_version=RIDVersion.f3411_22a,
         )
 
-        evaluator.evaluate_operational_status(value, [])
+        evaluator._evaluate_operational_status(value, [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
