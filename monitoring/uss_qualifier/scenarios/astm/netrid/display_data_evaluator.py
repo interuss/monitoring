@@ -797,7 +797,7 @@ class RIDObservationEvaluator(object):
                         ),
                         query_timestamps=[flights_query.query.request.timestamp],
                     )
-            self._common_dictionary_evaluator.evaluate_sp_flights_response(
+            self._common_dictionary_evaluator.evaluate_sp_flights(
                 sp_observation,
                 participants=[mapping.injected_flight.uss_participant_id],
             )
@@ -869,8 +869,8 @@ class RIDObservationEvaluator(object):
                         query_timestamps=[details_query.query.request.timestamp],
                     )
 
-            self._common_dictionary_evaluator.evaluate_sp_details_response(
-                details_query, [mapping.injected_flight.uss_participant_id]
+            self._common_dictionary_evaluator.evaluate_sp_details(
+                details_query.details, [mapping.injected_flight.uss_participant_id]
             )
 
     def _evaluate_area_too_large_sp_observation(
