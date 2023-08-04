@@ -15,9 +15,11 @@ net_rid:
         -   $ref: '#/common'
         -   $ref: 'environment.yaml#/net_rid'
     netrid_observation_evaluation_configuration:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.EvaluationConfigurationResource
         specification: { }
     id_generator:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.interuss.IDGeneratorResource
         dependencies:
             auth_adapter: utm_auth
@@ -25,6 +27,7 @@ net_rid:
             whoami_audience: localhost
             whoami_scope: rid.display_provider
     service_area:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.ServiceAreaResource
         specification:
             base_url: https://uss.example.com/dummy_base_url
@@ -38,23 +41,28 @@ net_rid:
 
 net_rid_sims:
     adjacent_circular_flights_data:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.FlightDataResource
         specification:
             adjacent_circular_flights_simulation_source: { }
     adjacent_circular_storage_config:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.FlightDataStorageResource
         specification:
             flight_record_collection_path: "./output/test_data.che.netrid.circular_flights.json"
     kml_flights_data:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.FlightDataResource
         specification:
             kml_source:
                 kml_location: file://./test_data/usa/netrid/dcdemo.kml
     kml_storage_config:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.FlightDataStorageResource
         specification:
             flight_record_collection_path: "./output/test_data.usa.netrid.dcdemo_flights.json"
     kentland_flights_data:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.FlightDataResource
         specification:
             kml_source:
@@ -63,6 +71,7 @@ net_rid_sims:
 flight_auth:
     $ref: '#/f3548_che'
     invalid_flight_auth_flights:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.flight_planning.FlightIntentsResource
         specification:
             planning_time: '0:05:00'
@@ -70,16 +79,19 @@ flight_auth:
 
 che_flight_intents:
     conflicting_flights:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.flight_planning.FlightIntentsResource
         specification:
             planning_time: '0:05:00'
             file_source: file://./test_data/che/flight_intents/conflicting_flights.json
     priority_preemption_flights:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.flight_planning.FlightIntentsResource
         specification:
             planning_time: '0:05:00'
             file_source: test_data.che.flight_intents.priority_preemption
     invalid_flight_intents:
+      $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
       resource_type: resources.flight_planning.FlightIntentsResource
       specification:
         planning_time: '0:05:00'
@@ -87,16 +99,19 @@ che_flight_intents:
 
 kentland_flight_intents:
     conflicting_flights:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.flight_planning.FlightIntentsResource
         specification:
             planning_time: '0:05:00'
             file_source: file://./test_data/usa/kentland/flight_intents/conflicting_flights.yaml
     priority_preemption_flights:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.flight_planning.FlightIntentsResource
         specification:
             planning_time: '0:05:00'
             file_source: test_data.usa.kentland.flight_intents.priority_preemption
     invalid_flight_intents:
+      $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
       resource_type: resources.flight_planning.FlightIntentsResource
       specification:
         planning_time: '0:05:00'
@@ -124,6 +139,7 @@ f3548_single_scenario:
 
 general_flight_authorization:
   flight_check_table:
+    $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
     resource_type: resources.interuss.flight_authorization.FlightCheckTableResource
     specification:
       table:
@@ -200,6 +216,7 @@ general_flight_authorization:
 
 geospatial_map:
   feature_check_table:
+    $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
     resource_type: resources.interuss.geospatial_map.FeatureCheckTableResource
     specification:
       table:

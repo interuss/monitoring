@@ -2,12 +2,14 @@
 
 common:
     utm_auth:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.communications.AuthAdapterResource
         specification:
             environment_variable_containing_auth_spec: AUTH_SPEC
 
 net_rid:
     netrid_service_providers_v19:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.NetRIDServiceProviders
         dependencies:
             auth_adapter: utm_auth
@@ -16,6 +18,7 @@ net_rid:
                 - participant_id: uss1
                   injection_base_url: http://host.docker.internal:8071/ridsp/injection
     netrid_service_providers_v22a:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.NetRIDServiceProviders
         dependencies:
             auth_adapter: utm_auth
@@ -24,6 +27,7 @@ net_rid:
                 - participant_id: uss1
                   injection_base_url: http://host.docker.internal:8081/ridsp/injection
     netrid_observers_v19:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.NetRIDObserversResource
         dependencies:
             auth_adapter: utm_auth
@@ -32,6 +36,7 @@ net_rid:
                 - participant_id: uss2
                   observation_base_url: http://host.docker.internal:8073/riddp/observation
     netrid_observers_v22a:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.NetRIDObserversResource
         dependencies:
             auth_adapter: utm_auth
@@ -40,6 +45,7 @@ net_rid:
                 - participant_id: uss2
                   observation_base_url: http://host.docker.internal:8083/riddp/observation
     netrid_dss_instances_v19:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.astm.f3411.DSSInstancesResource
         dependencies:
             auth_adapter: utm_auth
@@ -52,6 +58,7 @@ net_rid:
                   rid_version: F3411-19
                   base_url: http://host.docker.internal:8082
     netrid_dss_instances_v22a:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.astm.f3411.DSSInstancesResource
         dependencies:
             auth_adapter: utm_auth
@@ -66,6 +73,7 @@ net_rid:
 
 f3548:
     flight_planners:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.flight_planning.FlightPlannersResource
         dependencies:
             auth_adapter: utm_auth
@@ -84,6 +92,7 @@ f3548:
                 -   participant_id: uss2
                     injection_base_url: http://host.docker.internal:8094/scdsc
     dss:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.astm.f3548.v21.DSSInstanceResource
         dependencies:
             auth_adapter: utm_auth
@@ -93,6 +102,7 @@ f3548:
 
 f3548_single_scenario:
     uss1:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.flight_planning.FlightPlannerResource
         dependencies:
             auth_adapter: utm_auth
@@ -101,6 +111,7 @@ f3548_single_scenario:
                 participant_id: uss1
                 injection_base_url: http://host.docker.internal:8074/scdsc
     uss2:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.flight_planning.FlightPlannerResource
         dependencies:
             auth_adapter: utm_auth

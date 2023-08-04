@@ -78,6 +78,7 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             f"Invalid uas_id serial number: {serial_number}",
                             participants=participants,
+                            severity=Severity.Medium,
                         )
                     else:
                         check.record_passed()
@@ -87,7 +88,8 @@ class RIDCommonDictionaryEvaluator(object):
             # TODO: Add specific session id format check
         else:
             self._test_scenario.record_note(
-                f"Unsupported version {self._rid_version}: skipping UAS ID evaluation"
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping UAS ID evaluation",
             )
 
     def evaluate_operator_id(self, value: Optional[str], participants: List[str]):
@@ -104,7 +106,8 @@ class RIDCommonDictionaryEvaluator(object):
                         )
         else:
             self._test_scenario.record_note(
-                f"Unsupported version {self._rid_version}: skipping Operator ID evaluation"
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping Operator ID evaluation",
             )
 
     def evaluate_operator_location(
@@ -178,7 +181,8 @@ class RIDCommonDictionaryEvaluator(object):
 
         else:
             self._test_scenario.record_note(
-                f"Unsupported version {self._rid_version}: skipping Operator Location evaluation"
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping Operator Location evaluation",
             )
 
     def evaluate_operational_status(
@@ -200,5 +204,6 @@ class RIDCommonDictionaryEvaluator(object):
                         )
         else:
             self._test_scenario.record_note(
-                f"Unsupported version {self._rid_version}: skipping Operational Status evaluation"
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping Operational Status evaluation",
             )

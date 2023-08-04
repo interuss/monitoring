@@ -3,18 +3,20 @@
 import json
 import sys
 
-s = ""
-try:
-    for line in sys.stdin:
-        s += line + "\n"
-except KeyboardInterrupt:
-    pass
 
-try:
-    obj = json.loads(s)
-except ValueError as e:
-    raise ValueError(str(e) + "\nvvvvv Unable to decode JSON: vvvvv\n" + s + "^^^^^ Unable to decode JSON: ^^^^^")
+with open(sys.argv[2], "r") as f:
+    try:
+        obj = json.load(f)
+    except ValueError as e:
+        raise ValueError(f"Unable to load JSON from {sys.argv[2]}: {e}")
+
 fields = sys.argv[1].split(".")
 for field in fields:
-    obj = obj[field]
+    if field == "*":
+        obj = obj[next(iter(obj.keys()))]
+    else:
+        try:
+            obj = obj[field]
+        except KeyError:
+            raise ValueError(f"Could not find field '{field}' in '{sys.argv[1]}' for {sys.argv[2]}; available keys: {list(obj.keys())}")
 print(obj)

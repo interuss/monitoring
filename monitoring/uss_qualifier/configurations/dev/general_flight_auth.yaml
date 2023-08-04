@@ -1,0 +1,16 @@
+$content_schema: monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json
+v1:
+  test_run:
+    resources:
+      resource_declarations:
+        $ref: ./library/resources.yaml#/general_flight_authorization
+    action:
+      test_scenario:
+        scenario_type: scenarios.interuss.flight_authorization.GeneralFlightAuthorization
+        resources:
+          table: flight_check_table
+        on_failure: Abort
+  artifacts:
+    report:
+      report_path: output/report_general_flight_auth.json
+      redact_access_tokens: true
