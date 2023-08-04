@@ -5,10 +5,10 @@ import s2sphere
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
 
+from monitoring.monitorlib.fetch.rid import FetchedFlights
 from monitoring.monitorlib.fetch.rid import (
-    FetchedFlights
+    FlightDetails,
 )
-from monitoring.monitorlib.fetch.rid import FlightDetails
 from monitoring.monitorlib.geo import validate_lat, validate_lng
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
@@ -163,13 +163,11 @@ class RIDCommonDictionaryEvaluator(object):
                 details.v22a_value.get("operator_location"), participants
             )
 
-    def evaluate_dp_details(self, observed_details: Optional[FlightDetails], injected_flight, participants):
-        self.evaluate_operator_id(
-            observed_details.get("operator_id"), participants
-        )
-        self.evaluate_uas_id(
-            observed_details.get("uas_id"), participants
-        )
+    def evaluate_dp_details(
+        self, observed_details: Optional[FlightDetails], injected_flight, participants
+    ):
+        self.evaluate_operator_id(observed_details.get("operator_id"), participants)
+        self.evaluate_uas_id(observed_details.get("uas_id"), participants)
         self.evaluate_operator_location(
             observed_details.get("operator_location"), participants
         )
