@@ -61,6 +61,7 @@ jobs:
       env:
         RID_VERSION: F3411-22a
         CONFIG_NAME: configurations.dev.local_test
+        USS_QUALIFIER_STOP_FAST: true
     - name: uss_qualifier tests - ASTM NetRID F3411-19 Test Suite
       run: |
         cd monitoring/uss_qualifier
@@ -68,6 +69,7 @@ jobs:
       env:
         RID_VERSION: F3411-19
         CONFIG_NAME: configurations.dev.netrid_v19
+        USS_QUALIFIER_STOP_FAST: true
     - name: prober tests
       run: |
         cd monitoring/prober

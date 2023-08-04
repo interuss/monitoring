@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
@@ -32,6 +33,10 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceTypeName, ResourceID
 from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
+
+
+_STOP_FAST_FLAG = "USS_QUALIFIER_STOP_FAST"
+STOP_FAST = os.environ.get(_STOP_FAST_FLAG, "").strip().lower() == "true"
 
 
 class ScenarioCannotContinueError(Exception):
@@ -96,6 +101,12 @@ class PendingCheck(object):
             participants = self._participants
         if requirements is None:
             requirements = self._documentation.applicable_requirements
+
+        if STOP_FAST and severity != Severity.Critical:
+            note = f"Severity {severity} upgraded to Critical because {_STOP_FAST_FLAG} environment variable indicates true"
+            logger.info(note)
+            details += "\n" + note
+            severity = Severity.Critical
 
         kwargs = {
             "name": self._documentation.name,

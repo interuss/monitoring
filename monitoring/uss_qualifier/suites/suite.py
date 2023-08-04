@@ -108,7 +108,10 @@ class TestSuiteAction(object):
             except (ScenarioCannotContinueError, TestRunCannotContinueError):
                 pass
             scenario.go_to_cleanup()
-            scenario.cleanup()
+            try:
+                scenario.cleanup()
+            except (ScenarioCannotContinueError, TestRunCannotContinueError):
+                pass
         except KeyboardInterrupt:
             raise
         except Exception as e:
