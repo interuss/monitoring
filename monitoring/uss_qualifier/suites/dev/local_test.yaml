@@ -17,8 +17,14 @@ resources:
   netrid_dss_instances_v22a: resources.astm.f3411.DSSInstancesResource
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
+  flight_check_table: resources.interuss.flight_authorization.FlightCheckTableResource
   feature_check_table: resources.interuss.geospatial_map.FeatureCheckTableResource
 actions:
+- test_scenario:
+    scenario_type: scenarios.interuss.flight_authorization.GeneralFlightAuthorization
+    resources:
+      table: flight_check_table
+    on_failure: Abort
 - test_scenario:
     scenario_type: scenarios.interuss.geospatial_map.GeospatialFeatureComprehension
     resources:
