@@ -2,11 +2,14 @@ import datetime
 from typing import List, Optional
 import s2sphere
 
+from monitoring.monitorlib.rid_automated_testing.observation_api import (
+    GetDetailsResponse,
+)
+
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
-
-from monitoring.monitorlib.fetch.rid import FetchedFlights
 from monitoring.monitorlib.fetch.rid import (
+    FetchedFlights,
     FlightDetails,
 )
 from monitoring.monitorlib.geo import validate_lat, validate_lng
@@ -162,10 +165,12 @@ class RIDCommonDictionaryEvaluator(object):
     def evaluate_sp_details(self, details: FlightDetails, participants: List[str]):
         self._evaluate_uas_id(details.raw.get("uas_id"), participants)
         self._evaluate_operator_id(details.raw.get("operator_id"), participants)
-        self._evaluate_operator_location(details.raw.get("operator_location"), participants)
+        self._evaluate_operator_location(
+            details.raw.get("operator_location"), participants
+        )
 
     def evaluate_dp_details(
-        self, observed_details: Optional[FlightDetails], participants: List[str]
+        self, observed_details: Optional[GetDetailsResponse], participants: List[str]
     ):
         self._evaluate_operator_id(observed_details.get("operator_id"), participants)
         self._evaluate_uas_id(observed_details.get("uas_id"), participants)
@@ -173,7 +178,9 @@ class RIDCommonDictionaryEvaluator(object):
             observed_details.get("operator_location"), participants
         )
 
-    def _evaluate_uas_id(self, value: Optional[v22a.api.UASID], participants: List[str]):
+    def _evaluate_uas_id(
+        self, value: Optional[v22a.api.UASID], participants: List[str]
+    ):
         if self._rid_version == RIDVersion.f3411_22a:
             formats_keys = [
                 "serial_number",
