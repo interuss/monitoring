@@ -1,5 +1,10 @@
 from typing import List, Optional
-from monitoring.monitorlib.fetch.rid import FetchedUSSFlightDetails, FetchedUSSFlights
+from monitoring.monitorlib.fetch.rid import (
+    FetchedUSSFlightDetails,
+    FetchedUSSFlights,
+    FetchedFlights,
+    FlightDetails,
+)
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
@@ -20,28 +25,24 @@ class RIDCommonDictionaryEvaluator(object):
         self._test_scenario = test_scenario
         self._rid_version = rid_version
 
-    def evaluate_sp_flights_response(
-        self, sp_response: FetchedUSSFlights, participants: List[str]
+    def evaluate_sp_flights(
+        self, observed_flights: FetchedFlights, participants: List[str]
     ):
         if self._rid_version == RIDVersion.f3411_22a:
-            for f in sp_response.flights:
+            for f in observed_flights.flights:
                 self.evaluate_operational_status(
                     f.v22a_value.get("current_state", {}).get("operational_status"),
                     participants,
                 )
 
-    def evaluate_sp_details_response(
-        self, sp_response: FetchedUSSFlightDetails, participants: List[str]
-    ):
+    def evaluate_sp_details(self, details: FlightDetails, participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
-            self.evaluate_uas_id(
-                sp_response.details.v22a_value.get("uas_id"), participants
-            )
+            self.evaluate_uas_id(details.v22a_value.get("uas_id"), participants)
             self.evaluate_operator_id(
-                sp_response.details.v22a_value.get("operator_id"), participants
+                details.v22a_value.get("operator_id"), participants
             )
             self.evaluate_operator_location(
-                sp_response.details.v22a_value.get("operator_location"), participants
+                details.v22a_value.get("operator_location"), participants
             )
 
     def evaluate_uas_id(self, value: Optional[v22a.api.UASID], participants: List[str]):
@@ -76,7 +77,7 @@ class RIDCommonDictionaryEvaluator(object):
                     if not SerialNumber(serial_number).valid:
                         check.record_failed(
                             f"Invalid uas_id serial number: {serial_number}",
-                            participants,
+                            participants=participants,
                         )
                     else:
                         check.record_passed()
