@@ -30,6 +30,7 @@ class Flight(ImplicitDict):
 
 
 class GetDetailsResponse(v22a.api.RIDFlightDetails):
+    # TODO: Update automated_testing_interface instead of using the ASTM details response schema
     pass
 
 
