@@ -1,8 +1,10 @@
 #!/bin/bash
 
+echo "Waiting for local interoperability ecosystem infrastructure (DSS & OAuth) to become available..."
+
 # Docker Compose V2
-OAUTH_CONTAINER="dss_sandbox-local-dss-dummy-oauth-1"
-CORE_SERVICE_CONTAINER="dss_sandbox-local-dss-core-service-1"
+OAUTH_CONTAINER="local_infra-oauth-1"
+CORE_SERVICE_CONTAINER="local_infra-dss-1"
 
 declare -a localhost_containers=("$OAUTH_CONTAINER" "$CORE_SERVICE_CONTAINER")
 
@@ -16,7 +18,7 @@ check_timeout() {
    current_time=$(date +%s)
    elapsed_time=$((current_time-start_time))
    if ((elapsed_time >= timeout_duration)); then
-     echo "$error_message" 
+     echo "$error_message"
      exit 1
    fi
 }
@@ -67,4 +69,4 @@ if [ -n "${last_message}" ]; then
   echo ""
 fi
 
-echo "Local DSS instance is now available."
+echo "Local interoperability ecosystem infrastructure is now available."

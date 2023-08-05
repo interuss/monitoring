@@ -31,11 +31,11 @@ Simply build the Docker container with the Dockerfile from the root directory. A
 
 1. If testing local DSS instance, be sure that the loadtest (monitoring) container has access to the DSS container
 
-    a. For ISA run: `docker run -e AUTH_SPEC="DummyOAuth(http://host.docker.internal:8085/token,uss1)" --network="dss_sandbox-default" -p 8089:8089 interuss/monitoring locust -f loadtest/locust_files/ISA.py`
+    a. For ISA run: `docker run -e AUTH_SPEC="DummyOAuth(http://host.docker.internal:8085/token,uss1)" --network="interop_ecosystem_network" -p 8089:8089 interuss/monitoring locust -f loadtest/locust_files/ISA.py`
 
-    b. For ISA run: `docker run -e AUTH_SPEC="DummyOAuth(http://host.docker.internal:8085/token,uss1)" --network="dss_sandbox-default" -p 8089:8089 interuss/monitoring locust -f loadtest/locust_files/Sub.py`
+    b. For ISA run: `docker run -e AUTH_SPEC="DummyOAuth(http://host.docker.internal:8085/token,uss1)" --network="interop_ecosystem_network" -p 8089:8089 interuss/monitoring locust -f loadtest/locust_files/Sub.py`
 
 ## Use
 1. Navigate to http://localhost:8089
 1. Start new test with number of Users to spawn and the rate to spawn them.
-1. For the Host, provide the DSS Core Service endpoint used for testing. An example of such url is: http://dss_sandbox-local-dss-core-service-1:8082/v1/dss/ in case local environment is setup by [run_locally.sh](../../build/dev/run_locally.sh)
+1. For the Host, provide the DSS Core Service endpoint used for testing. An example of such url is: http://local_infra-dss-1:8082/v1/dss/ in case local environment is setup by [run_locally.sh](../../build/dev/run_locally.sh)
