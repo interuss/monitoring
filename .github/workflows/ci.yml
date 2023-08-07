@@ -61,6 +61,7 @@ jobs:
       env:
         RID_VERSION: F3411-22a
         CONFIG_NAME: ""
+        USS_QUALIFIER_STOP_FAST: true
     - name: uss_qualifier tests (F3411-19 configuration)
       run: |
         cd monitoring/uss_qualifier
@@ -68,6 +69,7 @@ jobs:
       env:
         RID_VERSION: F3411-19
         CONFIG_NAME: configurations.dev.netrid_v19
+        USS_QUALIFIER_STOP_FAST: true
     - name: prober tests
       run: |
         cd monitoring/prober
