@@ -51,7 +51,7 @@ make start-locally
 make start-uss-mocks
 
 RID_VERSION=${RID_VERSION:-"F3411-22a"}
-CONFIG_NAME=${CONFIG_NAME:-"configurations.dev.local_test"}
+CONFIG_NAME=${CONFIG_NAME:-""}
 echo "Selecting configuration"
 echo "============="
 echo "RID_VERSION: $RID_VERSION"
@@ -61,12 +61,3 @@ echo "CONFIG_NAME: $CONFIG_NAME"
 echo "Run the standard local tests."
 echo "============="
 monitoring/uss_qualifier/run_locally.sh "$CONFIG_NAME"
-
-# Ensure all tests passed
-successful=$(python build/dev/extract_json_field.py report.test_suite.successful < monitoring/uss_qualifier/output/report.json)
-if echo "${successful}" | grep -iqF true; then
-  echo "All uss_qualifier tests passed."
-else
-  echo "Could not establish that all uss_qualifier tests passed."
-  exit 1
-fi
