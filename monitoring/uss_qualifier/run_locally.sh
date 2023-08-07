@@ -44,6 +44,7 @@ docker run ${docker_args} --name uss_qualifier \
   -u "$(id -u):$(id -g)" \
   -e PYTHONBUFFERED=1 \
   -e AUTH_SPEC=${AUTH_SPEC} \
+  -e USS_QUALIFIER_STOP_FAST=${USS_QUALIFIER_STOP_FAST:-} \
   -v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \
   -w /app/monitoring/uss_qualifier \
   interuss/monitoring \
