@@ -1,0 +1,1 @@
+from .flight_check_table import FlightCheckTableResource

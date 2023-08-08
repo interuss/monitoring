@@ -1,4 +1,3 @@
-from types import MappingProxyType
 from typing import Dict, Optional
 
 from implicitdict import ImplicitDict

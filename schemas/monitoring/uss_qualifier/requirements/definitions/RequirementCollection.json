@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "requirement_collections": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "RequirementCollection.json"
+      },
+      "description": "This collection includes all of the requirements in all of these requirement collections."
+    },
+    "requirements": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "description": "This collection includes all of these requirements."
+    },
+    "requirement_sets": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "description": "This collection includes all requirements in all of these requirement sets."
+    },
+    "exclude": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "RequirementCollection.json"
+        }
+      ],
+      "description": "This collection does not include any of these requirements, despite all previous fields."
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/requirements/definitions/RequirementCollection.json",
+  "description": "monitoring.uss_qualifier.requirements.definitions.RequirementCollection, as defined in monitoring/uss_qualifier/requirements/definitions.py"
+}

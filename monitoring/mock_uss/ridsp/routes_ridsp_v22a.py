@@ -57,14 +57,16 @@ def _make_state(s: injection.RIDAircraftState) -> RIDAircraftState:
 
 
 def _make_operator_location(
-    position: injection.LatLngPoint, altitude: injection.OperatorAltitude
+    position: injection.LatLngPoint, altitude: Optional[injection.OperatorAltitude]
 ) -> OperatorLocation:
     """Convert injection information to F3411-22a OperatorLocation"""
-    return OperatorLocation(
+    operator_location = OperatorLocation(
         position=LatLngPoint(position),
-        altitude=Altitude(value=altitude.altitude),
-        altitude_type=altitude.altitude_type,
     )
+    if altitude:
+        operator_location["altitude"] = Altitude(value=altitude.altitude)
+        operator_location["altitude_type"] = altitude.altitude_type
+    return operator_location
 
 
 def _make_details(p: injection.RIDFlightDetails) -> RIDFlightDetails:
@@ -93,14 +95,9 @@ def _make_details(p: injection.RIDFlightDetails) -> RIDFlightDetails:
     ):
         if field in p:
             kwargs[field] = p[field]
-    if (
-        "operator_location" in p
-        and p.operator_location
-        and "operator_altitude" in p
-        and p.operator_altitude
-    ):
+    if "operator_location" in p and p.operator_location:
         kwargs["operator_location"] = _make_operator_location(
-            p.operator_location, p.operator_altitude
+            p.operator_location, p.get("operator_altitude")
         )
     return RIDFlightDetails(**kwargs)
 

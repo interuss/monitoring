@@ -1,8 +1,20 @@
 import os
 import subprocess
+from typing import Optional
+
+
+_commit_hash: Optional[str] = None
+_code_version: Optional[str] = None
 
 
 def get_commit_hash() -> str:
+    global _commit_hash
+    if _commit_hash is None:
+        _commit_hash = _retrieve_commit_hash()
+    return _commit_hash
+
+
+def _retrieve_commit_hash() -> str:
     env_hash = os.environ.get("GIT_COMMIT_HASH", "")
     if env_hash:
         return env_hash
@@ -22,6 +34,13 @@ def get_commit_hash() -> str:
 
 
 def get_code_version() -> str:
+    global _code_version
+    if _code_version is None:
+        _code_version = _retrieve_code_version()
+    return _code_version
+
+
+def _retrieve_code_version() -> str:
     env_version = os.environ.get("MONITORING_VERSION", "")
     if env_version:
         return env_version

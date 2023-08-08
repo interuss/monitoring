@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "test_run": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TestConfiguration.json"
+        }
+      ],
+      "description": "If specified, configuration describing how to perform a test run"
+    },
+    "artifacts": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ArtifactsConfiguration.json"
+        }
+      ],
+      "description": "If specified, configuration describing the artifacts related to the test run"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/USSQualifierConfigurationV1.json",
+  "description": "monitoring.uss_qualifier.configurations.configuration.USSQualifierConfigurationV1, as defined in monitoring/uss_qualifier/configurations/configuration.py"
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "message": {
+      "type": "string",
+      "description": "Error message"
+    },
+    "stacktrace": {
+      "type": "string",
+      "description": "Full stack trace of error"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of error"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time at which the error was logged"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/ErrorReport.json",
+  "description": "monitoring.uss_qualifier.reports.report.ErrorReport, as defined in monitoring/uss_qualifier/reports/report.py",
+  "required": [
+    "message",
+    "stacktrace",
+    "timestamp",
+    "type"
+  ]
+}

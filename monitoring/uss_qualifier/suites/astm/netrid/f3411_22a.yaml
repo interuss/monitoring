@@ -5,7 +5,39 @@ resources:
   observers: resources.netrid.NetRIDObserversResource
   evaluation_configuration: resources.netrid.EvaluationConfigurationResource
   dss_instances: resources.astm.f3411.DSSInstancesResource
+  id_generator: resources.interuss.IDGeneratorResource
+  service_area: resources.netrid.ServiceAreaResource
 actions:
+  - action_generator:
+      generator_type: action_generators.astm.f3411.ForEachDSS
+      resources:
+        dss_instances: dss_instances
+        id_generator: id_generator
+        service_area: service_area
+      specification:
+        action_to_repeat:
+          test_suite:
+            suite_definition:
+              name: DSS instance validator
+              resources:
+                dss: resources.astm.f3411.DSSInstanceResource
+                id_generator: resources.interuss.IDGeneratorResource
+                isa: resources.netrid.ServiceAreaResource
+              actions:
+                - test_scenario:
+                    scenario_type: scenarios.astm.netrid.v22a.dss.ISASimple
+                    resources:
+                      dss: dss
+                      id_generator: id_generator
+                      isa: isa
+            resources:
+              dss: dss
+              id_generator: id_generator
+              isa: service_area
+          on_failure: Continue
+        dss_instances_source: dss_instances
+        dss_instance_id: dss
+      on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.DSSInteroperability
       resources:

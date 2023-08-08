@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "action": {
+      "$ref": "../../suites/definitions/TestSuiteActionDeclaration.json",
+      "description": "The action this test configuration wants to run (usually a test suite)"
+    },
+    "non_baseline_inputs": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "description": "List of file inputs that should not be considered when computing the test baseline signature (e.g., environmental definitions)."
+    },
+    "resources": {
+      "$ref": "../../resources/definitions/ResourceCollection.json",
+      "description": "Declarations for resources used by the test suite"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/TestConfiguration.json",
+  "description": "monitoring.uss_qualifier.configurations.configuration.TestConfiguration, as defined in monitoring/uss_qualifier/configurations/configuration.py",
+  "required": [
+    "action",
+    "resources"
+  ]
+}

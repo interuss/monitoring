@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of this test suite"
+    },
+    "documentation_url": {
+      "type": "string",
+      "description": "URL at which this test suite is described"
+    },
+    "end_time": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "Time at which the test suite completed"
+    },
+    "capabilities_verified": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "$ref": {
+          "type": "string",
+          "description": "Path to content that replaces the $ref"
+        }
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "description": "If capabilities are defined by this suite, the list of capabilities verified for each participant."
+    },
+    "suite_type": {
+      "type": "string",
+      "description": "Type/location of this test suite"
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time at which the test suite started"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "TestSuiteActionReport.json"
+      },
+      "description": "Reports from test scenarios and test suites comprising the test suite for this report"
+    },
+    "successful": {
+      "type": "integer",
+      "description": "True iff test suite completed normally with no failed checks"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestSuiteReport.json",
+  "description": "monitoring.uss_qualifier.reports.report.TestSuiteReport, as defined in monitoring/uss_qualifier/reports/report.py",
+  "required": [
+    "actions",
+    "documentation_url",
+    "name",
+    "start_time",
+    "suite_type"
+  ]
+}

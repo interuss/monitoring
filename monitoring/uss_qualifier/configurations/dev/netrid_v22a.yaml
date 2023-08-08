@@ -1,8 +1,9 @@
+$content_schema: monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json
 v1:
     test_run:
         resources:
             resource_declarations:
-                $ref: 'resources.yaml#/all'
+                $ref: ./library/resources.yaml#/all
         action:
             test_suite:
                 suite_type: suites.astm.netrid.f3411_22a
@@ -12,10 +13,15 @@ v1:
                     observers: netrid_observers_v22a
                     evaluation_configuration: netrid_observation_evaluation_configuration
                     dss_instances: netrid_dss_instances_v22a
+                    id_generator: id_generator
+                    service_area: service_area
     artifacts:
-        "$ref": artifacts.yaml#/relative
+        report:
+            report_path: output/report_netrid_v22a.json
+            redact_access_tokens: true
+
         tested_roles:
-            report_path: output/tested_requirements.html
+            report_path: output/tested_requirements_netrid_v22a.html
             roles:
               - name: DSS Provider role
                 requirement_set: astm.f3411.v22a.dss_provider

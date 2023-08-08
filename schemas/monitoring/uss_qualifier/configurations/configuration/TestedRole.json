@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Participants fulfilling the role"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of role"
+    },
+    "requirement_set": {
+      "type": "string",
+      "description": "Set of requirements a participant must satisfy to fulfill the role"
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/TestedRole.json",
+  "description": "monitoring.uss_qualifier.configurations.configuration.TestedRole, as defined in monitoring/uss_qualifier/configurations/configuration.py",
+  "required": [
+    "name",
+    "participants",
+    "requirement_set"
+  ]
+}

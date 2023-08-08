@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
@@ -32,6 +33,10 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceTypeName, ResourceID
 from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
+
+
+_STOP_FAST_FLAG = "USS_QUALIFIER_STOP_FAST"
+STOP_FAST = os.environ.get(_STOP_FAST_FLAG, "").strip().lower() == "true"
 
 
 class ScenarioCannotContinueError(Exception):
@@ -97,6 +102,12 @@ class PendingCheck(object):
         if requirements is None:
             requirements = self._documentation.applicable_requirements
 
+        if STOP_FAST and severity != Severity.Critical:
+            note = f"Severity {severity} upgraded to Critical because {_STOP_FAST_FLAG} environment variable indicates true"
+            logger.info(note)
+            details += "\n" + note
+            severity = Severity.Critical
+
         kwargs = {
             "name": self._documentation.name,
             "documentation_url": self._documentation.url,
@@ -156,6 +167,7 @@ class GenericTestScenario(ABC):
     _case_report: Optional[TestCaseReport] = None
     _current_step: Optional[TestStepDocumentation] = None
     _step_report: Optional[TestStepReport] = None
+    _allow_undocumented_checks = False  # When this variable is set to True, it allows undocumented checks to be executed by the scenario. This is primarly intended to simplify internal unit testing.
 
     def __init__(self):
         self.documentation = get_documentation(self.__class__)
@@ -285,7 +297,19 @@ class GenericTestScenario(ABC):
             raise RuntimeError(
                 f'Test scenario `{self.me()}` was instructed to begin_test_step "{name}" during test case "{self._current_case.name}", but that test step is not declared in documentation; declared steps are: {step_list}'
             )
-        self._current_step = available_steps[name]
+        self._begin_test_step(available_steps[name])
+
+    def begin_dynamic_test_step(self, step: TestStepDocumentation) -> None:
+        self._expect_phase(ScenarioPhase.ReadyForTestStep)
+        available_steps = {c.name: c for c in self._current_case.steps}
+        if "Dynamic" not in available_steps:
+            raise RuntimeError(
+                f'Test scenario `{self.me()}` was instructed to begin_dynamic_test_step "{step.name}" during test case "{self._current_case.name}", but there is no "Dynamic test step" declared in documentation.'
+            )
+        self._begin_test_step(step)
+
+    def _begin_test_step(self, step: TestStepDocumentation) -> None:
+        self._current_step = step
         self._step_report = TestStepReport(
             name=self._current_step.name,
             documentation_url=self._current_step.url,
@@ -319,12 +343,18 @@ class GenericTestScenario(ABC):
     ) -> PendingCheck:
         self._expect_phase({ScenarioPhase.RunningTestStep, ScenarioPhase.CleaningUp})
         available_checks = {c.name: c for c in self._current_step.checks}
-        if name not in available_checks:
+        if name in available_checks:
+            check_documentation = available_checks[name]
+        else:
             check_list = ", ".join(available_checks)
-            raise RuntimeError(
-                f'Test scenario `{self.me()}` was instructed to prepare to record outcome for check "{name}" during test step "{self._current_step.name}" during test case "{self._current_case.name}", but that check is not declared in documentation; declared checks are: {check_list}'
-            )
-        check_documentation = available_checks[name]
+            if self._allow_undocumented_checks:
+                check_documentation = TestCheckDocumentation(
+                    name=name, applicable_requirements=[]
+                )
+            else:
+                raise RuntimeError(
+                    f'Test scenario `{self.me()}` was instructed to prepare to record outcome for check "{name}" during test step "{self._current_step.name}" during test case "{self._current_case.name}", but that check is not declared in documentation; declared checks are: {check_list}'
+                )
         return PendingCheck(
             documentation=check_documentation,
             participants=[] if participants is None else participants,

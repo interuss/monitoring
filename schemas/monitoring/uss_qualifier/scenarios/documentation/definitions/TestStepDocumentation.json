@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "$ref": "TestCheckDocumentation.json"
+      }
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/scenarios/documentation/definitions/TestStepDocumentation.json",
+  "description": "monitoring.uss_qualifier.scenarios.documentation.definitions.TestStepDocumentation, as defined in monitoring/uss_qualifier/scenarios/documentation/definitions.py",
+  "required": [
+    "checks",
+    "name"
+  ]
+}
