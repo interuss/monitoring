@@ -1,0 +1,73 @@
+{% extends "tracer/base.html" %}
+
+{% block content %}
+<h2>Observation area {{ area.id }}</h2>
+<p>
+  As of {{ now }}
+</p>
+<p>
+  Bounding box: {{ bbox_str }}
+</p>
+<p>
+  Time range: {{ area.area.time_start }} to {{ area.area.time_end }}
+</p>
+<p>
+  Altitude range: {{ alt_lo }} to {{ alt_hi }}
+</p>
+{% if area.f3411 %}
+<div>
+  <h3>F3411 remote ID</h3>
+  <p>
+    RID version: {{ area.f3411.rid_version.value }}
+  </p>
+  <p>
+    DSS URL: {{ area.f3411.dss_base_url }}
+  </p>
+  <p>
+    Polling: {{ area.f3411.poll }}
+  </p>
+  <p>
+    Subscription: {{ area.f3411.subscription_id }}
+  </p>
+  <h4>Poll flights</h4>
+  <div>
+    <form action="{{ url_for('tracer_rid_request_poll', observation_area_id=area.id) }}" method="POST">
+      <p>
+        <label for="include_recent_positions">Include recent positions</label>
+        <input type="checkbox" id="include_recent_positions" name="include_recent_positions">
+      </p>
+      <p>
+        <label for="get_details">Get details</label>
+        <input type="checkbox" id="get_details" name="get_details">
+      </p>
+      <p>
+        <label for="enhanced_details">Request enhanced details</label>
+        <input type="checkbox" id="enhanced_details" name="enhanced_details">
+      </p>
+      <input type="hidden" name="observation_area_id" value="{{ area.id }}">
+      <input type="submit" value="Poll flights once">
+    </form>
+  </div>
+</div>
+{% endif %}
+{% if area.f3548 %}
+<div>
+  <h3>F3548</h3>
+  <p>
+    DSS URL: {{ area.f3548.dss_base_url }}
+  </p>
+  <p>
+    Polling: {{ area.f3548.poll }}
+  </p>
+  <p>
+    Subscription: {{ area.f3548.subscription_id }}
+  </p>
+  <p>
+    Monitor operational intents: {{ area.f3548.monitor_op_intents }}
+  </p>
+  <p>
+    Monitor constraints: {{ area.f3548.monitor_constraints }}
+  </p>
+</div>
+{% endif %}
+{% endblock %}

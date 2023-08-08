@@ -16,30 +16,37 @@ from uas_standards.astm.f3411.v22a.api import (
     PutIdentificationServiceAreaNotificationParameters as PutIdentificationServiceAreaNotificationParametersV22a,
 )
 from .. import context
-from ..config import KEY_RID_VERSION
 from ..template import _print_time_range
 
 RESULT = ("", 204)
-RID_VERSION = webapp.config[KEY_RID_VERSION]
 
 
-if RID_VERSION == RIDVersion.f3411_19:
-    path = "/tracer/f3411v19/v1/uss/identification_service_areas/<id>"
-elif RID_VERSION == RIDVersion.f3411_22a:
-    path = "/tracer/f3411v22a/v2/uss/identification_service_areas/<id>"
-else:
-    raise NotImplementedError(
-        f"Unsupported RID Version {RID_VERSION}. No routes mounted for RID notifications."
-    )
+@webapp.route(
+    "/tracer/f3411v19/<observation_area_id>/v1/uss/identification_service_areas/<isa_id>",
+    methods=["POST"],
+)
+def tracer_rid_isa_notification_v19(
+    observation_area_id: str, isa_id: str
+) -> Tuple[str, int]:
+    return tracer_rid_isa_notification(isa_id, RIDVersion.f3411_19)
 
 
-@webapp.route(path, methods=["POST"])
-def tracer_rid_isa_notification(id: str) -> Tuple[str, int]:
+@webapp.route(
+    "/tracer/f3411v22a/<observation_area_id>/v2/uss/identification_service_areas/<isa_id>",
+    methods=["POST"],
+)
+def tracer_rid_isa_notification_v22a(
+    observation_area_id: str, isa_id: str
+) -> Tuple[str, int]:
+    return tracer_rid_isa_notification(isa_id, RIDVersion.f3411_22a)
+
+
+def tracer_rid_isa_notification(id: str, rid_version: RIDVersion) -> Tuple[str, int]:
     """Implements RID ISA notification receiver."""
     logger.debug(f"Handling tracer_rid_isa_notification from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
     req["endpoint"] = "identification_service_areas"
-    log_name = context.resources.logger.log_new("notify_isa", req)
+    log_name = context.tracer_logger.log_new("notify_isa", req)
 
     claims = req.token
     owner = claims.get("sub", "<No owner in token>")
@@ -50,14 +57,16 @@ def tracer_rid_isa_notification(id: str) -> Tuple[str, int]:
             raise ValueError("Request did not contain a JSON payload")
 
         # TODO: Use mutate.rid.ISAChangeNotification when fully implemented. See https://github.com/interuss/monitoring/pull/123/files/553f46b374623e3734634bb277548e06a2457cd6#r1255701016
-        if RID_VERSION == RIDVersion.f3411_19:
+        if rid_version == RIDVersion.f3411_19:
             notification = ImplicitDict.parse(
                 json, PutIdentificationServiceAreaNotificationParametersV19
             )
-        if RID_VERSION == RIDVersion.f3411_22a:
+        elif rid_version == RIDVersion.f3411_22a:
             notification = ImplicitDict.parse(
                 json, PutIdentificationServiceAreaNotificationParametersV22a
             )
+        else:
+            raise NotImplementedError(f"RID version {rid_version} not yet supported")
 
         if notification.get("service_area", None):
             isa = notification.service_area
@@ -65,13 +74,13 @@ def tracer_rid_isa_notification(id: str) -> Tuple[str, int]:
             if owner_body and owner_body != owner:
                 owner = f"{owner} token|{owner_body} body"
             version = isa.version if isa.version else "<Unknown version>"
-            if RID_VERSION == RIDVersion.f3411_19:
+            if rid_version == RIDVersion.f3411_19:
                 time_range = _print_time_range(isa.time_start, isa.time_end)
-            elif RID_VERSION == RIDVersion.f3411_22a:
+            elif rid_version == RIDVersion.f3411_22a:
                 time_range = _print_time_range(isa.time_start.value, isa.time_end.value)
             else:
                 raise NotImplementedError(
-                    f"Unsupported RID Version {RID_VERSION}. Unable to retrieve time range from isa response {isa}."
+                    f"Unsupported RID Version {rid_version}. Unable to retrieve time range from isa response {isa}."
                 )
 
             logger.info(
