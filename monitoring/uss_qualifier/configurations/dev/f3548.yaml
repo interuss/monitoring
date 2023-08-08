@@ -1,8 +1,9 @@
+$content_schema: monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json
 v1:
   test_run:
     resources:
       resource_declarations:
-        "$ref": resources.yaml#/f3548_che
+        $ref: ./library/resources.yaml#/f3548_che
     action:
       test_suite:
         suite_type: suites.astm.utm.f3548_21
@@ -14,11 +15,13 @@ v1:
           dss: dss
   artifacts:
     tested_roles:
-      report_path: output/tested_requirements.html
+      report_path: output/tested_requirements_f3548.html
       roles:
         - name: Strategic Coordination role
           requirement_set: astm.f3548.v21.scd
           participants:
             - uss1
             - uss2
-    "$ref": artifacts.yaml#/relative
+    report:
+      report_path: output/report_f3548.json
+      redact_access_tokens: true

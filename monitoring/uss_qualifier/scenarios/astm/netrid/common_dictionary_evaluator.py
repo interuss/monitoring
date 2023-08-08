@@ -1,3 +1,4 @@
+import datetime
 from typing import List, Optional
 from monitoring.monitorlib.fetch.rid import (
     FetchedUSSFlightDetails,
@@ -7,11 +8,19 @@ from monitoring.monitorlib.fetch.rid import (
 )
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
+from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType, PendingCheck
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.geo import validate_lat, validate_lng
+from monitoring.monitorlib.fetch.rid import Flight, Position
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
+
+# SP responses to /flights endpoint's p99 should be below this:
+SP_FLIGHTS_RESPONSE_TIME_TOLERANCE_SEC = 3
+NET_MAX_NEAR_REAL_TIME_DATA_PERIOD_SEC = 60
+_POSITION_TIMESTAMP_MAX_AGE_SEC = (
+    NET_MAX_NEAR_REAL_TIME_DATA_PERIOD_SEC + SP_FLIGHTS_RESPONSE_TIME_TOLERANCE_SEC
+)
 
 
 class RIDCommonDictionaryEvaluator(object):
@@ -28,12 +37,43 @@ class RIDCommonDictionaryEvaluator(object):
     def evaluate_sp_flights(
         self, observed_flights: FetchedFlights, participants: List[str]
     ):
+        for _, uss_flights in observed_flights.uss_flight_queries.items():
+            # For the timing checks, we want to look at the flights relative to the query
+            # they came from, as they may be provided from different SP's.
+            for f in uss_flights.flights:
+                self.evaluate_sp_flight_recent_positions(
+                    f,
+                    uss_flights.query.response.reported.datetime,
+                    participants,
+                )
+
         if self._rid_version == RIDVersion.f3411_22a:
             for f in observed_flights.flights:
+                # Evaluate on all flights regardless of where they came from
                 self.evaluate_operational_status(
                     f.v22a_value.get("current_state", {}).get("operational_status"),
                     participants,
                 )
+
+    def _evaluate_recent_position(
+        self, p: Position, query_time: datetime.datetime, check: PendingCheck
+    ):
+        """Check that the position's timestamp is at most 60 seconds before the request time."""
+        if (query_time - p.time).total_seconds() > _POSITION_TIMESTAMP_MAX_AGE_SEC:
+            check.record_failed(
+                "A Position timestamp was older than the tolerance.",
+                details=f"Position timestamp: {p.time}, query time: {query_time}",
+                severity=Severity.Medium,
+            )
+
+    def evaluate_sp_flight_recent_positions(
+        self, f: Flight, query_time: datetime.datetime, participants: List[str]
+    ):
+        with self._test_scenario.check(
+            "Recent positions timestamps", participants
+        ) as check:
+            for p in f.recent_positions:
+                self._evaluate_recent_position(p, query_time, check)
 
     def evaluate_sp_details(self, details: FlightDetails, participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
@@ -78,6 +118,7 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             f"Invalid uas_id serial number: {serial_number}",
                             participants=participants,
+                            severity=Severity.Medium,
                         )
                     else:
                         check.record_passed()
@@ -87,7 +128,8 @@ class RIDCommonDictionaryEvaluator(object):
             # TODO: Add specific session id format check
         else:
             self._test_scenario.record_note(
-                f"Unsupported version {self._rid_version}: skipping UAS ID evaluation"
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping UAS ID evaluation",
             )
 
     def evaluate_operator_id(self, value: Optional[str], participants: List[str]):
@@ -104,7 +146,8 @@ class RIDCommonDictionaryEvaluator(object):
                         )
         else:
             self._test_scenario.record_note(
-                f"Unsupported version {self._rid_version}: skipping Operator ID evaluation"
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping Operator ID evaluation",
             )
 
     def evaluate_operator_location(
@@ -178,7 +221,8 @@ class RIDCommonDictionaryEvaluator(object):
 
         else:
             self._test_scenario.record_note(
-                f"Unsupported version {self._rid_version}: skipping Operator Location evaluation"
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping Operator Location evaluation",
             )
 
     def evaluate_operational_status(
@@ -200,5 +244,6 @@ class RIDCommonDictionaryEvaluator(object):
                         )
         else:
             self._test_scenario.record_note(
-                f"Unsupported version {self._rid_version}: skipping Operational Status evaluation"
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping Operational Status evaluation",
             )

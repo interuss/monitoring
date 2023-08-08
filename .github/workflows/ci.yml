@@ -54,20 +54,22 @@ jobs:
       run: |
         cd monitoring/mock_uss
         make test
-    - name: uss_qualifier tests - U-Space Test Suite
+    - name: uss_qualifier tests (F3411-22a configuration)
       run: |
         cd monitoring/uss_qualifier
         make test
       env:
         RID_VERSION: F3411-22a
-        CONFIG_NAME: configurations.dev.local_test
-    - name: uss_qualifier tests - ASTM NetRID F3411-19 Test Suite
+        CONFIG_NAME: ""
+        USS_QUALIFIER_STOP_FAST: true
+    - name: uss_qualifier tests (F3411-19 configuration)
       run: |
         cd monitoring/uss_qualifier
         make test
       env:
         RID_VERSION: F3411-19
         CONFIG_NAME: configurations.dev.netrid_v19
+        USS_QUALIFIER_STOP_FAST: true
     - name: prober tests
       run: |
         cd monitoring/prober
@@ -80,7 +82,7 @@ jobs:
         path: |
           logs
           monitoring/mock_uss/output
-    - name: Save USS qualifier report as artifact
+    - name: Save USS qualifier reports as artifact
       if: always()
       uses: actions/upload-artifact@v3
       with:

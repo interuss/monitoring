@@ -1,3 +1,6 @@
+# See the file below (in the `schemas` folder of this repo) for the schema this file's content follows
+$content_schema: monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json
+
 # This configuration uses the v1 configuration schema
 v1:
   # This block defines how to perform a test run
@@ -81,12 +84,12 @@ v1:
   artifacts:
     report:
       # Path to main report output
-      report_path: output/report.json
+      report_path: output/report_f3548_self_contained.json
       redact_access_tokens: true
 
     # Information about a report including a list of roles tested and which participants are attempting to fill them
     tested_roles:
-      report_path: output/tested_requirements.html
+      report_path: output/tested_requirements_f3548_self_contained.html
       roles:
         - name: Strategic Coordination role
           requirement_set: astm.f3548.v21.scd
@@ -96,4 +99,4 @@ v1:
 
     graph:
       # Path to output GraphViz test file summarizing test run
-      gv_path: output/report.gv
+      gv_path: output/report_f3548_self_contained.gv
