@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List
 
 from monitoring.monitorlib import schema_validation, fetch
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
@@ -101,11 +101,15 @@ def validate_shared_operational_intent(
     test_step: str,
     flight_intent: InjectFlightRequest,
     op_intent_id: str,
-):
+    skip_if_not_found: bool = False,
+) -> bool:
     """Validate that operational intent information was correctly shared for a flight intent.
 
     This function implements the test step described in
     validate_shared_operational_intent.md.
+
+    :returns: True if the operational intent was validated. May return False without failing a check e.g. if the
+    operational intent was not found and skip_if_not_found was True.
     """
     scenario.begin_test_step(test_step)
     extent = bounding_vol4(
@@ -132,12 +136,20 @@ def validate_shared_operational_intent(
         "Operational intent shared correctly", [flight_planner.participant_id]
     ) as check:
         if not matching_op_intent_refs:
-            check.record_failed(
-                summary="Operational intent reference not found in DSS",
-                severity=Severity.High,
-                details=f"USS {flight_planner.participant_id} indicated that it created an operational intent with ID {op_intent_id}, but no operational intent references with that ID were found in the DSS in the area of the flight intent",
-                query_timestamps=[query.request.timestamp],
-            )
+            if not skip_if_not_found:
+                check.record_failed(
+                    summary="Operational intent reference not found in DSS",
+                    severity=Severity.High,
+                    details=f"USS {flight_planner.participant_id} indicated that it created an operational intent with ID {op_intent_id}, but no operational intent references with that ID were found in the DSS in the area of the flight intent",
+                    query_timestamps=[query.request.timestamp],
+                )
+            else:
+                scenario.record_note(
+                    flight_planner.participant_id,
+                    f"Operational intent reference with ID {op_intent_id} not found in DSS, instructed to skip test step.",
+                )
+                scenario.end_test_step()
+                return False
     op_intent_ref = matching_op_intent_refs[0]
 
     op_intent, query = dss.get_full_op_intent(op_intent_ref)

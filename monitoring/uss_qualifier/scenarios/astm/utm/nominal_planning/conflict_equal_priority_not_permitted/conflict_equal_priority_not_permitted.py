@@ -306,6 +306,14 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self.tested_uss,
             self.flight_1_planned_time_range_A.request,
         )
+        validate_shared_operational_intent(
+            self,
+            self.tested_uss,
+            self.dss,
+            "Validate flight 1 sharing",
+            self.flight_1_planned_time_range_A.request,
+            resp_flight_1.operational_intent_id,
+        )
 
         _ = modify_planned_conflict_flight_intent(
             self,
@@ -322,6 +330,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             "Validate flight 1 not modified",
             self.flight_1_planned_time_range_A.request,
             resp_flight_1.operational_intent_id,
+            skip_if_not_found=True,
         )
 
     def _attempt_modify_activated_flight_conflict(self) -> str:
@@ -331,6 +340,14 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self.tested_uss,
             self.flight_1_activated_time_range_A.request,
             self.flight_1_id,
+        )
+        validate_shared_operational_intent(
+            self,
+            self.tested_uss,
+            self.dss,
+            "Validate flight 1 sharing",
+            self.flight_1_activated_time_range_A.request,
+            resp_flight_1.operational_intent_id,
         )
 
         _ = modify_activated_conflict_flight_intent(
@@ -348,6 +365,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             "Validate flight 1 not modified",
             self.flight_1_activated_time_range_A.request,
             resp_flight_1.operational_intent_id,
+            skip_if_not_found=True,
         )
 
         return resp_flight_1.operational_intent_id
@@ -355,6 +373,22 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
     def _modify_activated_flight_preexisting_conflict(
         self, orig_flight_1_op_intent_id: str
     ):
+        resp_flight_1 = activate_flight_intent(
+            self,
+            "Activate flight 1",
+            self.tested_uss,
+            self.flight_1_activated_time_range_A.request,
+            self.flight_1_id,
+        )
+        validate_shared_operational_intent(
+            self,
+            self.tested_uss,
+            self.dss,
+            "Validate flight 1 sharing",
+            self.flight_1_activated_time_range_A.request,
+            resp_flight_1.operational_intent_id,
+        )
+
         # TODO: the following call requires the control USS to support CMSA role,
         #  but as there is currently no explicit way of knowing if it is the case
         #  or not, we assume that a Rejected result means the USS does not
@@ -411,6 +445,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 "Validate flight 1",
                 self.flight_1_activated_time_range_A.request,
                 orig_flight_1_op_intent_id,
+                skip_if_not_found=True,
             )
 
     def cleanup(self):
