@@ -140,7 +140,7 @@ def validate_shared_operational_intent(
                 check.record_failed(
                     summary="Operational intent reference not found in DSS",
                     severity=Severity.High,
-                    details=f"USS {flight_planner.participant_id} indicated that it created an operational intent with ID {op_intent_id}, but no operational intent references with that ID were found in the DSS in the area of the flight intent",
+                    details=f"USS {flight_planner.participant_id} was supposed to have shared an operational intent with ID {op_intent_id}, but no operational intent references with that ID were found in the DSS in the area of the flight intent",
                     query_timestamps=[query.request.timestamp],
                 )
             else:
