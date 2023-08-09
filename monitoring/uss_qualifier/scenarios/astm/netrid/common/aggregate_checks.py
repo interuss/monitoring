@@ -1,10 +1,8 @@
 import re
-import statistics
-from operator import attrgetter
-from typing import List, Dict, Tuple, Union
+from typing import List, Dict
 
 from monitoring.monitorlib import fetch
-from monitoring.monitorlib.fetch.evaluation import compute_query_durations_percentiles
+from monitoring.monitorlib.fetch import evaluation
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -59,12 +57,7 @@ class AggregateChecks(ReportEvaluationScenario):
         for query in self._queries:
             for base_url, participant in self._participants_by_base_url.items():
                 if query.request.url.startswith(base_url):
-
-                    # TODO: debugging attempt (there is a str amongst the fetch.Query)
-                    print(f"{type(query)}")
-                    if type(query) == str:
-                        print(query)
-                    self._queries_by_participant[participant] += query
+                    self._queries_by_participant[participant].append(query)
                     break
 
     def run(self):
@@ -72,35 +65,13 @@ class AggregateChecks(ReportEvaluationScenario):
         self.record_note("participants", str(self._participants_by_base_url))
         self.record_note("nb_queries", str(len(self._queries)))
 
-        self.begin_test_case("Time performances of Display Provider requests")
+        self.begin_test_case("Performance of Display Providers requests")
 
-        self.begin_test_step("Display data requests")
+        self.begin_test_step("Performance of /display_data requests")
         self._dp_display_data_times_step()
         self.end_test_step()
 
         self.end_test_case()
-
-        # SP response times NET0260.a
-        # flight details resp times NET0460
-        # perfs of SP pushing to DP NET0740
-
-        # Service Provider response times logged
-        #   Each USS being tested as a Service Provider logged, for all incoming Display Provider requests that resulted in responses that did not indicate an error:
-        #   The earliest timestamp at which a Display Provider request was received
-        #   The latest timestamp before the response was dispatched
-        #   The client ID of the querying Display Provider
-        #   The URL of the endpoint being queried
-        # Display Provider requests logged
-        #   Each USS being tested as a Display Provider (or acting in the Qualifier role) logged, for all outgoing requests to Service Providers that did not indicate an error:
-        #   The latest timestamp before a request to a Service Provider was dispatched
-        #   The earliest timestamp after a response from the Service Provider was received
-        #   The URL of the Service Provider endpoint being queried
-        # Display Provider responses logged
-        #   Each USS being tested as a Display Provider logged, for all incoming requests from a Display Application or Test Driver that did not indicate an error:
-        #   The earliest timestamp at which the Display Application or Test Driver request was received
-        #   The latest timestamp before the response was dispatched
-        #   The view bounds, for area-based queries
-
         self.end_test_scenario()
 
     def _dp_display_data_times_step(self):
@@ -108,32 +79,41 @@ class AggregateChecks(ReportEvaluationScenario):
         :return: the query durations of respectively the initial queries and the subsequent ones
         """
 
-        # find successful display_data queries for each DP
         pattern = re.compile(r"/display_data\?view=(-?\d+(.\d+)?,){3}-?\d+(.\d+)?")
         for participant, all_queries in self._queries_by_participant.items():
 
+            # identify successful display_data queries
             relevant_queries: List[fetch.Query] = list()
             for query in all_queries:
-
-                # TODO: debugging attempt (there is a str amongst the fetch.Query)
-                print(f"{type(query)}")
-                if type(query) == str:
-                    print(query)
-
                 match = pattern.search(query.request.url)
                 if match is not None and query.status_code == 200:
-                    relevant_queries += query
+                    relevant_queries.append(query)
 
+            if len(relevant_queries) == 0:
+                # this may be a service provider
+                self.record_note(
+                    f"{participant}/display_data", "skipped check: no relevant queries"
+                )
+                continue
+
+            # compute percentiles
+            relevant_queries_by_url = evaluation.classify_query_by_url(relevant_queries)
             (
-                init_95th,
-                init_99th,
-                subsequent_95th,
-                subsequent_99th,
-            ) = compute_query_durations_percentiles(
-                self._rid_version.min_session_length_s, relevant_queries
+                init_durations,
+                subsequent_durations,
+            ) = evaluation.get_init_subsequent_queries_durations(
+                self._rid_version.min_session_length_s, relevant_queries_by_url
+            )
+            [init_95th, init_99th] = evaluation.compute_percentiles(
+                init_durations, [95, 99]
+            )
+            [subsequent_95th, subsequent_99th] = evaluation.compute_percentiles(
+                subsequent_durations, [95, 99]
             )
 
-            with self.check("TODO: NET0420", [participant]) as check:
+            with self.check(
+                "Performance of /display_data initial requests", [participant]
+            ) as check:
                 if init_95th > self._rid_version.dp_init_resp_percentile95_s:
                     check.record_failed(
                         summary=f"95th percentile of durations for initial DP display_data queries is higher than threshold",
@@ -149,7 +129,9 @@ class AggregateChecks(ReportEvaluationScenario):
                         details=f"threshold: {self._rid_version.dp_init_resp_percentile99_s}, 99th percentile: {init_99th}",
                     )
 
-            with self.check("TODO: NET0440", [participant]) as check:
+            with self.check(
+                "Performance of /display_data subsequent requests", [participant]
+            ) as check:
                 if subsequent_95th > self._rid_version.dp_data_resp_percentile95_s:
                     check.record_failed(
                         summary=f"95th percentile of durations for subsequent DP display_data queries is higher than threshold",
@@ -164,3 +146,8 @@ class AggregateChecks(ReportEvaluationScenario):
                         participants=[participant],
                         details=f"threshold: {self._rid_version.dp_data_resp_percentile99_s}, 95th percentile: {subsequent_99th}",
                     )
+
+            self.record_note(
+                f"{participant}/display_data",
+                f"percentiles on {len(relevant_queries)} relevant queries ({len(relevant_queries_by_url)} different URLs, {len(init_durations)} initial queries, {len(subsequent_durations)} subsequent queries): init 95th: {init_95th}; init 99th: {init_99th}; subsequent 95th: {subsequent_95th}; subsequent 99th: {subsequent_99th}",
+            )
