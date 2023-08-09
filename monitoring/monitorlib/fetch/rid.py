@@ -140,13 +140,20 @@ class Position(ImplicitDict):
     alt: float
     """Meters above the WGS84 reference ellipsoid."""
 
-    @staticmethod
-    def from_v19_rid_aircraft_position(p: v19.api.RIDAircraftPosition) -> Position:
-        return Position(lat=p.lat, lng=p.lng, alt=p.alt)
+    time: datetime.datetime
+    """Timestamp for the position."""
 
     @staticmethod
-    def from_v22a_rid_aircraft_position(p: v22a.api.RIDAircraftPosition) -> Position:
-        return Position(lat=p.lat, lng=p.lng, alt=p.alt)
+    def from_v19_rid_aircraft_position(
+        p: v19.api.RIDAircraftPosition, t: v19.api.StringBasedDateTime
+    ) -> Position:
+        return Position(lat=p.lat, lng=p.lng, alt=p.alt, time=t.datetime)
+
+    @staticmethod
+    def from_v22a_rid_aircraft_position(
+        p: v22a.api.RIDAircraftPosition, t: v22a.api.StringBasedDateTime
+    ) -> Position:
+        return Position(lat=p.lat, lng=p.lng, alt=p.alt, time=t.datetime)
 
 
 class Flight(ImplicitDict):
@@ -188,11 +195,13 @@ class Flight(ImplicitDict):
         if "current_state" in self.raw and self.raw.current_state:
             if self.rid_version == RIDVersion.f3411_19:
                 return Position.from_v19_rid_aircraft_position(
-                    self.v19_value.current_state.position
+                    self.v19_value.current_state.position,
+                    self.v19_value.current_state.timestamp,
                 )
             elif self.rid_version == RIDVersion.f3411_22a:
                 return Position.from_v22a_rid_aircraft_position(
-                    self.v22a_value.current_state.position
+                    self.v22a_value.current_state.position,
+                    self.v22a_value.current_state.timestamp.value,
                 )
             else:
                 raise NotImplementedError(
@@ -205,12 +214,12 @@ class Flight(ImplicitDict):
     def recent_positions(self) -> List[Position]:
         if self.rid_version == RIDVersion.f3411_19:
             return [
-                Position.from_v19_rid_aircraft_position(p.position)
+                Position.from_v19_rid_aircraft_position(p.position, p.time)
                 for p in self.v19_value.recent_positions
             ]
         elif self.rid_version == RIDVersion.f3411_22a:
             return [
-                Position.from_v22a_rid_aircraft_position(p.position)
+                Position.from_v22a_rid_aircraft_position(p.position, p.time.value)
                 for p in self.v22a_value.recent_positions
             ]
         else:

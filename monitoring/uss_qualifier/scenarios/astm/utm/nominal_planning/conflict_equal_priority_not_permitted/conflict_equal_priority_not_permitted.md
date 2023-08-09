@@ -103,18 +103,25 @@ Flight 1 should not have been activated directly.
 ### [Plan flight 1 test step](../../../../flight_planning/plan_flight_intent.md)
 Flight 1 on time range A should be successfully planned by the tested USS.
 
+### [Validate flight 1 sharing test step](../../validate_shared_operational_intent.md)
+
 ### [Attempt to modify planned flight 1 in conflict test step](../../../../flight_planning/modify_planned_conflict_flight_intent.md)
 The test driver attempts to modify flight 1 via the tested USS so that it becomes planned on time range B.
 However, this conflicts with flight 2, which is of equal priority but was planned first.
 As such it should be rejected per **[astm.f3548.v21.SCD0040](../../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Validate flight 1 not modified test step](../../validate_shared_operational_intent.md)
-Flight 1 should not have been modified.
+Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
+original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
 
 ## Attempt to modify activated flight in conflict test case
 ### [Activate flight 1 test step](../../../../flight_planning/activate_flight_intent.md)
 The test driver activates flight 1 onto its time range A, which should be done successfully.
+Note that flight 1 could be either planned or non-existent before this step. In the latter case, the flight will be
+directly activated without being planned beforehand.
+
+### [Validate flight 1 sharing test step](../../validate_shared_operational_intent.md)
 
 ### [Attempt to modify activated flight 1 in conflict test step](../../../../flight_planning/modify_activated_conflict_flight_intent.md)
 The test driver attempts to modify flight 1 so that it becomes in conflict with flight 2 onto time range B.
@@ -122,10 +129,19 @@ Both flights are activated at that point. However, because the conflict did not 
 initiated, it should be rejected per **[astm.f3548.v21.SCD0050](../../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Validate flight 1 not modified test step](../../validate_shared_operational_intent.md)
-Flight 1 should not have been modified.
+Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
+original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
 
 ## Modify activated flight with pre-existing conflict test case
+### [Activate flight 1 test step](../../../../flight_planning/activate_flight_intent.md)
+The test driver activates flight 1 onto its time range A, which should be done successfully.
+Note that flight 1 could be either already activated or non-existent before this step. In the former case, the call is
+idempotent and nothing should change. In the latter case, the flight will be directly activated without being planned
+beforehand.
+
+### [Validate flight 1 sharing test step](../../validate_shared_operational_intent.md)
+
 ### Declare flight 2 non-conforming test step
 The test driver instructs the control USS to declare flight 2 as non-conforming with an off-nominal volume onto time
 range A. This makes non-conforming flight 2 conflicts with activated flight 1.
@@ -168,8 +184,9 @@ to reject or accept the flight. If the USS indicates that the injection attempt 
 
 ### [Validate flight 1 test step](../../validate_shared_operational_intent.md)
 This step validates that the response of the USS is consistent with the flight shared, i.e. either it was properly
-modified or it remained the same as previously.
-
+modified, or the USS considered the attempt invalid. In the latter case, because the modification attempt was invalid,
+either Flight 1 should not have been modified (because the USS kept the original accepted request), or it should have
+been removed (because the USS rejected the replacement plan provided).
 
 ## Cleanup
 ### Successful flight deletion check
