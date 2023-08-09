@@ -69,6 +69,7 @@ class DSSWrapper(object):
         fail_msg: str,
         required_status_code: Optional[Set[int]] = None,
         severity: Severity = Severity.High,
+        fail_details: Optional[str] = None,
     ):
         """
         :param required_status_code: one of those status code is expected, overrides the success check
@@ -82,7 +83,10 @@ class DSSWrapper(object):
                 summary=fail_msg,
                 severity=severity,
                 participants=[self._dss.participant_id],
-                details=f"{q.status_code} response: " + "\n".join(q.errors),
+                details=f"{fail_details}\n{q.status_code} response: "
+                + "\n".join(q.errors)
+                if fail_details is not None
+                else f"{q.status_code} response: " + "\n".join(q.errors),
                 query_timestamps=[q.query.request.timestamp],
             )
 
@@ -380,6 +384,53 @@ class DSSWrapper(object):
                 check, sub, f"Failed to get subscription {sub_id}", {404}
             )
             return
+
+        except QueryError as e:
+            self._handle_query_error(check, e)
+        raise RuntimeError(
+            "DSS query was not successful, but a High Severity issue didn't interrupt execution"
+        )
+
+    def put_sub_expect_response_code(
+        self,
+        check: PendingCheck,
+        area_vertices: List[s2sphere.LatLng],
+        alt_lo: float,
+        alt_hi: float,
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+        expected_error_codes: Set[int],
+        uss_base_url: str,
+        sub_id: str,
+        sub_version: Optional[str] = None,
+    ) -> ChangedSubscription:
+        """Attempt to create or update a subscription at the DSS, and expect the specified HTTP response code.
+
+        :return: the DSS response
+        """
+        try:
+            created_sub = mutate.upsert_subscription(
+                area_vertices=area_vertices,
+                alt_lo=alt_lo,
+                alt_hi=alt_hi,
+                start_time=start_time,
+                end_time=end_time,
+                uss_base_url=uss_base_url,
+                subscription_id=sub_id,
+                subscription_version=sub_version,
+                rid_version=self._dss.rid_version,
+                utm_client=self._dss.client,
+            )
+
+            self._handle_query_result(
+                check=check,
+                q=created_sub,
+                required_status_code=expected_error_codes,
+                fail_msg=f"Inserting subscription {sub_id} had an http code not in {expected_error_codes}",
+                fail_details=f"Passed subscription start and end times: {start_time} - {end_time} (duration: {end_time - start_time})"
+                f"altitudes: {alt_lo} - {alt_hi}, area: {area_vertices}",
+            )
+            return created_sub
 
         except QueryError as e:
             self._handle_query_error(check, e)
