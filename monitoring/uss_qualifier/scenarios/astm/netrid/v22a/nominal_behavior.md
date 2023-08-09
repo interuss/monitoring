@@ -49,6 +49,11 @@ This particular test requires each flight to be uniquely identifiable by its 2D 
 
 If a DSS was provided to this test scenario, uss_qualifier acts as a Display Provider to query Service Providers under test in this step.
 
+#### Recent positions timestamps check
+**[astm.f3411.v22a.NET0270](../../../../requirements/astm/f3411/v22a.md)** requires all recent positions to be within the NetMaxNearRealTimeDataPeriod. This check will fail if any of the reported positions are older than the maximally allowed period plus NetSpDataResponseTime99thPercentile.
+
+TODO Julien add required checks here for NET0270 b) and c)
+
 #### Flights data format check
 
 **[astm.f3411.v22a.NET0710](../../../../requirements/astm/f3411/v22a.md)** requires a Service Provider to implement the P2P portion of the OpenAPI specification.  This check will fail if the response to the /flights endpoint does not validate against the OpenAPI-specified schema.
