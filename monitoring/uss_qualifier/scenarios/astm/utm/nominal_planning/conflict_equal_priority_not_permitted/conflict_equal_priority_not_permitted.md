@@ -111,7 +111,8 @@ However, this conflicts with flight 2, which is of equal priority but was planne
 As such it should be rejected per **[astm.f3548.v21.SCD0040](../../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Validate flight 1 not modified test step](../../validate_shared_operational_intent.md)
-Flight 1 should not have been modified. It is acceptable for the flight to not exist anymore.
+Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
+original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
 
 ## Attempt to modify activated flight in conflict test case
@@ -128,7 +129,8 @@ Both flights are activated at that point. However, because the conflict did not 
 initiated, it should be rejected per **[astm.f3548.v21.SCD0050](../../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Validate flight 1 not modified test step](../../validate_shared_operational_intent.md)
-Flight 1 should not have been modified. It is acceptable for the flight to not exist anymore.
+Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
+original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
 
 ## Modify activated flight with pre-existing conflict test case
@@ -182,8 +184,9 @@ to reject or accept the flight. If the USS indicates that the injection attempt 
 
 ### [Validate flight 1 test step](../../validate_shared_operational_intent.md)
 This step validates that the response of the USS is consistent with the flight shared, i.e. either it was properly
-modified or it remained the same as previously. It is acceptable for the flight to not exist anymore in the latter case.
-
+modified, or the USS considered the attempt invalid. In the latter case, because the modification attempt was invalid,
+either Flight 1 should not have been modified (because the USS kept the original accepted request), or it should have
+been removed (because the USS rejected the replacement plan provided).
 
 ## Cleanup
 ### Successful flight deletion check

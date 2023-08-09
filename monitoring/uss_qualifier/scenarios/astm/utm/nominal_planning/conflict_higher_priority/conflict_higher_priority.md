@@ -95,7 +95,8 @@ However, it conflicts with flight 2, which is of higher priority and was planned
 As such it should be rejected per **[astm.f3548.v21.SCD0020](../../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Validate flight 1 not modified test step](../../validate_shared_operational_intent.md)
-The first flight should not have been modified. It is acceptable for the flight to not exist anymore.
+Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
+original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
 ### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
 
@@ -107,7 +108,9 @@ higher priority. Note that flight 1 could be either planned or non-existent befo
 As such it should be rejected per **[astm.f3548.v21.SCD0025](../../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Validate flight 1 not activated test step](../../validate_shared_operational_intent.md)
-The first flight should not have been activated. It is acceptable for the flight to not exist anymore.
+Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
+original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
+
 
 ## Modify activated flight with pre-existing conflict test case
 ### [Delete flight 2 test step](../../../../flight_planning/delete_flight_intent.md)
@@ -149,7 +152,8 @@ However, because the conflict did not exist when the modification was initiated,
 per **[astm.f3548.v21.SCD0030](../../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Validate flight 1 not modified test step](../../validate_shared_operational_intent.md)
-The first flight should not have been modified. It is acceptable for the flight to have been deleted in the meantime.
+Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
+original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
 ### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
 
