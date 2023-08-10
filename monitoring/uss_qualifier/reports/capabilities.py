@@ -105,7 +105,8 @@ def evaluate_all_conditions_condition(
         else:
             unsatisfied_conditions.append(subreport)
     return ParticipantCapabilityConditionEvaluationReport(
-        condition_satisfied=satisfied_conditions and not unsatisfied_conditions,
+        condition_satisfied=len(satisfied_conditions) > 0
+        and len(unsatisfied_conditions) == 0,
         all_conditions=AllConditionsEvaluationReport(
             satisfied_conditions=satisfied_conditions,
             unsatisfied_conditions=unsatisfied_conditions,
@@ -142,10 +143,10 @@ def evaluate_no_failed_checks_condition(
     report: TestSuiteReport,
 ) -> ParticipantCapabilityConditionEvaluationReport:
     failed_check_paths = [
-        path for path, _ in report.query_failed_checks(participant_id)
+        "$." + path for path, _ in report.query_failed_checks(participant_id)
     ]
     return ParticipantCapabilityConditionEvaluationReport(
-        condition_satisfied=not failed_check_paths,
+        condition_satisfied=len(failed_check_paths) == 0,
         no_failed_checks=NoFailedChecksConditionEvaluationReport(
             failed_checks=failed_check_paths
         ),
@@ -256,7 +257,7 @@ def evaluate_capability_verified_condition(
     ]
     return ParticipantCapabilityConditionEvaluationReport(
         condition_satisfied=all(cc.capability_verified for cc in checked_capabilities)
-        and not missing_capabilities,
+        and len(missing_capabilities) == 0,
         capability_verified=CapabilityVerifiedConditionEvaluationReport(
             checked_capabilities=checked_capabilities,
             missing_capabilities=missing_capabilities,
