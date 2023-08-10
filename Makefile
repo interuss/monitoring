@@ -58,7 +58,7 @@ tag:
 .PHONY: start-locally
 start-locally:
 	build/dev/run_locally.sh up -d
-	build/dev/wait_for_local_dss.sh
+	build/dev/wait_for_local_infra.sh
 
 .PHONY: probe-locally
 probe-locally:
@@ -78,7 +78,7 @@ stop-uss-mocks:
 .PHONY: collect-local-logs
 collect-local-logs:
 	mkdir -p logs
-	-sh -c "build/dev/run_locally.sh logs --timestamps" > logs/dss_sandbox_local.log 2>&1
+	-sh -c "build/dev/run_locally.sh logs --timestamps" > logs/local_infra.log 2>&1
 	-docker logs atproxy > logs/atproxy.log 2>&1
 	-docker logs mock_uss_scdsc_a > logs/mock_uss_scdsc_a.log 2>&1
 	-docker logs mock_uss_scdsc_b > logs/mock_uss_scdsc_b.log 2>&1
