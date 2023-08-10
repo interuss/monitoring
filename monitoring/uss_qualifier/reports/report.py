@@ -369,17 +369,23 @@ class TestSuiteActionReport(ImplicitDict):
 
 
 class AllConditionsEvaluationReport(ImplicitDict):
+    """Result of an evaluation of AllConditions determined by whether all the subconditions are satisfied."""
+
     satisfied_conditions: List[ParticipantCapabilityConditionEvaluationReport]
+    """All of the conditions that were satisfied (there must be at least one)."""
+
     unsatisfied_conditions: List[ParticipantCapabilityConditionEvaluationReport]
+    """All of the conditions that were unsatisfied (if any, then this condition will not be satisfied)."""
 
 
 class AnyConditionEvaluationReport(ImplicitDict):
-    """Resolve of an evaluation of AnyCondition determined by whether any of the subconditions are satisfied."""
+    """Result of an evaluation of AnyCondition determined by whether any of the subconditions are satisfied."""
 
     satisfied_options: List[ParticipantCapabilityConditionEvaluationReport]
     """Which of the specified options were satisfied (if any were satisfied, then this condition should be satisfied)."""
 
     unsatisfied_options: List[ParticipantCapabilityConditionEvaluationReport]
+    """Which of the specified options were not satisfied (these are informational only and do not affect the evaluation)."""
 
 
 class NoFailedChecksConditionEvaluationReport(ImplicitDict):

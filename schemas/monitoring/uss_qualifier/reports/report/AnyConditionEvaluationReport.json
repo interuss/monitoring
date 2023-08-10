@@ -6,22 +6,23 @@
       "type": "string",
       "description": "Path to content that replaces the $ref"
     },
-    "unsatisfied_options": {
-      "type": "array",
-      "items": {
-        "$ref": "ParticipantCapabilityConditionEvaluationReport.json"
-      }
-    },
     "satisfied_options": {
       "type": "array",
       "items": {
         "$ref": "ParticipantCapabilityConditionEvaluationReport.json"
       },
       "description": "Which of the specified options were satisfied (if any were satisfied, then this condition should be satisfied)."
+    },
+    "unsatisfied_options": {
+      "type": "array",
+      "items": {
+        "$ref": "ParticipantCapabilityConditionEvaluationReport.json"
+      },
+      "description": "Which of the specified options were not satisfied (these are informational only and do not affect the evaluation)."
     }
   },
   "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/AnyConditionEvaluationReport.json",
-  "description": "Resolve of an evaluation of AnyCondition determined by whether any of the subconditions are satisfied.\n\nmonitoring.uss_qualifier.reports.report.AnyConditionEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
+  "description": "Result of an evaluation of AnyCondition determined by whether any of the subconditions are satisfied.\n\nmonitoring.uss_qualifier.reports.report.AnyConditionEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "satisfied_options",
     "unsatisfied_options"
