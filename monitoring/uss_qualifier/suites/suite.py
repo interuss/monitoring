@@ -15,7 +15,7 @@ from monitoring.monitorlib.inspection import (
     import_submodules,
 )
 from monitoring.uss_qualifier.reports.capabilities import (
-    condition_satisfied_for_test_suite,
+    evaluate_condition_for_test_suite,
 )
 from monitoring.uss_qualifier.scenarios.interuss.evaluation_scenario import (
     ReportEvaluationScenario,
@@ -25,7 +25,7 @@ from monitoring.uss_qualifier.reports.report import (
     TestScenarioReport,
     FailedCheck,
     TestSuiteReport,
-    TestSuiteActionReport,
+    TestSuiteActionReport, ParticipantCapabilityEvaluationReport,
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.resource import (
@@ -216,6 +216,7 @@ class TestSuite(object):
             documentation_url="",  # TODO: Populate correctly
             start_time=StringBasedDateTime(datetime.utcnow()),
             actions=[],
+            capability_evaluations=[],
         )
         success = True
         for a in range(len(self.actions) + 1):
@@ -246,39 +247,31 @@ class TestSuite(object):
         report.successful = success
         report.end_time = StringBasedDateTime(datetime.utcnow())
 
-        # Evaluate participants' verified capabilities
+        # Evaluate participants' capabilities
         if (
             "participant_verifiable_capabilities" in self.definition
             and self.definition.participant_verifiable_capabilities
         ):
             all_participants = report.all_participants()
-            report.capabilities_verified = {p: [] for p in all_participants}
             for capability in self.definition.participant_verifiable_capabilities:
                 for participant_id in all_participants:
-                    try:
-                        if condition_satisfied_for_test_suite(
-                            capability.verification_condition, participant_id, report
-                        ):
-                            logger.info(
-                                "Test suite {} verified {} capability '{}' for {}",
-                                self.declaration.type_name,
-                                capability.id,
-                                capability.name,
-                                participant_id,
-                            )
-                            report.capabilities_verified[participant_id].append(
-                                capability.id
-                            )
-                    except ValueError as e:
-                        logger.error(
-                            "Error verifying {} capability '{}' in test suite {}: {}\nCapability definition: {}",
+                    cond_eval_report = evaluate_condition_for_test_suite(
+                        capability.verification_condition, participant_id, report
+                    )
+                    report.capability_evaluations.append(ParticipantCapabilityEvaluationReport(
+                        capability_id=capability.id,
+                        participant_id=participant_id,
+                        verified=cond_eval_report.condition_satisfied,
+                        condition_evaluation=cond_eval_report
+                    ))
+                    if cond_eval_report.condition_satisfied:
+                        logger.info(
+                            "Test suite {} verified {} capability '{}' for {}",
+                            self.declaration.type_name,
                             capability.id,
                             capability.name,
-                            self.declaration.type_name,
-                            str(e),
-                            json.dumps(capability, indent=2),
+                            participant_id,
                         )
-                        break
 
         return report
 
