@@ -25,7 +25,8 @@ from monitoring.uss_qualifier.reports.report import (
     TestScenarioReport,
     FailedCheck,
     TestSuiteReport,
-    TestSuiteActionReport, ParticipantCapabilityEvaluationReport,
+    TestSuiteActionReport,
+    ParticipantCapabilityEvaluationReport,
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.resource import (
@@ -258,12 +259,14 @@ class TestSuite(object):
                     cond_eval_report = evaluate_condition_for_test_suite(
                         capability.verification_condition, participant_id, report
                     )
-                    report.capability_evaluations.append(ParticipantCapabilityEvaluationReport(
-                        capability_id=capability.id,
-                        participant_id=participant_id,
-                        verified=cond_eval_report.condition_satisfied,
-                        condition_evaluation=cond_eval_report
-                    ))
+                    report.capability_evaluations.append(
+                        ParticipantCapabilityEvaluationReport(
+                            capability_id=capability.id,
+                            participant_id=participant_id,
+                            verified=cond_eval_report.condition_satisfied,
+                            condition_evaluation=cond_eval_report,
+                        )
+                    )
                     if cond_eval_report.condition_satisfied:
                         logger.info(
                             "Test suite {} verified {} capability '{}' for {}",

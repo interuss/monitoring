@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "failed_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The location of each FailedCheck, relative to the TestSuiteReport in which this report is located."
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/NoFailedChecksConditionEvaluationReport.json",
+  "description": "Result of an evaluation of NoFailedChecksCondition dependent on whether any checks failed within the scope of the test suite in which this condition is located.\n\nmonitoring.uss_qualifier.reports.report.NoFailedChecksConditionEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
+  "required": [
+    "failed_checks"
+  ]
+}

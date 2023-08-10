@@ -12,17 +12,28 @@ from monitoring.uss_qualifier.reports.capability_definitions import (
     CapabilityVerifiedCondition,
     CapabilityVerificationCondition,
 )
-from monitoring.uss_qualifier.reports.report import TestSuiteReport, ParticipantCapabilityConditionEvaluationReport, \
-    AllConditionsEvaluationReport, AnyConditionEvaluationReport, NoFailedChecksConditionEvaluationReport, \
-    CheckedRequirement, RequirementsCheckedConditionEvaluationReport, SpuriousReportMatch, CheckedCapability, \
-    CapabilityVerifiedConditionEvaluationReport
+from monitoring.uss_qualifier.reports.report import (
+    TestSuiteReport,
+    ParticipantCapabilityConditionEvaluationReport,
+    AllConditionsEvaluationReport,
+    AnyConditionEvaluationReport,
+    NoFailedChecksConditionEvaluationReport,
+    CheckedRequirement,
+    RequirementsCheckedConditionEvaluationReport,
+    SpuriousReportMatch,
+    CheckedCapability,
+    CapabilityVerifiedConditionEvaluationReport,
+)
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.requirements.documentation import (
     resolve_requirements_collection,
 )
 
 SpecificConditionType = TypeVar("SpecificConditionType", bound=SpecificCondition)
-ConditionEvaluator = Callable[[SpecificConditionType, ParticipantID, TestSuiteReport], ParticipantCapabilityConditionEvaluationReport]
+ConditionEvaluator = Callable[
+    [SpecificConditionType, ParticipantID, TestSuiteReport],
+    ParticipantCapabilityConditionEvaluationReport,
+]
 _capability_condition_evaluators: Dict[SpecificConditionType, ConditionEvaluator] = {}
 
 
@@ -86,7 +97,9 @@ def evaluate_all_conditions_condition(
     satisfied_conditions: List[ParticipantCapabilityConditionEvaluationReport] = []
     unsatisfied_conditions: List[ParticipantCapabilityConditionEvaluationReport] = []
     for subcondition in condition.conditions:
-        subreport = evaluate_condition_for_test_suite(subcondition, participant_id, report)
+        subreport = evaluate_condition_for_test_suite(
+            subcondition, participant_id, report
+        )
         if subreport.condition_satisfied:
             satisfied_conditions.append(subreport)
         else:
@@ -95,8 +108,8 @@ def evaluate_all_conditions_condition(
         condition_satisfied=satisfied_conditions and not unsatisfied_conditions,
         all_conditions=AllConditionsEvaluationReport(
             satisfied_conditions=satisfied_conditions,
-            unsatisfied_conditions=unsatisfied_conditions
-        )
+            unsatisfied_conditions=unsatisfied_conditions,
+        ),
     )
 
 
@@ -107,7 +120,9 @@ def evaluate_any_condition_condition(
     satisfied_options: List[ParticipantCapabilityConditionEvaluationReport] = []
     unsatisfied_options: List[ParticipantCapabilityConditionEvaluationReport] = []
     for subcondition in condition.conditions:
-        subreport = evaluate_condition_for_test_suite(subcondition, participant_id, report)
+        subreport = evaluate_condition_for_test_suite(
+            subcondition, participant_id, report
+        )
         if subreport.condition_satisfied:
             satisfied_options.append(subreport)
         else:
@@ -115,9 +130,8 @@ def evaluate_any_condition_condition(
     return ParticipantCapabilityConditionEvaluationReport(
         condition_satisfied=len(satisfied_options) > 0,
         all_conditions=AnyConditionEvaluationReport(
-            satisfied_options=satisfied_options,
-            unsatisfied_options=unsatisfied_options
-        )
+            satisfied_options=satisfied_options, unsatisfied_options=unsatisfied_options
+        ),
     )
 
 
@@ -127,12 +141,14 @@ def evaluate_no_failed_checks_condition(
     participant_id: ParticipantID,
     report: TestSuiteReport,
 ) -> ParticipantCapabilityConditionEvaluationReport:
-    failed_check_paths = [path for path, _ in report.query_failed_checks(participant_id)]
+    failed_check_paths = [
+        path for path, _ in report.query_failed_checks(participant_id)
+    ]
     return ParticipantCapabilityConditionEvaluationReport(
         condition_satisfied=not failed_check_paths,
         no_failed_checks=NoFailedChecksConditionEvaluationReport(
             failed_checks=failed_check_paths
-        )
+        ),
     )
 
 
@@ -143,7 +159,10 @@ def evaluate_requirements_checked_conditions(
     report: TestSuiteReport,
 ) -> ParticipantCapabilityConditionEvaluationReport:
     req_checks: Dict[RequirementID, CheckedRequirement] = {
-        req_id: CheckedRequirement(requirement_id=req_id, passed_checks=[], failed_checks=[]) for req_id in resolve_requirements_collection(condition.checked)
+        req_id: CheckedRequirement(
+            requirement_id=req_id, passed_checks=[], failed_checks=[]
+        )
+        for req_id in resolve_requirements_collection(condition.checked)
     }
     for path, passed_check in report.query_passed_checks(participant_id):
         for req_id in passed_check.requirements:
@@ -153,16 +172,23 @@ def evaluate_requirements_checked_conditions(
         for req_id in failed_check.requirements:
             if req_id in req_checks:
                 req_checks[req_id].failed_checks.append(path)
-    passed = [cr for cr in req_checks.values() if cr.passed_checks and not cr.failed_checks]
+    passed = [
+        cr for cr in req_checks.values() if cr.passed_checks and not cr.failed_checks
+    ]
     failed = [cr for cr in req_checks.values() if cr.failed_checks]
-    untested = [cr.requirement_id for cr in req_checks.values() if not cr.passed_checks and not cr.failed_checks]
+    untested = [
+        cr.requirement_id
+        for cr in req_checks.values()
+        if not cr.passed_checks and not cr.failed_checks
+    ]
     return ParticipantCapabilityConditionEvaluationReport(
-        condition_satisfied=all(cr.passed_checks for cr in req_checks.values()) and not any(cr.failed_checks for cr in req_checks.values()),
+        condition_satisfied=all(cr.passed_checks for cr in req_checks.values())
+        and not any(cr.failed_checks for cr in req_checks.values()),
         requirements_checked=RequirementsCheckedConditionEvaluationReport(
             passed_requirements=passed,
             failed_requirements=failed,
-            untested_requirements=untested
-        )
+            untested_requirements=untested,
+        ),
     )
 
 
@@ -201,30 +227,39 @@ def evaluate_capability_verified_condition(
     spurious_matches = []
     for matching_report in matching_reports:
         if isinstance(matching_report.value, TestSuiteReport):
-            for i, capability_eval in enumerate(matching_report.value.capability_evaluations):
+            for i, capability_eval in enumerate(
+                matching_report.value.capability_evaluations
+            ):
                 if capability_eval.participant_id != participant_id:
                     continue
                 if capability_eval.capability_id not in condition.capability_ids:
                     continue
                 report_path = "$" + _jsonpath_of(matching_report.value, report)
-                checked_capabilities.append(CheckedCapability(
-                    report_location=report_path,
-                    capability_id=capability_eval.capability_id,
-                    capability_location=f"{report_path}.capability_evaluations[{i}]",
-                    capability_verified=capability_eval.verified
-                ))
+                checked_capabilities.append(
+                    CheckedCapability(
+                        report_location=report_path,
+                        capability_id=capability_eval.capability_id,
+                        capability_location=f"{report_path}.capability_evaluations[{i}]",
+                        capability_verified=capability_eval.verified,
+                    )
+                )
         else:
-            spurious_matches.append(SpuriousReportMatch(
-                location="$" + _jsonpath_of(matching_report.value, report),
-                type=type(matching_report.value).__name__
-            ))
+            spurious_matches.append(
+                SpuriousReportMatch(
+                    location="$" + _jsonpath_of(matching_report.value, report),
+                    type=type(matching_report.value).__name__,
+                )
+            )
     found_capabilities = {cc.capability_id for cc in checked_capabilities}
-    missing_capabilities = [c for c in condition.capability_ids if c not in found_capabilities]
+    missing_capabilities = [
+        c for c in condition.capability_ids if c not in found_capabilities
+    ]
     return ParticipantCapabilityConditionEvaluationReport(
-        condition_satisfied=all(cc.capability_verified for cc in checked_capabilities) and not missing_capabilities,
+        condition_satisfied=all(cc.capability_verified for cc in checked_capabilities)
+        and not missing_capabilities,
         capability_verified=CapabilityVerifiedConditionEvaluationReport(
             checked_capabilities=checked_capabilities,
             missing_capabilities=missing_capabilities,
-            spurious_matches=spurious_matches
-        )
+            spurious_matches=spurious_matches,
+        ),
     )

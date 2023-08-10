@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "unsatisfied_conditions": {
+      "type": "array",
+      "items": {
+        "$ref": "ParticipantCapabilityConditionEvaluationReport.json"
+      }
+    },
+    "satisfied_conditions": {
+      "type": "array",
+      "items": {
+        "$ref": "ParticipantCapabilityConditionEvaluationReport.json"
+      }
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/AllConditionsEvaluationReport.json",
+  "description": "monitoring.uss_qualifier.reports.report.AllConditionsEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
+  "required": [
+    "satisfied_conditions",
+    "unsatisfied_conditions"
+  ]
+}

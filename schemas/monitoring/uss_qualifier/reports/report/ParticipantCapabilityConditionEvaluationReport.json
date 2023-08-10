@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "capability_verified": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "CapabilityVerifiedConditionEvaluationReport.json"
+        }
+      ],
+      "description": "When specified, the condition evaluated was CapabilityVerifiedCondition."
+    },
+    "any_conditions": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AnyConditionEvaluationReport.json"
+        }
+      ],
+      "description": "When specified, the condition evaluated was AnyCondition."
+    },
+    "requirements_checked": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "RequirementsCheckedConditionEvaluationReport.json"
+        }
+      ],
+      "description": "When specified, the condition evaluated was RequirementsCheckedCondition."
+    },
+    "condition_satisfied": {
+      "type": "integer",
+      "description": "Whether the condition was satisfied for the relevant participant."
+    },
+    "all_conditions": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AllConditionsEvaluationReport.json"
+        }
+      ],
+      "description": "When specified, the condition evaluated was AllConditions."
+    },
+    "no_failed_checks": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "NoFailedChecksConditionEvaluationReport.json"
+        }
+      ],
+      "description": "When specified, the condition evaluated was NoFailedChecksCondition."
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/ParticipantCapabilityConditionEvaluationReport.json",
+  "description": "Result of an evaluation of a condition related to whether a participant capability should be verified.\n\nExactly one field other than `condition_satisfied` must be specified.\n\nmonitoring.uss_qualifier.reports.report.ParticipantCapabilityConditionEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
+  "required": [
+    "condition_satisfied"
+  ]
+}

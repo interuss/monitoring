@@ -13,7 +13,10 @@ from monitoring.uss_qualifier.configurations.configuration import (
     ParticipantID,
 )
 from monitoring.uss_qualifier.fileio import FileReference
-from monitoring.uss_qualifier.reports.capability_definitions import CapabilityID, JSONPathExpression
+from monitoring.uss_qualifier.reports.capability_definitions import (
+    CapabilityID,
+    JSONPathExpression,
+)
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 
 
@@ -320,9 +323,7 @@ class TestSuiteActionReport(ImplicitDict):
 
     def _conditional(
         self,
-        test_suite_func: Union[
-            Callable[[TestSuiteReport], Any], Callable[[Any], Any]
-        ],
+        test_suite_func: Union[Callable[[TestSuiteReport], Any], Callable[[Any], Any]],
         test_scenario_func: Optional[Callable[[TestScenarioReport], Any]] = None,
         action_generator_func: Optional[Callable[[ActionGeneratorReport], Any]] = None,
     ) -> Any:

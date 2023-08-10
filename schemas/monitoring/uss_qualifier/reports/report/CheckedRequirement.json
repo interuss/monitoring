@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "passed_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The location of each PassedCheck involving the requirement of interest, relative to the TestSuiteReport in which the RequirementsCheckedConditionEvaluationReport containing this checked requirement is located."
+    },
+    "failed_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The location of each PassedCheck involving the requirement of interest, relative to the TestSuiteReport in which the RequirementsCheckedConditionEvaluationReport containing this checked requirement is located."
+    },
+    "requirement_id": {
+      "type": "string",
+      "description": "The requirement being checked."
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/CheckedRequirement.json",
+  "description": "A single requirement being checked for participant-verifiable capability verification.\n\nmonitoring.uss_qualifier.reports.report.CheckedRequirement, as defined in monitoring/uss_qualifier/reports/report.py",
+  "required": [
+    "failed_checks",
+    "passed_checks",
+    "requirement_id"
+  ]
+}
