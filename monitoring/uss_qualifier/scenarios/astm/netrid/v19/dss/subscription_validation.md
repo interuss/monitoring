@@ -30,17 +30,25 @@ We expect to be allowed to query for existing subscriptions in order to clean th
 
 ## Subscription limitations test case
 
-### Subscription limitations test step
+### Subscription quantity limitations test step
+
+The test will attempt to create 10 identical subscriptions for the same area and expect this to succeed, then create an 11th one and expect it to fail.
+
+#### Create up to the maximum allowed number of subscriptions in an area check
+
+As per **[astm.f3411.v19.DSS0030](../../../../../requirements/astm/f3411/v19.md)**, the DSS API is expected to allow us
+to create multiple subscriptions.
 
 #### Enforce maximum number of subscriptions for an area check
 
-**[astm.f3411.v22a.DSS0050](../../../../../requirements/astm/f3411/v22a.md)** for a given area for which the DSS is responsible, there may be at most NetDSSMaxSubscriptionPerArea (10) subscriptions per USS.
+If the DSS successfully creates an 11th Subscription in the same area instead of rejecting it,
+it will not have performed the Subscription count validation as defined in **[astm.f3411.v19.DSS0050](../../../../../requirements/astm/f3411/v19.md)**
 
-The test will attempt to create 10 subscriptions for the same area and expect this to succeed, then create an 11th one and expect it to fail.
+### Subscription duration limitations test step
 
 #### Enforce maximum duration of subscriptions for an area check
 
-**[astm.f3411.v22a.DSS0060](../../../../../requirements/astm/f3411/v22a.md)** any subscription to the DSS may not exceed NetDSSMaxSubscriptionDuration (24 hours).
+**[astm.f3411.v19.DSS0060](../../../../../requirements/astm/f3411/v19.md)** any subscription to the DSS may not exceed NetDSSMaxSubscriptionDuration (24 hours).
 
 The test will attempt to create a subscription for 24 hours and 10 minutes, and expect this to fail with an HTTP 400 error.
 
