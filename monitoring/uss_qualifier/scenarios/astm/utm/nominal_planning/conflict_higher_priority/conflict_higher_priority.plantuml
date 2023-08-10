@@ -31,6 +31,11 @@ TD <- C_USS: 200 Ok - Operational Intent 2 deleted\n{"result": "Closed"}
 TD -> T_USS: PUT /inject/flight/{flight1}\n{"state": "Accepted", "priority": //low//, "volumes": //time_range_A//}
 TD <- T_USS: 200 Ok - Operational Intent 1 created\n{"result": "Planned"}
 
+TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
+TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS
+TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
+TD <- T_USS: 200 Ok - returns Operational Intent 1
+
 TD -> C_USS: PUT /inject/flight/{flight2}\n{"state": "Accepted", "priority": //high//, "volumes": //time_range_A//}
 TD <- C_USS: 200 Ok - Operational Intent 2 created\n{"result": "Planned"}
 
@@ -39,9 +44,11 @@ TD <- T_USS: 200 Ok - Modification rejected\n{"result": "ConflictWithFlight"}
 note left: Per ""astm.f3548.v21.SCD0020""
 
 TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
-TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS
-TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
-TD <- T_USS: 200 Ok - returns Operational Intent 1
+TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS if it still exists
+alt Operational Intent Reference 1 still exists
+  TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
+  TD <- T_USS: 200 Ok - returns Operational Intent 1
+end
 
 TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
 TD <- DSS: 200 Ok - returns Operational Intent Reference 2 managed by Control USS
@@ -54,9 +61,11 @@ TD <- T_USS: 200 Ok - Activation rejected\n{"result": "ConflictWithFlight"}
 note left: Per ""astm.f3548.v21.SCD0025""
 
 TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
-TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS
-TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
-TD <- T_USS: 200 Ok - returns Operational Intent 1
+TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS if it still exists
+alt Operational Intent Reference 1 still exists
+  TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
+  TD <- T_USS: 200 Ok - returns Operational Intent 1
+end
 
 == Modify activated flight with pre-existing conflict ==
 TD -> C_USS: DELETE /inject/flight/{flight2}
@@ -64,6 +73,11 @@ TD <- C_USS: 200 Ok - Operational Intent 2 deleted\n{"result": "Closed"}
 
 TD -> T_USS: PUT /inject/flight/{flight1}\n{"state": "Activated"}
 TD <- T_USS: 200 Ok - Operational Intent 1 activated\n{"result": "ReadyToFly"}
+
+TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
+TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS
+TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
+TD <- T_USS: 200 Ok - returns Operational Intent 1
 
 TD -> C_USS: PUT /inject/flight/{flight2}\n{"state": "Accepted", "priority": //high//, "volumes": //time_range_A//}
 TD <- C_USS: 200 Ok - Operational Intent 2 created\n{"result": "Planned"}
@@ -94,9 +108,11 @@ TD <- T_USS: 200 Ok - Modification rejected\n{"result": "ConflictWithFlight"}
 note left: Per ""astm.f3548.v21.SCD0030""
 
 TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
-TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS
-TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
-TD <- T_USS: 200 Ok - returns Operational Intent 1
+TD <- DSS: 200 Ok - returns Operational Intent Reference 1 managed by Tested USS if it still exists
+alt Operational Intent Reference 1 still exists
+  TD -> T_USS: GET /uss/v1/operational_intents/{opintent1}
+  TD <- T_USS: 200 Ok - returns Operational Intent 1
+end
 
 TD -> DSS: POST /dss/v1/operational_intent_references/query\nwith area_of_interest encompassing flights volumes
 TD <- DSS: 200 Ok - returns Operational Intent Reference 2 managed by Control USS
