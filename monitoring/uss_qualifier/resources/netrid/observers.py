@@ -96,7 +96,9 @@ class NetRIDObserversResource(Resource[NetRIDObserversSpecification]):
     ):
         self.observers = [
             RIDSystemObserver(
-                o.participant_id, o.observation_base_url, auth_adapter.adapter
+                o.participant_id,
+                o.observation_base_url,
+                auth_adapter.adapter,
             )
             for o in specification.observers
         ]

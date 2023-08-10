@@ -16,7 +16,6 @@ The service providers to evaluate in the report.
 ### observers
 The observers to evaluate in the report.
 
-
 ## Performance of Display Providers requests test case
 
 ### Performance of /display_data requests test step
@@ -34,3 +33,13 @@ of the durations for the initial display data queries do not exceed the respecti
 **[astm.f3411.v22a.NET0440](../../../../requirements/astm/f3411/v22a.md)** requires that the 95th and 99th percentiles
 of the durations for the subsequent display data queries do not exceed the respectives thresholds
 `NetDpDataResponse95thPercentile` and `NetDpDataResponse99thPercentile`.
+
+## Performance of Service Providers requests test case
+
+### Performance of /flights?view requests test step
+
+#### Performance for replies to requested flights in an area check
+
+**[astm.f3411.v22a.NET0260-a](../../../../requirements/astm/f3411/v22a.md)** requires that the 95th and 99th percentiles
+of the durations for the replies to requested flights in an area do not exceed the respective thresholds
+`NetSpDataResponseTime95thPercentile` (1 second) and `NetSpDataResponseTime99thPercentile` (3 seconds).
