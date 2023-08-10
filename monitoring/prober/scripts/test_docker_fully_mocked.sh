@@ -19,7 +19,7 @@ make down-locally
 
 function collect_logs() {
   mkdir -p logs/prober
-  build/dev/run_locally.sh logs --timestamps > logs/prober/dss_sandbox_local.log 2>&1
+  build/dev/run_locally.sh logs --timestamps > logs/prober/local_infra.log 2>&1
 }
 
 function cleanup() {

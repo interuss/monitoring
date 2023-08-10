@@ -2,8 +2,8 @@
 
 set -eo pipefail
 
-# This script will deploy a standalone DSS instance with docker compose using
-# images from Docker Hub.
+# This script will deploy an interoperability ecosystem consisting of a standalone DSS instance and dummy OAuth server
+# (both accessible on the interop_ecosystem_network) with docker compose using the DSS image from Docker Hub.
 
 if [[ -z $(command -v docker) ]]; then
   echo "docker is required but not installed.  Visit https://docs.docker.com/install/ to install."
@@ -33,4 +33,4 @@ elif [[ "$DC_COMMAND" == "debug" ]]; then
 fi
 
 # shellcheck disable=SC2086
-docker compose -f docker-compose_dss.yaml -p dss_sandbox $DC_COMMAND $DC_OPTIONS
+docker compose -f docker-compose.yaml -p local_infra $DC_COMMAND $DC_OPTIONS
