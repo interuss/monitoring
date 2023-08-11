@@ -13,6 +13,10 @@ from monitoring.uss_qualifier.resources.communications import AuthAdapterResourc
 
 
 class RIDSystemObserver(object):
+    participant_id: str
+    base_url: str
+    session: infrastructure.UTMClientSession
+
     def __init__(
         self,
         participant_id: str,
@@ -21,6 +25,7 @@ class RIDSystemObserver(object):
     ):
         self.session = UTMClientSession(base_url, auth_adapter)
         self.participant_id = participant_id
+        self.base_url = base_url
 
         # TODO: Change observation API to use an InterUSS scope rather than re-using an ASTM scope
         self.rid_version = RIDVersion.f3411_19
