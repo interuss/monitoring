@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "satisfied_conditions": {
+      "type": "array",
+      "items": {
+        "$ref": "ParticipantCapabilityConditionEvaluationReport.json"
+      },
+      "description": "All of the conditions that were satisfied (there must be at least one)."
+    },
+    "unsatisfied_conditions": {
+      "type": "array",
+      "items": {
+        "$ref": "ParticipantCapabilityConditionEvaluationReport.json"
+      },
+      "description": "All of the conditions that were unsatisfied (if any, then this condition will not be satisfied)."
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/AllConditionsEvaluationReport.json",
+  "description": "Result of an evaluation of AllConditions determined by whether all the subconditions are satisfied.\n\nmonitoring.uss_qualifier.reports.report.AllConditionsEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
+  "required": [
+    "satisfied_conditions",
+    "unsatisfied_conditions"
+  ]
+}
