@@ -6,16 +6,18 @@
       "type": "string",
       "description": "Path to content that replaces the $ref"
     },
-    "suite_type": {
-      "type": "string",
-      "description": "Type/location of this test suite"
+    "successful": {
+      "type": "boolean",
+      "description": "True iff test suite completed normally with no failed checks"
     },
-    "actions": {
-      "type": "array",
-      "items": {
-        "$ref": "TestSuiteActionReport.json"
-      },
-      "description": "Reports from test scenarios and test suites comprising the test suite for this report"
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time at which the test suite started"
+    },
+    "documentation_url": {
+      "type": "string",
+      "description": "URL at which this test suite is described"
     },
     "capability_evaluations": {
       "type": "array",
@@ -24,19 +26,6 @@
       },
       "description": "List of capabilities defined in this test suite, evaluated for each participant."
     },
-    "documentation_url": {
-      "type": "string",
-      "description": "URL at which this test suite is described"
-    },
-    "start_time": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Time at which the test suite started"
-    },
-    "successful": {
-      "type": "integer",
-      "description": "True iff test suite completed normally with no failed checks"
-    },
     "end_time": {
       "type": [
         "string",
@@ -44,6 +33,17 @@
       ],
       "format": "date-time",
       "description": "Time at which the test suite completed"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "TestSuiteActionReport.json"
+      },
+      "description": "Reports from test scenarios and test suites comprising the test suite for this report"
+    },
+    "suite_type": {
+      "type": "string",
+      "description": "Type/location of this test suite"
     },
     "name": {
       "type": "string",

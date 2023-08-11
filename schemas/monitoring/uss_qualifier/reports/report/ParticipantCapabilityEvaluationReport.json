@@ -6,21 +6,21 @@
       "type": "string",
       "description": "Path to content that replaces the $ref"
     },
-    "capability_id": {
-      "type": "string",
-      "description": "ID of capability being evaluated."
+    "condition_evaluation": {
+      "$ref": "ParticipantCapabilityConditionEvaluationReport.json",
+      "description": "Report produced by evaluating the condition for verifying this capability."
+    },
+    "verified": {
+      "type": "boolean",
+      "description": "Whether the capability was successfully verified."
     },
     "participant_id": {
       "type": "string",
       "description": "ID of participant for which capability is being evaluated."
     },
-    "verified": {
-      "type": "integer",
-      "description": "Whether the capability was successfully verified."
-    },
-    "condition_evaluation": {
-      "$ref": "ParticipantCapabilityConditionEvaluationReport.json",
-      "description": "Report produced by evaluating the condition for verifying this capability."
+    "capability_id": {
+      "type": "string",
+      "description": "ID of capability being evaluated."
     }
   },
   "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/ParticipantCapabilityEvaluationReport.json",

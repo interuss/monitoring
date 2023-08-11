@@ -17,6 +17,21 @@
       ],
       "description": "When specified, the condition evaluated was CapabilityVerifiedCondition."
     },
+    "no_failed_checks": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "NoFailedChecksConditionEvaluationReport.json"
+        }
+      ],
+      "description": "When specified, the condition evaluated was NoFailedChecksCondition."
+    },
+    "condition_satisfied": {
+      "type": "boolean",
+      "description": "Whether the condition was satisfied for the relevant participant."
+    },
     "any_conditions": {
       "oneOf": [
         {
@@ -39,10 +54,6 @@
       ],
       "description": "When specified, the condition evaluated was RequirementsCheckedCondition."
     },
-    "condition_satisfied": {
-      "type": "integer",
-      "description": "Whether the condition was satisfied for the relevant participant."
-    },
     "all_conditions": {
       "oneOf": [
         {
@@ -53,17 +64,6 @@
         }
       ],
       "description": "When specified, the condition evaluated was AllConditions."
-    },
-    "no_failed_checks": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "NoFailedChecksConditionEvaluationReport.json"
-        }
-      ],
-      "description": "When specified, the condition evaluated was NoFailedChecksCondition."
     }
   },
   "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/ParticipantCapabilityConditionEvaluationReport.json",

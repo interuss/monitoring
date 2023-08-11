@@ -6,13 +6,36 @@
       "type": "string",
       "description": "Path to content that replaces the $ref"
     },
-    "name": {
+    "successful": {
+      "type": "boolean",
+      "description": "True iff test scenario completed normally with no failed checks"
+    },
+    "start_time": {
       "type": "string",
-      "description": "Name of this test scenario"
+      "format": "date-time",
+      "description": "Time at which the test scenario started"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "$ref": "TestCaseReport.json"
+      },
+      "description": "Reports for each of the test cases in this test scenario"
     },
     "documentation_url": {
       "type": "string",
       "description": "URL at which this test scenario is described"
+    },
+    "execution_error": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ErrorReport.json"
+        }
+      ],
+      "description": "If there was an error while executing this test scenario, this field describes the error"
     },
     "end_time": {
       "type": [
@@ -21,6 +44,17 @@
       ],
       "format": "date-time",
       "description": "Time at which the test scenario completed or encountered an error"
+    },
+    "cleanup": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TestStepReport.json"
+        }
+      ],
+      "description": "If this test scenario performed cleanup, this report captures the relevant information."
     },
     "notes": {
       "type": [
@@ -38,47 +72,13 @@
       },
       "description": "Additional information about this scenario that may be useful"
     },
-    "cases": {
-      "type": "array",
-      "items": {
-        "$ref": "TestCaseReport.json"
-      },
-      "description": "Reports for each of the test cases in this test scenario"
-    },
-    "start_time": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Time at which the test scenario started"
-    },
     "scenario_type": {
       "type": "string",
       "description": "Type of this test scenario"
     },
-    "cleanup": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "TestStepReport.json"
-        }
-      ],
-      "description": "If this test scenario performed cleanup, this report captures the relevant information."
-    },
-    "execution_error": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "ErrorReport.json"
-        }
-      ],
-      "description": "If there was an error while executing this test scenario, this field describes the error"
-    },
-    "successful": {
-      "type": "integer",
-      "description": "True iff test scenario completed normally with no failed checks"
+    "name": {
+      "type": "string",
+      "description": "Name of this test scenario"
     }
   },
   "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestScenarioReport.json",
