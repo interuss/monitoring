@@ -115,13 +115,12 @@ def main() -> int:
 
     if config.artifacts:
         if config.artifacts.report and not do_not_save_report:
-            if config.artifacts.report.redact_access_tokens:
+            if config.artifacts.redact_access_tokens:
                 logger.info("Redacting access tokens in report")
                 redact_access_tokens(report)
             logger.info("Writing report to {}", config.artifacts.report.report_path)
             with open(config.artifacts.report.report_path, "w") as f:
                 json.dump(report, f, indent=2)
-            render_templates(config.artifacts, report)
 
         if config.artifacts.report_html:
             logger.info(
@@ -129,6 +128,10 @@ def main() -> int:
             )
             with open(config.artifacts.report_html.html_path, "w") as f:
                 f.write(make_report_html(report))
+
+        if len(config.artifacts.report_templates) > 0:
+
+            render_templates(config.artifacts, report)
 
         if config.artifacts.graph:
             logger.info(

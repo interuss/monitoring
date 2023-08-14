@@ -63,11 +63,11 @@ class ReportConfiguration(ImplicitDict):
     report_path: str
     """File name of the report to write (if test_config provided) or read (if test_config not provided)"""
 
+
+class ArtifactsConfiguration(ImplicitDict):
     redact_access_tokens: bool = True
     """When True, look for instances of "Authorization" keys in the report with values starting "Bearer " and redact the signature from those access tokens"""
 
-
-class ArtifactsConfiguration(ImplicitDict):
     report: Optional[ReportConfiguration] = None
     """Configuration for report generation"""
 
