@@ -1,0 +1,36 @@
+v1:
+  test_run:
+    resources:
+      resource_declarations:
+        noop_config:
+          resource_type: resources.dev.NoOpResource
+          specification:
+            sleep_secs: 1
+
+    action:
+      test_suite:
+        suite_definition:
+          name: No-op
+          resources:
+            noop_config: resources.dev.NoOpResource
+          actions:
+          - test_scenario:
+              scenario_type: scenarios.dev.NoOp
+              resources:
+                noop_config: noop_config
+            on_failure: Continue
+        resources:
+          noop_config: noop_config
+
+  artifacts:
+    report:
+      # Path to main report output
+      report_path: output/report.json
+      redact_access_tokens: true
+    report_templates:
+      - template_url: https://github.com/Orbitalize/reports/releases/download/v0.0.10/app-v0.0.10.zip
+        output_path: output/report_template.html
+        configuration:
+          regulator_view: true
+          developer_view: true
+

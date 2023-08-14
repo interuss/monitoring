@@ -35,6 +35,25 @@ class ReportHTMLConfiguration(ImplicitDict):
     """Path of HTML file to contain an HTML rendering of the test report"""
 
 
+class TemplatedReportApplicationConfiguration(ImplicitDict):
+    regulator_view: bool = False
+    """Enable regulators-specific features"""
+
+    developer_view: bool = False
+    """Enable developers-specific features"""
+
+
+class TemplatedReportConfiguration(ImplicitDict):
+    template_url: str
+    """Url of the template to download from"""
+
+    output_path: str
+    """Path of the folder where the template will be rendered"""
+
+    configuration: TemplatedReportApplicationConfiguration
+    """Configuration to be injected in the application"""
+
+
 class GraphConfiguration(ImplicitDict):
     gv_path: str
     """Path of GraphViz (.gv) text file to contain a visualization of the test run"""
@@ -54,6 +73,9 @@ class ArtifactsConfiguration(ImplicitDict):
 
     report_html: Optional[ReportHTMLConfiguration] = None
     """If specified, configuration describing how an HTML version of the report should be generated"""
+
+    report_templates: List[TemplatedReportConfiguration] = []
+    """List of report templates to be rendered."""
 
     graph: Optional[GraphConfiguration] = None
     """If specified, configuration describing a desired graph visualization summarizing the test run"""

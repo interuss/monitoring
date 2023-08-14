@@ -20,6 +20,7 @@ from monitoring.uss_qualifier.reports.documents import make_report_html
 from monitoring.uss_qualifier.reports.tested_roles import generate_tested_roles
 from monitoring.uss_qualifier.reports.graphs import make_graph
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
+from monitoring.uss_qualifier.reports.templates import render_templates
 from monitoring.uss_qualifier.resources.resource import create_resources
 from monitoring.uss_qualifier.signatures import (
     compute_signature,
@@ -120,6 +121,7 @@ def main() -> int:
             logger.info("Writing report to {}", config.artifacts.report.report_path)
             with open(config.artifacts.report.report_path, "w") as f:
                 json.dump(report, f, indent=2)
+            render_templates(config.artifacts, report)
 
         if config.artifacts.report_html:
             logger.info(
