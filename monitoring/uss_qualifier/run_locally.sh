@@ -76,7 +76,7 @@ else
       echo "Full success indicated by $REPORT"
     else
       echo "Could not establish that all uss_qualifier tests passed in $REPORT"
-      # exit 1
+      exit 1
     fi
   done
 fi
