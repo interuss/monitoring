@@ -1,7 +1,6 @@
 import time
 from datetime import datetime
 
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.dev import NoOpResource
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
@@ -22,13 +21,6 @@ class NoOp(TestScenario):
         )
 
         time.sleep(self.sleep_secs)
-
-        # TODO: remove me - test
-        with self.check("fail") as check:
-            check.record_failed(
-                summary=f"FAIL",
-                severity=Severity.High,
-            )
 
         self.record_note("End time", f"Ending at {datetime.utcnow().isoformat()}Z.")
 
