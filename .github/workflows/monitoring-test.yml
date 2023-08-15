@@ -1,0 +1,49 @@
+name: 'Run a monitoring test (re-usable workflow)'
+
+on:
+  workflow_call:
+    inputs:
+      name:
+        description: 'Name of the monitoring test.'
+        required: true
+        type: string
+      script:
+        description: 'Bash script running the monitoring test.'
+        required: true
+        type: string
+
+jobs:
+  monitoring-test:
+    runs-on: ubuntu-latest
+    name: ${{ inputs.name }} test
+    steps:
+    - name: Job information
+      run: |
+        echo "Job information"
+        echo "Trigger: ${{ github.event_name }}"
+        echo "Host: ${{ runner.os }}"
+        echo "Repository: ${{ github.repository }}"
+        echo "Branch: ${{ github.ref }}"
+        docker images
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Run ${{ inputs.name }} test
+      run: ${{ inputs.script }}
+    - name: Save containers and tracer logs as artifact
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-test-${{ inputs.name }}-logs
+        path: |
+          logs
+          monitoring/mock_uss/output
+    - name: Save USS qualifier reports as artifact
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-test-${{ inputs.name }}-reports
+        path: |
+          monitoring/uss_qualifier/output
+          monitoring/prober/output
