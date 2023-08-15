@@ -362,7 +362,9 @@ class TestSuiteActionReport(ImplicitDict):
                 return test_suite_func(self.action_generator)
 
         # This line should not be possible to reach
-        raise RuntimeError("Case selection logic failed for TestSuiteActionReport")
+        raise RuntimeError(
+            "Case selection logic failed for TestSuiteActionReport; none of test_suite, test_scenario, nor action_generator were populated"
+        )
 
     def successful(self) -> bool:
         return self._conditional(lambda report: report.successful)
@@ -376,16 +378,44 @@ class TestSuiteActionReport(ImplicitDict):
     def query_passed_checks(
         self, participant_id: Optional[str] = None
     ) -> Iterator[Tuple[JSONPathExpression, PassedCheck]]:
-        return self._conditional(
-            lambda report: report.query_passed_checks(participant_id)
-        )
+        test_suite, test_scenario, action_generator = self._get_applicable_report()
+        if test_suite:
+            report = self.test_suite
+            prefix = "test_suite"
+        elif test_scenario:
+            report = self.test_scenario
+            prefix = "test_scenario"
+        elif action_generator:
+            report = self.action_generator
+            prefix = "action_generator"
+        else:
+            raise RuntimeError(
+                "Case selection logic failed for TestSuiteActionReport; none of test_suite, test_scenario, nor action_generator were populated"
+            )
+
+        for path, pc in report.query_passed_checks(participant_id):
+            yield f"{prefix}.{path}", pc
 
     def query_failed_checks(
         self, participant_id: Optional[str] = None
     ) -> Iterator[Tuple[JSONPathExpression, PassedCheck]]:
-        return self._conditional(
-            lambda report: report.query_failed_checks(participant_id)
-        )
+        test_suite, test_scenario, action_generator = self._get_applicable_report()
+        if test_suite:
+            report = self.test_suite
+            prefix = "test_suite"
+        elif test_scenario:
+            report = self.test_scenario
+            prefix = "test_scenario"
+        elif action_generator:
+            report = self.action_generator
+            prefix = "action_generator"
+        else:
+            raise RuntimeError(
+                "Case selection logic failed for TestSuiteActionReport; none of test_suite, test_scenario, nor action_generator were populated"
+            )
+
+        for path, fc in report.query_failed_checks(participant_id):
+            yield f"{prefix}.{path}", fc
 
     def queries(self) -> List[fetch.Query]:
         return self._conditional(lambda report: report.queries())
