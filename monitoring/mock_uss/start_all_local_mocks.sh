@@ -31,4 +31,4 @@ monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_scdsc_b
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_ridsp${RID_EXT}
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_riddp${RID_EXT}
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_geoawareness
-monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_tracer${RID_EXT}
+monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_tracer
