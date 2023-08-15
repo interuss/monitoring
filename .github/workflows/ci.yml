@@ -31,6 +31,7 @@ jobs:
       run: make shell-lint
 
   monitorlib-test:
+    name: monitorlib tests
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: monitorlib
@@ -39,6 +40,7 @@ jobs:
         make test
 
   mock_uss-test:
+    name: mock_uss tests
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: mock_uss
@@ -47,6 +49,7 @@ jobs:
         make test
 
   uss_qualifier_F3411-22a-test:
+    name: uss_qualifier tests (F3411-22a configuration)
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier_F3411-22a
@@ -59,6 +62,7 @@ jobs:
         make test
 
   uss_qualifier_F3411-19-test:
+    name: uss_qualifier tests (F3411-19 configuration)
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier_F3411-19
@@ -71,6 +75,7 @@ jobs:
         make test
 
   prober-test:
+    name: prober tests
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: prober
