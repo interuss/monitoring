@@ -13,6 +13,11 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
+if [ -z "$DO_NOT_BUILD_MONITORING" ]; then
+  monitoring/build.sh || exit 1
+  export DO_NOT_BUILD_MONITORING=true
+fi
+
 CORE_SERVICE_CONTAINER="local_infra-dss-1"
 OAUTH_CONTAINER="local_infra-oauth-1"
 declare -a localhost_containers=("$CORE_SERVICE_CONTAINER" "$OAUTH_CONTAINER")
