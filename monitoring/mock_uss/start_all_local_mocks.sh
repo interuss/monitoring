@@ -25,7 +25,7 @@ monitoring/mock_uss/run_locally_ridsp${RID_EXT}.sh -d
 monitoring/mock_uss/run_locally_riddp${RID_EXT}.sh -d
 monitoring/mock_uss/run_locally_geoawareness.sh -d
 monitoring/mock_uss/run_locally_atproxy_client.sh -d
-monitoring/mock_uss/run_locally_tracer${RID_EXT}.sh -d
+monitoring/mock_uss/run_locally_tracer.sh -d
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_scdsc_a
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_scdsc_b
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_ridsp${RID_EXT}
