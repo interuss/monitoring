@@ -352,6 +352,28 @@ class Subscription(ImplicitDict):
     def version(self) -> str:
         return self.raw.version
 
+    @property
+    def time_start(self) -> datetime:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value.time_start.datetime
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_value.time_start.value.datetime
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve time_start using RID version {self.rid_version}"
+            )
+
+    @property
+    def time_end(self) -> datetime:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value.time_end.datetime
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_value.time_end.value.datetime
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve time_end using RID version {self.rid_version}"
+            )
+
 
 class RIDQuery(ImplicitDict):
     v19_query: Optional[Query] = None
@@ -859,6 +881,10 @@ class FetchedFlights(ImplicitDict):
         for q in self.uss_flight_queries.values():
             all_flights.extend(q.flights)
         return all_flights
+
+    @property
+    def success(self) -> bool:
+        return not self.errors
 
 
 def all_flights(

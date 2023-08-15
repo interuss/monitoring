@@ -50,6 +50,8 @@ def put_subscription(
     end_time: datetime.datetime,
     base_url: str,
     subscription_id: str,
+    notify_for_op_intents: bool,
+    notify_for_constraints: bool,
     min_alt_m: float = 0,
     max_alt_m: float = 3048,
     version: Optional[str] = None,
@@ -63,8 +65,8 @@ def put_subscription(
             polygon=scd.make_polygon(latlngrect=area),
         ),
         "uss_base_url": base_url,
-        "notify_for_operational_intents": True,
-        "notify_for_constraints": True,
+        "notify_for_operational_intents": notify_for_op_intents,
+        "notify_for_constraints": notify_for_constraints,
     }
     url = "/dss/v1/subscriptions/{}".format(subscription_id)
     if version:

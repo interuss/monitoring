@@ -12,13 +12,6 @@ mkdir -p "$OUTPUT_DIR"
 # Prevent logs from building up too much by default
 find "$OUTPUT_DIR" -name "*.yaml" -exec rm {} \;
 
-AREA='--area=46.974,7.473,46.976,7.479'
-LOGS="--output-folder=$OUTPUT_DIR"
-MONITOR='--monitor-rid --monitor-scd'
-POLL='--rid-isa-poll-interval=15 --scd-operation-poll-interval=15 --scd-constraint-poll-interval=15'
-
-TRACER_OPTIONS="$AREA $LOGS $MONITOR $POLL"
-
 
 PORT=${PORT:-8078}
 AUTH="DummyOAuth(http://host.docker.internal:8085/token,tracer)"
@@ -26,7 +19,6 @@ DSS=${MOCK_USS_DSS_URL:-"http://host.docker.internal:8082"}
 PUBLIC_KEY="/var/test-certs/auth2.pem"
 AUD=${MOCK_USS_TOKEN_AUDIENCE:-localhost,host.docker.internal}
 
-RID_VERSION=${MOCK_USS_RID_VERSION:-"F3411-22a"}
 CONTAINER_NAME=${MOCK_CONTAINER_NAME:-"mock_uss_tracer"}
 
 BASE_URL="http://${MOCK_USS_TOKEN_AUDIENCE:-host.docker.internal}:${PORT}"
@@ -47,9 +39,8 @@ docker run ${docker_args} --name "${CONTAINER_NAME}" \
   -e MOCK_USS_PUBLIC_KEY="${PUBLIC_KEY}" \
   -e MOCK_USS_TOKEN_AUDIENCE="${AUD}" \
   -e MOCK_USS_BASE_URL="${BASE_URL}" \
-  -e MOCK_USS_TRACER_OPTIONS="${TRACER_OPTIONS}" \
+  -e MOCK_USS_TRACER_OUTPUT_FOLDER="${OUTPUT_DIR}" \
   -e MOCK_USS_SERVICES="tracer" \
-  -e MOCK_USS_RID_VERSION="${RID_VERSION}" \
   -p ${PORT}:5000 \
   -v "${SCRIPT_DIR}/../../build/test-certs:/var/test-certs:ro" \
   -v "$(pwd)/$OUTPUT_DIR:/app/monitoring/mock_uss/$OUTPUT_DIR" \

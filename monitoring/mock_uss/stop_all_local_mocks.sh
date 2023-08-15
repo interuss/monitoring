@@ -23,4 +23,4 @@ mock_uss_ridsp${RID_EXT} \
 mock_uss_riddp${RID_EXT} \
 mock_uss_geoawareness \
 mock_uss_atproxy_client \
-mock_uss_tracer${RID_EXT}
+mock_uss_tracer

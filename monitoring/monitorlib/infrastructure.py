@@ -21,6 +21,10 @@ TOKEN_REFRESH_MARGIN = datetime.timedelta(seconds=15)
 CLIENT_TIMEOUT = 10  # seconds
 
 
+AuthSpec = str
+"""Specification for means by which to obtain access tokens."""
+
+
 class AuthAdapter(object):
     """Base class for an adapter that add JWTs to requests."""
 

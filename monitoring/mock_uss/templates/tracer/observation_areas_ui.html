@@ -1,0 +1,273 @@
+{% extends "tracer/base.html" %}
+
+{% block content %}
+<html>
+<script type="text/javascript">
+function uuidv4() {
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    );
+}
+
+function makeVolume4D() {
+    let rectStr = document.getElementById("bounding_box").value.split(",");
+    let lat1 = parseFloat(rectStr[0]);
+    let lng1 = parseFloat(rectStr[1]);
+    let lat2 = parseFloat(rectStr[2]);
+    let lng2 = parseFloat(rectStr[3]);
+    let timeStart = new Date();
+    let timeEnd = new Date(timeStart.getTime() + 60 * 60000);
+    return {
+        "volume": {
+            "outline_polygon": {
+                "vertices": [
+                    {"lat": lat1, "lng": lng1},
+                    {"lat": lat2, "lng": lng1},
+                    {"lat": lat2, "lng": lng2},
+                    {"lat": lat1, "lng": lng2}
+                ]
+            }
+        },
+        "time_start": timeStart.toISOString(),
+        "time_end": timeEnd.toISOString()
+    }
+}
+
+function makeObservationAreaRequest() {
+    let obsArea = {
+        "area": makeVolume4D(),
+    }
+
+    let ridVersion = document.getElementById("rid_version").value;
+    if (ridVersion != "None") {
+        let pollRID = document.getElementById("poll_f3411").value;
+        let subscribeRID = document.getElementById("subscribe_f3411").value;
+        obsArea["f3411"] = {
+            "rid_version": ridVersion,
+            "poll": pollRID,
+            "subscribe": subscribeRID
+        }
+    }
+
+    let scdVersion = document.getElementById("scd_version").value;
+    if (scdVersion != "None") {
+        let pollF3548 = document.getElementById("poll_f3548").value;
+        let subscribeF3548 = document.getElementById("subscribe_f3548").value;
+        let opIntents = document.getElementById("op_intents").value;
+        let constraints = document.getElementById("constraints").value;
+        obsArea["f3548"] = {
+            "poll": pollF3548,
+            "subscribe": subscribeF3548,
+            "monitor_op_intents": opIntents,
+            "monitor_constraints": constraints
+        }
+    }
+
+    return {"area": obsArea}
+}
+
+function createObservationArea() {
+    let id = uuidv4();
+    let req = makeObservationAreaRequest();
+    let xhr = new XMLHttpRequest();
+    let url = "{{ url_for('tracer_upsert_observation_area', area_id='') }}" + id;
+    xhr.open("PUT", url);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+        if (this.readyState == XMLHttpRequest.DONE) {
+            if (this.status == 200) {
+                listObservationAreas();
+            } else {
+                alert("Error creating observation area (see also network log in debugger):\n" + this.response);
+            }
+        }
+    }
+    xhr.send(JSON.stringify(req));
+    listObservationAreas();
+}
+
+function createImportObservationAreasRequest() {
+    let req = {
+        "area": makeVolume4D()
+    }
+
+    let ridVersion = document.getElementById("rid_version").value;
+    if (ridVersion != "None") {
+        req["f3411"] = ridVersion;
+    }
+
+    let f3548Version = document.getElementById("scd_version").value;
+    if (f3548Version != "None") {
+        req["f3548"] = true;
+    }
+
+    return req;
+}
+
+function importObservationAreas() {
+    let req = createImportObservationAreasRequest();
+    let xhr = new XMLHttpRequest();
+    let url = "{{ url_for('tracer_import_observation_areas') }}";
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+        if (this.readyState == XMLHttpRequest.DONE) {
+            if (this.status == 200) {
+                listObservationAreas();
+            } else {
+                alert("Error importing observation areas (see also network log in debugger):\n" + this.response);
+            }
+        }
+    }
+    xhr.send(JSON.stringify(req));
+}
+
+function listObservationAreas() {
+    let xhr = new XMLHttpRequest();
+    let url = "{{ url_for('tracer_list_observation_areas') }}";
+    xhr.open("GET", url);
+    xhr.onreadystatechange = function () {
+        if (this.readyState == XMLHttpRequest.DONE) {
+            if (this.status == 200) {
+                renderObservationAreaList(JSON.parse(this.response)["areas"]);
+            } else {
+                alert("Error listing observation areas (see also network log in debugger):\n" + this.response);
+            }
+        }
+    }
+    xhr.send();
+}
+
+function renderObservationAreaList(observationAreas) {
+    let areaList = document.getElementById("observation_areas");
+    areaList.innerHTML = "";
+    if (observationAreas) {
+        let areasList = document.createElement("ul");
+        for (i in observationAreas) {
+            let obsArea = observationAreas[i];
+            let areaNode = document.createElement("li");
+            areasList.appendChild(areaNode);
+
+            let idLink = document.createElement("a");
+            idLink.href = "{{ url_for('tracer_observation_area_ui', observation_area_id='OBSERVATION_AREA_ID') }}".replace("OBSERVATION_AREA_ID", obsArea["id"]);
+            let idText = document.createTextNode(obsArea["id"]);
+            idLink.appendChild(idText);
+            areaNode.appendChild(idLink);
+
+            let obsAreaText = "";
+
+            if ("f3411" in obsArea && obsArea["f3411"]) {
+                obsAreaText += " " + obsArea["f3411"]["rid_version"] + "(";
+                if (obsArea["f3411"]["poll"] && obsArea["f3411"]["subscription_id"]) {
+                    obsAreaText += "poll+subscribe";
+                } else if (obsArea["f3411"]["poll"]) {
+                    obsAreaText += "poll";
+                } else if (obsArea["f3411"]["subscription_id"]) {
+                    obsAreaText += "subscribe";
+                }
+                obsAreaText += ")";
+            }
+
+            if ("f3548" in obsArea && obsArea["f3548"]) {
+                obsAreaText += " F3548-21(";
+                if (obsArea["f3548"]["poll"] && obsArea["f3548"]["subscription_id"]) {
+                    obsAreaText += "poll+subscribe";
+                } else if (obsArea["f3548"]["poll"]) {
+                    obsAreaText += "poll";
+                } else if (obsArea["f3548"]["subscription_id"]) {
+                    obsAreaText += "subscribe";
+                }
+                if (obsArea["f3548"]["monitor_op_intents"]) {
+                    obsAreaText += ":op intents";
+                }
+                if (obsArea["f3548"]["monitor_constraints"]) {
+                    obsAreaText += ":constraints";
+                }
+                obsAreaText += ")";
+            }
+            let basicInfo = document.createTextNode(obsAreaText + " ");
+            areaNode.appendChild(basicInfo);
+
+            let deleteButton = document.createElement("button");
+            deleteButton.innerHTML = "Delete";
+            deleteButton.addEventListener("click", function() { deleteObservationArea(obsArea["id"]); });
+            areaNode.appendChild(deleteButton);
+        }
+        areaList.appendChild(areasList);
+    } else {
+        areaList.innerHTML = "[None]";
+    }
+}
+
+function deleteObservationArea(observationAreaID) {
+    let xhr = new XMLHttpRequest();
+    let url = "{{ url_for('tracer_delete_observation_area', area_id='') }}" + observationAreaID;
+    xhr.open("DELETE", url);
+    xhr.onreadystatechange = function () {
+        if (this.readyState == XMLHttpRequest.DONE) {
+            if (this.status == 200) {
+                listObservationAreas();
+            } else {
+                alert("Error deleting observation area " + observationAreaID + " (see also network log in debugger):\n" + this.response);
+            }
+        }
+    }
+    xhr.send();
+}
+</script>
+<div>
+  <h3>Existing observation areas <button onclick="listObservationAreas()">Refresh</button></h3>
+  <div id="observation_areas">
+  </div>
+</div>
+<div>
+  <h3>New observation area</h3>
+  <div>
+    <p>
+      <label for="bounding_box">Bounding box (lat,lng,lat,lng):</label>
+      <input type="text" id="bounding_box" name="bounding_box" size="40">
+    </p>
+    <p>
+      <label for="rid_version">F3411 version:</label>
+      <select id="rid_version" name="rid_version" size="3">
+        <option value="None" selected>None</option>
+        <option value="F3411-19">F3411-19</option>
+        <option value="F3411-22a">F3411-22a</option>
+      </select>
+    </p>
+    <p>
+      <label for="poll_f3411">Poll for F3411 RID updates</label>
+      <input type="checkbox" id="poll_f3411" name="poll_f3411">
+      <label for="subscribe_f3411">Subscribe to F3411 RID updates</label>
+      <input type="checkbox" id="subscribe_f3411" name="subscribe_f3411">
+    </p>
+    <p>
+      <label for="scd_version">F3548 version:</label>
+      <select id="scd_version" name="scd_version" size="2">
+        <option value="None" selected>None</option>
+        <option value="F3548-21">F3548-21</option>
+      </select>
+    </p>
+    <p>
+      <label for="poll_f3548">Poll for F3548 updates</label>
+      <input type="checkbox" id="poll_f3548" name="poll_f3548">
+      <label for="subscribe_f3548">Subscribe to F3548 updates</label>
+      <input type="checkbox" id="subscribe_f3548" name="subscribe_f3548">
+    </p>
+    <p>
+      <label for="op_intents">Monitor operational intents</label>
+      <input type="checkbox" id="op_intents" name="op_intents">
+      <label for="constraints">Monitor constraints</label>
+      <input type="checkbox" id="constraints" name="constraints">
+    </p>
+    <p>
+      <button onclick="createObservationArea()">Create observation area</button>
+      <button onclick="importObservationAreas()">Import Subscriptions</button>
+    </p>
+  </div>
+</div>
+<script type="text/javascript">
+listObservationAreas();
+</script>
+</html>
+{% endblock %}

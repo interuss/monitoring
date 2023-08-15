@@ -20,8 +20,7 @@ from google import auth as google_auth
 from google.auth import impersonated_credentials
 from google.auth.transport import requests as google_requests
 from google.oauth2 import service_account
-from monitoring.monitorlib.infrastructure import AuthAdapter
-
+from monitoring.monitorlib.infrastructure import AuthAdapter, AuthSpec
 
 _UNIX_EPOCH = datetime.datetime.utcfromtimestamp(0)
 
@@ -509,7 +508,7 @@ def all_subclasses(cls):
     )
 
 
-def make_auth_adapter(spec: str) -> AuthAdapter:
+def make_auth_adapter(spec: AuthSpec) -> AuthAdapter:
     """Make an AuthAdapter according to a string specification.
 
     Args:
