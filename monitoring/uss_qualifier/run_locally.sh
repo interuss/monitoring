@@ -65,6 +65,7 @@ else
     -w /app/monitoring/uss_qualifier \
     interuss/monitoring \
     python main.py $QUALIFIER_OPTIONS
+  uss_qualifier_ret_code=$?
   echo "========== Completed uss_qualifier for configuration ${CONFIG_NAME} =========="
 
   # Set return code according to whether the test run was fully successful
@@ -74,9 +75,12 @@ else
     successful=$(python build/dev/extract_json_field.py report.*.successful "$REPORT")
     if echo "${successful}" | grep -iqF true; then
       echo "Full success indicated by $REPORT"
+    elif [ $uss_qualifier_ret_code -ne 0 ]; then
+      echo "uss_qualifier returned an error code, but $REPORT indicated success"
+      exit $uss_qualifier_ret_code
     else
       echo "Could not establish that all uss_qualifier tests passed in $REPORT"
-      # exit 1
+      exit $uss_qualifier_ret_code
     fi
   done
 fi
