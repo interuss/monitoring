@@ -30,7 +30,7 @@ jobs:
       with:
         submodules: true
     - name: ${{ inputs.name }} test
-      run: ${{ inputs.monitoring-test-script }}
+      run: ${{ inputs.script }}
     - name: Save containers and tracer logs as artifact
       if: always()
       uses: actions/upload-artifact@v3
