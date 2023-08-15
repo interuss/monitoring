@@ -387,7 +387,8 @@ class RIDObservationEvaluator(object):
                     or injected_telemetry.position["extrapolated"] is False
                 ) and (
                     "extrapolated" in mapping.observed_flight.most_recent_position
-                    and mapping.observed_flight.most_recent_position["extrapolated"] is True
+                    and mapping.observed_flight.most_recent_position["extrapolated"]
+                    is True
                 ):
                     check.record_failed(
                         "Position Data is using extrapolation when Telemetry is available.",
