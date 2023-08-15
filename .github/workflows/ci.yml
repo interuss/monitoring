@@ -30,63 +30,55 @@ jobs:
     - name: Shell lint
       run: make shell-lint
 
-  monitoring-tests:
-    name: monitoring tests
-    runs-on: ubuntu-latest
-    steps:
-    - name: Job information
-      run: |
-        echo "Job information"
-        echo "Trigger: ${{ github.event_name }}"
-        echo "Host: ${{ runner.os }}"
-        echo "Repository: ${{ github.repository }}"
-        echo "Branch: ${{ github.ref }}"
-        docker images
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        submodules: true
-    - name: monitorlib tests
-      run: |
+  monitorlib-test:
+    name: monitorlib tests
+    uses: ./.github/workflows/monitoring-test.yml
+    with:
+      name: monitorlib
+      script: |
         cd monitoring/monitorlib
         make test
-    - name: mock_uss tests
-      run: |
+
+  mock_uss-test:
+    name: mock_uss tests
+    uses: ./.github/workflows/monitoring-test.yml
+    with:
+      name: mock_uss
+      script: |
         cd monitoring/mock_uss
         make test
-    - name: uss_qualifier tests (F3411-22a configuration)
-      run: |
+
+  uss_qualifier_F3411-22a-test:
+    name: uss_qualifier tests (F3411-22a configuration)
+    uses: ./.github/workflows/monitoring-test.yml
+    with:
+      name: uss_qualifier_F3411-22a
+      script: |
+        export RID_VERSION=F3411-22a \
+          CONFIG_NAME="" \
+          USS_QUALIFIER_STOP_FAST=true
+
         cd monitoring/uss_qualifier
         make test
-      env:
-        RID_VERSION: F3411-22a
-        CONFIG_NAME: ""
-        USS_QUALIFIER_STOP_FAST: true
-    - name: uss_qualifier tests (F3411-19 configuration)
-      run: |
+
+  uss_qualifier_F3411-19-test:
+    name: uss_qualifier tests (F3411-19 configuration)
+    uses: ./.github/workflows/monitoring-test.yml
+    with:
+      name: uss_qualifier_F3411-19
+      script: |
+        export RID_VERSION=F3411-19 \
+          CONFIG_NAME=configurations.dev.netrid_v19 \
+          USS_QUALIFIER_STOP_FAST=true
+
         cd monitoring/uss_qualifier
         make test
-      env:
-        RID_VERSION: F3411-19
-        CONFIG_NAME: configurations.dev.netrid_v19
-        USS_QUALIFIER_STOP_FAST: true
-    - name: prober tests
-      run: |
+
+  prober-test:
+    name: prober tests
+    uses: ./.github/workflows/monitoring-test.yml
+    with:
+      name: prober
+      script: |
         cd monitoring/prober
         make test
-    - name: Save containers and tracer logs as artifact
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: monitoring-tests-logs
-        path: |
-          logs
-          monitoring/mock_uss/output
-    - name: Save USS qualifier reports as artifact
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: monitoring-tests-reports
-        path: |
-          monitoring/uss_qualifier/output
-          monitoring/prober/output
