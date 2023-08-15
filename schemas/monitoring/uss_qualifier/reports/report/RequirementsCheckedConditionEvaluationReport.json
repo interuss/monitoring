@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$ref": {
+      "type": "string",
+      "description": "Path to content that replaces the $ref"
+    },
+    "passed_requirements": {
+      "type": "array",
+      "items": {
+        "$ref": "CheckedRequirement.json"
+      },
+      "description": "Requirements with only PassedChecks."
+    },
+    "failed_requirements": {
+      "type": "array",
+      "items": {
+        "$ref": "CheckedRequirement.json"
+      },
+      "description": "Requirements with FailedChecks."
+    },
+    "untested_requirements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Requirements that didn't have any PassedChecks or FailedChecks within the scope of the test suite in which this condition is located."
+    }
+  },
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/RequirementsCheckedConditionEvaluationReport.json",
+  "description": "Result of an evaluation of RequirementsCheckedCondition dependent on whether a set of requirements were successfully checked.\n\nmonitoring.uss_qualifier.reports.report.RequirementsCheckedConditionEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
+  "required": [
+    "failed_requirements",
+    "passed_requirements",
+    "untested_requirements"
+  ]
+}

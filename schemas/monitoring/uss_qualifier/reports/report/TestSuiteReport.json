@@ -6,13 +6,25 @@
       "type": "string",
       "description": "Path to content that replaces the $ref"
     },
-    "name": {
+    "successful": {
+      "type": "boolean",
+      "description": "True iff test suite completed normally with no failed checks"
+    },
+    "start_time": {
       "type": "string",
-      "description": "Name of this test suite"
+      "format": "date-time",
+      "description": "Time at which the test suite started"
     },
     "documentation_url": {
       "type": "string",
       "description": "URL at which this test suite is described"
+    },
+    "capability_evaluations": {
+      "type": "array",
+      "items": {
+        "$ref": "ParticipantCapabilityEvaluationReport.json"
+      },
+      "description": "List of capabilities defined in this test suite, evaluated for each participant."
     },
     "end_time": {
       "type": [
@@ -22,34 +34,6 @@
       "format": "date-time",
       "description": "Time at which the test suite completed"
     },
-    "capabilities_verified": {
-      "type": [
-        "object",
-        "null"
-      ],
-      "properties": {
-        "$ref": {
-          "type": "string",
-          "description": "Path to content that replaces the $ref"
-        }
-      },
-      "additionalProperties": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
-      },
-      "description": "If capabilities are defined by this suite, the list of capabilities verified for each participant."
-    },
-    "suite_type": {
-      "type": "string",
-      "description": "Type/location of this test suite"
-    },
-    "start_time": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Time at which the test suite started"
-    },
     "actions": {
       "type": "array",
       "items": {
@@ -57,15 +41,20 @@
       },
       "description": "Reports from test scenarios and test suites comprising the test suite for this report"
     },
-    "successful": {
-      "type": "integer",
-      "description": "True iff test suite completed normally with no failed checks"
+    "suite_type": {
+      "type": "string",
+      "description": "Type/location of this test suite"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of this test suite"
     }
   },
   "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestSuiteReport.json",
   "description": "monitoring.uss_qualifier.reports.report.TestSuiteReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "actions",
+    "capability_evaluations",
     "documentation_url",
     "name",
     "start_time",

@@ -13,8 +13,8 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
-CORE_SERVICE_CONTAINER="dss_sandbox-local-dss-core-service-1"
-OAUTH_CONTAINER="dss_sandbox-local-dss-dummy-oauth-1"
+CORE_SERVICE_CONTAINER="local_infra-dss-1"
+OAUTH_CONTAINER="local_infra-oauth-1"
 declare -a localhost_containers=("$CORE_SERVICE_CONTAINER" "$OAUTH_CONTAINER")
 
 for container_name in "${localhost_containers[@]}"; do
@@ -34,10 +34,9 @@ OUTPUT_DIR="monitoring/prober/output"
 mkdir -p "$OUTPUT_DIR"
 
 # TODO(#17): Remove F3411_22A_ALTITUDE_REFERENCE environment variable once DSS behaves correctly
-if ! docker run --link "$OAUTH_CONTAINER":oauth \
-	--link "$CORE_SERVICE_CONTAINER":core-service \
+if ! docker run \
 	-u "$(id -u):$(id -g)" \
-	--network dss_sandbox-default \
+	--network interop_ecosystem_network \
 	-v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \
 	-w /app/monitoring/prober \
 	interuss/monitoring \
@@ -45,7 +44,7 @@ if ! docker run --link "$OAUTH_CONTAINER":oauth \
 	"${1:-.}" \
 	-rsx \
 	--junitxml="/app/$OUTPUT_DIR/e2e_test_result" \
-	--dss-endpoint http://core-service:8082 \
+	--dss-endpoint http://dss:8082 \
 	--rid-auth "DummyOAuth(http://oauth:8085/token,sub=fake_uss)" \
 	--rid-v2-auth "DummyOAuth(http://oauth:8085/token,sub=fake_uss)" \
 	--scd-auth1 "DummyOAuth(http://oauth:8085/token,sub=fake_uss)" \

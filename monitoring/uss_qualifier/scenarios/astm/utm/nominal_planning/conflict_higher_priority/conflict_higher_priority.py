@@ -264,12 +264,20 @@ class ConflictHigherPriority(TestScenario):
         )
         self.flight_2_id = None
 
-    def _attempt_modify_planned_flight_conflict(self) -> str:
+    def _attempt_modify_planned_flight_conflict(self) -> Optional[str]:
         resp_flight_1, self.flight_1_id = plan_flight_intent(
             self,
             "Plan flight 1",
             self.tested_uss,
             self.flight_1_planned_time_range_A.request,
+        )
+        validate_shared_operational_intent(
+            self,
+            self.tested_uss,
+            self.dss,
+            "Validate flight 1 sharing",
+            self.flight_1_planned_time_range_A.request,
+            resp_flight_1.operational_intent_id,
         )
 
         resp_flight_2, self.flight_2_id = plan_flight_intent(
@@ -294,6 +302,7 @@ class ConflictHigherPriority(TestScenario):
             "Validate flight 1 not modified",
             self.flight_1_planned_time_range_A.request,
             resp_flight_1.operational_intent_id,
+            skip_if_not_found=True,
         )
         validate_shared_operational_intent(
             self,
@@ -322,6 +331,7 @@ class ConflictHigherPriority(TestScenario):
             "Validate flight 1 not activated",
             self.flight_1_planned_time_range_A.request,
             flight_1_op_intent_id,
+            skip_if_not_found=True,
         )
 
     def _modify_activated_flight_conflict_preexisting(self) -> str:
@@ -330,12 +340,20 @@ class ConflictHigherPriority(TestScenario):
         )
         self.flight_2_id = None
 
-        _ = activate_flight_intent(
+        resp_flight_1 = activate_flight_intent(
             self,
             "Activate flight 1",
             self.tested_uss,
             self.flight_1_activated_time_range_A.request,
             self.flight_1_id,
+        )
+        validate_shared_operational_intent(
+            self,
+            self.tested_uss,
+            self.dss,
+            "Validate flight 1 sharing",
+            self.flight_1_activated_time_range_A.request,
+            resp_flight_1.operational_intent_id,
         )
 
         _, self.flight_2_id = plan_flight_intent(
@@ -404,6 +422,7 @@ class ConflictHigherPriority(TestScenario):
             "Validate flight 1 not modified",
             self.flight_1_activated_time_range_A_extended.request,
             flight_1_op_intent_id,
+            skip_if_not_found=True,
         )
         validate_shared_operational_intent(
             self,

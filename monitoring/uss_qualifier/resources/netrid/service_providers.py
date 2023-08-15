@@ -36,6 +36,7 @@ class NetRIDServiceProvidersSpecification(ImplicitDict):
 
 class NetRIDServiceProvider(object):
     participant_id: str
+    base_url: str
     client: infrastructure.UTMClientSession
 
     def __init__(
@@ -45,7 +46,7 @@ class NetRIDServiceProvider(object):
         auth_adapter: infrastructure.AuthAdapter,
     ):
         self.participant_id = participant_id
-        self._base_url = base_url
+        self.base_url = base_url
         self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
 
     def submit_test(self, request: CreateTestParameters, test_id: str) -> fetch.Query:

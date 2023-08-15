@@ -119,6 +119,51 @@ class RIDVersion(str, Enum):
         else:
             return "unknown"
 
+    @property
+    def min_session_length_s(self) -> int:
+        if self == RIDVersion.f3411_19:
+            return v19.constants.NetMinSessionLengthSeconds
+        elif self == RIDVersion.f3411_22a:
+            return v22a.constants.NetMinSessionLengthSeconds
+        else:
+            raise ValueError("Unsupported RID version '{}'".format(self))
+
+    @property
+    def dp_init_resp_percentile95_s(self) -> float:
+        if self == RIDVersion.f3411_19:
+            return v19.constants.NetDpInitResponse95thPercentileSeconds
+        elif self == RIDVersion.f3411_22a:
+            return v22a.constants.NetDpInitResponse95thPercentileSeconds
+        else:
+            raise ValueError("Unsupported RID version '{}'".format(self))
+
+    @property
+    def dp_init_resp_percentile99_s(self) -> float:
+        if self == RIDVersion.f3411_19:
+            return v19.constants.NetDpInitResponse99thPercentileSeconds
+        elif self == RIDVersion.f3411_22a:
+            return v22a.constants.NetDpInitResponse99thPercentileSeconds
+        else:
+            raise ValueError("Unsupported RID version '{}'".format(self))
+
+    @property
+    def dp_data_resp_percentile95_s(self) -> float:
+        if self == RIDVersion.f3411_19:
+            return v19.constants.NetDpDataResponse95thPercentileSeconds
+        elif self == RIDVersion.f3411_22a:
+            return v22a.constants.NetDpDataResponse95thPercentileSeconds
+        else:
+            raise ValueError("Unsupported RID version '{}'".format(self))
+
+    @property
+    def dp_data_resp_percentile99_s(self) -> float:
+        if self == RIDVersion.f3411_19:
+            return v19.constants.NetDpDataResponse99thPercentileSeconds
+        elif self == RIDVersion.f3411_22a:
+            return v22a.constants.NetDpDataResponse99thPercentileSeconds
+        else:
+            raise ValueError("Unsupported RID version '{}'".format(self))
+
     def flights_url_of(self, base_url: str) -> str:
         if self == RIDVersion.f3411_19:
             return base_url

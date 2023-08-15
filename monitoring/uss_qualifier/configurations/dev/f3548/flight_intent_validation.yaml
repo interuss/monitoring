@@ -2,7 +2,7 @@ v1:
   test_run:
     resources:
       resource_declarations:
-        "$ref": ../resources.yaml#/f3548_single_scenario
+        "$ref": ../library/resources.yaml#/f3548_single_scenario
     action:
       test_scenario:
         scenario_type: scenarios.astm.utm.FlightIntentValidation
@@ -11,6 +11,9 @@ v1:
           flight_intents: invalid_flight_intents
           dss: dss
   artifacts:
+    report:
+      report_path: output/report_f3548_flight_intent_validation.json
+      redact_access_tokens: true
     tested_roles:
       report_path: output/tested_requirements.html
       roles:
@@ -18,4 +21,3 @@ v1:
         requirement_set: astm.f3548.v21.scd
         participants:
         - uss1
-    "$ref": ../artifacts.yaml#/relative
