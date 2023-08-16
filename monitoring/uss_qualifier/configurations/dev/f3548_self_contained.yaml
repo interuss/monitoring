@@ -42,10 +42,10 @@ v1:
             flight_planners:
             # uss1 is the mock_uss directly exposing scdsc functionality
             - participant_id: uss1
-              injection_base_url: http://host.docker.internal:8074/scdsc
-            # uss2 uses atproxy, with requests being fulfilled by mock_uss with atproxy_client functionality enabled
+              injection_base_url: http://scdsc.uss1.localutm/scdsc
+            # uss2 is another mock_uss directly exposing scdsc functionality
             - participant_id: uss2
-              injection_base_url: http://host.docker.internal:8075/scd
+              injection_base_url: http://scdsc.uss2.localutm/scdsc
 
         # Details of conflicting flights (used in nominal planning scenario)
         conflicting_flights:
@@ -76,7 +76,7 @@ v1:
           specification:
             # A USS that hosts a DSS instance is also a participant in the test, even if they don't fulfill any other roles
             participant_id: uss1
-            base_url: http://host.docker.internal:8082
+            base_url: http://dss.uss1.localutm
 
   # This block defines artifacts related to the test run.  Note that all paths are
   # relative to where uss_qualifier is executed from, and are located inside the

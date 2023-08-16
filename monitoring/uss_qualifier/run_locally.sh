@@ -39,7 +39,7 @@ if [ "$CONFIG_NAME" == "ALL" ]; then
 else
   CONFIG_FLAG="--config ${CONFIG_NAME}"
 
-  AUTH_SPEC='DummyOAuth(http://host.docker.internal:8085/token,uss_qualifier)'
+  AUTH_SPEC='DummyOAuth(http://oauth.authority.localutm:8085/token,uss_qualifier)'
 
   QUALIFIER_OPTIONS="$CONFIG_FLAG"
 
@@ -57,6 +57,7 @@ else
   # shellcheck disable=SC2086
   docker run ${docker_args} --name uss_qualifier \
     --rm \
+    --network interop_ecosystem_network \
     -u "$(id -u):$(id -g)" \
     -e PYTHONBUFFERED=1 \
     -e AUTH_SPEC=${AUTH_SPEC} \

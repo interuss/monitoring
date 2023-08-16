@@ -15,8 +15,8 @@ net_rid:
             auth_adapter: utm_auth
         specification:
             service_providers:
-                - participant_id: uss1
-                  injection_base_url: http://host.docker.internal:8071/ridsp/injection
+                - participant_id: uss2
+                  injection_base_url: http://v19.ridsp.uss2.localutm/ridsp/injection
     netrid_service_providers_v22a:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.NetRIDServiceProviders
@@ -25,7 +25,7 @@ net_rid:
         specification:
             service_providers:
                 - participant_id: uss1
-                  injection_base_url: http://host.docker.internal:8081/ridsp/injection
+                  injection_base_url: http://v22a.ridsp.uss1.localutm/ridsp/injection
     netrid_observers_v19:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.NetRIDObserversResource
@@ -33,8 +33,8 @@ net_rid:
             auth_adapter: utm_auth
         specification:
             observers:
-                - participant_id: uss2
-                  observation_base_url: http://host.docker.internal:8073/riddp/observation
+                - participant_id: uss3
+                  observation_base_url: http://v19.riddp.uss3.localutm/riddp/observation
     netrid_observers_v22a:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.NetRIDObserversResource
@@ -42,8 +42,8 @@ net_rid:
             auth_adapter: utm_auth
         specification:
             observers:
-                - participant_id: uss2
-                  observation_base_url: http://host.docker.internal:8083/riddp/observation
+                - participant_id: uss1
+                  observation_base_url: http://v22a.riddp.uss1.localutm/riddp/observation
     netrid_dss_instances_v19:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.astm.f3411.DSSInstancesResource
@@ -53,10 +53,10 @@ net_rid:
             dss_instances:
                 - participant_id: uss1
                   rid_version: F3411-19
-                  base_url: http://host.docker.internal:8082
+                  base_url: http://dss.uss1.localutm
                 - participant_id: uss2
                   rid_version: F3411-19
-                  base_url: http://host.docker.internal:8082
+                  base_url: http://dss.uss2.localutm
     netrid_dss_instances_v22a:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.astm.f3411.DSSInstancesResource
@@ -66,10 +66,10 @@ net_rid:
             dss_instances:
                 - participant_id: uss1
                   rid_version: F3411-22a
-                  base_url: http://host.docker.internal:8082/rid/v2/
+                  base_url: http://dss.uss1.localutm/rid/v2
                 - participant_id: uss2
                   rid_version: F3411-22a
-                  base_url: http://host.docker.internal:8082/rid/v2/
+                  base_url: http://dss.uss2.localutm/rid/v2
 
 f3548:
     flight_planners:
@@ -81,7 +81,7 @@ f3548:
             flight_planners:
                 # uss1 is the mock_uss directly exposing scdsc functionality
                 -   participant_id: uss1
-                    injection_base_url: http://host.docker.internal:8074/scdsc
+                    injection_base_url: http://scdsc.uss1.localutm/scdsc
 
                 # The atproxy has been disabled since it is suspected to be responsible of issue #28. Replaced by another simple mock_uss
                 # # uss2 uses atproxy, with requests being fulfilled by mock_uss with atproxy_client functionality enabled
@@ -90,7 +90,7 @@ f3548:
 
                 # uss2 is the mock_uss directly exposing scdsc functionality
                 -   participant_id: uss2
-                    injection_base_url: http://host.docker.internal:8094/scdsc
+                    injection_base_url: http://scdsc.uss2.localutm/scdsc
     dss:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.astm.f3548.v21.DSSInstanceResource
@@ -98,7 +98,7 @@ f3548:
             auth_adapter: utm_auth
         specification:
             participant_id: uss1
-            base_url: http://host.docker.internal:8082
+            base_url: http://dss.uss1.localutm
 
 f3548_single_scenario:
     uss1:
@@ -109,7 +109,7 @@ f3548_single_scenario:
         specification:
             flight_planner:
                 participant_id: uss1
-                injection_base_url: http://host.docker.internal:8074/scdsc
+                injection_base_url: http://scdsc.uss1.localutm/scdsc
     uss2:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.flight_planning.FlightPlannerResource
@@ -118,4 +118,4 @@ f3548_single_scenario:
         specification:
             flight_planner:
                 participant_id: uss2
-                injection_base_url: http://host.docker.internal:8074/scdsc
+                injection_base_url: http://scdsc.uss2.localutm/scdsc
