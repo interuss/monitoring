@@ -48,6 +48,8 @@ services:
       - dss_component_coordination:/var/dss_component_coordination
       - $PWD/startup:/startup:ro
     command: /startup/core_service.sh ${DEBUG_ON:-0}
+    expose:
+      - 8082
     ports:
       - "4000:4000"
       - "8082:8082"
@@ -62,6 +64,8 @@ services:
     hostname: oauth
     image: interuss/dummy-oauth
     command: -private_key_file /var/test-certs/auth2.key
+    expose:
+      - 8085
     ports:
       - "8085:8085"
     networks:

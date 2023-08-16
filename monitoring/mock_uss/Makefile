@@ -16,4 +16,4 @@ format:
 
 .PHONY: test
 test: lint
-	TEST="true" ./run_locally_geoawareness.sh
+	./run_locally_test_geoawareness.sh

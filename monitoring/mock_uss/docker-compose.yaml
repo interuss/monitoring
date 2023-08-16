@@ -1,0 +1,235 @@
+# Full suite of mock_uss instances, capable of serving all local uss_qualifier tests.
+# Requires the interoperability ecosystem that can be brought up with build/dev/run_locally.sh
+
+# To bring up this system, see README.md
+
+version: '3.8'
+
+services:
+
+  mock_uss_scdsc_a:
+    container_name: mock_uss_scdsc_a
+    hostname: mock_uss_scdsc_a
+    image: interuss/monitoring
+    command: mock_uss/start.sh
+    environment:
+      - MOCK_USS_AUTH_SPEC=DummyOAuth(http://oauth:8085/token,uss1)
+      - MOCK_USS_DSS_URL=http://dss:8082
+      - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
+      - MOCK_USS_TOKEN_AUDIENCE=localhost,host.docker.internal
+      - MOCK_USS_BASE_URL=http://host.docker.internal:8074
+      - MOCK_USS_SERVICES=scdsc
+    ports:
+      - 8074:5000
+    volumes:
+      - ../../build/test-certs:/var/test-certs:ro
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  mock_uss_scdsc_b:
+    container_name: mock_uss_scdsc_b
+    hostname: mock_uss_scdsc_b
+    image: interuss/monitoring
+    command: mock_uss/start.sh
+    environment:
+      - MOCK_USS_AUTH_SPEC=DummyOAuth(http://oauth:8085/token,uss1)
+      - MOCK_USS_DSS_URL=http://dss:8082
+      - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
+      - MOCK_USS_TOKEN_AUDIENCE=localhost,host.docker.internal
+      - MOCK_USS_BASE_URL=http://host.docker.internal:8094
+      - MOCK_USS_SERVICES=scdsc
+    ports:
+      - 8094:5000
+    volumes:
+      - ../../build/test-certs:/var/test-certs:ro
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  mock_uss_geoawareness:
+    container_name: mock_uss_geoawareness
+    hostname: mock_uss_geoawareness
+    image: interuss/monitoring
+    command: mock_uss/start.sh
+    environment:
+      - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
+      - MOCK_USS_TOKEN_AUDIENCE=localhost,host.docker.internal
+      - MOCK_USS_SERVICES=geoawareness
+    ports:
+      - 8076:5000
+    volumes:
+      - ../../build/test-certs:/var/test-certs:ro
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  mock_uss_ridsp:
+    container_name: mock_uss_ridsp
+    hostname: mock_uss_ridsp
+    image: interuss/monitoring
+    command: mock_uss/start.sh
+    environment:
+      - MOCK_USS_AUTH_SPEC=DummyOAuth(http://oauth:8085/token,uss1)
+      - MOCK_USS_DSS_URL=http://dss:8082
+      - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
+      - MOCK_USS_TOKEN_AUDIENCE=localhost,host.docker.internal
+      - MOCK_USS_BASE_URL=http://host.docker.internal:8081
+      - MOCK_USS_SERVICES=ridsp
+      - MOCK_USS_RID_VERSION=F3411-22a
+    ports:
+      - 8081:5000
+    volumes:
+      - ../../build/test-certs:/var/test-certs:ro
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  mock_uss_riddp:
+    container_name: mock_uss_riddp
+    hostname: mock_uss_riddp
+    image: interuss/monitoring
+    command: mock_uss/start.sh
+    environment:
+      - MOCK_USS_AUTH_SPEC=DummyOAuth(http://oauth:8085/token,uss1)
+      - MOCK_USS_DSS_URL=http://dss:8082
+      - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
+      - MOCK_USS_TOKEN_AUDIENCE=localhost,host.docker.internal
+      - MOCK_USS_BASE_URL=http://host.docker.internal:8083
+      - MOCK_USS_SERVICES=riddp
+      - MOCK_USS_RID_VERSION=F3411-22a
+    ports:
+      - 8083:5000
+    volumes:
+      - ../../build/test-certs:/var/test-certs:ro
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  mock_uss_ridsp_v19:
+    container_name: mock_uss_ridsp_v19
+    hostname: mock_uss_ridsp_v19
+    image: interuss/monitoring
+    command: mock_uss/start.sh
+    environment:
+      - MOCK_USS_AUTH_SPEC=DummyOAuth(http://oauth:8085/token,uss1)
+      - MOCK_USS_DSS_URL=http://dss:8082
+      - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
+      - MOCK_USS_TOKEN_AUDIENCE=localhost,host.docker.internal
+      - MOCK_USS_BASE_URL=http://host.docker.internal:8071
+      - MOCK_USS_SERVICES=ridsp
+      - MOCK_USS_RID_VERSION=F3411-19
+    ports:
+      - 8071:5000
+    volumes:
+      - ../../build/test-certs:/var/test-certs:ro
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  mock_uss_riddp_v19:
+    container_name: mock_uss_riddp_v19
+    hostname: mock_uss_riddp_v19
+    image: interuss/monitoring
+    command: mock_uss/start.sh
+    environment:
+      - MOCK_USS_AUTH_SPEC=DummyOAuth(http://oauth:8085/token,uss1)
+      - MOCK_USS_DSS_URL=http://dss:8082
+      - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
+      - MOCK_USS_TOKEN_AUDIENCE=localhost,host.docker.internal
+      - MOCK_USS_BASE_URL=http://host.docker.internal:8073
+      - MOCK_USS_SERVICES=riddp
+      - MOCK_USS_RID_VERSION=F3411-22a
+    ports:
+      - 8073:5000
+    volumes:
+      - ../../build/test-certs:/var/test-certs:ro
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  mock_uss_tracer:
+    container_name: mock_uss_tracer
+    hostname: mock_uss_tracer
+    image: interuss/monitoring
+    working_dir: /app/monitoring/mock_uss
+    command: ./start.sh
+    environment:
+      - MOCK_USS_AUTH_SPEC=DummyOAuth(http://oauth:8085/token,uss1)
+      - MOCK_USS_DSS_URL=http://dss:8082
+      - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
+      - MOCK_USS_TOKEN_AUDIENCE=localhost,host.docker.internal
+      - MOCK_USS_BASE_URL=http://host.docker.internal:8078
+      - MOCK_USS_TRACER_OUTPUT_FOLDER=output/tracer
+      - MOCK_USS_SERVICES=tracer
+    ports:
+      - 8078:5000
+    volumes:
+      - ../../build/test-certs:/var/test-certs:ro
+      - ./output/tracer:/app/monitoring/mock_uss/output/tracer
+    user: "${UID_GID}"
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  atproxy:
+    container_name: atproxy
+    hostname: atproxy
+    image: interuss/monitoring
+    command: atproxy/start.sh
+    environment:
+      - ATPROXY_CLIENT_BASIC_AUTH=local_client:local_client
+      - ATPROXY_PUBLIC_KEY=/var/test-certs/auth2.pem
+      - ATPROXY_TOKEN_AUDIENCE=localhost,host.docker.internal
+      - ATPROXY_QUERY_TIMEOUT=5
+      - PYTHONUNBUFFERED=TRUE
+    ports:
+      - 8075:5000
+    volumes:
+      - ../../build/test-certs:/var/test-certs:ro
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  atproxy_client:
+    container_name: atproxy_client
+    image: interuss/monitoring
+    command: mock_uss/start.sh
+    environment:
+      - MOCK_USS_AUTH_SPEC=DummyOAuth(http://oauth:8085/token,uss1)
+      - MOCK_USS_DSS_URL=http://dss:8082
+      - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
+      - MOCK_USS_TOKEN_AUDIENCE=localhost,host.docker.internal
+      - MOCK_USS_BASE_URL=http://host.docker.internal:8075
+      - MOCK_USS_ATPROXY_BASE_URL=http://host.docker.internal:8075
+      - MOCK_USS_ATPROXY_BASIC_AUTH=local_client:local_client
+      - MOCK_USS_SERVICES=atproxy_client,scdsc,ridsp,riddp
+    volumes:
+      - ../../build/test-certs:/var/test-certs:ro
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+networks:
+  interop_ecosystem_network:
+    external: true

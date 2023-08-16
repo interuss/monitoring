@@ -12,23 +12,18 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
-RID_VERSION=${RID_VERSION:-"F3411-22a"}
-RID_EXT=""
-if [ "$RID_VERSION" = "F3411-19" ]; then
-	RID_EXT="_v19"
+if [ -z "${DO_NOT_BUILD_MONITORING}" ]; then
+  ./monitoring/build.sh || exit 1
+  export DO_NOT_BUILD_MONITORING=true
 fi
 
-CONTAINER_NAME=mock_uss_scdsc_a monitoring/mock_uss/run_locally_scdsc.sh -d
-export DO_NOT_BUILD_MONITORING=true
-PORT=8094 CONTAINER_NAME=mock_uss_scdsc_b monitoring/mock_uss/run_locally_scdsc.sh -d
-monitoring/mock_uss/run_locally_ridsp${RID_EXT}.sh -d
-monitoring/mock_uss/run_locally_riddp${RID_EXT}.sh -d
-monitoring/mock_uss/run_locally_geoawareness.sh -d
-monitoring/mock_uss/run_locally_atproxy_client.sh -d
-monitoring/mock_uss/run_locally_tracer.sh -d
+./monitoring/mock_uss/run_locally.sh up -d
+
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_scdsc_a
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_scdsc_b
-monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_ridsp${RID_EXT}
-monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_riddp${RID_EXT}
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_geoawareness
+monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_ridsp_v19
+monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_riddp_v19
+monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_ridsp
+monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_riddp
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_tracer
