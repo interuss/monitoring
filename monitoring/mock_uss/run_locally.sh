@@ -39,7 +39,6 @@ if [[ "$DC_COMMAND" == up* ]]; then
   echo "Cleaning up past tracer logs"
   # Prevent logs from building up too much by default
   find "output/tracer" -name "*.yaml" -exec rm {} \;
-  find "output/tracer_v19" -name "*.yaml" -exec rm {} \;
 fi
 
 # shellcheck disable=SC2086
