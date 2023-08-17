@@ -7,7 +7,7 @@ from loguru import logger
 from monitoring.uss_qualifier.configurations.configuration import (
     ArtifactsConfiguration,
     TemplatedReportConfiguration,
-    TemplatedReportApplicationConfiguration,
+    TemplatedReportInjectedConfiguration,
 )
 from monitoring.uss_qualifier.reports.report import TestRunReport
 import requests, zipfile, io
@@ -25,9 +25,9 @@ def _hash_url(url: str) -> str:
     return sig.hexdigest()
 
 
-class RenderedApplicationConfiguration(TemplatedReportApplicationConfiguration):
+class InjectedConfiguration(TemplatedReportInjectedConfiguration):
     report: TestRunReport
-    """Report instance to inject in the application"""
+    """Report instance to inject in the templated report"""
 
 
 class TemplateRenderer:
@@ -36,9 +36,9 @@ class TemplateRenderer:
     Rendering is achieved using the following steps:
     1. Download a template which is composed of a zip file containing a index.html. For convenience,
     it can be versioned and hosted using a Github release.
-    2. Replace the TEMPLATE_CONFIGURATION_MARK by a script tag. The tag sets a `interuss` variable
-    at the window level which can be leverage by the encompassed javascript code. <script>window.interuss=`[JSON]`;</script>
-    where [JSON] is a RenderedApplicationConfiguration JSON serialized object.
+    2. Replace the TEMPLATE_CONFIGURATION_MARK by a script tag containing the InjectedConfiguration.
+    The tag, whose id is `interuss_report_json` can be leveraged by the javascript code using
+    `JSON.parse(document.getElementById('interuss_report_json').innerHTML)`.
     """
 
     def __init__(self, template: TemplatedReportConfiguration, report: TestRunReport):
@@ -64,13 +64,13 @@ class TemplateRenderer:
 
         # Configure application
         rendered_configuration = json.dumps(
-            RenderedApplicationConfiguration(
-                self._template.configuration, report=self._report
-            )
-        ).replace("`", "\\`")
-        injected_configuration = (
-            f"<script>window.interuss=`{rendered_configuration}`;</script>"
+            InjectedConfiguration(self._template.configuration, report=self._report)
         )
+        injected_configuration = f"""
+<script id="interuss_report_json" type="application/json">
+    {rendered_configuration}
+</script>
+            """
 
         content = src.read_text()
         content = content.replace(TEMPLATE_CONFIGURATION_MARK, injected_configuration)
