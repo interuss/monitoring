@@ -84,7 +84,8 @@ def flights(fetched: rid.FetchedFlights) -> Dict:
             if isa.flights_url not in isas_by_url:
                 isas_by_url[isa.flights_url] = {}
             isa_info = copy.deepcopy(isa)
-            del isa_info["id"]
+            if "id" in isa_info:
+                del isa_info["id"]
             isas_by_url[isa.flights_url][isa_id] = isa_info
             owners_by_url[isa.flights_url] = isa.owner
 

@@ -168,11 +168,11 @@ def evaluate_requirements_checked_conditions(
     for path, passed_check in report.query_passed_checks(participant_id):
         for req_id in passed_check.requirements:
             if req_id in req_checks:
-                req_checks[req_id].passed_checks.append(path)
+                req_checks[req_id].passed_checks.append("$." + path)
     for path, failed_check in report.query_failed_checks(participant_id):
         for req_id in failed_check.requirements:
             if req_id in req_checks:
-                req_checks[req_id].failed_checks.append(path)
+                req_checks[req_id].failed_checks.append("$." + path)
     passed = [
         cr for cr in req_checks.values() if cr.passed_checks and not cr.failed_checks
     ]

@@ -13,13 +13,16 @@ from ..template import _print_time_range
 RESULT = ("", 204)
 
 
-@webapp.route("/tracer/f3548v21/uss/v1/operational_intents", methods=["POST"])
-def tracer_scd_v21_operation_notification() -> Tuple[str, int]:
+@webapp.route(
+    "/tracer/f3548v21/<observation_area_id>/uss/v1/operational_intents",
+    methods=["POST"],
+)
+def tracer_scd_v21_operation_notification(observation_area_id: str) -> Tuple[str, int]:
     """Implements SCD Operation notification receiver."""
     logger.debug(f"Handling tracer_scd_v21_operation_notification from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
     req["endpoint"] = "operational_intents"
-    log_name = context.resources.logger.log_new("notify_op", req)
+    log_name = context.tracer_logger.log_new("notify_op", req)
 
     claims = req.token
     owner = claims.get("sub", "<No owner in token>")
@@ -73,13 +76,15 @@ def tracer_scd_v21_operation_notification() -> Tuple[str, int]:
     return RESULT
 
 
-@webapp.route("/tracer/f3548v21/uss/v1/constraints", methods=["POST"])
-def tracer_scd_v21_constraint_notification() -> Tuple[str, int]:
+@webapp.route(
+    "/tracer/f3548v21/<observation_area_id>/uss/v1/constraints", methods=["POST"]
+)
+def tracer_scd_v21_constraint_notification(observation_area_id: str) -> Tuple[str, int]:
     """Implements SCD Constraint notification receiver."""
     logger.debug(f"Handling tracer_scd_v21_constraint_notification from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
     req["endpoint"] = "constraints"
-    log_name = context.resources.logger.log_new("notify_constraint", req)
+    log_name = context.tracer_logger.log_new("notify_constraint", req)
 
     claims = infrastructure.get_token_claims({k: v for k, v in flask.request.headers})
     owner = claims.get("sub", "<No owner in token>")
