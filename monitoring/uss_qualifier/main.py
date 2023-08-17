@@ -1,17 +1,15 @@
 #!env/bin/python3
 
 import argparse
-import hashlib
 import json
 import os
 import sys
-from typing import Dict
 
 from implicitdict import ImplicitDict
 from loguru import logger
 
+from monitoring.monitorlib.dicts import remove_elements
 from monitoring.monitorlib.versioning import get_code_version, get_commit_hash
-from monitoring.uss_qualifier import fileio
 from monitoring.uss_qualifier.configurations.configuration import (
     TestConfiguration,
     USSQualifierConfiguration,
@@ -25,6 +23,10 @@ from monitoring.uss_qualifier.reports.documents import (
 from monitoring.uss_qualifier.reports.graphs import make_graph
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
 from monitoring.uss_qualifier.resources.resource import create_resources
+from monitoring.uss_qualifier.signatures import (
+    compute_signature,
+    compute_baseline_signature,
+)
 from monitoring.uss_qualifier.suites.suite import TestSuiteAction
 
 
@@ -46,30 +48,27 @@ def parseArgs() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def compute_baseline_signature(
-    codebase_version: str, commit_hash: str, file_signatures: Dict[str, str]
-) -> str:
-    """Compute a signature uniquely identifying the test baseline being run.
-
-    Args:
-        codebase_version: Name and source of codebase being used (e.g., interuss/monitoring/v0.2.0)
-        commit_hash: Full git commit hash of the codebase being used
-        file_signatures: Mapping between file name and signature of that file's content for all files constituting the
-            test baseline.
-
-    Returns: Signature uniquely identifying the test baseline, according to provided parameters.
-    """
-    sig = hashlib.sha256()
-    sig.update(codebase_version.encode("utf-8"))
-    sig.update(commit_hash.encode("utf-8"))
-    for k in sorted(file_signatures):
-        sig.update(f"{k}={file_signatures[k]}".encode("utf-8"))
-    return sig.hexdigest()
-
-
-def execute_test_run(config: TestConfiguration):
+def execute_test_run(
+    config: TestConfiguration, whole_config: USSQualifierConfiguration
+):
     codebase_version = get_code_version()
     commit_hash = get_commit_hash()
+
+    # Compute signatures of inputs
+    if config.non_baseline_inputs:
+        baseline, environment = remove_elements(
+            whole_config, config.non_baseline_inputs
+        )
+    else:
+        baseline = whole_config
+        environment = []
+    baseline_signature = compute_baseline_signature(
+        codebase_version,
+        commit_hash,
+        compute_signature(baseline),
+    )
+    environment_signature = compute_signature(environment)
+
     resources = create_resources(config.resources.resource_declarations)
     action = TestSuiteAction(config.action, resources)
     report = action.run()
@@ -78,23 +77,11 @@ def execute_test_run(config: TestConfiguration):
     else:
         logger.warning("Final result: FAILURE")
 
-    # Report signatures of inputs
-    if config.non_baseline_inputs:
-        exclude = set(fileio.resolve_filename(f) for f in config.non_baseline_inputs)
-    else:
-        exclude = set()
-    file_signatures = fileio.content_signatures
-    baseline_signature = compute_baseline_signature(
-        codebase_version,
-        commit_hash,
-        {k: v for k, v in file_signatures.items() if k not in exclude},
-    )
-
     return TestRunReport(
         codebase_version=codebase_version,
         commit_hash=commit_hash,
-        file_signatures=file_signatures,
         baseline_signature=baseline_signature,
+        environment_signature=environment_signature,
         configuration=config,
         report=report,
     )
@@ -103,7 +90,8 @@ def execute_test_run(config: TestConfiguration):
 def main() -> int:
     args = parseArgs()
 
-    config = USSQualifierConfiguration.from_string(args.config).v1
+    whole_config = USSQualifierConfiguration.from_string(args.config)
+    config = whole_config.v1
     if args.report:
         if not config.artifacts:
             config.artifacts = ArtifactsConfiguration(
@@ -115,7 +103,7 @@ def main() -> int:
             config.artifacts.report.report_path = args.report
 
     if config.test_run:
-        report = execute_test_run(config.test_run)
+        report = execute_test_run(config.test_run, whole_config)
     elif config.artifacts and config.artifacts.report:
         with open(config.artifacts.report_path, "r") as f:
             report = ImplicitDict.parse(json.load(f), TestRunReport)

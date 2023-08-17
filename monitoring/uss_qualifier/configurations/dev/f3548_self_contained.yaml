@@ -78,6 +78,14 @@ v1:
             participant_id: uss1
             base_url: http://host.docker.internal:8082
 
+    # When a test run is executed, a "baseline signature" is computed uniquely identifying the "baseline" of the test,
+    # usually excluding exactly what systems are participating in the test (the "environment").  This is a list of
+    # elements within this configuration to exclude from the configuration when computing the baseline signature.
+    non_baseline_inputs:
+      - v1.test_run.resources.resource_declarations.utm_auth
+      - v1.test_run.resources.resource_declarations.flight_planners
+      - v1.test_run.resources.resource_declarations.dss
+
   # This block defines artifacts related to the test run.  Note that all paths are
   # relative to where uss_qualifier is executed from, and are located inside the
   # Docker container executing uss_qualifier.
