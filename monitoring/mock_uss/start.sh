@@ -25,5 +25,5 @@ gunicorn \
     --config ./gunicorn.conf.py \
     --workers=4 \
     --threads=2 \
-    --bind=0.0.0.0:${port} \
+    "--bind=0.0.0.0:${port}" \
     monitoring.mock_uss:webapp

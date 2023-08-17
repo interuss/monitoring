@@ -4,4 +4,4 @@
 # mock_uss via the interuss/monitoring image to determine the health status of
 # the container.
 
-curl --fail http://localhost:${MOCK_USS_PORT:-5000}/status || exit 1
+curl --fail "http://localhost:${MOCK_USS_PORT:-5000}/status" || exit 1
