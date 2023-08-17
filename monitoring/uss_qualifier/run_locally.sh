@@ -46,6 +46,9 @@ else
   OUTPUT_DIR="monitoring/uss_qualifier/output"
   mkdir -p "$OUTPUT_DIR"
 
+  CACHE_DIR="monitoring/uss_qualifier/.templates_cache"
+  mkdir -p "$CACHE_DIR"
+
   if [ "$CI" == "true" ]; then
     docker_args="--add-host host.docker.internal:host-gateway" # Required to reach other containers in Ubuntu (used for Github Actions)
   else
