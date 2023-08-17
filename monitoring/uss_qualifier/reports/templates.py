@@ -82,5 +82,5 @@ class TemplateRenderer:
 
 def render_templates(config: ArtifactsConfiguration, report: TestRunReport):
     pathlib.Path(CACHE_TEMPLATE_PATH).mkdir(parents=True, exist_ok=True)
-    for template in config.report_templates:
+    for template in config.templated_reports:
         TemplateRenderer(template, report).render()

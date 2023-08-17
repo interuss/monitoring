@@ -129,7 +129,7 @@ def main() -> int:
             with open(config.artifacts.report_html.html_path, "w") as f:
                 f.write(make_report_html(report))
 
-        if len(config.artifacts.report_templates) > 0:
+        if len(config.artifacts.templated_reports) > 0:
 
             render_templates(config.artifacts, report)
 
