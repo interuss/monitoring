@@ -15,7 +15,7 @@ from yaml.representer import Representer
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.monitorlib import infrastructure
-
+from monitoring.monitorlib.rid import RIDVersion
 
 TIMEOUTS = (5, 5)  # Timeouts of `connect` and `read` in seconds
 ATTEMPTS = (
@@ -211,6 +211,15 @@ class QueryType(str, Enum):
         "astm.f3548.v21.uss.notifyConstraintDetailsChanged"
     )
     F3548v21USSMakeUssReport = "astm.f3548.v21.uss.makeUssReport"
+
+    @staticmethod
+    def flight_details(rid_version: RIDVersion):
+        if rid_version == RIDVersion.f3411_19:
+            return QueryType.F3411v19aFlightDetails
+        elif rid_version == RIDVersion.f3411_22a:
+            return QueryType.F3411v22aFlightDetails
+        else:
+            raise ValueError(f"Unsupported RID version: {rid_version}")
 
 
 class Query(ImplicitDict):

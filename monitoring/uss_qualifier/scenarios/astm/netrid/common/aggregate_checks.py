@@ -92,6 +92,10 @@ class AggregateChecks(ReportEvaluationScenario):
         self._dp_display_data_times_step()
 
         self.end_test_step()
+        self.begin_test_step("Performance of /display_data/<flight_id> requests")
+        self._dp_display_data_details_times_step()
+        self.end_test_step()
+
         self.end_test_case()
 
         # SP performance
@@ -104,6 +108,60 @@ class AggregateChecks(ReportEvaluationScenario):
         self.end_test_case()
 
         self.end_test_scenario()
+
+    def _dp_display_data_details_times_step(self):
+        """
+        Check performance of /display_data/<flight_id> requests and confirm they conform to
+        NetDpDetailsResponse95thPercentile (2s) and NetDpDetailsResponse99thPercentile (6s)
+        """
+        for participant, all_queries in self._queries_by_participant.items():
+            relevant_queries: List[fetch.Query] = list()
+            for query in all_queries:
+
+                if (
+                    query.status_code == 200
+                    and query.has_field_with_value("query_type")
+                    and (
+                        query.query_type == QueryType.F3411v19aFlightDetails
+                        or query.query_type == QueryType.F3411v22aFlightDetails
+                    )
+                ):
+                    relevant_queries.append(query)
+
+            if len(relevant_queries) == 0:
+                # this may be a service provider
+                self.record_note(
+                    f"{participant}/display_data/<flight_id>",
+                    "skipped check: no relevant queries",
+                )
+                continue
+
+            # compute percentiles
+            durations = [query.response.elapsed_s for query in relevant_queries]
+            [p95, p99] = evaluation.compute_percentiles(durations, [95, 99])
+            with self.check(
+                "Performance of /display_data/<flight_id> requests", [participant]
+            ) as check:
+                if p95 > self._rid_version.dp_details_resp_percentile95_s:
+                    check.record_failed(
+                        summary=f"95th percentile of durations for DP display_data details queries is higher than threshold",
+                        severity=Severity.Medium,
+                        participants=[participant],
+                        details=f"threshold: {self._rid_version.dp_details_resp_percentile95_s}s, 95th percentile: {p95}s",
+                    )
+                if p99 > self._rid_version.dp_details_resp_percentile99_s:
+                    check.record_failed(
+                        summary=f"99th percentile of durations for DP display_data details queries is higher than threshold",
+                        severity=Severity.Medium,
+                        participants=[participant],
+                        details=f"threshold: {self._rid_version.dp_details_resp_percentile99_s}s, 99th percentile: {p99}s",
+                    )
+
+            self.record_note(
+                f"{participant}/display_data/<flight_id>",
+                f"{participant}/display_data/<flight_id> stats computed on {len(durations)} queries "
+                f"95th percentile: {p95}s, 99th percentile: {p99}s",
+            )
 
     def _sp_flights_area_times_step(self):
         for participant, all_queries in self._queries_by_participant.items():
