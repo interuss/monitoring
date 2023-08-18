@@ -36,6 +36,20 @@ A resources.astm.f3411.DSSInstancesResource containing at least two DSS instance
 
 ![Sequence diagram for interoperability test](../common/dss_interoperability_test.png)
 
+## Prerequisites test case
+
+### Test environment requirements test step
+
+#### DSS instance is publicly addressable check
+As per **[astm.f3411.v19.DSS0210](../../../../requirements/astm/f3411/v19.md)** the DSS instance should be publicly addressable.
+As such, this check will fail if the resolved IP of the DSS host is a private IP address, unless that is explicitly
+expected.
+
+#### DSS instance is reachable check
+As per **[astm.f3411.v19.DSS0210](../../../../requirements/astm/f3411/v19.md)** the DSS instance should be publicly addressable.
+As such, this check will fail if the DSS is not reachable with a dummy query,
+
+
 ## Interoperability sequence test case
 
 ### S1 test step
