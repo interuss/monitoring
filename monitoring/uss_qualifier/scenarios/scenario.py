@@ -61,6 +61,7 @@ class ScenarioPhase(str, Enum):
 
 
 class PendingCheck(object):
+    _phase: ScenarioPhase
     _documentation: TestCheckDocumentation
     _step_report: TestStepReport
     _on_failed_check: Optional[Callable[[FailedCheck], None]]
@@ -69,11 +70,13 @@ class PendingCheck(object):
 
     def __init__(
         self,
+        phase: ScenarioPhase,
         documentation: TestCheckDocumentation,
         participants: List[ParticipantID],
         step_report: TestStepReport,
         on_failed_check: Optional[Callable[[FailedCheck], None]],
     ):
+        self._phase = phase
         self._documentation = documentation
         self._participants = participants
         self._step_report = step_report
@@ -102,7 +105,11 @@ class PendingCheck(object):
         if requirements is None:
             requirements = self._documentation.applicable_requirements
 
-        if STOP_FAST and severity != Severity.Critical:
+        if (
+            STOP_FAST
+            and severity != Severity.Critical
+            and self._phase != ScenarioPhase.CleaningUp
+        ):
             note = f"Severity {severity} upgraded to Critical because {_STOP_FAST_FLAG} environment variable indicates true"
             logger.info(note)
             details += "\n" + note
@@ -356,6 +363,7 @@ class GenericTestScenario(ABC):
                     f'Test scenario `{self.me()}` was instructed to prepare to record outcome for check "{name}" during test step "{self._current_step.name}" during test case "{self._current_case.name}", but that check is not declared in documentation; declared checks are: {check_list}'
                 )
         return PendingCheck(
+            phase=self._phase,
             documentation=check_documentation,
             participants=[] if participants is None else participants,
             step_report=self._step_report,
@@ -423,6 +431,16 @@ class GenericTestScenario(ABC):
         self._expect_phase(ScenarioPhase.CleaningUp)
         self._step_report.end_time = StringBasedDateTime(datetime.utcnow())
         self._phase = ScenarioPhase.Complete
+
+    def ensure_cleanup_ended(self) -> None:
+        """This method should be called if the scenario may or may not be done cleaning up.
+
+        For instance, if an exception happened during cleanup and the exception may have been before or after
+        end_cleanup was called."""
+        self._expect_phase({ScenarioPhase.CleaningUp, ScenarioPhase.Complete})
+        if self._phase == ScenarioPhase.CleaningUp:
+            self._step_report.end_time = StringBasedDateTime(datetime.utcnow())
+            self._phase = ScenarioPhase.Complete
 
     def record_execution_error(self, e: Exception) -> None:
         if self._phase == ScenarioPhase.Complete:
