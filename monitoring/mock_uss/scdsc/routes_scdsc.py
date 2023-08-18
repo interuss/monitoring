@@ -3,7 +3,7 @@ import flask
 from monitoring.monitorlib import scd
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
-from monitoring.mock_uss.scdsc.database import db
+from monitoring.mock_uss.scdsc.database import db, FlightRecord
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents/<entityid>", methods=["GET"])
@@ -34,16 +34,20 @@ def scdsc_get_operational_intent_details(entityid: str):
 
     # Return nominal response with details
     response = scd.GetOperationalIntentDetailsResponse(
-        operational_intent=scd.OperationalIntent(
-            reference=flight.op_intent_reference,
-            details=scd.OperationalIntentDetails(
-                volumes=flight.op_intent_injection.volumes,
-                off_nominal_volumes=flight.op_intent_injection.off_nominal_volumes,
-                priority=flight.op_intent_injection.priority,
-            ),
-        )
+        operational_intent=op_intent_from_flightrecord(flight),
     )
     return flask.jsonify(response), 200
+
+
+def op_intent_from_flightrecord(flight: FlightRecord) -> scd.OperationalIntent:
+    return scd.OperationalIntent(
+        reference=flight.op_intent_reference,
+        details=scd.OperationalIntentDetails(
+            volumes=flight.op_intent_injection.volumes,
+            off_nominal_volumes=flight.op_intent_injection.off_nominal_volumes,
+            priority=flight.op_intent_injection.priority,
+        ),
+    )
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents", methods=["POST"])
