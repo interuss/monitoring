@@ -39,6 +39,14 @@ class DSSWrapper(object):
     def participant_id(self) -> str:
         return self._dss.participant_id
 
+    @property
+    def base_url(self) -> str:
+        return self._dss.base_url
+
+    @property
+    def has_private_address(self) -> bool:
+        return self._dss.has_private_address
+
     def _handle_query_error(
         self,
         check: PendingCheck,
