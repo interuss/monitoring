@@ -369,6 +369,44 @@ class RIDObservationEvaluator(object):
                             details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}, alt={injected_telemetry.position.alt}, but {observer.participant_id} observed lat={observed_position.lat}, lng={observed_position.lng}, alt={observed_position.alt} at {query.request.initiated_at}",
                         )
 
+        # Check that flights using telemetry are not using extrapolated position data
+        for mapping in mapping_by_injection_id.values():
+            injected_telemetry = mapping.injected_flight.flight.telemetry[
+                mapping.telemetry_index
+            ]
+
+            with self._test_scenario.check(
+                "Telemetry being used when present",
+                [
+                    mapping.injected_flight.uss_participant_id,
+                ],
+            ) as check:
+                injected_telemetry_extrapolated = (
+                    "extrapolated" in injected_telemetry.position
+                    and injected_telemetry.position.extrapolated
+                )
+
+                observed_telemetry_extrapolated = (
+                    "extrapolated" in mapping.observed_flight.most_recent_position
+                    and mapping.observed_flight.most_recent_position["extrapolated"]
+                )
+
+                # if telemetry is present then extrapolated position data should not be used.
+                if (
+                    not injected_telemetry_extrapolated
+                    and observed_telemetry_extrapolated
+                ):
+                    check.record_failed(
+                        "Position Data is using extrapolation when Telemetry is available.",
+                        Severity.Medium,
+                        details=(
+                            f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID "
+                            f"{mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} "
+                            f"with extrapolated position state, but Service Provider reported non-extrapolated telemetry at {mapping.observed_flight.query.query.request.initiated_at}. "
+                            f"Extrapolation State: Injected={injected_telemetry_extrapolated}, Observed={observed_telemetry_extrapolated}"
+                        ),
+                    )
+
     def _evaluate_flight_presence(
         self,
         observer_participant_id: str,
