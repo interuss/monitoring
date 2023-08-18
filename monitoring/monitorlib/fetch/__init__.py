@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 import traceback
 from typing import Dict, Optional, List
 
@@ -14,7 +15,7 @@ from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.monitorlib import infrastructure
 
 
-TIMEOUTS = (5, 25)  # Timeouts of `connect` and `read` in seconds
+TIMEOUTS = (5, 5)  # Timeouts of `connect` and `read` in seconds
 ATTEMPTS = (
     2  # Number of attempts to query when experiencing a retryable error like a timeout
 )
@@ -210,15 +211,11 @@ def query_and_describe(
         try:
             return describe_query(client.request(verb, url, **req_kwargs), t0)
         except (requests.Timeout, urllib3.exceptions.ReadTimeoutError) as e:
-            failure_message = "query_and_describe attempt {} to {} {} failed with timeout {}: {}".format(
-                attempt + 1, verb, url, type(e).__name__, str(e)
-            )
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with timeout {type(e).__name__}: {str(e)}"
             logger.warning(failure_message)
             failures.append(failure_message)
         except requests.RequestException as e:
-            failure_message = "query_and_describe attempt {} to {} {} failed with non-retryable RequestException {}: {}".format(
-                attempt + 1, verb, url, type(e).__name__, str(e)
-            )
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with non-retryable RequestException {type(e).__name__}: {str(e)}"
             logger.warning(failure_message)
             failures.append(failure_message)
 

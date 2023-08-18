@@ -787,11 +787,12 @@ class RIDObservationEvaluator(object):
             )
         else:
             self._evaluate_normal_sp_observation(
-                sp_observation, mapping_by_injection_id
+                rect, sp_observation, mapping_by_injection_id
             )
 
     def _evaluate_normal_sp_observation(
         self,
+        requested_area: s2sphere.LatLngRect,
         sp_observation: FetchedFlights,
         mappings: Dict[str, TelemetryMapping],
     ) -> None:
@@ -836,6 +837,7 @@ class RIDObservationEvaluator(object):
                         query_timestamps=[flights_query.query.request.timestamp],
                     )
             self._common_dictionary_evaluator.evaluate_sp_flights(
+                requested_area,
                 sp_observation,
                 participants=[mapping.injected_flight.uss_participant_id],
             )
