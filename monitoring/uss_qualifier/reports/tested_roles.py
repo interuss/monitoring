@@ -113,27 +113,28 @@ class CapabilityEvalReport(object):
         return n
 
 
-def _follow_jsonpath(obj: dict, fields: Union[str, List[str]]) -> Any:
-    """Follows an explicit JSONPath for an obj (much, much faster than treating path as a search)."""
+def _follow_jsonaddress(obj: dict, fields: Union[str, List[str]]) -> Any:
+    """Follows an explicit JSONAddress for an obj (much, much faster than treating path as a search)."""
+    # TODO: Change fields to be Union[JSONAddress, List[JSONAddress]] upon merging of #171
 
     if isinstance(fields, str):
-        return _follow_jsonpath(obj, fields.split("."))
+        return _follow_jsonaddress(obj, fields.split("."))
     if not fields:
         return obj
     if fields[0] == "$" or fields[0] == "":
-        return _follow_jsonpath(obj, fields[1:])
+        return _follow_jsonaddress(obj, fields[1:])
 
     if len(fields) == 1:
         field = fields[0]
         if field[-1] == "]" and "[" in field:
             field, index = field[0:-1].split("[")
-            items = _follow_jsonpath(obj, field)
+            items = _follow_jsonaddress(obj, field)
             return items[int(index)]
         else:
             return obj[field]
     else:
-        child = _follow_jsonpath(obj, [fields[0]])
-        return _follow_jsonpath(child, fields[1:])
+        child = _follow_jsonaddress(obj, [fields[0]])
+        return _follow_jsonaddress(child, fields[1:])
 
 
 def _collect_info_from_conditions(
@@ -156,10 +157,10 @@ def _collect_info_from_conditions(
             passed_checks = {}
             failed_checks = []
             for req_path in req_ref.passed_checks:
-                pc: PassedCheck = _follow_jsonpath(report, req_path)
+                pc: PassedCheck = _follow_jsonaddress(report, req_path)
                 passed_checks[pc.name] = passed_checks.get(pc.name, 0) + 1
             for req_path in req_ref.failed_checks:
-                failed_checks.append(_follow_jsonpath(report, req_path))
+                failed_checks.append(_follow_jsonaddress(report, req_path))
             req = PotentiallyCheckedRequirement(
                 requirement_id=req_ref.requirement_id,
                 passed_checks=passed_checks,
