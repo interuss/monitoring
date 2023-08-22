@@ -2,6 +2,7 @@ from typing import List, Dict, Union
 
 from implicitdict import ImplicitDict
 
+from monitoring.monitorlib.dicts import JSONPath
 from monitoring.monitorlib.inspection import (
     import_submodules,
 )
@@ -27,9 +28,6 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
 from monitoring.uss_qualifier.scenarios.documentation.parsing import (
     get_documentation_by_name,
 )
-from monitoring.uss_qualifier.suites.definitions import ActionType
-
-JSONPath = str
 
 
 class ParticipantRequirementPerformance(ImplicitDict):

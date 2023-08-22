@@ -170,7 +170,7 @@ def main() -> int:
             os.makedirs(dir_name, exist_ok=True)
             logger.info(f"Updating {rel_filename}")
             with open(filename, "w") as f:
-                json.dump(schema, f, indent=2)
+                json.dump(schema, f, indent=2, sort_keys=True)
         else:
             raise NotImplementedError(f"Action {args.action} is not yet implemented")
 
