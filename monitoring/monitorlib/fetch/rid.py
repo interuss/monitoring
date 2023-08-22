@@ -323,6 +323,33 @@ class Subscription(ImplicitDict):
     v22a_value: Optional[v22a.api.Subscription] = None
 
     @property
+    def duration(self) -> Optional[datetime.timedelta]:
+        if self.v19_value is not None:
+            if (
+                self.v19_value.time_end is not None
+                and self.v19_value.time_start is not None
+            ):
+                return (
+                    self.v19_value.time_end.datetime
+                    - self.v19_value.time_start.datetime
+                )
+            else:
+                return None
+        elif self.v22a_value is not None:
+            if (
+                self.v22a_value.time_end is not None
+                and self.v22a_value.time_start is not None
+            ):
+                return (
+                    self.v22a_value.time_end.value.datetime
+                    - self.v22a_value.time_start.value.datetime
+                )
+            else:
+                return None
+        else:
+            raise ValueError("No valid representation was specified for subscription")
+
+    @property
     def rid_version(self) -> RIDVersion:
         if self.v19_value is not None:
             return RIDVersion.f3411_19
