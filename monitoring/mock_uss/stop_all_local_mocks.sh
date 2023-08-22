@@ -10,17 +10,4 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
-RID_VERSION=${RID_VERSION:-"F3411-22a"}
-RID_EXT=""
-if [ "$RID_VERSION" = "F3411-19" ]; then
-	RID_EXT="_v19"
-fi
-
-docker container rm -f \
-mock_uss_scdsc_a \
-mock_uss_scdsc_b \
-mock_uss_ridsp${RID_EXT} \
-mock_uss_riddp${RID_EXT} \
-mock_uss_geoawareness \
-mock_uss_atproxy_client \
-mock_uss_tracer
+./monitoring/mock_uss/run_locally.sh down

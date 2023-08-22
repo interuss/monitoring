@@ -17,12 +17,13 @@ cd "${BASEDIR}" || exit 1
 # Use mock_uss's health check
 cp health_check.sh /app
 
-# Start mock_uss server on port 5000
+# Start mock_uss server
+port=${MOCK_USS_PORT:-5000}
 export PYTHONUNBUFFERED=TRUE
 gunicorn \
     --preload \
     --config ./gunicorn.conf.py \
     --workers=4 \
     --threads=2 \
-    --bind=0.0.0.0:5000 \
+    "--bind=0.0.0.0:${port}" \
     monitoring.mock_uss:webapp

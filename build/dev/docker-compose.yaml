@@ -7,7 +7,7 @@ version: '3.8'
 services:
 
   crdb:
-    hostname: crdb
+    hostname: crdb.uss1.localutm
     image: cockroachdb/cockroach:v21.2.7
     command: start-single-node --insecure
     expose:
@@ -41,27 +41,33 @@ services:
       - dss_internal_network
 
   dss:
-    hostname: dss
+    hostname: dss.uss1.localutm
     image: interuss/dss:v0.8.0-rc2
     volumes:
       - $PWD/../test-certs:/var/test-certs:ro
       - dss_component_coordination:/var/dss_component_coordination
       - $PWD/startup:/startup:ro
     command: /startup/core_service.sh ${DEBUG_ON:-0}
+    expose:
+      - 8082
     ports:
       - "4000:4000"
-      - "8082:8082"
+      - "8082:80"
     depends_on:
       - rid_bootstrapper
       - scd_bootstrapper
     networks:
-      - dss_internal_network
-      - interop_ecosystem_network
+      dss_internal_network:
+      interop_ecosystem_network:
+        aliases:
+          - dss.uss2.localutm
 
   oauth:
-    hostname: oauth
+    hostname: oauth.authority.localutm
     image: interuss/dummy-oauth
     command: -private_key_file /var/test-certs/auth2.key
+    expose:
+      - 8085
     ports:
       - "8085:8085"
     networks:

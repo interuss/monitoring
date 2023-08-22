@@ -17,13 +17,14 @@ cd "${BASEDIR}" || exit 1
 # Use atproxy's health check
 cp health_check.sh /app
 
-# Start atproxy server on port 5000
+# Start atproxy server
+port=${ATPROXY_PORT:-5000}
 gunicorn \
     --preload \
     --workers=4 \
     --threads=2 \
     --timeout 60 \
-    --bind=0.0.0.0:5000 \
+    --bind=0.0.0.0:${port} \
     --log-level debug \
     --config ./gunicorn.conf.py \
     monitoring.atproxy.app:webapp
