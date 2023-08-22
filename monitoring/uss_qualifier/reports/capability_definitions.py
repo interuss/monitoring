@@ -10,6 +10,7 @@ CapabilityID = str
 
 JSONPathExpression = str
 """JsonPath expression; see https://pypi.org/project/jsonpath-ng/"""
+# TODO: Change type to JSONAddress where applicable following merging of #171
 
 
 class SpecificCondition(ImplicitDict):

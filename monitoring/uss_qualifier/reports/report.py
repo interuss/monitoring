@@ -122,6 +122,14 @@ class TestStepReport(ImplicitDict):
             if participant_id is None or participant_id in fc.participants:
                 yield f"failed_checks[{i}]", fc
 
+    def participant_ids(self) -> Set[ParticipantID]:
+        ids = set()
+        for pc in self.passed_checks:
+            ids.update(pc.participants)
+        for fc in self.failed_checks:
+            ids.update(fc.participants)
+        return ids
+
 
 class TestCaseReport(ImplicitDict):
     name: str
@@ -161,6 +169,12 @@ class TestCaseReport(ImplicitDict):
         for i, step in enumerate(self.steps):
             for path, fc in step.query_failed_checks(participant_id):
                 yield f"steps[{i}].{path}", fc
+
+    def participant_ids(self) -> Set[ParticipantID]:
+        ids = set()
+        for step in self.steps:
+            ids.update(step.participant_ids())
+        return ids
 
 
 class ErrorReport(ImplicitDict):
@@ -242,7 +256,7 @@ class TestScenarioReport(ImplicitDict):
     ) -> Iterator[Tuple[JSONPathExpression, PassedCheck]]:
         for i, case in enumerate(self.cases):
             for path, pc in case.query_passed_checks(participant_id):
-                yield f"case[{i}].{path}", pc
+                yield f"cases[{i}].{path}", pc
         if "cleanup" in self and self.cleanup:
             for path, pc in self.cleanup.query_passed_checks(participant_id):
                 yield f"cleanup.{path}", pc
@@ -252,7 +266,7 @@ class TestScenarioReport(ImplicitDict):
     ) -> Iterator[Tuple[JSONPathExpression, PassedCheck]]:
         for i, case in enumerate(self.cases):
             for path, fc in case.query_failed_checks(participant_id):
-                yield f"case[{i}].{path}", fc
+                yield f"cases[{i}].{path}", fc
         if "cleanup" in self and self.cleanup:
             for path, fc in self.cleanup.query_failed_checks(participant_id):
                 yield f"cleanup.{path}", fc
@@ -270,6 +284,14 @@ class TestScenarioReport(ImplicitDict):
             queries.extend(self.cleanup.queries)
 
         return queries
+
+    def participant_ids(self) -> Set[ParticipantID]:
+        ids = set()
+        for case in self.cases:
+            ids.update(case.participant_ids())
+        if "cleanup" in self and self.cleanup:
+            ids.update(self.cleanup.participant_ids())
+        return ids
 
 
 class ActionGeneratorReport(ImplicitDict):
@@ -312,6 +334,12 @@ class ActionGeneratorReport(ImplicitDict):
             queries.extend(action.queries())
         return queries
 
+    def participant_ids(self) -> Set[ParticipantID]:
+        ids = set()
+        for action in self.actions:
+            ids.update(action.participant_ids())
+        return ids
+
 
 class TestSuiteActionReport(ImplicitDict):
     test_suite: Optional[TestSuiteReport]
@@ -323,7 +351,14 @@ class TestSuiteActionReport(ImplicitDict):
     action_generator: Optional[ActionGeneratorReport]
     """If this action was an action generator, this field will hold its report"""
 
-    def _get_applicable_report(self) -> Tuple[bool, bool, bool]:
+    def get_applicable_report(self) -> Tuple[bool, bool, bool]:
+        """Determine which type of report is applicable for this action.
+
+        Returns:
+            * Whether test_suite is applicable
+            * Whether test_scenario is applicable
+            * Whether action_generator is applicable
+        """
         test_suite = "test_suite" in self and self.test_suite is not None
         test_scenario = "test_scenario" in self and self.test_scenario is not None
         action_generator = (
@@ -347,7 +382,7 @@ class TestSuiteActionReport(ImplicitDict):
         test_scenario_func: Optional[Callable[[TestScenarioReport], Any]] = None,
         action_generator_func: Optional[Callable[[ActionGeneratorReport], Any]] = None,
     ) -> Any:
-        test_suite, test_scenario, action_generator = self._get_applicable_report()
+        test_suite, test_scenario, action_generator = self.get_applicable_report()
         if test_suite:
             return test_suite_func(self.test_suite)
         if test_scenario:
@@ -378,7 +413,7 @@ class TestSuiteActionReport(ImplicitDict):
     def query_passed_checks(
         self, participant_id: Optional[str] = None
     ) -> Iterator[Tuple[JSONPathExpression, PassedCheck]]:
-        test_suite, test_scenario, action_generator = self._get_applicable_report()
+        test_suite, test_scenario, action_generator = self.get_applicable_report()
         if test_suite:
             report = self.test_suite
             prefix = "test_suite"
@@ -399,7 +434,7 @@ class TestSuiteActionReport(ImplicitDict):
     def query_failed_checks(
         self, participant_id: Optional[str] = None
     ) -> Iterator[Tuple[JSONPathExpression, PassedCheck]]:
-        test_suite, test_scenario, action_generator = self._get_applicable_report()
+        test_suite, test_scenario, action_generator = self.get_applicable_report()
         if test_suite:
             report = self.test_suite
             prefix = "test_suite"
@@ -419,6 +454,9 @@ class TestSuiteActionReport(ImplicitDict):
 
     def queries(self) -> List[fetch.Query]:
         return self._conditional(lambda report: report.queries())
+
+    def participant_ids(self) -> Set[ParticipantID]:
+        return self._conditional(lambda report: report.participant_ids())
 
 
 class AllConditionsEvaluationReport(ImplicitDict):
@@ -604,6 +642,12 @@ class TestSuiteReport(ImplicitDict):
         for action in self.actions:
             queries.extend(action.queries())
         return queries
+
+    def participant_ids(self) -> Set[ParticipantID]:
+        ids = set()
+        for action in self.actions:
+            ids.update(action.participant_ids())
+        return ids
 
 
 class TestRunReport(ImplicitDict):
