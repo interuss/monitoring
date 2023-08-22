@@ -284,7 +284,7 @@ class RIDCommonDictionaryEvaluator(object):
                             participants,
                         ) as check:
                             try:
-                                v22a.api.OperatorLocationAltitude_type(
+                                v22a.api.OperatorLocationAltitudeType(
                                     alt_type
                                 )  # raise ValueError if alt_type is invalid
                             except ValueError:

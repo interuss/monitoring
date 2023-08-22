@@ -3,7 +3,7 @@ from typing import Tuple
 
 import flask
 from implicitdict import ImplicitDict
-from uas_standards.interuss.automated_testing.flight_planning.v1.api import \
+from uas_standards.interuss.automated_testing.scd.v1.api import \
     InjectFlightRequest, ClearAreaRequest
 
 from . import handling
