@@ -1,4 +1,4 @@
-# Diagnostic capability to monitor interactions in UTM ecosystem
+# Diagnostic capability to monitor interactions in interoperability ecosystems
 
 ## Description
 This diagnostic capability monitors UTM traffic in a specified area.  This

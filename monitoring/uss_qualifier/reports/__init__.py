@@ -9,5 +9,7 @@ jinja_env = Environment(
             os.path.abspath(os.path.join(os.path.dirname(__file__), relpath))
             for relpath in ("templates", "../../monitorlib/html/templates")
         ]
-    )
+    ),
+    trim_blocks=True,
+    lstrip_blocks=True,
 )
