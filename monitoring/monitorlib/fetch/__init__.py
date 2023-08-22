@@ -17,7 +17,7 @@ from monitoring.monitorlib import infrastructure
 
 TIMEOUTS = (5, 5)  # Timeouts of `connect` and `read` in seconds
 ATTEMPTS = (
-    5  # Number of attempts to query when experiencing a retryable error like a timeout
+    2  # Number of attempts to query when experiencing a retryable error like a timeout
 )
 
 
