@@ -25,23 +25,9 @@ class TestConfiguration(ImplicitDict):
     """Declarations for resources used by the test suite"""
 
 
-class TestedRole(ImplicitDict):
-    name: str
-    """Name of role"""
-
-    requirement_set: RequirementSetID
-    """Set of requirements a participant must satisfy to fulfill the role"""
-
-    participants: List[ParticipantID]
-    """Participants fulfilling the role"""
-
-
 class TestedRolesConfiguration(ImplicitDict):
     report_path: str
-    """Path of HTML file to contain a requirements-based summary of the test report"""
-
-    roles: List[TestedRole]
-    """Roles (and participants filling those roles) tested by the test run"""
+    """Path of HTML file to contain a fulfilled-requirements-based view of the test report"""
 
 
 class ReportHTMLConfiguration(ImplicitDict):

@@ -50,9 +50,14 @@ This particular test requires each flight to be uniquely identifiable by its 2D 
 If a DSS was provided to this test scenario, uss_qualifier acts as a Display Provider to query Service Providers under test in this step.
 
 #### Recent positions timestamps check
-**[astm.f3411.v22a.NET0270](../../../../requirements/astm/f3411/v22a.md)** requires all recent positions to be within the NetMaxNearRealTimeDataPeriod. This check will fail if any of the reported positions are older than the maximally allowed period plus NetSpDataResponseTime99thPercentile.
+**[astm.f3411.v19.NET0270](../../../../requirements/astm/f3411/v19.md)** requires all recent positions to be within the NetMaxNearRealTimeDataPeriod. This check will fail if any of the reported positions are older than the maximally allowed period plus NetSpDataResponseTime99thPercentile.
 
-TODO Julien add required checks here for NET0270 b) and c)
+#### Recent positions for aircraft crossing the requested area boundary show only one position before or after crossing check
+**[astm.f3411.v19.NET0270](../../../../requirements/astm/f3411/v19.md)** requires that when an aircraft enters or leaves the queried area, the last or first reported position outside the area is provided in the recent positions, as long as it is not older than NetMaxNearRealTimeDataPeriod.
+
+This implies that any recent position outside the area must be either preceded or followed by a position inside the area.
+
+(This check validates NET0270 b and c).
 
 #### Flights data format check
 
@@ -115,6 +120,10 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 #### Lingering flight check
 
 **[astm.f3411.v19.NET0260](../../../../requirements/astm/f3411/v19.md)** requires a SP to provide flights up to *NetMaxNearRealTimeDataPeriod* in the past, but an SP should preserve privacy and ensure relevancy by not sharing flights that are further in the past than this window.
+
+#### Telemetry being used when present check
+
+**[astm.f3411.v19.NET0290](../../../../requirements/astm/f3411/v19.md)** requires a SP uses Telemetry vs extrapolation when telemetry is present.
 
 #### Observed altitude check
 

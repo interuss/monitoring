@@ -16,10 +16,8 @@ from monitoring.uss_qualifier.configurations.configuration import (
     ArtifactsConfiguration,
     ReportConfiguration,
 )
-from monitoring.uss_qualifier.reports.documents import (
-    generate_tested_requirements,
-    make_report_html,
-)
+from monitoring.uss_qualifier.reports.documents import make_report_html
+from monitoring.uss_qualifier.reports.tested_roles import generate_tested_roles
 from monitoring.uss_qualifier.reports.graphs import make_graph
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
 from monitoring.uss_qualifier.resources.resource import create_resources
@@ -102,18 +100,20 @@ def main() -> int:
         else:
             config.artifacts.report.report_path = args.report
 
+    do_not_save_report = False
     if config.test_run:
         report = execute_test_run(config.test_run, whole_config)
     elif config.artifacts and config.artifacts.report:
-        with open(config.artifacts.report_path, "r") as f:
+        with open(config.artifacts.report.report_path, "r") as f:
             report = ImplicitDict.parse(json.load(f), TestRunReport)
+            do_not_save_report = True  # No reason to re-save what we just loaded
     else:
         raise ValueError(
             "No input provided; test_run or artifacts.report.report_path must be specified in configuration"
         )
 
     if config.artifacts:
-        if config.artifacts.report:
+        if config.artifacts.report and not do_not_save_report:
             if config.artifacts.report.redact_access_tokens:
                 logger.info("Redacting access tokens in report")
                 redact_access_tokens(report)
@@ -137,13 +137,8 @@ def main() -> int:
 
         if config.artifacts.tested_roles:
             path = config.artifacts.tested_roles.report_path
-            logger.info("Writing tested roles summary to {}", path)
-            with open(path, "w") as f:
-                f.write(
-                    generate_tested_requirements(
-                        report, config.artifacts.tested_roles.roles
-                    )
-                )
+            logger.info("Writing tested roles view to {}", path)
+            generate_tested_roles(report, path)
 
     return os.EX_OK
 

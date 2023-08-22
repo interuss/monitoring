@@ -1,0 +1,115 @@
+// To render:
+//   dot -Tpng -ogenerated/local_uss_qualifier.png local_uss_qualifier.gv
+digraph G {
+  rankdir="LR"
+  node [shape=box]
+
+  subgraph cluster_legend {
+    label="Legend"
+    Container [label=<Container description/purpose<br/><font color="purple" face="Courier" point-size="10">container_name</font><br/><font face="Courier" color="gray" point-size="10">accessible port on host machine</font>>]
+    Resource [shape=note,label=<uss_qualifier Resource description<br/><font color="gray" face="Courier" point-size="10">Resource class name</font>>]
+    Hidden1 [style=invis,label=""]
+    Hidden2 [style=invis,label=""]
+
+    Container -> Resource [style=dotted,label="Via the means of"]
+    Container -> Hidden1 [style=dashed,color=gray,fontcolor=gray,label="Indirectly communicates with"]
+    Container -> Hidden2 [label="Communicates with"]
+  }
+
+  subgraph cluster_local_infra {
+    label=<Local interoperability ecosystem<br/><font color="green" face="Courier" point-size="10">make start-locally</font><br/><font color="red" face="Courier" point-size="10">make down-locally</font>>
+    style="dashed"
+    Auth [label=<Dummy OAuth<br/><font color="purple" face="Courier" point-size="10">local_infra-oauth-1</font><br/><font face="Courier" color="gray" point-size="10">port 8085</font>>]
+    subgraph cluster_dss {
+      label="DSS"
+      CoreService [label=<Core Service<br/><font color="purple" face="Courier" point-size="10">local_infra-dss-1</font><br/><font face="Courier" color="gray" point-size="10">port 8082</font>>]
+      CRDB [label=<Cockroach DB<br/><font color="purple" face="Courier" point-size="10">local_infra-crdb-1</font><br/><font face="Courier" color="gray" point-size="10">web UI on port 8080</font>>]
+      CoreService -> CRDB
+    }
+    Auth -> CoreService [label="Public key",style="dashed",color="gray",fontcolor="gray"]
+  }
+
+  subgraph cluster_uss_mocks {
+    label=<Local USS mocks<br/><font color="green" face="Courier" point-size="10">make start-uss-mocks</font><br/><font color="red" face="Courier" point-size="10">make stop-uss-mocks</font>>
+    style="dashed"
+
+    atproxy [label=<Proxied testing interface<br/><font color="purple" face="Courier" point-size="10">atproxy</font><br/><font face="Courier" color="gray" point-size="10">host port 8075</font><br/><font color="red">Disabled</font>>]
+    subgraph force_same_level {
+      rank=same
+      mock_uss_atproxy_client [label=<Proxied testing backend<br/><font color="purple" face="Courier" point-size="10">mock_uss_atproxy_client</font>>]
+      InteropEcosystem [color=lightblue,label=<All of these services<br/>communicate with DSS +<br/>auth in local interoperability<br/>ecosystem, as well as each<br/>other, all according to ASTM<br/>standards>]
+    }
+
+    mock_uss_geoawareness [label=<Geo-awareness mock<br/><font color="purple" face="Courier" point-size="10">mock_uss_geoawareness</font><br/><font face="Courier" color="gray" point-size="10">host port 8076</font>>]
+
+    mock_uss_scdsc_a [label=<Strategic Coordination mock A<br/><font color="purple" face="Courier" point-size="10">mock_uss_scdsc_a</font><br/><font face="Courier" color="gray" point-size="10">host port 8074</font>>]
+    mock_uss_scdsc_b [label=<Strategic Coordination mock B<br/><font color="purple" face="Courier" point-size="10">mock_uss_scdsc_b</font><br/><font face="Courier" color="gray" point-size="10">host port 8094</font>>]
+
+    mock_uss_ridsp [label=<ASTM F3411-22a Service Provider mock<br/><font color="purple" face="Courier" point-size="10">mock_uss_ridsp</font><br/><font face="Courier" color="gray" point-size="10">host port 8081</font>>]
+    mock_uss_riddp [label=<ASTM F3411-22a Display Provider mock<br/><font color="purple" face="Courier" point-size="10">mock_uss_riddp</font><br/><font face="Courier" color="gray" point-size="10">host port 8083</font>>]
+
+    mock_uss_ridsp_v19 [label=<ASTM F3411-19 Service Provider mock<br/><font color="purple" face="Courier" point-size="10">mock_uss_ridsp_v19</font><br/><font face="Courier" color="gray" point-size="10">host port 8071</font>>]
+    mock_uss_riddp_v19 [label=<ASTM F3411-19 Display Provider mock<br/><font color="purple" face="Courier" point-size="10">mock_uss_riddp_v19</font><br/><font face="Courier" color="gray" point-size="10">host port 8073</font>>]
+
+    mock_uss_tracer [label=<ASTM F3411-22a trace logger<br/><font color="purple" face="Courier" point-size="10">mock_uss_tracer</font><br/><font face="Courier" color="gray" point-size="10">host port 8078</font>>]
+    mock_uss_tracer_v19 [label=<ASTM F3411-19 tracer logger<br/><font color="purple" face="Courier" point-size="10">mock_uss_tracer_v19</font><br/><font face="Courier" color="gray" point-size="10">host port 8088</font>>]
+
+    atproxy -> mock_uss_atproxy_client
+  }
+
+  subgraph cluster_uss_qualifier {
+    label=<uss_qualifier<br/><font color="green" face="Courier" point-size="10">./monitoring/uss_qualifier/run_locally.sh [CONFIG_NAME]</font>>
+    style="dashed"
+
+    uss_qualifier [label=<uss_qualifier<br/><font color="purple" face="Courier" point-size="10">uss_qualifier</font>>]
+
+    ResourceUSSAuth [shape=note,label=<Auth to act as USS<br/><font color="gray" face="Courier" point-size="10">AuthAdapterResource</font>>]
+    ResourceTestDirectorAuth [shape=note,label=<Auth to act as test director<br/><font color="gray" face="Courier" point-size="10">AuthAdapterResource</font>>]
+    ResourceDSSF3411 [shape=note,label=<DSS implementing F3411<br/><font color="gray" face="Courier" point-size="10">f3411.DSSInstanceResource</font>>]
+    ResourceDSSF3548 [shape=note,label=<DSS implementing F3548<br/><font color="gray" face="Courier" point-size="10">f3548.DSSInstanceResource</font>>]
+    ResourceRIDSPs [shape=note,label=<NetRID service providers<br/><font color="gray" face="Courier" point-size="10">NetRIDServiceProviders</font>>]
+    ResourceRIDObservers [shape=note,label=<NetRID observers<br/><font color="gray" face="Courier" point-size="10">NetRIDObserversResource</font>>]
+    ResourceFlightPlanners [shape=note,label=<Flight planners<br/><font color="gray" face="Courier" point-size="10">FlightPlannersResource</font>>]
+
+    ResourceUSSAuth -> ResourceDSSF3411 [style=dotted]
+    ResourceUSSAuth -> ResourceDSSF3548 [style=dotted]
+    ResourceTestDirectorAuth -> ResourceRIDSPs [style=dotted]
+    ResourceTestDirectorAuth -> ResourceRIDObservers [style=dotted]
+    ResourceTestDirectorAuth -> ResourceFlightPlanners [style=dotted]
+
+    uss_qualifier -> ResourceUSSAuth [style=dotted]
+    uss_qualifier -> ResourceTestDirectorAuth [style=dotted]
+    uss_qualifier -> ResourceDSSF3548 [style=dotted]
+    uss_qualifier -> ResourceDSSF3411 [style=dotted]
+    uss_qualifier -> ResourceRIDSPs [style=dotted]
+    uss_qualifier -> ResourceRIDObservers [style=dotted]
+    uss_qualifier -> ResourceFlightPlanners [style=dotted]
+  }
+
+  mock_uss_ridsp -> InteropEcosystem
+  mock_uss_riddp -> InteropEcosystem
+  mock_uss_ridsp_v19 -> InteropEcosystem
+  mock_uss_riddp_v19 -> InteropEcosystem
+  mock_uss_scdsc_a -> InteropEcosystem
+  mock_uss_scdsc_b -> InteropEcosystem
+  mock_uss_tracer -> InteropEcosystem
+  mock_uss_tracer_v19 -> InteropEcosystem
+  mock_uss_atproxy_client -> InteropEcosystem
+
+  ResourceUSSAuth -> Auth
+  ResourceTestDirectorAuth -> Auth
+  ResourceDSSF3411 -> CoreService
+  ResourceDSSF3411 -> mock_uss_ridsp [style=dashed,color=gray]
+  ResourceDSSF3411 -> mock_uss_riddp [style=dashed,color=gray]
+  ResourceDSSF3411 -> mock_uss_ridsp_v19 [style=dashed,color=gray]
+  ResourceDSSF3411 -> mock_uss_riddp_v19 [style=dashed,color=gray]
+  ResourceDSSF3548 -> CoreService
+  ResourceDSSF3548 -> mock_uss_scdsc_a [style=dashed,color=gray]
+  ResourceDSSF3548 -> mock_uss_scdsc_b [style=dashed,color=gray]
+  ResourceRIDSPs -> mock_uss_ridsp
+  ResourceRIDSPs -> mock_uss_ridsp_v19
+  ResourceRIDObservers -> mock_uss_riddp
+  ResourceRIDObservers -> mock_uss_riddp_v19
+  ResourceFlightPlanners -> mock_uss_scdsc_a
+  ResourceFlightPlanners -> mock_uss_scdsc_b
+}

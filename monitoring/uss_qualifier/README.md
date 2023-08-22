@@ -26,6 +26,10 @@ After building, uss_qualifier should take a few minutes to run and then `report.
 
 At this point, uss_qualifier can be run again with a different configuration targeted at the development resources brought up in steps 3-6; for instance: `monitoring/uss_qualifier/run_locally.sh configurations.dev.self_contained_f3548`
 
+### Local testing
+
+See the [local testing page](local_testing.md) for more information regarding running uss_qualifier on a single local system.
+
 ## Architecture
 
 * [Test suites](suites/README.md)
