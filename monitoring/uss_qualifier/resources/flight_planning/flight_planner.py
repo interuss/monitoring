@@ -18,7 +18,7 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     ClearAreaRequest,
     SCOPE_SCD_QUALIFIER_INJECT,
 )
-from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
+from uas_standards.interuss.automated_testing.scd.v1.api import (
     StatusResponse,
     CapabilitiesResponse,
 )

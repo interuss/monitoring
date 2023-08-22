@@ -5,7 +5,7 @@ from typing import Tuple, Optional
 
 from loguru import logger
 import requests
-from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
+from uas_standards.interuss.automated_testing.scd.v1.api import (
     ClearAreaRequest,
 )
 

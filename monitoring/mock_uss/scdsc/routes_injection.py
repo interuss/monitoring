@@ -13,7 +13,7 @@ from monitoring.mock_uss.scdsc.routes_scdsc import op_intent_from_flightrecord
 from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays, OiMaxVertices
 
 from monitoring.mock_uss.config import KEY_BASE_URL, KEY_BEHAVIOR_LOCALITY
-from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
+from uas_standards.interuss.automated_testing.scd.v1.api import (
     OperationalIntentState,
 )
 from monitoring.monitorlib import scd, versioning
