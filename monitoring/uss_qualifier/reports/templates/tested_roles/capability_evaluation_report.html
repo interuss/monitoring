@@ -1,0 +1,101 @@
+<html>
+<head>
+  <style>
+table, th, td {
+  border: 1px solid;
+}
+th {
+  background-color: rgb(230, 230, 230);
+}
+.pass_result {
+  background-color: rgb(192, 255, 192);
+}
+.fail_result {
+  background-color: rgb(255, 192, 192);
+}
+.not_tested {
+  background-color: rgb(192, 192, 192);
+}
+.verified_result {
+  background-color: rgb(192, 255, 192);
+}
+.unverified_result {
+  background-color: rgb(255, 255, 192);
+}
+.missing_capability {
+  background-color: rgb(255, 0, 0);
+}
+  </style>
+</head>
+<body>
+<div>
+  <h2>{{ test_suite_name }} test suite</h2>
+  <table>
+    <tr>
+      <th>Capability</th><th colspan="10">Evaluation</th>
+    </tr>
+
+    {% for capability in capabilities %}
+
+      {% if capability.requirements %}
+        <tr>
+          <td rowspan="{{ capability.rows }}" class="{{ 'verified_result' if capability.verified else 'unverified_result' }}">{{ capability.name }}</td>
+          <th>Requirement</th>
+          <th>Test check</th>
+          <th>Result</th>
+        </tr>
+
+        {% for req in capability.requirements %}
+          {% for pc in req.passed_checks %}
+            <tr>
+              {% if loop.index == 1 %}
+                <td rowspan="{{ req.rows }}">{{ req.requirement_id }}</td>
+              {% endif %}
+
+              <td>{{ pc }} ({{ req.passed_checks[pc] }}x)</td>
+
+              <td class="pass_result">PASS</td>
+            </tr>
+          {% endfor %}
+          {% for fc in req.failed_checks %}
+            <tr>
+              {% if loop.index == 1 %}
+                <td rowspan="{{ req.rows }}">{{ req.requirement_id }}</td>
+              {% endif %}
+
+              <td>{{ fc.name }}</td>
+
+              <td class="fail_result">FAIL</td>
+            </tr>
+          {% endfor %}
+          {% if (len(req.passed_checks) == 0) and (len(req.failed_checks) == 0) %}
+            <tr>
+              <td colspan="2">{{ req.requirement_id }}</td>
+              <td class="not_tested">Not tested</td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+
+      {% if capability.capabilities %}
+        <tr>
+          {% if not capability.requirements %}
+            <td rowspan="{{ capability.rows }}" class="{{ 'verified_result' if capability.verified else 'unverified_result' }}">{{ capability.name }}</td>
+          {% endif %}
+          <th colspan="2">Capability</th>
+          <th>Result</th>
+        </tr>
+
+        {% for child_cap in capability.capabilities %}
+          <tr>
+            <td colspan="2">{{ child_cap.capability_id }}</td>
+            <td  class="{{ 'verified_result' if child_cap.verified else 'missing_capability' if child_cap.missing else 'unverified_result' }}">{{ 'VERIFIED' if child_cap.verified else 'MISSING' if child_cap.missing else 'UNVERIFIED' }}</td>
+          </tr>
+        {% endfor %}
+      {% endif %}
+
+    {% endfor %}
+  </table>
+</div>
+</body>
+</html>

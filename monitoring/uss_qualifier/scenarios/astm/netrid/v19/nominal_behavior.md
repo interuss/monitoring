@@ -121,6 +121,10 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 
 **[astm.f3411.v19.NET0260](../../../../requirements/astm/f3411/v19.md)** requires a SP to provide flights up to *NetMaxNearRealTimeDataPeriod* in the past, but an SP should preserve privacy and ensure relevancy by not sharing flights that are further in the past than this window.
 
+#### Telemetry being used when present check
+
+**[astm.f3411.v19.NET0290](../../../../requirements/astm/f3411/v19.md)** requires a SP uses Telemetry vs extrapolation when telemetry is present.
+
 #### Observed altitude check
 
 **[astm.f3411.v19.NET0470](../../../../requirements/astm/f3411/v19.md)** requires that a Display Provider provides any specified data fields in accordance with the common data dictionary when responding to a Display Application.  If the observed altitude of a flight does not match the altitude of the injected telemetry, this check will fail.
