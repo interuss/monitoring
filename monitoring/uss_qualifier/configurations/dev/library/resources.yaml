@@ -169,14 +169,16 @@ general_flight_authorization:
                   units: M
                   reference: SFC
                 start_time:
-                  test_time: {}
+                  start_of_test: {}
+                  use_timezone: Europe/Berlin
                 end_time:
                   offset_from:
                     starting_from:
                       next_day:
+                        time_zone: Europe/Zurich
                         starting_from:
-                          test_time: {}
-                        days_of_the_week: ["M", "F"]
+                          start_of_test: {}
+                        days_of_the_week: ["Tu", "Th"]
                     offset: 12h
             acceptance_expectation: MustBeAccepted
           - flight_check_id: TEST_002
@@ -206,10 +208,11 @@ general_flight_authorization:
                   reference: W84
                 start_time:
                   next_day:
+                    time_zone: +02:00
                     starting_from:
                       offset_from:
                         starting_from:
-                          test_time: {}
+                          start_of_test: {}
                         offset: 12h
                 duration: 5m
             conditions_expectation: MustBePresent
@@ -245,14 +248,15 @@ geospatial_map:
                   units: M
                   reference: SFC
                 start_time:
-                  test_time: {}
+                  start_of_test: {}
                 end_time:
                   offset_from:
                     starting_from:
                       next_day:
+                        time_zone: Europe/Zurich
                         starting_from:
-                          test_time: {}
-                        days_of_the_week: ["M", "F"]
+                          start_of_test: {}
+                        days_of_the_week: ["Mo", "Fr"]
                     offset: 12h
             expected_result: Block
           - geospatial_check_id: TEST_002
@@ -281,13 +285,50 @@ geospatial_map:
                   reference: W84
                 start_time:
                   next_day:
+                    time_zone: Europe/Zurich
                     starting_from:
                       offset_from:
                         starting_from:
-                          test_time: {}
+                          start_of_test: {}
+                        offset: 12h
+                  use_timezone: +01:00
+                duration: 5m
+            expected_result: Advise
+          - geospatial_check_id: TEST_002
+            requirement_ids:
+              - REQ_001
+              - REQ_003
+              - REQ_004
+            description: The second test step defined by the test designer
+            operation_rule_set: Rules1
+            restriction_source: ThisRegulator
+            volumes:
+              - outline_circle:
+                  center:
+                    lng: 7.4774
+                    lat: 46.9749
+                  radius:
+                    value: 100
+                    units: M
+                altitude_upper:
+                  value: 400
+                  units: FT
+                  reference: SFC
+                end_time:
+                  next_sun_position:
+                    elevation_deg: -0.833  # Sunset
+                    observed_from:
+                      lng: 7.4774
+                      lat: 46.9749
+                    starting_from:
+                      offset_from:
+                        starting_from:
+                          next_day:
+                            time_zone: Europe/Zurich
+                            starting_from:
+                              start_of_test: {}
                         offset: 12h
                 duration: 5m
             expected_result: Advise
-
 common:
     $ref: 'environment.yaml#/common'
