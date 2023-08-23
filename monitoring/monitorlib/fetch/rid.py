@@ -401,6 +401,20 @@ class Subscription(ImplicitDict):
                 f"Cannot retrieve time_end using RID version {self.rid_version}"
             )
 
+    @property
+    def isa_url(self) -> str:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value.callbacks.identification_service_area_url
+        elif self.rid_version == RIDVersion.f3411_22a:
+            isa_path = v22a.api.OPERATIONS[
+                v22a.api.OperationID.PostIdentificationServiceArea
+            ].path.replace("{id}", self.id)
+            return self.v22a_value.uss_base_url + isa_path
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve isa_url using RID version {self.rid_version}"
+            )
+
 
 class RIDQuery(ImplicitDict):
     v19_query: Optional[Query] = None
