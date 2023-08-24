@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import json
-from typing import get_type_hints, Dict, Generic, TypeVar
+from typing import get_type_hints, Dict, Generic, Tuple, TypeVar, Type
 
 from implicitdict import ImplicitDict
 
@@ -75,10 +75,26 @@ def create_resources(
     return resource_pool
 
 
-def _make_resource(
-    declaration: ResourceDeclaration, resource_pool: Dict[ResourceID, Resource]
-) -> Resource:
-    inspection.import_submodules(resources_module)
+_resources_module_imported = False
+
+
+def get_resource_types(
+    declaration: ResourceDeclaration,
+) -> Tuple[Type[Resource], Type[ImplicitDict]]:
+    """Get the resource and specification types from the declaration, validating against the resource's constructor signature.
+
+    Args:
+        declaration: Resource declaration for which to obtain types
+
+    Returns:
+        * Concrete Resource subclass type of the declared resource
+        * Specification type for the declared resource, or None if the resource type doesn't have a specification
+    """
+    global _resources_module_imported
+    if not _resources_module_imported:
+        inspection.import_submodules(resources_module)
+        _resources_module_imported = True
+
     resource_type = inspection.get_module_object_by_name(
         uss_qualifier_module, declaration.resource_type
     )
@@ -91,7 +107,6 @@ def _make_resource(
 
     constructor_signature = get_type_hints(resource_type.__init__)
     specification_type = None
-    constructor_args = {}
     for arg_name, arg_type in constructor_signature.items():
         if arg_name == "return":
             continue
@@ -106,13 +121,24 @@ def _make_resource(
                     declaration.resource_type, arg_type
                 )
             )
-        if declaration.dependencies[arg_name] not in resource_pool:
+
+    return resource_type, specification_type
+
+
+def _make_resource(
+    declaration: ResourceDeclaration, resource_pool: Dict[ResourceID, Resource]
+) -> Resource:
+    resource_type, specification_type = get_resource_types(declaration)
+
+    constructor_args = {}
+    for arg_name, pool_source in declaration.dependencies.items():
+        if pool_source not in resource_pool:
             raise ValueError(
                 'Resource "{}" was not found in the resource pool when trying to create {} resource'.format(
-                    declaration.dependencies[arg_name], declaration.resource_type
+                    pool_source, declaration.resource_type
                 )
             )
-        constructor_args[arg_name] = resource_pool[declaration.dependencies[arg_name]]
+        constructor_args[arg_name] = resource_pool[pool_source]
     if specification_type is not None:
         constructor_args["specification"] = ImplicitDict.parse(
             declaration.specification, specification_type

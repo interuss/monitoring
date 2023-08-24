@@ -2,11 +2,14 @@ import os.path
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Type, TypeVar
 
 import bc_jsonpath_ng
 import jsonschema.validators
 import yaml
+
+from implicitdict import ImplicitDict
+from implicitdict.jsonschema import SchemaVars, make_json_schema
 
 
 class F3411_19(str, Enum):
@@ -109,5 +112,37 @@ def validate(
     validator = validator_class(schema, resolver=resolver)
     result = []
     for e in validator.iter_errors(instance):
+        result.extend(_collect_errors(e))
+    return result
+
+
+def _definitions_resolver(t: Type) -> SchemaVars:
+    def path_to(t_dest: Type, t_src: Type) -> str:
+        return "#/definitions/" + (
+            t_dest.__module__ + "." + t_dest.__qualname__
+        ).replace(".", "_")
+
+    full_name = (t.__module__ + "." + t.__qualname__).replace(".", "_")
+
+    return SchemaVars(name=full_name, path_to=path_to)
+
+
+def _make_implicitdict_schema(t: Type[ImplicitDict]) -> dict:
+    repo = {}
+    make_json_schema(t, _definitions_resolver, repo)
+    config_vars = _definitions_resolver(t)
+    schema = repo.pop(config_vars.name)
+    schema["definitions"] = repo
+    return schema
+
+
+def validate_implicitdict_object(
+    obj: dict, t: Type[ImplicitDict]
+) -> List[ValidationError]:
+    schema = _make_implicitdict_schema(t)
+    jsonschema.Draft202012Validator.check_schema(schema)
+    validator = jsonschema.Draft202012Validator(schema)
+    result = []
+    for e in validator.iter_errors(obj):
         result.extend(_collect_errors(e))
     return result

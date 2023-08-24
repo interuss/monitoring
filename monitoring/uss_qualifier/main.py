@@ -16,6 +16,7 @@ from monitoring.uss_qualifier.configurations.configuration import (
     ArtifactsConfiguration,
     ReportConfiguration,
 )
+from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.documents import make_report_html
 from monitoring.uss_qualifier.reports.tested_roles import generate_tested_roles
 from monitoring.uss_qualifier.reports.graphs import make_graph
@@ -26,6 +27,7 @@ from monitoring.uss_qualifier.signatures import (
     compute_baseline_signature,
 )
 from monitoring.uss_qualifier.suites.suite import TestSuiteAction
+from monitoring.uss_qualifier.validation import validate_config
 
 
 def parseArgs() -> argparse.Namespace:
@@ -88,7 +90,15 @@ def execute_test_run(
 def main() -> int:
     args = parseArgs()
 
-    whole_config = USSQualifierConfiguration.from_string(args.config)
+    logger.info("Validating configuration...")
+    config_src = load_dict_with_references(args.config)
+    validation_errors = validate_config(config_src)
+    if validation_errors:
+        for e in validation_errors:
+            logger.error("[{}]: {}", e.json_path, e.message)
+        raise ValueError(f"{len(validation_errors)} validation errors indicated above")
+    whole_config = ImplicitDict.parse(config_src, USSQualifierConfiguration)
+
     config = whole_config.v1
     if args.report:
         if not config.artifacts:
