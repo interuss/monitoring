@@ -85,6 +85,8 @@ Qualitatively proves: Can retrieve specific Subscription emplaced in primary DSS
 
 **[astm.f3411.v22a.A2-6-1,5](../../../../requirements/astm/f3411/v22a.md)**
 
+**[astm.f3411.v22a.DSS0070](../../../../requirements/astm/f3411/v22a.md)** requires that all DSS instances in a pool return the same result. This check fails if the DSS instance does not return the same result as the other DSS instances.
+
 ### S4 test step
 
 Action: USS2@DSS*n*: GET Subscriptions using ISA[*P*]’s area
@@ -94,6 +96,8 @@ Qualitatively proves: All Subscription[i] 1≤i≤n are returned in subscription
 #### Can query all Subscriptions in area from all DSSs check
 
 **[astm.f3411.v22a.A2-6-1,6](../../../../requirements/astm/f3411/v22a.md)**
+
+**[astm.f3411.v22a.DSS0070](../../../../requirements/astm/f3411/v22a.md)** requires that all DSS instances in a pool return the same result. This check fails if the DSS instance does not return the same result as the other DSS instances.
 
 ### S5 test step
 
@@ -133,6 +137,8 @@ Qualitatively proves: Subscription deletion from ID index was effective from pri
 
 **[astm.f3411.v22a.A2-6-1,4b](../../../../requirements/astm/f3411/v22a.md)**
 
+**[astm.f3411.v22a.DSS0070](../../../../requirements/astm/f3411/v22a.md)** requires that all DSS instances in a pool return the same result. This check fails if the DSS instance does not return the same result as the other DSS instances.
+
 ### S8 test step
 
 Action: USS2@DSS*n*: GET Subscriptions using ISA[*P*]’s area
@@ -147,6 +153,8 @@ Qualitatively proves: Subscription deletion from geographic index was effective 
 
 **[astm.f3411.v22a.A2-6-1,4b](../../../../requirements/astm/f3411/v22a.md)**
 
+**[astm.f3411.v22a.DSS0070](../../../../requirements/astm/f3411/v22a.md)** requires that all DSS instances in a pool return the same result. This check fails if the DSS instance does not return the same result as the other DSS instances.
+
 ### S9 test step
 
 Action: Wait >D seconds from S5 then USS2@DSS*n*: PUT Subscription with intersecting area, end time D seconds from now
@@ -160,6 +168,8 @@ Qualitatively proves: Expired ISA automatically removed, ISA modifications acces
 #### service_areas does not include ISA from S1 check
 
 **[astm.f3411.v22a.A2-6-1,1d](../../../../requirements/astm/f3411/v22a.md)**
+
+**[astm.f3411.v22a.DSS0070](../../../../requirements/astm/f3411/v22a.md)** requires that all DSS instances in a pool return the same result. This check fails if the DSS instance does not return the same result as the other DSS instances.
 
 ### S10 test step
 
@@ -217,6 +227,8 @@ Qualitatively proves: Expired Subscription removed from geographic index on prim
 
 **[astm.f3411.v22a.A2-6-1,3d](../../../../requirements/astm/f3411/v22a.md)**
 
+**[astm.f3411.v22a.DSS0070](../../../../requirements/astm/f3411/v22a.md)** requires that all DSS instances in a pool return the same result. This check fails if the DSS instance does not return the same result as the other DSS instances.
+
 ### S14 test step
 
 Action: USS2@DSS*n*: GET Subscription[*n*] by ID
@@ -254,6 +266,8 @@ Qualitatively proves: Deleted ISA removed from all DSSs
 #### service_areas does not include ISA from S12 check
 
 **[astm.f3411.v22a.A2-6-1,2b](../../../../requirements/astm/f3411/v22a.md)**
+
+**[astm.f3411.v22a.DSS0070](../../../../requirements/astm/f3411/v22a.md)** requires that all DSS instances in a pool return the same result. This check fails if the DSS instance does not return the same result as the other DSS instances.
 
 ### S17 test step
 
