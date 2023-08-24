@@ -18,6 +18,7 @@ if [ -z "$DO_NOT_BUILD_MONITORING" ]; then
 fi
 
 CONFIG_NAME="${1:-ALL}"
+OTHER_ARGS="${@:2}"
 
 if [ "$CONFIG_NAME" == "ALL" ]; then
   declare -a all_configurations=( \
@@ -41,7 +42,7 @@ else
 
   AUTH_SPEC='DummyOAuth(http://oauth.authority.localutm:8085/token,uss_qualifier)'
 
-  QUALIFIER_OPTIONS="$CONFIG_FLAG"
+  QUALIFIER_OPTIONS="$CONFIG_FLAG $OTHER_ARGS"
 
   OUTPUT_DIR="monitoring/uss_qualifier/output"
   mkdir -p "$OUTPUT_DIR"
