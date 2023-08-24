@@ -76,6 +76,22 @@ Qualitatively proves: Can create Subscription in primary DSS, ISA accessible fro
 
 **[astm.f3411.v19.A2-6-1,1c](../../../../requirements/astm/f3411/v19.md)**
 
+#### ID of ISA from S1 is properly synchronized with all DSS check
+
+**[astm.f3411.v19.DSS0130,3,a](../../../../requirements/astm/f3411/v19.md)**
+
+#### Owner of ISA from S1 is properly synchronized with all DSS check
+
+**[astm.f3411.v19.DSS0130,3,b](../../../../requirements/astm/f3411/v19.md)**
+
+#### URL of ISA from S1 is properly synchronized with all DSS check
+
+**[astm.f3411.v19.DSS0130,3,c](../../../../requirements/astm/f3411/v19.md)**
+
+#### Start/end times of ISA from S1 are properly synchronized with all DSS check
+
+**[astm.f3411.v19.DSS0130,3,d](../../../../requirements/astm/f3411/v19.md)**
+
 ### S3 test step
 
 Action: USS2@DSS*n*: GET Subscription[*P*] by ID
@@ -85,6 +101,26 @@ Qualitatively proves: Can retrieve specific Subscription emplaced in primary DSS
 #### Subscription[*P*] returned with proper response check
 
 **[astm.f3411.v19.A2-6-1,5](../../../../requirements/astm/f3411/v19.md)**
+
+#### Subscription[*P*] ID is properly synchronized with all DSS check
+
+**[astm.f3411.v19.DSS0130,2,a](../../../../requirements/astm/f3411/v19.md)**
+
+#### Subscription[*P*] owner is properly synchronized with all DSS check
+
+**[astm.f3411.v19.DSS0130,2,b](../../../../requirements/astm/f3411/v19.md)**
+
+#### Subscription[*P*] URL is properly synchronized with all DSS check
+
+**[astm.f3411.v19.DSS0130,2,c](../../../../requirements/astm/f3411/v19.md)**
+
+#### Subscription[*P*] start/end times are properly synchronized with all DSS check
+
+**[astm.f3411.v19.DSS0130,2,d](../../../../requirements/astm/f3411/v19.md)**
+
+#### Subscription[*P*] notification count is properly synchronized with all DSS check
+
+**[astm.f3411.v19.DSS0130,2,f](../../../../requirements/astm/f3411/v19.md)**
 
 ### S4 test step
 

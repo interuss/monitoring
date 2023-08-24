@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import s2sphere
 
+from monitoring.monitorlib.fetch.rid import ISA
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
     DSSInstancesResource,
@@ -171,15 +172,98 @@ class DSSInteroperability(GenericTestScenario):
             with self.check(
                 "service_areas includes ISA from S1", [dss.participant_id]
             ) as check:
-                isa_ids = [isa.id for isa in created_sub.isas]
+                sub_isa: Optional[ISA] = next(
+                    filter(lambda isa: isa.id == isa_1.uuid, created_sub.isas), None
+                )
 
-                if isa_1.uuid not in isa_ids:
+                if sub_isa is None:
                     check.record_failed(
                         summary=f"DSS did not return ISA {isa_1.uuid} from testStep1 when creating Subscription {sub_1.uuid}",
                         severity=Severity.High,
                         participants=[dss.participant_id],
-                        details=f"service_areas IDs: {', '.join(isa_ids)}",
+                        details=f"service_areas IDs: {', '.join([isa.id for isa in created_sub.isas])}",
                         query_timestamps=[created_sub.query.request.timestamp],
+                    )
+
+            # check data synchronization
+            if index == 0:
+                # the primary DSS should be the first we encounter
+                primary_isa = sub_isa
+                continue
+            else:
+                other_isa = sub_isa
+
+            def get_fail_params(
+                field_name: str,
+                primary_isa_field_value: str,
+                other_isa_field_value: object,
+            ) -> dict:
+                return dict(
+                    summary=f"ISA[{dss.participant_id}].{field_name} not equal ISA[{self._dss_primary.participant_id}].{field_name}",
+                    details=f"ISA[{dss.participant_id}].{field_name} is {primary_isa_field_value}; ISA[{self._dss_primary.participant_id}].{field_name} is {other_isa_field_value}",
+                    severity=Severity.High,
+                    participants=[dss.participant_id],
+                    query_timestamps=[created_sub.query.request.timestamp],
+                )
+
+            with self.check(
+                "ID of ISA from S1 is properly synchronized with all DSS",
+                [dss.participant_id],
+            ) as check:
+                if primary_isa.id != other_isa.id:
+                    check.record_failed(
+                        **get_fail_params("id", primary_isa.id, other_isa.id)
+                    )
+
+                if primary_isa.version != other_isa.version:
+                    check.record_failed(
+                        **get_fail_params(
+                            "version", primary_isa.version, other_isa.version
+                        )
+                    )
+
+            with self.check(
+                "Owner of ISA from S1 is properly synchronized with all DSS",
+                [dss.participant_id],
+            ) as check:
+                if primary_isa.owner != other_isa.owner:
+                    check.record_failed(
+                        **get_fail_params("owner", primary_isa.owner, other_isa.owner)
+                    )
+
+            with self.check(
+                "URL of ISA from S1 is properly synchronized with all DSS",
+                [dss.participant_id],
+            ) as check:
+                if primary_isa.flights_url != other_isa.flights_url:
+                    check.record_failed(
+                        **get_fail_params(
+                            "flights_url",
+                            primary_isa.flights_url,
+                            other_isa.flights_url,
+                        )
+                    )
+
+            with self.check(
+                "Start/end times of ISA from S1 are properly synchronized with all DSS",
+                [dss.participant_id],
+            ) as check:
+                if primary_isa.time_start != other_isa.time_start:
+                    check.record_failed(
+                        **get_fail_params(
+                            "time_start",
+                            str(primary_isa.time_start),
+                            str(other_isa.time_start),
+                        )
+                    )
+
+                if primary_isa.time_end != other_isa.time_end:
+                    check.record_failed(
+                        **get_fail_params(
+                            "time_end",
+                            str(primary_isa.time_end),
+                            str(other_isa.time_end),
+                        )
                     )
 
     def step3(self):
@@ -188,14 +272,127 @@ class DSSInteroperability(GenericTestScenario):
 
         sub_1_0 = self._context["sub_1_0"]
 
-        for dss in [self._dss_primary] + self._dss_others:
+        with self.check(
+            "Subscription[P] returned with proper response",
+            [self._dss_primary.participant_id],
+        ) as check:
+            primary_sub = self._dss_primary.get_sub(
+                check,
+                sub_1_0.uuid,
+            )
+
+        for dss in self._dss_others:
             with self.check(
                 "Subscription[P] returned with proper response", [dss.participant_id]
             ) as check:
-                _ = dss.get_sub(
+                other_sub = dss.get_sub(
                     check,
                     sub_1_0.uuid,
                 )
+
+            # check data synchronization
+            def get_fail_params(
+                field_name: str,
+                primary_sub_field_value: str,
+                other_sub_field_value: object,
+            ) -> dict:
+                return dict(
+                    summary=f"Subscription[{dss.participant_id}].{field_name} not equal Subscription[{self._dss_primary.participant_id}].{field_name}",
+                    details=f"Subscription[{dss.participant_id}].{field_name} is {primary_sub_field_value}; Subscription[{self._dss_primary.participant_id}].{field_name} is {other_sub_field_value}",
+                    severity=Severity.High,
+                    participants=[dss.participant_id],
+                    query_timestamps=[other_sub.query.request.timestamp],
+                )
+
+            with self.check(
+                "Subscription[P] ID is properly synchronized with all DSS",
+                [dss.participant_id],
+            ) as check:
+                if primary_sub.subscription.id != other_sub.subscription.id:
+                    check.record_failed(
+                        **get_fail_params(
+                            "id", primary_sub.subscription.id, other_sub.subscription.id
+                        )
+                    )
+
+                if primary_sub.subscription.version != other_sub.subscription.version:
+                    check.record_failed(
+                        **get_fail_params(
+                            "version",
+                            primary_sub.subscription.version,
+                            other_sub.subscription.version,
+                        )
+                    )
+
+            with self.check(
+                "Subscription[P] owner is properly synchronized with all DSS",
+                [dss.participant_id],
+            ) as check:
+                if (
+                    primary_sub.subscription.raw.owner
+                    != other_sub.subscription.raw.owner
+                ):
+                    check.record_failed(
+                        **get_fail_params(
+                            "owner",
+                            primary_sub.subscription.raw.owner,
+                            other_sub.subscription.raw.owner,
+                        )
+                    )
+
+            with self.check(
+                "Subscription[P] URL is properly synchronized with all DSS",
+                [dss.participant_id],
+            ) as check:
+                if primary_sub.subscription.isa_url != other_sub.subscription.isa_url:
+                    check.record_failed(
+                        **get_fail_params(
+                            "isa_url",
+                            primary_sub.subscription.isa_url,
+                            other_sub.subscription.isa_url,
+                        )
+                    )
+
+            with self.check(
+                "Subscription[P] notification count is properly synchronized with all DSS",
+                [dss.participant_id],
+            ) as check:
+                if (
+                    primary_sub.subscription.raw.notification_index
+                    != other_sub.subscription.raw.notification_index
+                ):
+                    check.record_failed(
+                        **get_fail_params(
+                            "notification_index",
+                            primary_sub.subscription.raw.notification_index,
+                            other_sub.subscription.raw.notification_index,
+                        )
+                    )
+
+            with self.check(
+                "Subscription[P] start/end times are properly synchronized with all DSS",
+                [dss.participant_id],
+            ) as check:
+                if (
+                    primary_sub.subscription.time_start
+                    != other_sub.subscription.time_start
+                ):
+                    check.record_failed(
+                        **get_fail_params(
+                            "time_start",
+                            primary_sub.subscription.time_start,
+                            other_sub.subscription.time_start,
+                        )
+                    )
+
+                if primary_sub.subscription.time_end != other_sub.subscription.time_end:
+                    check.record_failed(
+                        **get_fail_params(
+                            "time_end",
+                            primary_sub.subscription.time_end,
+                            other_sub.subscription.time_end,
+                        )
+                    )
 
     def step4(self):
         """Can query all Subscriptions in area from all DSSs."""
