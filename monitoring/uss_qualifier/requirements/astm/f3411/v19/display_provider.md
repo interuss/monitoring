@@ -40,5 +40,6 @@ This file describes the set of ASTM F3411-19 requirements with which a USS fulfi
 
 #### USS-USS Interfaces
 
+* **astm.f3411.v19.NET0340**
 * **astm.f3411.v19.NET0720**
 * **astm.f3411.v19.NET0730**

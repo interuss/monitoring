@@ -40,6 +40,7 @@ This file describes the set of ASTM F3411-22a requirements with which a USS fulf
 
 #### USS-USS Interfaces
 
+* **astm.f3411.v22a.NET0340**
 * **astm.f3411.v22a.NET0720**
 * **astm.f3411.v22a.NET0730**
 

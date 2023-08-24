@@ -53,6 +53,7 @@ All Service Provider Role requirements can be verified by automation.
 
 #### USS-USS Interfaces
 
+* **astm.f3411.v22a.NET0340**
 * **astm.f3411.v22a.NET0710**
 * **astm.f3411.v22a.NET0740**
 
