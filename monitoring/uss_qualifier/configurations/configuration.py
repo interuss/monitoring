@@ -91,9 +91,3 @@ class USSQualifierConfigurationV1(ImplicitDict):
 class USSQualifierConfiguration(ImplicitDict):
     v1: Optional[USSQualifierConfigurationV1]
     """Configuration in version 1 format"""
-
-    @staticmethod
-    def from_string(config_string: str) -> "USSQualifierConfiguration":
-        return ImplicitDict.parse(
-            load_dict_with_references(config_string), USSQualifierConfiguration
-        )
