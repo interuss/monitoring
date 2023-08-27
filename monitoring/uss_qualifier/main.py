@@ -20,6 +20,7 @@ from monitoring.uss_qualifier.reports.documents import make_report_html
 from monitoring.uss_qualifier.reports.tested_roles import generate_tested_roles
 from monitoring.uss_qualifier.reports.graphs import make_graph
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
+from monitoring.uss_qualifier.reports.templates import render_templates
 from monitoring.uss_qualifier.resources.resource import create_resources
 from monitoring.uss_qualifier.signatures import (
     compute_signature,
@@ -114,7 +115,7 @@ def main() -> int:
 
     if config.artifacts:
         if config.artifacts.report and not do_not_save_report:
-            if config.artifacts.report.redact_access_tokens:
+            if config.artifacts.redact_access_tokens:
                 logger.info("Redacting access tokens in report")
                 redact_access_tokens(report)
             logger.info("Writing report to {}", config.artifacts.report.report_path)
@@ -127,6 +128,10 @@ def main() -> int:
             )
             with open(config.artifacts.report_html.html_path, "w") as f:
                 f.write(make_report_html(report))
+
+        if len(config.artifacts.templated_reports) > 0:
+
+            render_templates(config.artifacts, report)
 
         if config.artifacts.graph:
             logger.info(
