@@ -49,9 +49,7 @@ class ISASimple(GenericTestScenario):
 
         self.end_test_case()
 
-    def _ensure_clean_workspace_step(self):
-        self.begin_test_step("Ensure clean workspace")
-
+    def _delete_isa_if_exists(self):
         fetched = fetch.isa(
             self._isa_id, rid_version=self._dss.rid_version, session=self._dss.client
         )
@@ -95,6 +93,11 @@ class ISASimple(GenericTestScenario):
                             f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
                             query_timestamps=[notification.query.request.timestamp],
                         )
+
+    def _ensure_clean_workspace_step(self):
+        self.begin_test_step("Ensure clean workspace")
+
+        self._delete_isa_if_exists()
 
         self.end_test_step()
 
@@ -251,6 +254,6 @@ class ISASimple(GenericTestScenario):
     def cleanup(self):
         self.begin_cleanup()
 
-        # TODO: Remove ISA if still present
+        self._delete_isa_if_exists()
 
         self.end_cleanup()

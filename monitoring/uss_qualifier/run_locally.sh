@@ -32,10 +32,10 @@ if [ "$CONFIG_NAME" == "ALL" ]; then
     "configurations.dev.general_flight_auth" \
     "configurations.dev.f3548" \
     "configurations.dev.f3548_self_contained" \
+    "configurations.dev.netrid_v22a" \
     "configurations.dev.uspace" \
   )
   # TODO: Add configurations.dev.netrid_v19
-  # TODO: Add configurations.dev.netrid_v22a
   echo "Running configurations: ${all_configurations[*]}"
   for configuration_name in "${all_configurations[@]}"; do
     monitoring/uss_qualifier/run_locally.sh "$configuration_name"
