@@ -13,7 +13,7 @@ import yaml
 from yaml.representer import Representer
 
 from monitoring.monitorlib import fetch, rid_v1, rid_v2, geo
-from monitoring.monitorlib.fetch import Query
+from monitoring.monitorlib.fetch import Query, QueryType
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
 
@@ -452,6 +452,14 @@ class RIDQuery(ImplicitDict):
     def errors(self) -> List[str]:
         raise NotImplementedError("RIDQuery.errors must be overriden")
 
+    def set_server_id(self, server_id: str):
+        if self.v19_query is not None:
+            self.v19_query.server_id = server_id
+        elif self.v22a_query is not None:
+            self.v22a_query.server_id = server_id
+        else:
+            raise NotImplementedError(f"Cannot set server_id")
+
 
 class FetchedISA(RIDQuery):
     """Version-independent representation of an ISA read from the DSS."""
@@ -766,6 +774,7 @@ def uss_flights(
             },
             scope=v19.constants.Scope.Read,
         )
+        query.query_type = QueryType.F3411v19Flights
         return FetchedUSSFlights(v19_query=query)
     elif rid_version == RIDVersion.f3411_22a:
         params = {
@@ -785,6 +794,7 @@ def uss_flights(
             params=params,
             scope=v22a.constants.Scope.DisplayProvider,
         )
+        query.query_type = QueryType.F3411v22aFlights
         return FetchedUSSFlights(v22a_query=query)
     else:
         raise NotImplementedError(

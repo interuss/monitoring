@@ -1,10 +1,8 @@
 import re
 from typing import List, Dict
 
-import urllib.parse
-
 from monitoring.monitorlib import fetch
-from monitoring.monitorlib.fetch import evaluation
+from monitoring.monitorlib.fetch import evaluation, QueryType
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -43,62 +41,49 @@ class AggregateChecks(ReportEvaluationScenario):
         self._service_providers = service_providers.service_providers
         self._observers = observers.observers
 
-        # Collect URL to participants mapping for sorting out queries we analyse
-        participants_by_base_url = {}
-
-        # identify SPs and observers by the base urls specified in their configuration
-        for sp in self._service_providers:
-            for base_url in sp.original_configuration.uss_base_urls + [
-                sp.original_configuration.injection_base_url  # Also take the injection base URL into account
-            ]:
-                prev_mapping = participants_by_base_url.get(base_url)
-                if prev_mapping is not None and prev_mapping != sp.participant_id:
-                    raise ValueError(
-                        f"Invalid configuration detected: same uss base url is defined for mutiple participants. Url: {base_url}, participants: {prev_mapping}, {sp.participant_id}"
-                    )
-                participants_by_base_url[base_url] = sp.participant_id
-
-        for obs in self._observers:
-            prev_mapping = participants_by_base_url.get(obs.base_url)
-            if prev_mapping is not None and prev_mapping != obs.participant_id:
-                raise ValueError(
-                    f"Invalid configuration detected: same uss base url is defined for mutiple participants. Url: {obs.base_url}, participants: {prev_mapping}, {obs.participant_id}"
-                )
-            participants_by_base_url[obs.base_url] = obs.participant_id
-
-        self._participants_by_base_url = participants_by_base_url
+        # identify SPs and observers by their base URL
+        self._participants_by_base_url.update(
+            {sp.base_url: sp.participant_id for sp in self._service_providers}
+        )
+        self._participants_by_base_url.update(
+            {dp.base_url: dp.participant_id for dp in self._observers}
+        )
 
         # collect and classify queries by participant
-        # Initialise the map so that all participants have an entry
         self._queries_by_participant = {
-            participant: list() for participant in participants_by_base_url.values()
+            participant: list()
+            for participant in self._participants_by_base_url.values()
         }
-        # Iterate over all queries we kept track of and sort them by participant
         for query in self._queries:
-            for base_url, participant in participants_by_base_url.items():
-                # Match the prefixes of the queried urls to the ones we know from participants:
+            for base_url, participant in self._participants_by_base_url.items():
                 if query.request.url.startswith(base_url):
                     self._queries_by_participant[participant].append(query)
                     break
+
+            # Only consider queries with the participant/server explicitly identified
+            if query.has_field_with_value("server_id"):
+                participant_queries = self._queries_by_participant.get(
+                    query.server_id, []
+                )
+                participant_queries.append(query)
+                self._queries_by_participant[query.server_id] = participant_queries
 
     def run(self):
         self.begin_test_scenario()
 
         self.record_note("participants", str(self._participants_by_base_url))
         self.record_note("nb_queries", str(len(self._queries)))
-        self.record_note(
-            "service_providers",
-            f"configured service providers: {self._service_providers}",
-        )
+
+        for sp in self._service_providers:
+            self.record_note(
+                "service_providers",
+                f"configured service providers: {sp.participant_id} - {sp.base_url}",
+            )
 
         for o in self._observers:
             self.record_note(
                 "observer", f"configured observer: {o.participant_id} - {o.base_url}"
             )
-
-        self.record_note(
-            "participants_by_base_url", f"{self._participants_by_base_url}"
-        )
 
         # DP performance
         self.begin_test_case("Performance of Display Providers requests")
@@ -121,13 +106,15 @@ class AggregateChecks(ReportEvaluationScenario):
         self.end_test_scenario()
 
     def _sp_flights_area_times_step(self):
-        pattern = re.compile(r"/uss/flights\?(\S)*view=")
         for participant, all_queries in self._queries_by_participant.items():
             # identify successful flights queries
             relevant_queries: List[fetch.Query] = list()
             for query in all_queries:
-                match = pattern.search(query.request.url)
-                if match is not None and query.status_code == 200:
+                if query.has_field_with_value("query_type") and (
+                    # TODO find a cleaner way than checking for version here
+                    query.query_type == QueryType.F3411v19Flights
+                    or query.query_type == QueryType.F3411v22aFlights
+                ):
                     relevant_queries.append(query)
 
             if len(relevant_queries) == 0:
