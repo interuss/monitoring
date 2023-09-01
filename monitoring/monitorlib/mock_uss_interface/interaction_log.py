@@ -25,4 +25,3 @@ yaml.add_representer(Interaction, Representer.represent_dict)
 
 class ListLogsResponse(ImplicitDict):
     interactions: List[Interaction]
-

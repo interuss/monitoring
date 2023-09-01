@@ -15,9 +15,9 @@ from monitoring.monitorlib.mock_uss_interface.interaction_log import (
     Issue,
 )
 from monitoring.mock_uss import webapp, require_config_value
-from monitoring.mock_uss.interaction_logging.config import KEY_LOG_DIR
+from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_DIR
 
-require_config_value(KEY_LOG_DIR)
+require_config_value(KEY_INTERACTIONS_LOG_DIR)
 
 
 def log_interaction(direction: str, method: str, type: str):
@@ -54,7 +54,7 @@ def log_interaction(direction: str, method: str, type: str):
 
 
 def log_file(code: str, content: Dict) -> str:
-    log_path = webapp.config[KEY_LOG_DIR]
+    log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]
     n = len(os.listdir(log_path))
     basename = "{:06d}_{}_{}".format(
         n, code, datetime.datetime.now().strftime("%H%M%S_%f")

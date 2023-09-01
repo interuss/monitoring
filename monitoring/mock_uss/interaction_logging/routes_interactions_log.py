@@ -14,10 +14,10 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
 from monitoring.monitorlib.mock_uss_interface.interaction_log import (
     Interaction,
     Issue,
-    ListLogsResponse
+    ListLogsResponse,
 )
 
-from monitoring.mock_uss.interaction_logging.config import KEY_LOG_DIR
+from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_DIR
 
 
 @webapp.route("/mock_uss/interuss/log", methods=["GET"])
@@ -30,7 +30,7 @@ def interaction_logs() -> Tuple[str, int]:
     """
     from_time_param = request.args.get("from_time")
     from_time = StringBasedDateTime(from_time_param)
-    log_path = webapp.config[KEY_LOG_DIR]
+    log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]
     n = len(os.listdir(log_path))
 
     if not os.path.exists(log_path):
@@ -62,14 +62,14 @@ def interaction_logs() -> Tuple[str, int]:
                 logger.error(f"Error occured in reading interaction - {e}")
                 logger.debug(f"Contents of {fname} - {obj}")
 
-    return jsonify(ListLogsResponse(interactions = interactions)), 200
+    return jsonify(ListLogsResponse(interactions=interactions)), 200
 
 
 @webapp.route("/mock_uss/interuss/logs", methods=["DELETE"])
 @requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
 def delete_interaction_logs() -> Tuple[str, int]:
     """Deletes all the files under the logging directory"""
-    log_path = webapp.config[KEY_LOG_DIR]
+    log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]
 
     if not os.path.exists(log_path):
         abort(404)
