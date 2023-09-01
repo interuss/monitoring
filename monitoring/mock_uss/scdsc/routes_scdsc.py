@@ -4,13 +4,14 @@ from monitoring.monitorlib import scd
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.scdsc.database import db, FlightRecord
+from monitoring.mock_uss.scdsc import log
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents/<entityid>", methods=["GET"])
 @requires_scope([scd.SCOPE_SC])
+@log
 def scdsc_get_operational_intent_details(entityid: str):
     """Implements getOperationalIntentDetails in ASTM SCD API."""
-
     # Look up entityid in database
     tx = db.value
     flight = None
@@ -19,24 +20,24 @@ def scdsc_get_operational_intent_details(entityid: str):
             flight = f
             break
 
+    response = None
+    status_code = None
+
     # If requested operational intent doesn't exist, return 404
     if flight is None:
-        return (
-            flask.jsonify(
-                scd.ErrorResponse(
-                    message="Operational intent {} not known by this USS".format(
-                        entityid
-                    )
-                )
-            ),
-            404,
+        response = scd.ErrorResponse(
+            message="Operational intent {} not known by this USS".format(entityid)
         )
-
+        status_code = 404
+    else:
+        # Return nominal response with details
+        response = scd.GetOperationalIntentDetailsResponse(
+            operational_intent=op_intent_from_flightrecord(flight),
+        )
+        status_code = 200
     # Return nominal response with details
-    response = scd.GetOperationalIntentDetailsResponse(
-        operational_intent=op_intent_from_flightrecord(flight),
-    )
-    return flask.jsonify(response), 200
+
+    return flask.make_response(response, status_code)
 
 
 def op_intent_from_flightrecord(flight: FlightRecord) -> scd.OperationalIntent:
@@ -52,12 +53,14 @@ def op_intent_from_flightrecord(flight: FlightRecord) -> scd.OperationalIntent:
 
 @webapp.route("/mock/scd/uss/v1/operational_intents", methods=["POST"])
 @requires_scope([scd.SCOPE_SC])
+@log
 def scdsc_notify_operational_intent_details_changed():
     """Implements notifyOperationalIntentDetailsChanged in ASTM SCD API."""
 
     # Do nothing because this USS is unsophisticated and polls the DSS for every
     # change in its operational intents
-    return "", 204
+    resp = flask.make_response("", 204)
+    return resp
 
 
 @webapp.route("/mock/scd/uss/v1/reports", methods=["POST"])

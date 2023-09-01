@@ -17,7 +17,7 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     OperationalIntentState,
 )
 from monitoring.monitorlib import scd, versioning
-from monitoring.monitorlib.clients import scd as scd_client
+from monitoring.mock_uss.scdsc import scd_client
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd import op_intent_transition_valid
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
@@ -85,11 +85,10 @@ def query_operational_intents(
 
     updated_op_intents = []
     for op_intent_ref in get_details_for:
-        updated_op_intents.append(
-            scd_client.get_operational_intent_details(
-                utm_client, op_intent_ref.uss_base_url, op_intent_ref.id
-            )
+        op_intent = scd_client.get_operational_intent_details(
+            utm_client, op_intent_ref.uss_base_url, op_intent_ref.id
         )
+        updated_op_intents.append(op_intent)
     result.extend(updated_op_intents)
 
     with db as tx:
@@ -283,6 +282,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             alt_hi,
             polygon=scd.make_polygon(latlngrect=area),
         )
+
         op_intents = query_operational_intents(vol4)
 
         # Check for intersections

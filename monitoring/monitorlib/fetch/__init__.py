@@ -98,7 +98,8 @@ class ResponseDescription(ImplicitDict):
     failure: Optional[str]
     headers: Optional[dict]
     elapsed_s: float
-    reported: StringBasedDateTime
+    reported: Optional[StringBasedDateTime]
+    sent_at: Optional[StringBasedDateTime]
     json: Optional[dict] = None
     body: Optional[str] = None
 
@@ -136,6 +137,19 @@ def describe_response(resp: requests.Response) -> ResponseDescription:
         kwargs["body"] = resp.content.decode("utf-8")
     return ResponseDescription(**kwargs)
 
+def describe_flask_response(resp: flask.Response, time_to_respond):
+    headers =  {k: v for k, v in resp.headers.items()}
+    kwargs = {
+        "code": resp.status_code,
+        "headers": headers,
+        "sent_at": StringBasedDateTime(datetime.datetime.utcnow()),
+        "elapsed_s": time_to_respond
+    }
+    try:
+        kwargs["json"] = resp.get_json()
+    except ValueError:
+        kwargs["body"] = resp.get_data(as_text=True)
+    return ResponseDescription(**kwargs)
 
 class Query(ImplicitDict):
     request: RequestDescription
@@ -155,6 +169,7 @@ class QueryError(RuntimeError):
 
     def __init__(self, msg, queries: Optional[List[Query]] = None):
         super(RuntimeError, self).__init__(msg)
+        self.msg = msg
         self.queries = queries or []
 
     @property
@@ -168,6 +183,7 @@ class QueryError(RuntimeError):
 
 yaml.add_representer(Query, Representer.represent_dict)
 
+yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
 def describe_query(resp: requests.Response, initiated_at: datetime.datetime) -> Query:
     return Query(
@@ -238,4 +254,10 @@ def query_and_describe(
             elapsed_s=(t1 - t0).total_seconds(),
             reported=StringBasedDateTime(t1),
         ),
+    )
+
+def describe_flask_query(req: flask.Request, res: flask.Response, time_to_respond) -> Query:
+    return Query(
+        request=describe_flask_request(req),
+        response=describe_flask_response(res, time_to_respond),
     )
