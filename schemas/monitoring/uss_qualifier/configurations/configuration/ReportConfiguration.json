@@ -1,23 +1,19 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/ReportConfiguration.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.uss_qualifier.configurations.configuration.ReportConfiguration, as defined in monitoring/uss_qualifier/configurations/configuration.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "report_path": {
-      "type": "string",
-      "description": "File name of the report to write (if test_config provided) or read (if test_config not provided)"
-    },
-    "redact_access_tokens": {
-      "type": "boolean",
-      "description": "When True, look for instances of \"Authorization\" keys in the report with values starting \"Bearer \" and redact the signature from those access tokens"
+      "description": "File name of the report to write (if test_config provided) or read (if test_config not provided)",
+      "type": "string"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/ReportConfiguration.json",
-  "description": "monitoring.uss_qualifier.configurations.configuration.ReportConfiguration, as defined in monitoring/uss_qualifier/configurations/configuration.py",
   "required": [
     "report_path"
-  ]
+  ],
+  "type": "object"
 }

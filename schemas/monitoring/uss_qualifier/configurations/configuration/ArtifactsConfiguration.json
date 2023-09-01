@@ -1,45 +1,14 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/ArtifactsConfiguration.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.uss_qualifier.configurations.configuration.ArtifactsConfiguration, as defined in monitoring/uss_qualifier/configurations/configuration.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
-    },
-    "report_html": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "ReportHTMLConfiguration.json"
-        }
-      ],
-      "description": "If specified, configuration describing how an HTML version of the report should be generated"
-    },
-    "report": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "ReportConfiguration.json"
-        }
-      ],
-      "description": "Configuration for report generation"
-    },
-    "tested_roles": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "TestedRolesConfiguration.json"
-        }
-      ],
-      "description": "If specified, configuration describing a desired report summarizing tested requirements for each specified participant and role"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "graph": {
+      "description": "If specified, configuration describing a desired graph visualization summarizing the test run",
       "oneOf": [
         {
           "type": "null"
@@ -47,10 +16,52 @@
         {
           "$ref": "GraphConfiguration.json"
         }
-      ],
-      "description": "If specified, configuration describing a desired graph visualization summarizing the test run"
+      ]
+    },
+    "redact_access_tokens": {
+      "description": "When True, look for instances of \"Authorization\" keys in the report with values starting \"Bearer \" and redact the signature from those access tokens",
+      "type": "boolean"
+    },
+    "report": {
+      "description": "Configuration for report generation",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ReportConfiguration.json"
+        }
+      ]
+    },
+    "report_html": {
+      "description": "If specified, configuration describing how an HTML version of the report should be generated",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ReportHTMLConfiguration.json"
+        }
+      ]
+    },
+    "templated_reports": {
+      "description": "List of report templates to be rendered",
+      "items": {
+        "$ref": "TemplatedReportConfiguration.json"
+      },
+      "type": "array"
+    },
+    "tested_roles": {
+      "description": "If specified, configuration describing a desired report summarizing tested requirements for each specified participant and role",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TestedRolesConfiguration.json"
+        }
+      ]
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/ArtifactsConfiguration.json",
-  "description": "monitoring.uss_qualifier.configurations.configuration.ArtifactsConfiguration, as defined in monitoring/uss_qualifier/configurations/configuration.py"
+  "type": "object"
 }
