@@ -154,6 +154,7 @@ def describe_flask_response(resp: flask.Response, time_to_respond):
         kwargs["body"] = resp.get_data(as_text=True)
     return ResponseDescription(**kwargs)
 
+
 class QueryType(str, Enum):
     F3411v22aFlights = "astm.f3411.v22a.sp.flights"
     F3411v19Flights = "astm.f3411.v19.sp.flights"
