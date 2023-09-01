@@ -4,8 +4,6 @@ from monitoring.monitorlib import fetch, scd
 from monitoring.monitorlib.fetch import QueryError, Query
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from implicitdict import ImplicitDict
-from monitoring.monitorlib import schema_validation
-from monitoring.monitorlib.mock_uss_interface.interuss_interaction import Interaction, Issue
 
 
 # === DSS operations defined in ASTM API ===
@@ -139,7 +137,7 @@ def delete_operational_intent_reference(
 
 def get_operational_intent_details(
     utm_client: UTMClientSession, uss_base_url: str, id: str
-) -> Tuple[scd.OperationalIntent,Query]:
+) -> Tuple[scd.OperationalIntent, Query]:
     url = f"{uss_base_url}/uss/v1/operational_intents/{id}"
     subject = f"getOperationalIntentDetails from {url}"
 
@@ -170,7 +168,7 @@ def notify_operational_intent_details_changed(
     utm_client: UTMClientSession,
     uss_base_url: str,
     update: scd.PutOperationalIntentDetailsParameters,
-) -> Tuple[None,Query]:
+) -> Tuple[None, Query]:
     url = f"{uss_base_url}/uss/v1/operational_intents"
     subject = f"notifyOperationalIntentDetailsChanged to {url}"
     query = fetch.query_and_describe(
@@ -184,6 +182,7 @@ def notify_operational_intent_details_changed(
             queries=[query],
         )
     return None, query
+
 
 # === Custom actions ===
 
