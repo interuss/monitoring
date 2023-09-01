@@ -1,7 +1,7 @@
 from typing import Tuple
 import yaml
 import os
-from  implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict, StringBasedDateTime
 from flask import request, abort, jsonify
 from yaml.constructor import ConstructorError
 from loguru import logger
@@ -9,8 +9,12 @@ from loguru import logger
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    SCOPE_SCD_QUALIFIER_INJECT)
-from monitoring.monitorlib.mock_uss_interface.interuss_interaction import Interaction, Issue
+    SCOPE_SCD_QUALIFIER_INJECT,
+)
+from monitoring.monitorlib.mock_uss_interface.interuss_interaction import (
+    Interaction,
+    Issue,
+)
 
 from monitoring.mock_uss.interuss_logging.config import KEY_LOG_DIR
 
@@ -37,22 +41,33 @@ def interuss_log() -> Tuple[str, int]:
             try:
                 for obj in yaml.full_load_all(f):
                     interaction = ImplicitDict.parse(obj, Interaction)
-                    if ("received_at" in interaction.query.request) and interaction.query.request.received_at.datetime > from_time.datetime:
+                    if (
+                        ("received_at" in interaction.query.request)
+                        and interaction.query.request.received_at.datetime
+                        > from_time.datetime
+                    ):
                         objs.append(obj)
-                    elif "initiated_at" in interaction.query.request and interaction.query.request.initiated_at.datetime > from_time.datetime:
+                    elif (
+                        "initiated_at" in interaction.query.request
+                        and interaction.query.request.initiated_at.datetime
+                        > from_time.datetime
+                    ):
                         objs.append(obj)
                     else:
-                        logger.debug(f"There is no received_at or initiated_at request after {from_time_param} the request in {fname}")
+                        logger.debug(
+                            f"There is no received_at or initiated_at request after {from_time_param} the request in {fname}"
+                        )
             except (ConstructorError, KeyError) as e:
-                    logger.error(f"Error occured in reading interaction - {e}")
-                    logger.debug(f"Contents of {fname} - {obj}")
+                logger.error(f"Error occured in reading interaction - {e}")
+                logger.debug(f"Contents of {fname} - {obj}")
 
     return jsonify(objs), 200
+
 
 @webapp.route("/mock_uss/interuss/logs", methods=["DELETE"])
 @requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
 def delete_interuss_logs() -> Tuple[str, int]:
-    """ Deletes all the files under the logging directory"""
+    """Deletes all the files under the logging directory"""
     log_path = webapp.config[KEY_LOG_DIR]
 
     if not os.path.exists(log_path):

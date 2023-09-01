@@ -3,8 +3,12 @@ from loguru import logger
 from monitoring.monitorlib.clients import scd
 from monitoring.mock_uss.interuss_logging.logger import log_interaction
 
-get_operational_intent_details = (log_interaction("outgoing", "GET", "Op"))(scd.get_operational_intent_details)
-notify_operational_intent_details_changed = (log_interaction("outgoing", "POST", "Op"))(scd.notify_operational_intent_details_changed)
+get_operational_intent_details = (log_interaction("outgoing", "GET", "Op"))(
+    scd.get_operational_intent_details
+)
+notify_operational_intent_details_changed = (log_interaction("outgoing", "POST", "Op"))(
+    scd.notify_operational_intent_details_changed
+)
 
 # no logging for non-uss queries
 query_operational_intent_references = scd.query_operational_intent_references

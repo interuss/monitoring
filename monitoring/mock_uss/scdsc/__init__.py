@@ -18,6 +18,7 @@ utm_client = UTMClientSession(
     auth.make_auth_adapter(webapp.config[KEY_AUTH_SPEC]),
 )
 
+
 def no_log_interaction(function):
     @functools.wraps(function)
     def wrapper(*args, **kwargs):
@@ -27,9 +28,13 @@ def no_log_interaction(function):
             logger.debug("no args")
 
         if kwargs:
-            logger.debug(f"kwargs passed to wrapper from {function.__name__} - {kwargs}")
+            logger.debug(
+                f"kwargs passed to wrapper from {function.__name__} - {kwargs}"
+            )
         return function(*args, **kwargs)
+
     return wrapper
+
 
 if KEY_LOG_DIR in webapp.config:
     logger.debug(f"KEY_LOG_DIR - {KEY_LOG_DIR} is in config")
