@@ -1,7 +1,7 @@
 from loguru import logger
 
 from monitoring.monitorlib.clients import scd
-from monitoring.mock_uss.interuss_logging.logger import log_interaction
+from monitoring.mock_uss.interaction_logging.logger import log_interaction
 
 get_operational_intent_details = (log_interaction("outgoing", "GET", "Op"))(
     scd.get_operational_intent_details

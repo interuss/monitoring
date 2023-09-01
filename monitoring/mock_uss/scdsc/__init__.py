@@ -38,8 +38,8 @@ def no_log_interaction(function):
 
 if KEY_LOG_DIR in webapp.config:
     logger.debug(f"KEY_LOG_DIR - {KEY_LOG_DIR} is in config")
-    from monitoring.mock_uss.interuss_logging import scd_log as scd_client
-    from monitoring.mock_uss.interuss_logging.logger import log_flask_interaction as log
+    from monitoring.mock_uss.interaction_logging import scd_log as scd_client
+    from monitoring.mock_uss.interaction_logging.logger import log_flask_interaction as log
 else:
     logger.debug(f"KEY_LOG_DIR - {KEY_LOG_DIR} not in config")
     from monitoring.monitorlib.clients import scd as scd_client

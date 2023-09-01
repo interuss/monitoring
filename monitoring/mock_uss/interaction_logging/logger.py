@@ -10,12 +10,12 @@ import yaml
 from typing import Dict
 
 from monitoring.monitorlib.fetch import QueryError, Query, describe_flask_query
-from monitoring.monitorlib.mock_uss_interface.interuss_interaction import (
+from monitoring.monitorlib.mock_uss_interface.interaction_log import (
     Interaction,
     Issue,
 )
 from monitoring.mock_uss import webapp, require_config_value
-from monitoring.mock_uss.interuss_logging.config import KEY_LOG_DIR
+from monitoring.mock_uss.interaction_logging.config import KEY_LOG_DIR
 
 require_config_value(KEY_LOG_DIR)
 

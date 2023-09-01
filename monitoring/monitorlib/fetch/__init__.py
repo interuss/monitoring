@@ -100,8 +100,7 @@ class ResponseDescription(ImplicitDict):
     failure: Optional[str]
     headers: Optional[dict]
     elapsed_s: float
-    reported: Optional[StringBasedDateTime]
-    sent_at: Optional[StringBasedDateTime]
+    reported: StringBasedDateTime
     json: Optional[dict] = None
     body: Optional[str] = None
 
@@ -145,7 +144,7 @@ def describe_flask_response(resp: flask.Response, time_to_respond):
     kwargs = {
         "code": resp.status_code,
         "headers": headers,
-        "sent_at": StringBasedDateTime(datetime.datetime.utcnow()),
+        "reported": StringBasedDateTime(datetime.datetime.utcnow()),
         "elapsed_s": time_to_respond,
     }
     try:

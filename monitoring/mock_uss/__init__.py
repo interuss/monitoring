@@ -13,7 +13,7 @@ SERVICE_SCDSC = "scdsc"
 SERVICE_MESSAGESIGNING = "msgsigning"
 SERVICE_ATPROXY_CLIENT = "atproxy_client"
 SERVICE_TRACER = "tracer"
-SERVICE_INTERUSS_LOGGING = "interuss_logging"
+SERVICE_INTERACTION_LOGGING = "interaction_logging"
 
 webapp = MockUSS(__name__)
 enabled_services = set()
@@ -89,10 +89,10 @@ if SERVICE_MESSAGESIGNING in webapp.config[config.KEY_SERVICES]:
     from monitoring.mock_uss import msgsigning
     from monitoring.mock_uss.msgsigning import routes as msgsigning_routes
 
-if SERVICE_INTERUSS_LOGGING in webapp.config[config.KEY_SERVICES]:
-    enabled_services.add(SERVICE_INTERUSS_LOGGING)
-    from monitoring.mock_uss import interuss_logging
-    from monitoring.mock_uss.interuss_logging import routes_interuss_log
+if SERVICE_INTERACTION_LOGGING in webapp.config[config.KEY_SERVICES]:
+    enabled_services.add(SERVICE_INTERACTION_LOGGING)
+    from monitoring.mock_uss import interaction_logging
+    from monitoring.mock_uss.interaction_logging import routes_interactions_log
 
 if SERVICE_ATPROXY_CLIENT in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_ATPROXY_CLIENT)
