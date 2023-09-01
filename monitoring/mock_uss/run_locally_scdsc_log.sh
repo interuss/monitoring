@@ -34,7 +34,6 @@ docker run ${docker_args} --name "${CONTAINER_NAME}" \
   -e MOCK_USS_TOKEN_AUDIENCE="${AUD}" \
   -e MOCK_USS_BASE_URL="${BASE_URL}" \
   -e MOCK_USS_SERVICES="scdsc,interuss_logging" \
-  -e MOCK_USS_SAN="${SAN}" \
   -e MOCK_USS_LOG_DIR="${LOG_DIR}" \
   -p ${PORT}:5000 \
   -v "${SCRIPT_DIR}/../../build/test-certs:/var/test-certs:ro" \
