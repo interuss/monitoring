@@ -18,6 +18,11 @@ from monitoring.mock_uss.interuss_logging.config import KEY_LOG_DIR
 @webapp.route("/mock_uss/interuss/log", methods=["GET"])
 @requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
 def interuss_log() -> Tuple[str, int]:
+    """
+    Returns all the interaction logs with requests that were
+    received or initiated between 'from_time' and now
+    Eg - http:/.../mock_uss/interuss/log?from_time=2023-08-30T20:48:21.900000Z
+    """
     from_time_param = request.args.get("from_time")
     from_time = StringBasedDateTime(from_time_param)
     log_path = webapp.config[KEY_LOG_DIR]
@@ -47,10 +52,17 @@ def interuss_log() -> Tuple[str, int]:
 @webapp.route("/mock_uss/interuss/logs", methods=["DELETE"])
 @requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
 def delete_interuss_logs() -> Tuple[str, int]:
+    """ Deletes all the files under the logging directory"""
     log_path = webapp.config[KEY_LOG_DIR]
 
     if not os.path.exists(log_path):
         abort(404)
-
+    logger.debug(f"Files in {log_path} - {os.listdir(log_path)}")
     n = len(os.listdir(log_path))
 
+    for file in os.listdir(log_path):
+        file_path = os.path.join(log_path, file)
+        os.remove(file_path)
+        logger.debug(f"Removed log file - {file_path}")
+
+    return f"Removed {n} files", 200
