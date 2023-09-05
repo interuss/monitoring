@@ -6,7 +6,7 @@ from loguru import logger
 from typing import List, Optional
 
 import flask
-import yaml
+import json
 from typing import Dict
 
 from monitoring.monitorlib.fetch import QueryError, Query, describe_flask_query
@@ -43,14 +43,12 @@ def log_file(code: str, content: Interaction) -> str:
     basename = "{:06d}_{}_{}".format(
         n, code, datetime.datetime.now().strftime("%H%M%S_%f")
     )
-    logname = "{}.yaml".format(basename)
+    logname = "{}.json".format(basename)
     fullname = os.path.join(log_path, logname)
 
     dump = copy.deepcopy(content)
-    dump["object_type"] = type(content).__name__
-    mode = "a" if os.path.exists(fullname) else "w"
-    with open(fullname, mode) as f:
-        f.write(yaml.dump(dump, indent=2))
+    with open(fullname, "w") as f:
+        json.dump(dump, f, indent=2)
 
 
 def log_flask_interaction(request: Request, response: Response):
