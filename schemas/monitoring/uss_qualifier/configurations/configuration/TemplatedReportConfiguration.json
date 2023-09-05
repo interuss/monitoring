@@ -1,0 +1,35 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/TemplatedReportConfiguration.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.configurations.configuration.TemplatedReportConfiguration, as defined in monitoring/uss_qualifier/configurations/configuration.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "configuration": {
+      "description": "Configuration to be injected in the templated report",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TemplatedReportInjectedConfiguration.json"
+        }
+      ]
+    },
+    "output_path": {
+      "description": "Path of HTML file to contain the rendered templated report",
+      "type": "string"
+    },
+    "template_url": {
+      "description": "Url of the template to download from",
+      "type": "string"
+    }
+  },
+  "required": [
+    "output_path",
+    "template_url"
+  ],
+  "type": "object"
+}

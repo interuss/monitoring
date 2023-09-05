@@ -4,6 +4,8 @@ import os
 import traceback
 from typing import Dict, Optional, List
 
+from enum import Enum
+
 import flask
 from loguru import logger
 import requests
@@ -137,9 +139,22 @@ def describe_response(resp: requests.Response) -> ResponseDescription:
     return ResponseDescription(**kwargs)
 
 
+class QueryType(str, Enum):
+    F3411v22aFlights = "astm.f3411.v22a.sp.flights"
+    F3411v19Flights = "astm.f3411.v19.sp.flights"
+    F3411v22aFlightDetails = "astm.f3411.v22a.sp.flight_details"
+    F3411v19aFlightDetails = "astm.f3411.v19.sp.flight_details"
+
+
 class Query(ImplicitDict):
     request: RequestDescription
     response: ResponseDescription
+
+    server_id: Optional[str]
+    """If specified, identifier of the USS/participant hosting the server involved in this query."""
+
+    query_type: Optional[QueryType]
+    """If specified, the recognized type of this query."""
 
     @property
     def status_code(self) -> int:

@@ -778,6 +778,13 @@ class RIDObservationEvaluator(object):
             self._injected_flights, observed_flights
         )
 
+        for telemetry_mapping in mapping_by_injection_id.values():
+            # For flights that were mapped to an injection ID,
+            # update the observation queries with the participant id for future use in the aggregate checks
+            telemetry_mapping.observed_flight.query.set_server_id(
+                telemetry_mapping.injected_flight.uss_participant_id
+            )
+
         diagonal_km = (
             rect.lo().get_distance(rect.hi()).degrees * geo.EARTH_CIRCUMFERENCE_KM / 360
         )

@@ -19,6 +19,10 @@ fi
 
 CONFIG_NAME="${1:-ALL}"
 
+# https://stackoverflow.com/a/9057392
+# shellcheck disable=SC2124
+OTHER_ARGS=${@:2}
+
 if [ "$CONFIG_NAME" == "ALL" ]; then
   declare -a all_configurations=( \
     "configurations.dev.noop" \
@@ -28,10 +32,10 @@ if [ "$CONFIG_NAME" == "ALL" ]; then
     "configurations.dev.general_flight_auth" \
     "configurations.dev.f3548" \
     "configurations.dev.f3548_self_contained" \
+    "configurations.dev.netrid_v22a" \
     "configurations.dev.uspace" \
   )
   # TODO: Add configurations.dev.netrid_v19
-  # TODO: Add configurations.dev.netrid_v22a
   echo "Running configurations: ${all_configurations[*]}"
   for configuration_name in "${all_configurations[@]}"; do
     monitoring/uss_qualifier/run_locally.sh "$configuration_name"
@@ -41,10 +45,13 @@ else
 
   AUTH_SPEC='DummyOAuth(http://oauth.authority.localutm:8085/token,uss_qualifier)'
 
-  QUALIFIER_OPTIONS="$CONFIG_FLAG"
+  QUALIFIER_OPTIONS="$CONFIG_FLAG $OTHER_ARGS"
 
   OUTPUT_DIR="monitoring/uss_qualifier/output"
   mkdir -p "$OUTPUT_DIR"
+
+  CACHE_DIR="monitoring/uss_qualifier/.templates_cache"
+  mkdir -p "$CACHE_DIR"
 
   if [ "$CI" == "true" ]; then
     docker_args="--add-host host.docker.internal:host-gateway" # Required to reach other containers in Ubuntu (used for Github Actions)
@@ -63,6 +70,7 @@ else
     -e AUTH_SPEC=${AUTH_SPEC} \
     -e USS_QUALIFIER_STOP_FAST=${USS_QUALIFIER_STOP_FAST:-} \
     -v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \
+    -v "$(pwd)/$CACHE_DIR:/app/$CACHE_DIR" \
     -w /app/monitoring/uss_qualifier \
     interuss/monitoring \
     python main.py $QUALIFIER_OPTIONS

@@ -7,6 +7,7 @@ import sys
 
 from implicitdict import ImplicitDict
 from loguru import logger
+import yaml
 
 from monitoring.monitorlib.dicts import remove_elements
 from monitoring.monitorlib.versioning import get_code_version, get_commit_hash
@@ -16,16 +17,19 @@ from monitoring.uss_qualifier.configurations.configuration import (
     ArtifactsConfiguration,
     ReportConfiguration,
 )
+from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.documents import make_report_html
 from monitoring.uss_qualifier.reports.tested_roles import generate_tested_roles
 from monitoring.uss_qualifier.reports.graphs import make_graph
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
+from monitoring.uss_qualifier.reports.templates import render_templates
 from monitoring.uss_qualifier.resources.resource import create_resources
 from monitoring.uss_qualifier.signatures import (
     compute_signature,
     compute_baseline_signature,
 )
 from monitoring.uss_qualifier.suites.suite import TestSuiteAction
+from monitoring.uss_qualifier.validation import validate_config
 
 
 def parseArgs() -> argparse.Namespace:
@@ -41,6 +45,24 @@ def parseArgs() -> argparse.Namespace:
         "--report",
         default=None,
         help="(Overrides setting in artifacts configuration) File name of the report to write (if test configuration provided) or read (if test configuration not provided)",
+    )
+
+    parser.add_argument(
+        "--config-output",
+        default=None,
+        help="If specified, write the configuration as parsed (potentially from multiple files) to the single file specified by this path",
+    )
+
+    parser.add_argument(
+        "--exit-before-execution",
+        action="store_true",
+        help="If specified, only exit before test execution begins.",
+    )
+
+    parser.add_argument(
+        "--skip-validation",
+        action="store_true",
+        help="If specified, do not validate the format of the provided configuration.",
     )
 
     return parser.parse_args()
@@ -88,7 +110,37 @@ def execute_test_run(
 def main() -> int:
     args = parseArgs()
 
-    whole_config = USSQualifierConfiguration.from_string(args.config)
+    config_src = load_dict_with_references(args.config)
+
+    if not args.skip_validation:
+        logger.info("Validating configuration...")
+        validation_errors = validate_config(config_src)
+        if validation_errors:
+            for e in validation_errors:
+                logger.error("[{}]: {}", e.json_path, e.message)
+            raise ValueError(
+                f"{len(validation_errors)} validation errors indicated above.  Hint: resolve the clearest error first and then rerun validation."
+            )
+
+    whole_config = ImplicitDict.parse(config_src, USSQualifierConfiguration)
+
+    if args.config_output:
+        logger.info("Writing flattened configuration to {}", args.config_output)
+        if args.config_output.lower().endswith(".json"):
+            with open(args.config_output, "w") as f:
+                json.dump(whole_config, f, indent=2, sort_keys=True)
+        elif args.config_output.lower().endswith(".yaml"):
+            with open(args.config_output, "w") as f:
+                yaml.dump(json.loads(json.dumps(whole_config)), f, sort_keys=True)
+        else:
+            raise ValueError(
+                "Unsupported extension for --config-output; only .json or .yaml file paths may be specified"
+            )
+
+    if args.exit_before_execution:
+        logger.info("Exiting because --exit-before-execution specified.")
+        return os.EX_OK
+
     config = whole_config.v1
     if args.report:
         if not config.artifacts:
@@ -114,7 +166,7 @@ def main() -> int:
 
     if config.artifacts:
         if config.artifacts.report and not do_not_save_report:
-            if config.artifacts.report.redact_access_tokens:
+            if config.artifacts.redact_access_tokens:
                 logger.info("Redacting access tokens in report")
                 redact_access_tokens(report)
             logger.info("Writing report to {}", config.artifacts.report.report_path)
@@ -127,6 +179,10 @@ def main() -> int:
             )
             with open(config.artifacts.report_html.html_path, "w") as f:
                 f.write(make_report_html(report))
+
+        if len(config.artifacts.templated_reports) > 0:
+
+            render_templates(config.artifacts, report)
 
         if config.artifacts.graph:
             logger.info(

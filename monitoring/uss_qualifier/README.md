@@ -20,11 +20,13 @@ This section provides a specific set of commands to execute uss_qualifier for de
 2. Go to repository root: `cd monitoring`
 3. Bring up a local UTM ecosystem (DSS + dummy auth): `make start-locally`
 4. Bring up mock USSs: `make start-uss-mocks`
-5. Run uss_qualifier explicitly specifying a configuration to use: `monitoring/uss_qualifier/run_locally.sh configurations.dev.local_test`
+5. Run uss_qualifier explicitly specifying a configuration to use: `monitoring/uss_qualifier/run_locally.sh configurations.dev.noop`
 
-After building, uss_qualifier should take a few minutes to run and then `report.json` should appear in [monitoring/uss_qualifier](.)
+After building, uss_qualifier should take a few minutes to run and then `report_*.json` should appear in [monitoring/uss_qualifier](.)
 
-At this point, uss_qualifier can be run again with a different configuration targeted at the development resources brought up in steps 3-6; for instance: `monitoring/uss_qualifier/run_locally.sh configurations.dev.self_contained_f3548`
+At this point, uss_qualifier can be run again with a different configuration targeted at the development resources brought up in steps 3-4; for instance: `monitoring/uss_qualifier/run_locally.sh configurations.dev.self_contained_f3548`
+
+Note that all baseline test configurations using local mocks can be run with `monitoring/uss_qualifier/run_locally.sh`.
 
 ### Local testing
 

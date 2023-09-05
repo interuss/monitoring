@@ -35,6 +35,21 @@ class ReportHTMLConfiguration(ImplicitDict):
     """Path of HTML file to contain an HTML rendering of the test report"""
 
 
+class TemplatedReportInjectedConfiguration(ImplicitDict):
+    pass
+
+
+class TemplatedReportConfiguration(ImplicitDict):
+    template_url: str
+    """Url of the template to download from"""
+
+    output_path: str
+    """Path of HTML file to contain the rendered templated report"""
+
+    configuration: Optional[TemplatedReportInjectedConfiguration] = None
+    """Configuration to be injected in the templated report"""
+
+
 class GraphConfiguration(ImplicitDict):
     gv_path: str
     """Path of GraphViz (.gv) text file to contain a visualization of the test run"""
@@ -44,16 +59,19 @@ class ReportConfiguration(ImplicitDict):
     report_path: str
     """File name of the report to write (if test_config provided) or read (if test_config not provided)"""
 
+
+class ArtifactsConfiguration(ImplicitDict):
     redact_access_tokens: bool = True
     """When True, look for instances of "Authorization" keys in the report with values starting "Bearer " and redact the signature from those access tokens"""
 
-
-class ArtifactsConfiguration(ImplicitDict):
     report: Optional[ReportConfiguration] = None
     """Configuration for report generation"""
 
     report_html: Optional[ReportHTMLConfiguration] = None
     """If specified, configuration describing how an HTML version of the report should be generated"""
+
+    templated_reports: List[TemplatedReportConfiguration] = []
+    """List of report templates to be rendered"""
 
     graph: Optional[GraphConfiguration] = None
     """If specified, configuration describing a desired graph visualization summarizing the test run"""
@@ -73,9 +91,3 @@ class USSQualifierConfigurationV1(ImplicitDict):
 class USSQualifierConfiguration(ImplicitDict):
     v1: Optional[USSQualifierConfigurationV1]
     """Configuration in version 1 format"""
-
-    @staticmethod
-    def from_string(config_string: str) -> "USSQualifierConfiguration":
-        return ImplicitDict.parse(
-            load_dict_with_references(config_string), USSQualifierConfiguration
-        )
