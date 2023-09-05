@@ -17,7 +17,7 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     OperationalIntentState,
 )
 from monitoring.monitorlib import scd, versioning
-from monitoring.mock_uss.scdsc import scd_client
+from monitoring.monitorlib.clients import scd as scd_client
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd import op_intent_transition_valid
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (

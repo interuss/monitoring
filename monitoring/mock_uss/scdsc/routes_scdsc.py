@@ -4,12 +4,11 @@ from monitoring.monitorlib import scd
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.scdsc.database import db, FlightRecord
-from monitoring.mock_uss.scdsc import log
+from monitoring.monitorlib.mock_uss_interface import call_res_hooks
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents/<entityid>", methods=["GET"])
 @requires_scope([scd.SCOPE_SC])
-@log
 def scdsc_get_operational_intent_details(entityid: str):
     """Implements getOperationalIntentDetails in ASTM SCD API."""
     # Look up entityid in database
@@ -53,7 +52,6 @@ def op_intent_from_flightrecord(flight: FlightRecord) -> scd.OperationalIntent:
 
 @webapp.route("/mock/scd/uss/v1/operational_intents", methods=["POST"])
 @requires_scope([scd.SCOPE_SC])
-@log
 def scdsc_notify_operational_intent_details_changed():
     """Implements notifyOperationalIntentDetailsChanged in ASTM SCD API."""
 
@@ -82,3 +80,10 @@ def scdsc_make_uss_report():
 
     # Return the ErrorReport as the nominal response
     # TODO: Implement
+
+
+@webapp.after_request
+def process(response):
+    req = flask.request
+    call_res_hooks(req, response)
+    return response

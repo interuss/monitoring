@@ -1,7 +1,6 @@
 import inspect
 import os
 from typing import Any, Optional, Callable
-
 from loguru import logger
 
 from monitoring.mock_uss.server import MockUSS
@@ -93,6 +92,7 @@ if SERVICE_INTERACTION_LOGGING in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_INTERACTION_LOGGING)
     from monitoring.mock_uss import interaction_logging
     from monitoring.mock_uss.interaction_logging import routes_interactions_log
+    from monitoring.mock_uss.interaction_logging import scd_log
 
 if SERVICE_ATPROXY_CLIENT in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_ATPROXY_CLIENT)

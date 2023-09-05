@@ -3,7 +3,7 @@ import os
 import datetime
 import copy
 from loguru import logger
-
+from typing import List, Optional
 
 import flask
 import yaml
@@ -16,13 +16,16 @@ from monitoring.monitorlib.mock_uss_interface.interaction_log import (
 )
 from monitoring.mock_uss import webapp, require_config_value
 from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_DIR
+from flask import Request, Response
 
 require_config_value(KEY_INTERACTIONS_LOG_DIR)
 
 
-def log_interaction(direction: str, method: str, type: str):
+def log_interaction(
+    direction: str, method: str, type: str, query: Query, issues: Optional[List[Issue]]
+):
     """
-    Decorator for logging the REST calls between Mock USS to SUT
+    Logs the REST calls between Mock USS to SUT
     Args:
         direction: incoming or outgoing
         method: GET or POST
@@ -30,30 +33,11 @@ def log_interaction(direction: str, method: str, type: str):
     Returns:
 
     """
-
-    def inner_log(function):
-        @functools.wraps(function)
-        def wrapper_log(*args, **kwargs):
-            interaction = None
-            func_name = function.__name__
-            try:
-                result, query = function(*args, **kwargs)
-                interaction = Interaction(query=query)
-                return result, query
-            except QueryError as q:
-                issues = []
-                issues.append(Issue(description=q.msg))
-                interaction = Interaction(query=q.queries[0], reported_issues=issues)
-                raise q
-            finally:
-                log_file(f"{direction}_{method}_{type}", interaction)
-
-        return wrapper_log
-
-    return inner_log
+    interaction: Interaction = Interaction(query=query, reported_issues=issues)
+    log_file(f"{direction}_{method}_{type}", interaction)
 
 
-def log_file(code: str, content: Dict) -> str:
+def log_file(code: str, content: Interaction) -> str:
     log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]
     n = len(os.listdir(log_path))
     basename = "{:06d}_{}_{}".format(
@@ -69,41 +53,37 @@ def log_file(code: str, content: Dict) -> str:
         f.write(yaml.dump(dump, indent=2))
 
 
-def log_flask_interaction(function):
+def log_flask_interaction(request: Request, response: Response):
     """
-    Decorator for logging flask request and response in an interaction
+    Logs flask request and response in an interaction
     Args:
         function
 
     Returns:
         function response
     """
-
-    @functools.wraps(function)
-    def wrapper_log(*args, **kwargs):
-        req = flask.request
-        method = flask.request.method
-        url = flask.request.url
-        type = ""
-        if "telemetry" in url:
-            type = "Pos"
-        elif "operational_intent" in url:
-            type = "Op"
-        elif "constraint" in url:
-            type = "Constr"
-        else:
-            type = "Unknown"
-        st = datetime.datetime.utcnow()
-        res = function(*args, **kwargs)
-        rt = (datetime.datetime.utcnow() - st).total_seconds()
-        logger.debug(f"res - {str(res)}")
-        query = describe_flask_query(req, res, rt)
-        issues = []
-        if query.status_code != 200 or query.status_code != 204:
-            issue = Issue(description=res.get_data(as_text=True))
-            issues.append(issue)
-        interaction = Interaction(query=query, reported_issues=issues)
-        log_file(f"incoming_{method}_{type}", interaction)
-        return res
-
-    return wrapper_log
+    req = flask.request
+    method = req.method
+    url = req.url
+    if "/uss/v1/" not in url:
+        return
+    type = ""
+    if "telemetry" in url:
+        type = "Pos"
+    elif "operational_intent" in url:
+        type = "Op"
+    elif "constraint" in url:
+        type = "Constr"
+    else:
+        type = "Unknown"
+    st = datetime.datetime.utcnow()
+    rt = (datetime.datetime.utcnow() - st).total_seconds()
+    logger.debug(f"res - {str(response)}")
+    query = describe_flask_query(req, response, rt)
+    issues = []
+    if query.status_code != 200 or query.status_code != 204:
+        issue = Issue(description=response.get_data(as_text=True))
+        issues.append(issue)
+    interaction = Interaction(query=query, reported_issues=issues)
+    log_file(f"incoming_{method}_{type}", interaction)
+    return response

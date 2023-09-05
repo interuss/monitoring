@@ -31,10 +31,12 @@ def interaction_logs() -> Tuple[str, int]:
     from_time_param = request.args.get("from_time")
     from_time = StringBasedDateTime(from_time_param)
     log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]
-    n = len(os.listdir(log_path))
 
     if not os.path.exists(log_path):
-        abort(404)
+        abort(500)
+
+    n = len(os.listdir(log_path))
+
     interactions: List[Interaction] = []
     for fname in os.listdir(log_path):
         with open(os.path.join(log_path, fname), "r") as f:
@@ -72,13 +74,15 @@ def delete_interaction_logs() -> Tuple[str, int]:
     log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]
 
     if not os.path.exists(log_path):
-        abort(404)
-    logger.debug(f"Files in {log_path} - {os.listdir(log_path)}")
-    n = len(os.listdir(log_path))
+        abort(500)
 
+    logger.debug(f"Num of files in {log_path} - {len(os.listdir(log_path))}")
+
+    num_removed = 0
     for file in os.listdir(log_path):
         file_path = os.path.join(log_path, file)
         os.remove(file_path)
         logger.debug(f"Removed log file - {file_path}")
+        num_removed = num_removed + 1
 
-    return f"Removed {n} files", 200
+    return f"Removed {num_removed} files", 200
