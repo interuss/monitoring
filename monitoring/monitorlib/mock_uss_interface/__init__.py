@@ -13,4 +13,4 @@ res_hooks: List[ResponseHook] = []
 
 def call_res_hooks(req: Request, res: Response):
     for hook in res_hooks:
-        hook.after_res(res, res)
+        hook.after_res(req, res)

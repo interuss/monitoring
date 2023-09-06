@@ -1,4 +1,1 @@
-from monitoring.mock_uss import require_config_value
-from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_DIR
 
-require_config_value(KEY_INTERACTIONS_LOG_DIR)

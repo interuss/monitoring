@@ -55,12 +55,15 @@ def interaction_logs() -> Tuple[str, int]:
                 ):
                     interactions.append(interaction)
                 else:
-                    logger.error(
-                        f"There is no received_at or initiated_at request after {from_time_param} the request in {fname}"
-                    )
-            except (KeyError) as e:
-                logger.error(f"Error occured in reading interaction - {e}")
-                logger.debug(f"Contents of {fname} - {obj}")
+                    msg = f"There is no received_at or initiated_at field in the request in {fname} with content {obj}"
+                    logger.error(msg)
+                    return msg, 500
+
+            except (KeyError, ValueError) as e:
+                msg = f"Error occured in reading interaction from file {fname} - {e}"
+                logger.error(msg)
+                logger.error(f"Contents of {fname} - {obj}")
+                return msg, 500
 
     return jsonify(ListLogsResponse(interactions=interactions)), 200
 

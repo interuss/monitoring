@@ -212,6 +212,33 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
 
+  mock_uss_scd_interaction_log:
+    container_name: mock_uss_scd_interaction_log
+    hostname: scdsc.log.uss1.localutm
+    image: interuss/monitoring
+    command: mock_uss/start.sh
+    environment:
+      - MOCK_USS_AUTH_SPEC=DummyOAuth(http://oauth.authority.localutm:8085/token,uss1)
+      - MOCK_USS_DSS_URL=http://dss.uss1.localutm
+      - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
+      - MOCK_USS_TOKEN_AUDIENCE=scdsc.log.uss1.localutm,localhost,host.docker.internal
+      - MOCK_USS_BASE_URL=http://scdsc.log.uss1.localutm
+      - MOCK_USS_SERVICES=scdsc,interaction_logging
+      - MOCK_USS_INTERACTIONS_LOG_DIR="output/logs_8095"
+      - MOCK_USS_PORT=80
+    expose:
+      - 80
+    ports:
+      - 8095:80
+    volumes:
+      - ../../build/test-certs:/var/test-certs:ro
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+
   # atproxy is currently disabled to troubleshoot occasional connection issues
 #  atproxy:
 #    container_name: atproxy

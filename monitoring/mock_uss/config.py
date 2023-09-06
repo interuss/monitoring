@@ -11,7 +11,6 @@ KEY_SERVICES = "MOCK_USS_SERVICES"
 KEY_DSS_URL = "MOCK_USS_DSS_URL"
 KEY_BEHAVIOR_LOCALITY = "MOCK_USS_BEHAVIOR_LOCALITY"
 KEY_CODE_VERSION = "MONITORING_VERSION"
-KEY_INTERACTIONS_LOG_DIR = "MOCK_USS_INTERACTIONS_LOG_DIR"
 
 
 import_environment_variable(
@@ -32,4 +31,3 @@ import_environment_variable(
     KEY_BEHAVIOR_LOCALITY, default="CHE", mutator=Locality.from_locale
 )
 import_environment_variable(KEY_CODE_VERSION, default="Unknown")
-import_environment_variable(KEY_INTERACTIONS_LOG_DIR, required=False)

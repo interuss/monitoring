@@ -25,9 +25,9 @@ class LoggingHook(QueryHook):
         self, query: Query, function, issues: Optional[List[Issue]] = None
     ) -> None:
         if function == get_operational_intent_details:
-            log_interaction("outgoing", "GET", "Op", query, issues)
+            log_interaction("outgoing", "Op", query, issues)
         elif function == notify_operational_intent_details_changed:
-            log_interaction("outgoing", "POST", "Op", query, issues)
+            log_interaction("outgoing", "Op", query, issues)
 
 
 query_hooks.append(LoggingHook())

@@ -12,7 +12,7 @@ PUBLIC_KEY="/var/test-certs/auth2.pem"
 AUD=${MOCK_USS_TOKEN_AUDIENCE:-localhost,host.docker.internal}
 
 
-PORT=${PORT:-8075}
+PORT=${PORT:-8095}
 LOG_DIR="output/logs_${PORT}"
 CONTAINER_NAME=${CONTAINER_NAME:-"mock_uss_scdsc_log_${PORT}"}
 

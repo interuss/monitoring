@@ -22,7 +22,7 @@ require_config_value(KEY_INTERACTIONS_LOG_DIR)
 
 
 def log_interaction(
-    direction: str, method: str, type: str, query: Query, issues: Optional[List[Issue]]
+    direction: str, type: str, query: Query, issues: Optional[List[Issue]]
 ):
     """
     Logs the REST calls between Mock USS to SUT
@@ -34,6 +34,7 @@ def log_interaction(
 
     """
     interaction: Interaction = Interaction(query=query, reported_issues=issues)
+    method = query.request.method
     log_file(f"{direction}_{method}_{type}", interaction)
 
 
@@ -60,9 +61,8 @@ def log_flask_interaction(request: Request, response: Response):
     Returns:
         function response
     """
-    req = flask.request
-    method = req.method
-    url = req.url
+    method = request.method
+    url = request.url
     if "/uss/v1/" not in url:
         return
     type = ""
@@ -77,7 +77,7 @@ def log_flask_interaction(request: Request, response: Response):
     st = datetime.datetime.utcnow()
     rt = (datetime.datetime.utcnow() - st).total_seconds()
     logger.debug(f"res - {str(response)}")
-    query = describe_flask_query(req, response, rt)
+    query = describe_flask_query(request, response, rt)
     issues = []
     if query.status_code != 200 or query.status_code != 204:
         issue = Issue(description=response.get_data(as_text=True))
