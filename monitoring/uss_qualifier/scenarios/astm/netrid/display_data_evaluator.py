@@ -36,7 +36,11 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection i
 from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType, PendingCheck
+from monitoring.uss_qualifier.scenarios.scenario import (
+    TestScenarioType,
+    PendingCheck,
+    TestScenario,
+)
 from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFlight
 
 DISTANCE_TOLERANCE_M = 0.01
@@ -190,7 +194,7 @@ class RIDObservationEvaluator(object):
 
     def __init__(
         self,
-        test_scenario: TestScenarioType,
+        test_scenario: TestScenario,
         injected_flights: List[InjectedFlight],
         config: EvaluationConfiguration,
         rid_version: RIDVersion,
