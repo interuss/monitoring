@@ -90,9 +90,8 @@ if SERVICE_MESSAGESIGNING in webapp.config[config.KEY_SERVICES]:
 
 if SERVICE_INTERACTION_LOGGING in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_INTERACTION_LOGGING)
-    from monitoring.mock_uss import interaction_logging
+    from monitoring.mock_uss.interaction_logging import logger as interactions_logger
     from monitoring.mock_uss.interaction_logging import routes_interactions_log
-    from monitoring.mock_uss.interaction_logging import scd_log
 
 if SERVICE_ATPROXY_CLIENT in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_ATPROXY_CLIENT)

@@ -4,13 +4,13 @@ from monitoring.monitorlib import scd
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.scdsc.database import db, FlightRecord
-from monitoring.monitorlib.mock_uss_interface import call_res_hooks
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents/<entityid>", methods=["GET"])
 @requires_scope([scd.SCOPE_SC])
 def scdsc_get_operational_intent_details(entityid: str):
     """Implements getOperationalIntentDetails in ASTM SCD API."""
+
     # Look up entityid in database
     tx = db.value
     flight = None
@@ -19,24 +19,24 @@ def scdsc_get_operational_intent_details(entityid: str):
             flight = f
             break
 
-    response = None
-    status_code = None
-
     # If requested operational intent doesn't exist, return 404
     if flight is None:
-        response = scd.ErrorResponse(
-            message="Operational intent {} not known by this USS".format(entityid)
+        return (
+            flask.jsonify(
+                scd.ErrorResponse(
+                    message="Operational intent {} not known by this USS".format(
+                        entityid
+                    )
+                )
+            ),
+            404,
         )
-        status_code = 404
-    else:
-        # Return nominal response with details
-        response = scd.GetOperationalIntentDetailsResponse(
-            operational_intent=op_intent_from_flightrecord(flight),
-        )
-        status_code = 200
-    # Return nominal response with details
 
-    return flask.make_response(response, status_code)
+    # Return nominal response with details
+    response = scd.GetOperationalIntentDetailsResponse(
+        operational_intent=op_intent_from_flightrecord(flight),
+    )
+    return flask.jsonify(response), 200
 
 
 def op_intent_from_flightrecord(flight: FlightRecord) -> scd.OperationalIntent:
@@ -57,8 +57,7 @@ def scdsc_notify_operational_intent_details_changed():
 
     # Do nothing because this USS is unsophisticated and polls the DSS for every
     # change in its operational intents
-    resp = flask.make_response("", 204)
-    return resp
+    return "", 204
 
 
 @webapp.route("/mock/scd/uss/v1/reports", methods=["POST"])
@@ -80,10 +79,3 @@ def scdsc_make_uss_report():
 
     # Return the ErrorReport as the nominal response
     # TODO: Implement
-
-
-@webapp.after_request
-def process(response):
-    req = flask.request
-    call_res_hooks(req, response)
-    return response

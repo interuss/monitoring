@@ -2,7 +2,7 @@ from typing import Tuple, List
 import json
 import os
 from implicitdict import ImplicitDict, StringBasedDateTime
-from flask import request, abort, jsonify
+from flask import request, jsonify
 from loguru import logger
 
 from monitoring.mock_uss import webapp
@@ -10,9 +10,8 @@ from monitoring.mock_uss.auth import requires_scope
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
 )
-from monitoring.monitorlib.mock_uss_interface.interaction_log import (
+from monitoring.mock_uss.interaction_logging.interactions import (
     Interaction,
-    Issue,
     ListLogsResponse,
 )
 
@@ -27,14 +26,12 @@ def interaction_logs() -> Tuple[str, int]:
     received or initiated between 'from_time' and now
     Eg - http:/.../mock_uss/interuss/log?from_time=2023-08-30T20:48:21.900000Z
     """
-    from_time_param = request.args.get("from_time")
+    from_time_param = request.args.get("from_time", "1900-01-01T00:00:00Z")
     from_time = StringBasedDateTime(from_time_param)
     log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]
 
     if not os.path.exists(log_path):
-        abort(500)
-
-    n = len(os.listdir(log_path))
+        raise ValueError(f"Configured log path {log_path} does not exist")
 
     interactions: List[Interaction] = []
     for fname in os.listdir(log_path):
@@ -45,25 +42,23 @@ def interaction_logs() -> Tuple[str, int]:
                 if (
                     ("received_at" in interaction.query.request)
                     and interaction.query.request.received_at.datetime
-                    > from_time.datetime
+                    >= from_time.datetime
                 ):
                     interactions.append(interaction)
                 elif (
                     "initiated_at" in interaction.query.request
                     and interaction.query.request.initiated_at.datetime
-                    > from_time.datetime
+                    >= from_time.datetime
                 ):
                     interactions.append(interaction)
                 else:
-                    msg = f"There is no received_at or initiated_at field in the request in {fname} with content {obj}"
-                    logger.error(msg)
-                    return msg, 500
+                    raise ValueError(
+                        f"There is no received_at or initiated_at field in the request in {fname}"
+                    )
 
             except (KeyError, ValueError) as e:
-                msg = f"Error occured in reading interaction from file {fname} - {e}"
-                logger.error(msg)
-                logger.error(f"Contents of {fname} - {obj}")
-                return msg, 500
+                msg = f"Error occurred in reading interaction from file {fname}: {e}"
+                raise type(e)(msg)
 
     return jsonify(ListLogsResponse(interactions=interactions)), 200
 
@@ -75,9 +70,9 @@ def delete_interaction_logs() -> Tuple[str, int]:
     log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]
 
     if not os.path.exists(log_path):
-        abort(500)
+        raise ValueError(f"Configured log path {log_path} does not exist")
 
-    logger.debug(f"Num of files in {log_path} - {len(os.listdir(log_path))}")
+    logger.debug(f"Number of files in {log_path}: {len(os.listdir(log_path))}")
 
     num_removed = 0
     for file in os.listdir(log_path):
