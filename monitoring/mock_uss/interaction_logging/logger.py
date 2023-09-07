@@ -65,6 +65,8 @@ def interaction_log_after_request(response):
     elapsed_s = (
         datetime.datetime.utcnow() - flask.current_app.custom_profiler["start"]
     ).total_seconds()
-    query = describe_flask_query(flask.request, response, elapsed_s)
-    log_interaction(QueryDirection.Incoming, query)
+    # TODO: Make this configurable instead of hardcoding exactly these query types
+    if "/uss/v1/" in flask.request.url_rule.rule:
+        query = describe_flask_query(flask.request, response, elapsed_s)
+        log_interaction(QueryDirection.Incoming, query)
     return response
