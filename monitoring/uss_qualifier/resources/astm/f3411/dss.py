@@ -25,8 +25,20 @@ class DSSInstanceSpecification(ImplicitDict):
     has_private_address: Optional[bool]
     """Whether this DSS instance is expected to have a private address that is not publicly addressable."""
 
+    local_debug: Optional[bool]
+    """Whether this DSS instance is running locally for debugging or development purposes. Mostly used for relaxing
+    constraints around encryption.
+    Assumed to be true if left unspecified and has_private_address is true, otherwise defaults to false
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
+        if (
+            not self.has_field_with_value("local_debug")
+            and self.has_field_with_value("has_private_address")
+            and self.get("has_private_address")
+        ):
+            self.local_debug = True
         try:
             urlparse(self.base_url)
         except ValueError:
@@ -38,6 +50,7 @@ class DSSInstance(object):
     rid_version: RIDVersion
     base_url: str
     has_private_address: bool = False
+    local_debug: bool = False
     client: infrastructure.UTMClientSession
 
     def __init__(
@@ -45,6 +58,7 @@ class DSSInstance(object):
         participant_id: ParticipantID,
         base_url: str,
         has_private_address: Optional[bool],
+        local_debug: Optional[bool],
         rid_version: RIDVersion,
         auth_adapter: infrastructure.AuthAdapter,
     ):
@@ -55,6 +69,8 @@ class DSSInstance(object):
 
         if has_private_address is not None:
             self.has_private_address = has_private_address
+        if local_debug is not None:
+            self.local_debug = local_debug
 
 
 class DSSInstanceResource(Resource[DSSInstanceSpecification]):
@@ -67,6 +83,7 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
             specification.participant_id,
             specification.base_url,
             specification.has_private_address,
+            specification.local_debug,
             specification.rid_version,
             auth_adapter.adapter,
         )
@@ -95,6 +112,7 @@ class DSSInstancesResource(Resource[DSSInstancesSpecification]):
                 s.participant_id,
                 s.base_url,
                 s.has_private_address,
+                s.local_debug,
                 s.rid_version,
                 auth_adapter.adapter,
             )

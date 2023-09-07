@@ -107,6 +107,7 @@ class DSSWrapper(object):
                 isa_id=isa_id,
                 rid_version=self._dss.rid_version,
                 session=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(check, isa, f"Failed to get ISA {isa_id}")
@@ -160,6 +161,7 @@ class DSSWrapper(object):
                 isa_version=isa_version,
                 rid_version=self._dss.rid_version,
                 utm_client=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(
@@ -223,6 +225,7 @@ class DSSWrapper(object):
                 isa_version=isa_version,
                 rid_version=self._dss.rid_version,
                 utm_client=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(
@@ -261,6 +264,7 @@ class DSSWrapper(object):
                 isa_id=isa_id,
                 rid_version=self._dss.rid_version,
                 session=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(
@@ -275,6 +279,7 @@ class DSSWrapper(object):
                 isa_version=isa.isa.version,
                 rid_version=self._dss.rid_version,
                 utm_client=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(
@@ -309,6 +314,7 @@ class DSSWrapper(object):
                 area=area,
                 rid_version=self._dss.rid_version,
                 session=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(
@@ -339,6 +345,7 @@ class DSSWrapper(object):
                 subscription_id=sub_id,
                 rid_version=self._dss.rid_version,
                 session=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(
@@ -378,6 +385,7 @@ class DSSWrapper(object):
                 subscription_id=sub_id,
                 rid_version=self._dss.rid_version,
                 session=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(
@@ -420,6 +428,7 @@ class DSSWrapper(object):
                 subscription_version=sub_version,
                 rid_version=self._dss.rid_version,
                 utm_client=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(
@@ -468,6 +477,7 @@ class DSSWrapper(object):
                 subscription_version=sub_version,
                 rid_version=self._dss.rid_version,
                 utm_client=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(
@@ -499,6 +509,7 @@ class DSSWrapper(object):
                 subscription_version=sub_version,
                 rid_version=self._dss.rid_version,
                 utm_client=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(
@@ -537,6 +548,7 @@ class DSSWrapper(object):
                 subscription_id=sub_id,
                 rid_version=self._dss.rid_version,
                 session=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(
@@ -555,6 +567,7 @@ class DSSWrapper(object):
                 subscription_version=sub.subscription.version,
                 rid_version=self._dss.rid_version,
                 utm_client=self._dss.client,
+                server_id=self._dss.participant_id,
             )
 
             self._handle_query_result(

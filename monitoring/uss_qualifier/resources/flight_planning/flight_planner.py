@@ -90,7 +90,12 @@ class FlightPlanner:
         url = "{}/v1/flights/{}".format(self.config.injection_base_url, flight_id)
 
         query = fetch.query_and_describe(
-            self.client, "PUT", url, json=request, scope=SCOPE_SCD_QUALIFIER_INJECT
+            self.client,
+            "PUT",
+            url,
+            json=request,
+            scope=SCOPE_SCD_QUALIFIER_INJECT,
+            server_id=self.config.participant_id,
         )
         if query.status_code != 200:
             raise QueryError(
@@ -116,7 +121,11 @@ class FlightPlanner:
     ) -> Tuple[DeleteFlightResponse, fetch.Query]:
         url = "{}/v1/flights/{}".format(self.config.injection_base_url, flight_id)
         query = fetch.query_and_describe(
-            self.client, "DELETE", url, scope=SCOPE_SCD_QUALIFIER_INJECT
+            self.client,
+            "DELETE",
+            url,
+            scope=SCOPE_SCD_QUALIFIER_INJECT,
+            server_id=self.config.participant_id,
         )
         if query.status_code != 200:
             raise QueryError(
@@ -139,7 +148,11 @@ class FlightPlanner:
     def get_target_information(self) -> FlightPlannerInformation:
         url_status = "{}/v1/status".format(self.config.injection_base_url)
         version_query = fetch.query_and_describe(
-            self.client, "GET", url_status, scope=SCOPE_SCD_QUALIFIER_INJECT
+            self.client,
+            "GET",
+            url_status,
+            scope=SCOPE_SCD_QUALIFIER_INJECT,
+            server_id=self.config.participant_id,
         )
         if version_query.status_code != 200:
             raise QueryError(
@@ -159,7 +172,11 @@ class FlightPlanner:
 
         url_capabilities = "{}/v1/capabilities".format(self.config.injection_base_url)
         capabilities_query = fetch.query_and_describe(
-            self.client, "GET", url_capabilities, scope=SCOPE_SCD_QUALIFIER_INJECT
+            self.client,
+            "GET",
+            url_capabilities,
+            scope=SCOPE_SCD_QUALIFIER_INJECT,
+            server_id=self.config.participant_id,
         )
         if capabilities_query.status_code != 200:
             raise QueryError(
@@ -187,7 +204,12 @@ class FlightPlanner:
         req = ClearAreaRequest(request_id=str(uuid.uuid4()), extent=extent)
         url = f"{self.config.injection_base_url}/v1/clear_area_requests"
         query = fetch.query_and_describe(
-            self.client, "POST", url, scope=SCOPE_SCD_QUALIFIER_INJECT, json=req
+            self.client,
+            "POST",
+            url,
+            scope=SCOPE_SCD_QUALIFIER_INJECT,
+            json=req,
+            server_id=self.config.participant_id,
         )
         if query.status_code != 200:
             raise QueryError(

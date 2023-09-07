@@ -15,6 +15,9 @@ The service providers to evaluate in the report.
 ### observers
 The observers to evaluate in the report.
 
+### dss_instances
+The DSS instances that have been relied upon or tested by the framework.
+
 ## Performance of Display Providers requests test case
 
 ### Performance of /display_data/<flight_id> requests test step
@@ -68,3 +71,14 @@ If one of the Display Provider test participants was found to have sent a query 
 area requested, then that participant will have violated **[astm.f3411.v22a.NET0240](../../../../requirements/astm/f3411/v22a.md)**.
 
 TODO: Implement this check
+
+## Verify https is in use test case
+
+### Verify https is in use test step
+
+Inspects all record queries for their usage of https. If resources such as a service provide, observer or DSS are marked
+as being in "local debug" mode, they may serve requests over https without breaking the test suite.
+
+#### All interactions happen over https check
+
+If non-encrypted interactions such as plaintext queries over http are allowed, **[astm.f3411.v19.NET0220](../../../../requirements/astm/f3411/v19.md)** is not satisfied.

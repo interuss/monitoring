@@ -235,6 +235,7 @@ class RIDObservationEvaluator(object):
                 get_details=True,
                 rid_version=self._rid_version,
                 session=self._dss.client,
+                server_id=self._dss.participant_id,
             )
             for q in sp_observation.queries:
                 self._test_scenario.record_query(q)
