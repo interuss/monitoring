@@ -282,7 +282,6 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             alt_hi,
             polygon=scd.make_polygon(latlngrect=area),
         )
-
         op_intents = query_operational_intents(vol4)
 
         # Check for intersections

@@ -1,44 +1,34 @@
-import functools
 import os
 import datetime
-import copy
-from loguru import logger
-from typing import List, Optional
 
 import flask
 import json
-from typing import Dict
+from loguru import logger
 
-from monitoring.monitorlib.fetch import QueryError, Query, describe_flask_query
-from monitoring.monitorlib.mock_uss_interface.interaction_log import (
-    Interaction,
-    Issue,
-)
 from monitoring.mock_uss import webapp, require_config_value
 from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_DIR
-from flask import Request, Response
+from monitoring.mock_uss.interaction_logging.interactions import (
+    Interaction,
+    QueryDirection,
+)
+from monitoring.monitorlib.clients import QueryHook, query_hooks
+from monitoring.monitorlib.fetch import Query, describe_flask_query, QueryType
 
 require_config_value(KEY_INTERACTIONS_LOG_DIR)
 
 
-def log_interaction(
-    direction: str, type: str, query: Query, issues: Optional[List[Issue]]
-):
-    """
-    Logs the REST calls between Mock USS to SUT
+def log_interaction(direction: QueryDirection, query: Query) -> None:
+    """Logs the REST calls between Mock USS to SUT
     Args:
-        direction: incoming or outgoing
-        method: GET or POST
-        type: Op, Pos or Constr
-    Returns:
-
+        direction: Whether this interaction was initiated or handled by this system.
+        query: Full description of the interaction to log.
     """
-    interaction: Interaction = Interaction(query=query, reported_issues=issues)
+    interaction: Interaction = Interaction(query=query, direction=direction)
     method = query.request.method
-    log_file(f"{direction}_{method}_{type}", interaction)
+    log_file(f"{direction}_{method}", interaction)
 
 
-def log_file(code: str, content: Interaction) -> str:
+def log_file(code: str, content: Interaction) -> None:
     log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]
     n = len(os.listdir(log_path))
     basename = "{:06d}_{}_{}".format(
@@ -47,41 +37,36 @@ def log_file(code: str, content: Interaction) -> str:
     logname = "{}.json".format(basename)
     fullname = os.path.join(log_path, logname)
 
-    dump = copy.deepcopy(content)
     with open(fullname, "w") as f:
-        json.dump(dump, f, indent=2)
+        json.dump(content, f)
 
 
-def log_flask_interaction(request: Request, response: Response):
-    """
-    Logs flask request and response in an interaction
-    Args:
-        function
+class InteractionLoggingHook(QueryHook):
+    def on_query(self, query: Query) -> None:
+        # TODO: Make this configurable instead of hardcoding exactly these query types
+        if "query_type" in query and query.query_type in {
+            QueryType.F3548v21USSGetOperationalIntentDetails,
+            QueryType.F3548v21USSNotifyOperationalIntentDetailsChanged,
+        }:
+            log_interaction(QueryDirection.Outgoing, query)
 
-    Returns:
-        function response
-    """
-    method = request.method
-    url = request.url
-    if "/uss/v1/" not in url:
-        return
-    type = ""
-    if "telemetry" in url:
-        type = "Pos"
-    elif "operational_intent" in url:
-        type = "Op"
-    elif "constraint" in url:
-        type = "Constr"
-    else:
-        type = "Unknown"
-    st = datetime.datetime.utcnow()
-    rt = (datetime.datetime.utcnow() - st).total_seconds()
-    logger.debug(f"res - {str(response)}")
-    query = describe_flask_query(request, response, rt)
-    issues = []
-    if query.status_code != 200 or query.status_code != 204:
-        issue = Issue(description=response.get_data(as_text=True))
-        issues.append(issue)
-    interaction = Interaction(query=query, reported_issues=issues)
-    log_file(f"incoming_{method}_{type}", interaction)
+
+query_hooks.append(InteractionLoggingHook())
+
+
+# https://stackoverflow.com/a/67856316
+@webapp.before_request
+def interaction_log_before_request():
+    flask.Flask.custom_profiler = {"start": datetime.datetime.utcnow()}
+
+
+@webapp.after_request
+def interaction_log_after_request(response):
+    elapsed_s = (
+        datetime.datetime.utcnow() - flask.current_app.custom_profiler["start"]
+    ).total_seconds()
+    # TODO: Make this configurable instead of hardcoding exactly these query types
+    if "/uss/v1/" in flask.request.url_rule.rule:
+        query = describe_flask_query(flask.request, response, elapsed_s)
+        log_interaction(QueryDirection.Incoming, query)
     return response

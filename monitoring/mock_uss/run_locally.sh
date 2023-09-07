@@ -31,15 +31,24 @@ elif [[ "$DC_COMMAND" == "debug" ]]; then
   export DEBUG_ON=1
 fi
 
-mkdir -p output/tracer
 UID_GID="$(id -u):$(id -g)"
 export UID_GID
 echo "DC_COMMAND is ${DC_COMMAND}"
-if [[ "$DC_COMMAND" == up* ]]; then
-  echo "Cleaning up past tracer logs"
-  # Prevent logs from building up too much by default
-  find "output/tracer" -name "*.yaml" -exec rm {} \;
-fi
+
+declare -a log_folders=( \
+    "output/tracer" \
+    "output/scdsc_a_interaction_logs" \
+    "output/scdsc_interaction_logs" \
+  )
+for log_folder in "${log_folders[@]}"; do
+  mkdir -p $log_folder
+  if [[ "$DC_COMMAND" == up* ]]; then
+    echo "Cleaning up past logs in $log_folder"
+    # Prevent logs from building up too much by default
+    find "$log_folder" -name "*.yaml" -exec rm {} \;
+    find "$log_folder" -name "*.json" -exec rm {} \;
+  fi
+done
 
 # shellcheck disable=SC2086
 docker compose -f docker-compose.yaml -p mocks $DC_COMMAND $DC_OPTIONS

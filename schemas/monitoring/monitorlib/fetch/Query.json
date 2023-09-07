@@ -1,22 +1,66 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/fetch/Query.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.monitorlib.fetch.Query, as defined in monitoring/monitorlib/fetch/__init__.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "query_type": {
+      "description": "If specified, the recognized type of this query.",
+      "enum": [
+        "astm.f3411.v22a.sp.flights",
+        "astm.f3411.v19.sp.flights",
+        "astm.f3411.v22a.sp.flight_details",
+        "astm.f3411.v19.sp.flight_details",
+        "astm.f3548.v21.dss.queryOperationalIntentReferences",
+        "astm.f3548.v21.dss.getOperationalIntentReference",
+        "astm.f3548.v21.dss.createOperationalIntentReference",
+        "astm.f3548.v21.dss.updateOperationalIntentReference",
+        "astm.f3548.v21.dss.deleteOperationalIntentReference",
+        "astm.f3548.v21.dss.queryConstraintReferences",
+        "astm.f3548.v21.dss.getConstraintReference",
+        "astm.f3548.v21.dss.createConstraintReference",
+        "astm.f3548.v21.dss.updateConstraintReference",
+        "astm.f3548.v21.dss.deleteConstraintReference",
+        "astm.f3548.v21.dss.querySubscriptions",
+        "astm.f3548.v21.dss.getSubscription",
+        "astm.f3548.v21.dss.createSubscription",
+        "astm.f3548.v21.dss.updateSubscription",
+        "astm.f3548.v21.dss.deleteSubscription",
+        "astm.f3548.v21.dss.makeDssReport",
+        "astm.f3548.v21.uss.setUssAvailability",
+        "astm.f3548.v21.uss.getUssAvailability",
+        "astm.f3548.v21.uss.getOperationalIntentDetails",
+        "astm.f3548.v21.uss.getOperationalIntentTelemetry",
+        "astm.f3548.v21.uss.notifyOperationalIntentDetailsChanged",
+        "astm.f3548.v21.uss.getConstraintDetails",
+        "astm.f3548.v21.uss.notifyConstraintDetailsChanged",
+        "astm.f3548.v21.uss.makeUssReport"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "request": {
+      "$ref": "RequestDescription.json"
     },
     "response": {
       "$ref": "ResponseDescription.json"
     },
-    "request": {
-      "$ref": "RequestDescription.json"
+    "server_id": {
+      "description": "If specified, identifier of the USS/participant hosting the server involved in this query.",
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/fetch/Query.json",
-  "description": "monitoring.monitorlib.fetch.Query, as defined in monitoring/monitorlib/fetch/__init__.py",
   "required": [
     "request",
     "response"
-  ]
+  ],
+  "type": "object"
 }
