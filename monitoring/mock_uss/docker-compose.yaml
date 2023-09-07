@@ -18,7 +18,9 @@ services:
       - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
       - MOCK_USS_TOKEN_AUDIENCE=scdsc.uss1.localutm,localhost,host.docker.internal
       - MOCK_USS_BASE_URL=http://scdsc.uss1.localutm
-      - MOCK_USS_SERVICES=scdsc
+      # TODO: remove interaction_logging once dedicated mock_uss is involved in tests
+      - MOCK_USS_SERVICES=scdsc,interaction_logging
+      - MOCK_USS_INTERACTIONS_LOG_DIR=output/scdsc_a_interaction_logs
       - MOCK_USS_PORT=80
     expose:
       - 80
@@ -26,6 +28,8 @@ services:
       - 8074:80
     volumes:
       - ../../build/test-certs:/var/test-certs:ro
+      - ./output/scdsc_a_interaction_logs:/app/monitoring/mock_uss/output/scdsc_a_interaction_logs
+    user: "${UID_GID}"
     restart: always
     networks:
       - interop_ecosystem_network
@@ -211,6 +215,35 @@ services:
       - interop_ecosystem_network
     extra_hosts:
       - host.docker.internal:host-gateway
+
+  mock_uss_scdsc_interaction_log:
+    container_name: mock_uss_scdsc_interaction_log
+    hostname: scdsc.log.uss6.localutm
+    image: interuss/monitoring
+    command: mock_uss/start.sh
+    environment:
+      - MOCK_USS_AUTH_SPEC=DummyOAuth(http://oauth.authority.localutm:8085/token,uss6)
+      - MOCK_USS_DSS_URL=http://dss.uss1.localutm
+      - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
+      - MOCK_USS_TOKEN_AUDIENCE=scdsc.log.uss6.localutm,localhost,host.docker.internal
+      - MOCK_USS_BASE_URL=http://scdsc.log.uss6.localutm
+      - MOCK_USS_SERVICES=scdsc,interaction_logging
+      - MOCK_USS_INTERACTIONS_LOG_DIR=output/scdsc_interaction_logs
+      - MOCK_USS_PORT=80
+    expose:
+      - 80
+    ports:
+      - 8095:80
+    volumes:
+      - ../../build/test-certs:/var/test-certs:ro
+      - ./output/scdsc_interaction_logs:/app/monitoring/mock_uss/output/scdsc_interaction_logs
+    user: "${UID_GID}"
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
 
   # atproxy is currently disabled to troubleshoot occasional connection issues
 #  atproxy:
