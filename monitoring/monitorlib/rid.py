@@ -182,6 +182,15 @@ class RIDVersion(str, Enum):
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
+    @property
+    def dss_max_subscriptions_per_area(self) -> int:
+        if self == RIDVersion.f3411_19:
+            return v19.constants.NetDSSMaxSubscriptionPerArea
+        elif self == RIDVersion.f3411_22a:
+            return v22a.constants.NetDSSMaxSubscriptionPerArea
+        else:
+            raise ValueError("Unsupported RID version '{}'".format(self))
+
     def flights_url_of(self, base_url: str) -> str:
         if self == RIDVersion.f3411_19:
             return base_url

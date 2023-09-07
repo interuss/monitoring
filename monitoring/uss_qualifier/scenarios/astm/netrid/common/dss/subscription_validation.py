@@ -58,6 +58,7 @@ class SubscriptionValidation(GenericTestScenario):
         self.begin_test_scenario()
 
         self._setup_case()
+
         self._subscription_limitations_case()
 
         self.end_test_scenario()
@@ -69,38 +70,75 @@ class SubscriptionValidation(GenericTestScenario):
 
         self.end_test_case()
 
-    def _clean_any_sub(self):
-        with self.check(
-            "Successful subscription query and cleanup", [self._dss.participant_id]
-        ) as check:
-            fetched = self._dss_wrapper.search_subs(
-                check, self._isa.footprint.to_vertices()
-            )
-
-            for sub_id in fetched.subscriptions.keys():
-                self._dss_wrapper.cleanup_sub(check, sub_id=sub_id)
+    def _clean_any_sub(self, check: PendingCheck):
+        fetched = self._dss_wrapper.search_subs(
+            check, self._isa.footprint.to_vertices()
+        )
+        for sub_id in fetched.subscriptions.keys():
+            self._dss_wrapper.cleanup_sub(check, sub_id=sub_id)
 
     def _ensure_clean_workspace_step(self):
         self.begin_test_step("Ensure clean workspace")
 
-        self._clean_any_sub()
+        with self.check(
+            "Successful subscription query and cleanup", [self._dss.participant_id]
+        ) as check:
+            self._clean_any_sub(check)
 
         self.end_test_step()
 
     def _subscription_limitations_case(self):
         self.begin_test_case("Subscription limitations")
-        self.begin_test_step("Subscription limitations")
+
+        self.begin_test_step("Subscription duration limitations")
 
         self._create_too_long_subscription()
 
         self.end_test_step()
+
+        self.begin_test_step("Subscription quantity limitations")
+
+        self._create_too_many_subscriptions()
+
+        self.end_test_step()
         self.end_test_case()
+
+    def _create_too_many_subscriptions(self):
+
+        with self.check(
+            "Create up to the maximum allowed number of subscriptions in an area",
+            [self._dss.participant_id],
+        ) as check:
+            self._clean_any_sub(check)
+            # Create 10 subscriptions with different ID's
+            for i in range(self._dss.rid_version.dss_max_subscriptions_per_area):
+                sub_id = f"{self._sub_id[:-3]}1{i:02d}"
+                self._dss_wrapper.put_sub(
+                    check,
+                    sub_id=sub_id,
+                    **self._default_subscription_params(datetime.timedelta(minutes=30)),
+                )
+
+        with self.check(
+            "Enforce maximum number of subscriptions for an area",
+            [self._dss.participant_id],
+        ) as check:
+            self._dss_wrapper.put_sub_expect_response_code(
+                check=check,
+                sub_id=f"{self._sub_id[:-3]}200",
+                expected_error_codes={
+                    400,  # Expecting a 429 but a 400 is acceptable too
+                    429,
+                },
+                **self._default_subscription_params(datetime.timedelta(minutes=30)),
+            )
 
     def _create_too_long_subscription(self):
         with self.check(
             "Enforce maximum duration of subscriptions for an area",
             [self._dss.participant_id],
         ) as check:
+            self._clean_any_sub(check)
             # Sub with this ID does not exist and too long: we expect either a failure, or
             # that any subscription that is effectively created to be truncated at 24 hours.
             creation_attempt = self._dss_wrapper.put_sub_expect_response_code(
@@ -173,6 +211,9 @@ class SubscriptionValidation(GenericTestScenario):
     def cleanup(self):
         self.begin_cleanup()
 
-        self._clean_any_sub()
+        with self.check(
+            "Successful subscription query and cleanup", [self._dss.participant_id]
+        ) as check:
+            self._clean_any_sub(check)
 
         self.end_cleanup()
