@@ -41,7 +41,7 @@ declare -a log_folders=( \
     "output/scdsc_interaction_logs" \
   )
 for log_folder in "${log_folders[@]}"; do
-  mkdir -p $log_folder
+  mkdir -p "$log_folder"
   if [[ "$DC_COMMAND" == up* ]]; then
     echo "Cleaning up past logs in $log_folder"
     # Prevent logs from building up too much by default
