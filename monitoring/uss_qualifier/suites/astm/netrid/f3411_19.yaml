@@ -15,19 +15,7 @@ actions:
       specification:
         action_to_repeat:
           test_suite:
-            suite_definition:
-              name: DSS instance validator
-              resources:
-                dss: resources.astm.f3411.DSSInstanceResource
-                id_generator: resources.interuss.IDGeneratorResource
-                isa: resources.netrid.ServiceAreaResource
-              actions:
-                - test_scenario:
-                    scenario_type: scenarios.astm.netrid.v22a.dss.SubscriptionValidation
-                    resources:
-                      dss: dss
-                      id_generator: id_generator
-                      isa: isa
+            suite_type: suites.astm.netrid.f3411_19.dss_probing
             resources:
               dss: dss
               id_generator: id_generator

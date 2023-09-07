@@ -26,6 +26,7 @@ OTHER_ARGS=${@:2}
 if [ "$CONFIG_NAME" == "ALL" ]; then
   declare -a all_configurations=( \
     "configurations.dev.noop" \
+    "configurations.dev.dss_probing" \
     "configurations.dev.geoawareness_cis" \
     "configurations.dev.generate_rid_test_data" \
     "configurations.dev.geospatial_comprehension" \

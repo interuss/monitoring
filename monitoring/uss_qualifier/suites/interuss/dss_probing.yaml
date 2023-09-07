@@ -1,0 +1,21 @@
+name: DSS instance probing
+resources:
+  netrid_dss_instance_v19: resources.astm.f3411.DSSInstanceResource
+  netrid_dss_instance_v22a: resources.astm.f3411.DSSInstanceResource
+  id_generator: resources.interuss.IDGeneratorResource
+  isa: resources.netrid.ServiceAreaResource
+actions:
+  - test_suite:
+      suite_type: suites.astm.netrid.f3411_19.dss_probing
+      resources:
+        dss: netrid_dss_instance_v19
+        id_generator: id_generator
+        isa: isa
+    on_failure: Continue
+  - test_suite:
+      suite_type: suites.astm.netrid.f3411_22a.dss_probing
+      resources:
+        dss: netrid_dss_instance_v22a
+        id_generator: id_generator
+        isa: isa
+    on_failure: Continue
