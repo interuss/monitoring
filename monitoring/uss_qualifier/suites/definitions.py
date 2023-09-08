@@ -1,8 +1,11 @@
 from __future__ import annotations
 from enum import Enum
-from typing import Dict, List, Optional, TypeVar
+from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict
+from monitoring.uss_qualifier.action_generators.definitions import (
+    ActionGeneratorDefinition,
+)
 
 from monitoring.uss_qualifier.fileio import load_dict_with_references, FileReference
 from monitoring.uss_qualifier.reports.capability_definitions import (
@@ -51,33 +54,6 @@ class TestSuiteDeclaration(ImplicitDict):
             return self.suite_type
         else:
             return "<in-configuration definition>"
-
-
-GeneratorTypeName = str
-"""This plain string represents a type of action generator, expressed as a Python class name qualified relative to the `uss_qualifier.action_generators` module"""
-
-
-ActionGeneratorSpecificationType = TypeVar(
-    "ActionGeneratorSpecificationType", bound=ImplicitDict
-)
-
-
-class ActionGeneratorDefinition(ImplicitDict):
-    generator_type: GeneratorTypeName
-    """Type of action generator"""
-
-    specification: dict = {}
-    """Specification of action generator; format is the ActionGeneratorSpecificationType that corresponds to the `generator_type`"""
-
-    resources: Dict[ResourceID, ResourceID]
-    """Mapping of the ID a resource will be known by in the child action -> the ID a resource is known by in the parent test suite.
-
-    The child action resource ID <key> is supplied by the parent test suite resource ID <value>.
-
-    Resources not included in this field will not be available to the child action.
-
-    If the parent resource ID is suffixed with ? then the resource will not be required (and will not be populated for the child action when not present in the parent)
-    """
 
 
 class ReactionToFailure(str, Enum):
@@ -168,7 +144,7 @@ class TestSuiteDefinition(ImplicitDict):
     @staticmethod
     def load_from_declaration(
         declaration: TestSuiteDeclaration,
-    ) -> "TestSuiteDefinition":
+    ) -> TestSuiteDefinition:
         if "suite_type" in declaration:
             return ImplicitDict.parse(
                 load_dict_with_references(declaration.suite_type), TestSuiteDefinition

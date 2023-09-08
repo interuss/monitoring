@@ -1,42 +1,33 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/suites/definitions/TestSuiteActionDeclaration.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "Defines a step in the sequence of things to do for a test suite.\n\nExactly one of `test_scenario`, `test_suite`, or `action_generator` must be specified.\n\nmonitoring.uss_qualifier.suites.definitions.TestSuiteActionDeclaration, as defined in monitoring/uss_qualifier/suites/definitions.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "action_generator": {
+      "description": "If this field is populated, declaration of a generator that will produce 0 or more test suite actions",
       "oneOf": [
         {
           "type": "null"
         },
         {
-          "$ref": "ActionGeneratorDefinition.json"
+          "$ref": "../../action_generators/definitions/ActionGeneratorDefinition.json"
         }
-      ],
-      "description": "If this field is populated, declaration of a generator that will produce 0 or more test suite actions"
-    },
-    "test_suite": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "TestSuiteDeclaration.json"
-        }
-      ],
-      "description": "If this field is populated, declaration of the test suite to run"
+      ]
     },
     "on_failure": {
-      "type": "string",
+      "description": "What to do if this action fails",
       "enum": [
         "Continue",
         "Abort"
       ],
-      "description": "What to do if this action fails"
+      "type": "string"
     },
     "test_scenario": {
+      "description": "If this field is populated, declaration of the test scenario to run",
       "oneOf": [
         {
           "type": "null"
@@ -44,10 +35,19 @@
         {
           "$ref": "../../scenarios/definitions/TestScenarioDeclaration.json"
         }
-      ],
-      "description": "If this field is populated, declaration of the test scenario to run"
+      ]
+    },
+    "test_suite": {
+      "description": "If this field is populated, declaration of the test suite to run",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TestSuiteDeclaration.json"
+        }
+      ]
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/suites/definitions/TestSuiteActionDeclaration.json",
-  "description": "Defines a step in the sequence of things to do for a test suite.\n\nExactly one of `test_scenario`, `test_suite`, or `action_generator` must be specified.\n\nmonitoring.uss_qualifier.suites.definitions.TestSuiteActionDeclaration, as defined in monitoring/uss_qualifier/suites/definitions.py"
+  "type": "object"
 }
