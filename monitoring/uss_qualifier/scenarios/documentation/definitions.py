@@ -31,6 +31,7 @@ class TestCaseDocumentation(ImplicitDict):
 class TestScenarioDocumentation(ImplicitDict):
     name: str
     url: Optional[str] = None
+    local_path: str
     resources: Optional[List[str]]
     cases: List[TestCaseDocumentation]
     cleanup: Optional[TestStepDocumentation]

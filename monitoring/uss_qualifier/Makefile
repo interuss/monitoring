@@ -4,6 +4,7 @@ lint: validate-docs python-lint shell-lint
 .PHONY: validate-docs
 validate-docs:
 	./scripts/validate_test_definitions.sh
+	./scripts/format_test_suite_docs.sh --lint
 
 .PHONY: python-lint
 python-lint:
@@ -20,6 +21,7 @@ format: format-documentation
 .PHONY: format-documentation
 format-documentation:
 	./scripts/format_test_documentation.sh
+	./scripts/format_test_suite_docs.sh
 
 .PHONY: unit_test
 unit_test:
