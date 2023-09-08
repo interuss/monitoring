@@ -5,7 +5,11 @@ from typing import Iterator, Optional
 
 from implicitdict import ImplicitDict
 
-from monitoring.uss_qualifier.fileio import load_dict_with_references, get_package_name
+from monitoring.uss_qualifier.fileio import (
+    load_dict_with_references,
+    get_package_name,
+    resolve_filename,
+)
 from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
 from monitoring.uss_qualifier.scenarios.scenario import get_scenario_type_by_name
 from monitoring.uss_qualifier.suites.definitions import TestSuiteDefinition, ActionType
@@ -54,8 +58,17 @@ def make_test_suite_documentation(test_suite_yaml_file: str) -> str:
             )
         elif action_type == ActionType.TestSuite:
             if "suite_type" in action.test_suite and action.test_suite.suite_type:
-                # TODO: Improve information about referenced test suite
-                lines.append(f"{i + 1}. Suite: `{action.test_suite.suite_type}`")
+                suite_def = ImplicitDict.parse(
+                    load_dict_with_references(action.test_suite.suite_type),
+                    TestSuiteDefinition,
+                )
+                suite_path = resolve_filename(action.test_suite.suite_type)
+                suite_rel_path = os.path.relpath(suite_path, start=base_path)
+                doc_path = os.path.splitext(suite_path)[0] + ".md"
+                doc_rel_path = os.path.relpath(doc_path, start=base_path)
+                lines.append(
+                    f"{i + 1}. Suite: [{suite_def.name}]({doc_rel_path}) ([`{action.test_suite.suite_type}`]({suite_rel_path}))"
+                )
             elif "suite_definition" in action.test_suite and action.suite_definition:
                 # TODO: Generate additional test suite documentation for in-suite suite definition
                 lines.append(f"{i + 1}. Suite: <in-suite definition>")

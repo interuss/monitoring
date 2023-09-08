@@ -4,5 +4,5 @@
 
 ## Actions
 
-1. Suite: `suites.uspace.flight_auth`
-2. Suite: `suites.uspace.network_identification`
+1. Suite: [U-space flight authorisation](flight_auth.md) ([`suites.uspace.flight_auth`](flight_auth.yaml))
+2. Suite: [U-Space network identification](network_identification.md) ([`suites.uspace.network_identification`](network_identification.yaml))

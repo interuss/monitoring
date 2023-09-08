@@ -5,5 +5,5 @@
 ## Actions
 
 1. Scenario: [Start message signing](../../../scenarios/faa/uft/message_signing_start.md) ([`scenarios.faa.uft.StartMessageSigningReport`](../../../scenarios/faa/uft/message_signing_start.py))
-2. Suite: `suites.astm.utm.f3548_21`
+2. Suite: [ASTM F3548-21](../../astm/utm/f3548_21.md) ([`suites.astm.utm.f3548_21`](../../astm/utm/f3548_21.yaml))
 3. Scenario: [Finalize message signing](../../../scenarios/faa/uft/message_signing_finalize.md) ([`scenarios.faa.uft.FinalizeMessageSigningReport`](../../../scenarios/faa/uft/message_signing_finalize.py))

@@ -4,5 +4,5 @@
 
 ## Actions
 
-1. Suite: `suites.astm.utm.f3548_21`
+1. Suite: [ASTM F3548-21](../astm/utm/f3548_21.md) ([`suites.astm.utm.f3548_21`](../astm/utm/f3548_21.yaml))
 2. Action generator: `action_generators.flight_planning.FlightPlannerCombinations`
