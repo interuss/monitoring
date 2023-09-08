@@ -54,7 +54,7 @@ jobs:
     with:
       name: uss_qualifier
       script: |
-          CONFIG_NAME="" \
+        export CONFIG_NAME="" \
           USS_QUALIFIER_STOP_FAST=true
 
         cd monitoring/uss_qualifier
@@ -66,7 +66,7 @@ jobs:
     with:
       name: uss_qualifier_F3411-19
       script: |
-          CONFIG_NAME=configurations.dev.netrid_v19 \
+        export CONFIG_NAME=configurations.dev.netrid_v19 \
           USS_QUALIFIER_STOP_FAST=true
 
         cd monitoring/uss_qualifier
