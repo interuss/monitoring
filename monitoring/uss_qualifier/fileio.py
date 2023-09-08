@@ -1,4 +1,3 @@
-import hashlib
 import json
 import os
 from typing import Tuple, Optional, Dict, List, Union
@@ -27,6 +26,8 @@ Allowed extensions:
   * .kml (content)
 """
 
+_package_root = os.path.dirname(__file__)
+
 
 def resolve_filename(data_file: FileReference) -> str:
     if data_file.startswith(FILE_PREFIX):
@@ -37,7 +38,7 @@ def resolve_filename(data_file: FileReference) -> str:
         return data_file
     else:
         # Package-based name (without extension)
-        path_parts = [os.path.dirname(__file__)]
+        path_parts = [_package_root]
         path_parts += data_file.split(".")
         file_name = None
 
@@ -50,6 +51,23 @@ def resolve_filename(data_file: FileReference) -> str:
             raise NotImplementedError(
                 f"Cannot find a suitable file to load for {data_file}"
             )
+
+
+def get_package_name(local_file_path: str) -> FileReference:
+    """Get the Python-package style name of the specified file path on the local system.
+
+    Args:
+        local_file_path: Path to YAML or JSON file on the local system.
+
+    Returns: Python-package style name; e.g., suites.astm.netrid.f3411_19
+    """
+    base, ext = os.path.splitext(local_file_path)
+    if ext.lower() not in {".yaml", ".json"}:
+        raise ValueError(
+            f"Package name does not exist for non-dictionary file {local_file_path}"
+        )
+    rel_path = os.path.relpath(base, start=_package_root)
+    return ".".join(os.path.normpath(rel_path).split(os.path.sep))
 
 
 def _load_content_from_file_name(file_name: str) -> str:

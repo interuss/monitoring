@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
 import inspect
-from typing import Callable, Dict, List, Optional, TypeVar, Union, Set
+from typing import Callable, Dict, List, Optional, TypeVar, Union, Set, Type
 
 import arrow
 from implicitdict import StringBasedDateTime
@@ -159,6 +159,20 @@ class PendingCheck(object):
         self._step_report.passed_checks.append(passed_check)
 
 
+def get_scenario_type_by_name(scenario_type_name: str) -> Type:
+    inspection.import_submodules(scenarios_module)
+    scenario_type = inspection.get_module_object_by_name(
+        parent_module=uss_qualifier_module, object_name=scenario_type_name
+    )
+    if not issubclass(scenario_type, TestScenario):
+        raise NotImplementedError(
+            "Scenario type {} is not a subclass of the TestScenario base class".format(
+                scenario_type.__name__
+            )
+        )
+    return scenario_type
+
+
 class GenericTestScenario(ABC):
     """Generic Test Scenario allowing mutualization of test scenario implementation.
 
@@ -185,16 +199,7 @@ class GenericTestScenario(ABC):
         declaration: TestScenarioDeclaration,
         resource_pool: Dict[ResourceID, ResourceTypeName],
     ) -> "TestScenario":
-        inspection.import_submodules(scenarios_module)
-        scenario_type = inspection.get_module_object_by_name(
-            parent_module=uss_qualifier_module, object_name=declaration.scenario_type
-        )
-        if not issubclass(scenario_type, TestScenario):
-            raise NotImplementedError(
-                "Scenario type {} is not a subclass of the TestScenario base class".format(
-                    scenario_type.__name__
-                )
-            )
+        scenario_type = get_scenario_type_by_name(declaration.scenario_type)
 
         constructor_signature = inspect.signature(scenario_type.__init__)
         constructor_args = {}

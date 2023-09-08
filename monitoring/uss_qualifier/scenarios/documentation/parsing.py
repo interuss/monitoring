@@ -296,6 +296,7 @@ def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
         "cases": test_cases,
         "resources": resources,
         "url": url,
+        "local_path": os.path.abspath(doc_filename),
     }
     if cleanup is not None:
         kwargs["cleanup"] = cleanup
