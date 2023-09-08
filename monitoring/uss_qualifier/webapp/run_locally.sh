@@ -10,7 +10,10 @@ else
 fi
 cd "${BASEDIR}/../../.." || exit 1
 
-monitoring/build.sh || exit 1
+if [ -z "${DO_NOT_BUILD_MONITORING}" ]; then
+  monitoring/build.sh || exit 1
+  export DO_NOT_BUILD_MONITORING=true
+fi
 
 # Run monitoring/mock_uss/run_locally_ridsp.sh and
 # monitoring/mock_uss/run_locally_riddp.sh to produce a mock RID system

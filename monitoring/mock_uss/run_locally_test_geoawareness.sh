@@ -3,6 +3,7 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 if [ -z "${DO_NOT_BUILD_MONITORING}" ]; then
   "${SCRIPT_DIR}/../build.sh" || exit 1
+  export DO_NOT_BUILD_MONITORING=true
 fi
 
 PUBLIC_KEY="/var/test-certs/auth2.pem"
