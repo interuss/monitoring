@@ -3,6 +3,12 @@ from typing import Dict, List, Optional
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.inspection import fullname
+from monitoring.uss_qualifier.action_generators.documentation.definitions import (
+    PotentialGeneratedAction,
+)
+from monitoring.uss_qualifier.action_generators.documentation.documentation import (
+    list_potential_actions_for_action_declaration,
+)
 from monitoring.uss_qualifier.reports.report import TestSuiteActionReport
 from monitoring.uss_qualifier.resources.astm.f3411 import (
     DSSInstanceResource,
@@ -33,6 +39,14 @@ class ForEachDSS(ActionGenerator[ForEachDSSSpecification]):
     _actions: List[TestSuiteAction]
     _current_action: int
     _failure_reaction: ReactionToFailure
+
+    @classmethod
+    def list_potential_actions(
+        cls, specification: ForEachDSSSpecification
+    ) -> List[PotentialGeneratedAction]:
+        return list_potential_actions_for_action_declaration(
+            specification.action_to_repeat
+        )
 
     def __init__(
         self,

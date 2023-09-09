@@ -1,18 +1,37 @@
 import glob
 import inspect
 import os
-from typing import Iterator, Optional
+from typing import Iterator, Optional, List, Union
 
 from implicitdict import ImplicitDict
+from monitoring.uss_qualifier.action_generators.action_generator import (
+    action_generator_type_from_name,
+)
+from monitoring.uss_qualifier.action_generators.definitions import (
+    ActionGeneratorDefinition,
+)
+from monitoring.uss_qualifier.action_generators.documentation.definitions import (
+    PotentialGeneratedAction,
+    PotentialActionGeneratorAction,
+)
+from monitoring.uss_qualifier.action_generators.documentation.documentation import (
+    list_potential_actions_for_action_generator_definition,
+)
 
 from monitoring.uss_qualifier.fileio import (
     load_dict_with_references,
     get_package_name,
     resolve_filename,
+    FileReference,
 )
+from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
 from monitoring.uss_qualifier.scenarios.scenario import get_scenario_type_by_name
-from monitoring.uss_qualifier.suites.definitions import TestSuiteDefinition, ActionType
+from monitoring.uss_qualifier.suites.definitions import (
+    TestSuiteDefinition,
+    ActionType,
+    TestSuiteActionDeclaration,
+)
 
 
 def find_test_suites(start_path: Optional[str] = None) -> Iterator[str]:
@@ -45,46 +64,91 @@ def make_test_suite_documentation(test_suite_yaml_file: str) -> str:
     lines.append("")
     base_path = os.path.dirname(test_suite_yaml_file)
     for i, action in enumerate(suite_def.actions):
-        action_type = action.get_action_type()
-        if action_type == ActionType.TestScenario:
-            scenario_type = get_scenario_type_by_name(
-                action.test_scenario.scenario_type
-            )
-            py_rel_path = os.path.relpath(inspect.getfile(scenario_type), base_path)
-            scenario_doc = get_documentation(scenario_type)
-            doc_rel_path = os.path.relpath(scenario_doc.local_path, start=base_path)
-            lines.append(
-                f"{i + 1}. Scenario: [{scenario_doc.name}]({doc_rel_path}) ([`{action.test_scenario.scenario_type}`]({py_rel_path}))"
-            )
-        elif action_type == ActionType.TestSuite:
-            if "suite_type" in action.test_suite and action.test_suite.suite_type:
-                suite_def = ImplicitDict.parse(
-                    load_dict_with_references(action.test_suite.suite_type),
-                    TestSuiteDefinition,
-                )
-                suite_path = resolve_filename(action.test_suite.suite_type)
-                suite_rel_path = os.path.relpath(suite_path, start=base_path)
-                doc_path = os.path.splitext(suite_path)[0] + ".md"
-                doc_rel_path = os.path.relpath(doc_path, start=base_path)
-                lines.append(
-                    f"{i + 1}. Suite: [{suite_def.name}]({doc_rel_path}) ([`{action.test_suite.suite_type}`]({suite_rel_path}))"
-                )
-            elif "suite_definition" in action.test_suite and action.suite_definition:
-                # TODO: Generate additional test suite documentation for in-suite suite definition
-                lines.append(f"{i + 1}. Suite: <in-suite definition>")
-            else:
-                raise ValueError(
-                    f"Test suite action {i + 1} missing suite type or definition in {test_suite_yaml_file}"
-                )
-        elif action_type == ActionType.ActionGenerator:
-            # TODO: Add documentation for action generators
-            lines.append(
-                f"{i + 1}. Action generator: `{action.action_generator.generator_type}`"
-            )
-        else:
-            raise NotImplementedError(
-                f"Unsupported test suite action type: {action_type}"
-            )
+        lines.extend(render_action(action, i + 1, base_path, 0))
 
     lines.append("")
     return "\n".join(lines)
+
+
+def render_scenario(
+    scenario_type_name: TestScenarioTypeName, i: int, base_path: str, indent: int
+) -> List[str]:
+    lines = []
+    scenario_type = get_scenario_type_by_name(scenario_type_name)
+    py_rel_path = os.path.relpath(inspect.getfile(scenario_type), base_path)
+    scenario_doc = get_documentation(scenario_type)
+    doc_rel_path = os.path.relpath(scenario_doc.local_path, start=base_path)
+    lines.append(
+        f"{' ' * indent}{i}. Scenario: [{scenario_doc.name}]({doc_rel_path}) ([`{scenario_type_name}`]({py_rel_path}))"
+    )
+    return lines
+
+
+def render_suite_by_type(
+    suite_type: FileReference, i: int, base_path: str, indent: int
+) -> List[str]:
+    lines = []
+    suite_def = ImplicitDict.parse(
+        load_dict_with_references(suite_type),
+        TestSuiteDefinition,
+    )
+    suite_path = resolve_filename(suite_type)
+    suite_rel_path = os.path.relpath(suite_path, start=base_path)
+    doc_path = os.path.splitext(suite_path)[0] + ".md"
+    doc_rel_path = os.path.relpath(doc_path, start=base_path)
+    lines.append(
+        f"{' ' * indent}{i}. Suite: [{suite_def.name}]({doc_rel_path}) ([`{suite_type}`]({suite_rel_path}))"
+    )
+    return lines
+
+
+def render_action_generator(
+    generator_def: Union[ActionGeneratorDefinition, PotentialActionGeneratorAction],
+    i: int,
+    base_path: str,
+    indent: int,
+) -> List[str]:
+    lines = []
+    action_generator_type = action_generator_type_from_name(
+        generator_def.generator_type
+    )
+    py_rel_path = os.path.relpath(
+        inspect.getfile(action_generator_type), start=base_path
+    )
+    lines.append(
+        f"{' ' * indent}{i}. Action generator: [`{generator_def.generator_type}`]({py_rel_path})"
+    )
+    potential_actions = list_potential_actions_for_action_generator_definition(
+        generator_def
+    )
+    for j, potential_action in enumerate(potential_actions):
+        lines.extend(render_action(potential_action, j + 1, base_path, indent + 4))
+    return lines
+
+
+def render_action(
+    action: Union[TestSuiteActionDeclaration, PotentialGeneratedAction],
+    i: int,
+    base_path: str,
+    indent: int,
+) -> List[str]:
+    action_type = action.get_action_type()
+    if action_type == ActionType.TestScenario:
+        return render_scenario(action.test_scenario.scenario_type, i, base_path, indent)
+    elif action_type == ActionType.TestSuite:
+        if "suite_type" in action.test_suite and action.test_suite.suite_type:
+            return render_suite_by_type(
+                action.test_suite.suite_type, i, base_path, indent
+            )
+        elif (
+            "suite_definition" in action.test_suite
+            and action.test_suite.suite_definition
+        ):
+            # TODO: Generate additional test suite documentation for in-suite suite definition
+            return [f"{' ' * indent}{i}. Suite: <in-suite definition>"]
+        else:
+            raise ValueError(f"Test suite action {i} missing suite type or definition")
+    elif action_type == ActionType.ActionGenerator:
+        return render_action_generator(action.action_generator, i, base_path, indent)
+    else:
+        raise NotImplementedError(f"Unsupported test suite action type: {action_type}")

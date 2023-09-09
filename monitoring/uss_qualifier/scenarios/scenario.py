@@ -24,7 +24,10 @@ from monitoring.uss_qualifier.reports.report import (
     ParticipantID,
     PassedCheck,
 )
-from monitoring.uss_qualifier.scenarios.definitions import TestScenarioDeclaration
+from monitoring.uss_qualifier.scenarios.definitions import (
+    TestScenarioDeclaration,
+    TestScenarioTypeName,
+)
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestScenarioDocumentation,
     TestCaseDocumentation,
@@ -159,7 +162,7 @@ class PendingCheck(object):
         self._step_report.passed_checks.append(passed_check)
 
 
-def get_scenario_type_by_name(scenario_type_name: str) -> Type:
+def get_scenario_type_by_name(scenario_type_name: TestScenarioTypeName) -> Type:
     inspection.import_submodules(scenarios_module)
     scenario_type = inspection.get_module_object_by_name(
         parent_module=uss_qualifier_module, object_name=scenario_type_name
