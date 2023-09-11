@@ -10,6 +10,8 @@ import monitoring
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib import versioning
 from monitoring.monitorlib.inspection import fullname, get_module_object_by_name
+from monitoring.uss_qualifier.requirements.definitions import RequirementID
+from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestStepDocumentation,
     TestCheckDocumentation,
@@ -80,7 +82,7 @@ def _parse_test_check(
         if isinstance(values[c], marko.block.Paragraph):
             for child in values[c].children:
                 if isinstance(child, marko.inline.StrongEmphasis):
-                    reqs.append(_text_of(child))
+                    reqs.append(RequirementID(_text_of(child)))
         c += 1
 
     return TestCheckDocumentation(name=name, url=url, applicable_requirements=reqs)
@@ -310,6 +312,8 @@ def get_documentation(scenario: Type) -> TestScenarioDocumentation:
     return getattr(scenario, DOC_CACHE_ATTRIBUTE)
 
 
-def get_documentation_by_name(scenario_type_name: str) -> TestScenarioDocumentation:
+def get_documentation_by_name(
+    scenario_type_name: TestScenarioTypeName,
+) -> TestScenarioDocumentation:
     scenario_type = get_module_object_by_name(uss_qualifier_module, scenario_type_name)
     return get_documentation(scenario_type)

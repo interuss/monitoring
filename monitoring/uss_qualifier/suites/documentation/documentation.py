@@ -1,3 +1,4 @@
+from __future__ import annotations
 import glob
 import inspect
 import os
@@ -25,14 +26,24 @@ from monitoring.uss_qualifier.fileio import (
     resolve_filename,
     FileReference,
 )
+from monitoring.uss_qualifier.requirements.definitions import RequirementID
+from monitoring.uss_qualifier.requirements.documentation import get_requirement
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
-from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
+from monitoring.uss_qualifier.scenarios.documentation.definitions import (
+    TestScenarioDocumentation,
+    TestCheckDocumentation,
+)
+from monitoring.uss_qualifier.scenarios.documentation.parsing import (
+    get_documentation,
+    get_documentation_by_name,
+)
 from monitoring.uss_qualifier.scenarios.scenario import get_scenario_type_by_name
 from monitoring.uss_qualifier.suites.definitions import (
     TestSuiteDefinition,
     ActionType,
     TestSuiteActionDeclaration,
 )
+from monitoring.uss_qualifier.suites.suite import TestSuiteAction
 
 
 @dataclass
@@ -99,8 +110,58 @@ def make_test_suite_documentation(
                 ),
             )
         )
-
     lines.append("")
+
+    lines.append("## Checked requirements")
+    lines.append("")
+    reqs = _collect_requirements_from_suite_def(suite_def)
+    if not reqs:
+        lines.append(
+            "_This test suite documentation does not indicate that any requirements are checked._"
+        )
+    else:
+        # Use an HTML table rather than Markdown table to enabled advanced features like spans
+        lines.append("<table>")
+        lines.append("  <tr>")
+        lines.append("    <th>Package</th>")
+        lines.append("    <th>Requirement</th>")
+        lines.append("    <th>Checked in</th>")
+        lines.append("  </tr>")
+
+        req_ids_by_package: Dict[str, List[RequirementID]] = {}
+        for req_id, req in reqs.items():
+            package = req_ids_by_package.get(req_id.package(), [])
+            if req_id not in package:
+                package.append(req_id)
+            req_ids_by_package[req_id.package()] = package
+
+        for package in sorted(req_ids_by_package):
+            req_md_path = os.path.relpath(
+                req_ids_by_package[package][0].md_file_path(), start=base_path
+            )
+            package_line = f'    <td rowspan="{len(req_ids_by_package[package])}" style="vertical-align:top;"><a href="{req_md_path}">{package}</a></td>'
+            for req_id in sorted(req_ids_by_package[package]):
+                req_text = f'<a href="{req_md_path}">{req_id.requirement_name()}</a>'
+
+                checked_in = list(
+                    set(
+                        f'<a href="{os.path.relpath(c.scenario.local_path, start=base_path)}">{c.scenario.name}</a>'
+                        for c in reqs[req_id].checked_in
+                    )
+                )
+                checked_in.sort()
+                checked_in_text = f"{'<br>'.join(checked_in)}"
+
+                lines.append("  <tr>")
+                if package_line:
+                    lines.append(package_line)
+                    package_line = None
+                lines.append(f"    <td>{req_text}</td>")
+                lines.append(f"    <td>{checked_in_text}</td>")
+                lines.append("  </tr>")
+        lines.append("</table>")
+    lines.append("")
+
     test_suites[suite_doc_file] = "\n".join(lines)
     return test_suites
 
@@ -216,3 +277,105 @@ def _render_action(
         return _render_action_generator(action.action_generator, context)
     else:
         raise NotImplementedError(f"Unsupported test suite action type: {action_type}")
+
+
+@dataclass
+class SuiteLocation(object):
+    scenario: TestScenarioDocumentation
+    check: TestCheckDocumentation
+
+
+@dataclass
+class RequirementInSuite(object):
+    checked_in: List[SuiteLocation]
+
+    def extend(self, other: RequirementInSuite):
+        self.checked_in.extend(other.checked_in)
+
+
+def _collect_requirements_from_suite_def(
+    suite_def: TestSuiteDefinition,
+) -> Dict[RequirementID, RequirementInSuite]:
+    reqs: Dict[RequirementID, RequirementInSuite] = {}
+    for action in suite_def.actions:
+        new_reqs = _collect_requirements_from_action(action)
+        for req_id, req in new_reqs.items():
+            if req_id not in reqs:
+                reqs[req_id] = req
+            else:
+                reqs[req_id].extend(req)
+    return reqs
+
+
+def _collect_requirements_from_action(
+    action: Union[TestSuiteActionDeclaration, PotentialGeneratedAction]
+) -> Dict[RequirementID, RequirementInSuite]:
+    action_type = action.get_action_type()
+    if action_type == ActionType.TestScenario:
+        return _collect_requirements_from_scenario(action.test_scenario.scenario_type)
+    elif action_type == ActionType.TestSuite:
+        if "suite_type" in action.test_suite and action.test_suite.suite_type:
+            suite_def = ImplicitDict.parse(
+                load_dict_with_references(action.test_suite.suite_type),
+                TestSuiteDefinition,
+            )
+            return _collect_requirements_from_suite_def(suite_def)
+        elif (
+            "suite_definition" in action.test_suite
+            and action.test_suite.suite_definition
+        ):
+            return _collect_requirements_from_suite_def(
+                action.test_suite.suite_definition
+            )
+        else:
+            raise ValueError(
+                "Neither suite_type nor suite_definition specified in test_suite action"
+            )
+    elif action_type == ActionType.ActionGenerator:
+        return _collect_requirements_from_action_generator(action.action_generator)
+    else:
+        raise NotImplementedError(
+            f"Test suite action type {action_type} not yet supported"
+        )
+
+
+def _collect_requirements_from_scenario(
+    scenario_type: TestScenarioTypeName,
+) -> Dict[RequirementID, RequirementInSuite]:
+    docs = get_documentation_by_name(scenario_type)
+    reqs: Dict[RequirementID, RequirementInSuite] = {}
+
+    def add_req(req_id: RequirementID, check: TestCheckDocumentation) -> None:
+        req = reqs.get(req_id, RequirementInSuite(checked_in=[]))
+        req.checked_in.append(SuiteLocation(scenario=docs, check=check))
+        reqs[req_id] = req
+
+    for case in docs.cases:
+        for step in case.steps:
+            for check in step.checks:
+                for req_id in check.applicable_requirements:
+                    add_req(req_id, check)
+    if "cleanup" in docs and docs.cleanup:
+        for check in docs.cleanup.checks:
+            for req_id in check.applicable_requirements:
+                add_req(req_id, check)
+    return reqs
+
+
+def _collect_requirements_from_action_generator(
+    generator_def: Union[ActionGeneratorDefinition, PotentialActionGeneratorAction]
+) -> Dict[RequirementID, RequirementInSuite]:
+    potential_actions = list_potential_actions_for_action_generator_definition(
+        generator_def
+    )
+
+    reqs: Dict[RequirementID, RequirementInSuite] = {}
+    for potential_action in potential_actions:
+        new_reqs = _collect_requirements_from_action(potential_action)
+        for req_id, req in new_reqs.items():
+            if req_id not in reqs:
+                reqs[req_id] = req
+            else:
+                reqs[req_id].extend(req)
+
+    return reqs

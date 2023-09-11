@@ -5,3 +5,7 @@
 ## Actions
 
 1. Scenario: [EUROCAE ED-269 UAS geographical zone model](../../scenarios/eurocae/ed269/source_data_model.md) ([`scenarios.eurocae.ed269.source_data_model.SourceDataModelValidation`](../../scenarios/eurocae/ed269/source_data_model.py))
+
+## Checked requirements
+
+_This test suite documentation does not indicate that any requirements are checked._
