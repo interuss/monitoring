@@ -1,6 +1,7 @@
 import glob
 import inspect
 import os
+from dataclasses import dataclass
 from typing import Iterator, Optional, List, Union, Dict
 
 from implicitdict import ImplicitDict
@@ -32,6 +33,16 @@ from monitoring.uss_qualifier.suites.definitions import (
     ActionType,
     TestSuiteActionDeclaration,
 )
+
+
+@dataclass
+class TestSuiteRenderContext(object):
+    parent_yaml_file: str
+    parent_doc_file: str
+    base_path: str
+    list_index: int
+    indent: int
+    test_suites: Dict[str, str]
 
 
 def find_test_suites(start_path: Optional[str] = None) -> Iterator[str]:
@@ -78,12 +89,14 @@ def make_test_suite_documentation(
         lines.extend(
             _render_action(
                 action,
-                i + 1,
-                base_path,
-                0,
-                suite_yaml_file,
-                suite_doc_file,
-                test_suites,
+                TestSuiteRenderContext(
+                    parent_yaml_file=suite_yaml_file,
+                    parent_doc_file=suite_doc_file,
+                    base_path=base_path,
+                    list_index=i + 1,
+                    indent=0,
+                    test_suites=test_suites,
+                ),
             )
         )
 
@@ -93,21 +106,21 @@ def make_test_suite_documentation(
 
 
 def _render_scenario(
-    scenario_type_name: TestScenarioTypeName, i: int, base_path: str, indent: int
+    scenario_type_name: TestScenarioTypeName, context: TestSuiteRenderContext
 ) -> List[str]:
     lines = []
     scenario_type = get_scenario_type_by_name(scenario_type_name)
-    py_rel_path = os.path.relpath(inspect.getfile(scenario_type), base_path)
+    py_rel_path = os.path.relpath(inspect.getfile(scenario_type), context.base_path)
     scenario_doc = get_documentation(scenario_type)
-    doc_rel_path = os.path.relpath(scenario_doc.local_path, start=base_path)
+    doc_rel_path = os.path.relpath(scenario_doc.local_path, start=context.base_path)
     lines.append(
-        f"{' ' * indent}{i}. Scenario: [{scenario_doc.name}]({doc_rel_path}) ([`{scenario_type_name}`]({py_rel_path}))"
+        f"{' ' * context.indent}{context.list_index}. Scenario: [{scenario_doc.name}]({doc_rel_path}) ([`{scenario_type_name}`]({py_rel_path}))"
     )
     return lines
 
 
 def _render_suite_by_type(
-    suite_type: FileReference, i: int, base_path: str, indent: int
+    suite_type: FileReference, context: TestSuiteRenderContext
 ) -> List[str]:
     lines = []
     suite_def = ImplicitDict.parse(
@@ -115,57 +128,48 @@ def _render_suite_by_type(
         TestSuiteDefinition,
     )
     suite_path = resolve_filename(suite_type)
-    suite_rel_path = os.path.relpath(suite_path, start=base_path)
+    suite_rel_path = os.path.relpath(suite_path, start=context.base_path)
     doc_path = os.path.splitext(suite_path)[0] + ".md"
-    doc_rel_path = os.path.relpath(doc_path, start=base_path)
+    doc_rel_path = os.path.relpath(doc_path, start=context.base_path)
     lines.append(
-        f"{' ' * indent}{i}. Suite: [{suite_def.name}]({doc_rel_path}) ([`{suite_type}`]({suite_rel_path}))"
+        f"{' ' * context.indent}{context.list_index}. Suite: [{suite_def.name}]({doc_rel_path}) ([`{suite_type}`]({suite_rel_path}))"
     )
     return lines
 
 
 def _render_suite_by_definition(
-    suite_def: TestSuiteDefinition,
-    i: int,
-    base_path: str,
-    indent: int,
-    parent_yaml_file: str,
-    parent_doc_file: str,
-    test_suites: Dict[str, str],
+    suite_def: TestSuiteDefinition, context: TestSuiteRenderContext
 ) -> List[str]:
-    doc_path = os.path.splitext(parent_doc_file)[0] + f"_suite{i}.md"
+    doc_path = (
+        os.path.splitext(context.parent_doc_file)[0] + f"_suite{context.list_index}.md"
+    )
     new_docs = make_test_suite_documentation(
-        suite_def, parent_yaml_file, doc_path, parent_doc_file
+        suite_def, context.parent_yaml_file, doc_path, context.parent_doc_file
     )
 
     for k, v in new_docs.items():
-        test_suites[k] = v
+        context.test_suites[k] = v
 
-    doc_rel_path = os.path.relpath(doc_path, base_path)
-    parent_rel_path = os.path.relpath(parent_yaml_file, start=base_path)
+    doc_rel_path = os.path.relpath(doc_path, context.base_path)
+    parent_rel_path = os.path.relpath(context.parent_yaml_file, start=context.base_path)
     return [
-        f"{' ' * indent}{i}. Suite: [{suite_def.name}]({doc_rel_path}) ([in-suite definition]({parent_rel_path}))"
+        f"{' ' * context.indent}{context.list_index}. Suite: [{suite_def.name}]({doc_rel_path}) ([in-suite definition]({parent_rel_path}))"
     ]
 
 
 def _render_action_generator(
     generator_def: Union[ActionGeneratorDefinition, PotentialActionGeneratorAction],
-    i: int,
-    base_path: str,
-    indent: int,
-    parent_yaml_file: str,
-    parent_doc_file: str,
-    test_suites: Dict[str, str],
+    context: TestSuiteRenderContext,
 ) -> List[str]:
     lines = []
     action_generator_type = action_generator_type_from_name(
         generator_def.generator_type
     )
     py_rel_path = os.path.relpath(
-        inspect.getfile(action_generator_type), start=base_path
+        inspect.getfile(action_generator_type), start=context.base_path
     )
     lines.append(
-        f"{' ' * indent}{i}. Action generator: [`{generator_def.generator_type}`]({py_rel_path})"
+        f"{' ' * context.indent}{context.list_index}. Action generator: [`{generator_def.generator_type}`]({py_rel_path})"
     )
     potential_actions = list_potential_actions_for_action_generator_definition(
         generator_def
@@ -174,12 +178,14 @@ def _render_action_generator(
         lines.extend(
             _render_action(
                 potential_action,
-                j + 1,
-                base_path,
-                indent + 4,
-                parent_yaml_file,
-                parent_doc_file,
-                test_suites,
+                TestSuiteRenderContext(
+                    parent_yaml_file=context.parent_yaml_file,
+                    parent_doc_file=context.parent_doc_file,
+                    base_path=context.base_path,
+                    list_index=j + 1,
+                    indent=context.indent + 4,
+                    test_suites=context.test_suites,
+                ),
             )
         )
     return lines
@@ -187,47 +193,26 @@ def _render_action_generator(
 
 def _render_action(
     action: Union[TestSuiteActionDeclaration, PotentialGeneratedAction],
-    i: int,
-    base_path: str,
-    indent: int,
-    parent_yaml_file: str,
-    parent_doc_file: str,
-    test_suites: Dict[str, str],
+    context: TestSuiteRenderContext,
 ) -> List[str]:
     action_type = action.get_action_type()
     if action_type == ActionType.TestScenario:
-        return _render_scenario(
-            action.test_scenario.scenario_type, i, base_path, indent
-        )
+        return _render_scenario(action.test_scenario.scenario_type, context)
     elif action_type == ActionType.TestSuite:
         if "suite_type" in action.test_suite and action.test_suite.suite_type:
-            return _render_suite_by_type(
-                action.test_suite.suite_type, i, base_path, indent
-            )
+            return _render_suite_by_type(action.test_suite.suite_type, context)
         elif (
             "suite_definition" in action.test_suite
             and action.test_suite.suite_definition
         ):
             return _render_suite_by_definition(
-                action.test_suite.suite_definition,
-                i,
-                base_path,
-                indent,
-                parent_yaml_file,
-                parent_doc_file,
-                test_suites,
+                action.test_suite.suite_definition, context
             )
         else:
-            raise ValueError(f"Test suite action {i} missing suite type or definition")
+            raise ValueError(
+                f"Test suite action {context.list_index} missing suite type or definition"
+            )
     elif action_type == ActionType.ActionGenerator:
-        return _render_action_generator(
-            action.action_generator,
-            i,
-            base_path,
-            indent,
-            parent_yaml_file,
-            parent_doc_file,
-            test_suites,
-        )
+        return _render_action_generator(action.action_generator, context)
     else:
         raise NotImplementedError(f"Unsupported test suite action type: {action_type}")
