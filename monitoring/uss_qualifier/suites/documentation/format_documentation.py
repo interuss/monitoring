@@ -3,6 +3,8 @@ import os
 import sys
 
 from implicitdict import ImplicitDict
+from monitoring.monitorlib.inspection import import_submodules
+from monitoring.uss_qualifier import scenarios, suites, action_generators
 from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.suites.definitions import TestSuiteDefinition
 from monitoring.uss_qualifier.suites.documentation.documentation import (
@@ -12,6 +14,10 @@ from monitoring.uss_qualifier.suites.documentation.documentation import (
 
 
 def main(lint: bool) -> int:
+    import_submodules(scenarios)
+    import_submodules(suites)
+    import_submodules(action_generators)
+
     test_suite_docs = {}
     for suite_yaml_file in find_test_suites():
         suite_def: TestSuiteDefinition = ImplicitDict.parse(
