@@ -3,6 +3,7 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 if [ -z "${DO_NOT_BUILD_MONITORING}" ]; then
   "${SCRIPT_DIR}/../build.sh" || exit 1
+  export DO_NOT_BUILD_MONITORING=true
 fi
 
 AUTH="DummyOAuth(http://host.docker.internal:8085/token,uss1)"
