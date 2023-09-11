@@ -40,6 +40,8 @@ def _text_of(value) -> str:
             result += _text_of(child)
         return result
     elif isinstance(value, marko.inline.InlineElement):
+        if isinstance(value, marko.inline.LineBreak):
+            return "\n"
         if isinstance(value.children, str):
             return value.children
         result = ""
@@ -75,17 +77,22 @@ def _parse_test_check(
 ) -> TestCheckDocumentation:
     name = _text_of(values[0])[0 : -len(TEST_CHECK_SUFFIX)]
     url = _url_of(doc_filename + anchors[values[0]])
+    has_todo = False
 
     reqs: List[str] = []
     c = 1
     while c < len(values):
         if isinstance(values[c], marko.block.Paragraph):
+            if "TODO:" in _text_of(values[c]):
+                has_todo = True
             for child in values[c].children:
                 if isinstance(child, marko.inline.StrongEmphasis):
                     reqs.append(RequirementID(_text_of(child)))
         c += 1
 
-    return TestCheckDocumentation(name=name, url=url, applicable_requirements=reqs)
+    return TestCheckDocumentation(
+        name=name, url=url, applicable_requirements=reqs, has_todo=has_todo
+    )
 
 
 def _get_linked_test_step(

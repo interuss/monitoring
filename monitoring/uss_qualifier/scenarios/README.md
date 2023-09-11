@@ -87,6 +87,8 @@ A check should document the requirement(s) violated if the check fails.  Require
 
 Any requirements identified (e.g., `**astm.f3411.v19.NET0420**`) must be documented as well.  See [the requirements documentation](../requirements/README.md) for more information.
 
+If the text of this section includes `TODO:`, then the check will be indicated as in development rather than complete.  Documentation of intended checks with, e.g., `TODO: Implement` prior to the start of Python development is highly encouraged.
+
 ### Cleanup phase
 
 If a test scenario wants to perform a cleanup procedure follow any non-error termination of the rest of the scenario, it must:

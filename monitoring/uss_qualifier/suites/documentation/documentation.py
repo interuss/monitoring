@@ -96,10 +96,28 @@ def make_test_suite_documentation(
     lines.append("## Actions")
     lines.append("")
     base_path = os.path.dirname(suite_yaml_file)
+    i = 0
     for i, action in enumerate(suite_def.actions):
         lines.extend(
             _render_action(
                 action,
+                TestSuiteRenderContext(
+                    parent_yaml_file=suite_yaml_file,
+                    parent_doc_file=suite_doc_file,
+                    base_path=base_path,
+                    list_index=i + 1,
+                    indent=0,
+                    test_suites=test_suites,
+                ),
+            )
+        )
+    if (
+        "report_evaluation_scenario" in suite_def
+        and suite_def.report_evaluation_scenario
+    ):
+        lines.extend(
+            _render_scenario(
+                suite_def.report_evaluation_scenario.scenario_type,
                 TestSuiteRenderContext(
                     parent_yaml_file=suite_yaml_file,
                     parent_doc_file=suite_doc_file,
@@ -125,6 +143,7 @@ def make_test_suite_documentation(
         lines.append("  <tr>")
         lines.append("    <th>Package</th>")
         lines.append("    <th>Requirement</th>")
+        lines.append("    <th>Status</th>")
         lines.append("    <th>Checked in</th>")
         lines.append("  </tr>")
 
@@ -143,13 +162,28 @@ def make_test_suite_documentation(
             for req_id in sorted(req_ids_by_package[package]):
                 req_text = f'<a href="{req_md_path}">{req_id.requirement_name()}</a>'
 
+                has_todo = False
+                has_complete = False
+                scenarios = {}
+                for checked_in in reqs[req_id].checked_in:
+                    if checked_in.scenario.local_path not in scenarios:
+                        scenarios[checked_in.scenario.name] = checked_in.scenario
+                    if checked_in.check.has_todo:
+                        has_todo = True
+                    else:
+                        has_complete = True
+                if has_complete and not has_todo:
+                    status_text = "Implemented"
+                elif has_todo and not has_complete:
+                    status_text = "Planned"
+                elif has_todo and has_complete:
+                    status_text = "In progress"
+                else:
+                    status_text = "Not implemented"
                 checked_in = list(
-                    set(
-                        f'<a href="{os.path.relpath(c.scenario.local_path, start=base_path)}">{c.scenario.name}</a>'
-                        for c in reqs[req_id].checked_in
-                    )
+                    f'<a href="{os.path.relpath(scenarios[s].local_path, start=base_path)}">{scenarios[s].name}</a>'
+                    for s in sorted(scenarios)
                 )
-                checked_in.sort()
                 checked_in_text = f"{'<br>'.join(checked_in)}"
 
                 lines.append("  <tr>")
@@ -157,6 +191,7 @@ def make_test_suite_documentation(
                     lines.append(package_line)
                     package_line = None
                 lines.append(f"    <td>{req_text}</td>")
+                lines.append(f"    <td>{status_text}</td>")
                 lines.append(f"    <td>{checked_in_text}</td>")
                 lines.append("  </tr>")
         lines.append("</table>")
@@ -297,13 +332,25 @@ def _collect_requirements_from_suite_def(
     suite_def: TestSuiteDefinition,
 ) -> Dict[RequirementID, RequirementInSuite]:
     reqs: Dict[RequirementID, RequirementInSuite] = {}
-    for action in suite_def.actions:
-        new_reqs = _collect_requirements_from_action(action)
+
+    def combine(new_reqs: Dict[RequirementID, RequirementInSuite]) -> None:
         for req_id, req in new_reqs.items():
             if req_id not in reqs:
                 reqs[req_id] = req
             else:
                 reqs[req_id].extend(req)
+
+    for action in suite_def.actions:
+        combine(_collect_requirements_from_action(action))
+    if (
+        "report_evaluation_scenario" in suite_def
+        and suite_def.report_evaluation_scenario
+    ):
+        combine(
+            _collect_requirements_from_scenario(
+                suite_def.report_evaluation_scenario.scenario_type
+            )
+        )
     return reqs
 
 
