@@ -63,6 +63,7 @@ class GeospatialFeatureComprehension(TestScenario):
                 name=check_name,
                 url=check_url,
                 applicable_requirements=row.requirement_ids,
+                has_todo=False,
             )
             doc = TestStepDocumentation(
                 name=row.geospatial_check_id,

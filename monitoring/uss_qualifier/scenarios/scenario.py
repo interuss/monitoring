@@ -364,7 +364,7 @@ class GenericTestScenario(ABC):
             check_list = ", ".join(available_checks)
             if self._allow_undocumented_checks:
                 check_documentation = TestCheckDocumentation(
-                    name=name, applicable_requirements=[]
+                    name=name, applicable_requirements=[], has_todo=False
                 )
             else:
                 raise RuntimeError(
