@@ -48,27 +48,25 @@ jobs:
         cd monitoring/mock_uss
         make test
 
-  uss_qualifier_F3411-22a-test:
-    name: uss_qualifier tests (F3411-22a configuration)
+  uss_qualifier-test:
+    name: uss_qualifier tests
     uses: ./.github/workflows/monitoring-test.yml
     with:
-      name: uss_qualifier_F3411-22a
+      name: uss_qualifier
       script: |
-        export RID_VERSION=F3411-22a \
-          CONFIG_NAME="" \
+        export CONFIG_NAME="" \
           USS_QUALIFIER_STOP_FAST=true
 
         cd monitoring/uss_qualifier
         make test
 
   uss_qualifier_F3411-19-test:
-    name: uss_qualifier tests (F3411-19 configuration)
+    name: uss_qualifier F3411-19 tests
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier_F3411-19
       script: |
-        export RID_VERSION=F3411-19 \
-          CONFIG_NAME=configurations.dev.netrid_v19 \
+        export CONFIG_NAME=configurations.dev.netrid_v19 \
           USS_QUALIFIER_STOP_FAST=true
 
         cd monitoring/uss_qualifier
