@@ -50,11 +50,9 @@ echo "============="
 make start-locally
 make start-uss-mocks
 
-RID_VERSION=${RID_VERSION:-"F3411-22a"}
 CONFIG_NAME=${CONFIG_NAME:-""}
 echo "Selecting configuration"
 echo "============="
-echo "RID_VERSION: $RID_VERSION"
 echo "CONFIG_NAME: $CONFIG_NAME"
 
 

@@ -10,7 +10,10 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
-monitoring/build.sh || exit 1
+if [ -z "${DO_NOT_BUILD_MONITORING}" ]; then
+  monitoring/build.sh || exit 1
+  export DO_NOT_BUILD_MONITORING=true
+fi
 
 CLIENT_BASIC_AUTH="local_client:local_client"
 PUBLIC_KEY="/var/test-certs/auth2.pem"
