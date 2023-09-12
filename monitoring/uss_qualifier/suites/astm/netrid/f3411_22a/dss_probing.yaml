@@ -1,0 +1,18 @@
+name: DSS instance probing for ASTM NetRID F3411-22a
+resources:
+  dss: resources.astm.f3411.DSSInstanceResource
+  id_generator: resources.interuss.IDGeneratorResource
+  isa: resources.netrid.ServiceAreaResource
+actions:
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v22a.dss.ISASimple
+      resources:
+        dss: dss
+        id_generator: id_generator
+        isa: isa
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v22a.dss.SubscriptionValidation
+      resources:
+        dss: dss
+        id_generator: id_generator
+        isa: isa

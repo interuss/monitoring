@@ -9,6 +9,8 @@ non_baseline_inputs:
     - v1.test_run.resources.resource_declarations.netrid_observers_v22a
     - v1.test_run.resources.resource_declarations.netrid_dss_instances_v19
     - v1.test_run.resources.resource_declarations.netrid_dss_instances_v22a
+    - v1.test_run.resources.resource_declarations.netrid_dss_instance_v19
+    - v1.test_run.resources.resource_declarations.netrid_dss_instance_v22a
     - v1.test_run.resources.resource_declarations.flight_planners
     - v1.test_run.resources.resource_declarations.dss
     - v1.test_run.resources.resource_declarations.uss1
@@ -89,6 +91,26 @@ net_rid:
                   rid_version: F3411-22a
                   base_url: http://dss.uss2.localutm/rid/v2
                   has_private_address: true
+    netrid_dss_instance_v19:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+        resource_type: resources.astm.f3411.DSSInstanceResource
+        dependencies:
+            auth_adapter: utm_auth
+        specification:
+            participant_id: uss1
+            rid_version: F3411-19
+            base_url: http://dss.uss1.localutm
+            has_private_address: true
+    netrid_dss_instance_v22a:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+        resource_type: resources.astm.f3411.DSSInstanceResource
+        dependencies:
+            auth_adapter: utm_auth
+        specification:
+            participant_id: uss1
+            rid_version: F3411-22a
+            base_url: http://dss.uss1.localutm/rid/v2
+            has_private_address: true
 
 f3548:
     flight_planners:
