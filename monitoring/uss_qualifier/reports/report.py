@@ -7,6 +7,7 @@ from typing import List, Optional, Dict, Tuple, Any, Union, Set, Iterator, Calla
 from implicitdict import ImplicitDict, StringBasedDateTime
 
 from monitoring.monitorlib import fetch, inspection
+from monitoring.uss_qualifier.action_generators.definitions import GeneratorTypeName
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import (
     TestConfiguration,
@@ -18,6 +19,7 @@ from monitoring.uss_qualifier.reports.capability_definitions import (
     JSONPathExpression,
 )
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
+from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 
 
 class FailedCheck(ImplicitDict):
@@ -211,7 +213,7 @@ class TestScenarioReport(ImplicitDict):
     name: str
     """Name of this test scenario"""
 
-    scenario_type: str
+    scenario_type: TestScenarioTypeName
     """Type of this test scenario"""
 
     documentation_url: str
@@ -295,7 +297,7 @@ class TestScenarioReport(ImplicitDict):
 
 
 class ActionGeneratorReport(ImplicitDict):
-    generator_type: str
+    generator_type: GeneratorTypeName
     """Type of action generator"""
 
     actions: List[TestSuiteActionReport]

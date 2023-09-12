@@ -52,3 +52,19 @@ of the durations for the subsequent display data queries do not exceed the respe
 **[astm.f3411.v22a.NET0260-a](../../../../requirements/astm/f3411/v22a.md)** requires that the 95th and 99th percentiles
 of the durations for the replies to requested flights in an area do not exceed the respective thresholds
 `NetSpDataResponseTime95thPercentile` (1 second) and `NetSpDataResponseTime99thPercentile` (3 seconds).
+
+## Mock USS interactions evaluation test case
+
+In this test case, the interactions with a mock_uss instance (if provided) are obtained and then examined to verify
+compliance with requirements.
+
+### Get mock USS interactions test step
+
+### Evaluate mock USS interactions test step
+
+#### No large Display Provider queries check
+
+If one of the Display Provider test participants was found to have sent a query to mock_uss with a larger-than-allowed
+area requested, then that participant will have violated **[astm.f3411.v22a.NET0240](../../../../requirements/astm/f3411/v22a.md)**.
+
+TODO: Implement this check

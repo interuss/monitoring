@@ -10,6 +10,8 @@ import monitoring
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib import versioning
 from monitoring.monitorlib.inspection import fullname, get_module_object_by_name
+from monitoring.uss_qualifier.requirements.definitions import RequirementID
+from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestStepDocumentation,
     TestCheckDocumentation,
@@ -38,6 +40,8 @@ def _text_of(value) -> str:
             result += _text_of(child)
         return result
     elif isinstance(value, marko.inline.InlineElement):
+        if isinstance(value, marko.inline.LineBreak):
+            return "\n"
         if isinstance(value.children, str):
             return value.children
         result = ""
@@ -73,17 +77,22 @@ def _parse_test_check(
 ) -> TestCheckDocumentation:
     name = _text_of(values[0])[0 : -len(TEST_CHECK_SUFFIX)]
     url = _url_of(doc_filename + anchors[values[0]])
+    has_todo = False
 
     reqs: List[str] = []
     c = 1
     while c < len(values):
         if isinstance(values[c], marko.block.Paragraph):
+            if "TODO:" in _text_of(values[c]):
+                has_todo = True
             for child in values[c].children:
                 if isinstance(child, marko.inline.StrongEmphasis):
-                    reqs.append(_text_of(child))
+                    reqs.append(RequirementID(_text_of(child)))
         c += 1
 
-    return TestCheckDocumentation(name=name, url=url, applicable_requirements=reqs)
+    return TestCheckDocumentation(
+        name=name, url=url, applicable_requirements=reqs, has_todo=has_todo
+    )
 
 
 def _get_linked_test_step(
@@ -310,6 +319,8 @@ def get_documentation(scenario: Type) -> TestScenarioDocumentation:
     return getattr(scenario, DOC_CACHE_ATTRIBUTE)
 
 
-def get_documentation_by_name(scenario_type_name: str) -> TestScenarioDocumentation:
+def get_documentation_by_name(
+    scenario_type_name: TestScenarioTypeName,
+) -> TestScenarioDocumentation:
     scenario_type = get_module_object_by_name(uss_qualifier_module, scenario_type_name)
     return get_documentation(scenario_type)

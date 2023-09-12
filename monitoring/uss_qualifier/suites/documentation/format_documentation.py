@@ -2,6 +2,11 @@ import argparse
 import os
 import sys
 
+from implicitdict import ImplicitDict
+from monitoring.monitorlib.inspection import import_submodules
+from monitoring.uss_qualifier import scenarios, suites, action_generators
+from monitoring.uss_qualifier.fileio import load_dict_with_references
+from monitoring.uss_qualifier.suites.definitions import TestSuiteDefinition
 from monitoring.uss_qualifier.suites.documentation.documentation import (
     find_test_suites,
     make_test_suite_documentation,
@@ -9,10 +14,24 @@ from monitoring.uss_qualifier.suites.documentation.documentation import (
 
 
 def main(lint: bool) -> int:
-    changes = False
+    import_submodules(scenarios)
+    import_submodules(suites)
+    import_submodules(action_generators)
+
+    test_suite_docs = {}
     for suite_yaml_file in find_test_suites():
-        suite_doc_content = make_test_suite_documentation(suite_yaml_file)
+        suite_def: TestSuiteDefinition = ImplicitDict.parse(
+            load_dict_with_references("file://" + suite_yaml_file), TestSuiteDefinition
+        )
         suite_doc_file = os.path.splitext(suite_yaml_file)[0] + ".md"
+        new_docs = make_test_suite_documentation(
+            suite_def, suite_yaml_file, suite_doc_file
+        )
+        for k, v in new_docs.items():
+            test_suite_docs[k] = v
+
+    changes = False
+    for suite_doc_file, suite_doc_content in test_suite_docs.items():
         if os.path.exists(suite_doc_file):
             with open(suite_doc_file, "r") as f:
                 existing_content = f.read()

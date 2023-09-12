@@ -8,6 +8,7 @@ class TestCheckDocumentation(ImplicitDict):
     name: str
     url: Optional[str] = None
     applicable_requirements: List[RequirementID]
+    has_todo: bool
 
 
 class TestStepDocumentation(ImplicitDict):

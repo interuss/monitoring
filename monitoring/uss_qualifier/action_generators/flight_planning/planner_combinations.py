@@ -3,6 +3,17 @@ from typing import Dict, List, Optional
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.inspection import fullname
+from monitoring.uss_qualifier.action_generators.action_generator import (
+    action_generator_type_from_name,
+    action_generator_specification_type,
+)
+from monitoring.uss_qualifier.action_generators.documentation.definitions import (
+    PotentialGeneratedAction,
+    PotentialTestScenarioAction,
+)
+from monitoring.uss_qualifier.action_generators.documentation.documentation import (
+    list_potential_actions_for_action_declaration,
+)
 from monitoring.uss_qualifier.reports.report import TestSuiteActionReport
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.flight_planning import FlightPlannersResource
@@ -14,7 +25,10 @@ from monitoring.uss_qualifier.resources.resource import (
     ResourceType,
 )
 
-from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
+from monitoring.uss_qualifier.suites.definitions import (
+    TestSuiteActionDeclaration,
+    ActionType,
+)
 from monitoring.uss_qualifier.suites.suite import (
     ActionGenerator,
     TestSuiteAction,
@@ -42,6 +56,14 @@ class FlightPlannerCombinations(
     _actions: List[TestSuiteAction]
     _current_action: int
     _failure_reaction: ReactionToFailure
+
+    @classmethod
+    def list_potential_actions(
+        cls, specification: FlightPlannerCombinationsSpecification
+    ) -> List[PotentialGeneratedAction]:
+        return list_potential_actions_for_action_declaration(
+            specification.action_to_repeat
+        )
 
     def __init__(
         self,
