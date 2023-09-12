@@ -367,8 +367,16 @@ class GenericTestScenario(ABC):
                     name=name, applicable_requirements=[], has_todo=False
                 )
             else:
+                test_step_name = (
+                    self._current_step.name if self._current_step else "<none>"
+                )
+                test_case_name = (
+                    self._current_case.name
+                    if self._current_case
+                    else "<none; possibly cleanup>"
+                )
                 raise RuntimeError(
-                    f'Test scenario `{self.me()}` was instructed to prepare to record outcome for check "{name}" during test step "{self._current_step.name}" during test case "{self._current_case.name}", but that check is not declared in documentation; declared checks are: {check_list}'
+                    f'Test scenario `{self.me()}` was instructed to prepare to record outcome for check "{name}" during test step "{test_step_name}" during test case "{test_case_name}", but that check is not declared in documentation; declared checks are: {check_list}'
                 )
         return PendingCheck(
             phase=self._phase,
