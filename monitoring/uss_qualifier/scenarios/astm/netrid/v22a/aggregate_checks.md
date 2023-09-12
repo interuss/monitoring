@@ -4,7 +4,6 @@
 In this special scenario, the report of previously executed ASTM F3411-22a NetRID scenario(s) are evaluated for the
 performances of the queries made during their execution.
 
-
 ## Resources
 
 ### report_resource
@@ -17,6 +16,16 @@ The service providers to evaluate in the report.
 The observers to evaluate in the report.
 
 ## Performance of Display Providers requests test case
+
+### Performance of /display_data/<flight_id> requests test step
+
+For this step, all successful display data queries made during the execution of the previous scenarios are used to compute an aggregate statistic.
+
+#### Performance of /display_data/<flight_id> requests check
+
+**[astm.f3411.v22a.NET0460](../../../../requirements/astm/f3411/v22a.md) Checks that the DP response times for the
+Display Application's flight details requests have a p95 and p99 that are respectively below
+`NetDpDetailsResponse95thPercentileSeconds` (2 seconds) and `NetDpDetailsResponse99thPercentileSeconds` (6 seconds).
 
 ### Performance of /display_data requests test step
 In this step, all successful display data queries made during the execution of the previous scenarios are aggregated per

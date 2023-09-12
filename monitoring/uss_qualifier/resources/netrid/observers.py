@@ -5,6 +5,7 @@ import s2sphere
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import fetch, infrastructure
+from monitoring.monitorlib.fetch import QueryType
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing import observation_api
@@ -27,9 +28,6 @@ class RIDSystemObserver(object):
         self.participant_id = participant_id
         self.base_url = base_url
 
-        # TODO: Change observation API to use an InterUSS scope rather than re-using an ASTM scope
-        self.rid_version = RIDVersion.f3411_19
-
     def observe_system(
         self, rect: s2sphere.LatLngRect
     ) -> Tuple[Optional[observation_api.GetDisplayDataResponse], fetch.Query]:
@@ -40,7 +38,12 @@ class RIDSystemObserver(object):
             rect.hi().lng().degrees,
         )
         query = fetch.query_and_describe(
-            self.session, "GET", url, scope=self.rid_version.read_scope
+            self.session,
+            "GET",
+            url,
+            # TODO replace with 'uas_standards.interuss.automated_testing.rid.v1.constants.Scope.Observe' once
+            #  the standard is updated with https://github.com/interuss/uas_standards/pull/11/files
+            scope="dss.read.identification_service_areas",
         )
         try:
             result = (
@@ -56,11 +59,19 @@ class RIDSystemObserver(object):
         return result, query
 
     def observe_flight_details(
-        self, flight_id: str
+        self, flight_id: str, rid_version: RIDVersion
     ) -> Tuple[Optional[observation_api.GetDetailsResponse], fetch.Query]:
         query = fetch.query_and_describe(
-            self.session, "GET", f"/display_data/{flight_id}"
+            self.session,
+            "GET",
+            f"/display_data/{flight_id}",
+            # TODO replace with 'uas_standards.interuss.automated_testing.rid.v1.constants.Scope.Observe' once
+            #  the standard is updated with https://github.com/interuss/uas_standards/pull/11/files
+            scope="dss.read.identification_service_areas",
         )
+        # Record query metadata for later use in the aggregate checks
+        query.server_id = self.participant_id
+        query.query_type = QueryType.flight_details(rid_version)
         try:
             result = (
                 ImplicitDict.parse(
