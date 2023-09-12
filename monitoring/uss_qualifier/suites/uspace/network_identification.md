@@ -280,7 +280,7 @@
     <td rowspan="4" style="vertical-align:top;"><a href="../../requirements/interuss/automated_testing/rid/injection.md">interuss.<wbr>automated_testing.<wbr>rid.<wbr>injection</a></td>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">DeleteTestSuccess</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v19/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">ExpectedBehavior</a></td>
@@ -295,7 +295,7 @@
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">UpsertTestSuccess</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v19/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td rowspan="2" style="vertical-align:top;"><a href="../../requirements/interuss/automated_testing/rid/observation.md">interuss.<wbr>automated_testing.<wbr>rid.<wbr>observation</a></td>

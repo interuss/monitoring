@@ -1,14 +1,18 @@
 import time
 import traceback
 import uuid
-from typing import List, Optional
+from typing import List
 
 import arrow
+import s2sphere
 from implicitdict import ImplicitDict
 from loguru import logger
 from requests.exceptions import RequestException
 from uas_standards.interuss.automated_testing.rid.v1.injection import ChangeTestResponse
 
+from monitoring.monitorlib import fetch
+from monitoring.monitorlib.fetch import rid
+from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing.injection_api import (
     CreateTestParameters,
@@ -19,7 +23,6 @@ from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResour
 from monitoring.uss_qualifier.resources.netrid import (
     FlightDataResource,
     NetRIDServiceProviders,
-    NetRIDObserversResource,
     EvaluationConfigurationResource,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid import display_data_evaluator
@@ -36,12 +39,14 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 
 
-class NominalBehavior(GenericTestScenario):
+class Misbehavior(GenericTestScenario):
+    """
+    Check that an unauthenticated client is not able to query a Service Provider
+    """
+
     _flights_data: FlightDataResource
     _service_providers: NetRIDServiceProviders
-    _observers: NetRIDObserversResource
     _evaluation_configuration: EvaluationConfigurationResource
-
     _injected_flights: List[InjectedFlight]
     _injected_tests: List[InjectedTest]
 
@@ -49,39 +54,46 @@ class NominalBehavior(GenericTestScenario):
         self,
         flights_data: FlightDataResource,
         service_providers: NetRIDServiceProviders,
-        observers: NetRIDObserversResource,
         evaluation_configuration: EvaluationConfigurationResource,
-        dss_pool: Optional[DSSInstancesResource] = None,
+        dss_pool: DSSInstancesResource = None,
     ):
         super().__init__()
         self._flights_data = flights_data
         self._service_providers = service_providers
-        self._observers = observers
         self._evaluation_configuration = evaluation_configuration
         self._injected_flights = []
         self._injected_tests = []
-        self._dss_pool = dss_pool
+        if len(dss_pool.dss_instances) == 0:
+            raise ValueError(
+                "The Misbehavior Scenario requires at least one DSS instance"
+            )
+        self._dss = dss_pool.dss_instances[0]
 
     @property
     def _rid_version(self) -> RIDVersion:
         raise NotImplementedError(
-            "NominalBehavior test scenario subclass must specify _rid_version"
+            "Misbehavior test scenario subclass must specify _rid_version"
         )
 
     def run(self):
         self.begin_test_scenario()
-        self.begin_test_case("Nominal flight")
+        self.begin_test_case("Unauthenticated requests")
 
         self.begin_test_step("Injection")
         self._inject_flights()
         self.end_test_step()
 
-        self._poll_during_flights()
+        self.begin_test_step("Unauthenticated requests")
+
+        self._poll_unauthenticated_during_flights()
+
+        self.end_test_step()
 
         self.end_test_case()
         self.end_test_scenario()
 
     def _inject_flights(self):
+        # TODO consider sharing code with nominal_behavior's _inject_flights
         # Inject flights into all USSs
         test_id = str(uuid.uuid4())
         test_flights = self._flights_data.get_test_flights()
@@ -135,7 +147,7 @@ class NominalBehavior(GenericTestScenario):
                     query_timestamps=[query.request.timestamp],
                 )
                 raise RuntimeError("High-severity issue did not abort test scenario")
-            # TODO: Validate injected flights, especially to make sure they contain the specified injection IDs
+
             for flight in injections:
                 self._injected_flights.append(
                     InjectedFlight(
@@ -172,20 +184,12 @@ class NominalBehavior(GenericTestScenario):
             + config.max_propagation_latency.timedelta,
         )
 
-    def _poll_during_flights(self):
+    def _poll_unauthenticated_during_flights(self):
         config = self._evaluation_configuration.configuration
-
-        # Evaluate observed RID system states
-        evaluator = display_data_evaluator.RIDObservationEvaluator(
-            self,
-            self._injected_flights,
-            config,
-            self._rid_version,
-            self._dss_pool.dss_instances[0] if self._dss_pool else None,
-        )
 
         t_end = self._virtual_observer.get_last_time_of_interest()
         t_now = arrow.utcnow()
+
         if t_now > t_end:
             raise RuntimeError(
                 f"Cannot evaluate RID system: injected test flights ended at {t_end}, which is before now ({t_now})"
@@ -207,11 +211,18 @@ class NominalBehavior(GenericTestScenario):
                 self._rid_version.max_diagonal_km * 1000 - 100,  # clustered
                 self._rid_version.max_details_diagonal_km * 1000 - 100,  # details
             ]
+            auth_tests = []
             for diagonal_m in diagonals_m:
                 rect = self._virtual_observer.get_query_rect(diagonal_m)
-                evaluator.evaluate_system_instantaneously(
-                    self._observers.observers, rect
+                auth_tests.append(self._evaluate_and_test_authentication(rect))
+
+            # If we checked for all diagonals that flights queries are properly authenticated,
+            # we can stop polling
+            if all(auth_tests):
+                logger.debug(
+                    "Authentication check is complete, ending polling now.",
                 )
+                break
 
             # Wait until minimum polling interval elapses
             while t_next < arrow.utcnow():
@@ -224,6 +235,76 @@ class NominalBehavior(GenericTestScenario):
                     f"Waiting {delay.total_seconds()} seconds before polling RID system again..."
                 )
                 time.sleep(delay.total_seconds())
+
+    def _evaluate_and_test_authentication(
+        self,
+        rect: s2sphere.LatLngRect,
+    ) -> bool:
+        """Queries all flights in the expected way, then repeats the queries to SPs without credentials.
+
+        returns true once queries to SPS have been made without credentials. False otherwise, such as when
+        no flights were yet returned by the authenticated queries.
+        """
+
+        with self.check("Missing credentials") as check:
+            # We grab all flights from the SP's. This is authenticated
+            # and is expected to succeed
+            sp_observation = rid.all_flights(
+                rect,
+                include_recent_positions=True,
+                get_details=True,
+                rid_version=self._rid_version,
+                session=self._dss.client,
+            )
+            # We fish out the queries that were used to grab the flights from the SP,
+            # and attempt to re-query without credentials. This should fail.
+
+            unauthenticated_session = UTMClientSession(
+                prefix_url=self._dss.client.get_prefix_url(),
+                auth_adapter=None,
+                timeout_seconds=self._dss.client.timeout_seconds,
+            )
+
+            queries_to_repeat = list(sp_observation.uss_flight_queries.values()) + list(
+                sp_observation.uss_flight_details_queries.values()
+            )
+
+            if len(queries_to_repeat) == 0:
+                logger.debug("no flights queries to repeat at this point.")
+                return False
+
+            logger.debug(
+                f"about to repeat {len(queries_to_repeat)} flights queries without credentials"
+            )
+
+            # Attempt to re-query the flights and flight details URLs:
+            for fq in queries_to_repeat:
+                failed_q = fetch.query_and_describe(
+                    client=unauthenticated_session,
+                    verb=fq.query.request.method,
+                    url=fq.query.request.url,
+                    json=fq.query.request.json,
+                    data=fq.query.request.body,
+                )
+                logger.info(
+                    f"Repeating query to {fq.query.request.url} without credentials"
+                )
+                server_id = fq.query.get("server_id", "unknown")
+                if failed_q.response.code not in [401, 403]:
+                    check.record_failed(
+                        "unauthenticated request was fulfilled",
+                        participants=[server_id],
+                        severity=Severity.MEDIUM,
+                        details=f"queried flights on {fq.query.request.url} with no credentials, expected a failure but got a success reply",
+                    )
+                else:
+                    logger.info(
+                        f"participant with id {server_id} properly authenticated the request"
+                    )
+                # Keep track of the failed queries, too
+                self.record_query(failed_q)
+
+            return True
 
     def cleanup(self):
         self.begin_cleanup()
