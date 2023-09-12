@@ -158,7 +158,7 @@ def make_test_suite_documentation(
             req_md_path = os.path.relpath(
                 req_ids_by_package[package][0].md_file_path(), start=base_path
             )
-            package_caption = ".<wbr>".join(package.split("."))
+            package_caption = "&#8203;.".join(package.split("."))
             package_line = f'    <td rowspan="{len(req_ids_by_package[package])}" style="vertical-align:top;"><a href="{req_md_path}">{package_caption}</a></td>'
             for req_id in sorted(req_ids_by_package[package]):
                 req_text = f'<a href="{req_md_path}">{req_id.requirement_name()}</a>'

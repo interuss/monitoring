@@ -16,13 +16,13 @@
     <th>Checked in</th>
   </tr>
   <tr>
-    <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v19.md">astm.<wbr>f3411.<wbr>v19</a></td>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v19.md">astm&#8203;.f3411&#8203;.v19</a></td>
     <td><a href="../../requirements/astm/f3411/v19.md">NET0500</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v19/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a></td>
   </tr>
   <tr>
-    <td rowspan="52" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm.<wbr>f3411.<wbr>v22a</a></td>
+    <td rowspan="52" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm&#8203;.f3411&#8203;.v22a</a></td>
     <td><a href="../../requirements/astm/f3411/v22a.md">A2-6-1,1a</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss_interoperability.md">ASTM F3411-22a NetRID DSS interoperability</a></td>
@@ -283,7 +283,7 @@
     <td><a href="../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
   </tr>
   <tr>
-    <td rowspan="4" style="vertical-align:top;"><a href="../../requirements/interuss/automated_testing/rid/injection.md">interuss.<wbr>automated_testing.<wbr>rid.<wbr>injection</a></td>
+    <td rowspan="4" style="vertical-align:top;"><a href="../../requirements/interuss/automated_testing/rid/injection.md">interuss&#8203;.automated_testing&#8203;.rid&#8203;.injection</a></td>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">DeleteTestSuccess</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v19/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
@@ -304,7 +304,7 @@
     <td><a href="../../scenarios/astm/netrid/v19/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
-    <td rowspan="2" style="vertical-align:top;"><a href="../../requirements/interuss/automated_testing/rid/observation.md">interuss.<wbr>automated_testing.<wbr>rid.<wbr>observation</a></td>
+    <td rowspan="2" style="vertical-align:top;"><a href="../../requirements/interuss/automated_testing/rid/observation.md">interuss&#8203;.automated_testing&#8203;.rid&#8203;.observation</a></td>
     <td><a href="../../requirements/interuss/automated_testing/rid/observation.md">ObservationSuccess</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
