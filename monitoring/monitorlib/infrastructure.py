@@ -133,6 +133,9 @@ class UTMClientSession(requests.Session):
 
         return super().request(method, url, **kwargs)
 
+    def get_prefix_url(self):
+        return self._prefix_url
+
 
 class AsyncUTMTestSession:
     """
