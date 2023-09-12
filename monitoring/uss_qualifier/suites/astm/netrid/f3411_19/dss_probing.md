@@ -5,3 +5,30 @@
 ## Actions
 
 1. Scenario: [ASTM NetRID DSS: Subscription Validation](../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md) ([`scenarios.astm.netrid.v19.dss.SubscriptionValidation`](../../../../scenarios/astm/netrid/v19/dss/subscription_validation.py))
+
+## Checked requirements
+
+<table>
+  <tr>
+    <th>Package</th>
+    <th>Requirement</th>
+    <th>Status</th>
+    <th>Checked in</th>
+  </tr>
+  <tr>
+    <td rowspan="3" style="vertical-align:top;"><a href="../../../../requirements/astm/f3411/v19.md">astm.f3411.v19</a></td>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0030</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0050</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0060</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
+  </tr>
+</table>
