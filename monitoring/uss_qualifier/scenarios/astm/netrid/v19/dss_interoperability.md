@@ -152,6 +152,8 @@ Qualitatively proves: ISA[*P*] modified with proper response, all Subscription[i
 
 #### ISA modification triggers subscription notification requests check
 
+TODO: Implement
+
 **[astm.f3411.v19.A2-6-1,3c](../../../../requirements/astm/f3411/v19.md)**
 
 ### S6 test step
@@ -273,6 +275,8 @@ Action: USS2@DSS*n*: GET Subscription[*n*] by ID
 Qualitatively proves: Expired Subscription removed from ID index on primary DSS
 
 #### 404 with proper response check
+
+TODO: Investigate expected behavior and "404 with proper response" check
 
 **[astm.f3411.v19.A2-6-1,3d](../../../../requirements/astm/f3411/v19.md)**
 

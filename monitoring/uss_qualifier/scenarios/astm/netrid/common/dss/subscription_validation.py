@@ -59,7 +59,13 @@ class SubscriptionValidation(GenericTestScenario):
 
         self._setup_case()
 
-        self._subscription_limitations_case()
+        self.begin_test_case("Subscription duration limitations")
+        self._create_too_long_subscription()
+        self.end_test_case()
+
+        self.begin_test_case("Subscription quantity limitations")
+        self._create_too_many_subscriptions()
+        self.end_test_case()
 
         self.end_test_scenario()
 
@@ -70,46 +76,33 @@ class SubscriptionValidation(GenericTestScenario):
 
         self.end_test_case()
 
-    def _clean_any_sub(self, check: PendingCheck):
-        fetched = self._dss_wrapper.search_subs(
-            check, self._isa.footprint.to_vertices()
-        )
+    def _clean_any_sub(self):
+        with self.check(
+            "Successful subscription query", [self._dss.participant_id]
+        ) as check:
+            fetched = self._dss_wrapper.search_subs(
+                check, self._isa.footprint.to_vertices()
+            )
         for sub_id in fetched.subscriptions.keys():
-            self._dss_wrapper.cleanup_sub(check, sub_id=sub_id)
+            with self.check(
+                "Successful subscription deletion", [self._dss.participant_id]
+            ) as check:
+                self._dss_wrapper.cleanup_sub(check, sub_id=sub_id)
 
     def _ensure_clean_workspace_step(self):
         self.begin_test_step("Ensure clean workspace")
 
-        with self.check(
-            "Successful subscription query and cleanup", [self._dss.participant_id]
-        ) as check:
-            self._clean_any_sub(check)
+        self._clean_any_sub()
 
         self.end_test_step()
-
-    def _subscription_limitations_case(self):
-        self.begin_test_case("Subscription limitations")
-
-        self.begin_test_step("Subscription duration limitations")
-
-        self._create_too_long_subscription()
-
-        self.end_test_step()
-
-        self.begin_test_step("Subscription quantity limitations")
-
-        self._create_too_many_subscriptions()
-
-        self.end_test_step()
-        self.end_test_case()
 
     def _create_too_many_subscriptions(self):
+        self.begin_test_step("Create maximum number of subscriptions")
 
         with self.check(
             "Create up to the maximum allowed number of subscriptions in an area",
             [self._dss.participant_id],
         ) as check:
-            self._clean_any_sub(check)
             # Create 10 subscriptions with different ID's
             for i in range(self._dss.rid_version.dss_max_subscriptions_per_area):
                 sub_id = f"{self._sub_id[:-3]}1{i:02d}"
@@ -118,6 +111,10 @@ class SubscriptionValidation(GenericTestScenario):
                     sub_id=sub_id,
                     **self._default_subscription_params(datetime.timedelta(minutes=30)),
                 )
+
+        self.end_test_step()
+
+        self.begin_test_step("Exceed maximum number of subscriptions")
 
         with self.check(
             "Enforce maximum number of subscriptions for an area",
@@ -133,12 +130,21 @@ class SubscriptionValidation(GenericTestScenario):
                 **self._default_subscription_params(datetime.timedelta(minutes=30)),
             )
 
+        self.end_test_step()
+
+        self.begin_test_step("Clean up subscriptions")
+
+        self._clean_any_sub()
+
+        self.end_test_step()
+
     def _create_too_long_subscription(self):
+        self.begin_test_step("Try to create too-long subscription")
+
         with self.check(
-            "Enforce maximum duration of subscriptions for an area",
+            "Too-long subscription creation rejected",
             [self._dss.participant_id],
         ) as check:
-            self._clean_any_sub(check)
             # Sub with this ID does not exist and too long: we expect either a failure, or
             # that any subscription that is effectively created to be truncated at 24 hours.
             creation_attempt = self._dss_wrapper.put_sub_expect_response_code(
@@ -156,8 +162,16 @@ class SubscriptionValidation(GenericTestScenario):
             if creation_attempt.success:
                 self._check_properly_truncated(check, creation_attempt)
 
+        self.end_test_step()
+
+        self.begin_test_step("Try to extend subscription")
+
+        with self.check(
+            "Valid subscription created",
+            [self._dss.participant_id],
+        ) as check:
             # Create a subscription that is fine
-            self._dss_wrapper.put_sub(
+            sub = self._dss_wrapper.put_sub(
                 check=check,
                 sub_id=self._sub_id,
                 **self._default_subscription_params(
@@ -165,7 +179,11 @@ class SubscriptionValidation(GenericTestScenario):
                 ),
             )
 
-            # Sub with this ID does exist, an we try to extend it beyond 24 hours:
+        with self.check(
+            "Subscription duration limited during update",
+            [self._dss.participant_id],
+        ) as check:
+            # Sub with this ID does exist, and we try to extend it beyond 24 hours:
             extended_subscription = self._dss_wrapper.put_sub_expect_response_code(
                 check=check,
                 sub_id=self._sub_id,
@@ -176,6 +194,20 @@ class SubscriptionValidation(GenericTestScenario):
             )
             if extended_subscription.success:
                 self._check_properly_truncated(check, extended_subscription)
+
+        self.end_test_step()
+
+        self.begin_test_step("Remove subscription")
+
+        with self.check(
+            "Subscription deleted",
+            [self._dss.participant_id],
+        ) as check:
+            self._dss_wrapper.del_sub(
+                check=check, sub_id=self._sub_id, sub_version=sub.subscription.version
+            )
+
+        self.end_test_step()
 
     def _check_properly_truncated(
         self, check: PendingCheck, changed: ChangedSubscription
@@ -191,7 +223,7 @@ class SubscriptionValidation(GenericTestScenario):
                 Severity.Medium,
                 f"{self._dss.participant_id} DSS instance has returned a non-properly truncated subscription "
                 f"(duration: {duration}) "
-                f"when the expecation was either to fail or to truncate at 24 hours.",
+                f"when the expectation was either to fail or to truncate at 24 hours.",
                 query_timestamps=[changed.query.request.timestamp],
             )
             # If a subscription was created, we want to delete it before continuing:
@@ -211,9 +243,6 @@ class SubscriptionValidation(GenericTestScenario):
     def cleanup(self):
         self.begin_cleanup()
 
-        with self.check(
-            "Successful subscription query and cleanup", [self._dss.participant_id]
-        ) as check:
-            self._clean_any_sub(check)
+        self._clean_any_sub()
 
         self.end_cleanup()

@@ -41,6 +41,8 @@ This check will fail if the flight was not successfully injected.
 
 #### Valid flight check
 
+TODO: Validate injected flights, especially to make sure they contain the specified injection IDs
+
 Per **[interuss.automated_testing.rid.injection.UpsertTestResult](../../../../requirements/interuss/automated_testing/rid/injection.md)**, the NetRID Service Provider under test should only make valid modifications to the injected flights.  This includes:
 * A flight with the specified injection ID must be returned.
 
