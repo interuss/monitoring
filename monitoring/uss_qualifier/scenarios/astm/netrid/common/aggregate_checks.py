@@ -134,13 +134,17 @@ class AggregateChecks(ReportEvaluationScenario):
             ) as check:
                 if p95 > self._rid_version.sp_data_resp_percentile95_s:
                     check.record_failed(
-                        f"95th percentile of /flights?view requests is {p95} s, "
-                        f"expected less than {self._rid_version.sp_data_resp_percentile95_s} s"
+                        summary=f"95th percentile of /flights?view requests is {p95} s",
+                        severity=Severity.Medium,
+                        participants=[participant],
+                        details=f"expected less than {self._rid_version.sp_data_resp_percentile95_s} s, was {p95}",
                     )
                 if p99 > self._rid_version.sp_data_resp_percentile99_s:
                     check.record_failed(
-                        f"99th percentile of /flights?view requests is {p99} s, "
-                        f"expected less than {self._rid_version.sp_data_resp_percentile99_s} s"
+                        summary=f"99th percentile of /flights?view requests is {p99} s",
+                        severity=Severity.Medium,
+                        participants=[participant],
+                        details=f"expected less than {self._rid_version.sp_data_resp_percentile99_s} s, was {p99}",
                     )
 
             self.record_note(
