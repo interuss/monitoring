@@ -15,7 +15,7 @@ from yaml.representer import Representer
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.monitorlib import infrastructure
-
+from monitoring.monitorlib.rid import RIDVersion
 
 TIMEOUTS = (5, 5)  # Timeouts of `connect` and `read` in seconds
 ATTEMPTS = (
@@ -139,11 +139,87 @@ def describe_response(resp: requests.Response) -> ResponseDescription:
     return ResponseDescription(**kwargs)
 
 
+def describe_flask_response(resp: flask.Response, elapsed_s: float):
+    headers = {k: v for k, v in resp.headers.items()}
+    kwargs = {
+        "code": resp.status_code,
+        "headers": headers,
+        "reported": StringBasedDateTime(datetime.datetime.utcnow()),
+        "elapsed_s": elapsed_s,
+    }
+    try:
+        kwargs["json"] = resp.get_json()
+    except ValueError:
+        kwargs["body"] = resp.get_data(as_text=True)
+    return ResponseDescription(**kwargs)
+
+
 class QueryType(str, Enum):
     F3411v22aFlights = "astm.f3411.v22a.sp.flights"
     F3411v19Flights = "astm.f3411.v19.sp.flights"
     F3411v22aFlightDetails = "astm.f3411.v22a.sp.flight_details"
     F3411v19aFlightDetails = "astm.f3411.v19.sp.flight_details"
+
+    # ASTM F3548-21
+    F3548v21DSSQueryOperationalIntentReferences = (
+        "astm.f3548.v21.dss.queryOperationalIntentReferences"
+    )
+    F3548v21DSSGetOperationalIntentReference = (
+        "astm.f3548.v21.dss.getOperationalIntentReference"
+    )
+    F3548v21DSSCreateOperationalIntentReference = (
+        "astm.f3548.v21.dss.createOperationalIntentReference"
+    )
+    F3548v21DSSUpdateOperationalIntentReference = (
+        "astm.f3548.v21.dss.updateOperationalIntentReference"
+    )
+    F3548v21DSSDeleteOperationalIntentReference = (
+        "astm.f3548.v21.dss.deleteOperationalIntentReference"
+    )
+    F3548v21DSSQueryConstraintReferences = (
+        "astm.f3548.v21.dss.queryConstraintReferences"
+    )
+    F3548v21DSSGetConstraintReference = "astm.f3548.v21.dss.getConstraintReference"
+    F3548v21DSSCreateConstraintReference = (
+        "astm.f3548.v21.dss.createConstraintReference"
+    )
+    F3548v21DSSUpdateConstraintReference = (
+        "astm.f3548.v21.dss.updateConstraintReference"
+    )
+    F3548v21DSSDeleteConstraintReference = (
+        "astm.f3548.v21.dss.deleteConstraintReference"
+    )
+    F3548v21DSSQuerySubscriptions = "astm.f3548.v21.dss.querySubscriptions"
+    F3548v21DSSGetSubscription = "astm.f3548.v21.dss.getSubscription"
+    F3548v21DSSCreateSubscription = "astm.f3548.v21.dss.createSubscription"
+    F3548v21DSSUpdateSubscription = "astm.f3548.v21.dss.updateSubscription"
+    F3548v21DSSDeleteSubscription = "astm.f3548.v21.dss.deleteSubscription"
+    F3548v21DSSMakeDssReport = "astm.f3548.v21.dss.makeDssReport"
+    F3548v21DSSSetUssAvailability = "astm.f3548.v21.uss.setUssAvailability"
+    F3548v21DSSGetUssAvailability = "astm.f3548.v21.uss.getUssAvailability"
+    F3548v21USSGetOperationalIntentDetails = (
+        "astm.f3548.v21.uss.getOperationalIntentDetails"
+    )
+    F3548v21USSGetOperationalIntentTelemetry = (
+        "astm.f3548.v21.uss.getOperationalIntentTelemetry"
+    )
+    F3548v21USSNotifyOperationalIntentDetailsChanged = (
+        "astm.f3548.v21.uss.notifyOperationalIntentDetailsChanged"
+    )
+    F3548v21USSGetConstraintDetails = "astm.f3548.v21.uss.getConstraintDetails"
+    F3548v21USSNotifyConstraintDetailsChanged = (
+        "astm.f3548.v21.uss.notifyConstraintDetailsChanged"
+    )
+    F3548v21USSMakeUssReport = "astm.f3548.v21.uss.makeUssReport"
+
+    @staticmethod
+    def flight_details(rid_version: RIDVersion):
+        if rid_version == RIDVersion.f3411_19:
+            return QueryType.F3411v19aFlightDetails
+        elif rid_version == RIDVersion.f3411_22a:
+            return QueryType.F3411v22aFlightDetails
+        else:
+            raise ValueError(f"Unsupported RID version: {rid_version}")
 
 
 class Query(ImplicitDict):
@@ -170,6 +246,7 @@ class QueryError(RuntimeError):
 
     def __init__(self, msg, queries: Optional[List[Query]] = None):
         super(RuntimeError, self).__init__(msg)
+        self.msg = msg
         self.queries = queries or []
 
     @property
@@ -183,18 +260,31 @@ class QueryError(RuntimeError):
 
 yaml.add_representer(Query, Representer.represent_dict)
 
+yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
-def describe_query(resp: requests.Response, initiated_at: datetime.datetime) -> Query:
-    return Query(
+
+def describe_query(
+    resp: requests.Response,
+    initiated_at: datetime.datetime,
+    query_type: Optional[QueryType] = None,
+) -> Query:
+    result = Query(
         request=describe_request(resp.request, initiated_at),
         response=describe_response(resp),
     )
+    if query_type is not None:
+        result.query_type = query_type
+    return result
 
 
 def query_and_describe(
-    client: Optional[infrastructure.UTMClientSession], verb: str, url: str, **kwargs
+    client: Optional[infrastructure.UTMClientSession],
+    verb: str,
+    url: str,
+    query_type: Optional[QueryType] = None,
+    **kwargs,
 ) -> Query:
-    """Attempt to perform a query, and the describe the results of that attempt.
+    """Attempt to perform a query, and then describe the results of that attempt.
 
     This function should capture all common problems when attempting to send a query and report the problem in the Query
     result rather than raising an exception.
@@ -203,6 +293,7 @@ def query_and_describe(
         client: UTMClientSession to use, or None to use a default `requests` Session.
         verb: HTTP verb to perform at the specified URL.
         url: URL to query.
+        query_type: If specified, the known type of query that this is.
         **kwargs: Any keyword arguments that should be applied to the <session>.request method when invoking it.
 
     Returns:
@@ -224,7 +315,9 @@ def query_and_describe(
     for attempt in range(ATTEMPTS):
         t0 = datetime.datetime.utcnow()
         try:
-            return describe_query(client.request(verb, url, **req_kwargs), t0)
+            return describe_query(
+                client.request(verb, url, **req_kwargs), t0, query_type
+            )
         except (requests.Timeout, urllib3.exceptions.ReadTimeoutError) as e:
             failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with timeout {type(e).__name__}: {str(e)}"
             logger.warning(failure_message)
@@ -245,7 +338,7 @@ def query_and_describe(
     del req_kwargs["timeout"]
     req = requests.Request(verb, url, **req_kwargs)
     prepped_req = client.prepare_request(req)
-    return Query(
+    result = Query(
         request=describe_request(prepped_req, t0),
         response=ResponseDescription(
             code=None,
@@ -253,4 +346,16 @@ def query_and_describe(
             elapsed_s=(t1 - t0).total_seconds(),
             reported=StringBasedDateTime(t1),
         ),
+    )
+    if query_type is not None:
+        result.query_type = query_type
+    return result
+
+
+def describe_flask_query(
+    req: flask.Request, res: flask.Response, elapsed_s: float
+) -> Query:
+    return Query(
+        request=describe_flask_request(req),
+        response=describe_flask_response(res, elapsed_s),
     )

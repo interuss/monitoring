@@ -85,11 +85,10 @@ def query_operational_intents(
 
     updated_op_intents = []
     for op_intent_ref in get_details_for:
-        updated_op_intents.append(
-            scd_client.get_operational_intent_details(
-                utm_client, op_intent_ref.uss_base_url, op_intent_ref.id
-            )
+        op_intent, _ = scd_client.get_operational_intent_details(
+            utm_client, op_intent_ref.uss_base_url, op_intent_ref.id
         )
+        updated_op_intents.append(op_intent)
     result.extend(updated_op_intents)
 
     with db as tx:

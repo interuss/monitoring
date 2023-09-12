@@ -5,3 +5,5 @@ A test suite is a set of tests that establish compliance to the thing they're na
 A test suite is composed of a list of {test suite|test scenario}; each element on the list is executed sequentially.
 
 A test suite is defined with a YAML file following the [`TestSuiteDefinition` schema](definitions.py).
+
+Test suite documentation is generated automatically; use `make format` from the repository root to regenerate it.

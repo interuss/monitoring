@@ -57,15 +57,6 @@ class RIDVersion(str, Enum):
             raise ValueError(f"Unsupported RID version '{self}'")
 
     @property
-    def read_scope(self) -> str:
-        if self == RIDVersion.f3411_19:
-            return v19.constants.Scope.Read
-        elif self == RIDVersion.f3411_22a:
-            return v22a.constants.Scope.DisplayProvider
-        else:
-            raise ValueError("Unsupported RID version '{}'".format(self))
-
-    @property
     def realtime_period(self) -> timedelta:
         if self == RIDVersion.f3411_19:
             return timedelta(seconds=v19.constants.NetMaxNearRealTimeDataPeriodSeconds)
@@ -152,6 +143,24 @@ class RIDVersion(str, Enum):
             return v19.constants.NetDpDataResponse95thPercentileSeconds
         elif self == RIDVersion.f3411_22a:
             return v22a.constants.NetDpDataResponse95thPercentileSeconds
+        else:
+            raise ValueError("Unsupported RID version '{}'".format(self))
+
+    @property
+    def dp_details_resp_percentile95_s(self) -> float:
+        if self == RIDVersion.f3411_19:
+            return v19.constants.NetDpDetailsResponse95thPercentileSeconds
+        elif self == RIDVersion.f3411_22a:
+            return v22a.constants.NetDpDetailsResponse95thPercentileSeconds
+        else:
+            raise ValueError("Unsupported RID version '{}'".format(self))
+
+    @property
+    def dp_details_resp_percentile99_s(self) -> float:
+        if self == RIDVersion.f3411_19:
+            return v19.constants.NetDpDetailsResponse99thPercentileSeconds
+        elif self == RIDVersion.f3411_22a:
+            return v22a.constants.NetDpDetailsResponse99thPercentileSeconds
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 

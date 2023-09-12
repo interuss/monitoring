@@ -21,6 +21,7 @@ The available functionality sets are:
 * [`ridsp`](ridsp): Remote ID Service Provider
 * [`scdsc`](scdsc): ASTM F3548 strategic coordinator
 * [`tracer`](tracer): Interoperability ecosystem tracer logger
+* [`interaction_logging`](interaction_logging): Enables logging of the [interuss](https://github.com/astm-utm/Protocol/blob/master/utm.yaml) interactions between mock_uss and other uss participants
 
 
 ## Local deployment

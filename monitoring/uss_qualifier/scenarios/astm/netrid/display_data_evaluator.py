@@ -10,7 +10,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator 
     RIDCommonDictionaryEvaluator,
 )
 
-from monitoring.monitorlib.fetch import Query
+from monitoring.monitorlib.fetch import Query, QueryType
 from monitoring.monitorlib.fetch.rid import (
     all_flights,
     FetchedFlights,
@@ -261,6 +261,16 @@ class RIDObservationEvaluator(object):
                     query,
                     verified_sps,
                 )
+                # We also issue queries to the flight details endpoint in order to collect
+                # performance statistics, which are computed and checked at a later stage.
+                if query.status_code == 200:
+                    # If there are multiple flights, we only issue a single details query for the first returned one,
+                    #  as we don't want to slow down the test we are piggy-backing on.
+                    if len(observation.flights) > 0:
+                        (_, detailQuery) = observer.observe_flight_details(
+                            observation.flights[0].id, self._rid_version
+                        )
+                        self._test_scenario.record_query(detailQuery)
 
                 # TODO: If bounding rect is smaller than cluster threshold, expand slightly above cluster threshold and re-observe
                 # TODO: If bounding rect is smaller than area-too-large threshold, expand slightly above area-too-large threshold and re-observe
@@ -617,14 +627,14 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     summary="Error while evaluating clustered area view. Missing flight",
                     severity=Severity.Medium,
-                    details=f"{expected_count-clustered_flight_count} (~{uncertain_count}) missing flight(s)",
+                    details=f"{expected_count - clustered_flight_count} (~{uncertain_count}) missing flight(s)",
                 )
             elif clustered_flight_count > expected_count + uncertain_count:
                 # Unexpected flight
                 check.record_failed(
                     summary="Error while evaluating clustered area view. Unexpected flight",
                     severity=Severity.Medium,
-                    details=f"{clustered_flight_count-expected_count} (~{uncertain_count}) unexpected flight(s)",
+                    details=f"{clustered_flight_count - expected_count} (~{uncertain_count}) unexpected flight(s)",
                 )
             elif clustered_flight_count == expected_count:
                 # evaluate cluster obfuscation distance
@@ -674,7 +684,7 @@ class RIDObservationEvaluator(object):
                 cluster_width, cluster_height = geo.flatten(
                     cluster_rect.lo(), cluster_rect.hi()
                 )
-                min_dim = 2 * observer.rid_version.min_obfuscation_distance_m
+                min_dim = 2 * self._rid_version.min_obfuscation_distance_m
                 if cluster_height < min_dim or cluster_width < min_dim:
                     # Cluster has a too small distance to the edge
                     check.record_failed(

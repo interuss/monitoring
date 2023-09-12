@@ -1,9 +1,11 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from monitoring.monitorlib import fetch, scd
-from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.clients import call_query_hooks
+from monitoring.monitorlib.fetch import QueryError, Query, QueryType
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from implicitdict import ImplicitDict
+from loguru import logger
 
 
 # === DSS operations defined in ASTM API ===
@@ -137,10 +139,17 @@ def delete_operational_intent_reference(
 
 def get_operational_intent_details(
     utm_client: UTMClientSession, uss_base_url: str, id: str
-) -> scd.OperationalIntent:
+) -> Tuple[scd.OperationalIntent, Query]:
     url = f"{uss_base_url}/uss/v1/operational_intents/{id}"
     subject = f"getOperationalIntentDetails from {url}"
-    query = fetch.query_and_describe(utm_client, "GET", url, scope=scd.SCOPE_SC)
+    query = fetch.query_and_describe(
+        utm_client,
+        "GET",
+        url,
+        QueryType.F3548v21USSGetOperationalIntentDetails,
+        scope=scd.SCOPE_SC,
+    )
+    call_query_hooks(query)
     if query.status_code != 200:
         raise QueryError(
             msg="{} failed {}:\n{}".format(
@@ -160,19 +169,25 @@ def get_operational_intent_details(
         raise QueryError(
             msg=f"{subject} response contained invalid JSON: {str(e)}", queries=[query]
         )
-    return resp_body.operational_intent
+    return resp_body.operational_intent, query
 
 
 def notify_operational_intent_details_changed(
     utm_client: UTMClientSession,
     uss_base_url: str,
     update: scd.PutOperationalIntentDetailsParameters,
-) -> None:
+) -> Query:
     url = f"{uss_base_url}/uss/v1/operational_intents"
     subject = f"notifyOperationalIntentDetailsChanged to {url}"
     query = fetch.query_and_describe(
-        utm_client, "POST", url, json=update, scope=scd.SCOPE_SC
+        utm_client,
+        "POST",
+        url,
+        QueryType.F3548v21USSNotifyOperationalIntentDetailsChanged,
+        json=update,
+        scope=scd.SCOPE_SC,
     )
+    call_query_hooks(query)
     if query.status_code != 204 and query.status_code != 200:
         raise QueryError(
             msg="{} failed {}:\n{}".format(
@@ -180,6 +195,7 @@ def notify_operational_intent_details_changed(
             ),
             queries=[query],
         )
+    return query
 
 
 # === Custom actions ===
