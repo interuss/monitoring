@@ -233,6 +233,17 @@ class Flight(ImplicitDict):
                 f"Cannot retrieve recent positions using RID version {self.rid_version}"
             )
 
+    @property
+    def operational_status(self) -> v22a.api.RIDOperationalStatus:
+        if self.rid_version == RIDVersion.f3411_19:
+            return v22a.api.RIDOperationalStatus(self.v19_value.current_state.operational_status)
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_value.current_state.operational_status
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve operational status using RID version {self.rid_version}"
+            )
+
     def errors(self) -> List[str]:
         try:
             rid_version = self.rid_version

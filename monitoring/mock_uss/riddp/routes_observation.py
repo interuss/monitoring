@@ -6,6 +6,7 @@ from loguru import logger
 import s2sphere
 from uas_standards.astm.f3411.v19.api import ErrorResponse
 from uas_standards.astm.f3411.v19.constants import Scope
+from uas_standards.interuss.automated_testing.rid.v1.observation import OperatorAltitude
 
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
@@ -54,10 +55,11 @@ def _make_flight_observation(
     if current_path:
         paths.append(current_path)
 
+
     p = flight.most_recent_position
     current_state = observation_api.CurrentState(
         timestamp=p.time.isoformat(),
-        operational_status=None, # TODO: Propagate value
+        operational_status=flight.operational_status,
         track=None, # TODO: Propagate value
         speed=None # TODO: Propagate value
     )
@@ -183,7 +185,7 @@ def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
         result = observation_api.GetDetailsResponse(
             operator=observation_api.Operator(
                 id=details.operator_id,
-                location=details.operator_location.get("position"),
+                location=details.operator_location.position,
                 altitude=observation_api.OperatorAltitude(
                     altitude=details.operator_location.get("altitude"),
                     altitude_type=details.operator_location.get("altitude_type"),
