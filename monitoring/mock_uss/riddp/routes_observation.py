@@ -1,3 +1,4 @@
+from s2sphere import LatLng
 from typing import Dict, List, Optional, Tuple
 import arrow
 import flask
@@ -6,9 +7,11 @@ import s2sphere
 from uas_standards.astm.f3411.v19.api import ErrorResponse
 from uas_standards.astm.f3411.v19.constants import Scope
 
+from uas_standards.astm.f3411.v22a.constants import MaxSpeed, SpecialSpeed, MinSpeedResolution
+
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
-from monitoring.monitorlib.fetch.rid import Flight, FetchedISAs
+from monitoring.monitorlib.fetch.rid import Flight, FetchedISAs, Position
 from monitoring.monitorlib.rid import RIDVersion
 from uas_standards.interuss.automated_testing.rid.v1 import observation as observation_api
 from monitoring.mock_uss import webapp
@@ -17,7 +20,24 @@ from . import clustering, database, utm_client
 from .behavior import DisplayProviderBehavior
 from .config import KEY_RID_VERSION
 from .database import db
+from ...monitorlib.formatting import _limit_resolution
+from ...monitorlib.geo import EARTH_CIRCUMFERENCE_M
 
+
+def _compute_speed(positions: List[Position]):
+    if len(positions) == 2:
+        p0 = positions[0]
+        p1 = positions[1]
+        if p0.time < p1.time:
+            p0 = positions[1]
+            p1 = positions[0]
+        c0 = LatLng.from_degrees(p0.lat, p0.lng)
+        c1 = LatLng.from_degrees(p1.lat, p1.lng)
+        distance_m = c0.get_distance(c1).degrees * EARTH_CIRCUMFERENCE_M / 360
+        duration_s = (p1.time - p0.time).seconds
+        return max(_limit_resolution(distance_m / duration_s, MinSpeedResolution), MaxSpeed)
+    else:
+        return SpecialSpeed
 
 def _make_flight_observation(
     flight: Flight, view: s2sphere.LatLngRect
@@ -53,14 +73,15 @@ def _make_flight_observation(
     if current_path:
         paths.append(current_path)
 
+    current_speed = _compute_speed(flight.recent_positions[:2])
+
     p = flight.most_recent_position
-    MICRO=pow(10, 6)
-    t = p.time.replace(microsecond=int(int(p.time.microsecond/MICRO*10)*MICRO/10))
+    t = p.time.replace(microsecond=_limit_resolution(p.time.microsecond, pow(10, 5)))
     current_state = observation_api.CurrentState(
         timestamp=t.isoformat(),
         operational_status=flight.operational_status,
         track=None, # TODO: Propagate value
-        speed=None # TODO: Propagate value
+        speed=current_speed
     )
     return observation_api.Flight(
         id=flight.id,

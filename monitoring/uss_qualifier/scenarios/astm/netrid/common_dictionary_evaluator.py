@@ -1,6 +1,7 @@
 import datetime
 from arrow import ParserError
 from implicitdict import StringBasedDateTime
+from loguru import logger
 from typing import List, Optional
 import s2sphere
 
@@ -11,10 +12,13 @@ from uas_standards.interuss.automated_testing.rid.v1.observation import (
 
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
+
+from uas_standards.astm.f3411.v22a.constants import SpecialSpeed, MaxSpeed
 from monitoring.monitorlib.fetch.rid import (
     FetchedFlights,
     FlightDetails,
 )
+from monitoring.monitorlib.formatting import _limit_resolution
 from monitoring.monitorlib.geo import validate_lat, validate_lng, Altitude, LatLngPoint
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
@@ -281,8 +285,9 @@ class RIDCommonDictionaryEvaluator(object):
                         f"Timestamp must be relative to UTC: {timestamp}",
                         severity=Severity.Medium,
                     )
-                deci_seconds = t.datetime.microsecond / 100000
-                if deci_seconds - int(deci_seconds) > 0:
+                ms = t.datetime.microsecond
+                ms_res = _limit_resolution(ms, pow(10, 5))
+                if ms != ms_res:
                     check.record_failed(
                         f"Timestamp resolution is smaller than 1/10: {timestamp}",
                         severity=Severity.Medium,
@@ -311,6 +316,20 @@ class RIDCommonDictionaryEvaluator(object):
                 key="skip_reason",
                 message=f"Unsupported version {self._rid_version}: skipping Operator ID evaluation",
             )
+
+    def evaluate_speed(self, speed: float, participants: List[str]):
+        with self._test_scenario.check(
+                "Speed consistency with Common Dictionary", participants
+        ) as check:
+            if not (0 < speed <= MaxSpeed or round(speed) == SpecialSpeed):
+                check.record_failed(
+                    f"Invalid speed: {speed}",
+                    details=f"The speed shall be greater than 0 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
+                    severity=Severity.Medium,
+                )
+
+            # TODO: In addition, if the value resolution is less than 0.25 m/s, this check will fail.
+
 
     def _evaluate_operator_location(
         self,
@@ -368,7 +387,7 @@ class RIDCommonDictionaryEvaluator(object):
                             details=f"Invalid Operator Altitude units: {alt.units}",
                             severity=Severity.Medium,
                         )
-                    if alt.value != round(alt.value):
+                    if alt.value != _limit_resolution(alt.value, 1):
                         check.record_failed(
                             "Operator Altitude must have a minimum resolution of 1 m.",
                             details=f"Invalid Operator Altitude: {alt.value}",
