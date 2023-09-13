@@ -1,5 +1,5 @@
 from typing import Dict, List, Optional, Tuple
-
+from datetime import datetime
 import arrow
 import flask
 from loguru import logger
@@ -11,7 +11,7 @@ from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.fetch.rid import Flight, FetchedISAs
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.monitorlib.rid_automated_testing import observation_api
+from uas_standards.interuss.automated_testing.rid.v1 import observation as observation_api
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
 from . import clustering, database, utm_client
@@ -55,10 +55,17 @@ def _make_flight_observation(
         paths.append(current_path)
 
     p = flight.most_recent_position
+    current_state = observation_api.CurrentState(
+        timestamp=p.time.isoformat(),
+        operational_status=None, # TODO: Propagate value
+        track=None, # TODO: Propagate value
+        speed=None # TODO: Propagate value
+    )
     return observation_api.Flight(
         id=flight.id,
         most_recent_position=observation_api.Position(lat=p.lat, lng=p.lng, alt=p.alt),
         recent_paths=[observation_api.Path(positions=path) for path in paths],
+        current_state=current_state
     )
 
 
@@ -172,15 +179,18 @@ def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
         # TODO: Implement details for F3411-19
         return flask.jsonify(observation_api.GetDetailsResponse(id=flight_id))
     elif rid_version == RIDVersion.f3411_22a:
+        details = flight_details.details
         result = observation_api.GetDetailsResponse(
-            id=flight_id,
-            operator_id=flight_details.details.v22a_value.get("operator_id"),
-            uas_id=flight_details.details.v22a_value.get("uas_id"),
-            operator_location=flight_details.details.v22a_value.get(
-                "operator_location"
+            operator=observation_api.Operator(
+                id=details.operator_id,
+                location=details.operator_location.get("position"),
+                altitude=observation_api.OperatorAltitude(
+                    altitude=details.operator_location.get("altitude"),
+                    altitude_type=details.operator_location.get("altitude_type"),
+                ),
             ),
-            operational_status=flight_details.details.v22a_value.get(
-                "operational_status"
+            uas=observation_api.UAS(
+                id=details.plain_uas_id,
             ),
         )
         return flask.jsonify(result)

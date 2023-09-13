@@ -321,6 +321,56 @@ class FlightDetails(ImplicitDict):
     def id(self) -> str:
         return self.raw.id
 
+    @property
+    def operator_id(self) -> str:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value.operator_id
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_value.operator_id
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve operator_id using RID version {self.rid_version}"
+            )
+
+    @property
+    def plain_uas_id(self) -> Optional[str]:
+        """Returns a UAS id as a plain string without type hint.
+        If multiple are provided:
+        For v19, registration_number is returned if set, else it falls back to the serial_number.
+        For v20, the order of ASTM F3411-v19 Table 1 is used.
+        If no match, it returns None.
+        """
+        if self.rid_version == RIDVersion.f3411_19:
+            rn = self.v19_value.registration_number
+            if rn:
+                return rn
+            else:
+                return self.v19_value.serial_number
+        elif self.rid_version == RIDVersion.f3411_22a:
+            uas_id = self.v22a_value.uas_id
+            if uas_id.serial_number:
+                return uas_id.serial_number
+            elif uas_id.registration_id:
+                return uas_id.registration_id
+            elif uas_id.utm_id:
+                return uas_id.utm_id
+            elif uas_id.specific_session_id:
+                return uas_id.specific_session_id
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve plain_uas_id using RID version {self.rid_version}"
+            )
+
+    @property
+    def operator_location(self) -> v22a.api.OperatorLocation:
+        if self.rid_version == RIDVersion.f3411_19:
+            return v22a.api.OperatorLocation(position=self.v19_value.operator_location)
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_value.operator_location
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve operator_location using RID version {self.rid_version}"
+            )
 
 class Subscription(ImplicitDict):
     """Version-independent representation of a F3411 subscription."""

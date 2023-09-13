@@ -8,7 +8,7 @@ from monitoring.monitorlib import fetch, infrastructure
 from monitoring.monitorlib.fetch import QueryType
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.monitorlib.rid_automated_testing import observation_api
+from uas_standards.interuss.automated_testing.rid.v1 import observation as observation_api
 from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 
@@ -85,7 +85,8 @@ class RIDSystemObserver(object):
                 if query.status_code == 200
                 else None
             )
-        except ValueError:
+        except ValueError as e:
+            logger.error("Error parsing observation details response: {}", e)
             result = None
         return result, query
 
