@@ -213,11 +213,34 @@ def _assert_timestamp(value: str, outcome: bool):
     assert unit_test_scenario.get_report().successful == outcome
 
 
+def test_speed():
+    _assert_speed(1, True)  # Ok
+    _assert_speed(20.75, True)  # Ok
+    _assert_speed(400, False)  # Fail, above MaxSpeed
+    _assert_speed(23.3, False)  # Wrong resolution
+
+
+def _assert_speed(value: float, outcome: bool):
+    def step_under_test(self: UnitTestScenario):
+        evaluator = RIDCommonDictionaryEvaluator(
+            config=EvaluationConfiguration(),
+            test_scenario=self,
+            rid_version=RIDVersion.f3411_22a,
+        )
+
+        evaluator.evaluate_speed(value, [])
+
+    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+    assert unit_test_scenario.get_report().successful == outcome
+
+
 def test_timestamp():
     _assert_timestamp("2023-09-13T04:43:00.1Z", True)  # Ok
     _assert_timestamp("2023-09-13T04:43:00Z", True)  # Ok
     _assert_timestamp("2023-09-13T04:43:00.501Z", False)  # Wrong resolution
     _assert_timestamp("2023-09-13T04:43:00.1EST", False)  # Wrong timezone
+
+
 
 
 def _assert_evaluate_sp_flight_recent_positions(

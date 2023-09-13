@@ -1,7 +1,6 @@
 import datetime
 from arrow import ParserError
 from implicitdict import StringBasedDateTime
-from loguru import logger
 from typing import List, Optional
 import s2sphere
 
@@ -13,7 +12,8 @@ from uas_standards.interuss.automated_testing.rid.v1.observation import (
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
 
-from uas_standards.astm.f3411.v22a.constants import SpecialSpeed, MaxSpeed
+from uas_standards.astm.f3411.v22a.constants import SpecialSpeed, MaxSpeed, MinSpeedResolution
+
 from monitoring.monitorlib.fetch.rid import (
     FetchedFlights,
     FlightDetails,
@@ -328,7 +328,14 @@ class RIDCommonDictionaryEvaluator(object):
                     severity=Severity.Medium,
                 )
 
-            # TODO: In addition, if the value resolution is less than 0.25 m/s, this check will fail.
+            if speed != _limit_resolution(speed, MinSpeedResolution):
+                check.record_failed(
+                    f"Invalid speed resolution: {speed}",
+                    details=f"the speed resolution shall not be less than 0.25 m/s",
+                    severity=Severity.Medium,
+                )
+
+
 
 
     def _evaluate_operator_location(
