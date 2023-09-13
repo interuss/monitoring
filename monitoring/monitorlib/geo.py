@@ -50,6 +50,14 @@ class Altitude(ImplicitDict):
     reference: AltitudeDatum
     units: DistanceUnits
 
+    @staticmethod
+    def w84m(value: float):
+        return Altitude(
+            value=value,
+            reference=AltitudeDatum.W84,
+            units=DistanceUnits.M
+        )
+
 
 class Volume3D(ImplicitDict):
     outline_circle: Optional[Circle] = None

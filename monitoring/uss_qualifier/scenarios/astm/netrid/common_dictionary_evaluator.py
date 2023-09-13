@@ -3,7 +3,8 @@ from typing import List, Optional
 import s2sphere
 
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
-    GetDetailsResponse, OperatorAltitudeAltitudeType,
+    GetDetailsResponse,
+    OperatorAltitudeAltitudeType,
 )
 
 from uas_standards.ansi_cta_2063_a import SerialNumber
@@ -71,7 +72,6 @@ class RIDCommonDictionaryEvaluator(object):
                 f.raw.get("current_state", {}).get("operational_status"),
                 participants,
             )
-
 
     def _evaluate_recent_position_time(
         self, p: Position, query_time: datetime.datetime, check: PendingCheck
@@ -169,22 +169,32 @@ class RIDCommonDictionaryEvaluator(object):
             details.operator_location.position,
             details.operator_location.get("altitude"),
             details.operator_location.get("altitude_type"),
-            participants
+            participants,
         )
 
     def evaluate_dp_details(
         self, observed_details: Optional[GetDetailsResponse], participants: List[str]
     ):
-        logger.info(observed_details)
         if not observed_details:
             observed_details = {}
-        self._evaluate_plain_uas_id(observed_details.get("uas", {}).get("id"), participants)
-        self._evaluate_operator_id(observed_details.get("operator", {}).get("id"), participants)
+
+        self._evaluate_plain_uas_id(
+            observed_details.get("uas", {}).get("id"), participants
+        )
+
+        operator = observed_details.get("operator", {})
+        self._evaluate_operator_id(operator.get("id"), participants)
+
+        operator_location = operator.get("location", {})
+        operator_altitude = operator.get("altitude", {})
+        operator_altitude_value = operator_altitude.get("altitude")
         self._evaluate_operator_location(
-            observed_details.get("operator", {}).get("location"),
-            observed_details.get("operator", {}).get("altitude"),
-            observed_details.get("operator", {}).get("altitude_type"),
-            participants
+            operator_location,
+            Altitude.w84m(value=operator_altitude_value)
+            if operator_altitude_value
+            else None,
+            operator_altitude.get("altitude_type"),
+            participants,
         )
 
     def _evaluate_uas_id(
@@ -236,29 +246,27 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping UAS ID evaluation",
             )
 
-    def _evaluate_plain_uas_id(
-        self, value: str, participants: List[str]
-    ):
-            with self._test_scenario.check(
-                "UAS ID presence in flight details", participants
-            ) as check:
-                if not value:
-                    check.record_failed(
-                        f"UAS ID not present as required by the Common Dictionary definition: {value}",
-                        severity=Severity.Medium,
-                    )
-                    return
+    def _evaluate_plain_uas_id(self, value: str, participants: List[str]):
+        with self._test_scenario.check(
+            "UAS ID presence in flight details", participants
+        ) as check:
+            if not value:
+                check.record_failed(
+                    f"UAS ID not present as required by the Common Dictionary definition: {value}",
+                    severity=Severity.Medium,
+                )
+                return
 
-            if SerialNumber(value).valid:
-                self._test_scenario.check(
-                    "UAS ID (Serial Number format) consistency with Common Dictionary",
-                    participants,
-                ).record_passed(participants)
+        if SerialNumber(value).valid:
+            self._test_scenario.check(
+                "UAS ID (Serial Number format) consistency with Common Dictionary",
+                participants,
+            ).record_passed(participants)
 
-            # TODO: Add registration id format check
-            # TODO: Add utm id format check
-            # TODO: Add specific session id format check
-            # TODO: Add a check to validate at least one format is correct
+        # TODO: Add registration id format check
+        # TODO: Add utm id format check
+        # TODO: Add specific session id format check
+        # TODO: Add a check to validate at least one format is correct
 
     def _evaluate_operator_id(self, value: Optional[str], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
@@ -279,12 +287,24 @@ class RIDCommonDictionaryEvaluator(object):
             )
 
     def _evaluate_operator_location(
-        self, position: Optional[LatLngPoint], altitude: Optional[Altitude], altitude_type: Optional[OperatorAltitudeAltitudeType], participants: List[str]
+        self,
+        position: Optional[LatLngPoint],
+        altitude: Optional[Altitude],
+        altitude_type: Optional[OperatorAltitudeAltitudeType],
+        participants: List[str],
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
                 "Operator Location consistency with Common Dictionary", participants
             ) as check:
+                if not position:
+                    check.record_failed(
+                        "Missing Operator position",
+                        details=f"Invalid position: {position}",
+                        severity=Severity.Medium,
+                    )
+                    return
+
                 lat = position.lat
                 try:
                     lat = validate_lat(lat)
@@ -336,7 +356,7 @@ class RIDCommonDictionaryEvaluator(object):
                         participants,
                     ) as check:
                         try:
-                            v22a.api.OperatorLocationAltitude_type(
+                            v22a.api.OperatorLocationAltitudeType(
                                 alt_type
                             )  # raise ValueError if alt_type is invalid
                         except ValueError:

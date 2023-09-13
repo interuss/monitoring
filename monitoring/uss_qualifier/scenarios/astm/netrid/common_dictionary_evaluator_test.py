@@ -1,6 +1,10 @@
 from datetime import datetime, timedelta, timezone
 import s2sphere
-from typing import List, Tuple
+from typing import List, Tuple, Optional
+from uas_standards.interuss.automated_testing.rid.v1.observation import (
+    OperatorAltitudeAltitudeType,
+)
+
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.fetch.rid import Flight
 from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
@@ -39,7 +43,7 @@ def test_operator_id_ascii():
 
 
 def _assert_operator_location(
-    value: OperatorLocation, expected_passed_checks, expected_failed_checks
+    position, altitude, altitude_type, expected_passed_checks, expected_failed_checks
 ):
     def step_under_test(self: UnitTestScenario):
         evaluator = RIDCommonDictionaryEvaluator(
@@ -47,7 +51,7 @@ def _assert_operator_location(
             test_scenario=self,
             rid_version=RIDVersion.f3411_22a,
         )
-        evaluator._evaluate_operator_location(value, [])
+        evaluator._evaluate_operator_location(position, altitude, altitude_type, [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert (
@@ -61,106 +65,113 @@ def _assert_operator_location(
 
 
 def test_operator_location():
-    valid_locations: List[Tuple[OperatorLocation, int]] = [
+    valid_locations: List[
+        Tuple[
+            Optional[LatLngPoint],
+            Optional[Altitude],
+            Optional[OperatorAltitudeAltitudeType],
+            int,
+        ]
+    ] = [
         (
-            OperatorLocation(
-                position=LatLngPoint(lat=1.0, lng=1.0),
-            ),
+            LatLngPoint(lat=1.0, lng=1.0),
+            None,
+            None,
             1,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(lat=-90.0, lng=180.0),
-            ),
+            LatLngPoint(lat=-90.0, lng=180.0),
+            None,
+            None,
             1,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(
-                    lat=46.2,
-                    lng=6.1,
-                ),
-                altitude=Altitude(value=1),
-                altitude_type="Takeoff",
+            LatLngPoint(
+                lat=46.2,
+                lng=6.1,
             ),
+            Altitude(value=1),
+            OperatorAltitudeAltitudeType("Takeoff"),
             3,
         ),
     ]
     for valid_location in valid_locations:
         _assert_operator_location(*valid_location, 0)
 
-    invalid_locations: List[Tuple[OperatorLocation, int, int]] = [
+    invalid_locations: List[
+        Tuple[
+            Optional[LatLngPoint],
+            Optional[Altitude],
+            Optional[OperatorAltitudeAltitudeType],
+            int,
+            int,
+        ]
+    ] = [
         (
-            OperatorLocation(
-                position=LatLngPoint(lat=-90.001, lng=0),  # out of range and valid
-            ),
+            LatLngPoint(lat=-90.001, lng=0),  # out of range and valid
+            None,
+            None,
             0,
             1,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(
-                    lat=0,  # valid
-                    lng=180.001,  # out of range
-                ),
+            LatLngPoint(
+                lat=0,  # valid
+                lng=180.001,  # out of range
             ),
+            None,
+            None,
             0,
             1,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(lat=-90.001, lng=180.001),  # both out of range
-            ),
+            LatLngPoint(lat=-90.001, lng=180.001),  # both out of range
+            None,
+            None,
             0,
             2,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(
-                    lat="46°12'7.99 N",  # Float required
-                    lng="6°08'44.48 E",  # Float required
-                ),
+            LatLngPoint(
+                lat="46°12'7.99 N",  # Float required
+                lng="6°08'44.48 E",  # Float required
             ),
+            None,
+            None,
             0,
             2,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(
-                    lat=46.2,
-                    lng=6.1,
-                ),
-                altitude=Altitude(value=1),
-                altitude_type="invalid",  # Invalid value
+            LatLngPoint(
+                lat=46.2,
+                lng=6.1,
             ),
+            Altitude(value=1),
+            "invalid",  # Invalid value
             2,
             1,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(
-                    lat=46.2,
-                    lng=6.1,
-                ),
-                altitude=Altitude(value=1000.9),  # Invalid value
-                altitude_type="Takeoff",
+            LatLngPoint(
+                lat=46.2,
+                lng=6.1,
             ),
+            Altitude(value=1000.9),  # Invalid value
+            OperatorAltitudeAltitudeType("Takeoff"),
             2,
             1,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(
-                    lat=46.2,
-                    lng=6.1,
-                ),
-                altitude=Altitude(
-                    value=1000.9,  # Invalid value
-                    units="FT",  # Invalid value
-                    reference="UNKNOWN",  # Invalid value
-                ),
-                altitude_type="Takeoff",
+            LatLngPoint(
+                lat=46.2,
+                lng=6.1,
             ),
+            Altitude(
+                value=1000.9,  # Invalid value
+                units="FT",  # Invalid value
+                reference="UNKNOWN",  # Invalid value
+            ),
+            "Takeoff",
             2,
             3,
         ),
