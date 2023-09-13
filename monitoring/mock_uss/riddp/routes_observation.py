@@ -1,12 +1,10 @@
 from typing import Dict, List, Optional, Tuple
-from datetime import datetime
 import arrow
 import flask
 from loguru import logger
 import s2sphere
 from uas_standards.astm.f3411.v19.api import ErrorResponse
 from uas_standards.astm.f3411.v19.constants import Scope
-from uas_standards.interuss.automated_testing.rid.v1.observation import OperatorAltitude
 
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
@@ -55,10 +53,11 @@ def _make_flight_observation(
     if current_path:
         paths.append(current_path)
 
-
     p = flight.most_recent_position
+    MICRO=pow(10, 6)
+    t = p.time.replace(microsecond=int(int(p.time.microsecond/MICRO*10)*MICRO/10))
     current_state = observation_api.CurrentState(
-        timestamp=p.time.isoformat(),
+        timestamp=t.isoformat(),
         operational_status=flight.operational_status,
         track=None, # TODO: Propagate value
         speed=None # TODO: Propagate value

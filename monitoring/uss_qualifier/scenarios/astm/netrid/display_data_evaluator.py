@@ -320,6 +320,10 @@ class RIDObservationEvaluator(object):
                 verified_sps,
             )
 
+        if observation:
+            flights: List[Flight] = observation.get("flights", [])
+            [self._common_dictionary_evaluator.evaluate_timestamp(f.current_state.timestamp, participants=[observer.participant_id]) for f in flights]
+
     def _evaluate_normal_observation(
         self,
         observer: RIDSystemObserver,

@@ -33,7 +33,6 @@ def _assert_operator_id(value: str, outcome: bool):
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
 
-
 def test_operator_id_non_ascii():
     _assert_operator_id("non_ascii©", False)
 
@@ -198,6 +197,27 @@ def test_operational_status():
     _assert_operational_status("Undeclared", True)  # v19 and v22a
     _assert_operational_status("Emergency", True)  # v22a only
     _assert_operational_status("Invalid", False)  # Invalid
+
+
+def _assert_timestamp(value: str, outcome: bool):
+    def step_under_test(self: UnitTestScenario):
+        evaluator = RIDCommonDictionaryEvaluator(
+            config=EvaluationConfiguration(),
+            test_scenario=self,
+            rid_version=RIDVersion.f3411_22a,
+        )
+
+        evaluator.evaluate_timestamp(value, [])
+
+    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+    assert unit_test_scenario.get_report().successful == outcome
+
+
+def test_timestamp():
+    _assert_timestamp("2023-09-13T04:43:00.1Z", True)  # Ok
+    _assert_timestamp("2023-09-13T04:43:00Z", True)  # Ok
+    _assert_timestamp("2023-09-13T04:43:00.501Z", False)  # Wrong resolution
+    _assert_timestamp("2023-09-13T04:43:00.1EST", False)  # Wrong timezone
 
 
 def _assert_evaluate_sp_flight_recent_positions(

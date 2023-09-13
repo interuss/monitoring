@@ -1,4 +1,6 @@
 import datetime
+from arrow import ParserError
+from implicitdict import StringBasedDateTime
 from typing import List, Optional
 import s2sphere
 
@@ -267,6 +269,30 @@ class RIDCommonDictionaryEvaluator(object):
         # TODO: Add utm id format check
         # TODO: Add specific session id format check
         # TODO: Add a check to validate at least one format is correct
+
+    def evaluate_timestamp(self, timestamp: str, participants: List[str]):
+        with self._test_scenario.check(
+                "Timestamp consistency with Common Dictionary", participants
+        ) as check:
+            try:
+                t = StringBasedDateTime(timestamp)
+                if t.datetime.utcoffset().seconds != 0:
+                    check.record_failed(
+                        f"Timestamp must be relative to UTC: {timestamp}",
+                        severity=Severity.Medium,
+                    )
+                deci_seconds = t.datetime.microsecond / 100000
+                if deci_seconds - int(deci_seconds) > 0:
+                    check.record_failed(
+                        f"Timestamp resolution is smaller than 1/10: {timestamp}",
+                        severity=Severity.Medium,
+                    )
+            except ParserError as e:
+                check.record_failed(
+                    f"Unable to parse timestamp: {timestamp}",
+                    details=f"Reason:  {e}",
+                    severity=Severity.Medium,
+                )
 
     def _evaluate_operator_id(self, value: Optional[str], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
