@@ -269,12 +269,15 @@ def describe_query(
     query_type: Optional[QueryType] = None,
     server_id: Optional[str] = None,
 ) -> Query:
-    return Query(
+    query = Query(
         request=describe_request(resp.request, initiated_at),
         response=describe_response(resp),
-        server_id=server_id,
-        query_type=query_type,
     )
+    if query_type is not None:
+        query.query_type = query_type
+    if server_id is not None:
+        query.server_id = server_id
+    return query
 
 
 def query_and_describe(
@@ -282,6 +285,7 @@ def query_and_describe(
     verb: str,
     url: str,
     query_type: Optional[QueryType] = None,
+    server_id: Optional[str] = None,
     **kwargs,
 ) -> Query:
     """Attempt to perform a query, and then describe the results of that attempt.
@@ -294,6 +298,7 @@ def query_and_describe(
         verb: HTTP verb to perform at the specified URL.
         url: URL to query.
         query_type: If specified, the known type of query that this is.
+        server_id: If specified, the participant identifier of the server being queried.
         **kwargs: Any keyword arguments that should be applied to the <session>.request method when invoking it.
 
     Returns:
@@ -305,7 +310,6 @@ def query_and_describe(
     else:
         utm_session = True
     req_kwargs = kwargs.copy()
-    req_kwargs.pop("server_id", None)
     if "timeout" not in req_kwargs:
         req_kwargs["timeout"] = TIMEOUTS
 
@@ -320,7 +324,7 @@ def query_and_describe(
                 client.request(verb, url, **req_kwargs),
                 t0,
                 query_type=query_type,
-                server_id=kwargs.get("server_id", None),
+                server_id=server_id,
             )
         except (requests.Timeout, urllib3.exceptions.ReadTimeoutError) as e:
             failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with timeout {type(e).__name__}: {str(e)}"
@@ -350,7 +354,7 @@ def query_and_describe(
             elapsed_s=(t1 - t0).total_seconds(),
             reported=StringBasedDateTime(t1),
         ),
-        server_id=kwargs.get("server_id", None),
+        server_id=server_id,
     )
     if query_type is not None:
         result.query_type = query_type

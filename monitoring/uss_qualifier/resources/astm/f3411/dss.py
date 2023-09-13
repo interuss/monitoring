@@ -69,6 +69,7 @@ class DSSInstance(object):
 
         if has_private_address is not None:
             self.has_private_address = has_private_address
+            self.local_debug = True
         if local_debug is not None:
             self.local_debug = local_debug
 

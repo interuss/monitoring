@@ -22,6 +22,8 @@ from monitoring.uss_qualifier.resources.netrid.service_providers import (
     NetRIDServiceProvider,
 )
 
+from loguru import logger
+
 
 class AggregateChecks(ReportEvaluationScenario):
     _rid_version: RIDVersion
@@ -73,6 +75,7 @@ class AggregateChecks(ReportEvaluationScenario):
             participant: list()
             for participant in self._participants_by_base_url.values()
         }
+
         for query in self._queries:
             for base_url, participant in self._participants_by_base_url.items():
                 if query.request.url.startswith(base_url):
@@ -141,7 +144,6 @@ class AggregateChecks(ReportEvaluationScenario):
         self.end_test_scenario()
 
     def _verify_https_everywhere(self):
-
         for participant_id, participant_queries in self._queries_by_participant.items():
             self._inspect_participant_queries(participant_id, participant_queries)
 
@@ -155,12 +157,9 @@ class AggregateChecks(ReportEvaluationScenario):
             # TODO clean this up: this is an internal requirement and not a check,
             #  leaving as-is during development to make sure the test-suite runs but we know about unattributed queries
             #  ultimately this check could go into the constructor and blow things up early
-            self.record_note(
-                "unattributed_queries",
-                f"found {len(unattr_queries)} unattributed queries",
-            )
+
             with self.check(
-                "All interactions happen over https",
+                "No unattributed queries",
                 [],
             ) as check:
                 check.record_failed(
@@ -170,13 +169,12 @@ class AggregateChecks(ReportEvaluationScenario):
     def _inspect_participant_queries(
         self, participant_id: str, participant_queries: List[fetch.Query]
     ):
-        found_cleartext_query = False
+        cleartext_queries = []
         for query in participant_queries:
             if query.request.url.startswith("http://"):
-                found_cleartext_query = True
                 if participant_id not in self._debug_mode_usses:
-                    self.record_note(
-                        "cleartext-query",
+                    cleartext_queries.append(query)
+                    logger.info(
                         f"query is not https: {participant_id} - {query.request.url}",
                     )
 
@@ -185,9 +183,17 @@ class AggregateChecks(ReportEvaluationScenario):
                 "All interactions happen over https",
                 [participant_id],
             ) as check:
-                if found_cleartext_query:
+                if len(cleartext_queries) > 0:
+                    timestamps = [
+                        q.request.initiated_at.datetime for q in cleartext_queries
+                    ]
+                    urls = set([q.request.url for q in cleartext_queries])
                     check.record_failed(
-                        "found at least one cleartext http query", Severity.Medium
+                        summary=f"found {len(cleartext_queries)} cleartext http queries",
+                        details=f"unique cleartext urls: {urls}",
+                        severity=Severity.Medium,
+                        participants=[participant_id],
+                        query_timestamps=timestamps,
                     )
         else:
             self.record_note(
@@ -203,7 +209,6 @@ class AggregateChecks(ReportEvaluationScenario):
         for participant, all_queries in self._queries_by_participant.items():
             relevant_queries: List[fetch.Query] = list()
             for query in all_queries:
-
                 if (
                     query.status_code == 200
                     and query.has_field_with_value("query_type")
@@ -303,7 +308,6 @@ class AggregateChecks(ReportEvaluationScenario):
 
         pattern = re.compile(r"/display_data\?view=(-?\d+(.\d+)?,){3}-?\d+(.\d+)?")
         for participant, all_queries in self._queries_by_participant.items():
-
             # identify successful display_data queries
             relevant_queries: List[fetch.Query] = list()
             for query in all_queries:
