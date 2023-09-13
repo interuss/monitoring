@@ -26,6 +26,7 @@ from monitoring.uss_qualifier.resources.netrid import (
     EvaluationConfigurationResource,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid import display_data_evaluator
+from monitoring.uss_qualifier.scenarios.astm.netrid.common import nominal_behavior
 from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection import (
     InjectedFlightCollection,
 )
@@ -55,7 +56,7 @@ class Misbehavior(GenericTestScenario):
         flights_data: FlightDataResource,
         service_providers: NetRIDServiceProviders,
         evaluation_configuration: EvaluationConfigurationResource,
-        dss_pool: DSSInstancesResource = None,
+        dss_pool: DSSInstancesResource,
     ):
         super().__init__()
         self._flights_data = flights_data
@@ -93,95 +94,15 @@ class Misbehavior(GenericTestScenario):
         self.end_test_scenario()
 
     def _inject_flights(self):
-        # TODO consider sharing code with nominal_behavior's _inject_flights
-        # Inject flights into all USSs
-        test_id = str(uuid.uuid4())
-        test_flights = self._flights_data.get_test_flights()
-        service_providers = self._service_providers.service_providers
-        if len(service_providers) > len(test_flights):
-            raise ValueError(
-                "{} service providers were specified, but data for only {} test flights were provided".format(
-                    len(service_providers), len(test_flights)
-                )
-            )
-        for i, target in enumerate(service_providers):
-            p = CreateTestParameters(requested_flights=[test_flights[i]])
-            check = self.check("Successful injection", [target.participant_id])
-            try:
-                query = target.submit_test(p, test_id)
-            except RequestException as e:
-                stacktrace = "".join(
-                    traceback.format_exception(type(e), value=e, tb=e.__traceback__)
-                )
-                check.record_failed(
-                    summary="Error while trying to inject test flight",
-                    severity=Severity.High,
-                    details=f"While trying to inject a test flight into {target.participant_id}, encountered error:\n{stacktrace}",
-                )
-                raise RuntimeError("High-severity issue did not abort test scenario")
-            self.record_query(query)
-            try:
-                if query.status_code != 200:
-                    raise ValueError(
-                        f"Expected response code 200 but received {query.status_code} instead"
-                    )
-                if "json" not in query.response:
-                    raise ValueError("Response did not contain a JSON body")
-                changed_test: ChangeTestResponse = ImplicitDict.parse(
-                    query.response.json, ChangeTestResponse
-                )
-                self._injected_tests.append(
-                    InjectedTest(
-                        participant_id=target.participant_id,
-                        test_id=test_id,
-                        version=changed_test.version,
-                    )
-                )
-                injections = changed_test.injected_flights
-                check.record_passed()
-            except ValueError as e:
-                check.record_failed(
-                    summary="Error injecting test flight",
-                    severity=Severity.High,
-                    details=f"Attempting to inject a test flight into {target.participant_id}, encountered status code {query.status_code}: {str(e)}",
-                    query_timestamps=[query.request.timestamp],
-                )
-                raise RuntimeError("High-severity issue did not abort test scenario")
-
-            for flight in injections:
-                self._injected_flights.append(
-                    InjectedFlight(
-                        uss_participant_id=target.participant_id,
-                        test_id=test_id,
-                        flight=TestFlight(flight),
-                        query_timestamp=query.request.timestamp,
-                    )
-                )
-
-        # Make sure the injected flights can be identified correctly by the test harness
-        with self.check("Identifiable flights") as check:
-            errors = display_data_evaluator.injected_flights_errors(
-                self._injected_flights
-            )
-            if errors:
-                check.record_failed(
-                    "Injected flights not suitable for test",
-                    Severity.High,
-                    details="When checking the suitability of the flights (as injected) for the test, found:\n"
-                    + "\n".join(errors),
-                    query_timestamps=[
-                        f.query_timestamp for f in self._injected_flights
-                    ],
-                )
-                raise RuntimeError("High-severity issue did not abort test scenario")
-
-        config = self._evaluation_configuration.configuration
-        self._virtual_observer = VirtualObserver(
-            injected_flights=InjectedFlightCollection(self._injected_flights),
-            repeat_query_rect_period=config.repeat_query_rect_period,
-            min_query_diagonal_m=config.min_query_diagonal,
-            relevant_past_data_period=self._rid_version.realtime_period
-            + config.max_propagation_latency.timedelta,
+        (
+            self._injected_flights,
+            self._injected_tests,
+        ) = nominal_behavior.inject_flights(
+            test_scenario=self,
+            flights_data=self._flights_data,
+            service_providers=self._service_providers,
+            evaluation_configuration=self._evaluation_configuration,
+            realtime_period=self._rid_version.realtime_period,
         )
 
     def _poll_unauthenticated_during_flights(self):
