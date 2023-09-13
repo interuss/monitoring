@@ -1,1 +1,1 @@
-# Replaced by uas_standards definitions
+# Replaced by uas_standards package
