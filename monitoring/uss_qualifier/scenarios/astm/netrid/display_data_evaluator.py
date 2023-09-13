@@ -421,7 +421,10 @@ class RIDObservationEvaluator(object):
                         ),
                     )
 
-            details, query = observer.observe_flight_details(mapping.observed_flight.id)
+            details, query = observer.observe_flight_details(
+                mapping.observed_flight.id, self._rid_version
+            )
+            logger.info(f"Received flight {details} - {query}")
             self._test_scenario.record_query(query)
 
             self._common_dictionary_evaluator.evaluate_dp_details(
