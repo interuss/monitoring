@@ -251,3 +251,16 @@ class LatLngBoundingBox(ImplicitDict):
             s2sphere.LatLng.from_degrees(self.lat_max, self.lng_max),
             s2sphere.LatLng.from_degrees(self.lat_min, self.lng_max),
         ]
+
+
+class LatLngVertex(ImplicitDict):
+    """Vertex in latitude and longitude"""
+
+    lat: float
+    """Latitude (degrees)"""
+
+    lng: float
+    """Longitude (degrees)"""
+
+    def as_s2sphere(self) -> s2sphere.LatLng:
+        return s2sphere.LatLng.from_degrees(self.lat, self.lng)

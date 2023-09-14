@@ -27,14 +27,14 @@ VERTICES: List[s2sphere.LatLng] = [
 
 
 def _default_params(duration: datetime.timedelta) -> Dict:
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now().astimezone()
     return dict(
         area_vertices=VERTICES,
         alt_lo=20,
         alt_hi=400,
         start_time=now,
         end_time=now + duration,
-        uss_base_url="https://example.com/uss/flights",
+        uss_base_url="https://example.com",
     )
 
 

@@ -654,7 +654,7 @@ class FetchedISAs(RIDQuery):
 
 
 def isas(
-    box: s2sphere.LatLngRect,
+    area: List[s2sphere.LatLng],
     start_time: datetime.datetime,
     end_time: datetime.datetime,
     rid_version: RIDVersion,
@@ -665,7 +665,7 @@ def isas(
     t1 = rid_version.format_time(end_time)
     if rid_version == RIDVersion.f3411_19:
         op = v19.api.OPERATIONS[v19.api.OperationID.SearchIdentificationServiceAreas]
-        area = rid_v1.geo_polygon_string_from_s2(geo.get_latlngrect_vertices(box))
+        area = rid_v1.geo_polygon_string_from_s2(area)
         url = f"{dss_base_url}{op.path}?area={area}&earliest_time={t0}&latest_time={t1}"
         return FetchedISAs(
             v19_query=fetch.query_and_describe(
@@ -674,7 +674,7 @@ def isas(
         )
     elif rid_version == RIDVersion.f3411_22a:
         op = v22a.api.OPERATIONS[v22a.api.OperationID.SearchIdentificationServiceAreas]
-        area = rid_v2.geo_polygon_string_from_s2(geo.get_latlngrect_vertices(box))
+        area = rid_v2.geo_polygon_string_from_s2(area)
         url = f"{dss_base_url}{op.path}?area={area}&earliest_time={t0}&latest_time={t1}"
         return FetchedISAs(
             v22a_query=fetch.query_and_describe(
@@ -948,7 +948,9 @@ def all_flights(
     enhanced_details: bool = False,
 ) -> FetchedFlights:
     t = datetime.datetime.utcnow()
-    isa_list = isas(area, t, t, rid_version, session, dss_base_url)
+    isa_list = isas(
+        geo.get_latlngrect_vertices(area), t, t, rid_version, session, dss_base_url
+    )
 
     uss_flight_queries: Dict[str, FetchedUSSFlights] = {}
     uss_flight_details_queries: Dict[str, FetchedUSSFlightDetails] = {}

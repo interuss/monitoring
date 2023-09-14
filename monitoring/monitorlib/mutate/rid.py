@@ -14,7 +14,13 @@ import uas_standards.astm.f3411.v22a.constants
 import yaml
 from yaml.representer import Representer
 
-from monitoring.monitorlib import fetch, infrastructure, rid_v1, rid_v2
+from monitoring.monitorlib import (
+    fetch,
+    infrastructure,
+    rid_v1,
+    rid_v2,
+    schema_validation,
+)
 
 
 class ChangedSubscription(RIDQuery):
@@ -60,6 +66,8 @@ class ChangedSubscription(RIDQuery):
                 return [
                     f"Error parsing F3411-22a USS PutSubscriptionResponse: {str(e)}"
                 ]
+
+        # TODO: add schema validation (like ChangedISA)
 
         return []
 
@@ -308,7 +316,11 @@ class ChangedISA(RIDQuery):
 
     @property
     def errors(self) -> List[str]:
-        if self.status_code != 200:
+        # Tolerate reasonable-but-technically-incorrect code 201
+        if not (
+            self.status_code == 200
+            or (self.mutation == "create" and self.status_code == 201)
+        ):
             return ["Failed to mutate ISA ({})".format(self.status_code)]
         if self.query.response.json is None:
             return ["ISA response did not include valid JSON"]
@@ -335,6 +347,23 @@ class ChangedISA(RIDQuery):
             except ValueError as e:
                 return [
                     f"Error parsing F3411-22a USS PutIdentificationServiceAreaResponse: {str(e)}"
+                ]
+
+        # TODO: This validates the schema only for v22a as the v19 OpenAPI definition contains a mistake in
+        #  'components.schemas.SubscriptionState', the non-existing property 'subscription' is marked as required.
+        #  The augmented.yaml version of the definition should be fixed and then this can be applied to both version.
+        if self.rid_version == RIDVersion.f3411_22a:
+            validation_errors = schema_validation.validate(
+                self.rid_version.openapi_path,
+                self.rid_version.openapi_delete_isa_response_path
+                if self.mutation == "delete"
+                else self.rid_version.openapi_put_isa_response_path,
+                self.query.response.json,
+            )
+            if validation_errors:
+                return [
+                    f"PUT ISA response JSON validation error: [{e.json_path}] {e.message}"
+                    for e in validation_errors
                 ]
 
         return []

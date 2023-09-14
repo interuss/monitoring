@@ -9,6 +9,7 @@ from monitoring.monitorlib.fetch.rid import (
     FetchedSubscriptions,
     RIDQuery,
     FetchedISA,
+    FetchedISAs,
 )
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.fetch import rid as fetch
@@ -19,6 +20,8 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     PendingCheck,
     TestScenario,
 )
+
+MAX_SKEW = 1e-6  # seconds maximum difference between expected and actual timestamps
 
 
 class DSSWrapper(object):
@@ -165,39 +168,79 @@ class DSSWrapper(object):
             self._handle_query_result(
                 check, mutated_isa.dss_query, f"Failed to insert ISA {isa_id}"
             )
+            for notification_query in mutated_isa.notifications.values():
+                self._scenario.record_query(notification_query.query)
 
-            dt = abs(
-                mutated_isa.dss_query.isa.time_end.timestamp() - end_time.timestamp()
-            )
-            if dt > 0.001:
+            t_dss = mutated_isa.dss_query.query.request.timestamp
+            dss_isa = mutated_isa.dss_query.isa
+
+            if mutated_isa.dss_query.query.status_code == 201:
                 check.record_failed(
-                    summary=f"DSS did not correctly create or update ISA; mismatched end time",
-                    severity=Severity.Medium,
+                    summary=f"PUT ISA returned technically-incorrect 201",
+                    severity=Severity.Low,
                     participants=[self._dss.participant_id],
-                    details=f"Expected: '{end_time}', received: '{mutated_isa.dss_query.isa.time_end}'",
-                    query_timestamps=[mutated_isa.dss_query.query.request.timestamp],
+                    details="DSS should return 200 from PUT ISA, but instead returned the reasonable-but-technically-incorrect code 201",
+                    query_timestamps=[t_dss],
                 )
-            elif isa_id != mutated_isa.dss_query.isa.id:
+
+            if isa_id != dss_isa.id:
                 check.record_failed(
                     summary=f"DSS did not return correct ISA",
                     severity=Severity.High,
                     participants=[self._dss.participant_id],
-                    details=f"Expected ISA ID {isa_id} but got {mutated_isa.dss_query.isa.id}",
-                    query_timestamps=[mutated_isa.dss_query.query.request.timestamp],
+                    details=f"Expected ISA ID {isa_id} but got {dss_isa.id}",
+                    query_timestamps=[t_dss],
                 )
-            elif (
-                isa_version is not None
-                and mutated_isa.dss_query.isa.version == isa_version
-            ):
+
+            if isa_version is not None:
+                if dss_isa.version == isa_version:
+                    check.record_failed(
+                        summary=f"ISA was not modified",
+                        severity=Severity.High,
+                        participants=[self._dss.participant_id],
+                        details=f"Got old version {isa_version} while expecting new version",
+                        query_timestamps=[t_dss],
+                    )
+                if not all(c not in "\0\t\r\n#%/:?@[\]" for c in dss_isa.version):
+                    check.record_failed(
+                        summary=f"DSS returned ISA (ID {isa_id}) with invalid version format",
+                        severity=Severity.High,
+                        participants=[self._dss.participant_id],
+                        details=f"DSS returned an ISA with a version that is not URL-safe: {dss_isa.version}",
+                        query_timestamps=[t_dss],
+                    )
+
+            if abs((dss_isa.time_start - start_time).total_seconds()) > MAX_SKEW:
                 check.record_failed(
-                    summary=f"ISA was not modified",
+                    summary=f"DSS returned ISA (ID {isa_id}) with incorrect start time",
                     severity=Severity.High,
                     participants=[self._dss.participant_id],
-                    details=f"Got old version {isa_version} while expecting new version",
-                    query_timestamps=[mutated_isa.dss_query.query.request.timestamp],
+                    details=f"DSS should have returned an ISA with a start time of {start_time}, but instead the ISA returned had a start time of {dss_isa.time_start}",
+                    query_timestamps=[t_dss],
                 )
-            else:
-                return mutated_isa
+            if abs((dss_isa.time_end - end_time).total_seconds()) > MAX_SKEW:
+                check.record_failed(
+                    summary=f"DSS returned ISA (ID {isa_id}) with incorrect end time",
+                    severity=Severity.High,
+                    participants=[self._dss.participant_id],
+                    details=f"DSS should have returned an ISA with an end time of {end_time}, but instead the ISA returned had an end time of {dss_isa.time_end}",
+                    query_timestamps=[t_dss],
+                )
+
+            expected_flights_url = self._dss.rid_version.flights_url_of(uss_base_url)
+            actual_flights_url = dss_isa.flights_url
+            if actual_flights_url != expected_flights_url:
+                check.record_failed(
+                    summary=f"DSS returned ISA (ID {isa_id}) with incorrect URL",
+                    severity=Severity.High,
+                    participants=[self._dss.participant_id],
+                    details=f"DSS should have returned an ISA with a flights URL of {expected_flights_url}, but instead the ISA returned had a flights URL of {actual_flights_url}",
+                    query_timestamps=[t_dss],
+                )
+
+            # TODO: Validate subscriber notifications
+
+            return mutated_isa
 
         except QueryError as e:
             self._handle_query_error(check, e)
