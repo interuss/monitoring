@@ -8,6 +8,8 @@ Note that none of this scenario is implemented yet.
 
 ## Resources
 
+## Future resources
+
 ### crdb_nodes
 
 Set of CockroachDB nodes constituting the DSS instances under test.
