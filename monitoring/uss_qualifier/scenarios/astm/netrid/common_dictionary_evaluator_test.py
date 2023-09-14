@@ -2,9 +2,10 @@ from datetime import datetime, timedelta, timezone
 import s2sphere
 from typing import List, Tuple, Optional
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
-    OperatorAltitudeAltitudeType,
+    OperatorAltitudeAltitudeType, RIDHeight, RIDHeightReference,
 )
 
+from uas_standards.astm.f3411.v22a.constants import SpecialTrackDirection
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.fetch.rid import Flight
 from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
@@ -15,7 +16,6 @@ from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfi
 from uas_standards.astm.f3411.v22a.api import (
     Altitude,
     LatLngPoint,
-    OperatorLocation,
     UAType,
 )
 from uas_standards.astm.f3411 import v22a
@@ -212,13 +212,11 @@ def _assert_timestamp(value: str, outcome: bool):
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
 
-
-def test_speed():
-    _assert_speed(1, True)  # Ok
-    _assert_speed(20.75, True)  # Ok
-    _assert_speed(400, False)  # Fail, above MaxSpeed
-    _assert_speed(23.3, False)  # Wrong resolution
-
+def test_timestamp():
+    _assert_timestamp("2023-09-13T04:43:00.1Z", True)  # Ok
+    _assert_timestamp("2023-09-13T04:43:00Z", True)  # Ok
+    _assert_timestamp("2023-09-13T04:43:00.501Z", False)  # Wrong resolution
+    _assert_timestamp("2023-09-13T04:43:00.1EST", False)  # Wrong timezone
 
 def _assert_speed(value: float, outcome: bool):
     def step_under_test(self: UnitTestScenario):
@@ -233,15 +231,52 @@ def _assert_speed(value: float, outcome: bool):
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
 
+def test_speed():
+    _assert_speed(1, True)  # Ok
+    _assert_speed(20.75, True)  # Ok
+    _assert_speed(400, False)  # Fail, above MaxSpeed
+    _assert_speed(23.3, False)  # Wrong resolution
 
-def test_timestamp():
-    _assert_timestamp("2023-09-13T04:43:00.1Z", True)  # Ok
-    _assert_timestamp("2023-09-13T04:43:00Z", True)  # Ok
-    _assert_timestamp("2023-09-13T04:43:00.501Z", False)  # Wrong resolution
-    _assert_timestamp("2023-09-13T04:43:00.1EST", False)  # Wrong timezone
+def _assert_track(value: float, outcome: bool):
+    def step_under_test(self: UnitTestScenario):
+        evaluator = RIDCommonDictionaryEvaluator(
+            config=EvaluationConfiguration(),
+            test_scenario=self,
+            rid_version=RIDVersion.f3411_22a,
+        )
+
+        evaluator.evaluate_track(value, [])
+
+    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+    assert unit_test_scenario.get_report().successful == outcome
+
+def test_track():
+    _assert_track(1, True)  # Ok
+    _assert_track(-359, True)  # Ok
+    _assert_track(400, False)  # Fail, above MaxTrackDirection
+    _assert_track(-360, False)  # Fail, below MinTrackDirection
+    _assert_track(23.3, False)  # Wrong resolution
+    _assert_track(SpecialTrackDirection, True)
+
+def _assert_height(value: RIDHeight, outcome: bool):
+    def step_under_test(self: UnitTestScenario):
+        evaluator = RIDCommonDictionaryEvaluator(
+            config=EvaluationConfiguration(),
+            test_scenario=self,
+            rid_version=RIDVersion.f3411_22a,
+        )
+
+        evaluator.evaluate_height(value, [])
 
 
+    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+    assert unit_test_scenario.get_report().successful == outcome
 
+def test_height():
+    _assert_height(None, True) # Ok
+    _assert_height(RIDHeight(distance=10, reference="TakeoffLocation"), True)  # Ok
+    _assert_height(RIDHeight(distance=10.101, reference="TakeoffLocation"), False)  # Wrong resolution
+    _assert_height(RIDHeight(distance=10.101, reference="Moon"), False)  # Wrong reference
 
 def _assert_evaluate_sp_flight_recent_positions(
     f: Flight, query_time: datetime, outcome: bool

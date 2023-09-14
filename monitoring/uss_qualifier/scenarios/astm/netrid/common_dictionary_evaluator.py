@@ -6,7 +6,7 @@ import s2sphere
 
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     GetDetailsResponse,
-    OperatorAltitudeAltitudeType,
+    OperatorAltitudeAltitudeType, RIDHeight, RIDHeightReference,
 )
 
 from uas_standards.ansi_cta_2063_a import SerialNumber
@@ -14,6 +14,7 @@ from uas_standards.astm.f3411 import v22a
 
 from uas_standards.astm.f3411.v22a.constants import SpecialSpeed, MaxSpeed, MinSpeedResolution, SpecialTrackDirection, MinTrackDirection, MaxTrackDirection, MinTrackDirectionResolution
 
+from interfaces.uas_standards.src.uas_standards.astm.f3411.v22a.constants import MinHeightResolution
 from monitoring.monitorlib.fetch.rid import (
     FetchedFlights,
     FlightDetails,
@@ -352,6 +353,27 @@ class RIDCommonDictionaryEvaluator(object):
                     details=f"the track direction resolution shall not be less than 1 degree",
                     severity=Severity.Medium,
                 )
+
+    def evaluate_height(self, height: Optional[RIDHeight], participants: List[str]):
+        if height:
+            with self._test_scenario.check(
+                    "Height consistency with Common Dictionary", participants
+            ) as check:
+                if height.distance != _limit_resolution(height.distance, MinHeightResolution):
+                    check.record_failed(
+                        f"Invalid height resolution: {height.distance}",
+                        details=f"the height resolution shall not be less than 1 meter",
+                        severity=Severity.Medium,
+                    )
+            with self._test_scenario.check(
+                    "Height Type consistency with Common Dictionary", participants
+            ) as check:
+                if height.reference != RIDHeightReference.TakeoffLocation and height.reference != RIDHeightReference.GroundLevel:
+                    check.record_failed(
+                        f"Invalid height type: {height.reference}",
+                        details=f"The height type reference shall be either {RIDHeightReference.TakeoffLocation} or {RIDHeightReference.GroundLevel}",
+                        severity=Severity.Medium,
+                    )
 
     def _evaluate_operator_location(
         self,
