@@ -17,7 +17,7 @@ from . import clustering, database, utm_client
 from .behavior import DisplayProviderBehavior
 from .config import KEY_RID_VERSION
 from .database import db
-from ...monitorlib.formatting import _limit_resolution
+from monitoring.monitorlib.formatting import _limit_resolution
 
 def _make_flight_observation(
     flight: Flight, view: s2sphere.LatLngRect
