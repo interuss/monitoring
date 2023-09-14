@@ -6,9 +6,10 @@ from loguru import logger
 import s2sphere
 from uas_standards.astm.f3411.v19.api import ErrorResponse
 from uas_standards.astm.f3411.v19.constants import Scope
+from uas_standards.astm.f3411.v22a.api import RIDHeight
+from uas_standards.astm.f3411.v22a.constants import MaxSpeed
 
-from uas_standards.astm.f3411.v22a.constants import MaxSpeed, SpecialSpeed, MinSpeedResolution
-
+from uas_standards.astm.f3411.v22a.constants import MinHeightResolution
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.fetch.rid import Flight, FetchedISAs, Position
@@ -21,23 +22,6 @@ from .behavior import DisplayProviderBehavior
 from .config import KEY_RID_VERSION
 from .database import db
 from ...monitorlib.formatting import _limit_resolution
-from ...monitorlib.geo import EARTH_CIRCUMFERENCE_M
-
-
-def _compute_speed(positions: List[Position]):
-    if len(positions) == 2:
-        p0 = positions[0]
-        p1 = positions[1]
-        if p0.time < p1.time:
-            p0 = positions[1]
-            p1 = positions[0]
-        c0 = LatLng.from_degrees(p0.lat, p0.lng)
-        c1 = LatLng.from_degrees(p1.lat, p1.lng)
-        distance_m = c0.get_distance(c1).degrees * EARTH_CIRCUMFERENCE_M / 360
-        duration_s = (p1.time - p0.time).seconds
-        return max(_limit_resolution(distance_m / duration_s, MinSpeedResolution), MaxSpeed)
-    else:
-        return SpecialSpeed
 
 def _make_flight_observation(
     flight: Flight, view: s2sphere.LatLngRect
@@ -73,19 +57,19 @@ def _make_flight_observation(
     if current_path:
         paths.append(current_path)
 
-    current_speed = _compute_speed(flight.recent_positions[:2])
-
     p = flight.most_recent_position
-    t = p.time.replace(microsecond=_limit_resolution(p.time.microsecond, pow(10, 5)))
+    original_time = p.time.replace(microsecond=_limit_resolution(p.time.microsecond, pow(10, 5)))
     current_state = observation_api.CurrentState(
-        timestamp=t.isoformat(),
+        timestamp=original_time.isoformat(),
         operational_status=flight.operational_status,
-        track=None, # TODO: Propagate value
-        speed=current_speed
+        track=flight.track,
+        speed=_limit_resolution(flight.speed, MaxSpeed)
     )
+    h = p.height if "height" in p else RIDHeight(distance=-1000)
+    h.distance = _limit_resolution(h.distance, MinHeightResolution)
     return observation_api.Flight(
         id=flight.id,
-        most_recent_position=observation_api.Position(lat=p.lat, lng=p.lng, alt=p.alt),
+        most_recent_position=observation_api.Position(lat=p.lat, lng=p.lng, alt=p.alt, height=h),
         recent_paths=[observation_api.Path(positions=path) for path in paths],
         current_state=current_state
     )

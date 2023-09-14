@@ -12,7 +12,7 @@ from uas_standards.interuss.automated_testing.rid.v1.observation import (
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
 
-from uas_standards.astm.f3411.v22a.constants import SpecialSpeed, MaxSpeed, MinSpeedResolution
+from uas_standards.astm.f3411.v22a.constants import SpecialSpeed, MaxSpeed, MinSpeedResolution, SpecialTrackDirection, MinTrackDirection, MaxTrackDirection, MinTrackDirectionResolution
 
 from monitoring.monitorlib.fetch.rid import (
     FetchedFlights,
@@ -335,8 +335,23 @@ class RIDCommonDictionaryEvaluator(object):
                     severity=Severity.Medium,
                 )
 
+    def evaluate_track(self, track: float, participants: List[str]):
+        with self._test_scenario.check(
+                "Track Direction consistency with Common Dictionary", participants
+        ) as check:
+            if not (MinTrackDirection <= track <= MaxTrackDirection or round(track) == SpecialTrackDirection):
+                check.record_failed(
+                    f"Invalid track direction: {track}",
+                    details=f"The track direction shall be greater than -360 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
+                    severity=Severity.Medium,
+                )
 
-
+            if track != _limit_resolution(track, MinTrackDirectionResolution):
+                check.record_failed(
+                    f"Invalid track direction resolution: {track}",
+                    details=f"the track direction resolution shall not be less than 1 degree",
+                    severity=Severity.Medium,
+                )
 
     def _evaluate_operator_location(
         self,

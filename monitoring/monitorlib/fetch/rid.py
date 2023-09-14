@@ -10,6 +10,7 @@ import uas_standards.astm.f3411.v19.constants
 import uas_standards.astm.f3411.v22a.api
 import uas_standards.astm.f3411.v22a.constants
 import yaml
+from uas_standards.astm.f3411.v22a.api import RIDHeight
 from yaml.representer import Representer
 
 from monitoring.monitorlib import fetch, rid_v1, rid_v2, geo
@@ -242,6 +243,28 @@ class Flight(ImplicitDict):
         else:
             raise NotImplementedError(
                 f"Cannot retrieve operational status using RID version {self.rid_version}"
+            )
+
+    @property
+    def track(self):
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value.current_state.track
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_value.current_state.track
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve track using RID version {self.rid_version}"
+            )
+
+    @property
+    def speed(self):
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value.current_state.speed
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_value.current_state.speed
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve track using RID version {self.rid_version}"
             )
 
     def errors(self) -> List[str]:
