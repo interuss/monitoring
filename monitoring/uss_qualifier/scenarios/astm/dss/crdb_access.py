@@ -6,4 +6,6 @@ class CRDBAccess(GenericTestScenario):
         super().__init__()
 
     def run(self):
-        pass  # TODO: Implement
+        self.begin_test_scenario()
+        # TODO: Implement
+        self.end_test_scenario()
