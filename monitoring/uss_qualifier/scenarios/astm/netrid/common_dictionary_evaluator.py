@@ -209,7 +209,7 @@ class RIDCommonDictionaryEvaluator(object):
         if not observed_details:
             observed_details = {}
 
-        self._evaluate_plain_uas_id(
+        self._evaluate_arbitrary_uas_id(
             observed_details.get("uas", {}).get("id"), participants
         )
 
@@ -277,158 +277,200 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping UAS ID evaluation",
             )
 
-    def _evaluate_plain_uas_id(self, value: str, participants: List[str]):
-        with self._test_scenario.check(
-            "UAS ID presence in flight details", participants
-        ) as check:
-            if not value:
-                check.record_failed(
-                    f"UAS ID not present as required by the Common Dictionary definition: {value}",
-                    severity=Severity.Medium,
-                )
-                return
+    def _evaluate_arbitrary_uas_id(self, value: str, participants: List[str]):
+        if self._rid_version == RIDVersion.f3411_22a:
+            with self._test_scenario.check(
+                "UAS ID presence in flight details", participants
+            ) as check:
+                if not value:
+                    check.record_failed(
+                        f"UAS ID not present as required by the Common Dictionary definition: {value}",
+                        severity=Severity.Medium,
+                    )
+                    return
 
-        if SerialNumber(value).valid:
-            self._test_scenario.check(
-                "UAS ID (Serial Number format) consistency with Common Dictionary",
-                participants,
-            ).record_passed(participants)
+            if SerialNumber(value).valid:
+                self._test_scenario.check(
+                    "UAS ID (Serial Number format) consistency with Common Dictionary",
+                    participants,
+                ).record_passed(participants)
 
         # TODO: Add registration id format check
         # TODO: Add utm id format check
         # TODO: Add specific session id format check
         # TODO: Add a check to validate at least one format is correct
+        else:
+            self._test_scenario.record_note(
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping arbitrary uas id evaluation",
+            )
 
     def _evaluate_timestamp(self, timestamp: str, participants: List[str]):
-        with self._test_scenario.check(
-            "Timestamp consistency with Common Dictionary", participants
-        ) as check:
-            try:
-                t = StringBasedDateTime(timestamp)
-                if t.datetime.utcoffset().seconds != 0:
+        if self._rid_version == RIDVersion.f3411_22a:
+            with self._test_scenario.check(
+                "Timestamp consistency with Common Dictionary", participants
+            ) as check:
+                try:
+                    t = StringBasedDateTime(timestamp)
+                    if t.datetime.utcoffset().seconds != 0:
+                        check.record_failed(
+                            f"Timestamp must be relative to UTC: {timestamp}",
+                            severity=Severity.Medium,
+                        )
+                    ms = t.datetime.microsecond
+                    ms_res = _limit_resolution(ms, pow(10, 5))
+                    if ms != ms_res:
+                        check.record_failed(
+                            f"Timestamp resolution is smaller than 1/10: {timestamp}",
+                            severity=Severity.Medium,
+                        )
+                except ParserError as e:
                     check.record_failed(
-                        f"Timestamp must be relative to UTC: {timestamp}",
+                        f"Unable to parse timestamp: {timestamp}",
+                        details=f"Reason:  {e}",
                         severity=Severity.Medium,
                     )
-                ms = t.datetime.microsecond
-                ms_res = _limit_resolution(ms, pow(10, 5))
-                if ms != ms_res:
-                    check.record_failed(
-                        f"Timestamp resolution is smaller than 1/10: {timestamp}",
-                        severity=Severity.Medium,
-                    )
-            except ParserError as e:
-                check.record_failed(
-                    f"Unable to parse timestamp: {timestamp}",
-                    details=f"Reason:  {e}",
-                    severity=Severity.Medium,
-                )
+        else:
+            self._test_scenario.record_note(
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping timestamp evaluation",
+            )
 
     def _evaluate_operator_id(self, value: Optional[str], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
-            if value:
+            if self._rid_version == RIDVersion.f3411_22a:
+                if value:
+                    with self._test_scenario.check(
+                        "Operator ID consistency with Common Dictionary", participants
+                    ) as check:
+                        is_ascii = all([0 <= ord(c) < 128 for c in value])
+                        if not is_ascii:
+                            check.record_failed(
+                                "Operator ID contains non-ascii characters",
+                                severity=Severity.Medium,
+                            )
+            else:
+                self._test_scenario.record_note(
+                    key="skip_reason",
+                    message=f"Unsupported version {self._rid_version}: skipping Operator ID evaluation",
+                )
+        else:
+            self._test_scenario.record_note(
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping operator id evaluation",
+            )
+
+    def _evaluate_speed(self, speed: float, participants: List[str]):
+        if self._rid_version == RIDVersion.f3411_22a:
+            with self._test_scenario.check(
+                "Speed consistency with Common Dictionary", participants
+            ) as check:
+                if not (0 <= speed <= MaxSpeed or round(speed) == SpecialSpeed):
+                    check.record_failed(
+                        f"Invalid speed: {speed}",
+                        details=f"The speed shall be greater than 0 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
+                        severity=Severity.Medium,
+                    )
+
+                if speed != _limit_resolution(speed, MinSpeedResolution):
+                    check.record_failed(
+                        f"Invalid speed resolution: {speed}",
+                        details=f"the speed resolution shall not be less than 0.25 m/s",
+                        severity=Severity.Medium,
+                    )
+        else:
+            self._test_scenario.record_note(
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping speed evaluation",
+            )
+
+    def _evaluate_track(self, track: float, participants: List[str]):
+        if self._rid_version == RIDVersion.f3411_22a:
+            with self._test_scenario.check(
+                "Track Direction consistency with Common Dictionary", participants
+            ) as check:
+                if not (
+                    MinTrackDirection <= track <= MaxTrackDirection
+                    or round(track) == SpecialTrackDirection
+                ):
+                    check.record_failed(
+                        f"Invalid track direction: {track}",
+                        details=f"The track direction shall be greater than -360 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
+                        severity=Severity.Medium,
+                    )
+
+                if track != _limit_resolution(track, MinTrackDirectionResolution):
+                    check.record_failed(
+                        f"Invalid track direction resolution: {track}",
+                        details=f"the track direction resolution shall not be less than 1 degree",
+                        severity=Severity.Medium,
+                    )
+        else:
+            self._test_scenario.record_note(
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping track direction evaluation",
+            )
+
+    def _evaluate_position(self, position: Position, participants: List[str]):
+        if self._rid_version == RIDVersion.f3411_22a:
+            with self._test_scenario.check(
+                "Current Position consistency with Common Dictionary", participants
+            ) as check:
+                lat = position.lat
+                try:
+                    lat = validate_lat(lat)
+                except ValueError:
+                    check.record_failed(
+                        "Current Position  contains an invalid latitude",
+                        details=f"Invalid latitude: {lat}",
+                        severity=Severity.Medium,
+                    )
+                lng = position.lng
+                try:
+                    lng = validate_lng(lng)
+                except ValueError:
+                    check.record_failed(
+                        "Current Position contains an invalid longitude",
+                        details=f"Invalid longitude: {lng}",
+                        severity=Severity.Medium,
+                    )
+        else:
+            self._test_scenario.record_note(
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping position evaluation",
+            )
+
+    def _evaluate_height(self, height: Optional[RIDHeight], participants: List[str]):
+        if self._rid_version == RIDVersion.f3411_22a:
+            if height:
                 with self._test_scenario.check(
-                    "Operator ID consistency with Common Dictionary", participants
+                    "Height consistency with Common Dictionary", participants
                 ) as check:
-                    is_ascii = all([0 <= ord(c) < 128 for c in value])
-                    if not is_ascii:
+                    if height.distance != _limit_resolution(
+                        height.distance, MinHeightResolution
+                    ):
                         check.record_failed(
-                            "Operator ID contains non-ascii characters",
+                            f"Invalid height resolution: {height.distance}",
+                            details=f"the height resolution shall not be less than 1 meter",
+                            severity=Severity.Medium,
+                        )
+                with self._test_scenario.check(
+                    "Height Type consistency with Common Dictionary", participants
+                ) as check:
+                    if (
+                        height.reference != RIDHeightReference.TakeoffLocation
+                        and height.reference != RIDHeightReference.GroundLevel
+                    ):
+                        check.record_failed(
+                            f"Invalid height type: {height.reference}",
+                            details=f"The height type reference shall be either {RIDHeightReference.TakeoffLocation} or {RIDHeightReference.GroundLevel}",
                             severity=Severity.Medium,
                         )
         else:
             self._test_scenario.record_note(
                 key="skip_reason",
-                message=f"Unsupported version {self._rid_version}: skipping Operator ID evaluation",
+                message=f"Unsupported version {self._rid_version}: skipping Height evaluation",
             )
-
-    def _evaluate_speed(self, speed: float, participants: List[str]):
-        with self._test_scenario.check(
-            "Speed consistency with Common Dictionary", participants
-        ) as check:
-            if not (0 <= speed <= MaxSpeed or round(speed) == SpecialSpeed):
-                check.record_failed(
-                    f"Invalid speed: {speed}",
-                    details=f"The speed shall be greater than 0 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
-                    severity=Severity.Medium,
-                )
-
-            if speed != _limit_resolution(speed, MinSpeedResolution):
-                check.record_failed(
-                    f"Invalid speed resolution: {speed}",
-                    details=f"the speed resolution shall not be less than 0.25 m/s",
-                    severity=Severity.Medium,
-                )
-
-    def _evaluate_track(self, track: float, participants: List[str]):
-        with self._test_scenario.check(
-            "Track Direction consistency with Common Dictionary", participants
-        ) as check:
-            if not (
-                MinTrackDirection <= track <= MaxTrackDirection
-                or round(track) == SpecialTrackDirection
-            ):
-                check.record_failed(
-                    f"Invalid track direction: {track}",
-                    details=f"The track direction shall be greater than -360 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
-                    severity=Severity.Medium,
-                )
-
-            if track != _limit_resolution(track, MinTrackDirectionResolution):
-                check.record_failed(
-                    f"Invalid track direction resolution: {track}",
-                    details=f"the track direction resolution shall not be less than 1 degree",
-                    severity=Severity.Medium,
-                )
-
-    def _evaluate_position(self, position: Position, participants: List[str]):
-        with self._test_scenario.check(
-            "Current Position consistency with Common Dictionary", participants
-        ) as check:
-            lat = position.lat
-            try:
-                lat = validate_lat(lat)
-            except ValueError:
-                check.record_failed(
-                    "Current Position  contains an invalid latitude",
-                    details=f"Invalid latitude: {lat}",
-                    severity=Severity.Medium,
-                )
-            lng = position.lng
-            try:
-                lng = validate_lng(lng)
-            except ValueError:
-                check.record_failed(
-                    "Current Position contains an invalid longitude",
-                    details=f"Invalid longitude: {lng}",
-                    severity=Severity.Medium,
-                )
-
-    def _evaluate_height(self, height: Optional[RIDHeight], participants: List[str]):
-        if height:
-            with self._test_scenario.check(
-                "Height consistency with Common Dictionary", participants
-            ) as check:
-                if height.distance != _limit_resolution(
-                    height.distance, MinHeightResolution
-                ):
-                    check.record_failed(
-                        f"Invalid height resolution: {height.distance}",
-                        details=f"the height resolution shall not be less than 1 meter",
-                        severity=Severity.Medium,
-                    )
-            with self._test_scenario.check(
-                "Height Type consistency with Common Dictionary", participants
-            ) as check:
-                if (
-                    height.reference != RIDHeightReference.TakeoffLocation
-                    and height.reference != RIDHeightReference.GroundLevel
-                ):
-                    check.record_failed(
-                        f"Invalid height type: {height.reference}",
-                        details=f"The height type reference shall be either {RIDHeightReference.TakeoffLocation} or {RIDHeightReference.GroundLevel}",
-                        severity=Severity.Medium,
-                    )
 
     def _evaluate_operator_location(
         self,
