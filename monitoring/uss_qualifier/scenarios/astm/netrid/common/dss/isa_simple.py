@@ -51,7 +51,10 @@ class ISASimple(GenericTestScenario):
 
     def _delete_isa_if_exists(self):
         fetched = fetch.isa(
-            self._isa_id, rid_version=self._dss.rid_version, session=self._dss.client
+            self._isa_id,
+            rid_version=self._dss.rid_version,
+            session=self._dss.client,
+            server_id=self._dss.participant_id,
         )
         self.record_query(fetched.query)
         with self.check("Successful ISA query", [self._dss.participant_id]) as check:
@@ -69,6 +72,7 @@ class ISASimple(GenericTestScenario):
                 fetched.isa.version,
                 self._dss.rid_version,
                 self._dss.client,
+                server_id=self._dss.participant_id,
             )
             self.record_query(deleted.dss_query.query)
             for subscriber_id, notification in deleted.notifications.items():
@@ -127,6 +131,7 @@ class ISASimple(GenericTestScenario):
             isa_version=None,
             alt_lo=self._isa.altitude_min,
             alt_hi=self._isa.altitude_max,
+            server_id=self._dss.participant_id,
         )
         self.record_query(isa_change.dss_query.query)
         for notification_query in isa_change.notifications.values():

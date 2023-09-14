@@ -122,9 +122,15 @@ class ISA(ImplicitDict):
         session: UTMClientSession,
         area: s2sphere.LatLngRect,
         include_recent_positions: bool = True,
+        server_id: Optional[str] = None,
     ) -> FetchedUSSFlights:
         return uss_flights(
-            self.flights_url, area, include_recent_positions, self.rid_version, session
+            self.flights_url,
+            area,
+            include_recent_positions,
+            self.rid_version,
+            session,
+            server_id=server_id,
         )
 
 
@@ -534,13 +540,18 @@ def isa(
     rid_version: RIDVersion,
     session: UTMClientSession,
     dss_base_url: str = "",
+    server_id: Optional[str] = None,
 ) -> FetchedISA:
     if rid_version == RIDVersion.f3411_19:
         op = v19.api.OPERATIONS[v19.api.OperationID.GetIdentificationServiceArea]
         url = f"{dss_base_url}{op.path}".replace("{id}", isa_id)
         return FetchedISA(
             v19_query=fetch.query_and_describe(
-                session, op.verb, url, scope=v19.constants.Scope.Read
+                session,
+                op.verb,
+                url,
+                scope=v19.constants.Scope.Read,
+                server_id=server_id,
             )
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -548,7 +559,11 @@ def isa(
         url = f"{dss_base_url}{op.path}".replace("{id}", isa_id)
         return FetchedISA(
             v22a_query=fetch.query_and_describe(
-                session, op.verb, url, scope=v22a.constants.Scope.DisplayProvider
+                session,
+                op.verb,
+                url,
+                scope=v22a.constants.Scope.DisplayProvider,
+                server_id=server_id,
             )
         )
     else:
@@ -660,6 +675,7 @@ def isas(
     rid_version: RIDVersion,
     session: UTMClientSession,
     dss_base_url: str = "",
+    server_id: Optional[str] = None,
 ) -> FetchedISAs:
     t0 = rid_version.format_time(start_time)
     t1 = rid_version.format_time(end_time)
@@ -669,7 +685,11 @@ def isas(
         url = f"{dss_base_url}{op.path}?area={area}&earliest_time={t0}&latest_time={t1}"
         return FetchedISAs(
             v19_query=fetch.query_and_describe(
-                session, op.verb, url, scope=v19.constants.Scope.Read
+                session,
+                op.verb,
+                url,
+                scope=v19.constants.Scope.Read,
+                server_id=server_id,
             )
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -678,7 +698,11 @@ def isas(
         url = f"{dss_base_url}{op.path}?area={area}&earliest_time={t0}&latest_time={t1}"
         return FetchedISAs(
             v22a_query=fetch.query_and_describe(
-                session, op.verb, url, scope=v22a.constants.Scope.DisplayProvider
+                session,
+                op.verb,
+                url,
+                scope=v22a.constants.Scope.DisplayProvider,
+                server_id=server_id,
             )
         )
     else:
@@ -755,6 +779,7 @@ def uss_flights(
     include_recent_positions: bool,
     rid_version: RIDVersion,
     session: UTMClientSession,
+    server_id: Optional[str] = None,
 ) -> FetchedUSSFlights:
     if rid_version == RIDVersion.f3411_19:
         query = fetch.query_and_describe(
@@ -773,6 +798,7 @@ def uss_flights(
                 else "false",
             },
             scope=v19.constants.Scope.Read,
+            server_id=server_id,
         )
         query.query_type = QueryType.F3411v19Flights
         return FetchedUSSFlights(v19_query=query)
@@ -793,6 +819,7 @@ def uss_flights(
             flights_url,
             params=params,
             scope=v22a.constants.Scope.DisplayProvider,
+            server_id=server_id,
         )
         query.query_type = QueryType.F3411v22aFlights
         return FetchedUSSFlights(v22a_query=query)
@@ -879,10 +906,11 @@ def flight_details(
     enhanced_details: bool,
     rid_version: RIDVersion,
     session: UTMClientSession,
+    server_id: Optional[str] = None,
 ) -> FetchedUSSFlightDetails:
     url = f"{flights_url}/{flight_id}/details"
     if rid_version == RIDVersion.f3411_19:
-        kwargs = {}
+        kwargs = {"server_id": server_id}
         if enhanced_details:
             kwargs["params"] = {"enhanced": "true"}
             kwargs["scope"] = (
@@ -894,7 +922,11 @@ def flight_details(
         return FetchedUSSFlightDetails(v19_query=query)
     elif rid_version == RIDVersion.f3411_22a:
         query = fetch.query_and_describe(
-            session, "GET", url, scope=v22a.constants.Scope.DisplayProvider
+            session,
+            "GET",
+            url,
+            scope=v22a.constants.Scope.DisplayProvider,
+            server_id=server_id,
         )
         return FetchedUSSFlightDetails(v22a_query=query)
     else:
@@ -946,22 +978,33 @@ def all_flights(
     session: UTMClientSession,
     dss_base_url: str = "",
     enhanced_details: bool = False,
+    server_id: Optional[str] = None,
 ) -> FetchedFlights:
     t = datetime.datetime.utcnow()
-    isa_list = isas(area, t, t, rid_version, session, dss_base_url)
+    isa_list = isas(area, t, t, rid_version, session, dss_base_url, server_id=server_id)
 
     uss_flight_queries: Dict[str, FetchedUSSFlights] = {}
     uss_flight_details_queries: Dict[str, FetchedUSSFlightDetails] = {}
     for flights_url in isa_list.flights_urls:
         flights_for_url = uss_flights(
-            flights_url, area, include_recent_positions, rid_version, session
+            flights_url,
+            area,
+            include_recent_positions,
+            rid_version,
+            session,
+            server_id=server_id,
         )
         uss_flight_queries[flights_url] = flights_for_url
 
         if get_details and flights_for_url.success:
             for flight in flights_for_url.flights:
                 details = flight_details(
-                    flights_url, flight.id, enhanced_details, rid_version, session
+                    flights_url,
+                    flight.id,
+                    enhanced_details,
+                    rid_version,
+                    session,
+                    server_id=server_id,
                 )
                 uss_flight_details_queries[flight.id] = details
 
@@ -1039,13 +1082,18 @@ def subscription(
     rid_version: RIDVersion,
     session: UTMClientSession,
     dss_base_url: str = "",
+    server_id: Optional[str] = None,
 ) -> FetchedSubscription:
     if rid_version == RIDVersion.f3411_19:
         op = v19.api.OPERATIONS[v19.api.OperationID.GetSubscription]
         url = f"{dss_base_url}{op.path}".replace("{id}", subscription_id)
         return FetchedSubscription(
             v19_query=fetch.query_and_describe(
-                session, op.verb, url, scope=v19.constants.Scope.Read
+                session,
+                op.verb,
+                url,
+                scope=v19.constants.Scope.Read,
+                server_id=server_id,
             )
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -1053,7 +1101,11 @@ def subscription(
         url = f"{dss_base_url}{op.path}".replace("{id}", subscription_id)
         return FetchedSubscription(
             v22a_query=fetch.query_and_describe(
-                session, op.verb, url, scope=v22a.constants.Scope.DisplayProvider
+                session,
+                op.verb,
+                url,
+                scope=v22a.constants.Scope.DisplayProvider,
+                server_id=server_id,
             )
         )
     else:
@@ -1137,13 +1189,18 @@ def subscriptions(
     rid_version: RIDVersion,
     session: UTMClientSession,
     dss_base_url: str = "",
+    server_id: Optional[str] = None,
 ) -> FetchedSubscriptions:
     if rid_version == RIDVersion.f3411_19:
         op = v19.api.OPERATIONS[v19.api.OperationID.SearchSubscriptions]
         url = f"{dss_base_url}{op.path}?area={rid_v1.geo_polygon_string_from_s2(area)}"
         return FetchedSubscriptions(
             v19_query=fetch.query_and_describe(
-                session, op.verb, url, scope=v19.constants.Scope.Read
+                session,
+                op.verb,
+                url,
+                scope=v19.constants.Scope.Read,
+                server_id=server_id,
             )
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -1151,7 +1208,11 @@ def subscriptions(
         url = f"{dss_base_url}{op.path}?area={rid_v2.geo_polygon_string_from_s2(area)}"
         return FetchedSubscriptions(
             v22a_query=fetch.query_and_describe(
-                session, op.verb, url, scope=v22a.constants.Scope.DisplayProvider
+                session,
+                op.verb,
+                url,
+                scope=v22a.constants.Scope.DisplayProvider,
+                server_id=server_id,
             )
         )
     else:

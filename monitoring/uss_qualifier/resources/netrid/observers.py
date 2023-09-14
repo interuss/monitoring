@@ -17,16 +17,19 @@ class RIDSystemObserver(object):
     participant_id: str
     base_url: str
     session: infrastructure.UTMClientSession
+    local_debug: bool
 
     def __init__(
         self,
         participant_id: str,
         base_url: str,
         auth_adapter: infrastructure.AuthAdapter,
+        local_debug: bool,
     ):
         self.session = UTMClientSession(base_url, auth_adapter)
         self.participant_id = participant_id
         self.base_url = base_url
+        self.local_debug = local_debug
 
     def observe_system(
         self, rect: s2sphere.LatLngRect
@@ -44,6 +47,7 @@ class RIDSystemObserver(object):
             # TODO replace with 'uas_standards.interuss.automated_testing.rid.v1.constants.Scope.Observe' once
             #  the standard is updated with https://github.com/interuss/uas_standards/pull/11/files
             scope="dss.read.identification_service_areas",
+            server_id=self.participant_id,
         )
         try:
             result = (
@@ -68,6 +72,7 @@ class RIDSystemObserver(object):
             # TODO replace with 'uas_standards.interuss.automated_testing.rid.v1.constants.Scope.Observe' once
             #  the standard is updated with https://github.com/interuss/uas_standards/pull/11/files
             scope="dss.read.identification_service_areas",
+            server_id=self.participant_id,
         )
         # Record query metadata for later use in the aggregate checks
         query.server_id = self.participant_id
@@ -92,6 +97,12 @@ class ObserverConfiguration(ImplicitDict):
     observation_base_url: str
     """Base URL for the observer's implementation of the interfaces/automated-testing/rid/observation.yaml API"""
 
+    local_debug: Optional[bool]
+    """Whether this Observer instance is running locally for debugging or development purposes. Mostly used for relaxing
+    constraints around encryption.
+    Assumed to be true if left unspecified and has_private_address is true, otherwise defaults to false
+    """
+
 
 class NetRIDObserversSpecification(ImplicitDict):
     observers: List[ObserverConfiguration]
@@ -110,6 +121,7 @@ class NetRIDObserversResource(Resource[NetRIDObserversSpecification]):
                 o.participant_id,
                 o.observation_base_url,
                 auth_adapter.adapter,
+                o.local_debug,
             )
             for o in specification.observers
         ]
