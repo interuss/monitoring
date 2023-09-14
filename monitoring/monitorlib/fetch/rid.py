@@ -216,7 +216,7 @@ class Flight(ImplicitDict):
                 )
             else:
                 raise NotImplementedError(
-                    f"Cannot retrieve most recent position using RID version {self.rid_version}"
+                    f"Cannot retrieve most_recent_position using RID version {self.rid_version}"
                 )
         else:
             return None
@@ -235,7 +235,7 @@ class Flight(ImplicitDict):
             ]
         else:
             raise NotImplementedError(
-                f"Cannot retrieve recent positions using RID version {self.rid_version}"
+                f"Cannot retrieve recent_positions using RID version {self.rid_version}"
             )
 
     @property
@@ -248,7 +248,7 @@ class Flight(ImplicitDict):
             return self.v22a_value.current_state.operational_status
         else:
             raise NotImplementedError(
-                f"Cannot retrieve operational status using RID version {self.rid_version}"
+                f"Cannot retrieve operational_status using RID version {self.rid_version}"
             )
 
     @property
@@ -270,7 +270,7 @@ class Flight(ImplicitDict):
             return self.v22a_value.current_state.speed
         else:
             raise NotImplementedError(
-                f"Cannot retrieve track using RID version {self.rid_version}"
+                f"Cannot retrieve speed using RID version {self.rid_version}"
             )
 
     def errors(self) -> List[str]:
@@ -373,7 +373,7 @@ class FlightDetails(ImplicitDict):
             )
 
     @property
-    def plain_uas_id(self) -> Optional[str]:
+    def arbitrary_uas_id(self) -> Optional[str]:
         """Returns a UAS id as a plain string without type hint.
         If multiple are provided:
         For v19, registration_number is returned if set, else it falls back to the serial_number.
@@ -381,9 +381,9 @@ class FlightDetails(ImplicitDict):
         If no match, it returns None.
         """
         if self.rid_version == RIDVersion.f3411_19:
-            rn = self.v19_value.registration_number
-            if rn:
-                return rn
+            registration_number = self.v19_value.registration_number
+            if registration_number:
+                return registration_number
             else:
                 return self.v19_value.serial_number
         elif self.rid_version == RIDVersion.f3411_22a:

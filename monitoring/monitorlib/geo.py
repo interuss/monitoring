@@ -51,7 +51,9 @@ class Altitude(ImplicitDict):
     units: DistanceUnits
 
     @staticmethod
-    def w84m(value: float):
+    def w84m(value: Optional[float]):
+        if not value:
+            return None
         return Altitude(value=value, reference=AltitudeDatum.W84, units=DistanceUnits.M)
 
 

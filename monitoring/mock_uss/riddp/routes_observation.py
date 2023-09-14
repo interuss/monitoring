@@ -61,11 +61,11 @@ def _make_flight_observation(
         paths.append(current_path)
 
     p = flight.most_recent_position
-    original_time = p.time.replace(
+    timestamp = p.time.replace(
         microsecond=_limit_resolution(p.time.microsecond, pow(10, 5))
     )
     current_state = observation_api.CurrentState(
-        timestamp=original_time.isoformat(),
+        timestamp=timestamp.isoformat(),
         operational_status=flight.operational_status,
         track=_limit_resolution(flight.track, MinTrackDirectionResolution),
         speed=_limit_resolution(flight.speed, MaxSpeed),
@@ -191,7 +191,9 @@ def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
     )
     if rid_version == RIDVersion.f3411_19:
         # TODO: Implement details for F3411-19
-        return flask.jsonify(observation_api.GetDetailsResponse(id=flight_id))
+        return flask.jsonify(observation_api.GetDetailsResponse(
+            operator=observation_api.Operator()
+        ))
     elif rid_version == RIDVersion.f3411_22a:
         details = flight_details.details
         result = observation_api.GetDetailsResponse(
@@ -204,7 +206,7 @@ def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
                 ),
             ),
             uas=observation_api.UAS(
-                id=details.plain_uas_id,
+                id=details.arbitrary_uas_id,
             ),
         )
         return flask.jsonify(result)

@@ -24,7 +24,7 @@ from uas_standards.astm.f3411.v22a.constants import (
     MinTrackDirectionResolution,
 )
 
-from interfaces.uas_standards.src.uas_standards.astm.f3411.v22a.constants import (
+from uas_standards.astm.f3411.v22a.constants import (
     MinHeightResolution,
     MinPositionResolution,
 )
@@ -207,7 +207,7 @@ class RIDCommonDictionaryEvaluator(object):
         self, observed_details: Optional[GetDetailsResponse], participants: List[str]
     ):
         if not observed_details:
-            observed_details = {}
+            return
 
         self._evaluate_arbitrary_uas_id(
             observed_details.get("uas", {}).get("id"), participants
@@ -221,9 +221,7 @@ class RIDCommonDictionaryEvaluator(object):
         operator_altitude_value = operator_altitude.get("altitude")
         self._evaluate_operator_location(
             operator_location,
-            Altitude.w84m(value=operator_altitude_value)
-            if operator_altitude_value
-            else None,
+            Altitude.w84m(value=operator_altitude_value),
             operator_altitude.get("altitude_type"),
             participants,
         )
@@ -321,7 +319,7 @@ class RIDCommonDictionaryEvaluator(object):
                     ms_res = _limit_resolution(ms, pow(10, 5))
                     if ms != ms_res:
                         check.record_failed(
-                            f"Timestamp resolution is smaller than 1/10: {timestamp}",
+                            f"Timestamp resolution is smaller than 1/10 second: {timestamp}",
                             severity=Severity.Medium,
                         )
                 except ParserError as e:
@@ -338,22 +336,16 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_operator_id(self, value: Optional[str], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
-            if self._rid_version == RIDVersion.f3411_22a:
-                if value:
-                    with self._test_scenario.check(
-                        "Operator ID consistency with Common Dictionary", participants
-                    ) as check:
-                        is_ascii = all([0 <= ord(c) < 128 for c in value])
-                        if not is_ascii:
-                            check.record_failed(
-                                "Operator ID contains non-ascii characters",
-                                severity=Severity.Medium,
-                            )
-            else:
-                self._test_scenario.record_note(
-                    key="skip_reason",
-                    message=f"Unsupported version {self._rid_version}: skipping Operator ID evaluation",
-                )
+            if value:
+                with self._test_scenario.check(
+                    "Operator ID consistency with Common Dictionary", participants
+                ) as check:
+                    is_ascii = all([0 <= ord(c) < 128 for c in value])
+                    if not is_ascii:
+                        check.record_failed(
+                            "Operator ID contains non-ascii characters",
+                            severity=Severity.Medium,
+                        )
         else:
             self._test_scenario.record_note(
                 key="skip_reason",
@@ -421,7 +413,7 @@ class RIDCommonDictionaryEvaluator(object):
                     lat = validate_lat(lat)
                 except ValueError:
                     check.record_failed(
-                        "Current Position  contains an invalid latitude",
+                        "Current Position contains an invalid latitude",
                         details=f"Invalid latitude: {lat}",
                         severity=Severity.Medium,
                     )
@@ -485,7 +477,7 @@ class RIDCommonDictionaryEvaluator(object):
             ) as check:
                 if not position:
                     check.record_failed(
-                        "Missing Operator position",
+                        "Missing Operator Location position",
                         details=f"Invalid position: {position}",
                         severity=Severity.Medium,
                     )
