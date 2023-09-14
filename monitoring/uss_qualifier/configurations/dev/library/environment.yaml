@@ -34,6 +34,7 @@ net_rid:
             service_providers:
                 - participant_id: uss2
                   injection_base_url: http://v19.ridsp.uss2.localutm/ridsp/injection
+                  local_debug: true
     netrid_service_providers_v22a:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.NetRIDServiceProviders
@@ -43,6 +44,7 @@ net_rid:
             service_providers:
                 - participant_id: uss1
                   injection_base_url: http://v22a.ridsp.uss1.localutm/ridsp/injection
+                  local_debug: true
     netrid_observers_v19:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.NetRIDObserversResource
@@ -52,6 +54,7 @@ net_rid:
             observers:
                 - participant_id: uss3
                   observation_base_url: http://v19.riddp.uss3.localutm/riddp/observation
+                  local_debug: true
     netrid_observers_v22a:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.NetRIDObserversResource
@@ -61,6 +64,7 @@ net_rid:
             observers:
                 - participant_id: uss1
                   observation_base_url: http://v22a.riddp.uss1.localutm/riddp/observation
+                  local_debug: true
     netrid_dss_instances_v19:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.astm.f3411.DSSInstancesResource
@@ -123,6 +127,7 @@ f3548:
                 # uss1 is the mock_uss directly exposing scdsc functionality
                 -   participant_id: uss1
                     injection_base_url: http://scdsc.uss1.localutm/scdsc
+                    local_debug: true
 
                 # The atproxy has been disabled since it is suspected to be responsible of issue #28. Replaced by another simple mock_uss
                 # # uss2 uses atproxy, with requests being fulfilled by mock_uss with atproxy_client functionality enabled
@@ -132,6 +137,7 @@ f3548:
                 # uss2 is the mock_uss directly exposing scdsc functionality
                 -   participant_id: uss2
                     injection_base_url: http://scdsc.uss2.localutm/scdsc
+                    local_debug: true
     dss:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.astm.f3548.v21.DSSInstanceResource
@@ -152,6 +158,7 @@ f3548_single_scenario:
             flight_planner:
                 participant_id: uss1
                 injection_base_url: http://scdsc.uss1.localutm/scdsc
+                local_debug: true
     uss2:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.flight_planning.FlightPlannerResource
@@ -161,3 +168,4 @@ f3548_single_scenario:
             flight_planner:
                 participant_id: uss2
                 injection_base_url: http://scdsc.uss2.localutm/scdsc
+                local_debug: true

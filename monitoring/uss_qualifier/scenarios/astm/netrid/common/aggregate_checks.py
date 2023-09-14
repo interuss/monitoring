@@ -1,11 +1,13 @@
 import re
-from typing import List, Dict
+from typing import List, Dict, Set
 
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.fetch import evaluation, QueryType
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
+from monitoring.uss_qualifier.resources.astm.f3411 import DSSInstancesResource
+from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
 from monitoring.uss_qualifier.scenarios.interuss.evaluation_scenario import (
     ReportEvaluationScenario,
 )
@@ -20,14 +22,18 @@ from monitoring.uss_qualifier.resources.netrid.service_providers import (
     NetRIDServiceProvider,
 )
 
+from loguru import logger
+
 
 class AggregateChecks(ReportEvaluationScenario):
     _rid_version: RIDVersion
     _service_providers: List[NetRIDServiceProvider]
     _observers: List[RIDSystemObserver]
+    _dss_instances: List[DSSInstance]
 
     _queries: List[fetch.Query]
     _participants_by_base_url: Dict[str, ParticipantID] = dict()
+    _debug_mode_usses: Set[ParticipantID] = set()
     _queries_by_participant: Dict[ParticipantID, List[fetch.Query]]
 
     def __init__(
@@ -35,11 +41,13 @@ class AggregateChecks(ReportEvaluationScenario):
         report_resource: TestSuiteReportResource,
         service_providers: NetRIDServiceProviders,
         observers: NetRIDObserversResource,
+        dss_instances: DSSInstancesResource,
     ):
         super().__init__(report_resource)
         self._queries = self.report.queries()
         self._service_providers = service_providers.service_providers
         self._observers = observers.observers
+        self._dss_instances = dss_instances.dss_instances
 
         # identify SPs and observers by their base URL
         self._participants_by_base_url.update(
@@ -49,15 +57,31 @@ class AggregateChecks(ReportEvaluationScenario):
             {dp.base_url: dp.participant_id for dp in self._observers}
         )
 
+        # identify usses running in debug mode
+        for sp in self._service_providers:
+            if sp.local_debug:
+                self._debug_mode_usses.add(sp.participant_id)
+
+        for o in self._observers:
+            if o.local_debug:
+                self._debug_mode_usses.add(o.participant_id)
+
+        for dss in self._dss_instances:
+            if dss.local_debug:
+                self._debug_mode_usses.add(dss.participant_id)
+
         # collect and classify queries by participant
         self._queries_by_participant = {
             participant: list()
             for participant in self._participants_by_base_url.values()
         }
+
         for query in self._queries:
             for base_url, participant in self._participants_by_base_url.items():
                 if query.request.url.startswith(base_url):
                     self._queries_by_participant[participant].append(query)
+                    # TODO opportunity here to set the participant_id on the query if it's not already there
+                    #  maybe do so after most/all queries have been tagged at the call site where possible
                     break
 
             # Only consider queries with the participant/server explicitly identified
@@ -85,6 +109,8 @@ class AggregateChecks(ReportEvaluationScenario):
                 "observer", f"configured observer: {o.participant_id} - {o.base_url}"
             )
 
+        self.record_note("debug_usses", f"debug mode usses: {self._debug_mode_usses}")
+
         # DP performance
         self.begin_test_case("Performance of Display Providers requests")
         self.begin_test_step("Performance of /display_data requests")
@@ -107,7 +133,73 @@ class AggregateChecks(ReportEvaluationScenario):
         self.end_test_step()
         self.end_test_case()
 
+        self.begin_test_case("Verify https is in use")
+        self.begin_test_step("Verify https is in use")
+
+        self._verify_https_everywhere()
+
+        self.end_test_step()
+        self.end_test_case()
+
         self.end_test_scenario()
+
+    def _verify_https_everywhere(self):
+        for participant_id, participant_queries in self._queries_by_participant.items():
+            self._inspect_participant_queries(participant_id, participant_queries)
+
+        # Check that all queries have been attributed to a participant
+        unattr_queries = [
+            query.request.url
+            for query in self._queries
+            if query.get("server_id") is None
+        ]
+        if len(unattr_queries) > 0:
+            # TODO clean this up: this is an internal requirement and not a check,
+            #  leaving as-is during development to make sure the test-suite runs but we know about unattributed queries
+            #  ultimately this check could go into the constructor and blow things up early
+
+            with self.check(
+                "No unattributed queries",
+                [],
+            ) as check:
+                check.record_failed(
+                    f"found unattributed queries: {unattr_queries}", Severity.Medium
+                )
+
+    def _inspect_participant_queries(
+        self, participant_id: str, participant_queries: List[fetch.Query]
+    ):
+        cleartext_queries = []
+        for query in participant_queries:
+            if query.request.url.startswith("http://"):
+                if participant_id not in self._debug_mode_usses:
+                    cleartext_queries.append(query)
+                    logger.info(
+                        f"query is not https: {participant_id} - {query.request.url}",
+                    )
+
+        if participant_id not in self._debug_mode_usses:
+            with self.check(
+                "All interactions happen over https",
+                [participant_id],
+            ) as check:
+                if len(cleartext_queries) > 0:
+                    timestamps = [
+                        q.request.initiated_at.datetime for q in cleartext_queries
+                    ]
+                    urls = set([q.request.url for q in cleartext_queries])
+                    check.record_failed(
+                        summary=f"found {len(cleartext_queries)} cleartext http queries",
+                        details=f"unique cleartext urls: {urls}",
+                        severity=Severity.Medium,
+                        participants=[participant_id],
+                        query_timestamps=timestamps,
+                    )
+        else:
+            self.record_note(
+                "https-check",
+                f"participant {participant_id} is in local debug mode, skipping HTTPS check",
+            )
 
     def _dp_display_data_details_times_step(self):
         """
@@ -117,7 +209,6 @@ class AggregateChecks(ReportEvaluationScenario):
         for participant, all_queries in self._queries_by_participant.items():
             relevant_queries: List[fetch.Query] = list()
             for query in all_queries:
-
                 if (
                     query.status_code == 200
                     and query.has_field_with_value("query_type")
@@ -217,7 +308,6 @@ class AggregateChecks(ReportEvaluationScenario):
 
         pattern = re.compile(r"/display_data\?view=(-?\d+(.\d+)?,){3}-?\d+(.\d+)?")
         for participant, all_queries in self._queries_by_participant.items():
-
             # identify successful display_data queries
             relevant_queries: List[fetch.Query] = list()
             for query in all_queries:

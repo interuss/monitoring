@@ -176,6 +176,7 @@ class Misbehavior(GenericTestScenario):
                 get_details=True,
                 rid_version=self._rid_version,
                 session=self._dss.client,
+                server_id=self._dss.participant_id,
             )
             # We fish out the queries that were used to grab the flights from the SP,
             # and attempt to re-query without credentials. This should fail.
@@ -206,6 +207,7 @@ class Misbehavior(GenericTestScenario):
                     url=fq.query.request.url,
                     json=fq.query.request.json,
                     data=fq.query.request.body,
+                    server_id=self._dss.participant_id,
                 )
                 logger.info(
                     f"Repeating query to {fq.query.request.url} without credentials"

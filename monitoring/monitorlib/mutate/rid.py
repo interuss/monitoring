@@ -99,6 +99,7 @@ def upsert_subscription(
     rid_version: RIDVersion,
     utm_client: infrastructure.UTMClientSession,
     subscription_version: Optional[str] = None,
+    server_id: Optional[str] = None,
 ) -> ChangedSubscription:
     mutation = "create" if subscription_version is None else "update"
     if rid_version == RIDVersion.f3411_19:
@@ -126,7 +127,12 @@ def upsert_subscription(
         return ChangedSubscription(
             mutation=mutation,
             v19_query=fetch.query_and_describe(
-                utm_client, op.verb, url, json=body, scope=v19.constants.Scope.Read
+                utm_client,
+                op.verb,
+                url,
+                json=body,
+                scope=v19.constants.Scope.Read,
+                server_id=server_id,
             ),
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -154,6 +160,7 @@ def upsert_subscription(
                 url,
                 json=body,
                 scope=v22a.constants.Scope.DisplayProvider,
+                server_id=server_id,
             ),
         )
     else:
@@ -167,6 +174,7 @@ def delete_subscription(
     subscription_version: str,
     rid_version: RIDVersion,
     utm_client: infrastructure.UTMClientSession,
+    server_id: Optional[str] = None,
 ) -> ChangedSubscription:
     if rid_version == RIDVersion.f3411_19:
         op = v19.api.OPERATIONS[v19.api.OperationID.DeleteSubscription]
@@ -174,7 +182,11 @@ def delete_subscription(
         return ChangedSubscription(
             mutation="delete",
             v19_query=fetch.query_and_describe(
-                utm_client, op.verb, url, scope=v19.constants.Scope.Read
+                utm_client,
+                op.verb,
+                url,
+                scope=v19.constants.Scope.Read,
+                server_id=server_id,
             ),
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -183,7 +195,11 @@ def delete_subscription(
         return ChangedSubscription(
             mutation="delete",
             v22a_query=fetch.query_and_describe(
-                utm_client, op.verb, url, scope=v22a.constants.Scope.DisplayProvider
+                utm_client,
+                op.verb,
+                url,
+                scope=v22a.constants.Scope.DisplayProvider,
+                server_id=server_id,
             ),
         )
     else:
@@ -238,6 +254,7 @@ class SubscriberToNotify(ImplicitDict):
         isa_id: str,
         utm_session: infrastructure.UTMClientSession,
         isa: Optional[ISA] = None,
+        server_id: Optional[str] = None,
     ) -> ISAChangeNotification:
         # Note that optional `extents` are not specified
         if self.rid_version == RIDVersion.f3411_19:
@@ -254,6 +271,7 @@ class SubscriberToNotify(ImplicitDict):
                     url,
                     json=body,
                     scope=v19.constants.Scope.Write,
+                    server_id=server_id,
                 )
             )
         elif self.rid_version == RIDVersion.f3411_22a:
@@ -271,6 +289,7 @@ class SubscriberToNotify(ImplicitDict):
                     url,
                     json=body,
                     scope=v22a.constants.Scope.ServiceProvider,
+                    server_id=server_id,
                 )
             )
         else:
@@ -422,6 +441,7 @@ def put_isa(
     rid_version: RIDVersion,
     utm_client: infrastructure.UTMClientSession,
     isa_version: Optional[str] = None,
+    server_id: Optional[str] = None,
 ) -> ISAChange:
     mutation = "create" if isa_version is None else "update"
     if rid_version == RIDVersion.f3411_19:
@@ -445,7 +465,12 @@ def put_isa(
         dss_response = ChangedISA(
             mutation=mutation,
             v19_query=fetch.query_and_describe(
-                utm_client, op.verb, url, json=body, scope=v19.constants.Scope.Write
+                utm_client,
+                op.verb,
+                url,
+                json=body,
+                scope=v19.constants.Scope.Write,
+                server_id=server_id,
             ),
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -477,6 +502,7 @@ def put_isa(
                 url,
                 json=body,
                 scope=v22a.constants.Scope.ServiceProvider,
+                server_id=server_id,
             ),
         )
     else:
@@ -499,6 +525,7 @@ def delete_isa(
     isa_version: str,
     rid_version: RIDVersion,
     utm_client: infrastructure.UTMClientSession,
+    server_id: Optional[str] = None,
 ) -> ISAChange:
     if rid_version == RIDVersion.f3411_19:
         op = v19.api.OPERATIONS[v19.api.OperationID.DeleteIdentificationServiceArea]
@@ -506,7 +533,11 @@ def delete_isa(
         dss_response = ChangedISA(
             mutation="delete",
             v19_query=fetch.query_and_describe(
-                utm_client, op.verb, url, scope=v19.constants.Scope.Write
+                utm_client,
+                op.verb,
+                url,
+                scope=v19.constants.Scope.Write,
+                server_id=server_id,
             ),
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -515,7 +546,11 @@ def delete_isa(
         dss_response = ChangedISA(
             mutation="delete",
             v22a_query=fetch.query_and_describe(
-                utm_client, op.verb, url, scope=v22a.constants.Scope.ServiceProvider
+                utm_client,
+                op.verb,
+                url,
+                scope=v22a.constants.Scope.ServiceProvider,
+                server_id=server_id,
             ),
         )
     else:

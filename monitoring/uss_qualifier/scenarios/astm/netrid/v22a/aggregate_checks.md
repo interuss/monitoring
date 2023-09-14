@@ -15,6 +15,9 @@ The service providers to evaluate in the report.
 ### observers
 The observers to evaluate in the report.
 
+### dss_instances
+The DSS instances that have been relied upon or tested by the framework.
+
 ## Performance of Display Providers requests test case
 
 ### Performance of /display_data/<flight_id> requests test step
@@ -52,6 +55,24 @@ of the durations for the subsequent display data queries do not exceed the respe
 **[astm.f3411.v22a.NET0260-a](../../../../requirements/astm/f3411/v22a.md)** requires that the 95th and 99th percentiles
 of the durations for the replies to requested flights in an area do not exceed the respective thresholds
 `NetSpDataResponseTime95thPercentile` (1 second) and `NetSpDataResponseTime99thPercentile` (3 seconds).
+
+## Verify https is in use test case
+
+### Verify https is in use test step
+
+Inspects all record queries for their usage of https. If services such as a service provider, observer or DSS are marked
+as being in "local debug" mode, they may serve requests over http without producing failed checks despite their lack of encryption.
+
+#### No unattributed queries check
+
+All queries must have been attributed to a participant: an unattributed query means that one of the test cases has not
+properly recorded to which participant it was made.
+
+This is an internal requirement and does not necessarily imply that there is a problem with the participants under test.
+
+#### All interactions happen over https check
+
+If non-encrypted interactions such as plaintext queries over http are allowed, **[astm.f3411.v19.NET0220](../../../../requirements/astm/f3411/v19.md)** is not satisfied.
 
 ## Mock USS interactions evaluation test case
 

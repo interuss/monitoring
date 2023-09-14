@@ -1,4 +1,5 @@
 from monitoring.monitorlib.rid import RIDVersion
+from monitoring.uss_qualifier.resources.astm.f3411 import DSSInstancesResource
 from monitoring.uss_qualifier.resources.interuss.report import TestSuiteReportResource
 from monitoring.uss_qualifier.resources.netrid import (
     NetRIDServiceProviders,
@@ -16,6 +17,7 @@ class AggregateChecks(TestScenario, CommonAggregateChecks):
         report_resource: TestSuiteReportResource,
         service_providers: NetRIDServiceProviders,
         observers: NetRIDObserversResource,
+        dss_instances: DSSInstancesResource,
     ):
-        super().__init__(report_resource, service_providers, observers)
+        super().__init__(report_resource, service_providers, observers, dss_instances)
         self._rid_version = RIDVersion.f3411_22a
