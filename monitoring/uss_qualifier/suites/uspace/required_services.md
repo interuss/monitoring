@@ -2,22 +2,22 @@
 # U-space required services test suite
 [`suites.uspace.required_services`](./required_services.yaml)
 
-## Actions
+## [Actions](../README.md#actions)
 
 1. Suite: [U-space flight authorisation](flight_auth.md) ([`suites.uspace.flight_auth`](flight_auth.yaml))
 2. Suite: [U-Space network identification](network_identification.md) ([`suites.uspace.network_identification`](network_identification.yaml))
 
-## Checked requirements
+## [Checked requirements](../README.md#checked-requirements)
 
 <table>
   <tr>
-    <th>Package</th>
-    <th>Requirement</th>
-    <th>Status</th>
-    <th>Checked in</th>
+    <th><a href="../README.md#package">Package</a></th>
+    <th><a href="../README.md#requirement">Requirement</a></th>
+    <th><a href="../README.md#status">Status</a></th>
+    <th><a href="../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="52" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
+    <td rowspan="57" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
     <td><a href="../../requirements/astm/f3411/v22a.md">A2-6-1,1a</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss_interoperability.md">ASTM F3411-22a NetRID DSS interoperability</a></td>
@@ -59,12 +59,12 @@
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">A2-6-1,3c</a></td>
-    <td>In progress</td>
+    <td>Implemented + TODO</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss_interoperability.md">ASTM F3411-22a NetRID DSS interoperability</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">A2-6-1,3d</a></td>
-    <td>In progress</td>
+    <td>Implemented + TODO</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss_interoperability.md">ASTM F3411-22a NetRID DSS interoperability</a></td>
   </tr>
   <tr>
@@ -106,6 +106,16 @@
     <td><a href="../../requirements/astm/f3411/v22a.md">DSS0070</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss_interoperability.md">ASTM F3411-22a NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">DSS0110</a></td>
+    <td>TODO</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/dss/crdb_access.md">ASTM NetRID DSS: Direct CRDB access</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">DSS0120</a></td>
+    <td>TODO</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/dss/crdb_access.md">ASTM NetRID DSS: Direct CRDB access</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">DSS0130</a></td>
@@ -163,8 +173,18 @@
     <td><a href="../../scenarios/astm/netrid/v22a/dss_interoperability.md">ASTM F3411-22a NetRID DSS interoperability</a></td>
   </tr>
   <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0030</a></td>
+    <td>TODO</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0040</a></td>
+    <td>TODO</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
+  </tr>
+  <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0240</a></td>
-    <td>Planned</td>
+    <td>TODO</td>
     <td><a href="../../scenarios/astm/netrid/v22a/aggregate_checks.md">ASTM F3411-22a NetRID aggregate checks</a></td>
   </tr>
   <tr>
@@ -264,8 +284,13 @@
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0610</a></td>
-    <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td>Implemented + TODO</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a><br><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0620</a></td>
+    <td>TODO</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0710</a></td>
@@ -397,7 +422,7 @@
   </tr>
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">UpsertTestResult</a></td>
-    <td>Planned</td>
+    <td>TODO</td>
     <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
