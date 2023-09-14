@@ -62,7 +62,9 @@ def _make_flight_observation(
 
     p = flight.most_recent_position
     timestamp = p.time.replace(
-        microsecond=_limit_resolution(p.time.microsecond, pow(10, 5))
+        microsecond=round(
+            _limit_resolution(p.time.microsecond, pow(10, 5))
+        )  # Microsecond is very strict on the expected size and format, thus the round.
     )
     current_state = observation_api.CurrentState(
         timestamp=timestamp.isoformat(),
