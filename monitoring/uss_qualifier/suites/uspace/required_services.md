@@ -17,13 +17,7 @@
     <th><a href="../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v19.md">astm<br>.f3411<br>.v19</a></td>
-    <td><a href="../../requirements/astm/f3411/v19.md">NET0220</a></td>
-    <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/aggregate_checks.md">ASTM F3411-22a NetRID aggregate checks</a></td>
-  </tr>
-  <tr>
-    <td rowspan="57" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
+    <td rowspan="58" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
     <td><a href="../../requirements/astm/f3411/v22a.md">A2-6-1,1a</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss_interoperability.md">ASTM F3411-22a NetRID DSS interoperability</a></td>
@@ -187,6 +181,11 @@
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0040</a></td>
     <td>TODO</td>
     <td><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0220</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/aggregate_checks.md">ASTM F3411-22a NetRID aggregate checks</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0240</a></td>

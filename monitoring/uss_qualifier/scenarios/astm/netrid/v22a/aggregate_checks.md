@@ -72,7 +72,7 @@ This is an internal requirement and does not necessarily imply that there is a p
 
 #### All interactions happen over https check
 
-If non-encrypted interactions such as plaintext queries over http are allowed, **[astm.f3411.v19.NET0220](../../../../requirements/astm/f3411/v19.md)** is not satisfied.
+If non-encrypted interactions such as plaintext queries over http are allowed, **[astm.f3411.v22a.NET0220](../../../../requirements/astm/f3411/v22a.md)** is not satisfied.
 
 ## Mock USS interactions evaluation test case
 
