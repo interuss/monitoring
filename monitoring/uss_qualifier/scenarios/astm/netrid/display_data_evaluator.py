@@ -433,7 +433,6 @@ class RIDObservationEvaluator(object):
                 details,
                 participants=[
                     observer.participant_id,
-                    mapping.injected_flight.uss_participant_id,
                 ],
             )
 
