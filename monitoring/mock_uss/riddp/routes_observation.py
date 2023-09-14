@@ -5,12 +5,18 @@ from loguru import logger
 import s2sphere
 from uas_standards.astm.f3411.v19.api import ErrorResponse
 from uas_standards.astm.f3411.v19.constants import Scope
-from uas_standards.astm.f3411.v22a.constants import MaxSpeed, MinHeightResolution, MinTrackDirectionResolution
+from uas_standards.astm.f3411.v22a.constants import (
+    MaxSpeed,
+    MinHeightResolution,
+    MinTrackDirectionResolution,
+)
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.fetch.rid import Flight, FetchedISAs, Position
 from monitoring.monitorlib.rid import RIDVersion
-from uas_standards.interuss.automated_testing.rid.v1 import observation as observation_api
+from uas_standards.interuss.automated_testing.rid.v1 import (
+    observation as observation_api,
+)
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
 from . import clustering, database, utm_client
@@ -18,6 +24,7 @@ from .behavior import DisplayProviderBehavior
 from .config import KEY_RID_VERSION
 from .database import db
 from monitoring.monitorlib.formatting import _limit_resolution
+
 
 def _make_flight_observation(
     flight: Flight, view: s2sphere.LatLngRect
@@ -54,21 +61,25 @@ def _make_flight_observation(
         paths.append(current_path)
 
     p = flight.most_recent_position
-    original_time = p.time.replace(microsecond=_limit_resolution(p.time.microsecond, pow(10, 5)))
+    original_time = p.time.replace(
+        microsecond=_limit_resolution(p.time.microsecond, pow(10, 5))
+    )
     current_state = observation_api.CurrentState(
         timestamp=original_time.isoformat(),
         operational_status=flight.operational_status,
         track=_limit_resolution(flight.track, MinTrackDirectionResolution),
-        speed=_limit_resolution(flight.speed, MaxSpeed)
+        speed=_limit_resolution(flight.speed, MaxSpeed),
     )
     h = p.get("height")
     if h:
         h.distance = _limit_resolution(h.distance, MinHeightResolution)
     return observation_api.Flight(
         id=flight.id,
-        most_recent_position=observation_api.Position(lat=p.lat, lng=p.lng, alt=p.alt, height=h),
+        most_recent_position=observation_api.Position(
+            lat=p.lat, lng=p.lng, alt=p.alt, height=h
+        ),
         recent_paths=[observation_api.Path(positions=path) for path in paths],
-        current_state=current_state
+        current_state=current_state,
     )
 
 

@@ -52,11 +52,7 @@ class Altitude(ImplicitDict):
 
     @staticmethod
     def w84m(value: float):
-        return Altitude(
-            value=value,
-            reference=AltitudeDatum.W84,
-            units=DistanceUnits.M
-        )
+        return Altitude(value=value, reference=AltitudeDatum.W84, units=DistanceUnits.M)
 
 
 class Volume3D(ImplicitDict):

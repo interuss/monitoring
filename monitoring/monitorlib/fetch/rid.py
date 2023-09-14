@@ -162,7 +162,9 @@ class Position(ImplicitDict):
     def from_v22a_rid_aircraft_position(
         p: v22a.api.RIDAircraftPosition, t: v22a.api.StringBasedDateTime
     ) -> Position:
-        return Position(lat=p.lat, lng=p.lng, alt=p.alt, time=t.datetime, height=p.get("height"))
+        return Position(
+            lat=p.lat, lng=p.lng, alt=p.alt, time=t.datetime, height=p.get("height")
+        )
 
 
 class Flight(ImplicitDict):
@@ -239,7 +241,9 @@ class Flight(ImplicitDict):
     @property
     def operational_status(self) -> v22a.api.RIDOperationalStatus:
         if self.rid_version == RIDVersion.f3411_19:
-            return v22a.api.RIDOperationalStatus(self.v19_value.current_state.operational_status)
+            return v22a.api.RIDOperationalStatus(
+                self.v19_value.current_state.operational_status
+            )
         elif self.rid_version == RIDVersion.f3411_22a:
             return self.v22a_value.current_state.operational_status
         else:
@@ -407,6 +411,7 @@ class FlightDetails(ImplicitDict):
             raise NotImplementedError(
                 f"Cannot retrieve operator_location using RID version {self.rid_version}"
             )
+
 
 class Subscription(ImplicitDict):
     """Version-independent representation of a F3411 subscription."""

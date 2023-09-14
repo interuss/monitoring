@@ -2,7 +2,9 @@ from datetime import datetime, timedelta, timezone
 import s2sphere
 from typing import List, Tuple, Optional
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
-    OperatorAltitudeAltitudeType, RIDHeight, RIDHeightReference,
+    OperatorAltitudeAltitudeType,
+    RIDHeight,
+    RIDHeightReference,
 )
 
 from uas_standards.astm.f3411.v22a.constants import SpecialTrackDirection
@@ -32,6 +34,7 @@ def _assert_operator_id(value: str, outcome: bool):
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
+
 
 def test_operator_id_non_ascii():
     _assert_operator_id("non_ascii©", False)
@@ -212,11 +215,13 @@ def _assert_timestamp(value: str, outcome: bool):
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
 
+
 def test_timestamp():
     _assert_timestamp("2023-09-13T04:43:00.1Z", True)  # Ok
     _assert_timestamp("2023-09-13T04:43:00Z", True)  # Ok
     _assert_timestamp("2023-09-13T04:43:00.501Z", False)  # Wrong resolution
     _assert_timestamp("2023-09-13T04:43:00.1EST", False)  # Wrong timezone
+
 
 def _assert_speed(value: float, outcome: bool):
     def step_under_test(self: UnitTestScenario):
@@ -231,11 +236,13 @@ def _assert_speed(value: float, outcome: bool):
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
 
+
 def test_speed():
     _assert_speed(1, True)  # Ok
     _assert_speed(20.75, True)  # Ok
     _assert_speed(400, False)  # Fail, above MaxSpeed
     _assert_speed(23.3, False)  # Wrong resolution
+
 
 def _assert_track(value: float, outcome: bool):
     def step_under_test(self: UnitTestScenario):
@@ -250,6 +257,7 @@ def _assert_track(value: float, outcome: bool):
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
 
+
 def test_track():
     _assert_track(1, True)  # Ok
     _assert_track(-359, True)  # Ok
@@ -257,6 +265,7 @@ def test_track():
     _assert_track(-360, False)  # Fail, below MinTrackDirection
     _assert_track(23.3, False)  # Wrong resolution
     _assert_track(SpecialTrackDirection, True)
+
 
 def _assert_height(value: RIDHeight, outcome: bool):
     def step_under_test(self: UnitTestScenario):
@@ -268,15 +277,20 @@ def _assert_height(value: RIDHeight, outcome: bool):
 
         evaluator._evaluate_height(value, [])
 
-
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
 
+
 def test_height():
-    _assert_height(None, True) # Ok
+    _assert_height(None, True)  # Ok
     _assert_height(RIDHeight(distance=10, reference="TakeoffLocation"), True)  # Ok
-    _assert_height(RIDHeight(distance=10.101, reference="TakeoffLocation"), False)  # Wrong resolution
-    _assert_height(RIDHeight(distance=10.101, reference="Moon"), False)  # Wrong reference
+    _assert_height(
+        RIDHeight(distance=10.101, reference="TakeoffLocation"), False
+    )  # Wrong resolution
+    _assert_height(
+        RIDHeight(distance=10.101, reference="Moon"), False
+    )  # Wrong reference
+
 
 def _assert_evaluate_sp_flight_recent_positions(
     f: Flight, query_time: datetime, outcome: bool
