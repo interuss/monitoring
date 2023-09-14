@@ -150,17 +150,19 @@ class Position(ImplicitDict):
     time: datetime.datetime
     """Timestamp for the position."""
 
+    height: Optional[RIDHeight]
+
     @staticmethod
     def from_v19_rid_aircraft_position(
         p: v19.api.RIDAircraftPosition, t: v19.api.StringBasedDateTime
     ) -> Position:
-        return Position(lat=p.lat, lng=p.lng, alt=p.alt, time=t.datetime)
+        return Position(lat=p.lat, lng=p.lng, alt=p.alt, time=t.datetime, height=None)
 
     @staticmethod
     def from_v22a_rid_aircraft_position(
         p: v22a.api.RIDAircraftPosition, t: v22a.api.StringBasedDateTime
     ) -> Position:
-        return Position(lat=p.lat, lng=p.lng, alt=p.alt, time=t.datetime)
+        return Position(lat=p.lat, lng=p.lng, alt=p.alt, time=t.datetime, height=p.get("height"))
 
 
 class Flight(ImplicitDict):

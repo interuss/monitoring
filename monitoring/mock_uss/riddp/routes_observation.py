@@ -1,4 +1,3 @@
-from s2sphere import LatLng
 from typing import Dict, List, Optional, Tuple
 import arrow
 import flask
@@ -6,10 +5,7 @@ from loguru import logger
 import s2sphere
 from uas_standards.astm.f3411.v19.api import ErrorResponse
 from uas_standards.astm.f3411.v19.constants import Scope
-from uas_standards.astm.f3411.v22a.api import RIDHeight
-from uas_standards.astm.f3411.v22a.constants import MaxSpeed
-
-from uas_standards.astm.f3411.v22a.constants import MinHeightResolution
+from uas_standards.astm.f3411.v22a.constants import MaxSpeed, MinHeightResolution, MinTrackDirectionResolution
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.fetch.rid import Flight, FetchedISAs, Position
@@ -62,11 +58,12 @@ def _make_flight_observation(
     current_state = observation_api.CurrentState(
         timestamp=original_time.isoformat(),
         operational_status=flight.operational_status,
-        track=flight.track,
+        track=_limit_resolution(flight.track, MinTrackDirectionResolution),
         speed=_limit_resolution(flight.speed, MaxSpeed)
     )
-    h = p.height if "height" in p else RIDHeight(distance=-1000)
-    h.distance = _limit_resolution(h.distance, MinHeightResolution)
+    h = p.get("height")
+    if h:
+        h.distance = _limit_resolution(h.distance, MinHeightResolution)
     return observation_api.Flight(
         id=flight.id,
         most_recent_position=observation_api.Position(lat=p.lat, lng=p.lng, alt=p.alt, height=h),

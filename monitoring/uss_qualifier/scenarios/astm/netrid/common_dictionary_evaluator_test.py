@@ -207,7 +207,7 @@ def _assert_timestamp(value: str, outcome: bool):
             rid_version=RIDVersion.f3411_22a,
         )
 
-        evaluator.evaluate_timestamp(value, [])
+        evaluator._evaluate_timestamp(value, [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
@@ -226,7 +226,7 @@ def _assert_speed(value: float, outcome: bool):
             rid_version=RIDVersion.f3411_22a,
         )
 
-        evaluator.evaluate_speed(value, [])
+        evaluator._evaluate_speed(value, [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
@@ -245,7 +245,7 @@ def _assert_track(value: float, outcome: bool):
             rid_version=RIDVersion.f3411_22a,
         )
 
-        evaluator.evaluate_track(value, [])
+        evaluator._evaluate_track(value, [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
@@ -266,7 +266,7 @@ def _assert_height(value: RIDHeight, outcome: bool):
             rid_version=RIDVersion.f3411_22a,
         )
 
-        evaluator.evaluate_height(value, [])
+        evaluator._evaluate_height(value, [])
 
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()

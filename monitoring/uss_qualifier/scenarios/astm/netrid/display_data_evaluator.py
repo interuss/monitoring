@@ -320,10 +320,6 @@ class RIDObservationEvaluator(object):
                 verified_sps,
             )
 
-        if observation:
-            flights: List[Flight] = observation.get("flights", [])
-            [self._common_dictionary_evaluator.evaluate_timestamp(f.current_state.timestamp, participants=[observer.participant_id]) for f in flights]
-
     def _evaluate_normal_observation(
         self,
         observer: RIDSystemObserver,
@@ -386,9 +382,8 @@ class RIDObservationEvaluator(object):
                             Severity.Medium,
                             details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}, alt={injected_telemetry.position.alt}, but {observer.participant_id} observed lat={observed_position.lat}, lng={observed_position.lng}, alt={observed_position.alt} at {query.request.initiated_at}",
                         )
-            observed_speed = mapping.observed_flight.current_state.speed
-            self._common_dictionary_evaluator.evaluate_speed(observed_speed, [observer.participant_id])
 
+            self._common_dictionary_evaluator.evaluate_dp_flight(mapping.observed_flight, [observer.participant_id])
         # Check that flights using telemetry are not using extrapolated position data
         for mapping in mapping_by_injection_id.values():
             injected_telemetry = mapping.injected_flight.flight.telemetry[

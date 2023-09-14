@@ -14,7 +14,8 @@ from uas_standards.astm.f3411 import v22a
 
 from uas_standards.astm.f3411.v22a.constants import SpecialSpeed, MaxSpeed, MinSpeedResolution, SpecialTrackDirection, MinTrackDirection, MaxTrackDirection, MinTrackDirectionResolution
 
-from interfaces.uas_standards.src.uas_standards.astm.f3411.v22a.constants import MinHeightResolution
+from interfaces.uas_standards.src.uas_standards.astm.f3411.v22a.constants import MinHeightResolution, \
+    MinPositionResolution
 from monitoring.monitorlib.fetch.rid import (
     FetchedFlights,
     FlightDetails,
@@ -67,18 +68,25 @@ class RIDCommonDictionaryEvaluator(object):
                     requested_area, f, participants
                 )
 
-        if self._rid_version == RIDVersion.f3411_22a:
-            for f in observed_flights.flights:
-                # Evaluate on all flights regardless of where they came from
-                self._evaluate_operational_status(
-                    f.v22a_value.get("current_state", {}).get("operational_status"),
-                    participants,
-                )
         for f in observed_flights.flights:
+            # Evaluate on all flights regardless of where they came from
             self._evaluate_operational_status(
-                f.raw.get("current_state", {}).get("operational_status"),
+                f.operational_status,
                 participants,
             )
+
+    def evaluate_dp_flight(
+        self,
+        observed_flight: Flight,
+        participants: List[str],
+    ):
+        current_state = observed_flight.current_state
+        self._evaluate_speed(current_state.speed, participants)
+        self._evaluate_track(current_state.track, participants)
+        self._evaluate_timestamp(current_state.timestamp, participants)
+        self._evaluate_operational_status(current_state.operational_status, participants)
+        self._evaluate_position(observed_flight.most_recent_position, participants)
+        self._evaluate_height(observed_flight.most_recent_position.get("height"), participants)
 
     def _evaluate_recent_position_time(
         self, p: Position, query_time: datetime.datetime, check: PendingCheck
@@ -275,7 +283,7 @@ class RIDCommonDictionaryEvaluator(object):
         # TODO: Add specific session id format check
         # TODO: Add a check to validate at least one format is correct
 
-    def evaluate_timestamp(self, timestamp: str, participants: List[str]):
+    def _evaluate_timestamp(self, timestamp: str, participants: List[str]):
         with self._test_scenario.check(
                 "Timestamp consistency with Common Dictionary", participants
         ) as check:
@@ -318,11 +326,11 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping Operator ID evaluation",
             )
 
-    def evaluate_speed(self, speed: float, participants: List[str]):
+    def _evaluate_speed(self, speed: float, participants: List[str]):
         with self._test_scenario.check(
                 "Speed consistency with Common Dictionary", participants
         ) as check:
-            if not (0 < speed <= MaxSpeed or round(speed) == SpecialSpeed):
+            if not (0 <= speed <= MaxSpeed or round(speed) == SpecialSpeed):
                 check.record_failed(
                     f"Invalid speed: {speed}",
                     details=f"The speed shall be greater than 0 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
@@ -336,7 +344,7 @@ class RIDCommonDictionaryEvaluator(object):
                     severity=Severity.Medium,
                 )
 
-    def evaluate_track(self, track: float, participants: List[str]):
+    def _evaluate_track(self, track: float, participants: List[str]):
         with self._test_scenario.check(
                 "Track Direction consistency with Common Dictionary", participants
         ) as check:
@@ -354,7 +362,32 @@ class RIDCommonDictionaryEvaluator(object):
                     severity=Severity.Medium,
                 )
 
-    def evaluate_height(self, height: Optional[RIDHeight], participants: List[str]):
+    def _evaluate_position(
+        self, position: Position, participants: List[str]
+    ):
+        with self._test_scenario.check(
+                "Current Position consistency with Common Dictionary", participants
+        ) as check:
+                lat = position.lat
+                try:
+                    lat = validate_lat(lat)
+                except ValueError:
+                    check.record_failed(
+                        "Current Position  contains an invalid latitude",
+                        details=f"Invalid latitude: {lat}",
+                        severity=Severity.Medium,
+                    )
+                lng = position.lng
+                try:
+                    lng = validate_lng(lng)
+                except ValueError:
+                    check.record_failed(
+                        "Current Position contains an invalid longitude",
+                        details=f"Invalid longitude: {lng}",
+                        severity=Severity.Medium,
+                    )
+
+    def _evaluate_height(self, height: Optional[RIDHeight], participants: List[str]):
         if height:
             with self._test_scenario.check(
                     "Height consistency with Common Dictionary", participants
