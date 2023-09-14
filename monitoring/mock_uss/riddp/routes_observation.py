@@ -191,9 +191,9 @@ def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
     )
     if rid_version == RIDVersion.f3411_19:
         # TODO: Implement details for F3411-19
-        return flask.jsonify(observation_api.GetDetailsResponse(
-            operator=observation_api.Operator()
-        ))
+        return flask.jsonify(
+            observation_api.GetDetailsResponse(operator=observation_api.Operator())
+        )
     elif rid_version == RIDVersion.f3411_22a:
         details = flight_details.details
         result = observation_api.GetDetailsResponse(
