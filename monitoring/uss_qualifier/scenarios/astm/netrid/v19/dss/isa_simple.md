@@ -42,11 +42,11 @@ When a pre-existing ISA needs to be deleted to ensure a clean workspace, any sub
 
 ### [Create ISA test step](test_steps/put_isa.md)
 
-This step attempts to create at the DSS the ISA provided as resource.
+This step attempts to query the configured DSS with the ISA provided as a resource.
 
 ### Get ISA by ID test step
 
-This step attempts to retrieve at the DSS the ISA just created.
+This step attempts to retrieve the previously created ISA from the DSS.
 
 #### Successful ISA query check
 
@@ -73,8 +73,8 @@ The cleanup phase of this test scenario attempts to remove the ISA if the test e
 
 ### Removed pre-existing ISA check
 
-If an ISA with the intended ID is still present in the DSS, it needs to be removed before exiting the test.  If that ISA cannot be deleted, then the **[astm.f3411.v19.DSS0030](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the ISA deletion endpoint might not be met.
+If an ISA with the intended ID is still present in the DSS, it needs to be removed before exiting the test. If that ISA cannot be deleted, then the **[astm.f3411.v19.DSS0030](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the ISA deletion endpoint might not be met.
 
 ### Notified subscriber check
 
-When an ISA is deleted, subscribers must be notified.  If a subscriber cannot be notified, that subscriber USS did not correctly implement "POST Identification Service Area" in **[astm.f3411.v19.NET0730](../../../../../requirements/astm/f3411/v19.md)**.
+When an ISA is deleted, subscribers must be notified. If a subscriber cannot be notified, that subscriber USS did not correctly implement "POST Identification Service Area" in **[astm.f3411.v19.NET0730](../../../../../requirements/astm/f3411/v19.md)**.

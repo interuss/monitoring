@@ -373,11 +373,11 @@ class ChangedISA(RIDQuery):
         #  The augmented.yaml version of the definition should be fixed and then this can be applied to both version.
         if self.rid_version == RIDVersion.f3411_22a:
             validation_errors = schema_validation.validate(
-                self.rid_version.openapi_path,
-                self.rid_version.openapi_delete_isa_response_path
+                openapi_path=self.rid_version.openapi_path,
+                object_path=self.rid_version.openapi_delete_isa_response_path
                 if self.mutation == "delete"
                 else self.rid_version.openapi_put_isa_response_path,
-                self.query.response.json,
+                instance=self.query.response.json,
             )
             if validation_errors:
                 return [

@@ -2,7 +2,7 @@ import datetime
 from typing import List
 
 from implicitdict import ImplicitDict, StringBasedDateTime
-from monitoring.monitorlib.geo import LatLngVertex
+from monitoring.monitorlib.geo import LatLngPoint
 
 from monitoring.uss_qualifier.resources.resource import Resource
 
@@ -15,7 +15,7 @@ class ServiceAreaSpecification(ImplicitDict):
 
     This URL will probably not identify a real resource in tests."""
 
-    footprint: List[LatLngVertex]
+    footprint: List[LatLngPoint]
     """2D outline of service area"""
 
     altitude_min: float = 0
@@ -33,12 +33,16 @@ class ServiceAreaSpecification(ImplicitDict):
     time_end: StringBasedDateTime
     """End time of service area (relative to reference_time)"""
 
-    def shifted_time_start(self, now: datetime.datetime) -> datetime.datetime:
-        dt = now - self.reference_time.datetime
+    def shifted_time_start(
+        self, new_reference_time: datetime.datetime
+    ) -> datetime.datetime:
+        dt = new_reference_time - self.reference_time.datetime
         return self.time_start.datetime + dt
 
-    def shifted_time_end(self, now: datetime.datetime) -> datetime.datetime:
-        dt = now - self.reference_time.datetime
+    def shifted_time_end(
+        self, new_reference_time: datetime.datetime
+    ) -> datetime.datetime:
+        dt = new_reference_time - self.reference_time.datetime
         return self.time_end.datetime + dt
 
 
