@@ -27,6 +27,10 @@ actions:
         dss_instance_id: dss
       on_failure: Continue
   - test_scenario:
+      scenario_type: scenarios.astm.netrid.v22a.dss.CRDBAccess
+      resources: {}
+      on_failure: Continue
+  - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.DSSInteroperability
       resources:
         dss_instances: dss_instances
@@ -49,11 +53,16 @@ actions:
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances
       on_failure: Continue
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v22a.OperatorInteractions
+      resources: {}
+      on_failure: Continue
 report_evaluation_scenario:
   scenario_type: scenarios.astm.netrid.v22a.AggregateChecks
   resources:
     service_providers: service_providers
     observers: observers
+    dss_instances: dss_instances
 participant_verifiable_capabilities:
   - id: service_provider
     name: NetRID Service Provider

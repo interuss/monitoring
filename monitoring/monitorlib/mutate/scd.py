@@ -55,6 +55,7 @@ def put_subscription(
     min_alt_m: float = 0,
     max_alt_m: float = 3048,
     version: Optional[str] = None,
+    server_id: Optional[str] = None,
 ) -> MutatedSubscription:
     body = {
         "extents": scd.make_vol4(
@@ -72,18 +73,25 @@ def put_subscription(
     if version:
         url += f"/{version}"
     result = MutatedSubscription(
-        fetch.query_and_describe(utm_client, "PUT", url, json=body, scope=scd.SCOPE_SC)
+        fetch.query_and_describe(
+            utm_client, "PUT", url, json=body, scope=scd.SCOPE_SC, server_id=server_id
+        )
     )
     result.mutation = "update" if version else "create"
     return result
 
 
 def delete_subscription(
-    utm_client: infrastructure.UTMClientSession, subscription_id: str, version: str
+    utm_client: infrastructure.UTMClientSession,
+    subscription_id: str,
+    version: str,
+    server_id: Optional[str] = None,
 ) -> MutatedSubscription:
     url = f"/dss/v1/subscriptions/{subscription_id}/{version}"
     result = MutatedSubscription(
-        fetch.query_and_describe(utm_client, "DELETE", url, scope=scd.SCOPE_SC)
+        fetch.query_and_describe(
+            utm_client, "DELETE", url, scope=scd.SCOPE_SC, server_id=server_id
+        )
     )
     result.mutation = "delete"
     return result

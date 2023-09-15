@@ -235,6 +235,7 @@ class RIDObservationEvaluator(object):
                 get_details=True,
                 rid_version=self._rid_version,
                 session=self._dss.client,
+                server_id=self._dss.participant_id,
             )
             for q in sp_observation.queries:
                 self._test_scenario.record_query(q)
@@ -365,9 +366,18 @@ class RIDObservationEvaluator(object):
             ]
             observed_position = mapping.observed_flight.most_recent_position
             injected_position = injected_telemetry.position
+
+            with self._test_scenario.check("Altitude is present") as check:
+                if "alt" not in injected_position:
+                    check.record_failed(
+                        summary="Displayed flight is missing altitude",
+                        severity=Severity.Medium,
+                        details=f"Displayed data for injected flight {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} at {injected_telemetry.timestamp} does not have altitude",
+                    )
+
             if "alt" in observed_position:
                 with self._test_scenario.check(
-                    "Observed altitude",
+                    "Correct up-to-date altitude",
                     [
                         observer.participant_id,
                         mapping.injected_flight.uss_participant_id,

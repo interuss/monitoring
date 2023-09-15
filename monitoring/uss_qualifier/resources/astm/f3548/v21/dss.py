@@ -53,7 +53,12 @@ class DSSInstance(object):
         url = "/dss/v1/operational_intent_references/query"
         req = QueryOperationalIntentReferenceParameters(area_of_interest=extent)
         query = fetch.query_and_describe(
-            self.client, "POST", url, scope=SCOPE_SC, json=req
+            self.client,
+            "POST",
+            url,
+            scope=SCOPE_SC,
+            json=req,
+            server_id=self.participant_id,
         )
         if query.status_code != 200:
             result = None
@@ -67,7 +72,9 @@ class DSSInstance(object):
         self, op_intent_ref: OperationalIntentReference
     ) -> Tuple[OperationalIntent, fetch.Query]:
         url = f"{op_intent_ref.uss_base_url}/uss/v1/operational_intents/{op_intent_ref.id}"
-        query = fetch.query_and_describe(self.client, "GET", url, scope=SCOPE_SC)
+        query = fetch.query_and_describe(
+            self.client, "GET", url, scope=SCOPE_SC, server_id=self.participant_id
+        )
         if query.status_code != 200:
             result = None
         else:

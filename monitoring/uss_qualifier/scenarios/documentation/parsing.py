@@ -135,17 +135,16 @@ def _parse_test_step(
         name = name[0 : -len(TEST_STEP_SUFFIX)]
     url = _url_of(doc_filename + anchors[values[0]])
 
+    checks: List[TestCheckDocumentation] = []
     if values[0].children and isinstance(
         values[0].children[0], marko.block.inline.Link
     ):
-        # We should include the content of the linked test step document rather
-        # than extracting content from this section.
-        step = _get_linked_test_step(values[0].children[0].dest, doc_filename)
-        step = TestStepDocumentation(step)
-        step.name = name
-        return step
+        # We include the content of the linked test step document before
+        # extracting content from this section.
+        linked_step = _get_linked_test_step(values[0].children[0].dest, doc_filename)
+        url = linked_step.url
+        checks = linked_step.checks.copy()
 
-    checks: List[TestCheckDocumentation] = []
     c = 1
     while c < len(values):
         if isinstance(values[c], marko.block.Heading):

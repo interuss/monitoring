@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Optional
 from urllib.parse import urlparse
 
 from implicitdict import ImplicitDict
@@ -20,6 +20,11 @@ class ServiceProviderConfiguration(ImplicitDict):
     injection_base_url: str
     """Base URL for the Service Provider's implementation of the interfaces/automated-testing/rid/injection.yaml API"""
 
+    local_debug: Optional[bool]
+    """Whether this Service Provider instance is running locally for debugging or development purposes. Mostly used for relaxing
+    constraints around encryption.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         try:
@@ -38,16 +43,19 @@ class NetRIDServiceProvider(object):
     participant_id: str
     base_url: str
     client: infrastructure.UTMClientSession
+    local_debug: bool
 
     def __init__(
         self,
         participant_id: str,
         base_url: str,
         auth_adapter: infrastructure.AuthAdapter,
+        local_debug: bool,
     ):
         self.participant_id = participant_id
         self.base_url = base_url
         self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
+        self.local_debug = local_debug
 
     def submit_test(self, request: CreateTestParameters, test_id: str) -> fetch.Query:
         return fetch.query_and_describe(
@@ -56,6 +64,7 @@ class NetRIDServiceProvider(object):
             url=f"/tests/{test_id}",
             json=request,
             scope=SCOPE_RID_QUALIFIER_INJECT,
+            server_id=self.participant_id,
         )
 
     def delete_test(self, test_id: str, version: str) -> fetch.Query:
@@ -64,6 +73,7 @@ class NetRIDServiceProvider(object):
             "DELETE",
             url=f"/tests/{test_id}/{version}",
             scope=SCOPE_RID_QUALIFIER_INJECT,
+            server_id=self.participant_id,
         )
 
 
@@ -77,7 +87,10 @@ class NetRIDServiceProviders(Resource[NetRIDServiceProvidersSpecification]):
     ):
         self.service_providers = [
             NetRIDServiceProvider(
-                s.participant_id, s.injection_base_url, auth_adapter.adapter
+                s.participant_id,
+                s.injection_base_url,
+                auth_adapter.adapter,
+                s.get("local_debug", False),
             )
             for s in specification.service_providers
         ]
