@@ -27,6 +27,8 @@ MAX_SKEW = 1e-6  # seconds maximum difference between expected and actual timest
 class DSSWrapper(object):
     """Wraps a DSS instance with test checks."""
 
+    # TODO: embed checks in all functions (like it is done for put_isa) instead of passing an existing check as parameter
+
     _scenario: TestScenario
     _dss: DSSInstance
 
@@ -50,6 +52,7 @@ class DSSWrapper(object):
     def has_private_address(self) -> bool:
         return self._dss.has_private_address
 
+    # TODO: QueryError is not actually raised for RID functions, this function and its uses should be removed
     def _handle_query_error(
         self,
         check: PendingCheck,
@@ -134,7 +137,6 @@ class DSSWrapper(object):
 
     def put_isa(
         self,
-        check: PendingCheck,
         area_vertices: List[s2sphere.LatLng],
         alt_lo: float,
         alt_hi: float,
@@ -145,36 +147,32 @@ class DSSWrapper(object):
         isa_version: Optional[str] = None,
     ) -> ISAChange:
         """Create or update an ISA at the DSS.
-        A check fail is considered of high severity and as such will raise a ScenarioCannotContinueError.
-        Fails if the ID of the ISA returned by the DSS does not match the submitted one.
-        Fails if the end time of the ISA returned by the DSS does not match the submitted one.
+        Most check fail are considered of high severity and as such will raise a ScenarioCannotContinueError.
+        This function implements the test step described in '[v19|v22a]/dss/test_steps/put_isa.md'.
 
         :return: the DSS response
         """
 
-        try:
-            mutated_isa = mutate.put_isa(
-                area_vertices=area_vertices,
-                alt_lo=alt_lo,
-                alt_hi=alt_hi,
-                start_time=start_time,
-                end_time=end_time,
-                uss_base_url=uss_base_url,
-                isa_id=isa_id,
-                isa_version=isa_version,
-                rid_version=self._dss.rid_version,
-                utm_client=self._dss.client,
-                server_id=self._dss.participant_id,
-            )
+        mutated_isa = mutate.put_isa(
+            area_vertices=area_vertices,
+            alt_lo=alt_lo,
+            alt_hi=alt_hi,
+            start_time=start_time,
+            end_time=end_time,
+            uss_base_url=uss_base_url,
+            isa_id=isa_id,
+            isa_version=isa_version,
+            rid_version=self._dss.rid_version,
+            utm_client=self._dss.client,
+            server_id=self._dss.participant_id,
+        )
+        t_dss = mutated_isa.dss_query.query.request.timestamp
+        dss_isa = mutated_isa.dss_query.isa
 
+        with self._scenario.check("ISA created", [self._dss.participant_id]) as check:
             self._handle_query_result(
                 check, mutated_isa.dss_query, f"Failed to insert ISA {isa_id}"
             )
-            for notification_query in mutated_isa.notifications.values():
-                self._scenario.record_query(notification_query.query)
-
-            t_dss = mutated_isa.dss_query.query.request.timestamp
-            dss_isa = mutated_isa.dss_query.isa
 
             if mutated_isa.dss_query.query.status_code == 201:
                 check.record_failed(
@@ -185,6 +183,12 @@ class DSSWrapper(object):
                     query_timestamps=[t_dss],
                 )
 
+            for notification_query in mutated_isa.notifications.values():
+                self._scenario.record_query(notification_query.query)
+
+        with self._scenario.check(
+            "ISA ID matches", [self._dss.participant_id]
+        ) as check:
             if isa_id != dss_isa.id:
                 check.record_failed(
                     summary=f"DSS did not return correct ISA",
@@ -194,7 +198,10 @@ class DSSWrapper(object):
                     query_timestamps=[t_dss],
                 )
 
-            if isa_version is not None:
+        if isa_version is not None:
+            with self._scenario.check(
+                "ISA version changed", [self._dss.participant_id]
+            ) as check:
                 if dss_isa.version == isa_version:
                     check.record_failed(
                         summary=f"ISA was not modified",
@@ -203,15 +210,22 @@ class DSSWrapper(object):
                         details=f"Got old version {isa_version} while expecting new version",
                         query_timestamps=[t_dss],
                     )
-                if not all(c not in "\0\t\r\n#%/:?@[\]" for c in dss_isa.version):
-                    check.record_failed(
-                        summary=f"DSS returned ISA (ID {isa_id}) with invalid version format",
-                        severity=Severity.High,
-                        participants=[self._dss.participant_id],
-                        details=f"DSS returned an ISA with a version that is not URL-safe: {dss_isa.version}",
-                        query_timestamps=[t_dss],
-                    )
 
+        with self._scenario.check(
+            "ISA version format", [self._dss.participant_id]
+        ) as check:
+            if not all(c not in "\0\t\r\n#%/:?@[\]" for c in dss_isa.version):
+                check.record_failed(
+                    summary=f"DSS returned ISA (ID {isa_id}) with invalid version format",
+                    severity=Severity.High,
+                    participants=[self._dss.participant_id],
+                    details=f"DSS returned an ISA with a version that is not URL-safe: {dss_isa.version}",
+                    query_timestamps=[t_dss],
+                )
+
+        with self._scenario.check(
+            "ISA start time matches", [self._dss.participant_id]
+        ) as check:
             if abs((dss_isa.time_start - start_time).total_seconds()) > MAX_SKEW:
                 check.record_failed(
                     summary=f"DSS returned ISA (ID {isa_id}) with incorrect start time",
@@ -220,6 +234,10 @@ class DSSWrapper(object):
                     details=f"DSS should have returned an ISA with a start time of {start_time}, but instead the ISA returned had a start time of {dss_isa.time_start}",
                     query_timestamps=[t_dss],
                 )
+
+        with self._scenario.check(
+            "ISA end time matches", [self._dss.participant_id]
+        ) as check:
             if abs((dss_isa.time_end - end_time).total_seconds()) > MAX_SKEW:
                 check.record_failed(
                     summary=f"DSS returned ISA (ID {isa_id}) with incorrect end time",
@@ -229,6 +247,9 @@ class DSSWrapper(object):
                     query_timestamps=[t_dss],
                 )
 
+        with self._scenario.check(
+            "ISA URL matches", [self._dss.participant_id]
+        ) as check:
             expected_flights_url = self._dss.rid_version.flights_url_of(uss_base_url)
             actual_flights_url = dss_isa.flights_url
             if actual_flights_url != expected_flights_url:
@@ -240,15 +261,9 @@ class DSSWrapper(object):
                     query_timestamps=[t_dss],
                 )
 
-            # TODO: Validate subscriber notifications
+        # TODO: Validate subscriber notifications
 
-            return mutated_isa
-
-        except QueryError as e:
-            self._handle_query_error(check, e)
-        raise RuntimeError(
-            "DSS query was not successful, but a High Severity issue didn't interrupt execution"
-        )
+        return mutated_isa
 
     def del_isa(
         self,

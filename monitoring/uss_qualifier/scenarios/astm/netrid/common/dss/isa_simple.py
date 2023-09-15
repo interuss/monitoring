@@ -141,20 +141,17 @@ class ISASimple(GenericTestScenario):
         def _create_isa_step():
             self.begin_test_step("Create ISA")
 
-            with self.check("ISA created", [self._dss.participant_id]) as check:
-                isa_change = self._dss_wrapper.put_isa(
-                    check,
-                    area_vertices=self._isa_area,
-                    start_time=self._isa_start_time,
-                    end_time=self._isa_end_time,
-                    uss_base_url=self._isa.base_url,
-                    isa_id=self._isa_id,
-                    isa_version=self._isa_version,
-                    alt_lo=self._isa.altitude_min,
-                    alt_hi=self._isa.altitude_max,
-                    server_id=self._dss.participant_id,  # TODO: check this
-                )
-                self._isa_version = isa_change.dss_query.isa.version
+            isa_change = self._dss_wrapper.put_isa(
+                area_vertices=self._isa_area,
+                start_time=self._isa_start_time,
+                end_time=self._isa_end_time,
+                uss_base_url=self._isa.base_url,
+                isa_id=self._isa_id,
+                isa_version=self._isa_version,
+                alt_lo=self._isa.altitude_min,
+                alt_hi=self._isa.altitude_max,
+            )
+            self._isa_version = isa_change.dss_query.isa.version
 
             self.end_test_step()
 

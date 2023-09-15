@@ -40,25 +40,9 @@ When a pre-existing ISA needs to be deleted to ensure a clean workspace, any sub
 
 ## Create and check ISA test case
 
-### Create ISA test step
+### [Create ISA test step](test_steps/put_isa.md)
 
 This step attempts to create at the DSS the ISA provided as resource.
-
-#### ISA created check
-
-If the ISA cannot be created, the PUT DSS endpoint in **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)** is likely not implemented correctly.
-
-When the ISA is created, the DSS returns the ID of the ISA in the response body.  If this ID does not match the ID in the resource path, **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)** was not implemented correctly and this check will fail.
-
-When the ISA is created, the DSS returns the URL of the ISA in the response body.  If this URL does not match the URL requested, **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)** is not implemented correctly and this check will fail.
-
-The ISA creation request specified an exact start time slightly past now, so the DSS should have created an ISA starting at exactly that time.  If the DSS response indicates the ISA start time is not this value, **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)** is not implemented correctly and this check will fail.
-
-The ISA creation request specified an exact end time, so the DSS should have created an ISA ending at exactly that time.  If the DSS response indicates the ISA end time is not this value, **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)** is not implemented correctly and this check will fail.
-
-Because the ISA version must be used in URLs, it must be URL-safe even though the ASTM standards do not explicitly require this.  If the indicated ISA version is not URL-safe, this check will fail.
-
-The API for **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)** specifies an explicit format that the DSS responses must follow.  If the DSS response does not validate against this format, this check will fail.
 
 ### Get ISA by ID test step
 
