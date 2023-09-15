@@ -2,20 +2,20 @@
 # U-space flight authorisation test suite
 [`suites.uspace.flight_auth`](./flight_auth.yaml)
 
-## Actions
+## [Actions](../README.md#actions)
 
 1. Suite: [ASTM F3548-21](../astm/utm/f3548_21.md) ([`suites.astm.utm.f3548_21`](../astm/utm/f3548_21.yaml))
 2. Action generator: [`action_generators.flight_planning.FlightPlannerCombinations`](../../action_generators/flight_planning/planner_combinations.py)
     1. Scenario: [Flight authorisation validation](../../scenarios/uspace/flight_auth/validation.md) ([`scenarios.uspace.flight_auth.Validation`](../../scenarios/uspace/flight_auth/validation.py))
 
-## Checked requirements
+## [Checked requirements](../README.md#checked-requirements)
 
 <table>
   <tr>
-    <th>Package</th>
-    <th>Requirement</th>
-    <th>Status</th>
-    <th>Checked in</th>
+    <th><a href="../README.md#package">Package</a></th>
+    <th><a href="../README.md#requirement">Requirement</a></th>
+    <th><a href="../README.md#status">Status</a></th>
+    <th><a href="../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
     <td rowspan="18" style="vertical-align:top;"><a href="../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>

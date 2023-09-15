@@ -2,19 +2,19 @@
 # DSS instance probing for ASTM NetRID F3411-22a test suite
 [`suites.astm.netrid.f3411_22a.dss_probing`](./dss_probing.yaml)
 
-## Actions
+## [Actions](../../../README.md#actions)
 
 1. Scenario: [ASTM NetRID DSS: Simple ISA](../../../../scenarios/astm/netrid/v22a/dss/isa_simple.md) ([`scenarios.astm.netrid.v22a.dss.ISASimple`](../../../../scenarios/astm/netrid/v22a/dss/isa_simple.py))
 2. Scenario: [ASTM NetRID DSS: Subscription Validation](../../../../scenarios/astm/netrid/v22a/dss/subscription_validation.md) ([`scenarios.astm.netrid.v22a.dss.SubscriptionValidation`](../../../../scenarios/astm/netrid/v22a/dss/subscription_validation.py))
 
-## Checked requirements
+## [Checked requirements](../../../README.md#checked-requirements)
 
 <table>
   <tr>
-    <th>Package</th>
-    <th>Requirement</th>
-    <th>Status</th>
-    <th>Checked in</th>
+    <th><a href="../../../README.md#package">Package</a></th>
+    <th><a href="../../../README.md#requirement">Requirement</a></th>
+    <th><a href="../../../README.md#status">Status</a></th>
+    <th><a href="../../../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
     <td rowspan="5" style="vertical-align:top;"><a href="../../../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>

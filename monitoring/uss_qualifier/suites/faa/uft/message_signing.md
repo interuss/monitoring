@@ -2,20 +2,20 @@
 # UFT message signing test suite
 [`suites.faa.uft.message_signing`](./message_signing.yaml)
 
-## Actions
+## [Actions](../../README.md#actions)
 
 1. Scenario: [Start message signing](../../../scenarios/faa/uft/message_signing_start.md) ([`scenarios.faa.uft.StartMessageSigningReport`](../../../scenarios/faa/uft/message_signing_start.py))
 2. Suite: [ASTM F3548-21](../../astm/utm/f3548_21.md) ([`suites.astm.utm.f3548_21`](../../astm/utm/f3548_21.yaml))
 3. Scenario: [Finalize message signing](../../../scenarios/faa/uft/message_signing_finalize.md) ([`scenarios.faa.uft.FinalizeMessageSigningReport`](../../../scenarios/faa/uft/message_signing_finalize.py))
 
-## Checked requirements
+## [Checked requirements](../../README.md#checked-requirements)
 
 <table>
   <tr>
-    <th>Package</th>
-    <th>Requirement</th>
-    <th>Status</th>
-    <th>Checked in</th>
+    <th><a href="../../README.md#package">Package</a></th>
+    <th><a href="../../README.md#requirement">Requirement</a></th>
+    <th><a href="../../README.md#status">Status</a></th>
+    <th><a href="../../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
     <td rowspan="18" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
