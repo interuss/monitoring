@@ -152,10 +152,8 @@ def generate_tested_requirements(report: TestRunReport, output_path: str) -> Non
     import_submodules(suites)
     import_submodules(action_generators)
 
-    if os.path.exists(output_path):
-        shutil.rmtree(output_path)
+    os.makedirs(output_path, exist_ok=True)
     index_file = os.path.join(output_path, "index.html")
-    os.makedirs(os.path.dirname(index_file), exist_ok=True)
 
     participant_ids = report.report.participant_ids()
     template = jinja_env.get_template("tested_requirements/test_run_report.html")
