@@ -19,6 +19,9 @@ from monitoring.uss_qualifier.configurations.configuration import (
 )
 from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.documents import make_report_html
+from monitoring.uss_qualifier.reports.tested_requirements import (
+    generate_tested_requirements,
+)
 from monitoring.uss_qualifier.reports.tested_roles import generate_tested_roles
 from monitoring.uss_qualifier.reports.graphs import make_graph
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
@@ -195,6 +198,11 @@ def main() -> int:
             path = config.artifacts.tested_roles.report_path
             logger.info("Writing tested roles view to {}", path)
             generate_tested_roles(report, path)
+
+        if config.artifacts.tested_requirements:
+            path = config.artifacts.tested_requirements.output_path
+            logger.info(f"Writing tested requirements view to {path}")
+            generate_tested_requirements(report, path)
 
     return os.EX_OK
 

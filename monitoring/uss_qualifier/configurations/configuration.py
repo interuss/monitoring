@@ -27,7 +27,12 @@ class TestConfiguration(ImplicitDict):
 
 class TestedRolesConfiguration(ImplicitDict):
     report_path: str
-    """Path of HTML file to contain a fulfilled-requirements-based view of the test report"""
+    """Path of folder to write HTML files containing a fulfilled-requirements-based view of the test report"""
+
+
+class TestedRequirementsConfiguration(ImplicitDict):
+    output_path: str
+    """Path of a folder into which report HTML files should be written"""
 
 
 class ReportHTMLConfiguration(ImplicitDict):
@@ -78,6 +83,9 @@ class ArtifactsConfiguration(ImplicitDict):
 
     tested_roles: Optional[TestedRolesConfiguration] = None
     """If specified, configuration describing a desired report summarizing tested requirements for each specified participant and role"""
+
+    tested_requirements: Optional[TestedRequirementsConfiguration] = None
+    """If specified, configuration describing a desired report summarizing all tested requirements for each participant"""
 
 
 class USSQualifierConfigurationV1(ImplicitDict):

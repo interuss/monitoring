@@ -12,8 +12,6 @@ from implicitdict.jsonschema import SchemaVars, SchemaVarsResolver
 from loguru import logger
 
 import monitoring
-from monitoring.uss_qualifier import configurations, reports
-from monitoring.monitorlib.inspection import import_submodules
 
 
 class Action(str, enum.Enum):
@@ -116,8 +114,11 @@ def main() -> int:
             description=f"{full_name(schema_type)}, as defined in {path_of_py_file(schema_type)}",
         )
 
-    for module in (configurations, reports):
-        import_submodules(module)
+    from monitoring.uss_qualifier.reports.report import TestRunReport
+    from monitoring.uss_qualifier.configurations.configuration import (
+        USSQualifierConfiguration,
+    )
+
     schemas = _find_type_schemas(monitoring, schema_vars_resolver)
 
     repo_root = os.path.abspath(
