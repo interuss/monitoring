@@ -1,31 +1,72 @@
 <html>
 <head>
   <style>
-table, th, td {
-  border: 1px solid;
-}
-td {
-  vertical-align: top;
-}
-th {
-  background-color: rgb(230, 230, 230);
-}
-.pass_result {
-  background-color: rgb(192, 255, 192);
-}
-.fail_result {
-  background-color: rgb(255, 192, 192);
-}
-.not_tested {
-  background-color: rgb(192, 192, 192);
-}
+    body {
+      margin: 0;
+      color: #24292f;
+      background-color: #ffffff;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+      font-size: 16px;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+    table {
+      border-spacing: 0;
+      border-collapse: collapse;
+      width: max-content;
+      max-width: 100%;
+      overflow: auto;
+    }
+    tr {
+      border-top: 1px solid hsla(210,18%,87%,1);
+    }
+    td {
+      padding: 6px 6px;
+      vertical-align: top;
+      border: 1px solid #d0d7de;
+    }
+    th {
+      padding: 6px 6px;
+      text-align: left;
+      background-color: rgb(230, 230, 230);
+      border: 1px solid #d0d7de;
+      height: 40px;
+    }
+    a {
+      background-color: transparent;
+      color: #0969da;
+      text-decoration: none;
+    }
+    h2 {
+      margin-block-end: 0.1em;
+    }
+    .header_row {
+      position: sticky;
+      top: -1px;
+      z-index: 100;
+    }
+    .sticky_cell_value {
+      position: sticky;
+      top: 40px;
+      z-index: 0;
+    }
+    .pass_result {
+      background-color: rgb(192, 255, 192);
+    }
+    .fail_result {
+      background-color: rgb(255, 192, 192);
+    }
+    .not_tested {
+      background-color: rgb(192, 192, 192);
+    }
   </style>
 </head>
 <body>
 <div>
-  <h2>{{ participant_id }} tested requirements</h2>
+  <h1>{{ participant_id }} tested requirements</h1>
+  <h2>Tested requirements</h2>
   <table>
-    <tr>
+    <tr class="header_row">
       <th>Package</th>
       <th>Requirement</th>
       <th>Result</th>
@@ -49,38 +90,38 @@ th {
               {% for check in test_step.checks %}
                 <tr>
                   {% if first_row.package %}
-                    <td rowspan="{{ package.rows }}">{{ package.name }}</td>
+                    <td rowspan="{{ package.rows }}"><span class="sticky_cell_value">{{ package.name }}</span></td>
                   {% endif %}
                   {% if first_row.requirement %}
-                    <td rowspan="{{ requirement.rows }}" class="{{ requirement.classname }}">{{ requirement.id }}</td>
+                    <td rowspan="{{ requirement.rows }}" class="{{ requirement.classname }}"><span class="sticky_cell_value">{{ requirement.id }}</span></td>
                   {% endif %}
                   <td class="{{ check.classname }}">{{ check.result }}</td>
                   {% if first_row.scenario %}
-                    <td rowspan="{{ test_scenario.rows }}">
+                    <td rowspan="{{ test_scenario.rows }}"><span class="sticky_cell_value">
                       {% if test_scenario.url %}
                         <a href="{{ test_scenario.url }}">{{ test_scenario.name }}</a>
                       {% else %}
                         {{ test_scenario.name }}
                       {% endif %}
-                    </td>
+                    </span></td>
                   {% endif %}
                   {% if first_row.case %}
-                    <td rowspan="{{ test_case.rows }}">
+                    <td rowspan="{{ test_case.rows }}"><span class="sticky_cell_value">
                       {% if test_case.url %}
                         <a href="{{ test_case.url }}">{{ test_case.name }}</a>
                       {% else %}
                         {{ test_case.name }}
                       {% endif %}
-                    </td>
+                    </span></td>
                   {% endif %}
                   {% if first_row.step %}
-                    <td rowspan="{{ test_step.rows }}">
+                    <td rowspan="{{ test_step.rows }}"><span class="sticky_cell_value">
                       {% if test_step.url %}
                         <a href="{{ test_step.url }}">{{ test_step.name }}</a>
                       {% else %}
                         {{ test_step.name }}
                       {% endif %}
-                    </td>
+                    </span></td>
                   {% endif %}
                   <td class="{{ check.classname }}">
                     {% if check.url %}
