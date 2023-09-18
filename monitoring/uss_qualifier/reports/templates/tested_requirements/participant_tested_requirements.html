@@ -22,8 +22,46 @@ th {
   </style>
 </head>
 <body>
+<h1>{{ participant_id }} tested requirements</h1>
 <div>
-  <h2>{{ participant_id }} tested requirements</h2>
+  <h2>Test run</h2>
+  <table>
+    <tr>
+      <th>Test characteristic</th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <td>Participant</td>
+      <td>{{ participant_id }}</td>
+    </tr>
+    <tr>
+      <td>Test run identifier</td>
+      <td>TR{{ test_run.test_run_id[0:7] }}</td>
+    </tr>
+    {% if test_run.start_time %}
+      <tr>
+        <td>Start time</td>
+        <td>{{ test_run.start_time }}</td>
+      </tr>
+    {% endif %}
+    {% if test_run.end_time %}
+      <tr>
+        <td>End time</td>
+        <td>{{ test_run.end_time }}</td>
+      </tr>
+    {% endif %}
+    <tr>
+      <td>Test baseline identifier</td>
+      <td>TB{{ test_run.baseline[0:7] }}</td>
+    </tr>
+    <tr>
+      <td>Environment identifier</td>
+      <td>TE{{ test_run.environment[0:7] }}</td>
+    </tr>
+  </table>
+</div>
+<div>
+  <h2>Tested requirements</h2>
   <table>
     <tr>
       <th>Package</th>

@@ -342,6 +342,18 @@ class ActionGeneratorReport(ImplicitDict):
             ids.update(action.participant_ids())
         return ids
 
+    @property
+    def start_time(self) -> Optional[StringBasedDateTime]:
+        if not self.actions:
+            return None
+        return self.actions[0].start_time
+
+    @property
+    def end_time(self) -> Optional[StringBasedDateTime]:
+        if not self.actions:
+            return None
+        return self.actions[-1].end_time
+
 
 class TestSuiteActionReport(ImplicitDict):
     test_suite: Optional[TestSuiteReport]
@@ -459,6 +471,14 @@ class TestSuiteActionReport(ImplicitDict):
 
     def participant_ids(self) -> Set[ParticipantID]:
         return self._conditional(lambda report: report.participant_ids())
+
+    @property
+    def start_time(self) -> Optional[StringBasedDateTime]:
+        return self._conditional(lambda report: report.start_time)
+
+    @property
+    def end_time(self) -> Optional[StringBasedDateTime]:
+        return self._conditional(lambda report: report.end_time)
 
 
 class AllConditionsEvaluationReport(ImplicitDict):

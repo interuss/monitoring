@@ -1,8 +1,9 @@
 import os
-import shutil
-from typing import List, Union
+from dataclasses import dataclass
+from typing import List, Union, Optional
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, StringBasedDateTime
+
 from monitoring.monitorlib.inspection import import_submodules
 from monitoring.uss_qualifier import scenarios, suites, action_generators
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
@@ -24,6 +25,7 @@ from monitoring.uss_qualifier.reports.report import (
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
 from monitoring.uss_qualifier.scenarios.scenario import get_scenario_type_by_name
+from monitoring.uss_qualifier.signatures import compute_signature
 from monitoring.uss_qualifier.suites.definitions import (
     TestSuiteActionDeclaration,
     ActionType,
@@ -147,6 +149,15 @@ class TestedBreakdown(ImplicitDict):
     packages: List[TestedPackage]
 
 
+@dataclass
+class TestRunInformation(object):
+    test_run_id: str
+    start_time: Optional[str]
+    end_time: Optional[str]
+    baseline: str
+    environment: str
+
+
 def generate_tested_requirements(report: TestRunReport, output_path: str) -> None:
     import_submodules(scenarios)
     import_submodules(suites)
@@ -176,9 +187,26 @@ def generate_tested_requirements(report: TestRunReport, output_path: str) -> Non
         with open(participant_file, "w") as f:
             f.write(
                 template.render(
-                    participant_id=participant_id, breakdown=participant_breakdown
+                    participant_id=participant_id,
+                    breakdown=participant_breakdown,
+                    test_run=_compute_test_run_information(report),
                 )
             )
+
+
+def _compute_test_run_information(report: TestRunReport) -> TestRunInformation:
+    def print_datetime(t: Optional[StringBasedDateTime]) -> Optional[str]:
+        if t is None:
+            return None
+        return t.datetime.strftime("%Y-%m-%d %H:%M:%S %Z")
+
+    return TestRunInformation(
+        test_run_id=compute_signature(report),
+        start_time=print_datetime(report.report.start_time),
+        end_time=print_datetime(report.report.end_time),
+        baseline=report.baseline_signature,
+        environment=report.environment_signature,
+    )
 
 
 def _sort_breakdown(breakdown: TestedBreakdown) -> None:
