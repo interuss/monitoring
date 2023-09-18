@@ -202,7 +202,7 @@ def main() -> int:
         if config.artifacts.tested_requirements:
             path = config.artifacts.tested_requirements.output_path
             logger.info(f"Writing tested requirements view to {path}")
-            generate_tested_requirements(report, path)
+            generate_tested_requirements(report, config.artifacts.tested_requirements)
 
     return os.EX_OK
 
