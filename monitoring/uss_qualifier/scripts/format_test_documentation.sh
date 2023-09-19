@@ -22,5 +22,6 @@ fi
 docker run --name test_documentation_formatter \
   --rm \
   -v "$(pwd):/app" \
+  -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
   interuss/monitoring \
   uss_qualifier/scripts/in_container/format_test_documentation.sh

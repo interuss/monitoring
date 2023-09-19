@@ -21,5 +21,6 @@ fi
 # shellcheck disable=SC2086
 docker run --name test_definition_validator \
   --rm \
+  -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
   interuss/monitoring \
   uss_qualifier/scripts/in_container/validate_test_definitions.sh
