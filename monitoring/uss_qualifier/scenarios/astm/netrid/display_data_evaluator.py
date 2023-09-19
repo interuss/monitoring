@@ -265,16 +265,6 @@ class RIDObservationEvaluator(object):
                     query,
                     verified_sps,
                 )
-                # We also issue queries to the flight details endpoint in order to collect
-                # performance statistics, which are computed and checked at a later stage.
-                if query.status_code == 200:
-                    # If there are multiple flights, we only issue a single details query for the first returned one,
-                    #  as we don't want to slow down the test we are piggy-backing on.
-                    if len(observation.flights) > 0:
-                        (_, detailQuery) = observer.observe_flight_details(
-                            observation.flights[0].id, self._rid_version
-                        )
-                        self._test_scenario.record_query(detailQuery)
 
                 # TODO: If bounding rect is smaller than cluster threshold, expand slightly above cluster threshold and re-observe
                 # TODO: If bounding rect is smaller than area-too-large threshold, expand slightly above area-too-large threshold and re-observe
@@ -433,17 +423,29 @@ class RIDObservationEvaluator(object):
                         ),
                     )
 
-            details, query = observer.observe_flight_details(
-                mapping.observed_flight.id, self._rid_version
-            )
-            self._test_scenario.record_query(query)
+            with self._test_scenario.check(
+                "Successful details observation",
+                [mapping.injected_flight.uss_participant_id],
+            ) as check:
+                details, query = observer.observe_flight_details(
+                    mapping.observed_flight.id, self._rid_version
+                )
+                self._test_scenario.record_query(query)
 
-            self._common_dictionary_evaluator.evaluate_dp_details(
-                details,
-                participants=[
-                    observer.participant_id,
-                ],
-            )
+                if query.status_code != 200:
+                    check.record_failed(
+                        summary=f"Observation of details failed for {mapping.observed_flight.id}",
+                        details=f"When queried for details of observation (ID {mapping.observed_flight.id}), {observer.participant_id} returned code {query.status_code}",
+                        severity=Severity.Medium,
+                        query_timestamps=[query.request.timestamp],
+                    )
+                else:
+                    self._common_dictionary_evaluator.evaluate_dp_details(
+                        details,
+                        participants=[
+                            observer.participant_id,
+                        ],
+                    )
 
     def _evaluate_flight_presence(
         self,

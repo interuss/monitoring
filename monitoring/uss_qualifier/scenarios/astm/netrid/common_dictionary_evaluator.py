@@ -7,12 +7,16 @@ from typing import List, Optional
 import s2sphere
 from uas_standards.astm.f3411.v22a.api import UASID
 
-from uas_standards.interuss.automated_testing.rid.v1.observation import (
-    GetDetailsResponse,
-    OperatorAltitudeAltitudeType,
-    RIDHeight,
-    RIDHeightReference,
+from uas_standards.interuss.automated_testing.rid.v1 import (
+    observation as observation_api,
 )
+
+# from uas_standards.interuss.automated_testing.rid.v1.observation import (
+#     GetDetailsResponse,
+#     OperatorAltitudeAltitudeType,
+#     RIDHeight,
+#     RIDHeightReference,
+# )
 
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
@@ -89,14 +93,22 @@ class RIDCommonDictionaryEvaluator(object):
 
     def evaluate_dp_flight(
         self,
-        observed_flight: Flight,
+        observed_flight: observation_api.Flight,
         participants: List[str],
     ):
-        self._evaluate_speed(observed_flight.speed, participants)
-        self._evaluate_track(observed_flight.track, participants)
-        self._evaluate_timestamp(observed_flight.timestamp, participants)
+        with self._test_scenario.check("Current state present", participants) as check:
+            if not observed_flight.has_field_with_value("current_state"):
+                check.record_failed(
+                    f"Current state for flight {observed_flight.id}",
+                    details=f"The current state must be specified.",
+                    severity=Severity.High,
+                )
+
+        self._evaluate_speed(observed_flight.current_state.speed, participants)
+        self._evaluate_track(observed_flight.current_state.track, participants)
+        self._evaluate_timestamp(observed_flight.current_state.timestamp, participants)
         self._evaluate_operational_status(
-            observed_flight.operational_status, participants
+            observed_flight.current_state.operational_status, participants
         )
         self._evaluate_position(observed_flight.most_recent_position, participants)
         self._evaluate_height(
@@ -132,7 +144,7 @@ class RIDCommonDictionaryEvaluator(object):
             for p in sorted(f.recent_positions, key=lambda p: p.time)
         ]
 
-    def _sliding_triples(  # TODO
+    def _sliding_triples(
         self, points: List[s2sphere.LatLng]
     ) -> List[List[s2sphere.LatLng]]:
         """
@@ -203,7 +215,9 @@ class RIDCommonDictionaryEvaluator(object):
         )
 
     def evaluate_dp_details(
-        self, observed_details: Optional[GetDetailsResponse], participants: List[str]
+        self,
+        observed_details: Optional[observation_api.GetDetailsResponse],
+        participants: List[str],
     ):
         if not observed_details:
             return
@@ -300,9 +314,7 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping arbitrary uas id evaluation",
             )
 
-    def _evaluate_timestamp(
-        self, timestamp: Optional[StringBasedDateTime], participants: List[str]
-    ):
+    def _evaluate_timestamp(self, timestamp: Optional[str], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
                 "Timestamp consistency with Common Dictionary", participants
@@ -315,16 +327,17 @@ class RIDCommonDictionaryEvaluator(object):
                     )
 
                 try:
-                    if timestamp.datetime.utcoffset().seconds != 0:
+                    t = StringBasedDateTime(timestamp)
+                    if t.datetime.utcoffset().seconds != 0:
                         check.record_failed(
-                            f"Timestamp must be relative to UTC: {timestamp}",
+                            f"Timestamp must be relative to UTC: {t}",
                             severity=Severity.Medium,
                         )
-                    us = timestamp.datetime.microsecond
+                    us = t.datetime.microsecond
                     us_res = limit_resolution(us, pow(10, 5))
                     if not math.isclose(us, us_res):
                         check.record_failed(
-                            f"Timestamp resolution is smaller than 1/10 second: {timestamp}",
+                            f"Timestamp resolution is smaller than 1/10 second: {t}",
                             severity=Severity.Medium,
                         )
                 except ParserError as e:
@@ -453,7 +466,9 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping position evaluation",
             )
 
-    def _evaluate_height(self, height: Optional[RIDHeight], participants: List[str]):
+    def _evaluate_height(
+        self, height: Optional[observation_api.RIDHeight], participants: List[str]
+    ):
         if self._rid_version == RIDVersion.f3411_22a:
             if height:
                 with self._test_scenario.check(
@@ -472,12 +487,14 @@ class RIDCommonDictionaryEvaluator(object):
                     "Height Type consistency with Common Dictionary", participants
                 ) as check:
                     if (
-                        height.reference != RIDHeightReference.TakeoffLocation
-                        and height.reference != RIDHeightReference.GroundLevel
+                        height.reference
+                        != observation_api.RIDHeightReference.TakeoffLocation
+                        and height.reference
+                        != observation_api.RIDHeightReference.GroundLevel
                     ):
                         check.record_failed(
                             f"Invalid height type: {height.reference}",
-                            details=f"The height type reference shall be either {RIDHeightReference.TakeoffLocation} or {RIDHeightReference.GroundLevel}",
+                            details=f"The height type reference shall be either {observation_api.RIDHeightReference.TakeoffLocation} or {observation_api.RIDHeightReference.GroundLevel}",
                             severity=Severity.Medium,
                         )
         else:
@@ -490,7 +507,7 @@ class RIDCommonDictionaryEvaluator(object):
         self,
         position: Optional[LatLngPoint],
         altitude: Optional[Altitude],
-        altitude_type: Optional[OperatorAltitudeAltitudeType],
+        altitude_type: Optional[observation_api.OperatorAltitudeAltitudeType],
         participants: List[str],
     ):
         if self._rid_version == RIDVersion.f3411_22a:

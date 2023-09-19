@@ -431,14 +431,14 @@ class FlightDetails(ImplicitDict):
         self,
     ) -> Optional[geo.LatLngPoint]:
         if self.rid_version == RIDVersion.f3411_19:
-            if self.v19_value.operator_location is None:
+            if not self.v19_value.has_field_with_value("operator_location"):
                 return None
             return geo.LatLngPoint(
                 lat=self.v19_value.operator_location.lat,
                 lng=self.v19_value.operator_location.lng,
             )
         elif self.rid_version == RIDVersion.f3411_22a:
-            if self.v22a_value.operator_location is None:
+            if not self.v22a_value.has_field_with_value("operator_location"):
                 return None
             pos = self.v22a_value.operator_location.position
             return geo.LatLngPoint(lat=pos.lat, lng=pos.lng)
@@ -454,10 +454,9 @@ class FlightDetails(ImplicitDict):
         if self.rid_version == RIDVersion.f3411_19:
             return None
         elif self.rid_version == RIDVersion.f3411_22a:
-            if (
-                self.v22a_value.operator_location is None
-                or self.v22a_value.operator_location.altitude is None
-            ):
+            if not self.v22a_value.has_field_with_value(
+                "operator_location"
+            ) or not self.v22a_value.operator_location.has_field_with_value("altitude"):
                 return None
             alt = self.v22a_value.operator_location.altitude
             return geo.Altitude(
@@ -475,9 +474,10 @@ class FlightDetails(ImplicitDict):
         if self.rid_version == RIDVersion.f3411_19:
             return None
         elif self.rid_version == RIDVersion.f3411_22a:
-            if (
-                self.v22a_value.operator_location is None
-                or self.v22a_value.operator_location.altitude_type is None
+            if not self.v22a_value.has_field_with_value(
+                "operator_location"
+            ) or not self.v22a_value.operator_location.has_field_with_value(
+                "altitude_type"
             ):
                 return None
             return self.v22a_value.operator_location.altitude_type
