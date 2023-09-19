@@ -22,3 +22,17 @@ v1:
             report_path: output/tested_roles_netrid_v22a
         tested_requirements:
             output_path: output/tested_requirements_f3411v22a
+            requirement_collections:
+              sp_dp_dss:
+                  requirement_sets:
+                      - astm.f3411.v22a.service_provider#Mandatory requirements
+                      - astm.f3411.v22a.display_provider#Mandatory requirements
+                      - astm.f3411.v22a.dss_provider#Mandatory requirements
+              sp_dss:
+                  requirement_sets:
+                      - astm.f3411.v22a.service_provider#Mandatory requirements
+                      - astm.f3411.v22a.dss_provider#Mandatory requirements
+                      - astm.f3548.v21.scd#Automated verification
+            participant_requirements:
+                uss1: sp_dp_dss
+                uss2: sp_dss
