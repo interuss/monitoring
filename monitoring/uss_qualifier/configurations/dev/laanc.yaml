@@ -1,0 +1,290 @@
+$content_schema: monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json
+v1:
+  test_run:
+    resources:
+      resource_declarations:
+        scenario3_flight_check_table:
+          resource_type: resources.interuss.flight_authorization.FlightCheckTableResource
+          specification:
+            table:
+              rows:
+                - flight_check_id: Scenario 3, Step 1
+                  requirement_ids:
+                    - faa.laanc.v7.3,3,6a
+                  description: Walker Park is not available for an airspace authorization through LAANC.
+                  additional_information:
+                    faa:
+                      laanc:
+                        v7:
+                          rule_set: Part107
+                  volumes:
+                    - outline_circle:
+                        center:
+                          lng: -85.9273
+                          lat: 41.7009
+                        radius:
+                          value: 1700
+                          units: FT
+                      altitude_lower:
+                        value: 0
+                        units: FT
+                        reference: SFC
+                      altitude_upper:
+                        value: 100
+                        units: FT
+                        reference: SFC
+                      start_time:
+                        offset_from:
+                          starting_from:
+                            start_of_test: {}
+                          offset: 5m
+                        use_timezone: America/Indianapolis
+                      duration: 5m
+                  acceptance_expectation: MustBeRejected
+                - flight_check_id: Scenario 3, Step 2
+                  requirement_ids:
+                    - faa.laanc.v7.3,3,1a
+                  description: Grapevine is not eligible for the requested altitude.
+                  additional_information:
+                    faa:
+                      laanc:
+                        v7:
+                          rule_set: Part107
+                  volumes:
+                    - outline_circle:
+                        center:
+                          lng: -97.0784
+                          lat: 32.9298
+                        radius:
+                          value: 1700
+                          units: FT
+                      altitude_lower:
+                        value: 0
+                        units: FT
+                        reference: SFC
+                      altitude_upper:
+                        value: 400
+                        units: FT
+                        reference: SFC
+                      start_time:
+                        offset_from:
+                          starting_from:
+                            start_of_test: {}
+                          offset: 7d
+                        use_timezone: EST
+                      duration: 5m
+                  acceptance_expectation: MustBeRejected
+                - flight_check_id: Scenario 3, Step 3
+                  requirement_ids:
+                    - faa.laanc.v7.3,3,4c
+                  description: Operation is within a surface airspace that has no UASFM.
+                  additional_information:
+                    faa:
+                      laanc:
+                        v7:
+                          rule_set: Part107
+                  volumes:
+                    - outline_circle:
+                        center:
+                          lng: -96.6953
+                          lat: 39.0791
+                        radius:
+                          value: 1700
+                          units: FT
+                      altitude_lower:
+                        value: 0
+                        units: FT
+                        reference: SFC
+                      altitude_upper:
+                        value: 200
+                        units: FT
+                        reference: SFC
+                      start_time:
+                        offset_from:
+                          starting_from:
+                            start_of_test: {}
+                          offset: 7d
+                        use_timezone: EST
+                      duration: 5m
+                  acceptance_expectation: MustBeRejected
+                - flight_check_id: Scenario 3, Step 4
+                  requirement_ids:
+                    - faa.laanc.v7.3,4,4e
+                    - faa.laanc.v7.3,4,4i
+                  description: Operation is within Washington D.C. FRZ.
+                  additional_information:
+                    faa:
+                      laanc:
+                        v7:
+                          rule_set: Part107
+                  volumes:
+                    - outline_circle:
+                        center:
+                          lng: -77.2673
+                          lat: 38.9403
+                        radius:
+                          value: 1700
+                          units: FT
+                      altitude_lower:
+                        value: 0
+                        units: FT
+                        reference: SFC
+                      altitude_upper:
+                        value: 200
+                        units: FT
+                        reference: SFC
+                      start_time:
+                        offset_from:
+                          starting_from:
+                            start_of_test: {}
+                          offset: 7d
+                        use_timezone: EST
+                      duration: 5m
+                  acceptance_expectation: MustBeRejected
+                - flight_check_id: Scenario 3, Step 5
+                  requirement_ids:
+                    - faa.laanc.v7.3,4,4d
+                    - faa.laanc.v7.3,4,4e
+                    - faa.laanc.v7.3,4,4j
+                    - faa.laanc.v7.3,4,4m
+                  description: Operation is within restricted airspace, R-4001A.
+                  additional_information:
+                    faa:
+                      laanc:
+                        v7:
+                          rule_set: Part107
+                  volumes:
+                    - outline_circle:
+                        center:
+                          lng: -76.3547
+                          lat: 39.3692
+                        radius:
+                          value: 1700
+                          units: FT
+                      altitude_lower:
+                        value: 0
+                        units: FT
+                        reference: SFC
+                      altitude_upper:
+                        value: 200
+                        units: FT
+                        reference: SFC
+                      start_time:
+                        offset_from:
+                          starting_from:
+                            start_of_test: {}
+                          offset: 7d
+                        use_timezone: EST
+                      duration: 5m
+                  acceptance_expectation: MustBeRejected
+                - flight_check_id: Scenario 3, Step 6
+                  requirement_ids:
+                    - faa.laanc.v7.3,4,4e
+                    - faa.laanc.v7.3,4,4j
+                  description: Operation is within prohibited airspace, P-67.
+                  additional_information:
+                    faa:
+                      laanc:
+                        v7:
+                          rule_set: Part107
+                  volumes:
+                    - outline_circle:
+                        center:
+                          lng: -70.4614
+                          lat: 43.354
+                        radius:
+                          value: 1700
+                          units: FT
+                      altitude_lower:
+                        value: 0
+                        units: FT
+                        reference: SFC
+                      altitude_upper:
+                        value: 200
+                        units: FT
+                        reference: SFC
+                      start_time:
+                        offset_from:
+                          starting_from:
+                            start_of_test: {}
+                          offset: 7d
+                        use_timezone: EST
+                      duration: 5m
+                  acceptance_expectation: MustBeRejected
+                - flight_check_id: Scenario 3, Step 8
+                  requirement_ids:
+                    - faa.laanc.v7.3,7b
+                  description: Operation is too large (>10 NM between two vertices).
+                  additional_information:
+                    faa:
+                      laanc:
+                        v7:
+                          rule_set: Part107
+                  volumes:
+                    - outline_polygon:
+                        vertices:
+                          - lng: -106.8667
+                            lat: 44.6682
+                          - lng: -106.8667
+                            lat: 44.4881
+                          - lng: -106.8822
+                            lat: 44.5500
+                      altitude_lower:
+                        value: 0
+                        units: FT
+                        reference: SFC
+                      altitude_upper:
+                        value: 200
+                        units: FT
+                        reference: SFC
+                      start_time:
+                        offset_from:
+                          starting_from:
+                            start_of_test: {}
+                          offset: 7d
+                        use_timezone: MST
+                      duration: 5m
+                  acceptance_expectation: MustBeRejected
+                - flight_check_id: Scenario 3, Step 9
+                  requirement_ids:
+                    - faa.laanc.v7.3,7b
+                  description: Operation is too large (>10 NM radius).
+                  additional_information:
+                    faa:
+                      laanc:
+                        v7:
+                          rule_set: Part107
+                  volumes:
+                    - outline_circle:
+                        center:
+                          lng: -106.8559
+                          lat: 44.6093
+                        radius:
+                          value: 61300
+                          units: FT
+                      altitude_lower:
+                        value: 0
+                        units: FT
+                        reference: SFC
+                      altitude_upper:
+                        value: 200
+                        units: FT
+                        reference: SFC
+                      start_time:
+                        offset_from:
+                          starting_from:
+                            start_of_test: {}
+                          offset: 7d
+                        use_timezone: MST
+                      duration: 5m
+                  acceptance_expectation: MustBeRejected
+    action:
+      test_suite:
+        suite_type: suites.faa.laanc.v7
+        resources:
+          scenario3_flight_check_table: scenario3_flight_check_table
+  artifacts:
+    report:
+      report_path: output/report_laanc.json
+    tested_requirements:
+      output_path: output/tested_requirements_laanc

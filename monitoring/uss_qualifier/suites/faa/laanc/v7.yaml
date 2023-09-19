@@ -1,0 +1,15 @@
+name: FAA LAANC v7 USS automated testing
+resources:
+  scenario3_flight_check_table: resources.interuss.flight_authorization.FlightCheckTableResource
+actions:
+  - test_scenario:
+      scenario_type: scenarios.faa.laanc.v7.Scenario2
+      resources: {}
+      future_resources:
+        mock_uss: mock_uss
+    on_failure: Abort
+  - test_scenario:
+      scenario_type: scenarios.interuss.flight_authorization.GeneralFlightAuthorization
+      resources:
+        table: scenario3_flight_check_table
+      on_failure: Abort
