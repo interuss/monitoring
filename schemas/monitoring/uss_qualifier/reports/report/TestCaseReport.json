@@ -1,46 +1,46 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestCaseReport.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.uss_qualifier.reports.report.TestCaseReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
-    },
-    "name": {
-      "type": "string",
-      "description": "Name of this test case"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "documentation_url": {
-      "type": "string",
-      "description": "URL at which this test case is described"
+      "description": "URL at which this test case is described",
+      "type": "string"
     },
     "end_time": {
+      "description": "Time at which the test case completed or encountered an error",
+      "format": "date-time",
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time",
-      "description": "Time at which the test case completed or encountered an error"
+      ]
+    },
+    "name": {
+      "description": "Name of this test case",
+      "type": "string"
     },
     "start_time": {
-      "type": "string",
+      "description": "Time at which the test case started",
       "format": "date-time",
-      "description": "Time at which the test case started"
+      "type": "string"
     },
     "steps": {
-      "type": "array",
+      "description": "Reports for each of the test steps in this test case, in chronological order.",
       "items": {
         "$ref": "TestStepReport.json"
       },
-      "description": "Reports for each of the test steps in this test case"
+      "type": "array"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestCaseReport.json",
-  "description": "monitoring.uss_qualifier.reports.report.TestCaseReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "documentation_url",
     "name",
     "start_time",
     "steps"
-  ]
+  ],
+  "type": "object"
 }
