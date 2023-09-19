@@ -56,3 +56,7 @@ which grants properly-formatted access tokens (which can be validated against th
 [mock_uss](mock_uss) behaves like a USS for the purposes of testing and
 evaluation.  It has a number of sets of functionality that can be enabled to
 allow it to fulfill different roles.
+
+## Settings
+
+Some tools within this repository (especially uss_qualifier's report generation) need to know where on GitHub the repository is hosted.  The interuss repository URL is used by default, but this may be overridden by setting the `MONITORING_GITHUB_ROOT` environment variable.
