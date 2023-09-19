@@ -17,7 +17,7 @@
     <th><a href="../../../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="5" style="vertical-align:top;"><a href="../../../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
+    <td rowspan="6" style="vertical-align:top;"><a href="../../../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
     <td><a href="../../../../requirements/astm/f3411/v22a.md">DSS0030</a></td>
     <td>Implemented</td>
     <td><a href="../../../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../../scenarios/astm/netrid/v22a/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
@@ -31,6 +31,11 @@
     <td><a href="../../../../requirements/astm/f3411/v22a.md">DSS0060</a></td>
     <td>Implemented</td>
     <td><a href="../../../../scenarios/astm/netrid/v22a/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v22a.md">NET0340</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
   </tr>
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v22a.md">NET0710</a></td>

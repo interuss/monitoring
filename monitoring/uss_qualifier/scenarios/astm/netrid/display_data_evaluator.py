@@ -367,7 +367,7 @@ class RIDObservationEvaluator(object):
             injected_position = injected_telemetry.position
 
             with self._test_scenario.check("Altitude is present") as check:
-                if "alt" not in injected_position:
+                if "alt" not in observed_position:
                     check.record_failed(
                         summary="Displayed flight is missing altitude",
                         severity=Severity.Medium,

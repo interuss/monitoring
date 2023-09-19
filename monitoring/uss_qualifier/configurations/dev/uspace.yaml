@@ -31,3 +31,16 @@ v1:
     templated_reports:
       - template_url: https://github.com/Orbitalize/reports/releases/download/v0.0.17/app-v0.0.17.zip
         output_path: output/capabilities_uspace.html
+    tested_requirements:
+      output_path: output/tested_requirements_uspace
+      requirement_collections:
+        uspace:
+          requirement_collections:
+            - requirement_sets:
+                - astm.f3411.v22a.service_provider#Mandatory requirements
+                - astm.f3411.v22a.display_provider#Mandatory requirements
+                - astm.f3411.v22a.dss_provider#Mandatory requirements
+                - astm.f3548.v21.scd#Automated verification
+      participant_requirements:
+        uss1: uspace
+        uss2: uspace
