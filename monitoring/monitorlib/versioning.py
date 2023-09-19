@@ -1,10 +1,48 @@
+import inspect
 import os
 import subprocess
 from typing import Optional
 
+import monitoring
+
 
 _commit_hash: Optional[str] = None
 _code_version: Optional[str] = None
+_github_base_url: Optional[str] = None
+_repo_root: Optional[str] = None
+
+
+def repo_url_of(abspath: str) -> str:
+    relpath = os.path.relpath(abspath, start=get_repo_root())
+    version = get_commit_hash()
+    if version == "unknown":
+        version = "main"
+    return f"{get_github_base_url()}/blob/{version}/{relpath}"
+
+
+def get_repo_root() -> str:
+    global _repo_root
+    if _repo_root is None:
+        _repo_root = _retrieve_repo_root()
+    return _repo_root
+
+
+def _retrieve_repo_root() -> str:
+    return os.path.split(os.path.split(inspect.getfile(monitoring))[0])[0]
+
+
+def get_github_base_url() -> str:
+    global _github_base_url
+    if _github_base_url is None:
+        _github_base_url = _retrieve_github_base_url()
+    return _github_base_url
+
+
+def _retrieve_github_base_url() -> str:
+    base_url = os.environ.get("MONITORING_GITHUB_ROOT", "")
+    if not base_url:
+        base_url = "https://github.com/interuss/monitoring"
+    return base_url
 
 
 def get_commit_hash() -> str:
@@ -20,7 +58,7 @@ def _retrieve_commit_hash() -> str:
         return env_hash
 
     process = subprocess.Popen(
-        ["git", "rev-parse", "--short", "HEAD"],
+        ["git", "rev-parse", "HEAD"],
         stdout=subprocess.PIPE,
         universal_newlines=True,
     )
@@ -49,6 +87,8 @@ def _retrieve_code_version() -> str:
         return env_version
 
     commit = get_commit_hash()
+    if len(commit) > 7:
+        commit = commit[0:7]
 
     process = subprocess.Popen(
         ["git", "status", "-s"], stdout=subprocess.PIPE, universal_newlines=True

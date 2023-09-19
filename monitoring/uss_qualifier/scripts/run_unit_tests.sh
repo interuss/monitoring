@@ -21,6 +21,7 @@ fi
 # shellcheck disable=SC2086
 docker run --name uss_qualifier_unit_test \
   --rm \
+  -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
   -v "$(pwd):/app" \
   interuss/monitoring \
   uss_qualifier/scripts/in_container/run_unit_tests.sh

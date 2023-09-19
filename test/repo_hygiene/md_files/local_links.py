@@ -4,8 +4,9 @@ import marko
 import marko.block
 import marko.inline
 
+from monitoring.monitorlib import versioning
 
-REPO_CONTENT_BASE_URL = "https://github.com/interuss/monitoring/tree/main/"
+REPO_CONTENT_BASE_URL = versioning.get_github_base_url() + "/tree/main/"
 
 
 def check_local_links(parent: marko.block.Element, doc_path: str, repo_root: str) -> None:
