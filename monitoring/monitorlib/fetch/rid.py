@@ -252,7 +252,7 @@ class Flight(ImplicitDict):
             )
 
     @property
-    def track(self):
+    def track(self) -> float:
         if self.rid_version == RIDVersion.f3411_19:
             return self.v19_value.current_state.track
         elif self.rid_version == RIDVersion.f3411_22a:
@@ -263,7 +263,7 @@ class Flight(ImplicitDict):
             )
 
     @property
-    def speed(self):
+    def speed(self) -> float:
         if self.rid_version == RIDVersion.f3411_19:
             return self.v19_value.current_state.speed
         elif self.rid_version == RIDVersion.f3411_22a:
@@ -402,7 +402,9 @@ class FlightDetails(ImplicitDict):
             )
 
     @property
-    def operator_location(self) -> v22a.api.OperatorLocation:
+    def operator_location(
+        self,
+    ) -> v22a.api.OperatorLocation:  # TODO: split in position + altitude
         if self.rid_version == RIDVersion.f3411_19:
             return v22a.api.OperatorLocation(position=self.v19_value.operator_location)
         elif self.rid_version == RIDVersion.f3411_22a:
