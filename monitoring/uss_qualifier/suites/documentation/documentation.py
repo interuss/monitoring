@@ -27,7 +27,6 @@ from monitoring.uss_qualifier.fileio import (
     FileReference,
 )
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
-from monitoring.uss_qualifier.requirements.documentation import get_requirement
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestScenarioDocumentation,
@@ -38,12 +37,12 @@ from monitoring.uss_qualifier.scenarios.documentation.parsing import (
     get_documentation_by_name,
 )
 from monitoring.uss_qualifier.scenarios.scenario import get_scenario_type_by_name
+from monitoring.uss_qualifier.suites import suite as suite_module
 from monitoring.uss_qualifier.suites.definitions import (
     TestSuiteDefinition,
     ActionType,
     TestSuiteActionDeclaration,
 )
-from monitoring.uss_qualifier.suites.suite import TestSuiteAction
 
 
 @dataclass
@@ -93,9 +92,13 @@ def make_test_suite_documentation(
     lines.append(f"{prefix}[`{get_package_name(suite_yaml_file)}`](./{local_path})")
     lines.append("")
 
-    lines.append("## Actions")
-    lines.append("")
+    suite_readme_abspath = os.path.join(
+        os.path.dirname(suite_module.__file__), "README.md"
+    )
     base_path = os.path.dirname(suite_yaml_file)
+    suites_readme_path = os.path.relpath(suite_readme_abspath, start=base_path)
+    lines.append(f"## [Actions]({suites_readme_path}#actions)")
+    lines.append("")
     i = 0
     for i, action in enumerate(suite_def.actions):
         lines.extend(
@@ -130,7 +133,9 @@ def make_test_suite_documentation(
         )
     lines.append("")
 
-    lines.append("## Checked requirements")
+    lines.append(
+        f"## [Checked requirements]({suites_readme_path}#checked-requirements)"
+    )
     lines.append("")
     reqs = _collect_requirements_from_suite_def(suite_def)
     if not reqs:
@@ -141,10 +146,14 @@ def make_test_suite_documentation(
         # Use an HTML table rather than Markdown table to enabled advanced features like spans
         lines.append("<table>")
         lines.append("  <tr>")
-        lines.append("    <th>Package</th>")
-        lines.append("    <th>Requirement</th>")
-        lines.append("    <th>Status</th>")
-        lines.append("    <th>Checked in</th>")
+        lines.append(f'    <th><a href="{suites_readme_path}#package">Package</a></th>')
+        lines.append(
+            f'    <th><a href="{suites_readme_path}#requirement">Requirement</a></th>'
+        )
+        lines.append(f'    <th><a href="{suites_readme_path}#status">Status</a></th>')
+        lines.append(
+            f'    <th><a href="{suites_readme_path}#checked-in">Checked in</a></th>'
+        )
         lines.append("  </tr>")
 
         req_ids_by_package: Dict[str, List[RequirementID]] = {}
@@ -176,9 +185,9 @@ def make_test_suite_documentation(
                 if has_complete and not has_todo:
                     status_text = "Implemented"
                 elif has_todo and not has_complete:
-                    status_text = "Planned"
+                    status_text = "TODO"
                 elif has_todo and has_complete:
-                    status_text = "In progress"
+                    status_text = "Implemented + TODO"
                 else:
                     status_text = "Not implemented"
                 checked_in = list(

@@ -2,10 +2,10 @@
 # U-Space Common Information Service test suite
 [`suites.uspace.geo_awareness_cis`](./geo_awareness_cis.yaml)
 
-## Actions
+## [Actions](../README.md#actions)
 
 1. Scenario: [EUROCAE ED-269 UAS geographical zone model](../../scenarios/eurocae/ed269/source_data_model.md) ([`scenarios.eurocae.ed269.source_data_model.SourceDataModelValidation`](../../scenarios/eurocae/ed269/source_data_model.py))
 
-## Checked requirements
+## [Checked requirements](../README.md#checked-requirements)
 
 _This test suite documentation does not indicate that any requirements are checked._
