@@ -4,15 +4,15 @@ import marko
 import marko.block
 import marko.inline
 
-from monitoring.monitorlib import versioning
-
-REPO_CONTENT_BASE_URL = versioning.get_github_base_url() + "/tree/main/"
-
 
 def check_local_links(parent: marko.block.Element, doc_path: str, repo_root: str) -> None:
+    github_base_url = os.environ.get("MONITORING_GITHUB_ROOT", "")
+    if not github_base_url:
+        github_base_url = "https://github.com/interuss/monitoring"
+    repo_content_base_url = github_base_url + "/tree/main/"
     if isinstance(parent, marko.inline.Link):
-        if parent.dest.startswith(REPO_CONTENT_BASE_URL):
-            relative_path = parent.dest[len(REPO_CONTENT_BASE_URL):]
+        if parent.dest.startswith(repo_content_base_url):
+            relative_path = parent.dest[len(repo_content_base_url):]
         elif parent.dest.startswith("http://") or parent.dest.startswith("https://"):
             # Don't check absolute paths to other locations
             relative_path = None
