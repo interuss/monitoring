@@ -1,8 +1,11 @@
 import datetime
+import math
+
 from arrow import ParserError
 from implicitdict import StringBasedDateTime
 from typing import List, Optional
 import s2sphere
+from uas_standards.astm.f3411.v22a.api import UASID
 
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     GetDetailsResponse,
@@ -24,15 +27,12 @@ from uas_standards.astm.f3411.v22a.constants import (
     MinTrackDirectionResolution,
 )
 
-from uas_standards.astm.f3411.v22a.constants import (
-    MinHeightResolution,
-    MinPositionResolution,
-)
+from uas_standards.astm.f3411.v22a.constants import MinHeightResolution
 from monitoring.monitorlib.fetch.rid import (
     FetchedFlights,
     FlightDetails,
 )
-from monitoring.monitorlib.formatting import _limit_resolution
+from monitoring.monitorlib.formatting import limit_resolution
 from monitoring.monitorlib.geo import validate_lat, validate_lng, Altitude, LatLngPoint
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
@@ -92,12 +92,11 @@ class RIDCommonDictionaryEvaluator(object):
         observed_flight: Flight,
         participants: List[str],
     ):
-        current_state = observed_flight.current_state
-        self._evaluate_speed(current_state.speed, participants)
-        self._evaluate_track(current_state.track, participants)
-        self._evaluate_timestamp(current_state.timestamp, participants)
+        self._evaluate_speed(observed_flight.speed, participants)
+        self._evaluate_track(observed_flight.track, participants)
+        self._evaluate_timestamp(observed_flight.timestamp, participants)
         self._evaluate_operational_status(
-            current_state.operational_status, participants
+            observed_flight.operational_status, participants
         )
         self._evaluate_position(observed_flight.most_recent_position, participants)
         self._evaluate_height(
@@ -133,7 +132,7 @@ class RIDCommonDictionaryEvaluator(object):
             for p in sorted(f.recent_positions, key=lambda p: p.time)
         ]
 
-    def _sliding_triples(
+    def _sliding_triples(  # TODO
         self, points: List[s2sphere.LatLng]
     ) -> List[List[s2sphere.LatLng]]:
         """
@@ -197,9 +196,9 @@ class RIDCommonDictionaryEvaluator(object):
         self._evaluate_uas_id(details.raw.get("uas_id"), participants)
         self._evaluate_operator_id(details.operator_id, participants)
         self._evaluate_operator_location(
-            details.operator_location.position,
-            details.operator_location.get("altitude"),
-            details.operator_location.get("altitude_type"),
+            details.operator_location,
+            details.operator_altitude,
+            details.operator_altitude_type,
             participants,
         )
 
@@ -226,9 +225,7 @@ class RIDCommonDictionaryEvaluator(object):
             participants,
         )
 
-    def _evaluate_uas_id(
-        self, value: Optional[v22a.api.UASID], participants: List[str]
-    ):
+    def _evaluate_uas_id(self, value: Optional[UASID], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
             formats_keys = [
                 "serial_number",
@@ -303,21 +300,29 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping arbitrary uas id evaluation",
             )
 
-    def _evaluate_timestamp(self, timestamp: str, participants: List[str]):
+    def _evaluate_timestamp(
+        self, timestamp: Optional[StringBasedDateTime], participants: List[str]
+    ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
                 "Timestamp consistency with Common Dictionary", participants
             ) as check:
+                if timestamp is None:
+                    check.record_failed(
+                        f"Timestamp not present",
+                        details=f"The timestamp must be specified.",
+                        severity=Severity.High,
+                    )
+
                 try:
-                    t = StringBasedDateTime(timestamp)
-                    if t.datetime.utcoffset().seconds != 0:
+                    if timestamp.datetime.utcoffset().seconds != 0:
                         check.record_failed(
                             f"Timestamp must be relative to UTC: {timestamp}",
                             severity=Severity.Medium,
                         )
-                    ms = t.datetime.microsecond
-                    ms_res = _limit_resolution(ms, pow(10, 5))
-                    if ms != ms_res:
+                    us = timestamp.datetime.microsecond
+                    us_res = limit_resolution(us, pow(10, 5))
+                    if not math.isclose(us, us_res):
                         check.record_failed(
                             f"Timestamp resolution is smaller than 1/10 second: {timestamp}",
                             severity=Severity.Medium,
@@ -352,11 +357,18 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping operator id evaluation",
             )
 
-    def _evaluate_speed(self, speed: float, participants: List[str]):
+    def _evaluate_speed(self, speed: Optional[float], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
                 "Speed consistency with Common Dictionary", participants
             ) as check:
+                if speed is None:
+                    check.record_failed(
+                        f"Speed not present",
+                        details=f"The speed must be specified.",
+                        severity=Severity.High,
+                    )
+
                 if not (0 <= speed <= MaxSpeed or round(speed) == SpecialSpeed):
                     check.record_failed(
                         f"Invalid speed: {speed}",
@@ -364,7 +376,7 @@ class RIDCommonDictionaryEvaluator(object):
                         severity=Severity.Medium,
                     )
 
-                if speed != _limit_resolution(speed, MinSpeedResolution):
+                if not math.isclose(speed, limit_resolution(speed, MinSpeedResolution)):
                     check.record_failed(
                         f"Invalid speed resolution: {speed}",
                         details=f"the speed resolution shall not be less than 0.25 m/s",
@@ -376,11 +388,18 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping speed evaluation",
             )
 
-    def _evaluate_track(self, track: float, participants: List[str]):
+    def _evaluate_track(self, track: Optional[float], participants: List[str]):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
                 "Track Direction consistency with Common Dictionary", participants
             ) as check:
+                if track is None:
+                    check.record_failed(
+                        f"Track direction not present",
+                        details=f"The track direction must be specified.",
+                        severity=Severity.High,
+                    )
+
                 if not (
                     MinTrackDirection <= track <= MaxTrackDirection
                     or round(track) == SpecialTrackDirection
@@ -391,10 +410,12 @@ class RIDCommonDictionaryEvaluator(object):
                         severity=Severity.Medium,
                     )
 
-                if track != _limit_resolution(track, MinTrackDirectionResolution):
+                if not math.isclose(
+                    track, limit_resolution(track, MinTrackDirectionResolution)
+                ):
                     check.record_failed(
                         f"Invalid track direction resolution: {track}",
-                        details=f"the track direction resolution shall not be less than 1 degree",
+                        details=f"The track direction resolution shall not be less than 1 degree.",
                         severity=Severity.Medium,
                     )
         else:
@@ -438,8 +459,9 @@ class RIDCommonDictionaryEvaluator(object):
                 with self._test_scenario.check(
                     "Height consistency with Common Dictionary", participants
                 ) as check:
-                    if height.distance != _limit_resolution(
-                        height.distance, MinHeightResolution
+                    if not math.isclose(
+                        height.distance,
+                        limit_resolution(height.distance, MinHeightResolution),
                     ):
                         check.record_failed(
                             f"Invalid height resolution: {height.distance}",
@@ -520,7 +542,9 @@ class RIDCommonDictionaryEvaluator(object):
                             details=f"Invalid Operator Altitude units: {alt.units}",
                             severity=Severity.Medium,
                         )
-                    if alt.value != _limit_resolution(alt.value, 1):
+                    if not math.isclose(
+                        alt.value, limit_resolution(alt.value, MinHeightResolution)
+                    ):
                         check.record_failed(
                             "Operator Altitude must have a minimum resolution of 1 m.",
                             details=f"Invalid Operator Altitude: {alt.value}",

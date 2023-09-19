@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
 import s2sphere
 from typing import List, Tuple, Optional
+
+from implicitdict import StringBasedDateTime
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     OperatorAltitudeAltitudeType,
     RIDHeight,
@@ -210,7 +212,7 @@ def _assert_timestamp(value: str, outcome: bool):
             rid_version=RIDVersion.f3411_22a,
         )
 
-        evaluator._evaluate_timestamp(value, [])
+        evaluator._evaluate_timestamp(StringBasedDateTime(value), [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
@@ -220,7 +222,7 @@ def test_timestamp():
     _assert_timestamp("2023-09-13T04:43:00.1Z", True)  # Ok
     _assert_timestamp("2023-09-13T04:43:00Z", True)  # Ok
     _assert_timestamp("2023-09-13T04:43:00.501Z", False)  # Wrong resolution
-    _assert_timestamp("2023-09-13T04:43:00.1EST", False)  # Wrong timezone
+    _assert_timestamp("2023-09-13T04:43:00.1+07:00", False)  # Wrong timezone
 
 
 def _assert_speed(value: float, outcome: bool):

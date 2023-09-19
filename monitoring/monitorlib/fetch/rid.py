@@ -2,7 +2,7 @@ from __future__ import annotations
 import datetime
 from typing import Dict, List, Optional, Any, Union
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, StringBasedDateTime
 import s2sphere
 from uas_standards.astm.f3411 import v19, v22a
 import uas_standards.astm.f3411.v19.api
@@ -239,12 +239,14 @@ class Flight(ImplicitDict):
             )
 
     @property
-    def operational_status(self) -> v22a.api.RIDOperationalStatus:
+    def operational_status(self) -> Optional[str]:
         if self.rid_version == RIDVersion.f3411_19:
-            return v22a.api.RIDOperationalStatus(
-                self.v19_value.current_state.operational_status
-            )
+            if self.v19_value.current_state is None:
+                return None
+            return self.v19_value.current_state.operational_status
         elif self.rid_version == RIDVersion.f3411_22a:
+            if self.v22a_value.current_state is None:
+                return None
             return self.v22a_value.current_state.operational_status
         else:
             raise NotImplementedError(
@@ -252,10 +254,14 @@ class Flight(ImplicitDict):
             )
 
     @property
-    def track(self) -> float:
+    def track(self) -> Optional[float]:
         if self.rid_version == RIDVersion.f3411_19:
+            if self.v19_value.current_state is None:
+                return None
             return self.v19_value.current_state.track
         elif self.rid_version == RIDVersion.f3411_22a:
+            if self.v22a_value.current_state is None:
+                return None
             return self.v22a_value.current_state.track
         else:
             raise NotImplementedError(
@@ -263,11 +269,30 @@ class Flight(ImplicitDict):
             )
 
     @property
-    def speed(self) -> float:
+    def speed(self) -> Optional[float]:
         if self.rid_version == RIDVersion.f3411_19:
+            if self.v19_value.current_state is None:
+                return None
             return self.v19_value.current_state.speed
         elif self.rid_version == RIDVersion.f3411_22a:
+            if self.v22a_value.current_state is None:
+                return None
             return self.v22a_value.current_state.speed
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve speed using RID version {self.rid_version}"
+            )
+
+    @property
+    def timestamp(self) -> Optional[StringBasedDateTime]:
+        if self.rid_version == RIDVersion.f3411_19:
+            if self.v19_value.current_state is None:
+                return None
+            return self.v19_value.current_state.timestamp
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if self.v22a_value.current_state is None:
+                return None
+            return self.v22a_value.current_state.timestamp.value
         else:
             raise NotImplementedError(
                 f"Cannot retrieve speed using RID version {self.rid_version}"
@@ -377,7 +402,7 @@ class FlightDetails(ImplicitDict):
         """Returns a UAS id as a plain string without type hint.
         If multiple are provided:
         For v19, registration_number is returned if set, else it falls back to the serial_number.
-        For v20, the order of ASTM F3411-v19 Table 1 is used.
+        For v22a, the order of ASTM F3411-v22a Table 1 is used.
         If no match, it returns None.
         """
         if self.rid_version == RIDVersion.f3411_19:
@@ -404,14 +429,61 @@ class FlightDetails(ImplicitDict):
     @property
     def operator_location(
         self,
-    ) -> v22a.api.OperatorLocation:  # TODO: split in position + altitude
+    ) -> Optional[geo.LatLngPoint]:
         if self.rid_version == RIDVersion.f3411_19:
-            return v22a.api.OperatorLocation(position=self.v19_value.operator_location)
+            if self.v19_value.operator_location is None:
+                return None
+            return geo.LatLngPoint(
+                lat=self.v19_value.operator_location.lat,
+                lng=self.v19_value.operator_location.lng,
+            )
         elif self.rid_version == RIDVersion.f3411_22a:
-            return self.v22a_value.operator_location
+            if self.v22a_value.operator_location is None:
+                return None
+            pos = self.v22a_value.operator_location.position
+            return geo.LatLngPoint(lat=pos.lat, lng=pos.lng)
         else:
             raise NotImplementedError(
-                f"Cannot retrieve operator_location using RID version {self.rid_version}"
+                f"Cannot retrieve operator_position using RID version {self.rid_version}"
+            )
+
+    @property
+    def operator_altitude(
+        self,
+    ) -> Optional[geo.Altitude]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return None
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if (
+                self.v22a_value.operator_location is None
+                or self.v22a_value.operator_location.altitude is None
+            ):
+                return None
+            alt = self.v22a_value.operator_location.altitude
+            return geo.Altitude(
+                value=alt.value, reference=alt.reference, units=alt.units
+            )
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve operator_altitude using RID version {self.rid_version}"
+            )
+
+    @property
+    def operator_altitude_type(
+        self,
+    ) -> Optional[str]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return None
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if (
+                self.v22a_value.operator_location is None
+                or self.v22a_value.operator_location.altitude_type is None
+            ):
+                return None
+            return self.v22a_value.operator_location.altitude_type
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve operator_altitude_type using RID version {self.rid_version}"
             )
 
 

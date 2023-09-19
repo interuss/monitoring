@@ -23,7 +23,7 @@ from . import clustering, database, utm_client
 from .behavior import DisplayProviderBehavior
 from .config import KEY_RID_VERSION
 from .database import db
-from monitoring.monitorlib.formatting import _limit_resolution
+from monitoring.monitorlib.formatting import limit_resolution
 
 
 def _make_flight_observation(
@@ -63,18 +63,18 @@ def _make_flight_observation(
     p = flight.most_recent_position
     timestamp = p.time.replace(
         microsecond=round(
-            _limit_resolution(p.time.microsecond, pow(10, 5))
+            limit_resolution(p.time.microsecond, pow(10, 5))
         )  # Microsecond is very strict on the expected size and format, thus the round.
     )
     current_state = observation_api.CurrentState(
         timestamp=timestamp.isoformat(),
         operational_status=flight.operational_status,
-        track=_limit_resolution(flight.track, MinTrackDirectionResolution),
-        speed=_limit_resolution(flight.speed, MaxSpeed),
+        track=limit_resolution(flight.track, MinTrackDirectionResolution),
+        speed=limit_resolution(flight.speed, MaxSpeed),
     )
     h = p.get("height")
     if h:
-        h.distance = _limit_resolution(h.distance, MinHeightResolution)
+        h.distance = limit_resolution(h.distance, MinHeightResolution)
     return observation_api.Flight(
         id=flight.id,
         most_recent_position=observation_api.Position(
@@ -191,26 +191,27 @@ def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
     flight_details = fetch.flight_details(
         flight_info.flights_url, flight_id, True, rid_version, utm_client
     )
-    if rid_version == RIDVersion.f3411_19:
-        # TODO: Implement details for F3411-19
-        return flask.jsonify(
-            observation_api.GetDetailsResponse(operator=observation_api.Operator())
+    details = flight_details.details
+
+    result = observation_api.GetDetailsResponse(
+        operator=observation_api.Operator(
+            id=details.operator_id,
+            location=None,
+            altitude=observation_api.OperatorAltitude(),
+        ),
+        uas=observation_api.UAS(
+            id=details.arbitrary_uas_id,
+        ),
+    )
+    if details.operator_location is not None:
+        result.operator.location = observation_api.LatLngPoint(
+            lat=details.operator_location.lat,
+            lng=details.operator_location.lng,
         )
-    elif rid_version == RIDVersion.f3411_22a:
-        details = flight_details.details
-        result = observation_api.GetDetailsResponse(
-            operator=observation_api.Operator(
-                id=details.operator_id,
-                location=details.operator_location.position,
-                altitude=observation_api.OperatorAltitude(
-                    altitude=details.operator_location.get("altitude"),
-                    altitude_type=details.operator_location.get("altitude_type"),
-                ),
-            ),
-            uas=observation_api.UAS(
-                id=details.arbitrary_uas_id,
-            ),
+    if details.operator_altitude is not None:
+        result.operator.altitude.altitude = details.operator_altitude.value
+    if details.operator_altitude_type is not None:
+        result.operator.altitude.altitude_type = (
+            observation_api.OperatorAltitudeAltitudeType(details.operator_altitude_type)
         )
-        return flask.jsonify(result)
-    else:
-        return f"Support for RID version {rid_version} not yet implemented", 501
+    return flask.jsonify(result)
