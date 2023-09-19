@@ -19,6 +19,9 @@ th {
 .not_tested {
   background-color: rgb(192, 192, 192);
 }
+.has_todo {
+  background-color: rgb(255, 255, 192);
+}
   </style>
 </head>
 <body>
@@ -39,70 +42,83 @@ th {
     {% for package in breakdown.packages %}
       {% set first_row.package = True %}
       {% for requirement in package.requirements %}
-        {% set first_row.requirement = True %}
-        {% for test_scenario in requirement.scenarios %}
-          {% set first_row.scenario = True %}
-          {% for test_case in test_scenario.cases %}
-            {% set first_row.case = True %}
-            {% for test_step in test_case.steps %}
-              {% set first_row.step = True %}
-              {% for check in test_step.checks %}
-                <tr>
-                  {% if first_row.package %}
-                    <td rowspan="{{ package.rows }}">{{ package.name }}</td>
-                  {% endif %}
-                  {% if first_row.requirement %}
-                    <td rowspan="{{ requirement.rows }}" class="{{ requirement.classname }}">{{ requirement.id }}</td>
-                  {% endif %}
-                  <td class="{{ check.classname }}">{{ check.result }}</td>
-                  {% if first_row.scenario %}
-                    <td rowspan="{{ test_scenario.rows }}">
-                      {% if test_scenario.url %}
-                        <a href="{{ test_scenario.url }}">{{ test_scenario.name }}</a>
-                      {% else %}
-                        {{ test_scenario.name }}
-                      {% endif %}
-                    </td>
-                  {% endif %}
-                  {% if first_row.case %}
-                    <td rowspan="{{ test_case.rows }}">
-                      {% if test_case.url %}
-                        <a href="{{ test_case.url }}">{{ test_case.name }}</a>
-                      {% else %}
-                        {{ test_case.name }}
-                      {% endif %}
-                    </td>
-                  {% endif %}
-                  {% if first_row.step %}
-                    <td rowspan="{{ test_step.rows }}">
-                      {% if test_step.url %}
-                        <a href="{{ test_step.url }}">{{ test_step.name }}</a>
-                      {% else %}
-                        {{ test_step.name }}
-                      {% endif %}
-                    </td>
-                  {% endif %}
-                  <td class="{{ check.classname }}">
-                    {% if check.url %}
-                      <a href="{{ check.url }}">{{ check.name }}</a>
-                    {% else %}
-                      {{ check.name }}
+        {% if requirement.scenarios %}
+          {% set first_row.requirement = True %}
+          {% for test_scenario in requirement.scenarios %}
+            {% set first_row.scenario = True %}
+            {% for test_case in test_scenario.cases %}
+              {% set first_row.case = True %}
+              {% for test_step in test_case.steps %}
+                {% set first_row.step = True %}
+                {% for check in test_step.checks %}
+                  <tr>
+                    {% if first_row.package %}
+                      <td rowspan="{{ package.rows }}">{{ package.name }}</td>
                     {% endif %}
-                    {% if check.successes + check.failures > 1 %}
-                      ({{ check.successes + check.failures }}x)
+                    {% if first_row.requirement %}
+                      <td rowspan="{{ requirement.rows }}" class="{{ requirement.classname }}">{{ requirement.id }}</td>
                     {% endif %}
-                  </td>
-                </tr>
+                    <td class="{{ check.result_classname }}">{{ check.result }}</td>
+                    {% if first_row.scenario %}
+                      <td rowspan="{{ test_scenario.rows }}">
+                        {% if test_scenario.url %}
+                          <a href="{{ test_scenario.url }}">{{ test_scenario.name }}</a>
+                        {% else %}
+                          {{ test_scenario.name }}
+                        {% endif %}
+                      </td>
+                    {% endif %}
+                    {% if first_row.case %}
+                      <td rowspan="{{ test_case.rows }}">
+                        {% if test_case.url %}
+                          <a href="{{ test_case.url }}">{{ test_case.name }}</a>
+                        {% else %}
+                          {{ test_case.name }}
+                        {% endif %}
+                      </td>
+                    {% endif %}
+                    {% if first_row.step %}
+                      <td rowspan="{{ test_step.rows }}">
+                        {% if test_step.url %}
+                          <a href="{{ test_step.url }}">{{ test_step.name }}</a>
+                        {% else %}
+                          {{ test_step.name }}
+                        {% endif %}
+                      </td>
+                    {% endif %}
+                    <td class="{{ check.check_classname }}">
+                      {% if check.url %}
+                        <a href="{{ check.url }}">{{ check.name }}</a>
+                      {% else %}
+                        {{ check.name }}
+                      {% endif %}
+                      {% if check.successes + check.failures > 1 %}
+                        ({{ check.successes + check.failures }}x)
+                      {% endif %}
+                    </td>
+                  </tr>
 
-                {% set first_row.package = False %}
-                {% set first_row.requirement = False %}
-                {% set first_row.scenario = False %}
-                {% set first_row.case = False %}
-                {% set first_row.step = False %}
+                  {% set first_row.package = False %}
+                  {% set first_row.requirement = False %}
+                  {% set first_row.scenario = False %}
+                  {% set first_row.case = False %}
+                  {% set first_row.step = False %}
+                {% endfor %}
               {% endfor %}
             {% endfor %}
           {% endfor %}
-        {% endfor %}
+        {% else %}
+          <tr>
+            {% if first_row.package %}
+              <td rowspan="{{ package.rows }}">{{ package.name }}</td>
+            {% endif %}
+            <td class="not_tested">{{ requirement.id }}</td>
+            <td class="not_tested">Not tested</td>
+            <td colspan="4">Not implemented</td>
+          </tr>
+
+          {% set first_row.package = False %}
+        {% endif %}
       {% endfor %}
     {% endfor %}
   </table>
