@@ -5,10 +5,12 @@ successfully modified by a flight planner.  See `modify_activated_flight_intent`
 
 ## Successful modification check
 
-All flight intent data provided is correct and valid and free of conflict in space and time, therefore it should have
-been modified by the USS per **interuss.automated_testing.flight_planning.ExpectedBehavior**.
-If the USS fails to modify the flight, wrongly indicates a conflict, or wrongly indicates the activated state of the
-flight, this check will fail.
+All flight intent data provided is correct and valid. The (already activated) provided flight intent may be in conflict with
+another activated flight, but only if this conflict already existed before the modification was initiated.
+Therefore, the USS should have either successfully modified the flight per **interuss.automated_testing.flight_planning.ExpectedBehavior**,
+or indicated that the operation is not supported.
+If the USS fails to modify the flight (or to indicate that the modification is not supported), wrongly indicates a
+conflict, or wrongly indicates the activated state of the flight, this check will fail.
 
 ## Failure check
 

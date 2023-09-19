@@ -3,13 +3,15 @@ from datetime import datetime
 from typing import List, Union, Optional, Tuple, Iterable, Set, Dict
 
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
+from uas_standards.interuss.automated_testing.scd.v1.api import (
+    InjectFlightResponseResult,
+)
 
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd import bounding_vol4
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
     Capability,
-    InjectFlightResult,
     InjectFlightResponse,
     DeleteFlightResult,
     DeleteFlightResponse,
@@ -254,8 +256,8 @@ def plan_flight_intent(
         scenario,
         test_step,
         "Successful planning",
-        {InjectFlightResult.Planned},
-        {InjectFlightResult.Failed: "Failure"},
+        {InjectFlightResponseResult.Planned},
+        {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
     )
@@ -283,8 +285,8 @@ def activate_flight_intent(
         scenario,
         test_step,
         "Successful activation",
-        {InjectFlightResult.ReadyToFly},
-        {InjectFlightResult.Failed: "Failure"},
+        {InjectFlightResponseResult.ReadyToFly},
+        {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
         flight_id,
@@ -313,8 +315,8 @@ def modify_planned_flight_intent(
         scenario,
         test_step,
         "Successful modification",
-        {InjectFlightResult.Planned},
-        {InjectFlightResult.Failed: "Failure"},
+        {InjectFlightResponseResult.Planned},
+        {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
         flight_id,
@@ -327,8 +329,11 @@ def modify_activated_flight_intent(
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: str,
+    preexisting_conflict: bool = False,
 ) -> InjectFlightResponse:
     """Modify an activated flight intent that should result in success.
+    If the activated flight intent to modify has a pre-existing conflict, the USS is allowed to return `NotSupported`.
+    Use `preexisting_conflict=True` in this case.
 
     This function implements the test step described in
     modify_activated_flight_intent.md.
@@ -339,12 +344,15 @@ def modify_activated_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario, test_step
     )
 
+    expected_results = {InjectFlightResponseResult.ReadyToFly}
+    if preexisting_conflict:
+        expected_results.add(InjectFlightResponseResult.NotSupported)
     return submit_flight_intent(
         scenario,
         test_step,
         "Successful modification",
-        {InjectFlightResult.ReadyToFly},
-        {InjectFlightResult.Failed: "Failure"},
+        expected_results,
+        {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
         flight_id,
@@ -355,8 +363,8 @@ def submit_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     success_check: str,
-    expected_results: Set[InjectFlightResult],
-    failed_checks: Dict[InjectFlightResult, str],
+    expected_results: Set[InjectFlightResponseResult],
+    failed_checks: Dict[InjectFlightResponseResult, str],
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: Optional[str] = None,

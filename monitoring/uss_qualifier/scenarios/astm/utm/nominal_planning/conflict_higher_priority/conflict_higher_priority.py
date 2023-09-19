@@ -1,6 +1,9 @@
 from typing import Optional
 
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
+from uas_standards.interuss.automated_testing.scd.v1.api import (
+    InjectFlightResponseResult,
+)
 
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
@@ -371,21 +374,37 @@ class ConflictHigherPriority(TestScenario):
             self.flight_2_id,
         )
 
-        resp_flight_1 = modify_activated_flight_intent(
+        resp_flight_1_modif = modify_activated_flight_intent(
             self,
             "Modify activated flight 1 in conflict with activated flight 2",
             self.tested_uss,
             self.flight_1_activated_time_range_A_extended.request,
             self.flight_1_id,
+            preexisting_conflict=True,
         )
+
+        # The tested USS may respond NotSupported to the modification of the activated flight in conflict.
+        # If that's the case, it will not impact the rest of the test scenario.
+        if (
+            resp_flight_1_modif.result == InjectFlightResponseResult.NotSupported
+            or resp_flight_1_modif.operational_intent_id is None
+        ):
+            flight_1_op_intent_id = resp_flight_1.operational_intent_id
+        else:
+            flight_1_op_intent_id = resp_flight_1_modif.operational_intent_id
+
+        if resp_flight_1_modif.result == InjectFlightResponseResult.NotSupported:
+            flight_1_op_intent = self.flight_1_activated_time_range_A
+        else:
+            flight_1_op_intent = self.flight_1_activated_time_range_A_extended
 
         validate_shared_operational_intent(
             self,
             self.tested_uss,
             self.dss,
             "Validate flight 1 sharing",
-            self.flight_1_activated_time_range_A_extended.request,
-            resp_flight_1.operational_intent_id,
+            flight_1_op_intent.request,
+            flight_1_op_intent_id,
         )
         validate_shared_operational_intent(
             self,
@@ -396,7 +415,7 @@ class ConflictHigherPriority(TestScenario):
             resp_flight_2.operational_intent_id,
         )
 
-        return resp_flight_1.operational_intent_id
+        return flight_1_op_intent_id
 
     def _attempt_modify_activated_flight_conflict(self, flight_1_op_intent_id: str):
         resp_flight_2 = modify_activated_flight_intent(

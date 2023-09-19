@@ -1,11 +1,13 @@
 from typing import Optional
 
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
+from uas_standards.interuss.automated_testing.scd.v1.api import (
+    InjectFlightResponseResult,
+)
 
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     Capability,
-    InjectFlightResult,
 )
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
@@ -397,13 +399,13 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self,
             "Declare flight 2 non-conforming",
             "Successful transition to non-conforming state",
-            {InjectFlightResult.Planned, InjectFlightResult.Rejected},
-            {InjectFlightResult.Failed: "Failure"},
+            {InjectFlightResponseResult.Planned, InjectFlightResponseResult.Rejected},
+            {InjectFlightResponseResult.Failed: "Failure"},
             self.control_uss,
             self.flight_2_equal_prio_nonconforming_time_range_A.request,
             self.flight_2_id,
         )
-        if resp_flight_2.result == InjectFlightResult.Rejected:
+        if resp_flight_2.result == InjectFlightResponseResult.Rejected:
             msg = f"{self.control_uss.config.participant_id} rejected transition to a Nonconforming state because it does not support CMSA role, execution of the scenario was stopped without failure"
             self.record_note("Control USS does not support CMSA role", msg)
             raise ScenarioCannotContinueError(msg)
@@ -421,14 +423,17 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self,
             "Attempt to modify activated flight 1 in conflict with activated flight 2",
             "Successful modification or rejection",
-            {InjectFlightResult.ReadyToFly, InjectFlightResult.Rejected},
-            {InjectFlightResult.Failed: "Failure"},
+            {
+                InjectFlightResponseResult.ReadyToFly,
+                InjectFlightResponseResult.Rejected,
+            },
+            {InjectFlightResponseResult.Failed: "Failure"},
             self.tested_uss,
             self.flight_1_activated_time_range_A_extended.request,
             self.flight_1_id,
         )
 
-        if resp_flight_1.result == InjectFlightResult.ReadyToFly:
+        if resp_flight_1.result == InjectFlightResponseResult.ReadyToFly:
             validate_shared_operational_intent(
                 self,
                 self.tested_uss,
@@ -437,7 +442,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 self.flight_1_activated_time_range_A_extended.request,
                 resp_flight_1.operational_intent_id,
             )
-        elif resp_flight_1.result == InjectFlightResult.Rejected:
+        elif resp_flight_1.result == InjectFlightResponseResult.Rejected:
             validate_shared_operational_intent(
                 self,
                 self.tested_uss,
