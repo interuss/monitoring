@@ -10,6 +10,36 @@
     "output_path": {
       "description": "Path of a folder into which report HTML files should be written",
       "type": "string"
+    },
+    "participant_requirements": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "requirement_collections": {
+      "additionalProperties": {
+        "$ref": "../../requirements/definitions/RequirementCollection.json"
+      },
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
     }
   },
   "required": [

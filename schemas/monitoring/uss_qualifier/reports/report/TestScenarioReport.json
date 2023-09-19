@@ -1,51 +1,21 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestScenarioReport.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.uss_qualifier.reports.report.TestScenarioReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
-    },
-    "successful": {
-      "type": "boolean",
-      "description": "True iff test scenario completed normally with no failed checks"
-    },
-    "start_time": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Time at which the test scenario started"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "cases": {
-      "type": "array",
+      "description": "Reports for each of the test cases in this test scenario, in chronological order.",
       "items": {
         "$ref": "TestCaseReport.json"
       },
-      "description": "Reports for each of the test cases in this test scenario"
-    },
-    "documentation_url": {
-      "type": "string",
-      "description": "URL at which this test scenario is described"
-    },
-    "execution_error": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "ErrorReport.json"
-        }
-      ],
-      "description": "If there was an error while executing this test scenario, this field describes the error"
-    },
-    "end_time": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "date-time",
-      "description": "Time at which the test scenario completed or encountered an error"
+      "type": "array"
     },
     "cleanup": {
+      "description": "If this test scenario performed cleanup, this report captures the relevant information.",
       "oneOf": [
         {
           "type": "null"
@@ -53,41 +23,71 @@
         {
           "$ref": "TestStepReport.json"
         }
-      ],
-      "description": "If this test scenario performed cleanup, this report captures the relevant information."
+      ]
+    },
+    "documentation_url": {
+      "description": "URL at which this test scenario is described",
+      "type": "string"
+    },
+    "end_time": {
+      "description": "Time at which the test scenario completed or encountered an error",
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "execution_error": {
+      "description": "If there was an error while executing this test scenario, this field describes the error",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ErrorReport.json"
+        }
+      ]
+    },
+    "name": {
+      "description": "Name of this test scenario",
+      "type": "string"
     },
     "notes": {
-      "type": [
-        "object",
-        "null"
-      ],
-      "properties": {
-        "$ref": {
-          "type": "string",
-          "description": "Path to content that replaces the $ref"
-        }
-      },
       "additionalProperties": {
         "$ref": "Note.json"
       },
-      "description": "Additional information about this scenario that may be useful"
+      "description": "Additional information about this scenario that may be useful",
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
     },
     "scenario_type": {
-      "type": "string",
-      "description": "Type of this test scenario"
+      "description": "Type of this test scenario",
+      "type": "string"
     },
-    "name": {
-      "type": "string",
-      "description": "Name of this test scenario"
+    "start_time": {
+      "description": "Time at which the test scenario started",
+      "format": "date-time",
+      "type": "string"
+    },
+    "successful": {
+      "description": "True iff test scenario completed normally with no failed checks",
+      "type": "boolean"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestScenarioReport.json",
-  "description": "monitoring.uss_qualifier.reports.report.TestScenarioReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "cases",
     "documentation_url",
     "name",
     "scenario_type",
     "start_time"
-  ]
+  ],
+  "type": "object"
 }
