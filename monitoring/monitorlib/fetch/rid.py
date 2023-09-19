@@ -241,11 +241,19 @@ class Flight(ImplicitDict):
     @property
     def operational_status(self) -> Optional[str]:
         if self.rid_version == RIDVersion.f3411_19:
-            if self.v19_value.current_state is None:
+            if not self.v19_value.has_field_with_value(
+                "current_state"
+            ) or not self.v19_value.current_state.has_field_with_value(
+                "operational_status"
+            ):
                 return None
             return self.v19_value.current_state.operational_status
         elif self.rid_version == RIDVersion.f3411_22a:
-            if self.v22a_value.current_state is None:
+            if not self.v22a_value.has_field_with_value(
+                "current_state"
+            ) or not self.v22a_value.current_state.has_field_with_value(
+                "operational_status"
+            ):
                 return None
             return self.v22a_value.current_state.operational_status
         else:
@@ -256,11 +264,15 @@ class Flight(ImplicitDict):
     @property
     def track(self) -> Optional[float]:
         if self.rid_version == RIDVersion.f3411_19:
-            if self.v19_value.current_state is None:
+            if not self.v19_value.has_field_with_value(
+                "current_state"
+            ) or not self.v19_value.current_state.has_field_with_value("track"):
                 return None
             return self.v19_value.current_state.track
         elif self.rid_version == RIDVersion.f3411_22a:
-            if self.v22a_value.current_state is None:
+            if not self.v22a_value.has_field_with_value(
+                "current_state"
+            ) or not self.v22a_value.current_state.has_field_with_value("track"):
                 return None
             return self.v22a_value.current_state.track
         else:
@@ -271,11 +283,15 @@ class Flight(ImplicitDict):
     @property
     def speed(self) -> Optional[float]:
         if self.rid_version == RIDVersion.f3411_19:
-            if self.v19_value.current_state is None:
+            if not self.v19_value.has_field_with_value(
+                "current_state"
+            ) or not self.v19_value.current_state.has_field_with_value("speed"):
                 return None
             return self.v19_value.current_state.speed
         elif self.rid_version == RIDVersion.f3411_22a:
-            if self.v22a_value.current_state is None:
+            if not self.v22a_value.has_field_with_value(
+                "current_state"
+            ) or not self.v22a_value.current_state.has_field_with_value("speed"):
                 return None
             return self.v22a_value.current_state.speed
         else:
@@ -286,11 +302,11 @@ class Flight(ImplicitDict):
     @property
     def timestamp(self) -> Optional[StringBasedDateTime]:
         if self.rid_version == RIDVersion.f3411_19:
-            if self.v19_value.current_state is None:
+            if not self.v19_value.has_field_with_value("current_state"):
                 return None
             return self.v19_value.current_state.timestamp
         elif self.rid_version == RIDVersion.f3411_22a:
-            if self.v22a_value.current_state is None:
+            if not self.v22a_value.has_field_with_value("current_state"):
                 return None
             return self.v22a_value.current_state.timestamp.value
         else:
