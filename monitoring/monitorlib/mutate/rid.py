@@ -368,22 +368,18 @@ class ChangedISA(RIDQuery):
                     f"Error parsing F3411-22a USS PutIdentificationServiceAreaResponse: {str(e)}"
                 ]
 
-        # TODO: This validates the schema only for v22a as the v19 OpenAPI definition contains a mistake in
-        #  'components.schemas.SubscriptionState', the non-existing property 'subscription' is marked as required.
-        #  The augmented.yaml version of the definition should be fixed and then this can be applied to both version.
-        if self.rid_version == RIDVersion.f3411_22a:
-            validation_errors = schema_validation.validate(
-                openapi_path=self.rid_version.openapi_path,
-                object_path=self.rid_version.openapi_delete_isa_response_path
-                if self.mutation == "delete"
-                else self.rid_version.openapi_put_isa_response_path,
-                instance=self.query.response.json,
-            )
-            if validation_errors:
-                return [
-                    f"PUT ISA response JSON validation error: [{e.json_path}] {e.message}"
-                    for e in validation_errors
-                ]
+        validation_errors = schema_validation.validate(
+            openapi_path=self.rid_version.openapi_path,
+            object_path=self.rid_version.openapi_delete_isa_response_path
+            if self.mutation == "delete"
+            else self.rid_version.openapi_put_isa_response_path,
+            instance=self.query.response.json,
+        )
+        if validation_errors:
+            return [
+                f"PUT ISA response JSON validation error: [{e.json_path}] {e.message}"
+                for e in validation_errors
+            ]
 
         return []
 
