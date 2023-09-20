@@ -11,6 +11,7 @@ from monitoring.uss_qualifier.requirements.definitions import (
     RequirementCollection,
     RequirementID,
     RequirementSetID,
+    PackageID,
 )
 
 
@@ -22,7 +23,7 @@ class Requirement(object):
 _verified_requirements: Set[RequirementID] = set()
 
 
-def _verify_requirements(parent: marko.element.Element, package: str) -> None:
+def _verify_requirements(parent: marko.element.Element, package: PackageID) -> None:
     if hasattr(parent, "children") and not isinstance(parent.children, str):
         for i, child in enumerate(parent.children):
             if isinstance(child, str):
@@ -51,7 +52,7 @@ def _load_requirement(requirement_id: RequirementID) -> None:
     _verify_requirements(doc, requirement_id.package())
     if requirement_id not in _verified_requirements:
         raise ValueError(
-            f'Requirement "{requirement_id.requirement_name()}" could not be found in "{md_filename}", so the requirement {requirement_id} could not be loaded (the file must contain `<tt>{requirement_id.requirement_name()}</tt>` somewhere in it, but does not)'
+            f'Requirement "{requirement_id.short_requirement_name()}" could not be found in "{md_filename}", so the requirement {requirement_id} could not be loaded (the file must contain `<tt>{requirement_id.short_requirement_name()}</tt>` somewhere in it, but does not)'
         )
 
 

@@ -79,7 +79,7 @@
     </tr>
     <tr>
       <td>Test run identifier</td>
-      <td>TR{{ test_run.test_run_id[0:7] }}</td>
+      <td>TR-{{ test_run.test_run_id[0:7] }}</td>
     </tr>
     {% if test_run.start_time %}
       <tr>
@@ -95,11 +95,11 @@
     {% endif %}
     <tr>
       <td>Test baseline identifier</td>
-      <td>TB{{ test_run.baseline[0:7] }}</td>
+      <td>TB-{{ test_run.baseline[0:7] }}</td>
     </tr>
     <tr>
       <td>Environment identifier</td>
-      <td>TE{{ test_run.environment[0:7] }}</td>
+      <td>TE-{{ test_run.environment[0:7] }}</td>
     </tr>
   </table>
 </div>
@@ -131,7 +131,7 @@
                 {% for check in test_step.checks %}
                   <tr>
                     {% if first_row.package %}
-                      <td rowspan="{{ package.rows }}"><span class="sticky_cell_value">{{ package.name }}</span></td>
+                      <td rowspan="{{ package.rows }}"><span class="sticky_cell_value"><a href="{{ package.url }}">{{ package.name }}</a></span></td>
                     {% endif %}
                     {% if first_row.requirement %}
                       <td rowspan="{{ requirement.rows }}" class="{{ requirement.classname }}"><span class="sticky_cell_value">{{ requirement.id }}</span></td>
@@ -188,10 +188,10 @@
         {% else %}
           <tr>
             {% if first_row.package %}
-              <td rowspan="{{ package.rows }}">{{ package.name }}</td>
+              <td rowspan="{{ package.rows }}"><span class="sticky_cell_value"><a href="{{ package.url }}">{{ package.name }}</a></span></td>
             {% endif %}
-            <td class="not_tested">{{ requirement.id }}</td>
-            <td class="not_tested">Not tested</td>
+            <td class="not_tested"><span class="sticky_cell_value">{{ requirement.id }}</span></td>
+            <td class="not_tested"><span class="sticky_cell_value">Not tested</span></td>
             <td colspan="4">Not implemented</td>
           </tr>
 
