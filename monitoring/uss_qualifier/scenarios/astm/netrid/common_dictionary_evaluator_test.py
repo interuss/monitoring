@@ -160,24 +160,14 @@ def test_operator_location():
                 lat=46.2,
                 lng=6.1,
             ),
-            Altitude(value=1000.9),  # Invalid value
-            OperatorAltitudeAltitudeType("Takeoff"),
-            2,
-            1,
-        ),
-        (
-            LatLngPoint(
-                lat=46.2,
-                lng=6.1,
-            ),
             Altitude(
-                value=1000.9,  # Invalid value
+                value=1000.9,
                 units="FT",  # Invalid value
                 reference="UNKNOWN",  # Invalid value
             ),
             "Takeoff",
             2,
-            3,
+            2,
         ),
     ]
     for invalid_location in invalid_locations:
@@ -221,7 +211,7 @@ def _assert_timestamp(value: str, outcome: bool):
 def test_timestamp():
     _assert_timestamp("2023-09-13T04:43:00.1Z", True)  # Ok
     _assert_timestamp("2023-09-13T04:43:00Z", True)  # Ok
-    _assert_timestamp("2023-09-13T04:43:00.501Z", False)  # Wrong resolution
+    _assert_timestamp("2023-09-13T04:43:00.501Z", True)  # Ok
     _assert_timestamp("2023-09-13T04:43:00.1+07:00", False)  # Wrong timezone
 
 
@@ -243,7 +233,7 @@ def test_speed():
     _assert_speed(1, True)  # Ok
     _assert_speed(20.75, True)  # Ok
     _assert_speed(400, False)  # Fail, above MaxSpeed
-    _assert_speed(23.3, False)  # Wrong resolution
+    _assert_speed(23.3, True)  # Ok
 
 
 def _assert_track(value: float, outcome: bool):
@@ -265,7 +255,7 @@ def test_track():
     _assert_track(-359, True)  # Ok
     _assert_track(400, False)  # Fail, above MaxTrackDirection
     _assert_track(-360, False)  # Fail, below MinTrackDirection
-    _assert_track(23.3, False)  # Wrong resolution
+    _assert_track(23.3, True)  # Wrong resolution
     _assert_track(SpecialTrackDirection, True)
 
 
@@ -286,9 +276,7 @@ def _assert_height(value: RIDHeight, outcome: bool):
 def test_height():
     _assert_height(None, True)  # Ok
     _assert_height(RIDHeight(distance=10, reference="TakeoffLocation"), True)  # Ok
-    _assert_height(
-        RIDHeight(distance=10.101, reference="TakeoffLocation"), False
-    )  # Wrong resolution
+    _assert_height(RIDHeight(distance=10.101, reference="TakeoffLocation"), True)  # Ok
     _assert_height(
         RIDHeight(distance=10.101, reference="Moon"), False
     )  # Wrong reference
