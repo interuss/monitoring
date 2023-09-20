@@ -36,7 +36,7 @@ If an ISA with the intended ID is already present in the DSS, it needs to be rem
 
 #### Notified subscriber check
 
-When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).  If a notification cannot be delivered, then the **[astm.f3411.v22a.NET0710](../../../../../requirements/astm/f3411/v22a.md)** requirement to implement the POST ISAs endpoint isn't met.
+When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).  If a notification cannot be delivered, then the **[astm.f3411.v22a.NET0710](../../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0340](../../../../../requirements/astm/f3411/v22a.md)** requirements to implement the POST ISAs endpoint aren't met.
 
 ## Create and check ISA test case
 

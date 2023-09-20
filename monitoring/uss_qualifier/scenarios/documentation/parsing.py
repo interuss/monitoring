@@ -6,10 +6,9 @@ import marko
 import marko.element
 import marko.inline
 
-import monitoring
 from monitoring import uss_qualifier as uss_qualifier_module
-from monitoring.monitorlib import versioning
 from monitoring.monitorlib.inspection import fullname, get_module_object_by_name
+from monitoring.monitorlib.versioning import repo_url_of
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
@@ -19,7 +18,6 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestScenarioDocumentation,
 )
 
-_REPO_ROOT = os.path.split(os.path.split(inspect.getfile(monitoring))[0])[0]
 RESOURCES_HEADING = "resources"
 CLEANUP_HEADING = "cleanup"
 TEST_SCENARIO_SUFFIX = " test scenario"
@@ -54,14 +52,6 @@ def _text_of(value) -> str:
         )
 
 
-def _url_of(abspath: str) -> str:
-    relpath = os.path.relpath(abspath, start=_REPO_ROOT)
-    version = versioning.get_commit_hash()
-    if version == "unknown":
-        version = "main"
-    return f"https://github.com/interuss/monitoring/blob/{version}/{relpath}"
-
-
 def _length_of_section(values, start_of_section: int) -> int:
     level = values[start_of_section].level
     c = start_of_section + 1
@@ -76,7 +66,7 @@ def _parse_test_check(
     values, doc_filename: str, anchors: Dict[Any, str]
 ) -> TestCheckDocumentation:
     name = _text_of(values[0])[0 : -len(TEST_CHECK_SUFFIX)]
-    url = _url_of(doc_filename + anchors[values[0]])
+    url = repo_url_of(doc_filename + anchors[values[0]])
     has_todo = False
 
     reqs: List[str] = []
@@ -133,7 +123,7 @@ def _parse_test_step(
     name = _text_of(values[0])
     if name.lower().endswith(TEST_STEP_SUFFIX):
         name = name[0 : -len(TEST_STEP_SUFFIX)]
-    url = _url_of(doc_filename + anchors[values[0]])
+    url = repo_url_of(doc_filename + anchors[values[0]])
 
     checks: List[TestCheckDocumentation] = []
     if values[0].children and isinstance(
@@ -166,7 +156,7 @@ def _parse_test_case(
 ) -> TestCaseDocumentation:
     name = _text_of(values[0])[0 : -len(TEST_CASE_SUFFIX)]
 
-    url = _url_of(doc_filename + anchors[values[0]])
+    url = repo_url_of(doc_filename + anchors[values[0]])
 
     steps: List[TestStepDocumentation] = []
     c = 1
@@ -240,7 +230,7 @@ def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
         )
     with open(doc_filename, "r") as f:
         doc = marko.parse(f.read())
-    url = _url_of(doc_filename)
+    url = repo_url_of(doc_filename)
     anchors = _get_anchors(doc)
 
     # Extract the scenario name from the first top-level header

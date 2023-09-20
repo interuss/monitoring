@@ -1,9 +1,10 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.dicts import JSONAddress
 from monitoring.uss_qualifier.fileio import load_dict_with_references
+from monitoring.uss_qualifier.requirements.definitions import RequirementCollection
 from monitoring.uss_qualifier.requirements.documentation import RequirementSetID
 from monitoring.uss_qualifier.resources.definitions import ResourceCollection
 from monitoring.uss_qualifier.suites.definitions import (
@@ -27,7 +28,26 @@ class TestConfiguration(ImplicitDict):
 
 class TestedRolesConfiguration(ImplicitDict):
     report_path: str
-    """Path of HTML file to contain a fulfilled-requirements-based view of the test report"""
+    """Path of folder to write HTML files containing a fulfilled-requirements-based view of the test report"""
+
+
+TestedRequirementsCollectionIdentifier = str
+"""Identifier for a requirements collection, local to a TestedRequirementsConfiguration artifact configuration."""
+
+
+class TestedRequirementsConfiguration(ImplicitDict):
+    output_path: str
+    """Path of a folder into which report HTML files should be written"""
+
+    requirement_collections: Optional[
+        Dict[TestedRequirementsCollectionIdentifier, RequirementCollection]
+    ]
+    """Definition of requirement collections specific to production of this artifact."""
+
+    participant_requirements: Optional[
+        Dict[ParticipantID, TestedRequirementsCollectionIdentifier]
+    ]
+    """If a requirement collection is specified for a participant, only the requirements in the specified collection will be listed on that participant's report."""
 
 
 class ReportHTMLConfiguration(ImplicitDict):
@@ -78,6 +98,9 @@ class ArtifactsConfiguration(ImplicitDict):
 
     tested_roles: Optional[TestedRolesConfiguration] = None
     """If specified, configuration describing a desired report summarizing tested requirements for each specified participant and role"""
+
+    tested_requirements: Optional[TestedRequirementsConfiguration] = None
+    """If specified, configuration describing a desired report summarizing all tested requirements for each participant"""
 
 
 class USSQualifierConfigurationV1(ImplicitDict):
