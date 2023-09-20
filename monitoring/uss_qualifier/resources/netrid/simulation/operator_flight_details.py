@@ -37,6 +37,7 @@ class OperatorFlightDataGenerator:
         return self.random.choice(operation_description)
 
     def generate_operator_location(self, centroid):
+        # TODO: Inject operator location altitude
         operator_location = LatLngPoint(lat=centroid.y, lng=centroid.x)
         return operator_location
 

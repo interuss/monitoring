@@ -112,7 +112,7 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 
 #### Operator Altitude consistency with Common Dictionary check
 
-**[astm.f3411.v22a.NET0260](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that if the Operator Altitude is based on WGS-84 height above ellipsoid (HAE), is provided in meters and must have a minimum resolution of 1 m. (**[astm.f3411.v22a.NET0260,Table1,25](../../../../requirements/astm/f3411/v22a.md)**)
+**[astm.f3411.v22a.NET0260](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that if the Operator Altitude is based on WGS-84 height above ellipsoid (HAE) and is provided in meters. (**[astm.f3411.v22a.NET0260,Table1,25](../../../../requirements/astm/f3411/v22a.md)**)
 
 #### Operator Altitude Type consistency with Common Dictionary check
 
@@ -195,6 +195,63 @@ Taking into account the propagation time of the injected flights, if the total n
 
 For a display area with a diagonal greather than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v22a.NET0480](../../../../requirements/astm/f3411/v22a.md)** requires that a Display provider shall cluster UAs in close proximity to each other using a circular or polygonal area covering no less than *NetMinClusterSize* percent of the display area size.
 This check validates that the display area of a cluster, measured and provided in square meters by the test harness, is no less than *NetMinClusterSize* percent of the display area.
+
+#### Successful details observation check
+
+Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the call for flight details is expected to succeed since a valid ID was provided by uss_qualifier.
+
+#### Current state present check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the current state is present. If it is not, this check will fail.
+
+#### UAS ID presence in flight details check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the UAS ID is present in the information sent by the Display Provider. (**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)**)
+
+#### UAS ID (Serial Number format) consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that if the UAS ID is in serial number format, its format is valid. (**[astm.f3411.v22a.NET0470,Table1,1a](../../../../requirements/astm/f3411/v22a.md)**)
+
+#### Timestamp consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that timestamps are relative to UTC. (**[astm.f3411.v22a.NET0470,Table1,5](../../../../requirements/astm/f3411/v22a.md)**)
+
+#### Operational Status consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Operational Status, if present, is valid. (**[astm.f3411.v22a.NET0470,Table1,7](../../../../requirements/astm/f3411/v22a.md)**)
+
+#### Operator ID consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall (NET0470) provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Operator ID, if present, is valid. (**[astm.f3411.v22a.NET0470,Table1,9](../../../../requirements/astm/f3411/v22a.md)**)
+
+#### Current Position consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Current Position provided is valid. (**[astm.f3411.v22a.NET0470,Table1,10](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0470,Table1,11](../../../../requirements/astm/f3411/v22a.md)**). If the observed Current Position do not contain valid latitude and longitude, this check will fail.
+TODO: If the resolution is greater than 7 number digits, this check will fail.
+
+#### Height Type consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Height Type (**[astm.f3411.v22a.NET0470,Table1,15](../../../../requirements/astm/f3411/v22a.md)**), if present, is valid. If the observed Height Type indicates a value different than Takeoff Location or Ground Level, this check will fail.
+
+#### Track Direction consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Track Direction (**[astm.f3411.v22a.NET0470,Table1,19](../../../../requirements/astm/f3411/v22a.md)**) is valid. If the observed Track Direction is less than -359 or is greater than 359, except for the special value 361, this check will fail.
+
+#### Speed consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Speed (**[astm.f3411.v22a.NET0470,Table1,20](../../../../requirements/astm/f3411/v22a.md)**) is valid. If the observed Speed is negative or greater than 254.25, except for the special value 255, this check will fail.
+
+#### Operator Location consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Operator Latitude (**[astm.f3411.v22a.NET0470,Table1,23](../../../../requirements/astm/f3411/v22a.md)**) and Longitude (**[astm.f3411.v22a.NET0470,Table1,24](../../../../requirements/astm/f3411/v22a.md)**), if present, are valid.
+
+#### Operator Altitude consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that, if present, the Operator Altitude is based on WGS-84 height above ellipsoid (HAE) and is provided in meters. (**[astm.f3411.v22a.NET0470,Table1,25](../../../../requirements/astm/f3411/v22a.md)**)
+
+#### Operator Altitude Type consistency with Common Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Operator Altitude Type is valid, if present. (**[astm.f3411.v22a.NET0470,Table1,26](../../../../requirements/astm/f3411/v22a.md)**)
 
 ## Cleanup
 

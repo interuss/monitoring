@@ -1,6 +1,15 @@
 from datetime import datetime, timedelta, timezone
 import s2sphere
-from typing import List, Tuple
+from typing import List, Tuple, Optional
+
+from implicitdict import StringBasedDateTime
+from uas_standards.interuss.automated_testing.rid.v1.observation import (
+    OperatorAltitudeAltitudeType,
+    RIDHeight,
+    RIDHeightReference,
+)
+
+from uas_standards.astm.f3411.v22a.constants import SpecialTrackDirection
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.fetch.rid import Flight
 from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
@@ -11,7 +20,6 @@ from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfi
 from uas_standards.astm.f3411.v22a.api import (
     Altitude,
     LatLngPoint,
-    OperatorLocation,
     UAType,
 )
 from uas_standards.astm.f3411 import v22a
@@ -24,7 +32,7 @@ def _assert_operator_id(value: str, outcome: bool):
             test_scenario=self,
             rid_version=RIDVersion.f3411_22a,
         )
-        evaluator.evaluate_operator_id(value, RIDVersion.f3411_22a)
+        evaluator._evaluate_operator_id(value, [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
@@ -39,7 +47,7 @@ def test_operator_id_ascii():
 
 
 def _assert_operator_location(
-    value: OperatorLocation, expected_passed_checks, expected_failed_checks
+    position, altitude, altitude_type, expected_passed_checks, expected_failed_checks
 ):
     def step_under_test(self: UnitTestScenario):
         evaluator = RIDCommonDictionaryEvaluator(
@@ -47,7 +55,7 @@ def _assert_operator_location(
             test_scenario=self,
             rid_version=RIDVersion.f3411_22a,
         )
-        evaluator.evaluate_operator_location(value, RIDVersion.f3411_22a)
+        evaluator._evaluate_operator_location(position, altitude, altitude_type, [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert (
@@ -61,108 +69,105 @@ def _assert_operator_location(
 
 
 def test_operator_location():
-    valid_locations: List[Tuple[OperatorLocation, int]] = [
+    valid_locations: List[
+        Tuple[
+            Optional[LatLngPoint],
+            Optional[Altitude],
+            Optional[OperatorAltitudeAltitudeType],
+            int,
+        ]
+    ] = [
         (
-            OperatorLocation(
-                position=LatLngPoint(lat=1.0, lng=1.0),
-            ),
+            LatLngPoint(lat=1.0, lng=1.0),
+            None,
+            None,
             1,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(lat=-90.0, lng=180.0),
-            ),
+            LatLngPoint(lat=-90.0, lng=180.0),
+            None,
+            None,
             1,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(
-                    lat=46.2,
-                    lng=6.1,
-                ),
-                altitude=Altitude(value=1),
-                altitude_type="Takeoff",
+            LatLngPoint(
+                lat=46.2,
+                lng=6.1,
             ),
+            Altitude(value=1),
+            OperatorAltitudeAltitudeType("Takeoff"),
             3,
         ),
     ]
     for valid_location in valid_locations:
         _assert_operator_location(*valid_location, 0)
 
-    invalid_locations: List[Tuple[OperatorLocation, int, int]] = [
+    invalid_locations: List[
+        Tuple[
+            Optional[LatLngPoint],
+            Optional[Altitude],
+            Optional[OperatorAltitudeAltitudeType],
+            int,
+            int,
+        ]
+    ] = [
         (
-            OperatorLocation(
-                position=LatLngPoint(lat=-90.001, lng=0),  # out of range and valid
-            ),
+            LatLngPoint(lat=-90.001, lng=0),  # out of range and valid
+            None,
+            None,
             0,
             1,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(
-                    lat=0,  # valid
-                    lng=180.001,  # out of range
-                ),
+            LatLngPoint(
+                lat=0,  # valid
+                lng=180.001,  # out of range
             ),
+            None,
+            None,
             0,
             1,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(lat=-90.001, lng=180.001),  # both out of range
-            ),
+            LatLngPoint(lat=-90.001, lng=180.001),  # both out of range
+            None,
+            None,
             0,
             2,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(
-                    lat="46°12'7.99 N",  # Float required
-                    lng="6°08'44.48 E",  # Float required
-                ),
+            LatLngPoint(
+                lat="46°12'7.99 N",  # Float required
+                lng="6°08'44.48 E",  # Float required
             ),
+            None,
+            None,
             0,
             2,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(
-                    lat=46.2,
-                    lng=6.1,
-                ),
-                altitude=Altitude(value=1),
-                altitude_type="invalid",  # Invalid value
+            LatLngPoint(
+                lat=46.2,
+                lng=6.1,
             ),
+            Altitude(value=1),
+            "invalid",  # Invalid value
             2,
             1,
         ),
         (
-            OperatorLocation(
-                position=LatLngPoint(
-                    lat=46.2,
-                    lng=6.1,
-                ),
-                altitude=Altitude(value=1000.9),  # Invalid value
-                altitude_type="Takeoff",
+            LatLngPoint(
+                lat=46.2,
+                lng=6.1,
             ),
-            2,
-            1,
-        ),
-        (
-            OperatorLocation(
-                position=LatLngPoint(
-                    lat=46.2,
-                    lng=6.1,
-                ),
-                altitude=Altitude(
-                    value=1000.9,  # Invalid value
-                    units="FT",  # Invalid value
-                    reference="UNKNOWN",  # Invalid value
-                ),
-                altitude_type="Takeoff",
+            Altitude(
+                value=1000.9,
+                units="FT",  # Invalid value
+                reference="UNKNOWN",  # Invalid value
             ),
+            "Takeoff",
             2,
-            3,
+            2,
         ),
     ]
     for invalid_location in invalid_locations:
@@ -177,7 +182,7 @@ def _assert_operational_status(value: str, outcome: bool):
             rid_version=RIDVersion.f3411_22a,
         )
 
-        evaluator.evaluate_operational_status(value, RIDVersion.f3411_22a)
+        evaluator._evaluate_operational_status(value, [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
@@ -187,6 +192,94 @@ def test_operational_status():
     _assert_operational_status("Undeclared", True)  # v19 and v22a
     _assert_operational_status("Emergency", True)  # v22a only
     _assert_operational_status("Invalid", False)  # Invalid
+
+
+def _assert_timestamp(value: str, outcome: bool):
+    def step_under_test(self: UnitTestScenario):
+        evaluator = RIDCommonDictionaryEvaluator(
+            config=EvaluationConfiguration(),
+            test_scenario=self,
+            rid_version=RIDVersion.f3411_22a,
+        )
+
+        evaluator._evaluate_timestamp(StringBasedDateTime(value), [])
+
+    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+    assert unit_test_scenario.get_report().successful == outcome
+
+
+def test_timestamp():
+    _assert_timestamp("2023-09-13T04:43:00.1Z", True)  # Ok
+    _assert_timestamp("2023-09-13T04:43:00Z", True)  # Ok
+    _assert_timestamp("2023-09-13T04:43:00.501Z", True)  # Ok
+    _assert_timestamp("2023-09-13T04:43:00.1+07:00", False)  # Wrong timezone
+
+
+def _assert_speed(value: float, outcome: bool):
+    def step_under_test(self: UnitTestScenario):
+        evaluator = RIDCommonDictionaryEvaluator(
+            config=EvaluationConfiguration(),
+            test_scenario=self,
+            rid_version=RIDVersion.f3411_22a,
+        )
+
+        evaluator._evaluate_speed(value, [])
+
+    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+    assert unit_test_scenario.get_report().successful == outcome
+
+
+def test_speed():
+    _assert_speed(1, True)  # Ok
+    _assert_speed(20.75, True)  # Ok
+    _assert_speed(400, False)  # Fail, above MaxSpeed
+    _assert_speed(23.3, True)  # Ok
+
+
+def _assert_track(value: float, outcome: bool):
+    def step_under_test(self: UnitTestScenario):
+        evaluator = RIDCommonDictionaryEvaluator(
+            config=EvaluationConfiguration(),
+            test_scenario=self,
+            rid_version=RIDVersion.f3411_22a,
+        )
+
+        evaluator._evaluate_track(value, [])
+
+    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+    assert unit_test_scenario.get_report().successful == outcome
+
+
+def test_track():
+    _assert_track(1, True)  # Ok
+    _assert_track(-359, True)  # Ok
+    _assert_track(400, False)  # Fail, above MaxTrackDirection
+    _assert_track(-360, False)  # Fail, below MinTrackDirection
+    _assert_track(23.3, True)  # Wrong resolution
+    _assert_track(SpecialTrackDirection, True)
+
+
+def _assert_height(value: RIDHeight, outcome: bool):
+    def step_under_test(self: UnitTestScenario):
+        evaluator = RIDCommonDictionaryEvaluator(
+            config=EvaluationConfiguration(),
+            test_scenario=self,
+            rid_version=RIDVersion.f3411_22a,
+        )
+
+        evaluator._evaluate_height(value, [])
+
+    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+    assert unit_test_scenario.get_report().successful == outcome
+
+
+def test_height():
+    _assert_height(None, True)  # Ok
+    _assert_height(RIDHeight(distance=10, reference="TakeoffLocation"), True)  # Ok
+    _assert_height(RIDHeight(distance=10.101, reference="TakeoffLocation"), True)  # Ok
+    _assert_height(
+        RIDHeight(distance=10.101, reference="Moon"), False
+    )  # Wrong reference
 
 
 def _assert_evaluate_sp_flight_recent_positions(
