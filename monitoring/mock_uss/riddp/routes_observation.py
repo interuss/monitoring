@@ -61,13 +61,8 @@ def _make_flight_observation(
         paths.append(current_path)
 
     p = flight.most_recent_position
-    timestamp = p.time.replace(
-        microsecond=round(
-            limit_resolution(p.time.microsecond, pow(10, 5))
-        )  # Microsecond is very strict on the expected size and format, thus the round.
-    )
     current_state = observation_api.CurrentState(
-        timestamp=timestamp.isoformat(),
+        timestamp=p.time.isoformat(),
         operational_status=flight.operational_status,
         track=limit_resolution(flight.track, MinTrackDirectionResolution),
         speed=limit_resolution(flight.speed, MaxSpeed),
