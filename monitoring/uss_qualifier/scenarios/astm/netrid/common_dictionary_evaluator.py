@@ -11,13 +11,6 @@ from uas_standards.interuss.automated_testing.rid.v1 import (
     observation as observation_api,
 )
 
-# from uas_standards.interuss.automated_testing.rid.v1.observation import (
-#     GetDetailsResponse,
-#     OperatorAltitudeAltitudeType,
-#     RIDHeight,
-#     RIDHeightReference,
-# )
-
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
 
