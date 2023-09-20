@@ -198,7 +198,7 @@ This check validates that the display area of a cluster, measured and provided i
 
 #### Successful details observation check
 
-Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the call for flight details  is expected to succeed since a valid ID was provided by uss_qualifier.
+Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the call for flight details is expected to succeed since a valid ID was provided by uss_qualifier.
 
 #### Current state present check
 

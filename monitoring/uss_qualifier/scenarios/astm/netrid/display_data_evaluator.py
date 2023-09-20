@@ -218,6 +218,11 @@ class RIDObservationEvaluator(object):
             raise ValueError(
                 f"Cannot evaluate a system using RID version {rid_version} with a DSS using RID version {dss.rid_version}"
             )
+        self._retrieved_flight_details: Set[
+            str
+        ] = (
+            set()
+        )  # Contains the observed IDs of the flights whose details were retrieved.
 
     def evaluate_system_instantaneously(
         self,
@@ -385,6 +390,7 @@ class RIDObservationEvaluator(object):
             self._common_dictionary_evaluator.evaluate_dp_flight(
                 mapping.observed_flight, [observer.participant_id]
             )
+
         # Check that flights using telemetry are not using extrapolated position data
         for mapping in mapping_by_injection_id.values():
             injected_telemetry = mapping.injected_flight.flight.telemetry[
@@ -423,10 +429,16 @@ class RIDObservationEvaluator(object):
                         ),
                     )
 
+        # Check details of flights (once per flight)
+        for mapping in mapping_by_injection_id.values():
             with self._test_scenario.check(
                 "Successful details observation",
                 [mapping.injected_flight.uss_participant_id],
             ) as check:
+                # query for flight details only once per flight
+                if mapping.observed_flight.id in self._retrieved_flight_details:
+                    continue
+
                 details, query = observer.observe_flight_details(
                     mapping.observed_flight.id, self._rid_version
                 )
@@ -440,6 +452,7 @@ class RIDObservationEvaluator(object):
                         query_timestamps=[query.request.timestamp],
                     )
                 else:
+                    self._retrieved_flight_details.add(mapping.observed_flight.id)
                     self._common_dictionary_evaluator.evaluate_dp_details(
                         details,
                         participants=[
