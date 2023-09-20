@@ -63,13 +63,6 @@ of the durations for the replies to requested flights in an area do not exceed t
 Inspects all record queries for their usage of https. If services such as a service provider, observer or DSS are marked
 as being in "local debug" mode, they may serve requests over http without producing failed checks despite their lack of encryption.
 
-#### No unattributed queries check
-
-All queries must have been attributed to a participant: an unattributed query means that one of the test cases has not
-properly recorded to which participant it was made.
-
-This is an internal requirement and does not necessarily imply that there is a problem with the participants under test.
-
 #### All interactions happen over https check
 
 If non-encrypted interactions such as plaintext queries over http are allowed, **[astm.f3411.v22a.NET0220](../../../../requirements/astm/f3411/v22a.md)** is not satisfied.

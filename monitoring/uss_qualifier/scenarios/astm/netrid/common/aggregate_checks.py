@@ -154,17 +154,10 @@ class AggregateChecks(ReportEvaluationScenario):
             if query.get("server_id") is None
         ]
         if len(unattr_queries) > 0:
-            # TODO clean this up: this is an internal requirement and not a check,
-            #  leaving as-is during development to make sure the test-suite runs but we know about unattributed queries
-            #  ultimately this check could go into the constructor and blow things up early
-
-            with self.check(
-                "No unattributed queries",
-                [],
-            ) as check:
-                check.record_failed(
-                    f"found unattributed queries: {unattr_queries}", Severity.Medium
-                )
+            self.record_note(
+                "unattributed-queries",
+                f"found unattributed queries: {unattr_queries}",
+            )
 
     def _inspect_participant_queries(
         self, participant_id: str, participant_queries: List[fetch.Query]
