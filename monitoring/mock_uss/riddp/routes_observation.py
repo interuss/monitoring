@@ -6,13 +6,13 @@ import s2sphere
 from uas_standards.astm.f3411.v19.api import ErrorResponse
 from uas_standards.astm.f3411.v19.constants import Scope
 from uas_standards.astm.f3411.v22a.constants import (
-    MaxSpeed,
     MinHeightResolution,
     MinTrackDirectionResolution,
+    MinSpeedResolution,
 )
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
-from monitoring.monitorlib.fetch.rid import Flight, FetchedISAs, Position
+from monitoring.monitorlib.fetch.rid import Flight, FetchedISAs
 from monitoring.monitorlib.rid import RIDVersion
 from uas_standards.interuss.automated_testing.rid.v1 import (
     observation as observation_api,
@@ -65,7 +65,7 @@ def _make_flight_observation(
         timestamp=p.time.isoformat(),
         operational_status=flight.operational_status,
         track=limit_resolution(flight.track, MinTrackDirectionResolution),
-        speed=limit_resolution(flight.speed, MaxSpeed),
+        speed=limit_resolution(flight.speed, MinSpeedResolution),
     )
     h = p.get("height")
     if h:

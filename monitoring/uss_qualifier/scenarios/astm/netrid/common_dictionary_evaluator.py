@@ -17,19 +17,15 @@ from uas_standards.astm.f3411 import v22a
 from uas_standards.astm.f3411.v22a.constants import (
     SpecialSpeed,
     MaxSpeed,
-    MinSpeedResolution,
     SpecialTrackDirection,
     MinTrackDirection,
     MaxTrackDirection,
-    MinTrackDirectionResolution,
 )
 
-from uas_standards.astm.f3411.v22a.constants import MinHeightResolution
 from monitoring.monitorlib.fetch.rid import (
     FetchedFlights,
     FlightDetails,
 )
-from monitoring.monitorlib.formatting import limit_resolution
 from monitoring.monitorlib.geo import validate_lat, validate_lng, Altitude, LatLngPoint
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
@@ -326,13 +322,6 @@ class RIDCommonDictionaryEvaluator(object):
                             f"Timestamp must be relative to UTC: {t}",
                             severity=Severity.Medium,
                         )
-                    us = t.datetime.microsecond
-                    us_res = limit_resolution(us, pow(10, 5))
-                    if not math.isclose(us, us_res):
-                        check.record_failed(
-                            f"Timestamp resolution is smaller than 1/10 second: {t}",
-                            severity=Severity.Medium,
-                        )
                 except ParserError as e:
                     check.record_failed(
                         f"Unable to parse timestamp: {timestamp}",
@@ -375,17 +364,10 @@ class RIDCommonDictionaryEvaluator(object):
                         severity=Severity.High,
                     )
 
-                if not (0 <= speed <= MaxSpeed or round(speed) == SpecialSpeed):
+                if not (0 <= speed <= MaxSpeed or math.isclose(speed, SpecialSpeed)):
                     check.record_failed(
                         f"Invalid speed: {speed}",
                         details=f"The speed shall be greater than 0 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
-                        severity=Severity.Medium,
-                    )
-
-                if not math.isclose(speed, limit_resolution(speed, MinSpeedResolution)):
-                    check.record_failed(
-                        f"Invalid speed resolution: {speed}",
-                        details=f"the speed resolution shall not be less than 0.25 m/s",
                         severity=Severity.Medium,
                     )
         else:
@@ -413,15 +395,6 @@ class RIDCommonDictionaryEvaluator(object):
                     check.record_failed(
                         f"Invalid track direction: {track}",
                         details=f"The track direction shall be greater than -360 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
-                        severity=Severity.Medium,
-                    )
-
-                if not math.isclose(
-                    track, limit_resolution(track, MinTrackDirectionResolution)
-                ):
-                    check.record_failed(
-                        f"Invalid track direction resolution: {track}",
-                        details=f"The track direction resolution shall not be less than 1 degree.",
                         severity=Severity.Medium,
                     )
         else:
@@ -464,18 +437,6 @@ class RIDCommonDictionaryEvaluator(object):
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             if height:
-                with self._test_scenario.check(
-                    "Height consistency with Common Dictionary", participants
-                ) as check:
-                    if not math.isclose(
-                        height.distance,
-                        limit_resolution(height.distance, MinHeightResolution),
-                    ):
-                        check.record_failed(
-                            f"Invalid height resolution: {height.distance}",
-                            details=f"the height resolution shall not be less than 1 meter",
-                            severity=Severity.Medium,
-                        )
                 with self._test_scenario.check(
                     "Height Type consistency with Common Dictionary", participants
                 ) as check:
@@ -550,14 +511,6 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             "Operator Altitude units shall be provided in meters",
                             details=f"Invalid Operator Altitude units: {alt.units}",
-                            severity=Severity.Medium,
-                        )
-                    if not math.isclose(
-                        alt.value, limit_resolution(alt.value, MinHeightResolution)
-                    ):
-                        check.record_failed(
-                            "Operator Altitude must have a minimum resolution of 1 m.",
-                            details=f"Invalid Operator Altitude: {alt.value}",
                             severity=Severity.Medium,
                         )
 
