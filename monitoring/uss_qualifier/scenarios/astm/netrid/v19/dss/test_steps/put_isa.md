@@ -3,9 +3,11 @@
 This page describes the content of a common test step where a creation or an update of an ISA should be successful.
 See `DSSWrapper.put_isa` in [`dss_wrapper.py`](../../../dss_wrapper.py).
 
-## ISA created check
+## ISA response code check
 
-If the ISA cannot be created, the PUT DSS endpoint in **[astm.f3411.v19.DSS0030](../../../../../../requirements/astm/f3411/v19.md)** is likely not implemented correctly.
+The API for **[astm.f3411.v19.DSS0030](../../../../../../requirements/astm/f3411/v19.md)** specifies that the code of successful DSS responses is 200. While tolerated in some cases, if the DSS responds with an HTTP code 201 for success, this check will fail with a low severity.
+
+## ISA response format check
 
 The API for **[astm.f3411.v19.DSS0030](../../../../../../requirements/astm/f3411/v19.md)** specifies an explicit format that the DSS responses must follow.  If the DSS response does not validate against this format, this check will fail.
 

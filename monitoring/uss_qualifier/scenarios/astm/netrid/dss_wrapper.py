@@ -3,6 +3,7 @@ import s2sphere
 
 from typing import Optional, List, Set
 
+from monitoring.monitorlib import schema_validation
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.fetch.rid import (
     FetchedSubscription,
@@ -137,6 +138,7 @@ class DSSWrapper(object):
 
     def put_isa(
         self,
+        main_check: PendingCheck,
         area_vertices: List[s2sphere.LatLng],
         alt_lo: float,
         alt_hi: float,
@@ -147,8 +149,9 @@ class DSSWrapper(object):
         isa_version: Optional[str] = None,
     ) -> ISAChange:
         """Create or update an ISA at the DSS.
-        Most check fail are considered of high severity and as such will raise a ScenarioCannotContinueError.
-        This function implements the test step described in '[v19|v22a]/dss/test_steps/put_isa.md'.
+
+        Query failure will fail the provided main check. If the query is successful, the sub-checks of the test step
+        described in '[v19|v22a]/dss/test_steps/put_isa.md' are performed. Some of those might fail the main check.
 
         :return: the DSS response
         """
@@ -166,99 +169,110 @@ class DSSWrapper(object):
             utm_client=self._dss.client,
             server_id=self._dss.participant_id,
         )
+        self._handle_query_result(
+            main_check, mutated_isa.dss_query, f"Failed to insert ISA {isa_id}"
+        )
+        for notification_query in mutated_isa.notifications.values():
+            self._scenario.record_query(notification_query.query)
+
+        dss_id = [self._dss.participant_id]
         t_dss = mutated_isa.dss_query.query.request.timestamp
         dss_isa = mutated_isa.dss_query.isa
 
-        with self._scenario.check("ISA created", [self._dss.participant_id]) as check:
-            self._handle_query_result(
-                check, mutated_isa.dss_query, f"Failed to insert ISA {isa_id}"
-            )
-
+        # sub-checks that do not fail the main check
+        with self._scenario.check("ISA response code", dss_id) as sub_check:
             if mutated_isa.dss_query.query.status_code == 201:
-                check.record_failed(
+                sub_check.record_failed(
                     summary=f"PUT ISA returned technically-incorrect 201",
                     severity=Severity.Low,
-                    participants=[self._dss.participant_id],
                     details="DSS should return 200 from PUT ISA, but instead returned the reasonable-but-technically-incorrect code 201",
                     query_timestamps=[t_dss],
                 )
 
-            for notification_query in mutated_isa.notifications.values():
-                self._scenario.record_query(notification_query.query)
-
-        with self._scenario.check(
-            "ISA ID matches", [self._dss.participant_id]
-        ) as check:
-            if isa_id != dss_isa.id:
-                check.record_failed(
-                    summary=f"DSS did not return correct ISA",
-                    severity=Severity.High,
-                    participants=[self._dss.participant_id],
-                    details=f"Expected ISA ID {isa_id} but got {dss_isa.id}",
+        with self._scenario.check("ISA response format", dss_id) as sub_check:
+            errors = schema_validation.validate(
+                self._dss.rid_version.openapi_path,
+                self._dss.rid_version.openapi_put_isa_response_path,
+                mutated_isa.dss_query.query.response.json,
+            )
+            if errors:
+                details = "\n".join(f"[{e.json_path}] {e.message}" for e in errors)
+                sub_check.record_failed(
+                    "PUT ISA response format was invalid",
+                    Severity.Medium,
+                    "Found the following schema validation errors in the DSS response:\n"
+                    + details,
                     query_timestamps=[t_dss],
+                )
+
+        # sub-checks that fail the main check
+        def _fail_sub_check(
+            _sub_check: PendingCheck, _summary: str, _details: str
+        ) -> None:
+            """Fails with Medium severity the sub_check and with High severity the main check."""
+
+            _sub_check.record_failed(
+                summary=_summary,
+                severity=Severity.Medium,
+                details=_details,
+                query_timestamps=[t_dss],
+            )
+            main_check.record_failed(
+                summary=f"PUT ISA request succeeded, but the DSS response is not valid: {_summary}",
+                severity=Severity.High,
+                details=_details,
+                query_timestamps=[t_dss],
+            )
+
+        with self._scenario.check("ISA ID matches", dss_id) as sub_check:
+            if isa_id != dss_isa.id:
+                _fail_sub_check(
+                    sub_check,
+                    "DSS did not return correct ISA",
+                    f"Expected ISA ID {isa_id} but got {dss_isa.id}",
                 )
 
         if isa_version is not None:
-            with self._scenario.check(
-                "ISA version changed", [self._dss.participant_id]
-            ) as check:
+            with self._scenario.check("ISA version changed", dss_id) as sub_check:
                 if dss_isa.version == isa_version:
-                    check.record_failed(
-                        summary=f"ISA was not modified",
-                        severity=Severity.High,
-                        participants=[self._dss.participant_id],
-                        details=f"Got old version {isa_version} while expecting new version",
-                        query_timestamps=[t_dss],
+                    _fail_sub_check(
+                        sub_check,
+                        "ISA was not modified",
+                        f"Got old version {isa_version} while expecting new version",
                     )
 
-        with self._scenario.check(
-            "ISA version format", [self._dss.participant_id]
-        ) as check:
+        with self._scenario.check("ISA version format", dss_id) as sub_check:
             if not all(c not in "\0\t\r\n#%/:?@[\]" for c in dss_isa.version):
-                check.record_failed(
-                    summary=f"DSS returned ISA (ID {isa_id}) with invalid version format",
-                    severity=Severity.High,
-                    participants=[self._dss.participant_id],
-                    details=f"DSS returned an ISA with a version that is not URL-safe: {dss_isa.version}",
-                    query_timestamps=[t_dss],
+                _fail_sub_check(
+                    sub_check,
+                    f"DSS returned ISA (ID {isa_id}) with invalid version format",
+                    f"DSS returned an ISA with a version that is not URL-safe: {dss_isa.version}",
                 )
 
-        with self._scenario.check(
-            "ISA start time matches", [self._dss.participant_id]
-        ) as check:
+        with self._scenario.check("ISA start time matches", dss_id) as sub_check:
             if abs((dss_isa.time_start - start_time).total_seconds()) > MAX_SKEW:
-                check.record_failed(
-                    summary=f"DSS returned ISA (ID {isa_id}) with incorrect start time",
-                    severity=Severity.High,
-                    participants=[self._dss.participant_id],
-                    details=f"DSS should have returned an ISA with a start time of {start_time}, but instead the ISA returned had a start time of {dss_isa.time_start}",
-                    query_timestamps=[t_dss],
+                _fail_sub_check(
+                    sub_check,
+                    f"DSS returned ISA (ID {isa_id}) with incorrect start time",
+                    f"DSS should have returned an ISA with a start time of {start_time}, but instead the ISA returned had a start time of {dss_isa.time_start}",
                 )
 
-        with self._scenario.check(
-            "ISA end time matches", [self._dss.participant_id]
-        ) as check:
+        with self._scenario.check("ISA end time matches", dss_id) as sub_check:
             if abs((dss_isa.time_end - end_time).total_seconds()) > MAX_SKEW:
-                check.record_failed(
-                    summary=f"DSS returned ISA (ID {isa_id}) with incorrect end time",
-                    severity=Severity.High,
-                    participants=[self._dss.participant_id],
-                    details=f"DSS should have returned an ISA with an end time of {end_time}, but instead the ISA returned had an end time of {dss_isa.time_end}",
-                    query_timestamps=[t_dss],
+                _fail_sub_check(
+                    sub_check,
+                    f"DSS returned ISA (ID {isa_id}) with incorrect end time",
+                    f"DSS should have returned an ISA with an end time of {end_time}, but instead the ISA returned had an end time of {dss_isa.time_end}",
                 )
 
-        with self._scenario.check(
-            "ISA URL matches", [self._dss.participant_id]
-        ) as check:
+        with self._scenario.check("ISA URL matches", dss_id) as sub_check:
             expected_flights_url = self._dss.rid_version.flights_url_of(uss_base_url)
             actual_flights_url = dss_isa.flights_url
             if actual_flights_url != expected_flights_url:
-                check.record_failed(
-                    summary=f"DSS returned ISA (ID {isa_id}) with incorrect URL",
-                    severity=Severity.High,
-                    participants=[self._dss.participant_id],
-                    details=f"DSS should have returned an ISA with a flights URL of {expected_flights_url}, but instead the ISA returned had a flights URL of {actual_flights_url}",
-                    query_timestamps=[t_dss],
+                _fail_sub_check(
+                    sub_check,
+                    f"DSS returned ISA (ID {isa_id}) with incorrect URL",
+                    f"DSS should have returned an ISA with a flights URL of {expected_flights_url}, but instead the ISA returned had a flights URL of {actual_flights_url}",
                 )
 
         # TODO: Validate subscriber notifications

@@ -44,6 +44,10 @@ When a pre-existing ISA needs to be deleted to ensure a clean workspace, any sub
 
 This step attempts to query the configured DSS with the ISA provided as a resource.
 
+#### ISA created check
+
+If the ISA cannot be created, the PUT DSS endpoint in **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)** is likely not implemented correctly.
+
 ### Get ISA by ID test step
 
 This step attempts to retrieve the previously created ISA from the DSS.

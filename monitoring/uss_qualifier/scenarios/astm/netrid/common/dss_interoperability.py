@@ -143,12 +143,11 @@ class DSSInteroperability(GenericTestScenario):
             isa_1 = self._new_isa("isa_1")
 
             mutated_isa = self._dss_primary.put_isa(
+                check,
                 isa_id=isa_1.uuid,
                 **_default_params(datetime.timedelta(minutes=10)),
             )
             isa_1.version = mutated_isa.dss_query.isa.version
-
-            check.record_passed()
 
     def step2(self):
         """Can create Subscription in all DSSs, ISA accessible from all
@@ -435,13 +434,12 @@ class DSSInteroperability(GenericTestScenario):
             "Can modify ISA in primary DSS", [self._dss_primary.participant_id]
         ) as check:
             mutated_isa = self._dss_primary.put_isa(
+                check,
                 isa_id=isa_1.uuid,
                 isa_version=isa_1.version,
                 **_default_params(datetime.timedelta(seconds=SHORT_WAIT_SEC)),
             )
             isa_1.version = mutated_isa.dss_query.isa.version
-
-            check.record_passed()
 
         # TODO: Implement "ISA modification triggers subscription notification requests check"
 
@@ -545,12 +543,11 @@ class DSSInteroperability(GenericTestScenario):
             "ISA[P] created with proper response", [self._dss_primary.participant_id]
         ) as check:
             mutated_isa = self._dss_primary.put_isa(
+                check,
                 isa_id=isa_2.uuid,
                 **_default_params(datetime.timedelta(minutes=10)),
             )
             isa_2.version = mutated_isa.dss_query.isa.version
-
-            check.record_passed()
 
         with self.check(
             "All Subscription[i] 1≤i≤n returned in subscribers",
@@ -607,12 +604,11 @@ class DSSInteroperability(GenericTestScenario):
             "ISA[P] created with proper response", [self._dss_primary.participant_id]
         ) as check:
             mutated_isa = self._dss_primary.put_isa(
+                check,
                 isa_id=isa_3.uuid,
                 **_default_params(datetime.timedelta(minutes=10)),
             )
             isa_3.version = mutated_isa.dss_query.isa.version
-
-            check.record_passed()
 
         with self.check(
             "None of Subscription[i] 1≤i≤n returned in subscribers",
