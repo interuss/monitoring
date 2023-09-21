@@ -163,8 +163,61 @@ This step attempts an ISA search at the DSS with a too large search area.
 
 The search request contained invalid parameters (too large search area), as such the DSS should reject it with a 413 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)**.
 
+### Search ISA with loop test step
+
+This step attempts an ISA search at the DSS with a polygon defining the area that forms a loop.
+
+#### Search request rejected check
+
+The search request contained invalid parameters (area polygon is a loop, which is not allowed), as such the DSS should reject it with a 400 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)**.
+
 
 ## Delete ISA test case
+
+### Delete with wrong version test step
+
+This step attempts an ISA deletion with a wrong version.
+
+#### Delete request rejected check
+
+The deletion request contained invalid parameters (wrong version), as such the DSS should reject it with a 409 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)**.
+
+### Delete with empty version test step
+
+This step attempts an ISA deletion with an empty version.
+
+#### Delete request rejected check
+
+The deletion request contained invalid parameters (empty version), as such the DSS should reject it with a 400 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)**.
+
+### [Delete ISA test step](test_steps/delete_isa.md)
+
+This step attempts an ISA deletion at the DSS.
+
+#### ISA deleted check
+
+If the ISA cannot be deleted, the PUT DSS endpoint in **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)** is likely not implemented correctly.
+
+### Get deleted ISA by ID test step
+
+This step attempts to retrieve at the DSS the ISA just deleted.
+
+#### ISA not found check
+
+The ISA fetch request was about a deleted ISA, as such the DSS should reject it with a 404 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)**.
+
+### [Search ISA test step](test_steps/search_isas.md)
+
+This step attempts an ISA search at the DSS with only the area of the ISA resource. Since it has just been deleted, the ISA should not be returned.
+
+#### Successful ISAs search check
+
+The ISA search parameters are valid, as such the search should be successful.  If the request is not successful, this check will fail as per **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)**.
+
+#### ISA not returned by search check
+
+The ISA search are parameter cover the resource ISA, but it has been previously deleted, as such the ISA should not be returned by the search.  If it is returned, this check will fail as per **[astm.f3411.v22a.DSS0030](../../../../../requirements/astm/f3411/v22a.md)**.
+
 
 ## Cleanup
 

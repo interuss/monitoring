@@ -123,8 +123,6 @@ class ISASimple(GenericTestScenario):
     def _get_isa_by_id_step(self):
         self.begin_test_step("Get ISA by ID")
 
-        # TODO: add + use get_isa step
-
         with self.check(
             "Successful ISA query", [self._dss_wrapper.participant_id]
         ) as check:
@@ -152,7 +150,7 @@ class ISASimple(GenericTestScenario):
         def _create_isa_step():
             self.begin_test_step("Create ISA")
 
-            with self.check("ISA created", [self._dss.participant_id]) as check:
+            with self.check("ISA created", [self._dss_wrapper.participant_id]) as check:
                 isa_change = self._dss_wrapper.put_isa(
                     main_check=check,
                     area_vertices=self._isa_area,
@@ -371,17 +369,116 @@ class ISASimple(GenericTestScenario):
 
         _search_huge_area_step()
 
+        def _search_isa_loop_step():
+            self.begin_test_step("Search ISA with loop")
+
+            with self.check(
+                "Search request rejected", [self._dss_wrapper.participant_id]
+            ) as check:
+                search_area_loop = self._isa_area.copy()
+                search_area_loop.append(search_area_loop[0])
+                _ = self._dss_wrapper.search_isas_expect_response_code(
+                    check,
+                    expected_error_codes={400},
+                    area=search_area_loop,
+                )
+
+            self.end_test_step()
+
+        _search_isa_loop_step()
+
         self.end_test_case()
 
     def _delete_isa_case(self):
         self.begin_test_case("Delete ISA")
 
-        # TODO: Delete with wrong version
-        # TODO: Delete with empty version
-        # TODO: Delete ISA
-        # TODO: Get ISA by ID
-        # TODO: Search ISA
-        # TODO: Search ISA with loop
+        def _delete_wrong_version_step():
+            self.begin_test_step("Delete with wrong version")
+
+            with self.check(
+                "Delete request rejected", [self._dss_wrapper.participant_id]
+            ) as check:
+                _ = self._dss_wrapper.del_isa_expect_response_code(
+                    check,
+                    expected_error_codes={409},
+                    isa_id=self._isa_id,
+                    isa_version=self._isa_version[1:-1],
+                )
+
+            self.end_test_step()
+
+        _delete_wrong_version_step()
+
+        def _delete_empty_version_step():
+            self.begin_test_step("Delete with empty version")
+
+            with self.check(
+                "Delete request rejected", [self._dss_wrapper.participant_id]
+            ) as check:
+                _ = self._dss_wrapper.del_isa_expect_response_code(
+                    check,
+                    expected_error_codes={400},
+                    isa_id=self._isa_id,
+                    isa_version="",
+                )
+
+            self.end_test_step()
+
+        _delete_empty_version_step()
+
+        def _delete_step():
+            self.begin_test_step("Delete ISA")
+
+            with self.check("ISA deleted", [self._dss_wrapper.participant_id]) as check:
+                _ = self._dss_wrapper.del_isa(
+                    check, isa_id=self._isa_id, isa_version=self._isa_version
+                )
+
+            self.end_test_step()
+
+        _delete_step()
+
+        def _get_deleted_isa_by_id_step():
+            self.begin_test_step("Get deleted ISA by ID")
+
+            with self.check(
+                "ISA not found", [self._dss_wrapper.participant_id]
+            ) as check:
+                _ = self._dss_wrapper.get_isa_expect_response_code(
+                    check,
+                    expected_error_codes={404},
+                    isa_id=self._isa_id,
+                )
+
+            self.end_test_step()
+
+        _get_deleted_isa_by_id_step()
+
+        def _search_isa_step():
+            self.begin_test_step("Search ISA")
+
+            with self.check(
+                "Successful ISAs search", [self._dss_wrapper.participant_id]
+            ) as check:
+                isas = self._dss_wrapper.search_isas(
+                    check,
+                    area=self._isa_area,
+                )
+
+            with self.check(
+                "ISA not returned by search", [self._dss_wrapper.participant_id]
+            ) as check:
+                if self._isa_id in isas.isas.keys():
+                    check.record_failed(
+                        f"ISAs search returned deleted ISA {self._isa_id}",
+                        severity=Severity.High,
+                        details=f"Search in area {self._isa_area} returned ISAs {isas.isas.keys()}",
+                        query_timestamps=[isas.dss_query.query.request.timestamp],
+                    )
+
+            self.end_test_step()
+
+        _search_isa_step()
 
         self.end_test_case()
 
