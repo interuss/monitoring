@@ -11,9 +11,13 @@ implementation.
 
 ## Resources
 
-### dss_instances
+### primary_dss_instance
 
-A resources.astm.f3411.DSSInstancesResource containing at least two DSS instances complying with ASTM F3411-19.  The first instance is the "Primary DSS" instance and the other instances are the "Other DSS" instances.
+A resources.astm.f3411.DSSInstanceResource containing the "primary" DSS instance for this scenario.
+
+### all_dss_instances
+
+A resources.astm.f3411.DSSInstancesResource containing at least two DSS instances complying with ASTM F3411-19.
 
 ## Test sequence legend
 
