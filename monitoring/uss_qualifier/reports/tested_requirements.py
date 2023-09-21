@@ -5,6 +5,7 @@ from typing import List, Union, Dict, Set, Optional
 from implicitdict import ImplicitDict, StringBasedDateTime
 
 from monitoring.monitorlib.inspection import import_submodules
+from monitoring.monitorlib.versioning import repo_url_of
 from monitoring.uss_qualifier import scenarios, suites, action_generators
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
     PotentialGeneratedAction,
@@ -26,7 +27,7 @@ from monitoring.uss_qualifier.reports.report import (
     PassedCheck,
     FailedCheck,
 )
-from monitoring.uss_qualifier.requirements.definitions import RequirementID
+from monitoring.uss_qualifier.requirements.definitions import RequirementID, PackageID
 from monitoring.uss_qualifier.requirements.documentation import (
     resolve_requirements_collection,
 )
@@ -160,7 +161,8 @@ class TestedRequirement(ImplicitDict):
 
 
 class TestedPackage(ImplicitDict):
-    id: str
+    id: PackageID
+    url: str
     name: str
     requirements: List[TestedRequirement]
 
@@ -275,8 +277,9 @@ def _populate_breakdown_with_req_set(
         if matches:
             tested_package = matches[0]
         else:
+            url = repo_url_of(package_id.md_file_path())
             tested_package = TestedPackage(
-                id=package_id, name=package_id, requirements=[]
+                id=package_id, url=url, name=package_id, requirements=[]
             )
             breakdown.packages.append(tested_package)
 
@@ -336,8 +339,9 @@ def _populate_breakdown_with_scenario_report(
                         tested_package = matches[0]
                     else:
                         # TODO: Improve name of package by using title of page
+                        url = repo_url_of(package_id.md_file_path())
                         tested_package = TestedPackage(
-                            id=package_id, name=package_name, requirements=[]
+                            id=package_id, url=url, name=package_name, requirements=[]
                         )
                         breakdown.packages.append(tested_package)
 
@@ -461,8 +465,9 @@ def _populate_breakdown_with_scenario(
                         tested_package = matches[0]
                     else:
                         # TODO: Improve name of package by using title of page
+                        url = repo_url_of(package_id.md_file_path())
                         tested_package = TestedPackage(
-                            id=package_id, name=package_name, requirements=[]
+                            id=package_id, url=url, name=package_name, requirements=[]
                         )
                         breakdown.packages.append(tested_package)
 

@@ -170,7 +170,9 @@ def make_test_suite_documentation(
             package_caption = "<br>.".join(package.split("."))
             package_line = f'    <td rowspan="{len(req_ids_by_package[package])}" style="vertical-align:top;"><a href="{req_md_path}">{package_caption}</a></td>'
             for req_id in sorted(req_ids_by_package[package]):
-                req_text = f'<a href="{req_md_path}">{req_id.requirement_name()}</a>'
+                req_text = (
+                    f'<a href="{req_md_path}">{req_id.short_requirement_name()}</a>'
+                )
 
                 has_todo = False
                 has_complete = False

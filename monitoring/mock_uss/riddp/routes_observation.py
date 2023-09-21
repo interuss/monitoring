@@ -1,23 +1,29 @@
 from typing import Dict, List, Optional, Tuple
-
 import arrow
 import flask
 from loguru import logger
 import s2sphere
 from uas_standards.astm.f3411.v19.api import ErrorResponse
 from uas_standards.astm.f3411.v19.constants import Scope
-
+from uas_standards.astm.f3411.v22a.constants import (
+    MinHeightResolution,
+    MinTrackDirectionResolution,
+    MinSpeedResolution,
+)
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.fetch.rid import Flight, FetchedISAs
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.monitorlib.rid_automated_testing import observation_api
+from uas_standards.interuss.automated_testing.rid.v1 import (
+    observation as observation_api,
+)
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
 from . import clustering, database, utm_client
 from .behavior import DisplayProviderBehavior
 from .config import KEY_RID_VERSION
 from .database import db
+from monitoring.monitorlib.formatting import limit_resolution
 
 
 def _make_flight_observation(
@@ -55,10 +61,22 @@ def _make_flight_observation(
         paths.append(current_path)
 
     p = flight.most_recent_position
+    current_state = observation_api.CurrentState(
+        timestamp=p.time.isoformat(),
+        operational_status=flight.operational_status,
+        track=limit_resolution(flight.track, MinTrackDirectionResolution),
+        speed=limit_resolution(flight.speed, MinSpeedResolution),
+    )
+    h = p.get("height")
+    if h:
+        h.distance = limit_resolution(h.distance, MinHeightResolution)
     return observation_api.Flight(
         id=flight.id,
-        most_recent_position=observation_api.Position(lat=p.lat, lng=p.lng, alt=p.alt),
+        most_recent_position=observation_api.Position(
+            lat=p.lat, lng=p.lng, alt=p.alt, height=h
+        ),
         recent_paths=[observation_api.Path(positions=path) for path in paths],
+        current_state=current_state,
     )
 
 
@@ -161,9 +179,36 @@ def riddp_display_data() -> Tuple[str, int]:
 @requires_scope([Scope.Read])
 def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
     """Implements get flight details endpoint per automated testing API."""
-
     tx = db.value
-    if flight_id not in tx.flights:
-        return 'Flight "{}" not found'.format(flight_id), 404
+    flight_info = tx.flights.get(flight_id)
+    if not flight_info:
+        return f'Flight "{flight_id}" not found', 404
 
-    return flask.jsonify(observation_api.GetDetailsResponse())
+    rid_version: RIDVersion = webapp.config[KEY_RID_VERSION]
+    flight_details = fetch.flight_details(
+        flight_info.flights_url, flight_id, True, rid_version, utm_client
+    )
+    details = flight_details.details
+
+    result = observation_api.GetDetailsResponse(
+        operator=observation_api.Operator(
+            id=details.operator_id,
+            location=None,
+            altitude=observation_api.OperatorAltitude(),
+        ),
+        uas=observation_api.UAS(
+            id=details.arbitrary_uas_id,
+        ),
+    )
+    if details.operator_location is not None:
+        result.operator.location = observation_api.LatLngPoint(
+            lat=details.operator_location.lat,
+            lng=details.operator_location.lng,
+        )
+    if details.operator_altitude is not None:
+        result.operator.altitude.altitude = details.operator_altitude.value
+    if details.operator_altitude_type is not None:
+        result.operator.altitude.altitude_type = (
+            observation_api.OperatorAltitudeAltitudeType(details.operator_altitude_type)
+        )
+    return flask.jsonify(result)

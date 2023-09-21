@@ -168,6 +168,14 @@ Taking into account the propagation time of the injected flights, if the total n
 For a display area with a diagonal greather than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v19.NET0480](../../../../requirements/astm/f3411/v19.md)** requires that a Display provider shall cluster UAs in close proximity to each other using a circular or polygonal area covering no less than *NetMinClusterSize* percent of the display area size.
 This check validates that the display area of a cluster, measured and provided in square meters by the test harness, is no less than *NetMinClusterSize* percent of the display area.
 
+#### Successful details observation check
+
+Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the call for flight details is expected to succeed since a valid ID was provided by uss_qualifier.
+
+#### Current state present check
+
+**[astm.f3411.v19.NET0470](../../../../requirements/astm/f3411/v19.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the current state is present. If it is not, this check will fail.
+
 ## Cleanup
 
 The cleanup phase of this test scenario attempts to remove injected data from all SPs.

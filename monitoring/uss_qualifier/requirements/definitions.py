@@ -35,13 +35,41 @@ class RequirementID(str):
         )
         return md_filename
 
-    def requirement_name(self) -> str:
+    def short_requirement_name(self) -> str:
         parts = self.split(".")
         return parts[-1]
 
-    def package(self) -> str:
+    def package(self) -> PackageID:
         parts = self.split(".")
-        return ".".join(parts[:-1])
+        return PackageID(".".join(parts[:-1]))
+
+
+class PackageID(str):
+    """Identifier for a package containing requirements.
+
+    Form: <FOLDERS>.md_file_name_without_extension
+
+    PackageID is a Python-style package reference to a .md file (without extension)
+    relative to uss_qualifier/requirements.  For instance, the PackageID for the file
+    located at uss_qualifier/requirements/astm/f3548/v21.md would be
+    `astm.f3548.v21`.
+    """
+
+    def __new__(cls, value):
+        illegal_characters = "#%&{}\\<>*?/ $!'\":@+`|="
+        if any(c in value for c in illegal_characters):
+            raise ValueError(
+                f'PackageID "{value}" may not contain any of these characters: {illegal_characters}'
+            )
+        str_value = str.__new__(cls, value)
+        return str_value
+
+    def md_file_path(self) -> str:
+        parts = self.split(".")
+        md_filename = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), os.path.join(*parts) + ".md")
+        )
+        return md_filename
 
 
 class RequirementSetID(str):
