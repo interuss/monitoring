@@ -19,7 +19,6 @@ from monitoring.monitorlib import (
     infrastructure,
     rid_v1,
     rid_v2,
-    schema_validation,
 )
 
 
@@ -66,8 +65,6 @@ class ChangedSubscription(RIDQuery):
                 return [
                     f"Error parsing F3411-22a USS PutSubscriptionResponse: {str(e)}"
                 ]
-
-        # TODO: add schema validation (like ChangedISA)
 
         return []
 
@@ -367,19 +364,6 @@ class ChangedISA(RIDQuery):
                 return [
                     f"Error parsing F3411-22a USS PutIdentificationServiceAreaResponse: {str(e)}"
                 ]
-
-        validation_errors = schema_validation.validate(
-            openapi_path=self.rid_version.openapi_path,
-            object_path=self.rid_version.openapi_delete_isa_response_path
-            if self.mutation == "delete"
-            else self.rid_version.openapi_put_isa_response_path,
-            instance=self.query.response.json,
-        )
-        if validation_errors:
-            return [
-                f"PUT ISA response JSON validation error: [{e.json_path}] {e.message}"
-                for e in validation_errors
-            ]
 
         return []
 

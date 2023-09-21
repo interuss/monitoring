@@ -28,7 +28,7 @@ MAX_SKEW = 1e-6  # seconds maximum difference between expected and actual timest
 class DSSWrapper(object):
     """Wraps a DSS instance with test checks."""
 
-    # TODO: embed checks in all functions (like it is done for put_isa) instead of passing an existing check as parameter
+    # TODO: adapt other functions with corresponding test step and sub-checks like it is done for put_isa
 
     _scenario: TestScenario
     _dss: DSSInstance

@@ -19,9 +19,6 @@ class F3411_19(str, Enum):
     PutIdentificationServiceAreaResponse = (
         "components.schemas.PutIdentificationServiceAreaResponse"
     )
-    DeleteIdentificationServiceAreaResponse = (
-        "components.schemas.DeleteIdentificationServiceAreaResponse"
-    )
 
 
 class F3411_22a(str, Enum):
@@ -30,9 +27,6 @@ class F3411_22a(str, Enum):
     GetFlightDetailsResponse = "components.schemas.GetFlightDetailsResponse"
     PutIdentificationServiceAreaResponse = (
         "components.schemas.PutIdentificationServiceAreaResponse"
-    )
-    DeleteIdentificationServiceAreaResponse = (
-        "components.schemas.DeleteIdentificationServiceAreaResponse"
     )
 
 
