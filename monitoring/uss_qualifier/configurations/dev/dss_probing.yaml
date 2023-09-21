@@ -1,41 +1,81 @@
 $content_schema: monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json
 v1:
   test_run:
-    $ref: ./library/environment.yaml#/non_baseline_inputs
+    non_baseline_inputs:
+      - v1.test_run.resources.resource_declarations.utm_auth
+      - v1.test_run.resources.resource_declarations.netrid_dss_instances_v19
+      - v1.test_run.resources.resource_declarations.netrid_dss_instances_v22a
     resources:
       resource_declarations:
-        $ref: ./library/resources.yaml#/all
+        utm_auth:
+          resource_type: resources.communications.AuthAdapterResource
+          specification:
+            environment_variable_containing_auth_spec: AUTH_SPEC
+        netrid_dss_instances_v19:
+          resource_type: resources.astm.f3411.DSSInstancesResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            dss_instances:
+              - participant_id: uss1
+                rid_version: F3411-19
+                base_url: http://dss.uss1.localutm
+                has_private_address: true
+              - participant_id: uss2
+                rid_version: F3411-19
+                base_url: http://dss.uss2.localutm
+                has_private_address: true
+        netrid_dss_instances_v22a:
+          resource_type: resources.astm.f3411.DSSInstancesResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            dss_instances:
+              - participant_id: uss1
+                rid_version: F3411-22a
+                base_url: http://dss.uss1.localutm/rid/v2
+                has_private_address: true
+              - participant_id: uss2
+                rid_version: F3411-22a
+                base_url: http://dss.uss2.localutm/rid/v2
+                has_private_address: true
+        id_generator:
+          resource_type: resources.interuss.IDGeneratorResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            whoami_audience: localhost
+            whoami_scope: rid.display_provider
+        service_area:
+          resource_type: resources.netrid.ServiceAreaResource
+          specification:
+            base_url: https://uss_qualifier.test.utm/dummy_base_url
+            footprint:
+              lat_min: 37.1853
+              lng_min: -80.6140
+              lat_max: 37.2148
+              lng_max: -80.5440
+            altitude_min: 0
+            altitude_max: 3048
     action:
       test_suite:
-        suite_definition:
-          name: DSS instance probing
-          resources:
-            netrid_dss_instance_v19: resources.astm.f3411.DSSInstanceResource
-            netrid_dss_instance_v22a: resources.astm.f3411.DSSInstanceResource
-            id_generator: resources.interuss.IDGeneratorResource
-            isa: resources.netrid.ServiceAreaResource
-          actions:
-            - test_suite:
-                suite_type: suites.astm.netrid.f3411_19.dss_probing
-                resources:
-                  dss: netrid_dss_instance_v19
-                  id_generator: id_generator
-                  isa: isa
-              on_failure: Continue
-            - test_suite:
-                suite_type: suites.astm.netrid.f3411_22a.dss_probing
-                resources:
-                  dss: netrid_dss_instance_v22a
-                  id_generator: id_generator
-                  isa: isa
-              on_failure: Continue
+        suite_type: suites.interuss.dss.all_tests
         resources:
-          netrid_dss_instance_v19: netrid_dss_instance_v19
-          netrid_dss_instance_v22a: netrid_dss_instance_v22a
+          f3411v19_dss_instances: netrid_dss_instances_v19
+          f3411v22a_dss_instances: netrid_dss_instances_v22a
           id_generator: id_generator
-          isa: service_area
+          service_area: service_area
   artifacts:
-    tested_roles:
-      report_path: output/tested_roles_dss_probing
     report:
-        report_path: output/report_dss_probing.json
+      report_path: output/report_dss_probing.json
+    tested_requirements:
+      output_path: output/tested_requirements_dss_probing
+      requirement_collections:
+        all_astm_dss_requirements:
+          requirement_collections:
+            - requirement_sets:
+                - astm.f3411.v22a.dss_provider
+                - astm.f3411.v19.dss_provider
+      participant_requirements:
+        uss1: all_astm_dss_requirements
+        uss2: all_astm_dss_requirements

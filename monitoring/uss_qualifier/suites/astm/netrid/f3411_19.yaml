@@ -5,6 +5,8 @@ resources:
   observers: resources.netrid.NetRIDObserversResource
   evaluation_configuration: resources.netrid.EvaluationConfigurationResource
   dss_instances: resources.astm.f3411.DSSInstancesResource
+  id_generator: resources.interuss.IDGeneratorResource
+  service_area: resources.netrid.ServiceAreaResource
 actions:
   - action_generator:
       generator_type: action_generators.astm.f3411.ForEachDSS
@@ -18,6 +20,7 @@ actions:
             suite_type: suites.astm.netrid.f3411_19.dss_probing
             resources:
               dss: dss
+              all_dss_instances: dss_instances
               id_generator: id_generator
               isa: service_area
           on_failure: Continue
@@ -28,11 +31,6 @@ actions:
       scenario_type: scenarios.astm.netrid.v19.dss.CRDBAccess
       resources: {}
       on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.DSSInteroperability
-      resources:
-        dss_instances: dss_instances
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v19.NominalBehavior
       resources:
@@ -85,4 +83,4 @@ participant_verifiable_capabilities:
           requirements_checked:
             checked:
                 requirement_sets:
-                    - "astm.f3411.v19.dss_provider#Automated verification"
+                    - "astm.f3411.v19.dss_provider"

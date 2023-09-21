@@ -125,7 +125,7 @@ def make_test_suite_documentation(
                     parent_yaml_file=suite_yaml_file,
                     parent_doc_file=suite_doc_file,
                     base_path=base_path,
-                    list_index=i + 1,
+                    list_index=i + 2,
                     indent=0,
                     test_suites=test_suites,
                 ),

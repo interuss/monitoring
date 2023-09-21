@@ -20,6 +20,7 @@ from monitoring.uss_qualifier.reports.capability_definitions import (
 )
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
+from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
 
 
 class FailedCheck(ImplicitDict):
@@ -611,6 +612,17 @@ class ParticipantCapabilityEvaluationReport(ImplicitDict):
     """Report produced by evaluating the condition for verifying this capability."""
 
 
+class SkippedActionReport(ImplicitDict):
+    reason: str
+    """The reason the action was skipped."""
+
+    action_declaration_index: int
+    """Index of the skipped action in the configured declaration."""
+
+    declaration: TestSuiteActionDeclaration
+    """Full declaration of the action that was skipped."""
+
+
 class TestSuiteReport(ImplicitDict):
     name: str
     """Name of this test suite"""
@@ -626,6 +638,9 @@ class TestSuiteReport(ImplicitDict):
 
     actions: List[TestSuiteActionReport]
     """Reports from test scenarios and test suites comprising the test suite for this report, in order of execution."""
+
+    skipped_actions: List[SkippedActionReport]
+    """Reports for actions configured but not executed."""
 
     end_time: Optional[StringBasedDateTime]
     """Time at which the test suite completed"""
