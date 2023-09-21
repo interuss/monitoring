@@ -16,6 +16,9 @@ class F3411_19(str, Enum):
     OpenAPIPath = "interfaces/rid/v1/remoteid/augmented.yaml"
     GetFlightsResponse = "components.schemas.GetFlightsResponse"
     GetFlightDetailsResponse = "components.schemas.GetFlightDetailsResponse"
+    SearchIdentificationServiceAreasResponse = (
+        "components.schemas.SearchIdentificationServiceAreasResponse"
+    )
     PutIdentificationServiceAreaResponse = (
         "components.schemas.PutIdentificationServiceAreaResponse"
     )
@@ -25,6 +28,9 @@ class F3411_22a(str, Enum):
     OpenAPIPath = "interfaces/rid/v2/remoteid/updated.yaml"
     GetFlightsResponse = "components.schemas.GetFlightsResponse"
     GetFlightDetailsResponse = "components.schemas.GetFlightDetailsResponse"
+    SearchIdentificationServiceAreasResponse = (
+        "components.schemas.SearchIdentificationServiceAreasResponse"
+    )
     PutIdentificationServiceAreaResponse = (
         "components.schemas.PutIdentificationServiceAreaResponse"
     )

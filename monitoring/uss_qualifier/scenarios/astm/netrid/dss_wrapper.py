@@ -97,6 +97,90 @@ class DSSWrapper(object):
                 query_timestamps=[q.query.request.timestamp],
             )
 
+    def search_isas(
+        self,
+        main_check: PendingCheck,
+        area: List[s2sphere.LatLng],
+        start_time: Optional[datetime.datetime] = None,
+        end_time: Optional[datetime.datetime] = None,
+    ) -> FetchedISAs:
+        """Search for ISAs at the DSS.
+
+        Query failure will fail the provided main check. If the query is successful, the sub-checks of the test step
+        described in '[v19|v22a]/dss/test_steps/search_isas.md' are performed. Some of those might fail the main check.
+
+        :return: the DSS response
+        """
+
+        isas = fetch.isas(
+            area=area,
+            start_time=start_time,
+            end_time=end_time,
+            rid_version=self._dss.rid_version,
+            session=self._dss.client,
+            server_id=self._dss.participant_id,
+        )
+        self._handle_query_result(
+            main_check,
+            isas,
+            f"Failed to search ISAs in {area} from {start_time} to {end_time}",
+        )
+
+        dss_id = [self._dss.participant_id]
+        t_dss = isas.query.request.timestamp
+
+        with self._scenario.check("ISAs search response format", dss_id) as sub_check:
+            errors = schema_validation.validate(
+                self._dss.rid_version.openapi_path,
+                self._dss.rid_version.openapi_search_isas_response_path,
+                isas.query.response.json,
+            )
+            if errors:
+                details = "\n".join(f"[{e.json_path}] {e.message}" for e in errors)
+                sub_check.record_failed(
+                    "Search ISA response format was invalid",
+                    Severity.Medium,
+                    "Found the following schema validation errors in the DSS response:\n"
+                    + details,
+                    query_timestamps=[t_dss],
+                )
+
+        return isas
+
+    def search_isas_expect_response_code(
+        self,
+        main_check: PendingCheck,
+        expected_error_codes: Set[int],
+        area: List[s2sphere.LatLng],
+        start_time: Optional[datetime.datetime] = None,
+        end_time: Optional[datetime.datetime] = None,
+    ) -> FetchedISAs:
+        """Attempt to search for ISAs at the DSS, and expect the specified HTTP response code.
+
+        A check fail is considered of high severity and as such will raise a ScenarioCannotContinueError.
+
+        :return: the DSS response
+        """
+
+        isas = fetch.isas(
+            area=area,
+            start_time=start_time,
+            end_time=end_time,
+            rid_version=self._dss.rid_version,
+            session=self._dss.client,
+            server_id=self._dss.participant_id,
+        )
+
+        self._handle_query_result(
+            check=main_check,
+            q=isas,
+            required_status_code=expected_error_codes,
+            fail_msg=f"Searching for ISAs resulted in an HTTP code not in {expected_error_codes}",
+            fail_details=f"Search area: {area}; from {start_time} to {end_time}",
+        )
+
+        return isas
+
     def get_isa(
         self,
         check: PendingCheck,
