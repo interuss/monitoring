@@ -14,7 +14,12 @@ import uas_standards.astm.f3411.v22a.constants
 import yaml
 from yaml.representer import Representer
 
-from monitoring.monitorlib import fetch, infrastructure, rid_v1, rid_v2
+from monitoring.monitorlib import (
+    fetch,
+    infrastructure,
+    rid_v1,
+    rid_v2,
+)
 
 
 class ChangedSubscription(RIDQuery):
@@ -327,7 +332,11 @@ class ChangedISA(RIDQuery):
 
     @property
     def errors(self) -> List[str]:
-        if self.status_code != 200:
+        # Tolerate reasonable-but-technically-incorrect code 201
+        if not (
+            self.status_code == 200
+            or (self.mutation == "create" and self.status_code == 201)
+        ):
             return ["Failed to mutate ISA ({})".format(self.status_code)]
         if self.query.response.json is None:
             return ["ISA response did not include valid JSON"]

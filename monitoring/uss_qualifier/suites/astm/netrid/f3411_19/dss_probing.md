@@ -4,7 +4,8 @@
 
 ## [Actions](../../../README.md#actions)
 
-1. Scenario: [ASTM NetRID DSS: Subscription Validation](../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md) ([`scenarios.astm.netrid.v19.dss.SubscriptionValidation`](../../../../scenarios/astm/netrid/v19/dss/subscription_validation.py))
+1. Scenario: [ASTM NetRID DSS: Simple ISA](../../../../scenarios/astm/netrid/v19/dss/isa_simple.md) ([`scenarios.astm.netrid.v19.dss.ISASimple`](../../../../scenarios/astm/netrid/v19/dss/isa_simple.py))
+2. Scenario: [ASTM NetRID DSS: Subscription Validation](../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md) ([`scenarios.astm.netrid.v19.dss.SubscriptionValidation`](../../../../scenarios/astm/netrid/v19/dss/subscription_validation.py))
 
 ## [Checked requirements](../../../README.md#checked-requirements)
 
@@ -16,10 +17,10 @@
     <th><a href="../../../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="3" style="vertical-align:top;"><a href="../../../../requirements/astm/f3411/v19.md">astm<br>.f3411<br>.v19</a></td>
+    <td rowspan="5" style="vertical-align:top;"><a href="../../../../requirements/astm/f3411/v19.md">astm<br>.f3411<br>.v19</a></td>
     <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0030</a></td>
     <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
   </tr>
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0050</a></td>
@@ -30,5 +31,15 @@
     <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0060</a></td>
     <td>Implemented</td>
     <td><a href="../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">NET0710</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">NET0730</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
   </tr>
 </table>

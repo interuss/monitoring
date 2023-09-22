@@ -5,6 +5,7 @@ import arrow
 
 from monitoring.monitorlib import schema_validation
 from uas_standards.astm.f3411 import v19, v22a
+import uas_standards.astm.f3411.v19.api
 import uas_standards.astm.f3411.v19.constants
 import uas_standards.astm.f3411.v22a.api
 import uas_standards.astm.f3411.v22a.constants
@@ -202,7 +203,8 @@ class RIDVersion(str, Enum):
 
     def flights_url_of(self, base_url: str) -> str:
         if self == RIDVersion.f3411_19:
-            return base_url
+            flights_path = v19.api.OPERATIONS[v19.api.OperationID.SearchFlights].path
+            return base_url + flights_path
         elif self == RIDVersion.f3411_22a:
             flights_path = v22a.api.OPERATIONS[v22a.api.OperationID.SearchFlights].path
             return base_url + flights_path
