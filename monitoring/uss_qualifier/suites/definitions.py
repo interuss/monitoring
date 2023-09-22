@@ -123,13 +123,17 @@ class TestSuiteActionDeclaration(ImplicitDict):
             ActionType.raise_invalid_action_declaration()
 
 
+ResourceTypeNameSpecifyingOptional = ResourceTypeName
+"""This string is a ResourceTypeName, but then may be suffixed with '?'.  If the value ends in '?', that indicates the resource is optional and does not need to be provided."""
+
+
 class TestSuiteDefinition(ImplicitDict):
     """Schema for the definition of a test suite, analogous to the Python TestScenario subclass for scenarios"""
 
     name: str
     """Name of the test suite"""
 
-    resources: Dict[ResourceID, ResourceTypeName]
+    resources: Dict[ResourceID, ResourceTypeNameSpecifyingOptional]
     """Enumeration of the resources used by this test suite"""
 
     actions: List[TestSuiteActionDeclaration]

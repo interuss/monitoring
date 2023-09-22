@@ -1,0 +1,29 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/SkippedActionReport.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.reports.report.SkippedActionReport, as defined in monitoring/uss_qualifier/reports/report.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "action_declaration_index": {
+      "description": "Index of the skipped action in the configured declaration.",
+      "type": "integer"
+    },
+    "declaration": {
+      "$ref": "../../suites/definitions/TestSuiteActionDeclaration.json",
+      "description": "Full declaration of the action that was skipped."
+    },
+    "reason": {
+      "description": "The reason the action was skipped.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "action_declaration_index",
+    "declaration",
+    "reason"
+  ],
+  "type": "object"
+}

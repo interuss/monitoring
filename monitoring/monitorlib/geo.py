@@ -19,8 +19,16 @@ class DistanceUnits(str, Enum):
 
 
 class LatLngPoint(ImplicitDict):
+    """Vertex in latitude and longitude"""
+
     lat: float
+    """Latitude (degrees)"""
+
     lng: float
+    """Longitude (degrees)"""
+
+    def as_s2sphere(self) -> s2sphere.LatLng:
+        return s2sphere.LatLng.from_degrees(self.lat, self.lng)
 
 
 class Radius(ImplicitDict):
@@ -49,6 +57,12 @@ class Altitude(ImplicitDict):
     value: float
     reference: AltitudeDatum
     units: DistanceUnits
+
+    @staticmethod
+    def w84m(value: Optional[float]):
+        if not value:
+            return None
+        return Altitude(value=value, reference=AltitudeDatum.W84, units=DistanceUnits.M)
 
 
 class Volume3D(ImplicitDict):
@@ -151,14 +165,14 @@ def make_latlng_rect(area) -> s2sphere.LatLngRect:
         )
 
 
-def validate_lat(lat: str) -> float:
+def validate_lat(lat: Union[str, float]) -> float:
     lat = float(lat)
     if lat < -90 or lat > 90:
         raise ValueError("Latitude must be in [-90, 90] range")
     return lat
 
 
-def validate_lng(lng: str) -> float:
+def validate_lng(lng: Union[str, float]) -> float:
     lng = float(lng)
     if lng < -180 or lng > 180:
         raise ValueError("Longitude must be in [-180, 180] range")

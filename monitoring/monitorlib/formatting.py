@@ -141,3 +141,8 @@ def make_datetime(t) -> datetime.datetime:
         return arrow.get(t).datetime
     else:
         raise ValueError("Could not convert {} to datetime".format(str(type(t))))
+
+
+def limit_resolution(value: float, resolution: float) -> float:
+    """Change resolution of a value"""
+    return round(value / resolution) * resolution

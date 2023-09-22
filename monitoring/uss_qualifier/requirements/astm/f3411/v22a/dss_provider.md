@@ -1,16 +1,10 @@
 # ASTM F3411-22a: DSS Provider Role requirement set
 
-This file describes the set of ASTM F3411-22a requirements with which a USS providing a DSS instance must comply.
+This file describes the set of ASTM F3411-22a requirements with which a USS providing a DSS instance must comply, according to ASTM F3411-22a.
 
-## Manual verification
+## DSS Compliance Matrix
 
-All DSS instance provider requirements can be verified by automation.
-
-## Mandatory requirements
-
-### DSS Compliance Matrix
-
-#### DSS Implementation Requirements
+### DSS Implementation Requirements
 
 * **astm.f3411.v22a.DSS0010**
 * **astm.f3411.v22a.DSS0020**
@@ -20,7 +14,7 @@ All DSS instance provider requirements can be verified by automation.
 * **astm.f3411.v22a.DSS0060**
 * **astm.f3411.v22a.DSS0070**
 
-#### Data Synchronization Requirements
+### Data Synchronization Requirements
 
 * **astm.f3411.v22a.DSS0110**
 * **astm.f3411.v22a.DSS0120**
@@ -49,6 +43,6 @@ All DSS instance provider requirements can be verified by automation.
     * **astm.f3411.v22a.A2-6-1,5**
     * **astm.f3411.v22a.A2-6-1,6**
 
-#### Test Environment Requirements
+### Test Environment Requirements
 
 * **astm.f3411.v22a.DSS0210**

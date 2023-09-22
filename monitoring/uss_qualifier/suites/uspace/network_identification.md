@@ -16,7 +16,7 @@
     <th><a href="../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="60" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
+    <td rowspan="74" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
     <td><a href="../../requirements/astm/f3411/v22a.md">A2-6-1,1a</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss_interoperability.md">ASTM F3411-22a NetRID DSS interoperability</a></td>
@@ -89,7 +89,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">DSS0030</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../scenarios/astm/netrid/v22a/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/dss_interoperability.md">ASTM F3411-22a NetRID DSS interoperability</a><br><a href="../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../scenarios/astm/netrid/v22a/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">DSS0050</a></td>
@@ -278,6 +278,76 @@
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0470</a></td>
+    <td>Implemented + TODO</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,1</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,10</a></td>
+    <td>TODO</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,11</a></td>
+    <td>TODO</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,15</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,19</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,1a</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,20</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,23</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,24</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,25</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,26</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,5</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,7</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,9</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>

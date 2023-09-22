@@ -67,13 +67,6 @@ as being in "local debug" mode, they may serve requests over http without produc
 
 If non-encrypted interactions such as plaintext queries over http are allowed, **[astm.f3411.v19.NET0220](../../../../requirements/astm/f3411/v19.md)** is not satisfied.
 
-#### No unattributed queries check
-
-All queries must have been attributed to a participant: an unattributed query means that one of the test cases has not
-properly recorded to which participant it was made.
-
-This is an internal requirement and does not necessarily imply that there is a problem with the participants under test.
-
 ## Mock USS interactions evaluation test case
 
 In this test case, the interactions with a mock_uss instance (if provided) are obtained and then examined to verify

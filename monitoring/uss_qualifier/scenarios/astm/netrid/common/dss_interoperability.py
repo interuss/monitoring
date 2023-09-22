@@ -14,6 +14,7 @@ from monitoring.monitorlib.fetch.rid import ISA
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
     DSSInstancesResource,
+    DSSInstanceResource,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
@@ -27,14 +28,14 @@ VERTICES: List[s2sphere.LatLng] = [
 
 
 def _default_params(duration: datetime.timedelta) -> Dict:
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now().astimezone()
     return dict(
         area_vertices=VERTICES,
         alt_lo=20,
         alt_hi=400,
         start_time=now,
         end_time=now + duration,
-        uss_base_url="https://example.com/uss/flights",
+        uss_base_url="https://example.com",
     )
 
 
@@ -60,13 +61,15 @@ class DSSInteroperability(GenericTestScenario):
 
     def __init__(
         self,
-        dss_instances: DSSInstancesResource,
+        primary_dss_instance: DSSInstanceResource,
+        all_dss_instances: DSSInstancesResource,
     ):
         super().__init__()
-        # TODO: Add DSS combinations action generator to rotate primary DSS instance
-        self._dss_primary = DSSWrapper(self, dss_instances.dss_instances[0])
+        self._dss_primary = DSSWrapper(self, primary_dss_instance.dss_instance)
         self._dss_others = [
-            DSSWrapper(self, dss) for dss in dss_instances.dss_instances[1:]
+            DSSWrapper(self, dss)
+            for dss in all_dss_instances.dss_instances
+            if not dss.is_same_as(primary_dss_instance.dss_instance)
         ]
         self._context: Dict[str, TestEntity] = {}
 
