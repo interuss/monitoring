@@ -433,6 +433,7 @@ class RIDObservationEvaluator(object):
 
         # Check details of flights (once per flight)
         for mapping in mapping_by_injection_id.values():
+
             with self._test_scenario.check(
                 "Successful details observation",
                 [mapping.injected_flight.uss_participant_id],
@@ -441,9 +442,10 @@ class RIDObservationEvaluator(object):
                 if mapping.observed_flight.id in self._retrieved_flight_details:
                     continue
 
-                details, query = observer.observe_flight_details(
+                details_obs, query = observer.observe_flight_details(
                     mapping.observed_flight.id, self._rid_version
                 )
+
                 self._test_scenario.record_query(query)
 
                 if query.status_code != 200:
@@ -454,9 +456,17 @@ class RIDObservationEvaluator(object):
                         query_timestamps=[query.request.timestamp],
                     )
                 else:
+                    telemetry_inj = mapping.injected_flight.flight.telemetry[
+                        mapping.telemetry_index
+                    ]
+                    # Get details that are expected to be valid for the present telemetry:
+                    details_inj = mapping.injected_flight.flight.get_details(
+                        telemetry_inj.timestamp.datetime
+                    )
                     self._retrieved_flight_details.add(mapping.observed_flight.id)
                     self._common_dictionary_evaluator.evaluate_dp_details(
-                        details,
+                        details_inj,
+                        details_obs,
                         participants=[
                             observer.participant_id,
                         ],
