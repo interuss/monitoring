@@ -122,6 +122,10 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 
 **[astm.f3411.v22a.NET0260](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the Operational Status, if present, is valid. (**[astm.f3411.v22a.NET0260,Table1,7](../../../../requirements/astm/f3411/v22a.md)**)
 
+#### Operational Status is consistent with injected one check
+
+If the Operational status reported for an observation does not correspond to the injected one, the DP is not providing timely and accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
+
 #### Lingering flight check
 
 **[astm.f3411.v22a.NET0260](../../../../requirements/astm/f3411/v22a.md)** requires a SP to provide flights up to *NetMaxNearRealTimeDataPeriod* in the past, but an SP should preserve privacy and ensure relevancy by not sharing flights that are further in the past than this window.
@@ -216,6 +220,10 @@ Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../.
 
 **[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that timestamps are relative to UTC. (**[astm.f3411.v22a.NET0470,Table1,5](../../../../requirements/astm/f3411/v22a.md)**)
 
+#### Observed timestamp is consistent with injected one check
+
+If the timestamp reported for an observation does not correspond to the injected one, the DP is not providing timely and accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
+
 #### Operational Status consistency with Common Dictionary check
 
 **[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Operational Status, if present, is valid. (**[astm.f3411.v22a.NET0470,Table1,7](../../../../requirements/astm/f3411/v22a.md)**)
@@ -229,17 +237,33 @@ Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../.
 **[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Current Position provided is valid. (**[astm.f3411.v22a.NET0470,Table1,10](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0470,Table1,11](../../../../requirements/astm/f3411/v22a.md)**). If the observed Current Position do not contain valid latitude and longitude, this check will fail.
 TODO: If the resolution is greater than 7 number digits, this check will fail.
 
+#### Observed Position is consistent with injected one check
+
+If the Position reported for an observation does not correspond to the injected one, the DP is not providing timely and accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
+
 #### Height Type consistency with Common Dictionary check
 
 **[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Height Type (**[astm.f3411.v22a.NET0470,Table1,15](../../../../requirements/astm/f3411/v22a.md)**), if present, is valid. If the observed Height Type indicates a value different than Takeoff Location or Ground Level, this check will fail.
+
+#### Height is consistent with injected one check
+
+If the Height Type reported for an observation does not correspond to the injected one, the DP is not providing timely and accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
 
 #### Track Direction consistency with Common Dictionary check
 
 **[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Track Direction (**[astm.f3411.v22a.NET0470,Table1,19](../../../../requirements/astm/f3411/v22a.md)**) is valid. If the observed Track Direction is less than -359 or is greater than 359, except for the special value 361, this check will fail.
 
+#### Observed track is consistent with injected one check
+
+If the track reported for an observation does not correspond to the injected one, the DP is not providing timely and accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
+
 #### Speed consistency with Common Dictionary check
 
 **[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Speed (**[astm.f3411.v22a.NET0470,Table1,20](../../../../requirements/astm/f3411/v22a.md)**) is valid. If the observed Speed is negative or greater than 254.25, except for the special value 255, this check will fail.
+
+#### Observed speed is consistent with injected one check
+
+If the speed reported for an observation does not correspond to the injected one, the DP is not providing timely and accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
 
 #### Operator Location consistency with Common Dictionary check
 
