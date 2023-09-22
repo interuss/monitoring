@@ -39,6 +39,14 @@ class Resource(ABC, Generic[SpecificationType]):
 ResourceType = TypeVar("ResourceType", bound=Resource)
 
 
+class MissingResourceError(ValueError):
+    missing_resource_name: str
+
+    def __init__(self, msg: str, missing_resource_name: str):
+        super(MissingResourceError, self).__init__(msg)
+        self.missing_resource_name = missing_resource_name
+
+
 def create_resources(
     resource_declarations: Dict[ResourceID, ResourceDeclaration]
 ) -> Dict[ResourceID, ResourceType]:
@@ -160,7 +168,8 @@ def make_child_resources(
         if parent_id in parent_resources:
             child_resources[child_id] = parent_resources[parent_id]
         elif not is_optional:
-            raise ValueError(
-                f'{subject} could not find required resource ID "{parent_id}" used to populate child resource ID "{child_id}"'
+            raise MissingResourceError(
+                f'{subject} could not find required resource ID "{parent_id}" used to populate child resource ID "{child_id}"',
+                parent_id,
             )
     return child_resources

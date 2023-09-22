@@ -14,6 +14,7 @@ from monitoring.monitorlib.fetch.rid import ISA
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
     DSSInstancesResource,
+    DSSInstanceResource,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
@@ -60,13 +61,15 @@ class DSSInteroperability(GenericTestScenario):
 
     def __init__(
         self,
-        dss_instances: DSSInstancesResource,
+        primary_dss_instance: DSSInstanceResource,
+        all_dss_instances: DSSInstancesResource,
     ):
         super().__init__()
-        # TODO: Add DSS combinations action generator to rotate primary DSS instance
-        self._dss_primary = DSSWrapper(self, dss_instances.dss_instances[0])
+        self._dss_primary = DSSWrapper(self, primary_dss_instance.dss_instance)
         self._dss_others = [
-            DSSWrapper(self, dss) for dss in dss_instances.dss_instances[1:]
+            DSSWrapper(self, dss)
+            for dss in all_dss_instances.dss_instances
+            if not dss.is_same_as(primary_dss_instance.dss_instance)
         ]
         self._context: Dict[str, TestEntity] = {}
 
