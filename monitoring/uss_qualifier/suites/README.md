@@ -6,6 +6,8 @@ A test suite is composed of a list of actions, each one being a [test scenario](
 
 A test suite is defined with a YAML file following the [`TestSuiteDefinition` schema](definitions.py).
 
+Test suites are tolerant of incomplete resources available for an action.  All resources declared as required for the test suite must be provided, but some resources may be marked as optional (by suffixing the resource type name with `?`) and those resources do not need to be provided to the test suite.  If an optional resource is used as input to a test suite action ([scenario](../scenarios/README.md), child test suite, or [action generator](../action_generators/README.md)) that requires that resource but the resource was not provided to the parent test suite, that test suite action will be skipped and this will be noted in the test report, but the remaining test suite actions will be executed normally.
+
 ## Documentation
 
 Test suite documentation is generated automatically; use `make format` from the repository root to regenerate it.
