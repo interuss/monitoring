@@ -49,6 +49,10 @@ uss_qualifier instructs the USS to emulate a user attempting to plan the `cheste
 
 This is equivalent to "Step 4" plus part of "Step 5" ("Submit the operation to the FAA") in the standard FAA Onboarding Test Procedure.
 
+#### Successful response check
+
+A USS must respond properly to the user intent to create a flight in order to be tested by InterUSS, per **[interuss.automated_testing.faa.laanc.v1.uss.FlightPlannerInterface](../../../../requirements/interuss/automated_testing/faa/laanc/v1/uss.md)**.  An improper response will fail this check.
+
 #### Successful planning check
 
 The requested flight intent does not violate any LAANC rules, so the USS is not properly providing sUAS authorizations as a service to operators if it does not successfully plan the flight (**[faa.laanc.v7.3,1a](../../../../requirements/faa/laanc/v7.md)**).
@@ -97,6 +101,10 @@ uss_qualifier instructs the USS to emulate a user attempting to plan the `willia
 
 This is equivalent to "Step 7" in the standard FAA Onboarding Test Procedure.
 
+#### Successful response check
+
+A USS must respond properly to the user intent to create a flight in order to be tested by InterUSS, per **[interuss.automated_testing.faa.laanc.v1.uss.FlightPlannerInterface](../../../../requirements/interuss/automated_testing/faa/laanc/v1/uss.md)**.  An improper response will fail this check.
+
 #### Correctly rejected check
 
 The requested flight intent is too far away to co-exist with the previous, simultaneous operation.  If the USS successfully plans this flight, it does not meet **[faa.laanc.v7.3,7d](../../../../requirements/faa/laanc/v7.md)**.
@@ -122,6 +130,10 @@ uss_qualifier instructs the USS to emulate a user attempting to plan the next `c
 Note that planning may succeed or fail for these flights.
 
 This is equivalent to "Step 8" in the standard FAA Onboarding Test Procedure.
+
+#### Successful response check
+
+A USS must respond properly to each user intent to create a flight in order to be tested by InterUSS, per **[interuss.automated_testing.faa.laanc.v1.uss.FlightPlannerInterface](../../../../requirements/interuss/automated_testing/faa/laanc/v1/uss.md)**.  An improper response will fail this check.
 
 #### Early rejection check
 
@@ -155,6 +167,10 @@ uss_qualifier instructs the USS to emulate a user attempting to plan the `cheste
 
 This is equivalent to "Step 9" in the standard FAA Onboarding Test Procedure.
 
+#### Successful response check
+
+A USS must respond properly to the user intent to create a flight in order to be tested by InterUSS, per **[interuss.automated_testing.faa.laanc.v1.uss.FlightPlannerInterface](../../../../requirements/interuss/automated_testing/faa/laanc/v1/uss.md)**.  An improper response will fail this check.
+
 #### Correctly rejected check
 
 The requested flight intent would cause too many overlapping simultaneous flights.  If the USS successfully plans this flight, it does not meet **[faa.laanc.v7.3,7c](../../../../requirements/faa/laanc/v7.md)**.
@@ -178,6 +194,10 @@ If the USS indicating planning failure to the user but nonetheless created a LAA
 uss_qualifier instructs the USS to emulate a user attempting to change their existing `chester_pa_p107` flight intent to `chester_pa_p107_b`.
 
 This is equivalent to "Step 10" and "Step 11" in the standard FAA Onboarding Test Procedure.
+
+#### Successful response check
+
+A USS must respond properly to the user intent to update a flight in order to be tested by InterUSS, per **[interuss.automated_testing.faa.laanc.v1.uss.FlightPlannerInterface](../../../../requirements/interuss/automated_testing/faa/laanc/v1/uss.md)**.  An improper response will fail this check.
 
 #### Correctly updated check
 
