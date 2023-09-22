@@ -1,19 +1,14 @@
 import datetime
 import math
+from typing import List, Optional
 
+import s2sphere
 from arrow import ParserError
 from implicitdict import StringBasedDateTime
-from typing import List, Optional
-import s2sphere
-from uas_standards.astm.f3411.v22a.api import UASID
-
-from uas_standards.interuss.automated_testing.rid.v1 import (
-    observation as observation_api,
-)
-
+from loguru import logger
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
-
+from uas_standards.astm.f3411.v22a.api import UASID
 from uas_standards.astm.f3411.v22a.constants import (
     SpecialSpeed,
     MaxSpeed,
@@ -21,18 +16,25 @@ from uas_standards.astm.f3411.v22a.constants import (
     MinTrackDirection,
     MaxTrackDirection,
 )
+from uas_standards.interuss.automated_testing.rid.v1 import (
+    observation as observation_api,
+    injection,
+)
+from uas_standards.interuss.automated_testing.rid.v1.injection import (
+    RIDAircraftState,
+    RIDAircraftPosition,
+)
 
 from monitoring.monitorlib.fetch.rid import (
     FetchedFlights,
     FlightDetails,
 )
+from monitoring.monitorlib.fetch.rid import Flight, Position
 from monitoring.monitorlib.geo import validate_lat, validate_lng, Altitude, LatLngPoint
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType, PendingCheck
-from monitoring.monitorlib.fetch.rid import Flight, Position
-
 
 # SP responses to /flights endpoint's p99 should be below this:
 SP_FLIGHTS_RESPONSE_TIME_TOLERANCE_SEC = 3
@@ -82,6 +84,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def evaluate_dp_flight(
         self,
+        injected_flight: RIDAircraftState,
         observed_flight: observation_api.Flight,
         participants: List[str],
     ):
@@ -93,15 +96,33 @@ class RIDCommonDictionaryEvaluator(object):
                     severity=Severity.High,
                 )
 
-        self._evaluate_speed(observed_flight.current_state.speed, participants)
-        self._evaluate_track(observed_flight.current_state.track, participants)
-        self._evaluate_timestamp(observed_flight.current_state.timestamp, participants)
+        logger.debug(f"Injected flight: {injected_flight}")
+        logger.debug(f"Observed flight: {observed_flight.current_state}")
+
+        self._evaluate_speed(
+            injected_flight.speed, observed_flight.current_state.speed, participants
+        )
+        self._evaluate_track(
+            injected_flight.track, observed_flight.current_state.track, participants
+        )
+        self._evaluate_timestamp(
+            injected_flight.timestamp,
+            observed_flight.current_state.timestamp,
+            participants,
+        )
+
+        # TODO check if worth adding correctness check here, it requires some slight (possibly non-trivial)
+        #  changes in evaluate_sp_flights as well
         self._evaluate_operational_status(
             observed_flight.current_state.operational_status, participants
         )
-        self._evaluate_position(observed_flight.most_recent_position, participants)
+        self._evaluate_position(
+            injected_flight.position, observed_flight.most_recent_position, participants
+        )
         self._evaluate_height(
-            observed_flight.most_recent_position.get("height"), participants
+            injected_flight.get("height"),
+            observed_flight.most_recent_position.get("height"),
+            participants,
         )
 
     def _evaluate_recent_position_time(
@@ -303,12 +324,14 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping arbitrary uas id evaluation",
             )
 
-    def _evaluate_timestamp(self, timestamp: Optional[str], participants: List[str]):
+    def _evaluate_timestamp(
+        self, timestamp_inj: str, timestamp_obs: Optional[str], participants: List[str]
+    ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
                 "Timestamp consistency with Common Dictionary", participants
             ) as check:
-                if timestamp is None:
+                if timestamp_obs is None:
                     check.record_failed(
                         f"Timestamp not present",
                         details=f"The timestamp must be specified.",
@@ -316,18 +339,30 @@ class RIDCommonDictionaryEvaluator(object):
                     )
 
                 try:
-                    t = StringBasedDateTime(timestamp)
-                    if t.datetime.utcoffset().seconds != 0:
+                    t_obs = StringBasedDateTime(timestamp_obs)
+                    if t_obs.datetime.utcoffset().seconds != 0:
                         check.record_failed(
-                            f"Timestamp must be relative to UTC: {t}",
+                            f"Timestamp must be relative to UTC: {t_obs}",
                             severity=Severity.Medium,
                         )
                 except ParserError as e:
                     check.record_failed(
-                        f"Unable to parse timestamp: {timestamp}",
+                        f"Unable to parse timestamp: {timestamp_obs}",
                         details=f"Reason:  {e}",
                         severity=Severity.Medium,
                     )
+
+            if timestamp_obs:
+                with self._test_scenario.check(
+                    "Observed timestamp is consistent with injected one", participants
+                ) as check:
+                    t_inj = StringBasedDateTime(timestamp_inj)
+                    if abs(t_inj.datetime - t_obs.datetime).total_seconds() > 1.0:
+                        check.record_failed(
+                            "Observed timestamp inconsistent with injected one",
+                            details=f"Injected timestamp: {timestamp_inj} – Observed one: {timestamp_obs}",
+                            severity=Severity.Medium,
+                        )
         else:
             self._test_scenario.record_note(
                 key="skip_reason",
@@ -352,36 +387,54 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping operator id evaluation",
             )
 
-    def _evaluate_speed(self, speed: Optional[float], participants: List[str]):
+    def _evaluate_speed(
+        self, speed_inj: float, speed_obs: Optional[float], participants: List[str]
+    ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
                 "Speed consistency with Common Dictionary", participants
             ) as check:
-                if speed is None:
+                if speed_obs is None:
                     check.record_failed(
                         f"Speed not present",
                         details=f"The speed must be specified.",
                         severity=Severity.High,
                     )
 
-                if not (0 <= speed <= MaxSpeed or math.isclose(speed, SpecialSpeed)):
+                if not (
+                    0 <= speed_obs <= MaxSpeed or math.isclose(speed_obs, SpecialSpeed)
+                ):
                     check.record_failed(
-                        f"Invalid speed: {speed}",
+                        f"Invalid speed: {speed_obs}",
                         details=f"The speed shall be greater than 0 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
                         severity=Severity.Medium,
                     )
+
+            if speed_obs is not None:
+                with self._test_scenario.check(
+                    "Observed speed is consistent with injected one", participants
+                ) as check:
+                    # Speed seems rounded to nearest 0.25 m/s -> x.0, x.25, x.5, x.75, (x+1).0
+                    if abs(speed_obs - speed_inj) > 0.125:
+                        check.record_failed(
+                            "Observed speed different from injected speed",
+                            details=f"Injected speed was {speed_inj} – observed speed is {speed_obs}",
+                            severity=Severity.Medium,
+                        )
         else:
             self._test_scenario.record_note(
                 key="skip_reason",
                 message=f"Unsupported version {self._rid_version}: skipping speed evaluation",
             )
 
-    def _evaluate_track(self, track: Optional[float], participants: List[str]):
+    def _evaluate_track(
+        self, track_inj: float, track_obs: Optional[float], participants: List[str]
+    ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
                 "Track Direction consistency with Common Dictionary", participants
             ) as check:
-                if track is None:
+                if track_obs is None:
                     check.record_failed(
                         f"Track direction not present",
                         details=f"The track direction must be specified.",
@@ -389,26 +442,47 @@ class RIDCommonDictionaryEvaluator(object):
                     )
 
                 if not (
-                    MinTrackDirection <= track <= MaxTrackDirection
-                    or round(track) == SpecialTrackDirection
+                    MinTrackDirection <= track_obs <= MaxTrackDirection
+                    or round(track_obs) == SpecialTrackDirection
                 ):
                     check.record_failed(
-                        f"Invalid track direction: {track}",
+                        f"Invalid track direction: {track_obs}",
                         details=f"The track direction shall be greater than -360 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
                         severity=Severity.Medium,
                     )
+
+            if track_obs is not None:
+                with self._test_scenario.check(
+                    "Observed track is consistent with injected one", participants
+                ) as check:
+                    # Track seems rounded to nearest integer.
+                    abs_track_diff = min(
+                        (track_inj - track_obs) % 360, (track_obs - track_inj) % 360
+                    )
+                    if abs_track_diff > 0.5:
+                        check.record_failed(
+                            "Observed track direction different from injected one",
+                            details=f"Inject track was {track_inj} – observed one is {track_obs}",
+                            severity=Severity.Medium,
+                        )
+
         else:
             self._test_scenario.record_note(
                 key="skip_reason",
                 message=f"Unsupported version {self._rid_version}: skipping track direction evaluation",
             )
 
-    def _evaluate_position(self, position: Position, participants: List[str]):
+    def _evaluate_position(
+        self,
+        position_inj: RIDAircraftPosition,
+        position_obs: Position,
+        participants: List[str],
+    ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
                 "Current Position consistency with Common Dictionary", participants
             ) as check:
-                lat = position.lat
+                lat = position_obs.lat
                 try:
                     lat = validate_lat(lat)
                 except ValueError:
@@ -417,13 +491,26 @@ class RIDCommonDictionaryEvaluator(object):
                         details=f"Invalid latitude: {lat}",
                         severity=Severity.Medium,
                     )
-                lng = position.lng
+                lng = position_obs.lng
                 try:
                     lng = validate_lng(lng)
                 except ValueError:
                     check.record_failed(
                         "Current Position contains an invalid longitude",
                         details=f"Invalid longitude: {lng}",
+                        severity=Severity.Medium,
+                    )
+            with self._test_scenario.check(
+                "Observed Position is consistent with injected one", participants
+            ) as check:
+                # TODO is this too lax?
+                if (
+                    abs(position_inj.lat - position_obs.lat) > 0.01
+                    or abs(position_inj.lng - position_obs.lng) > 0.01
+                ):
+                    check.record_failed(
+                        "Observed position inconsistent with injected one",
+                        details=f"Injected Position: {position_inj} – Observed Position: {position_obs}",
                         severity=Severity.Medium,
                     )
         else:
@@ -433,22 +520,38 @@ class RIDCommonDictionaryEvaluator(object):
             )
 
     def _evaluate_height(
-        self, height: Optional[observation_api.RIDHeight], participants: List[str]
+        self,
+        height_inj: Optional[injection.RIDHeight],
+        height_obs: Optional[observation_api.RIDHeight],
+        participants: List[str],
     ):
         if self._rid_version == RIDVersion.f3411_22a:
-            if height:
+            if height_obs is not None:
                 with self._test_scenario.check(
                     "Height Type consistency with Common Dictionary", participants
                 ) as check:
                     if (
-                        height.reference
+                        height_obs.reference
                         != observation_api.RIDHeightReference.TakeoffLocation
-                        and height.reference
+                        and height_obs.reference
                         != observation_api.RIDHeightReference.GroundLevel
                     ):
                         check.record_failed(
-                            f"Invalid height type: {height.reference}",
+                            f"Invalid height type: {height_obs.reference}",
                             details=f"The height type reference shall be either {observation_api.RIDHeightReference.TakeoffLocation} or {observation_api.RIDHeightReference.GroundLevel}",
+                            severity=Severity.Medium,
+                        )
+
+                with self._test_scenario.check(
+                    "Height is consistent with injected one", participants
+                ) as check:
+                    if (
+                        height_obs.reference != height_inj.reference
+                        or abs(height_obs.distance - height_inj.distance) > 1.0
+                    ):
+                        check.record_failed(
+                            "Observed Height is inconsistent with injected one",
+                            details=f"Observed height: {height_obs} – injected: {height_inj}",
                             severity=Severity.Medium,
                         )
         else:
@@ -538,22 +641,38 @@ class RIDCommonDictionaryEvaluator(object):
             )
 
     def _evaluate_operational_status(
-        self, value: Optional[str], participants: List[str]
+        self,
+        value_obs: Optional[str],
+        participants: List[str],
+        value_inj: Optional[str] = None,
     ):
         if self._rid_version == RIDVersion.f3411_22a:
-            if value:
+            if value_obs is not None:
                 with self._test_scenario.check(
                     "Operational Status consistency with Common Dictionary",
                     participants,
                 ) as check:
                     try:
-                        v22a.api.RIDOperationalStatus(value)
+                        v22a.api.RIDOperationalStatus(value_obs)
                     except ValueError:
                         check.record_failed(
                             "Operational Status is invalid",
-                            details=f"Invalid Operational Status: {value}",
+                            details=f"Invalid Operational Status: {value_obs}",
                             severity=Severity.Medium,
                         )
+                # We only check if an injected value: when SP values are evaluated we don't compare with the injected
+                # value, for example.
+                if value_inj is not None:
+                    with self._test_scenario.check(
+                        "Operational Status is consistent with injected one",
+                        participants,
+                    ) as check:
+                        if not value_obs == value_inj:
+                            check.record_failed(
+                                "Observed operational status inconsistent with injected one",
+                                details=f"Injected operational status: {value_inj} – Observed {value_obs}",
+                            )
+
         else:
             self._test_scenario.record_note(
                 key="skip_reason",

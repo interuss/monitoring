@@ -24,6 +24,7 @@ from monitoring.uss_qualifier.reports.report import (
     ParticipantID,
     PassedCheck,
 )
+from monitoring.uss_qualifier.resources.resource import MissingResourceError
 from monitoring.uss_qualifier.scenarios.definitions import (
     TestScenarioDeclaration,
     TestScenarioTypeName,
@@ -217,8 +218,9 @@ class GenericTestScenario(ABC):
 
                 # Missing value for required argument
                 available_pool = ", ".join(resource_pool)
-                raise ValueError(
-                    f'Resource to populate test scenario argument "{arg_name}" was not found in the resource pool when trying to create {declaration.scenario_type} test scenario (resource pool: {available_pool})'
+                raise MissingResourceError(
+                    f'Resource to populate test scenario argument "{arg_name}" was not found in the resource pool when trying to create {declaration.scenario_type} test scenario (resource pool: {available_pool})',
+                    arg_name,
                 )
             constructor_args[arg_name] = resource_pool[arg_name]
 

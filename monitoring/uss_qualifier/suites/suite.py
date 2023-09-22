@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import os
 from datetime import datetime
 import json
 from typing import Dict, List, Optional
@@ -8,10 +10,12 @@ from loguru import logger
 import yaml
 
 from monitoring.monitorlib.inspection import fullname
+from monitoring.monitorlib.versioning import repo_url_of
 from monitoring.uss_qualifier.action_generators.action_generator import (
     ActionGeneratorType,
     ActionGenerator,
 )
+from monitoring.uss_qualifier.fileio import resolve_filename
 from monitoring.uss_qualifier.reports.capabilities import (
     evaluate_condition_for_test_suite,
 )
@@ -25,11 +29,13 @@ from monitoring.uss_qualifier.reports.report import (
     TestSuiteReport,
     TestSuiteActionReport,
     ParticipantCapabilityEvaluationReport,
+    SkippedActionReport,
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.resource import (
     ResourceType,
     make_child_resources,
+    MissingResourceError,
 )
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenario,
@@ -148,14 +154,35 @@ class TestSuiteAction(object):
 class TestSuite(object):
     declaration: TestSuiteDeclaration
     definition: TestSuiteDefinition
+    documentation_url: str
     local_resources: Dict[ResourceID, ResourceType]
     actions: List[TestSuiteAction]
+    skipped_actions: List[SkippedActionReport]
 
     def __init__(
         self,
         declaration: TestSuiteDeclaration,
         resources: Dict[ResourceID, ResourceType],
     ):
+        # Determine the suite's documentation URL
+        if "suite_type" in declaration and declaration.suite_type:
+            suite_yaml_path = resolve_filename(declaration.suite_type)
+            if suite_yaml_path.lower().startswith(
+                "http://"
+            ) or suite_yaml_path.lower().startswith("https://"):
+                self.documentation_url = suite_yaml_path
+            else:
+                self.documentation_url = repo_url_of(
+                    os.path.splitext(suite_yaml_path)[0] + ".md"
+                )
+        elif "suite_definition" in declaration and declaration.suite_definition:
+            # TODO: Accept information about the declaration origin in order to populate the URL in this case
+            self.documentation_url = ""
+        else:
+            raise ValueError(
+                "Unrecognized declaration type (neither suite_type nor suite_definition were defined)"
+            )
+
         self.declaration = declaration
         self.definition = TestSuiteDefinition.load_from_declaration(declaration)
         self.local_resources = {
@@ -167,19 +194,33 @@ class TestSuite(object):
             if is_optional:
                 resource_type = resource_type[:-1]
             if not is_optional and resource_id not in self.local_resources:
-                raise ValueError(
-                    f'Test suite "{self.definition.name}" is missing resource {resource_id} ({resource_type})'
+                raise MissingResourceError(
+                    f'Test suite "{self.definition.name}" is missing resource {resource_id} ({resource_type})',
+                    resource_id,
                 )
             if resource_id in self.local_resources and not self.local_resources[
                 resource_id
             ].is_type(resource_type):
                 raise ValueError(
-                    f'Test suite "{self.definition.name}" expected resource {resource_id} to be {resource_type}, but instead it was provided {fullname(resources[resource_id].__class__)}'
+                    f'Test suite "{self.definition.name}" expected resource {resource_id} to be {resource_type}, but instead it was provided {fullname(self.local_resources[resource_id].__class__)}'
                 )
-        self.actions = [
-            TestSuiteAction(action=a, resources=self.local_resources)
-            for a in self.definition.actions
-        ]
+        actions: List[TestSuiteAction] = []
+        skipped_actions: List[SkippedActionReport] = []
+        for a, action_dec in enumerate(self.definition.actions):
+            try:
+                actions.append(
+                    TestSuiteAction(action=action_dec, resources=self.local_resources)
+                )
+            except MissingResourceError as e:
+                skipped_actions.append(
+                    SkippedActionReport(
+                        reason=str(e),
+                        action_declaration_index=a,
+                        declaration=action_dec,
+                    )
+                )
+        self.actions = actions
+        self.skipped_actions = skipped_actions
 
     def _make_report_evaluation_action(
         self, report: TestSuiteReport
@@ -210,9 +251,10 @@ class TestSuite(object):
         report = TestSuiteReport(
             name=self.definition.name,
             suite_type=self.declaration.type_name,
-            documentation_url="",  # TODO: Populate correctly
+            documentation_url=self.documentation_url,
             start_time=StringBasedDateTime(datetime.utcnow()),
             actions=[],
+            skipped_actions=self.skipped_actions,
             capability_evaluations=[],
         )
         success = True

@@ -110,7 +110,9 @@ def riddp_display_data() -> Tuple[str, int]:
 
     # Get ISAs in the DSS
     t = arrow.utcnow().datetime
-    isa_list: FetchedISAs = fetch.isas(view, t, t, rid_version, utm_client)
+    isa_list: FetchedISAs = fetch.isas(
+        geo.get_latlngrect_vertices(view), t, t, rid_version, utm_client
+    )
     if not isa_list.success:
         msg = f"Error fetching ISAs from DSS: {isa_list.errors}"
         logger.error(msg)

@@ -3,13 +3,8 @@ from typing import Dict, List, Optional
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.inspection import fullname
-from monitoring.uss_qualifier.action_generators.action_generator import (
-    action_generator_type_from_name,
-    action_generator_specification_type,
-)
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
     PotentialGeneratedAction,
-    PotentialTestScenarioAction,
 )
 from monitoring.uss_qualifier.action_generators.documentation.documentation import (
     list_potential_actions_for_action_declaration,
@@ -23,11 +18,11 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
 )
 from monitoring.uss_qualifier.resources.resource import (
     ResourceType,
+    MissingResourceError,
 )
 
 from monitoring.uss_qualifier.suites.definitions import (
     TestSuiteActionDeclaration,
-    ActionType,
 )
 from monitoring.uss_qualifier.suites.suite import (
     ActionGenerator,
@@ -71,8 +66,9 @@ class FlightPlannerCombinations(
         resources: Dict[ResourceID, ResourceType],
     ):
         if specification.flight_planners_source not in resources:
-            raise ValueError(
-                f"Resource ID {specification.flight_planners_source} specified as `flight_planners_source` was not present in the available resource pool"
+            raise MissingResourceError(
+                f"Resource ID {specification.flight_planners_source} specified as `flight_planners_source` was not present in the available resource pool",
+                specification.flight_planners_source,
             )
         flight_planners_resource: FlightPlannersResource = resources[
             specification.flight_planners_source

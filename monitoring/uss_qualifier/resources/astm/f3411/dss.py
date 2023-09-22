@@ -73,6 +73,15 @@ class DSSInstance(object):
         if local_debug is not None:
             self.local_debug = local_debug
 
+    def is_same_as(self, other: DSSInstance) -> bool:
+        return (
+            self.participant_id == other.participant_id
+            and self.rid_version == other.rid_version
+            and self.base_url == other.base_url
+            and self.has_private_address == other.has_private_address
+            and self.local_debug == other.local_debug
+        )
+
 
 class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     dss_instance: DSSInstance

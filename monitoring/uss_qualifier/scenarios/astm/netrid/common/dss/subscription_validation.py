@@ -81,7 +81,7 @@ class SubscriptionValidation(GenericTestScenario):
             "Successful subscription query", [self._dss.participant_id]
         ) as check:
             fetched = self._dss_wrapper.search_subs(
-                check, self._isa.footprint.to_vertices()
+                check, [vertex.as_s2sphere() for vertex in self._isa.footprint]
             )
         for sub_id in fetched.subscriptions.keys():
             with self.check(
@@ -232,7 +232,7 @@ class SubscriptionValidation(GenericTestScenario):
     def _default_subscription_params(self, duration: datetime.timedelta) -> Dict:
         now = datetime.datetime.utcnow()
         return dict(
-            area_vertices=self._isa.footprint.to_vertices(),
+            area_vertices=[vertex.as_s2sphere() for vertex in self._isa.footprint],
             alt_lo=self._isa.altitude_min,
             alt_hi=self._isa.altitude_max,
             start_time=now,

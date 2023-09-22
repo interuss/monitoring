@@ -388,7 +388,9 @@ class RIDObservationEvaluator(object):
                         )
 
             self._common_dictionary_evaluator.evaluate_dp_flight(
-                mapping.observed_flight, [observer.participant_id]
+                injected_flight=injected_telemetry,
+                observed_flight=mapping.observed_flight,
+                participants=[observer.participant_id],
             )
 
         # Check that flights using telemetry are not using extrapolated position data

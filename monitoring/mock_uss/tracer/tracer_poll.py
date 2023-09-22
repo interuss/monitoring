@@ -21,7 +21,7 @@ from monitoring.mock_uss.tracer.database import db
 from monitoring.mock_uss.tracer import context
 from monitoring.monitorlib.fetch.rid import FetchedISAs
 from monitoring.monitorlib.fetch.scd import FetchedEntities
-from monitoring.monitorlib.geo import make_latlng_rect
+from monitoring.monitorlib.geo import make_latlng_rect, get_latlngrect_vertices
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 
@@ -97,7 +97,7 @@ def poll_observation_areas() -> None:
 
 def poll_isas(area: ObservationArea, logger: tracerlog.Logger) -> None:
     rid_client = context.get_client(area.f3411.auth_spec, area.f3411.dss_base_url)
-    box = make_latlng_rect(area.area.volume)
+    box = get_latlngrect_vertices(make_latlng_rect(area.area.volume))
 
     log_name = "poll_isas"
     t0 = datetime.datetime.utcnow()

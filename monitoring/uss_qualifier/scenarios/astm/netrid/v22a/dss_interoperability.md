@@ -11,9 +11,13 @@ implementation.
 
 ## Resources
 
-### dss_instances
+### primary_dss_instance
 
-A resources.astm.f3411.DSSInstancesResource containing at least two DSS instances complying with ASTM F3411-22a.  The first instance is the "Primary DSS" instance and the other instances are the "Other DSS" instances.
+A resources.astm.f3411.DSSInstanceResource containing the "primary" DSS instance for this scenario.
+
+### all_dss_instances
+
+A resources.astm.f3411.DSSInstancesResource containing at least two DSS instances complying with ASTM F3411-22a.
 
 ## Test sequence legend
 
@@ -51,7 +55,7 @@ As such, this check will fail if the DSS is not reachable with a dummy query,
 
 ## Interoperability sequence test case
 
-### S1 test step
+### [S1 test step](dss/test_steps/put_isa.md)
 
 Action: USS1@DSS*P*: PUT ISA with no start time and end time 10 minutes from now
 
@@ -135,7 +139,7 @@ Qualitatively proves: All Subscription[i] 1≤i≤n are returned in subscription
 
 **[astm.f3411.v22a.DSS0070](../../../../requirements/astm/f3411/v22a.md)** requires that all DSS instances in a pool return the same result. This check fails if the DSS instance does not return the same result as the other DSS instances.
 
-### S5 test step
+### [S5 test step](dss/test_steps/put_isa.md)
 
 Action: USS1@DSS*P*: PUT ISA[*P*] setting end time to now + D seconds
 
@@ -209,7 +213,7 @@ Qualitatively proves: Expired ISA automatically removed, ISA modifications acces
 
 **[astm.f3411.v22a.DSS0070](../../../../requirements/astm/f3411/v22a.md)** requires that all DSS instances in a pool return the same result. This check fails if the DSS instance does not return the same result as the other DSS instances.
 
-### S10 test step
+### [S10 test step](dss/test_steps/put_isa.md)
 
 Action: USS1@DSS*P*: PUT ISA with no start time and end time 10 minutes from now
 
@@ -237,7 +241,7 @@ Qualitatively proves: ISA deletion triggers subscription notification requests
 
 **[astm.f3411.v22a.A2-6-1,3c](../../../../requirements/astm/f3411/v22a.md)**
 
-### S12 test step
+### [S12 test step](dss/test_steps/put_isa.md)
 
 Action: Wait >D seconds from S9 then USS1@DSS*P*: PUT ISA with no start time and end time 10 minutes from now
 
