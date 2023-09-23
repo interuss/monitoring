@@ -49,11 +49,29 @@ class RIDVersion(str, Enum):
             raise ValueError(f"Unsupported RID version '{self}'")
 
     @property
+    def openapi_search_isas_response_path(self) -> str:
+        if self == RIDVersion.f3411_19:
+            return schema_validation.F3411_19.SearchIdentificationServiceAreasResponse
+        elif self == RIDVersion.f3411_22a:
+            return schema_validation.F3411_22a.SearchIdentificationServiceAreasResponse
+        else:
+            raise ValueError(f"Unsupported RID version '{self}'")
+
+    @property
     def openapi_put_isa_response_path(self) -> str:
         if self == RIDVersion.f3411_19:
             return schema_validation.F3411_19.PutIdentificationServiceAreaResponse
         elif self == RIDVersion.f3411_22a:
             return schema_validation.F3411_22a.PutIdentificationServiceAreaResponse
+        else:
+            raise ValueError(f"Unsupported RID version '{self}'")
+
+    @property
+    def openapi_delete_isa_response_path(self) -> str:
+        if self == RIDVersion.f3411_19:
+            return schema_validation.F3411_19.DeleteIdentificationServiceAreaResponse
+        elif self == RIDVersion.f3411_22a:
+            return schema_validation.F3411_22a.DeleteIdentificationServiceAreaResponse
         else:
             raise ValueError(f"Unsupported RID version '{self}'")
 

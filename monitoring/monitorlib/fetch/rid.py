@@ -851,19 +851,23 @@ class FetchedISAs(RIDQuery):
 
 def isas(
     area: List[s2sphere.LatLng],
-    start_time: datetime.datetime,
-    end_time: datetime.datetime,
+    start_time: Optional[datetime.datetime],
+    end_time: Optional[datetime.datetime],
     rid_version: RIDVersion,
     session: UTMClientSession,
     dss_base_url: str = "",
     server_id: Optional[str] = None,
 ) -> FetchedISAs:
-    t0 = rid_version.format_time(start_time)
-    t1 = rid_version.format_time(end_time)
+    url_time_params = ""
+    if start_time is not None:
+        url_time_params += f"&earliest_time={rid_version.format_time(start_time)}"
+    if end_time is not None:
+        url_time_params += f"&latest_time={rid_version.format_time(end_time)}"
+
     if rid_version == RIDVersion.f3411_19:
         op = v19.api.OPERATIONS[v19.api.OperationID.SearchIdentificationServiceAreas]
         area = rid_v1.geo_polygon_string_from_s2(area)
-        url = f"{dss_base_url}{op.path}?area={area}&earliest_time={t0}&latest_time={t1}"
+        url = f"{dss_base_url}{op.path}?area={area}{url_time_params}"
         return FetchedISAs(
             v19_query=fetch.query_and_describe(
                 session,
@@ -876,7 +880,7 @@ def isas(
     elif rid_version == RIDVersion.f3411_22a:
         op = v22a.api.OPERATIONS[v22a.api.OperationID.SearchIdentificationServiceAreas]
         area = rid_v2.geo_polygon_string_from_s2(area)
-        url = f"{dss_base_url}{op.path}?area={area}&earliest_time={t0}&latest_time={t1}"
+        url = f"{dss_base_url}{op.path}?area={area}{url_time_params}"
         return FetchedISAs(
             v22a_query=fetch.query_and_describe(
                 session,

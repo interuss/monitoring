@@ -228,7 +228,7 @@ Qualitatively proves: ISA creation triggers subscription notification requests
 
 **[astm.f3411.v19.A2-6-1,3b](../../../../requirements/astm/f3411/v19.md)**
 
-### S11 test step
+### [S11 test step](dss/test_steps/delete_isa.md)
 
 Action: USS1@DSS*P*: DELETE ISA[*P*]
 
@@ -284,7 +284,7 @@ TODO: Investigate expected behavior and "404 with proper response" check
 
 **[astm.f3411.v19.A2-6-1,3d](../../../../requirements/astm/f3411/v19.md)**
 
-### S15 test step
+### [S15 test step](dss/test_steps/delete_isa.md)
 
 Action: USS1@DSS*P*: DELETE ISA[*P*]
 
