@@ -1,54 +1,60 @@
 from datetime import datetime, timedelta, timezone
-import s2sphere
 from typing import List, Tuple, Optional
 
+import s2sphere
 from implicitdict import StringBasedDateTime
-from uas_standards.interuss.automated_testing.rid.v1 import injection
-from uas_standards.interuss.automated_testing.rid.v1.observation import (
-    OperatorAltitudeAltitudeType,
-    RIDHeight,
-    RIDHeightReference,
-)
-
-from uas_standards.astm.f3411.v22a.constants import SpecialTrackDirection
-from monitoring.monitorlib.rid import RIDVersion
-from monitoring.monitorlib.fetch.rid import Flight
-from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
-    RIDCommonDictionaryEvaluator,
-)
-from monitoring.uss_qualifier.scenarios.interuss.unit_test import UnitTestScenario
-from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
+from uas_standards.astm.f3411 import v22a
 from uas_standards.astm.f3411.v22a.api import (
     Altitude,
     LatLngPoint,
     UAType,
 )
-from uas_standards.astm.f3411 import v22a
+from uas_standards.astm.f3411.v22a.constants import SpecialTrackDirection
+from uas_standards.interuss.automated_testing.rid.v1 import injection
+from uas_standards.interuss.automated_testing.rid.v1.observation import (
+    OperatorAltitudeAltitudeType,
+    RIDHeight,
+)
+
+from monitoring.monitorlib.fetch.rid import Flight
+from monitoring.monitorlib.rid import RIDVersion
+from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
+from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
+    RIDCommonDictionaryEvaluator,
+)
+from monitoring.uss_qualifier.scenarios.interuss.unit_test import UnitTestScenario
 
 
-def _assert_operator_id(value: str, outcome: bool):
+def _assert_operator_id(value_inj: str, value_obs: str, outcome: bool):
     def step_under_test(self: UnitTestScenario):
         evaluator = RIDCommonDictionaryEvaluator(
             config=EvaluationConfiguration(),
             test_scenario=self,
             rid_version=RIDVersion.f3411_22a,
         )
-        evaluator._evaluate_operator_id(value, [])
+        evaluator._evaluate_operator_id(value_inj, value_obs, [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert unit_test_scenario.get_report().successful == outcome
 
 
 def test_operator_id_non_ascii():
-    _assert_operator_id("non_ascii©", False)
+    _assert_operator_id("non_ascii©", "non_ascii©", False)
 
 
 def test_operator_id_ascii():
-    _assert_operator_id("ascii.1234", True)
+    _assert_operator_id("ascii.1234", "ascii.1234", True)
 
 
 def _assert_operator_location(
-    position, altitude, altitude_type, expected_passed_checks, expected_failed_checks
+    position_inj,
+    altitude_inj,
+    altitude_type_inj,
+    position,
+    altitude,
+    altitude_type,
+    expected_passed_checks,
+    expected_failed_checks,
 ):
     def step_under_test(self: UnitTestScenario):
         evaluator = RIDCommonDictionaryEvaluator(
@@ -56,7 +62,15 @@ def _assert_operator_location(
             test_scenario=self,
             rid_version=RIDVersion.f3411_22a,
         )
-        evaluator._evaluate_operator_location(position, altitude, altitude_type, [])
+        evaluator._evaluate_operator_location(
+            position_inj,
+            altitude_inj,
+            altitude_type_inj,
+            position,
+            altitude,
+            altitude_type,
+            [],
+        )
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
     assert (
@@ -75,6 +89,9 @@ def test_operator_location():
             Optional[LatLngPoint],
             Optional[Altitude],
             Optional[OperatorAltitudeAltitudeType],
+            Optional[LatLngPoint],
+            Optional[Altitude],
+            Optional[OperatorAltitudeAltitudeType],
             int,
         ]
     ] = [
@@ -82,13 +99,19 @@ def test_operator_location():
             LatLngPoint(lat=1.0, lng=1.0),
             None,
             None,
-            1,
+            LatLngPoint(lat=1.0, lng=1.0),
+            None,
+            None,
+            2,
         ),
         (
             LatLngPoint(lat=-90.0, lng=180.0),
             None,
             None,
-            1,
+            LatLngPoint(lat=-90.0, lng=180.0),
+            None,
+            None,
+            2,
         ),
         (
             LatLngPoint(
@@ -97,7 +120,13 @@ def test_operator_location():
             ),
             Altitude(value=1),
             OperatorAltitudeAltitudeType("Takeoff"),
-            3,
+            LatLngPoint(
+                lat=46.2,
+                lng=6.1,
+            ),
+            Altitude(value=1),
+            OperatorAltitudeAltitudeType("Takeoff"),
+            6,
         ),
     ]
     for valid_location in valid_locations:
@@ -116,10 +145,19 @@ def test_operator_location():
             LatLngPoint(lat=-90.001, lng=0),  # out of range and valid
             None,
             None,
-            0,
+            LatLngPoint(lat=-90.001, lng=0),  # out of range and valid
+            None,
+            None,
+            1,
             1,
         ),
         (
+            LatLngPoint(
+                lat=0,  # valid
+                lng=180.001,  # out of range
+            ),
+            None,
+            None,
             LatLngPoint(
                 lat=0,  # valid
                 lng=180.001,  # out of range
@@ -133,10 +171,19 @@ def test_operator_location():
             LatLngPoint(lat=-90.001, lng=180.001),  # both out of range
             None,
             None,
+            LatLngPoint(lat=-90.001, lng=180.001),  # both out of range
+            None,
+            None,
             0,
             2,
         ),
         (
+            LatLngPoint(
+                lat=46.2,
+                lng=6.1,
+            ),
+            None,
+            None,
             LatLngPoint(
                 lat="46°12'7.99 N",  # Float required
                 lng="6°08'44.48 E",  # Float required
@@ -153,7 +200,13 @@ def test_operator_location():
             ),
             Altitude(value=1),
             "invalid",  # Invalid value
-            2,
+            LatLngPoint(
+                lat=46.2,
+                lng=6.1,
+            ),
+            Altitude(value=1),
+            "invalid",  # Invalid value
+            5,
             1,
         ),
         (
@@ -167,7 +220,17 @@ def test_operator_location():
                 reference="UNKNOWN",  # Invalid value
             ),
             "Takeoff",
-            2,
+            LatLngPoint(
+                lat=46.2,
+                lng=6.1,
+            ),
+            Altitude(
+                value=1000.9,
+                units="FT",  # Invalid value
+                reference="UNKNOWN",  # Invalid value
+            ),
+            "Takeoff",
+            5,
             2,
         ),
     ]
