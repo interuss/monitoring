@@ -10,6 +10,8 @@
 
 import datetime
 
+from monitoring.monitorlib.geo import Circle
+from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import (
@@ -39,7 +41,9 @@ def _make_c1_request():
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
         "extents": [
-            scd.make_vol4(time_start, time_end, 0, 120, scd.make_circle(-56, 178, 50))
+            Volume4D.from_values(
+                time_start, time_end, 0, 120, Circle.from_meters(-56, 178, 50)
+            ).to_f3548v21()
         ],
         "old_version": 0,
         "uss_base_url": BASE_URL,
@@ -77,9 +81,9 @@ def test_constraint_does_not_exist_query(ids, scd_api, scd_session):
         resp = scd_session.post(
             "/constraint_references/query",
             json={
-                "area_of_interest": scd.make_vol4(
-                    time_now, time_now, 0, 5000, scd.make_circle(-56, 178, 300)
-                )
+                "area_of_interest": Volume4D.from_values(
+                    time_now, time_now, 0, 5000, Circle.from_meters(-56, 178, 300)
+                ).to_f3548v21()
             },
             scope=scope,
         )
@@ -197,9 +201,9 @@ def test_get_constraint_by_search(ids, scd_api, scd_session):
         resp = scd_session.post(
             "/constraint_references/query",
             json={
-                "area_of_interest": scd.make_vol4(
-                    None, None, 0, 5000, scd.make_circle(-56, 178, 300)
-                )
+                "area_of_interest": Volume4D.from_values(
+                    None, None, 0, 5000, Circle.from_meters(-56, 178, 300)
+                ).to_f3548v21()
             },
             scope=scope,
         )
@@ -217,9 +221,9 @@ def test_get_constraint_by_search_earliest_time_included(ids, scd_api, scd_sessi
     resp = scd_session.post(
         "/constraint_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                earliest_time, None, 0, 5000, scd.make_circle(-56, 178, 300)
-            )
+            "area_of_interest": Volume4D.from_values(
+                earliest_time, None, 0, 5000, Circle.from_meters(-56, 178, 300)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -236,9 +240,9 @@ def test_get_constraint_by_search_earliest_time_excluded(ids, scd_api, scd_sessi
     resp = scd_session.post(
         "/constraint_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                earliest_time, None, 0, 5000, scd.make_circle(-56, 178, 300)
-            )
+            "area_of_interest": Volume4D.from_values(
+                earliest_time, None, 0, 5000, Circle.from_meters(-56, 178, 300)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -255,9 +259,9 @@ def test_get_constraint_by_search_latest_time_included(ids, scd_api, scd_session
     resp = scd_session.post(
         "/constraint_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                None, latest_time, 0, 5000, scd.make_circle(-56, 178, 300)
-            )
+            "area_of_interest": Volume4D.from_values(
+                None, latest_time, 0, 5000, Circle.from_meters(-56, 178, 300)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -274,9 +278,9 @@ def test_get_constraint_by_search_latest_time_excluded(ids, scd_api, scd_session
     resp = scd_session.post(
         "/constraint_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                None, latest_time, 0, 5000, scd.make_circle(-56, 178, 300)
-            )
+            "area_of_interest": Volume4D.from_values(
+                None, latest_time, 0, 5000, Circle.from_meters(-56, 178, 300)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -401,9 +405,9 @@ def test_get_deleted_constraint_by_search(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/constraint_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                None, None, 0, 5000, scd.make_circle(-56, 178, 300)
-            )
+            "area_of_interest": Volume4D.from_values(
+                None, None, 0, 5000, Circle.from_meters(-56, 178, 300)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content

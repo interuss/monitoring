@@ -1,8 +1,12 @@
+from __future__ import annotations
 import math
 from enum import Enum
 from typing import List, Tuple, Union, Optional
+
+from implicitdict import ImplicitDict
 import s2sphere
-from implicitdict import ImplicitDict, StringBasedDateTime
+import shapely.geometry
+from uas_standards.astm.f3548.v21 import api as f3548v21
 
 EARTH_CIRCUMFERENCE_KM = 40075
 EARTH_CIRCUMFERENCE_M = EARTH_CIRCUMFERENCE_KM * 1000
@@ -39,10 +43,61 @@ class Radius(ImplicitDict):
 class Polygon(ImplicitDict):
     vertices: List[LatLngPoint]
 
+    @staticmethod
+    def from_coords(coords: List[Tuple[float, float]]) -> Polygon:
+        return Polygon(
+            vertices=[LatLngPoint(lat=lat, lng=lng) for (lat, lng) in coords]
+        )
+
+    @staticmethod
+    def from_latlng_rect(latlngrect: s2sphere.LatLngRect) -> Polygon:
+        return Polygon(
+            vertices=[
+                LatLngPoint(
+                    lat=latlngrect.lat_lo().degrees, lng=latlngrect.lng_lo().degrees
+                ),
+                LatLngPoint(
+                    lat=latlngrect.lat_lo().degrees, lng=latlngrect.lng_hi().degrees
+                ),
+                LatLngPoint(
+                    lat=latlngrect.lat_hi().degrees, lng=latlngrect.lng_hi().degrees
+                ),
+                LatLngPoint(
+                    lat=latlngrect.lat_hi().degrees, lng=latlngrect.lng_lo().degrees
+                ),
+            ]
+        )
+
+    @staticmethod
+    def from_f3548v21(vol: Union[f3548v21.Polygon, dict]) -> Polygon:
+        if not isinstance(vol, f3548v21.Polygon) and isinstance(vol, dict):
+            vol = ImplicitDict.parse(vol, f3548v21.Polygon)
+        return Polygon(
+            vertices=[ImplicitDict.parse(p, LatLngPoint) for p in vol.vertices]
+        )
+
 
 class Circle(ImplicitDict):
     center: LatLngPoint
     radius: Radius
+
+    @staticmethod
+    def from_meters(
+        lat_degrees: float, lng_degrees: float, radius_meters: float
+    ) -> Circle:
+        return Circle(
+            center=LatLngPoint(lat=lat_degrees, lng=lng_degrees),
+            radius=Radius(value=radius_meters, units="M"),
+        )
+
+    @staticmethod
+    def from_f3548v21(vol: Union[f3548v21.Circle, dict]) -> Circle:
+        if not isinstance(vol, f3548v21.Circle) and isinstance(vol, dict):
+            vol = ImplicitDict.parse(vol, f3548v21.Circle)
+        return Circle(
+            center=ImplicitDict.parse(vol.center, LatLngPoint),
+            radius=ImplicitDict.parse(vol.radius, Radius),
+        )
 
 
 class AltitudeDatum(str, Enum):
@@ -59,10 +114,14 @@ class Altitude(ImplicitDict):
     units: DistanceUnits
 
     @staticmethod
-    def w84m(value: Optional[float]):
-        if not value:
+    def w84m(value: Optional[float]) -> Optional[Altitude]:
+        if value is None:
             return None
         return Altitude(value=value, reference=AltitudeDatum.W84, units=DistanceUnits.M)
+
+    @staticmethod
+    def from_f3548v21(vol: Union[f3548v21.Altitude, dict]) -> Altitude:
+        return ImplicitDict.parse(vol, Altitude)
 
 
 class Volume3D(ImplicitDict):
@@ -103,13 +162,70 @@ class Volume3D(ImplicitDict):
             )
         return self.altitude_upper.value
 
+    def intersects_vol3(self, vol3_2: Volume3D) -> bool:
+        vol3_1 = self
+        if vol3_1.altitude_upper.value < vol3_2.altitude_lower.value:
+            return False
+        if vol3_1.altitude_lower.value > vol3_2.altitude_upper.value:
+            return False
 
-class Volume4D(ImplicitDict):
-    """Generic representation of a 4D volume, usable across multiple standards and formats."""
+        if vol3_1.outline_circle:
+            circle = vol3_1.outline_circle
+            if circle.radius.units != "M":
+                raise NotImplementedError(
+                    "Unsupported circle radius units: {}".format(circle.radius.units)
+                )
+            ref = s2sphere.LatLng.from_degrees(circle.center.lat, circle.center.lng)
+            footprint1 = shapely.geometry.Point(0, 0).buffer(
+                vol3_1.outline_circle.radius.value
+            )
+        elif vol3_1.outline_polygon:
+            p = vol3_1.outline_polygon.vertices[0]
+            ref = s2sphere.LatLng.from_degrees(p.lat, p.lng)
+            footprint1 = shapely.geometry.Polygon(
+                flatten(ref, s2sphere.LatLng.from_degrees(v.lat, v.lng))
+                for v in vol3_1.outline_polygon.vertices
+            )
+        else:
+            raise ValueError("Neither outline_circle nor outline_polygon specified")
 
-    volume: Volume3D
-    time_start: Optional[StringBasedDateTime] = None
-    time_end: Optional[StringBasedDateTime] = None
+        if vol3_2.outline_circle:
+            circle = vol3_2.outline_circle
+            if circle.radius.units != "M":
+                raise NotImplementedError(
+                    "Unsupported circle radius units: {}".format(circle.radius.units)
+                )
+            xy = flatten(
+                ref, s2sphere.LatLng.from_degrees(circle.center.lat, circle.center.lng)
+            )
+            footprint2 = shapely.geometry.Point(*xy).buffer(circle.radius.value)
+        elif vol3_2.outline_polygon:
+            footprint2 = shapely.geometry.Polygon(
+                flatten(ref, s2sphere.LatLng.from_degrees(v.lat, v.lng))
+                for v in vol3_2.outline_polygon.vertices
+            )
+        else:
+            raise ValueError("Neither outline_circle nor outline_polygon specified")
+
+        return footprint1.intersects(footprint2)
+
+    @staticmethod
+    def from_f3548v21(vol: Union[f3548v21.Volume3D, dict]) -> Volume3D:
+        if not isinstance(vol, f3548v21.Volume3D) and isinstance(vol, dict):
+            vol = ImplicitDict.parse(vol, f3548v21.Volume3D)
+        kwargs = {}
+        if "outline_circle" in vol and vol.outline_circle:
+            kwargs["outline_circle"] = Circle.from_f3548v21(vol.outline_circle)
+        if "outline_polygon" in vol and vol.outline_polygon:
+            kwargs["outline_polygon"] = Polygon.from_f3548v21(vol.outline_polygon)
+        if "altitude_lower" in vol and vol.altitude_lower:
+            kwargs["altitude_lower"] = Altitude.from_f3548v21(vol.altitude_lower)
+        if "altitude_upper" in vol and vol.altitude_upper:
+            kwargs["altitude_upper"] = Altitude.from_f3548v21(vol.altitude_upper)
+        return Volume3D(**kwargs)
+
+    def to_f3548v21(self) -> f3548v21.Volume3D:
+        return ImplicitDict.parse(self, f3548v21.Volume3D)
 
 
 def make_latlng_rect(area) -> s2sphere.LatLngRect:
@@ -265,3 +381,7 @@ class LatLngBoundingBox(ImplicitDict):
             s2sphere.LatLng.from_degrees(self.lat_max, self.lng_max),
             s2sphere.LatLng.from_degrees(self.lat_min, self.lng_max),
         ]
+
+
+def latitude_degrees(distance_meters: float) -> float:
+    return 360 * distance_meters / EARTH_CIRCUMFERENCE_M

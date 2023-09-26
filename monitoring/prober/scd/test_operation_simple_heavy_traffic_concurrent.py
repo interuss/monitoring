@@ -16,6 +16,8 @@ import datetime
 import json
 import inspect
 
+from monitoring.monitorlib.geo import Circle
+from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
@@ -66,7 +68,9 @@ def _make_op_request_differ_in_2d(idx):
     time_end = time_start + datetime.timedelta(minutes=60)
     lat = _calculate_lat(idx)
 
-    vol4 = scd.make_vol4(time_start, time_end, 0, 120, scd.make_circle(lat, 178, 50))
+    vol4 = Volume4D.from_values(
+        time_start, time_end, 0, 120, Circle.from_meters(lat, 178, 50)
+    ).to_f3548v21()
     return _make_op_request_with_extents(vol4)
 
 
@@ -80,9 +84,9 @@ def _make_op_request_differ_in_altitude(idx):
     alt0 = delta * idx
     alt1 = alt0 + delta - 1
 
-    vol4 = scd.make_vol4(
-        time_start, time_end, alt0, alt1, scd.make_circle(-56, 178, 50)
-    )
+    vol4 = Volume4D.from_values(
+        time_start, time_end, alt0, alt1, Circle.from_meters(-56, 178, 50)
+    ).to_f3548v21()
     return _make_op_request_with_extents(vol4)
 
 
@@ -96,7 +100,9 @@ def _make_op_request_differ_in_time(idx, time_gap):
     )
     time_end = time_start + datetime.timedelta(minutes=delta - 1)
 
-    vol4 = scd.make_vol4(time_start, time_end, 0, 120, scd.make_circle(-56, 178, 50))
+    vol4 = Volume4D.from_values(
+        time_start, time_end, 0, 120, Circle.from_meters(-56, 178, 50)
+    ).to_f3548v21()
     return _make_op_request_with_extents(vol4)
 
 
@@ -169,9 +175,9 @@ async def _get_operation_async(op_id, scd_session_async, scd_api):
 async def _query_operation_async(idx, scd_session_async, scd_api):
     lat = _calculate_lat(idx)
     req_json = {
-        "area_of_interest": scd.make_vol4(
-            None, None, 0, 5000, scd.make_circle(lat, 178, 12000)
-        )
+        "area_of_interest": Volume4D.from_values(
+            None, None, 0, 5000, Circle.from_meters(lat, 178, 12000)
+        ).to_f3548v21()
     }
     async with SEMAPHORE:
         if scd_api == scd.API_0_3_17:

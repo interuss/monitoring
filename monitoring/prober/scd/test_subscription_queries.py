@@ -6,6 +6,8 @@
 
 import datetime
 
+from monitoring.monitorlib.geo import latitude_degrees, Circle
+from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
@@ -29,11 +31,11 @@ FOOTPRINT_SPACING_M = 10000
 def _make_sub1_req(scd_api):
     time_start = datetime.datetime.utcnow()
     time_end = time_start + datetime.timedelta(minutes=60)
-    lat = LAT0 - scd.latitude_degrees(FOOTPRINT_SPACING_M)
+    lat = LAT0 - latitude_degrees(FOOTPRINT_SPACING_M)
     req = {
-        "extents": scd.make_vol4(
-            None, time_end, 0, 300, scd.make_circle(lat, LNG0, 100)
-        ),
+        "extents": Volume4D.from_values(
+            None, time_end, 0, 300, Circle.from_meters(lat, LNG0, 100)
+        ).to_f3548v21(),
         "uss_base_url": "https://example.com/foo",
         "notify_for_constraints": False,
     }
@@ -45,9 +47,9 @@ def _make_sub2_req(scd_api):
     time_start = datetime.datetime.utcnow() + datetime.timedelta(hours=2)
     time_end = time_start + datetime.timedelta(minutes=60)
     req = {
-        "extents": scd.make_vol4(
-            time_start, time_end, 350, 650, scd.make_circle(LAT0, LNG0, 100)
-        ),
+        "extents": Volume4D.from_values(
+            time_start, time_end, 350, 650, Circle.from_meters(LAT0, LNG0, 100)
+        ).to_f3548v21(),
         "old_version": 0,
         "uss_base_url": "https://example.com/foo",
         "notify_for_operations": True,
@@ -60,11 +62,11 @@ def _make_sub2_req(scd_api):
 def _make_sub3_req(scd_api):
     time_start = datetime.datetime.utcnow() + datetime.timedelta(hours=4)
     time_end = time_start + datetime.timedelta(minutes=60)
-    lat = LAT0 + scd.latitude_degrees(FOOTPRINT_SPACING_M)
+    lat = LAT0 + latitude_degrees(FOOTPRINT_SPACING_M)
     req = {
-        "extents": scd.make_vol4(
-            time_start, time_end, 700, 1000, scd.make_circle(lat, LNG0, 100)
-        ),
+        "extents": Volume4D.from_values(
+            time_start, time_end, 700, 1000, Circle.from_meters(lat, LNG0, 100)
+        ).to_f3548v21(),
         "uss_base_url": "https://example.com/foo",
         "notify_for_constraints": False,
     }
@@ -96,9 +98,9 @@ def test_subs_do_not_exist_query(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/subscriptions/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                None, None, 0, 5000, scd.make_circle(LAT0, LNG0, FOOTPRINT_SPACING_M)
-            )
+            "area_of_interest": Volume4D.from_values(
+                None, None, 0, 5000, Circle.from_meters(LAT0, LNG0, FOOTPRINT_SPACING_M)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -136,9 +138,9 @@ def test_search_find_all_subs(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/subscriptions/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                None, None, 0, 3000, scd.make_circle(LAT0, LNG0, FOOTPRINT_SPACING_M)
-            )
+            "area_of_interest": Volume4D.from_values(
+                None, None, 0, 3000, Circle.from_meters(LAT0, LNG0, FOOTPRINT_SPACING_M)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -152,14 +154,14 @@ def test_search_find_all_subs(ids, scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_search_footprint(ids, scd_api, scd_session):
-    lat = LAT0 - scd.latitude_degrees(FOOTPRINT_SPACING_M)
+    lat = LAT0 - latitude_degrees(FOOTPRINT_SPACING_M)
     print(lat)
     resp = scd_session.post(
         "/subscriptions/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                None, None, 0, 3000, scd.make_circle(lat, LNG0, 50)
-            )
+            "area_of_interest": Volume4D.from_values(
+                None, None, 0, 3000, Circle.from_meters(lat, LNG0, 50)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -171,9 +173,9 @@ def test_search_footprint(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/subscriptions/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                None, None, 0, 3000, scd.make_circle(LAT0, LNG0, 50)
-            )
+            "area_of_interest": Volume4D.from_values(
+                None, None, 0, 3000, Circle.from_meters(LAT0, LNG0, 50)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -194,13 +196,13 @@ def test_search_time(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/subscriptions/query",
         json={
-            "area_of_interest": scd.make_vol4(
+            "area_of_interest": Volume4D.from_values(
                 time_start,
                 time_end,
                 0,
                 3000,
-                scd.make_circle(LAT0, LNG0, FOOTPRINT_SPACING_M),
-            )
+                Circle.from_meters(LAT0, LNG0, FOOTPRINT_SPACING_M),
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -212,13 +214,13 @@ def test_search_time(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/subscriptions/query",
         json={
-            "area_of_interest": scd.make_vol4(
+            "area_of_interest": Volume4D.from_values(
                 None,
                 time_end,
                 0,
                 3000,
-                scd.make_circle(LAT0, LNG0, FOOTPRINT_SPACING_M),
-            )
+                Circle.from_meters(LAT0, LNG0, FOOTPRINT_SPACING_M),
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -233,13 +235,13 @@ def test_search_time(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/subscriptions/query",
         json={
-            "area_of_interest": scd.make_vol4(
+            "area_of_interest": Volume4D.from_values(
                 time_start,
                 time_end,
                 0,
                 3000,
-                scd.make_circle(LAT0, LNG0, FOOTPRINT_SPACING_M),
-            )
+                Circle.from_meters(LAT0, LNG0, FOOTPRINT_SPACING_M),
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -251,13 +253,13 @@ def test_search_time(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/subscriptions/query",
         json={
-            "area_of_interest": scd.make_vol4(
+            "area_of_interest": Volume4D.from_values(
                 time_start,
                 None,
                 0,
                 3000,
-                scd.make_circle(LAT0, LNG0, FOOTPRINT_SPACING_M),
-            )
+                Circle.from_meters(LAT0, LNG0, FOOTPRINT_SPACING_M),
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -274,17 +276,17 @@ def test_search_time(ids, scd_api, scd_session):
 def test_search_time_footprint(ids, scd_api, scd_session):
     time_start = datetime.datetime.utcnow()
     time_end = time_start + datetime.timedelta(hours=2.5)
-    lat = LAT0 + scd.latitude_degrees(FOOTPRINT_SPACING_M)
+    lat = LAT0 + latitude_degrees(FOOTPRINT_SPACING_M)
     resp = scd_session.post(
         "/subscriptions/query",
         json={
-            "area_of_interest": scd.make_vol4(
+            "area_of_interest": Volume4D.from_values(
                 time_start,
                 time_end,
                 0,
                 3000,
-                scd.make_circle(lat, LNG0, FOOTPRINT_SPACING_M),
-            )
+                Circle.from_meters(lat, LNG0, FOOTPRINT_SPACING_M),
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
