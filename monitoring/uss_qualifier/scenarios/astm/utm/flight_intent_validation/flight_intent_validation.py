@@ -178,7 +178,7 @@ class FlightIntentValidation(TestScenario):
         error, query = self.tested_uss.get_readiness()
         self.record_query(query)
         with self.check(
-            "Flight planning USS not ready", self.tested_uss.participant_id
+            "Flight planning USS not ready", [self.tested_uss.participant_id]
         ) as check:
             if error:
                 check.record_failed(

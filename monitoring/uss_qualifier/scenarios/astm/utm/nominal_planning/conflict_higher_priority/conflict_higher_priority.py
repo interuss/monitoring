@@ -201,7 +201,7 @@ class ConflictHigherPriority(TestScenario):
             error, query = uss.get_readiness()
             self.record_query(query)
             with self.check(
-                "Flight planning USS not ready", uss.participant_id
+                "Flight planning USS not ready", [uss.participant_id]
             ) as check:
                 if error:
                     check.record_failed(

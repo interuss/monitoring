@@ -95,7 +95,7 @@ class Validation(TestScenario):
         error, query = self.ussp.get_readiness()
         self.record_query(query)
         with self.check(
-            "Flight planning USSP not ready", self.ussp.participant_id
+            "Flight planning USSP not ready", [self.ussp.participant_id]
         ) as check:
             if error:
                 check.record_failed(
