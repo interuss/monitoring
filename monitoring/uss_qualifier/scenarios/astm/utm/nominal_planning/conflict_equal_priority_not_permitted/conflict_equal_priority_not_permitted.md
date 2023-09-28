@@ -12,33 +12,68 @@ It involves a tested USS and a control USS through which conflicting flights are
 
 This scenario skips execution and completes successfully at the setup case if a resource containing equal priority flight intents where conflicts are not allow is not provided, such as if a jurisdiction does not have any priority levels at which conflicts are not allowed.
 
-
-## Sequence
-![Sequence diagram](conflict_equal_priority_not_permitted.png)
-
 ## Resources
 ### flight_intents
 If the jurisdiction in which these tests are being conducted does not have a priority level at which conflicts are not allowed, the FlightIntentsResource must be None to prevent the
-execution of the test.
+execution of this test.
 
 Otherwise, the FlightIntentsResource must provide the following flight intents:
 
-- For flight 1:
-    - `flight_1_planned_time_range_A`: flight used for the tested USS
-        - original time range `time_range_A` (e.g. 1pm to 2pm)
-    - `flight_1_activated_time_range_A`: state mutation `Activated`
-    - `flight_1_activated_time_range_A_extended`: mutation of volume in time to extend original time range (e.g. 12pm to 2pm)
-    - `flight_1_planned_time_range_B`: mutation of volume in time to not intersect with `time_range_A` or `time_range_A_extended` (e.g. 4pm to 5pm)
-    - `flight_1_activated_time_range_B`: state mutation `Activated`
-
-- For flight 2:
-    - `flight_2_equal_prio_planned_time_range_B`: flight used for the control USS
-        - original time range `time_range_B` that does not intersect with `time_range_A` or `time_range_A_extended` (e.g. 4pm to 5pm)
-        - must have equal priority than flight 1
-        - must intersect flight 1 in space
-    - `flight_2_equal_prio_activated_time_range_B`: state mutation `Activated`
-    - `flight_2_equal_prio_nonconforming_time_range_A`: state mutation `Nonconforming`
-      - must have an off-nominal volume with time range `time_range_A`
+<table>
+  <tr>
+    <th>Flight intent ID</th><!-- TODO: remove mention of time ranges -->
+    <th>Flight name</th>
+    <th>Priority</th>
+    <th>State</th><!-- TODO: Update with usage_state and uas_state when new flight planning API is adopted -->
+    <th>Must conflict with</th>
+    <th>Must not conflict with</th>
+  </tr>
+  <tr>
+    <td><code>flight_1_planned_time_range_A</code></td>
+    <td rowspan="2">Flight 1</td>
+    <td rowspan="8">Any (but all the same)</td>
+    <td>Accepted</td>
+    <td rowspan="2">Flight 2</td>
+    <td rowspan="2">N/A</td>
+  </tr>
+  <tr>
+    <td><code>flight_1_activated_time_range_A</code></td>
+    <td>Activated</td>
+  </tr>
+  <tr>
+    <td><code>flight_1_activated_time_range_A_extended</code></td>
+    <td>Flight 1m</td>
+    <td>Activated</td>
+    <td>Flight 2</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td><code>flight_1_planned_time_range_B</code></td>
+    <td rowspan="2">Flight 1c</td>
+    <td>Planned</td>
+    <td rowspan="2">N/A</td>
+    <td rowspan="2">Flight 2</td>
+  </tr>
+  <tr>
+    <td><code>flight_1_activated_time_range_B</code></td>
+    <td>Activated</td>
+  </tr>
+  <tr>
+    <td><code>flight_2_equal_prio_planned_time_range_B</code></td>
+    <td rowspan="3">Flight 2</td>
+    <td>Planned</td>
+    <td rowspan="3">Flight 1, Flight 1m</td>
+    <td rowspan="3">Flight 1c</td>
+  </tr>
+  <tr>
+    <td><code>flight_2_equal_prio_activated_time_range_B</code></td>
+    <td>Activated</td>
+  </tr>
+  <tr>
+    <td><code>flight_2_equal_prio_nonconforming_time_range_A</code></td>
+    <td>Nonconforming</td>
+  </tr>
+</table>
 
 ### tested_uss
 FlightPlannerResource that is under test and will manage flight 1.
@@ -65,7 +100,9 @@ Both USSs are requested to remove all flights from the area under test.
 **[interuss.automated_testing.flight_planning.ClearArea](../../../../../requirements/interuss/automated_testing/flight_planning.md)**
 
 
-## Attempt to plan flight in conflict test case
+## Attempt to plan flight into conflict test case
+![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict.svg)
+
 ### [Plan flight 2 test step](../../../../flight_planning/plan_flight_intent.md)
 Flight 2 on time range B should be successfully planned by the control USS.
 
@@ -84,7 +121,9 @@ per **[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**.
 Flight 1 should not have been planned.
 
 
-## Attempt to activate flight in conflict test case
+## Attempt to activate flight into conflict test case
+![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict.svg)
+
 ### [Attempt to directly activate conflicting flight 1 test step](../../../../flight_planning/activate_conflict_flight_intent.md)
 The test driver attempts to activate directly flight 1 onto time range B, i.e. without the flight being planned before.
 However, this conflicts with activated flight 2, which is of equal priority. As such it should be rejected
@@ -94,13 +133,15 @@ per **[astm.f3548.v21.SCD0045](../../../../../requirements/astm/f3548/v21.md)**.
 Flight 1 should not have been activated directly.
 
 
-## Attempt to modify planned flight in conflict test case
+## Attempt to modify planned flight into conflict test case
+![Test case summary illustration](assets/attempt_to_modify_planned_flight_into_conflict.svg)
+
 ### [Plan flight 1 test step](../../../../flight_planning/plan_flight_intent.md)
 Flight 1 on time range A should be successfully planned by the tested USS.
 
 ### [Validate flight 1 sharing test step](../../validate_shared_operational_intent.md)
 
-### [Attempt to modify planned flight 1 in conflict test step](../../../../flight_planning/modify_planned_conflict_flight_intent.md)
+### [Attempt to modify planned flight 1 into conflict test step](../../../../flight_planning/modify_planned_conflict_flight_intent.md)
 The test driver attempts to modify flight 1 via the tested USS so that it becomes planned on time range B.
 However, this conflicts with flight 2, which is of equal priority but was planned first.
 As such it should be rejected per **[astm.f3548.v21.SCD0040](../../../../../requirements/astm/f3548/v21.md)**.
@@ -110,7 +151,9 @@ Because the modification attempt was invalid, either Flight 1 should not have be
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
 
-## Attempt to modify activated flight in conflict test case
+## Attempt to modify activated flight into conflict test case
+![Test case summary illustration](assets/attempt_to_modify_activated_flight_into_conflict.svg)
+
 ### [Activate flight 1 test step](../../../../flight_planning/activate_flight_intent.md)
 The test driver activates flight 1 onto its time range A, which should be done successfully.
 Note that flight 1 could be either planned or non-existent before this step. In the latter case, the flight will be
@@ -118,7 +161,7 @@ directly activated without being planned beforehand.
 
 ### [Validate flight 1 sharing test step](../../validate_shared_operational_intent.md)
 
-### [Attempt to modify activated flight 1 in conflict test step](../../../../flight_planning/modify_activated_conflict_flight_intent.md)
+### [Attempt to modify activated flight 1 into conflict test step](../../../../flight_planning/modify_activated_conflict_flight_intent.md)
 The test driver attempts to modify flight 1 so that it becomes in conflict with flight 2 onto time range B.
 Both flights are activated at that point. However, because the conflict did not exist when the modification was
 initiated, it should be rejected per **[astm.f3548.v21.SCD0050](../../../../../requirements/astm/f3548/v21.md)**.
@@ -129,6 +172,8 @@ original accepted request), or it should have been removed (because the USS reje
 
 
 ## Modify activated flight with pre-existing conflict test case
+![Test case summary illustration](assets/modify_activated_flight_with_preexisting_conflict.svg)
+
 ### [Activate flight 1 test step](../../../../flight_planning/activate_flight_intent.md)
 The test driver activates flight 1 onto its time range A, which should be done successfully.
 Note that flight 1 could be either already activated or non-existent before this step. In the former case, the call is
@@ -158,7 +203,7 @@ to reject or accept the flight. If the USS indicates that the injection attempt 
 
 ### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
 
-### Attempt to modify activated flight 1 in conflict with activated flight 2 test step
+### Attempt to modify activated flight 1 in conflict with nonconforming flight 2 test step
 Before execution of this step, flight 1 is activated (onto time range A) and flight 2 is non-conforming (onto time range
 A), and both are in conflict. The test driver modifies flight 1 in a way that still conflicts with flight 2 by extending
 its time range A.
