@@ -25,7 +25,7 @@ FlightPlannerResource that provides the flight planner (USSP) which should be te
 ### Check for flight planning readiness test step
 Both USSs are queried for their readiness to ensure this test can proceed.
 
-#### Flight planning USSP not ready check
+#### Flight planning USSP ready check
 If the USS does not respond appropriately to the endpoint queried to determine readiness, this check will fail and the test cannot proceed.
 
 ### Area clearing test step
