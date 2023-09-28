@@ -2,10 +2,9 @@ from typing import Optional, List
 
 from implicitdict import ImplicitDict
 
-from monitoring.monitorlib.geo import Volume4D
+from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import AuthSpec
 from monitoring.monitorlib.rid import RIDVersion
-
 
 ObservationAreaID = str
 """Unique identifier of observation area."""

@@ -2,10 +2,10 @@ import inspect
 from datetime import datetime
 from typing import List, Union, Optional, Tuple, Iterable, Set, Dict
 
+from monitoring.monitorlib.geotemporal import Volume4DCollection
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.scd import bounding_vol4
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
     Capability,
@@ -48,7 +48,7 @@ def clear_area(
     for flight_intent in flight_intents:
         volumes += flight_intent.request.operational_intent.volumes
         volumes += flight_intent.request.operational_intent.off_nominal_volumes
-    extent = bounding_vol4(volumes)
+    extent = Volume4DCollection.from_f3548v21(volumes).bounding_volume.to_f3548v21()
     for uss in flight_planners:
         with scenario.check("Area cleared successfully", [uss.participant_id]) as check:
             try:

@@ -1,8 +1,8 @@
+from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays
 
-from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightResult,
 )
@@ -104,9 +104,9 @@ class FlightIntentValidation(TestScenario):
             ), "valid_conflict_tiny_overlap must have state Accepted"
 
             time_delta = (
-                scd.start_of(
+                Volume4DCollection.from_f3548v21(
                     self.invalid_too_far_away.request.operational_intent.volumes
-                )
+                ).time_start.datetime
                 - self.invalid_too_far_away.reference_time.datetime
             )
             assert (
@@ -126,9 +126,12 @@ class FlightIntentValidation(TestScenario):
                 > 0
             ), "invalid_activated_offnominal must have at least one off-nominal volume"
 
-            assert scd.vol4s_intersect(
-                self.valid_flight.request.operational_intent.volumes,
-                self.valid_conflict_tiny_overlap.request.operational_intent.volumes,
+            assert Volume4DCollection.from_f3548v21(
+                self.valid_flight.request.operational_intent.volumes
+            ).intersects_vol4s(
+                Volume4DCollection.from_f3548v21(
+                    self.valid_conflict_tiny_overlap.request.operational_intent.volumes
+                )
             ), "valid_flight and valid_conflict_tiny_overlap must intersect"
 
         except KeyError as e:

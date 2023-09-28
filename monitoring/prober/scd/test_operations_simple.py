@@ -12,6 +12,8 @@
 import datetime
 from typing import Dict, Tuple
 
+from monitoring.monitorlib.geo import Circle, Altitude
+from monitoring.monitorlib.geotemporal import Volume4D, Time
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
@@ -41,7 +43,9 @@ def _make_op1_request():
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
         "extents": [
-            scd.make_vol4(time_start, time_end, 0, 120, scd.make_circle(90, 0, 200))
+            Volume4D.from_values(
+                time_start, time_end, 0, 120, Circle.from_meters(90, 0, 200)
+            ).to_f3548v21()
         ],
         "old_version": 0,
         "state": "Accepted",
@@ -55,7 +59,9 @@ def _make_op2_request():
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
         "extents": [
-            scd.make_vol4(time_start, time_end, 0, 120, scd.make_circle(89.999, 0, 200))
+            Volume4D.from_values(
+                time_start, time_end, 0, 120, Circle.from_meters(89.999, 0, 200)
+            ).to_f3548v21()
         ],
         "old_version": 0,
         "state": "Accepted",
@@ -129,9 +135,9 @@ def test_op1_does_not_exist_query_1(ids, scd_api, scd_session, scd_session2):
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                time_now, end_time, 0, 5000, scd.make_circle(89.999, 180, 300)
-            )
+            "area_of_interest": Volume4D.from_values(
+                time_now, end_time, 0, 5000, Circle.from_meters(89.999, 180, 300)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -153,9 +159,9 @@ def test_op1_does_not_exist_query_2(ids, scd_api, scd_session, scd_session2):
     resp = scd_session2.post(
         "/operational_intent_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                time_now, end_time, 0, 5000, scd.make_circle(89.999, 180, 300)
-            )
+            "area_of_interest": Volume4D.from_values(
+                time_now, end_time, 0, 5000, Circle.from_meters(89.999, 180, 300)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -256,9 +262,9 @@ def test_create_op2sub(ids, scd_api, scd_session, scd_session2):
     time_start = datetime.datetime.utcnow()
     time_end = time_start + datetime.timedelta(minutes=70)
     req = {
-        "extents": scd.make_vol4(
-            time_start, time_end, 0, 1000, scd.make_circle(89.999, 0, 250)
-        ),
+        "extents": Volume4D.from_values(
+            time_start, time_end, 0, 1000, Circle.from_meters(89.999, 0, 250)
+        ).to_f3548v21(),
         "uss_base_url": URL_SUB2,
         "notify_for_constraints": False,
     }
@@ -367,9 +373,9 @@ def test_read_ops_from_uss1(ids, scd_api, scd_session, scd_session2):
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                time_now, end_time, 0, 5000, scd.make_circle(89.999, 180, 300)
-            )
+            "area_of_interest": Volume4D.from_values(
+                time_now, end_time, 0, 5000, Circle.from_meters(89.999, 180, 300)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -399,9 +405,9 @@ def test_read_ops_from_uss2(ids, scd_api, scd_session, scd_session2):
     resp = scd_session2.post(
         "/operational_intent_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                time_now, end_time, 0, 5000, scd.make_circle(89.999, 180, 300)
-            )
+            "area_of_interest": Volume4D.from_values(
+                time_now, end_time, 0, 5000, Circle.from_meters(89.999, 180, 300)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -550,8 +556,8 @@ def test_mutate_sub2(ids, scd_api, scd_session, scd_session2):
     req["extents"] = req["extents"][0]
     del req["state"]
     req["notify_for_constraints"] = False
-    req["extents"]["time_start"] = scd.make_time(time_start)
-    req["extents"]["time_end"] = scd.make_time(time_end)
+    req["extents"]["time_start"] = Time(time_start).to_f3548v21()
+    req["extents"]["time_end"] = Time(time_end).to_f3548v21()
 
     req["notify_for_operational_intents"] = False
     resp = scd_session2.put("/subscriptions/{}".format(ids(SUB2_TYPE)), json=req)
@@ -560,38 +566,38 @@ def test_mutate_sub2(ids, scd_api, scd_session, scd_session2):
 
     # Attempt mutation with start time that doesn't cover Op2
 
-    req["extents"]["time_start"] = scd.make_time(
+    req["extents"]["time_start"] = Time(
         time_now + datetime.timedelta(minutes=5)
-    )
+    ).to_f3548v21()
     resp = scd_session2.put(
         "/subscriptions/{}/{}".format(ids(SUB2_TYPE), sub2_version), json=req
     )
     assert resp.status_code == 400, resp.content
-    req["extents"]["time_start"] = scd.make_time(time_start)
+    req["extents"]["time_start"] = Time(time_start).to_f3548v21()
 
     # Attempt mutation with end time that doesn't cover Op2
-    req["extents"]["time_end"] = scd.make_time(time_now)
+    req["extents"]["time_end"] = Time(time_now).to_f3548v21()
     resp = scd_session2.put(
         "/subscriptions/{}/{}".format(ids(SUB2_TYPE), sub2_version), json=req
     )
     assert resp.status_code == 400, resp.content
-    req["extents"]["time_end"] = scd.make_time(time_end)
+    req["extents"]["time_end"] = Time(time_end).to_f3548v21()
 
     # # Attempt mutation with minimum altitude that doesn't cover Op2
-    req["extents"]["volume"]["altitude_lower"] = scd.make_altitude(10)
+    req["extents"]["volume"]["altitude_lower"] = Altitude.w84m(10)
     resp = scd_session2.put(
         "/subscriptions/{}/{}".format(ids(SUB2_TYPE), sub2_version), json=req
     )
     assert resp.status_code == 400, resp.content
-    req["extents"]["volume"]["altitude_lower"] = scd.make_altitude(0)
+    req["extents"]["volume"]["altitude_lower"] = Altitude.w84m(0)
 
     # Attempt mutation with maximum altitude that doesn't cover Op2
-    req["extents"]["volume"]["altitude_upper"] = scd.make_altitude(10)
+    req["extents"]["volume"]["altitude_upper"] = Altitude.w84m(10)
     resp = scd_session2.put(
         "/subscriptions/{}/{}".format(ids(SUB2_TYPE), sub2_version), json=req
     )
     assert resp.status_code == 400, resp.content
-    req["extents"]["volume"]["altitude_upper"] = scd.make_altitude(200)
+    req["extents"]["volume"]["altitude_upper"] = Altitude.w84m(200)
 
     # # Attempt mutation with outline that doesn't cover Op2
     old_lat = req["extents"]["volume"]["outline_circle"]["center"]["lat"]

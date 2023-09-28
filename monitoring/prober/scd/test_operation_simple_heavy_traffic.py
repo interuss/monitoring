@@ -12,11 +12,12 @@
 import datetime
 
 from monitoring.monitorlib import scd
+from monitoring.monitorlib.geo import Circle
+from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.scd import SCOPE_SC
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib.testing import assert_datetimes_are_equal
 from monitoring.prober.infrastructure import (
-    depends_on,
     for_api_versions,
     register_resource_type,
 )
@@ -39,7 +40,9 @@ def _make_op_request(idx):
     lat = -56 - 0.001 * idx
     return {
         "extents": [
-            scd.make_vol4(time_start, time_end, 0, 120, scd.make_circle(lat, 178, 50))
+            Volume4D.from_values(
+                time_start, time_end, 0, 120, Circle.from_meters(lat, 178, 50)
+            ).to_f3548v21()
         ],
         "old_version": 0,
         "state": "Accepted",
@@ -75,9 +78,9 @@ def test_ops_do_not_exist_query(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                time_now, end_time, 0, 5000, scd.make_circle(-56, 178, 12000)
-            )
+            "area_of_interest": Volume4D.from_values(
+                time_now, end_time, 0, 5000, Circle.from_meters(-56, 178, 12000)
+            ).to_f3548v21()
         },
         scope=SCOPE_SC,
     )
@@ -140,9 +143,9 @@ def test_get_ops_by_search(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                None, None, 0, 5000, scd.make_circle(-56, 178, 12000)
-            )
+            "area_of_interest": Volume4D.from_values(
+                None, None, 0, 5000, Circle.from_meters(-56, 178, 12000)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -160,9 +163,9 @@ def test_get_ops_by_search_earliest_time_included(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                earliest_time, None, 0, 5000, scd.make_circle(-56, 178, 12000)
-            )
+            "area_of_interest": Volume4D.from_values(
+                earliest_time, None, 0, 5000, Circle.from_meters(-56, 178, 12000)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -179,9 +182,9 @@ def test_get_ops_by_search_earliest_time_excluded(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                earliest_time, None, 0, 5000, scd.make_circle(-56, 178, 12000)
-            )
+            "area_of_interest": Volume4D.from_values(
+                earliest_time, None, 0, 5000, Circle.from_meters(-56, 178, 12000)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -196,9 +199,9 @@ def test_get_ops_by_search_latest_time_included(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                None, latest_time, 0, 5000, scd.make_circle(-56, 178, 12000)
-            )
+            "area_of_interest": Volume4D.from_values(
+                None, latest_time, 0, 5000, Circle.from_meters(-56, 178, 12000)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -215,9 +218,9 @@ def test_get_ops_by_search_latest_time_excluded(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                None, latest_time, 0, 5000, scd.make_circle(-56, 178, 12000)
-            )
+            "area_of_interest": Volume4D.from_values(
+                None, latest_time, 0, 5000, Circle.from_meters(-56, 178, 12000)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -302,9 +305,9 @@ def test_get_deleted_ops_by_search(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                None, None, 0, 5000, scd.make_circle(-56, 178, 12000)
-            )
+            "area_of_interest": Volume4D.from_values(
+                None, None, 0, 5000, Circle.from_meters(-56, 178, 12000)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content

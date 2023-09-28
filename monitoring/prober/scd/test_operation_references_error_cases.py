@@ -7,6 +7,7 @@ import uuid
 import arrow
 import yaml
 
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
@@ -258,8 +259,9 @@ def test_missing_conflicted_operation(ids, scd_api, scd_session):
     # Emplace the initial version of Operation 1
     with open("./scd/resources/op_missing_initial.yaml", "r") as f:
         req = yaml.full_load(f)
-    dt = arrow.utcnow().datetime - scd.start_of(req["extents"])
-    req["extents"] = scd.offset_time(req["extents"], dt)
+    extents = Volume4DCollection.from_f3548v21(req["extents"])
+    dt = arrow.utcnow().datetime - extents.time_start.datetime
+    req["extents"] = extents.offset_times(dt).to_f3548v21()
     resp = scd_session.put(
         "/operational_intent_references/{}".format(ids(OP_TYPE)), json=req
     )
@@ -270,7 +272,8 @@ def test_missing_conflicted_operation(ids, scd_api, scd_session):
     # Emplace the pre-existing Operation that conflicted in the original observation
     with open("./scd/resources/op_missing_preexisting_unknown.yaml", "r") as f:
         req = yaml.full_load(f)
-    req["extents"] = scd.offset_time(req["extents"], dt)
+    extents = Volume4DCollection.from_f3548v21(req["extents"])
+    req["extents"] = extents.offset_times(dt).to_f3548v21()
     req["key"] = [ovn1a]
     resp = scd_session.put(
         "/operational_intent_references/{}".format(ids(OP_TYPE2)), json=req
@@ -280,7 +283,9 @@ def test_missing_conflicted_operation(ids, scd_api, scd_session):
     # Attempt to update Operation 1 without OVN for the pre-existing Operation
     with open("./scd/resources/op_missing_update.json", "r") as f:
         req = json.load(f)
-    req["extents"] = scd.offset_time(req["extents"], dt)
+    req["extents"] = (
+        Volume4DCollection.from_f3548v21(req["extents"]).offset_times(dt).to_f3548v21()
+    )
     req["key"] = [ovn1a]
     req["subscription_id"] = sub_id
     resp = scd_session.put(
@@ -299,7 +304,9 @@ def test_missing_conflicted_operation(ids, scd_api, scd_session):
     # Perform an area-based query on the area occupied by Operation 1
     with open("./scd/resources/op_missing_query.json", "r") as f:
         req = json.load(f)
-    req["area_of_interest"] = scd.offset_time([req["area_of_interest"]], dt)[0]
+    req["area_of_interest"] = (
+        Volume4D.from_f3548v21(req["area_of_interest"]).offset_time(dt).to_f3548v21()
+    )
     resp = scd_session.post("/operational_intent_references/query", json=req)
     assert resp.status_code == 200, resp.content
     ops = [op["id"] for op in resp.json()["operational_intent_references"]]
@@ -315,8 +322,9 @@ def test_missing_conflicted_operation(ids, scd_api, scd_session):
 def test_big_operation_search(scd_api, scd_session):
     with open("./scd/resources/op_big_operation.json", "r") as f:
         req = json.load(f)
-    dt = arrow.utcnow().datetime - scd.start_of([req["area_of_interest"]])
-    req["area_of_interest"] = scd.offset_time([req["area_of_interest"]], dt)[0]
+    aoi = Volume4D.from_f3548v21(req["area_of_interest"])
+    dt = arrow.utcnow().datetime - aoi.time_start.datetime
+    req["area_of_interest"] = aoi.offset_time(dt).to_f3548v21()
     resp = scd_session.post("/operational_intent_references/query", json=req)
     assert resp.status_code == 400, resp.content
 
