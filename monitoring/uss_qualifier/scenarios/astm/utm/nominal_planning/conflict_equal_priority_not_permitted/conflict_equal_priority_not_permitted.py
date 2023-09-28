@@ -1,10 +1,10 @@
 from typing import Optional
 
 from monitoring.monitorlib.geotemporal import Volume4DCollection
+from monitoring.uss_qualifier.common_data_definitions import Severity
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    Capability,
     InjectFlightResult,
 )
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
@@ -37,7 +37,6 @@ from monitoring.uss_qualifier.scenarios.scenario import (
 )
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     clear_area,
-    check_capabilities,
     plan_flight_intent,
     cleanup_flights,
     activate_flight_intent,
@@ -226,17 +225,23 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
         self.end_test_scenario()
 
     def _setup(self) -> bool:
-        if not check_capabilities(
-            self,
-            "Check for necessary capabilities",
-            required_capabilities=[
-                (
-                    [self.tested_uss, self.control_uss],
-                    Capability.BasicStrategicConflictDetection,
-                )
-            ],
-        ):
-            return False
+        self.begin_test_step("Check for flight planning readiness")
+
+        for uss in (self.tested_uss, self.control_uss):
+            error, query = uss.get_readiness()
+            self.record_query(query)
+            with self.check(
+                "Flight planning USS not ready", [uss.participant_id]
+            ) as check:
+                if error:
+                    check.record_failed(
+                        "Error determining readiness",
+                        Severity.High,
+                        "Error: " + error,
+                        query_timestamps=[query.request.timestamp],
+                    )
+
+        self.end_test_step()
 
         clear_area(
             self,
