@@ -1,8 +1,8 @@
 from typing import Optional
 
+from monitoring.monitorlib.geotemporal import Volume4DCollection
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
-from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     Capability,
     InjectFlightResult,
@@ -141,21 +141,33 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 self.flight_2_equal_prio_planned_time_range_B.request.operational_intent.priority
                 == self.flight_1_planned_time_range_A.request.operational_intent.priority
             ), "flight_2 must have priority equal to flight_1"
-            assert not scd.vol4s_intersect(
-                self.flight_1_planned_time_range_A.request.operational_intent.volumes,
-                self.flight_2_equal_prio_planned_time_range_B.request.operational_intent.volumes,
+            assert not Volume4DCollection.from_f3548v21(
+                self.flight_1_planned_time_range_A.request.operational_intent.volumes
+            ).intersects_vol4s(
+                Volume4DCollection.from_f3548v21(
+                    self.flight_2_equal_prio_planned_time_range_B.request.operational_intent.volumes
+                )
             ), "flight_1_planned_time_range_A and flight_2_equal_prio_planned_time_range_B must not intersect"
-            assert not scd.vol4s_intersect(
-                self.flight_1_planned_time_range_A.request.operational_intent.volumes,
-                self.flight_1_activated_time_range_B.request.operational_intent.volumes,
+            assert not Volume4DCollection.from_f3548v21(
+                self.flight_1_planned_time_range_A.request.operational_intent.volumes
+            ).intersects_vol4s(
+                Volume4DCollection.from_f3548v21(
+                    self.flight_1_activated_time_range_B.request.operational_intent.volumes
+                )
             ), "flight_1_planned_time_range_A and flight_1_activated_time_range_B must not intersect"
-            assert scd.vol4s_intersect(
-                self.flight_1_activated_time_range_B.request.operational_intent.volumes,
-                self.flight_2_equal_prio_activated_time_range_B.request.operational_intent.volumes,
+            assert Volume4DCollection.from_f3548v21(
+                self.flight_1_activated_time_range_B.request.operational_intent.volumes
+            ).intersects_vol4s(
+                Volume4DCollection.from_f3548v21(
+                    self.flight_2_equal_prio_activated_time_range_B.request.operational_intent.volumes
+                )
             ), "flight_1_activated_time_range_B and flight_2_equal_prio_activated_time_range_B must intersect"
-            assert scd.vol4s_intersect(
-                self.flight_1_activated_time_range_A.request.operational_intent.volumes,
-                self.flight_2_equal_prio_nonconforming_time_range_A.request.operational_intent.off_nominal_volumes,
+            assert Volume4DCollection.from_f3548v21(
+                self.flight_1_activated_time_range_A.request.operational_intent.volumes
+            ).intersects_vol4s(
+                Volume4DCollection.from_f3548v21(
+                    self.flight_2_equal_prio_nonconforming_time_range_A.request.operational_intent.off_nominal_volumes
+                )
             ), "flight_1_activated_time_range_A.volumes and flight_2_equal_prio_nonconforming_time_range_A.off_nominal_volumes must intersect"
 
             assert (

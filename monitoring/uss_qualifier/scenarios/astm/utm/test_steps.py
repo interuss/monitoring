@@ -1,13 +1,13 @@
 from typing import List
 
 from monitoring.monitorlib import schema_validation, fetch
-from uas_standards.astm.f3548.v21.api import OperationalIntentState
-
-from monitoring.monitorlib.scd import (
-    bounding_vol4,
-    OperationalIntentReference,
+from monitoring.monitorlib.geotemporal import Volume4DCollection
+from uas_standards.astm.f3548.v21.api import (
+    OperationalIntentState,
     Volume4D,
+    OperationalIntentReference,
 )
+
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
 )
@@ -53,10 +53,10 @@ class ValidateNotSharedOperationalIntent(object):
         self._dss = dss
         self._test_step = test_step
 
-        self._flight_intent_extent = bounding_vol4(
+        self._flight_intent_extent = Volume4DCollection.from_f3548v21(
             flight_intent.operational_intent.volumes
             + flight_intent.operational_intent.off_nominal_volumes
-        )
+        ).bounding_volume.to_f3548v21()
 
     def __enter__(self):
         self._initial_op_intent_refs, self._initial_query = self._dss.find_op_intent(
@@ -112,10 +112,10 @@ def validate_shared_operational_intent(
     operational intent was not found and skip_if_not_found was True.
     """
     scenario.begin_test_step(test_step)
-    extent = bounding_vol4(
+    extent = Volume4DCollection.from_f3548v21(
         flight_intent.operational_intent.volumes
         + flight_intent.operational_intent.off_nominal_volumes
-    )
+    ).bounding_volume.to_f3548v21()
     op_intent_refs, query = dss.find_op_intent(extent)
     scenario.record_query(query)
     with scenario.check("DSS response", [dss.participant_id]) as check:

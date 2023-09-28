@@ -38,7 +38,6 @@ done
 OUTPUT_DIR="monitoring/prober/output"
 mkdir -p "$OUTPUT_DIR"
 
-# TODO(#17): Remove F3411_22A_ALTITUDE_REFERENCE environment variable once DSS behaves correctly
 if ! docker run \
 	-u "$(id -u):$(id -g)" \
 	--network interop_ecosystem_network \

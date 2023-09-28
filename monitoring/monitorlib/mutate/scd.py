@@ -7,6 +7,8 @@ from yaml.representer import Representer
 
 from monitoring.monitorlib import infrastructure, scd
 from monitoring.monitorlib import fetch
+from monitoring.monitorlib.geo import Polygon
+from monitoring.monitorlib.geotemporal import Volume4D
 
 
 class MutatedSubscription(fetch.Query):
@@ -58,13 +60,13 @@ def put_subscription(
     server_id: Optional[str] = None,
 ) -> MutatedSubscription:
     body = {
-        "extents": scd.make_vol4(
+        "extents": Volume4D.from_values(
             start_time,
             end_time,
             min_alt_m,
             max_alt_m,
-            polygon=scd.make_polygon(latlngrect=area),
-        ),
+            polygon=Polygon.from_latlng_rect(latlngrect=area),
+        ).to_f3548v21(),
         "uss_base_url": base_url,
         "notify_for_operational_intents": notify_for_op_intents,
         "notify_for_constraints": notify_for_constraints,

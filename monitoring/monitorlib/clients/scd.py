@@ -5,18 +5,18 @@ from monitoring.monitorlib.clients import call_query_hooks
 from monitoring.monitorlib.fetch import QueryError, Query, QueryType
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from implicitdict import ImplicitDict
-from loguru import logger
+from uas_standards.astm.f3548.v21 import api
 
 
 # === DSS operations defined in ASTM API ===
 
 
 def query_operational_intent_references(
-    utm_client: UTMClientSession, area_of_interest: scd.Volume4D
-) -> List[scd.OperationalIntentReference]:
+    utm_client: UTMClientSession, area_of_interest: api.Volume4D
+) -> List[api.OperationalIntentReference]:
     url = "/dss/v1/operational_intent_references/query"
     subject = f"queryOperationalIntentReferences from {url}"
-    req = scd.QueryOperationalIntentReferenceParameters(
+    req = api.QueryOperationalIntentReferenceParameters(
         area_of_interest=area_of_interest
     )
     query = fetch.query_and_describe(
@@ -31,7 +31,7 @@ def query_operational_intent_references(
         )
     try:
         resp_body = ImplicitDict.parse(
-            query.response.json, scd.QueryOperationalIntentReferenceResponse
+            query.response.json, api.QueryOperationalIntentReferenceResponse
         )
     except KeyError:
         raise QueryError(
@@ -47,8 +47,8 @@ def query_operational_intent_references(
 def create_operational_intent_reference(
     utm_client: UTMClientSession,
     id: str,
-    req: scd.PutOperationalIntentReferenceParameters,
-) -> scd.ChangeOperationalIntentReferenceResponse:
+    req: api.PutOperationalIntentReferenceParameters,
+) -> api.ChangeOperationalIntentReferenceResponse:
     url = "/dss/v1/operational_intent_references/{}".format(id)
     subject = f"createOperationalIntentReference to {url}"
     query = fetch.query_and_describe(
@@ -63,7 +63,7 @@ def create_operational_intent_reference(
         )
     try:
         return ImplicitDict.parse(
-            query.response.json, scd.ChangeOperationalIntentReferenceResponse
+            query.response.json, api.ChangeOperationalIntentReferenceResponse
         )
     except KeyError:
         raise QueryError(
@@ -79,8 +79,8 @@ def update_operational_intent_reference(
     utm_client: UTMClientSession,
     id: str,
     ovn: str,
-    req: scd.PutOperationalIntentReferenceParameters,
-) -> scd.ChangeOperationalIntentReferenceResponse:
+    req: api.PutOperationalIntentReferenceParameters,
+) -> api.ChangeOperationalIntentReferenceResponse:
     url = "/dss/v1/operational_intent_references/{}/{}".format(id, ovn)
     subject = f"updateOperationalIntentReference to {url}"
     query = fetch.query_and_describe(
@@ -95,7 +95,7 @@ def update_operational_intent_reference(
         )
     try:
         return ImplicitDict.parse(
-            query.response.json, scd.ChangeOperationalIntentReferenceResponse
+            query.response.json, api.ChangeOperationalIntentReferenceResponse
         )
     except KeyError:
         raise QueryError(
@@ -109,7 +109,7 @@ def update_operational_intent_reference(
 
 def delete_operational_intent_reference(
     utm_client: UTMClientSession, id: str, ovn: str
-) -> scd.ChangeOperationalIntentReferenceResponse:
+) -> api.ChangeOperationalIntentReferenceResponse:
     url = f"/dss/v1/operational_intent_references/{id}/{ovn}"
     subject = f"deleteOperationalIntentReference from {url}"
     query = fetch.query_and_describe(utm_client, "DELETE", url, scope=scd.SCOPE_SC)
@@ -122,7 +122,7 @@ def delete_operational_intent_reference(
         )
     try:
         return ImplicitDict.parse(
-            query.response.json, scd.ChangeOperationalIntentReferenceResponse
+            query.response.json, api.ChangeOperationalIntentReferenceResponse
         )
     except KeyError:
         raise QueryError(
@@ -139,7 +139,7 @@ def delete_operational_intent_reference(
 
 def get_operational_intent_details(
     utm_client: UTMClientSession, uss_base_url: str, id: str
-) -> Tuple[scd.OperationalIntent, Query]:
+) -> Tuple[api.OperationalIntent, Query]:
     url = f"{uss_base_url}/uss/v1/operational_intents/{id}"
     subject = f"getOperationalIntentDetails from {url}"
     query = fetch.query_and_describe(
@@ -159,7 +159,7 @@ def get_operational_intent_details(
         )
     try:
         resp_body = ImplicitDict.parse(
-            query.response.json, scd.GetOperationalIntentDetailsResponse
+            query.response.json, api.GetOperationalIntentDetailsResponse
         )
     except KeyError:
         raise QueryError(
@@ -175,7 +175,7 @@ def get_operational_intent_details(
 def notify_operational_intent_details_changed(
     utm_client: UTMClientSession,
     uss_base_url: str,
-    update: scd.PutOperationalIntentDetailsParameters,
+    update: api.PutOperationalIntentDetailsParameters,
 ) -> Query:
     url = f"{uss_base_url}/uss/v1/operational_intents"
     subject = f"notifyOperationalIntentDetailsChanged to {url}"
@@ -204,8 +204,8 @@ def notify_operational_intent_details_changed(
 def notify_subscribers(
     utm_client: UTMClientSession,
     id: str,
-    operational_intent: Optional[scd.OperationalIntent],
-    subscribers: List[scd.SubscriberToNotify],
+    operational_intent: Optional[api.OperationalIntent],
+    subscribers: List[api.SubscriberToNotify],
 ):
     for subscriber in subscribers:
         kwargs = {
@@ -214,7 +214,7 @@ def notify_subscribers(
         }
         if operational_intent is not None:
             kwargs["operational_intent"] = operational_intent
-        update = scd.PutOperationalIntentDetailsParameters(**kwargs)
+        update = api.PutOperationalIntentDetailsParameters(**kwargs)
         notify_operational_intent_details_changed(
             utm_client, subscriber.uss_base_url, update
         )

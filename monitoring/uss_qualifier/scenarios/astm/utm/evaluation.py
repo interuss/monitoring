@@ -1,8 +1,9 @@
 from datetime import timedelta
 from typing import Optional, List
 
-from monitoring.monitorlib import scd
-from monitoring.monitorlib.scd import OperationalIntentDetails, Volume4D
+from monitoring.monitorlib.geotemporal import Volume4DCollection
+from uas_standards.astm.f3548.v21.api import OperationalIntentDetails, Volume4D
+
 
 NUMERIC_PRECISION = 0.001
 
@@ -24,9 +25,10 @@ def validate_op_intent_details(
 
     # Check that the USS is providing reasonable volume 4D
     resp_vol4s = op_intent_details.volumes + op_intent_details.off_nominal_volumes
-    resp_alts = scd.meter_altitude_bounds_of(resp_vol4s)
-    resp_start = scd.start_of(resp_vol4s)
-    resp_end = scd.end_of(resp_vol4s)
+    vol4c = Volume4DCollection.from_f3548v21(resp_vol4s)
+    resp_alts = vol4c.meter_altitude_bounds
+    resp_start = vol4c.time_start.datetime
+    resp_end = vol4c.time_end.datetime
     if resp_alts[0] > expected_extent.volume.altitude_lower.value + NUMERIC_PRECISION:
         errors_text.append(
             "Lower altitude specified by USS in operational intent details ({} m WGS84) is above the lower altitude in the injected flight ({} m WGS84)".format(

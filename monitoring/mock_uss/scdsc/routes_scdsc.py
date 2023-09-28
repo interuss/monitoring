@@ -4,6 +4,12 @@ from monitoring.monitorlib import scd
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.scdsc.database import db, FlightRecord
+from uas_standards.astm.f3548.v21.api import (
+    GetOperationalIntentDetailsResponse,
+    ErrorResponse,
+    OperationalIntent,
+    OperationalIntentDetails,
+)
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents/<entityid>", methods=["GET"])
@@ -23,7 +29,7 @@ def scdsc_get_operational_intent_details(entityid: str):
     if flight is None:
         return (
             flask.jsonify(
-                scd.ErrorResponse(
+                ErrorResponse(
                     message="Operational intent {} not known by this USS".format(
                         entityid
                     )
@@ -33,16 +39,16 @@ def scdsc_get_operational_intent_details(entityid: str):
         )
 
     # Return nominal response with details
-    response = scd.GetOperationalIntentDetailsResponse(
+    response = GetOperationalIntentDetailsResponse(
         operational_intent=op_intent_from_flightrecord(flight),
     )
     return flask.jsonify(response), 200
 
 
-def op_intent_from_flightrecord(flight: FlightRecord) -> scd.OperationalIntent:
-    return scd.OperationalIntent(
+def op_intent_from_flightrecord(flight: FlightRecord) -> OperationalIntent:
+    return OperationalIntent(
         reference=flight.op_intent_reference,
-        details=scd.OperationalIntentDetails(
+        details=OperationalIntentDetails(
             volumes=flight.op_intent_injection.volumes,
             off_nominal_volumes=flight.op_intent_injection.off_nominal_volumes,
             priority=flight.op_intent_injection.priority,

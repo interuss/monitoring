@@ -14,6 +14,8 @@
 import datetime
 
 from monitoring.monitorlib import scd
+from monitoring.monitorlib.geo import Circle
+from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib.scd import SCOPE_SC
 from monitoring.monitorlib.testing import assert_datetimes_are_equal
@@ -35,7 +37,9 @@ def _make_op_req():
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
         "extents": [
-            scd.make_vol4(time_start, time_end, 0, 1000, scd.make_circle(-56, 178, 500))
+            Volume4D.from_values(
+                time_start, time_end, 0, 1000, Circle.from_meters(-56, 178, 500)
+            ).to_f3548v21()
         ],
         "old_version": 0,
         "state": "Accepted",
@@ -46,9 +50,13 @@ def _make_op_req():
 
 def _make_sub_req(time_start, time_end, alt_start, alt_end, radius, scd_api):
     req = {
-        "extents": scd.make_vol4(
-            time_start, time_end, alt_start, alt_end, scd.make_circle(-56, 178, radius)
-        ),
+        "extents": Volume4D.from_values(
+            time_start,
+            time_end,
+            alt_start,
+            alt_end,
+            Circle.from_meters(-56, 178, radius),
+        ).to_f3548v21(),
         "old_version": 0,
         "uss_base_url": BASE_URL,
         "notify_for_constraints": False,
