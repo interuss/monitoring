@@ -273,7 +273,7 @@ class Volume4D(ImplicitDict):
         if self.volume.outline_circle:
             circle = self.volume.outline_circle
             if circle.radius.units != "M":
-                raise ValueError(
+                raise NotImplementedError(
                     "Unsupported circle radius units: {}".format(circle.radius.units)
                 )
             lat_radius = 360 * circle.radius.value / geo.EARTH_CIRCUMFERENCE_M
@@ -415,10 +415,14 @@ class Volume4DCollection(ImplicitDict):
 
     @property
     def rect_bounds(self) -> s2sphere.LatLngRect:
-        lat_min = 90
-        lat_max = -90
-        lng_min = 360
-        lng_max = -360
+        if not self.volumes:
+            raise ValueError(
+                "Cannot compute rectangular bounds when no volumes are present"
+            )
+        lat_min = math.inf
+        lat_max = -math.inf
+        lng_min = math.inf
+        lng_max = -math.inf
         for vol4 in self.volumes:
             if "outline_polygon" in vol4.volume and vol4.volume.outline_polygon:
                 for v in vol4.volume.outline_polygon.vertices:
@@ -429,7 +433,7 @@ class Volume4DCollection(ImplicitDict):
             if "outline_circle" in vol4.volume and vol4.volume.outline_circle:
                 circle = vol4.volume.outline_circle
                 if circle.radius.units != "M":
-                    raise ValueError(
+                    raise NotImplementedError(
                         "Unsupported circle radius units: {}".format(
                             circle.radius.units
                         )
@@ -495,8 +499,8 @@ class Volume4DCollection(ImplicitDict):
             and vol4.volume.altitude_lower.units != "M"
         ]
         if units:
-            raise ValueError(
-                f"altitude_lower units must always be M; found instead {', '.join(units)}"
+            raise NotImplementedError(
+                f"altitude_lower units must currently be M; found instead {', '.join(units)}"
             )
         units = [
             vol4.volume.altitude_upper.units
@@ -505,8 +509,8 @@ class Volume4DCollection(ImplicitDict):
             and vol4.volume.altitude_upper.units != "M"
         ]
         if units:
-            raise ValueError(
-                f"altitude_upper units must always be M; found instead {', '.join(units)}"
+            raise NotImplementedError(
+                f"altitude_upper units must currently be M; found instead {', '.join(units)}"
             )
         return alt_lo, alt_hi
 
