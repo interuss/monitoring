@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import List, Optional
 
 from monitoring.monitorlib import schema_validation, fetch
-from uas_standards.astm.f3548.v21.api import OperationalIntentState
-
-from monitoring.monitorlib.scd import (
-    bounding_vol4,
-    OperationalIntentReference,
+from monitoring.monitorlib.geotemporal import Volume4DCollection
+from uas_standards.astm.f3548.v21.api import (
+    OperationalIntentState,
     Volume4D,
+    OperationalIntentReference,
 )
+
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     InjectFlightRequest,
 )
@@ -241,10 +241,9 @@ class OpIntentValidator(object):
             error_text = validate_op_intent_details(
                 oi_full.details,
                 flight_intent.operational_intent.priority,
-                bounding_vol4(
-                    flight_intent.operational_intent.volumes
-                    + flight_intent.operational_intent.off_nominal_volumes
-                ),
+                Volume4DCollection.from_f3548v21(
+                    flight_intent.operational_intent.volumes + flight_intent.operational_intent.off_nominal_volumes
+                ).bounding_volume.to_f3548v21(),
             )
             if error_text:
                 check.record_failed(

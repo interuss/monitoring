@@ -1,10 +1,9 @@
+from monitoring.monitorlib.geotemporal import Volume4DCollection
+from monitoring.uss_qualifier.common_data_definitions import Severity
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays
 
-from monitoring.monitorlib import scd
-from monitoring.monitorlib.scd import bounding_vol4
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    Capability,
     InjectFlightResult,
 )
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
@@ -27,7 +26,6 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     clear_area,
-    check_capabilities,
     plan_flight_intent,
     cleanup_flights,
     activate_flight_intent,
@@ -67,7 +65,9 @@ class FlightIntentValidation(TestScenario):
         for intent in flight_intents.values():
             extents.extend(intent.request.operational_intent.volumes)
             extents.extend(intent.request.operational_intent.off_nominal_volumes)
-        self._intents_extent = bounding_vol4(extents)
+        self._intents_extent = Volume4DCollection.from_f3548v21(
+            extents
+        ).bounding_volume.to_f3548v21()
 
         try:
             (
@@ -112,9 +112,9 @@ class FlightIntentValidation(TestScenario):
             ), "valid_conflict_tiny_overlap must have state Accepted"
 
             time_delta = (
-                scd.start_of(
+                Volume4DCollection.from_f3548v21(
                     self.invalid_too_far_away.request.operational_intent.volumes
-                )
+                ).time_start.datetime
                 - self.invalid_too_far_away.reference_time.datetime
             )
             assert (
@@ -134,9 +134,12 @@ class FlightIntentValidation(TestScenario):
                 > 0
             ), "invalid_activated_offnominal must have at least one off-nominal volume"
 
-            assert scd.vol4s_intersect(
-                self.valid_flight.request.operational_intent.volumes,
-                self.valid_conflict_tiny_overlap.request.operational_intent.volumes,
+            assert Volume4DCollection.from_f3548v21(
+                self.valid_flight.request.operational_intent.volumes
+            ).intersects_vol4s(
+                Volume4DCollection.from_f3548v21(
+                    self.valid_conflict_tiny_overlap.request.operational_intent.volumes
+                )
             ), "valid_flight and valid_conflict_tiny_overlap must intersect"
 
         except KeyError as e:
@@ -181,14 +184,22 @@ class FlightIntentValidation(TestScenario):
         self.end_test_scenario()
 
     def _setup(self) -> bool:
-        if not check_capabilities(
-            self,
-            "Check for necessary capabilities",
-            required_capabilities=[
-                ([self.tested_uss], Capability.BasicStrategicConflictDetection)
-            ],
-        ):
-            return False
+        self.begin_test_step("Check for flight planning readiness")
+
+        error, query = self.tested_uss.get_readiness()
+        self.record_query(query)
+        with self.check(
+            "Flight planning USS not ready", [self.tested_uss.participant_id]
+        ) as check:
+            if error:
+                check.record_failed(
+                    "Error determining readiness",
+                    Severity.High,
+                    "Error: " + error,
+                    query_timestamps=[query.request.timestamp],
+                )
+
+        self.end_test_step()
 
         clear_area(
             self,

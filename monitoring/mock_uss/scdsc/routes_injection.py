@@ -2,7 +2,7 @@ import os
 import traceback
 from datetime import datetime, timedelta
 import time
-from typing import List, Tuple, Dict, Optional
+from typing import List, Tuple
 import uuid
 
 import flask
@@ -10,6 +10,14 @@ from loguru import logger
 import requests.exceptions
 
 from monitoring.mock_uss.scdsc.routes_scdsc import op_intent_from_flightrecord
+from monitoring.monitorlib.geo import Polygon
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
+from uas_standards.astm.f3548.v21.api import (
+    OperationalIntent,
+    PutOperationalIntentDetailsParameters,
+    ImplicitSubscriptionParameters,
+    PutOperationalIntentReferenceParameters,
+)
 from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays, OiMaxVertices
 
 from monitoring.mock_uss.config import KEY_BASE_URL, KEY_BEHAVIOR_LOCALITY
@@ -37,7 +45,7 @@ from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.mock_uss import webapp, require_config_value
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.scdsc import database, utm_client
-from monitoring.mock_uss.scdsc.database import db, FlightRecord
+from monitoring.mock_uss.scdsc.database import db
 from monitoring.monitorlib.uspace import problems_with_flight_authorisation
 
 
@@ -55,7 +63,7 @@ def _make_stacktrace(e) -> str:
 
 def query_operational_intents(
     area_of_interest: scd.Volume4D,
-) -> List[scd.OperationalIntent]:
+) -> List[OperationalIntent]:
     """Retrieve a complete set of operational intents in an area, including details.
 
     :param area_of_interest: Area where intersecting operational intents must be discovered
@@ -190,7 +198,9 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         )
 
     # Validate max planning horizon for creation
-    start_time = scd.start_of(req_body.operational_intent.volumes)
+    start_time = Volume4DCollection.from_f3548v21(
+        req_body.operational_intent.volumes
+    ).time_start.datetime
     time_delta = start_time - datetime.now(tz=start_time.tzinfo)
     if (
         time_delta.days > OiMaxPlanHorizonDays
@@ -269,19 +279,9 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         logger.debug(
             f"[inject_flight/{pid}:{flight_id}] Obtaining latest operational intent information"
         )
-        start_time = scd.start_of(req_body.operational_intent.volumes)
-        end_time = scd.end_of(req_body.operational_intent.volumes)
-        area = scd.rect_bounds_of(req_body.operational_intent.volumes)
-        alt_lo, alt_hi = scd.meter_altitude_bounds_of(
+        vol4 = Volume4DCollection.from_f3548v21(
             req_body.operational_intent.volumes
-        )
-        vol4 = scd.make_vol4(
-            start_time,
-            end_time,
-            alt_lo,
-            alt_hi,
-            polygon=scd.make_polygon(latlngrect=area),
-        )
+        ).bounding_volume.to_f3548v21()
         op_intents = query_operational_intents(vol4)
 
         # Check for intersections
@@ -289,7 +289,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         logger.debug(
             f"[inject_flight/{pid}:{flight_id}] Checking for intersections with {', '.join(op_intent.reference.id for op_intent in op_intents)}"
         )
-        v1 = req_body.operational_intent.volumes
+        v1 = Volume4DCollection.from_f3548v21(req_body.operational_intent.volumes)
         for op_intent in op_intents:
             if (
                 existing_flight
@@ -315,7 +315,9 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 )
                 continue
 
-            v2 = op_intent.details.volumes + op_intent.details.off_nominal_volumes
+            v2 = Volume4DCollection.from_f3548v21(
+                op_intent.details.volumes + op_intent.details.off_nominal_volumes
+            )
 
             if (
                 existing_flight
@@ -323,16 +325,16 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 == OperationalIntentState.Activated
                 and req_body.operational_intent.state
                 == OperationalIntentState.Activated
-                and (
-                    scd.vol4s_intersect(existing_flight.op_intent_injection.volumes, v2)
-                )
+                and Volume4DCollection.from_f3548v21(
+                    existing_flight.op_intent_injection.volumes
+                ).intersects_vol4s(v2)
             ):
                 logger.debug(
                     f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: modification of Activated operational intent with a pre-existing conflict"
                 )
                 continue
 
-            if scd.vol4s_intersect(v1, v2):
+            if v1.intersects_vol4s(v2):
                 notes = f"Requested flight (priority {req_body.operational_intent.priority}) intersected {op_intent.reference.manager}'s operational intent {op_intent.reference.id} (priority {op_intent.details.priority})"
                 return (
                     InjectFlightResponse(
@@ -347,13 +349,13 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             f"[inject_flight/{pid}:{flight_id}] Sharing operational intent with DSS"
         )
         base_url = "{}/mock/scd".format(webapp.config[KEY_BASE_URL])
-        req = scd.PutOperationalIntentReferenceParameters(
+        req = PutOperationalIntentReferenceParameters(
             extents=req_body.operational_intent.volumes
             + req_body.operational_intent.off_nominal_volumes,
             key=[op.reference.ovn for op in op_intents],
             state=req_body.operational_intent.state,
             uss_base_url=base_url,
-            new_subscription=scd.ImplicitSubscriptionParameters(uss_base_url=base_url),
+            new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url),
         )
         if existing_flight:
             id = existing_flight.op_intent_reference.id
@@ -372,7 +374,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         # Notify subscribers
         subscriber_list = ", ".join(s.uss_base_url for s in result.subscribers)
         step_name = f"notifying subscribers {{{subscriber_list}}}"
-        operational_intent = scd.OperationalIntent(
+        operational_intent = OperationalIntent(
             reference=result.operational_intent_reference,
             details=req_body.operational_intent,
         )
@@ -380,7 +382,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             if subscriber.uss_base_url == base_url:
                 # Do not notify ourselves
                 continue
-            update = scd.PutOperationalIntentDetailsParameters(
+            update = PutOperationalIntentDetailsParameters(
                 operational_intent_id=result.operational_intent_reference.id,
                 operational_intent=operational_intent,
                 subscriptions=subscriber.subscriptions,
@@ -512,7 +514,7 @@ def delete_flight(flight_id) -> Tuple[dict, int]:
             if subscriber.uss_base_url == base_url:
                 # Do not notify ourselves
                 continue
-            update = scd.PutOperationalIntentDetailsParameters(
+            update = PutOperationalIntentDetailsParameters(
                 operational_intent_id=result.operational_intent_reference.id,
                 subscriptions=subscriber.subscriptions,
             )
@@ -579,17 +581,20 @@ def clear_area(req: ClearAreaRequest) -> Tuple[dict, int]:
     try:
         # Find operational intents in the DSS
         step_name = "constructing DSS operational intent query"
-        start_time = scd.start_of([req.extent])
-        end_time = scd.end_of([req.extent])
-        area = scd.rect_bounds_of([req.extent])
-        alt_lo, alt_hi = scd.meter_altitude_bounds_of([req.extent])
-        vol4 = scd.make_vol4(
+        # TODO: Simply use the req.extent 4D volume more directly
+        extent = Volume4D.from_f3548v21(req.extent)
+        start_time = extent.time_start.datetime
+        end_time = extent.time_end.datetime
+        area = extent.rect_bounds
+        alt_lo = extent.volume.altitude_lower_wgs84_m()
+        alt_hi = extent.volume.altitude_upper_wgs84_m()
+        vol4 = Volume4D.from_values(
             start_time,
             end_time,
             alt_lo,
             alt_hi,
-            polygon=scd.make_polygon(latlngrect=area),
-        )
+            polygon=Polygon.from_latlng_rect(latlngrect=area),
+        ).to_f3548v21()
         step_name = "finding operational intents in the DSS"
         op_intent_refs = scd_client.query_operational_intent_references(
             utm_client, vol4

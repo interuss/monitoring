@@ -12,6 +12,10 @@
 
 import datetime
 
+from monitoring.monitorlib.geo import Circle
+from monitoring.monitorlib.geotemporal import Volume4D
+from uas_standards.astm.f3548.v21 import api
+
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
@@ -32,9 +36,9 @@ def _make_sub1_req(scd_api):
     time_start = datetime.datetime.utcnow()
     time_end = time_start + datetime.timedelta(minutes=60)
     req = {
-        "extents": scd.make_vol4(
-            time_start, time_end, 0, 1000, scd.make_circle(12, -34, 300)
-        ),
+        "extents": Volume4D.from_values(
+            time_start, time_end, 0, 1000, Circle.from_meters(12, -34, 300)
+        ).to_f3548v21(),
         "uss_base_url": "https://example.com/foo",
         "notify_for_constraints": False,
     }
@@ -48,8 +52,8 @@ def _check_sub1(data, sub_id, scd_api):
         data["subscription"]["notification_index"] == 0
     )
     assert data["subscription"]["uss_base_url"] == "https://example.com/foo"
-    assert data["subscription"]["time_start"]["format"] == scd.TIME_FORMAT_CODE
-    assert data["subscription"]["time_end"]["format"] == scd.TIME_FORMAT_CODE
+    assert data["subscription"]["time_start"]["format"] == api.TimeFormat.RFC3339
+    assert data["subscription"]["time_end"]["format"] == api.TimeFormat.RFC3339
     assert ("notify_for_constraints" not in data["subscription"]) or (
         data["subscription"]["notify_for_constraints"] == False
     )
@@ -79,9 +83,9 @@ def test_sub_does_not_exist_query(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/subscriptions/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                None, None, 0, 5000, scd.make_circle(12, -34, 300)
-            )
+            "area_of_interest": Volume4D.from_values(
+                None, None, 0, 5000, Circle.from_meters(12, -34, 300)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content
@@ -133,9 +137,9 @@ def test_get_sub_by_search(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/subscriptions/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                time_now, time_now, 0, 120, scd.make_circle(12.00001, -34.00001, 50)
-            )
+            "area_of_interest": Volume4D.from_values(
+                time_now, time_now, 0, 120, Circle.from_meters(12.00001, -34.00001, 50)
+            ).to_f3548v21()
         },
     )
     if resp.status_code != 200:
@@ -217,9 +221,9 @@ def test_get_deleted_sub_by_search(ids, scd_api, scd_session):
     resp = scd_session.post(
         "/subscriptions/query",
         json={
-            "area_of_interest": scd.make_vol4(
-                time_now, time_now, 0, 120, scd.make_circle(12.00001, -34.00001, 50)
-            )
+            "area_of_interest": Volume4D.from_values(
+                time_now, time_now, 0, 120, Circle.from_meters(12.00001, -34.00001, 50)
+            ).to_f3548v21()
         },
     )
     assert resp.status_code == 200, resp.content

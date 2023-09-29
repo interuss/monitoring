@@ -7,6 +7,8 @@ from yaml.representer import Representer
 
 from implicitdict import ImplicitDict
 from monitoring.monitorlib import fetch, infrastructure, scd
+from monitoring.monitorlib.geo import Polygon
+from monitoring.monitorlib.geotemporal import Volume4D
 
 
 class FetchedEntityReferences(fetch.Query):
@@ -83,13 +85,13 @@ def _entity_references(
 ) -> FetchedEntityReferences:
     # Query DSS for Entities in 4D volume of interest
     request_body = {
-        "area_of_interest": scd.make_vol4(
+        "area_of_interest": Volume4D.from_values(
             start_time,
             end_time,
             alt_min_m,
             alt_max_m,
-            polygon=scd.make_polygon(latlngrect=area),
-        )
+            polygon=Polygon.from_latlng_rect(latlngrect=area),
+        ).to_f3548v21()
     }
     url = "/dss/v1/{}/query".format(dss_resource_name)
     scope = scd.SCOPE_CP if "constraint" in dss_resource_name else scd.SCOPE_SC

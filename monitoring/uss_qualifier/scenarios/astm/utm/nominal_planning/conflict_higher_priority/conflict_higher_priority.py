@@ -1,15 +1,13 @@
 from typing import Optional, Tuple
 
 from uas_standards.astm.f3548.v21.api import (
-    OperationalIntentState,
     OperationalIntentReference,
 )
 
-from monitoring.monitorlib import scd
-from monitoring.monitorlib.scd import bounding_vol4
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    Capability,
-)
+from monitoring.monitorlib.geotemporal import Volume4DCollection
+from monitoring.uss_qualifier.common_data_definitions import Severity
+from uas_standards.astm.f3548.v21.api import OperationalIntentState
+
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
@@ -36,7 +34,6 @@ from monitoring.uss_qualifier.scenarios.flight_planning.prioritization_test_step
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     clear_area,
-    check_capabilities,
     plan_flight_intent,
     cleanup_flights,
     activate_flight_intent,
@@ -80,7 +77,9 @@ class ConflictHigherPriority(TestScenario):
         for intent in flight_intents.values():
             extents.extend(intent.request.operational_intent.volumes)
             extents.extend(intent.request.operational_intent.off_nominal_volumes)
-        self._intents_extent = bounding_vol4(extents)
+        self._intents_extent = Volume4DCollection.from_f3548v21(
+            extents
+        ).bounding_volume.to_f3548v21()
 
         try:
             (
@@ -143,17 +142,26 @@ class ConflictHigherPriority(TestScenario):
                 self.flight_2_planned_time_range_A.request.operational_intent.priority
                 > self.flight_1_planned_time_range_A.request.operational_intent.priority
             ), "flight_2 must have higher priority than flight_1"
-            assert scd.vol4s_intersect(
-                self.flight_1_planned_time_range_A.request.operational_intent.volumes,
-                self.flight_2_planned_time_range_A.request.operational_intent.volumes,
+            assert Volume4DCollection.from_f3548v21(
+                self.flight_1_planned_time_range_A.request.operational_intent.volumes
+            ).intersects_vol4s(
+                Volume4DCollection.from_f3548v21(
+                    self.flight_2_planned_time_range_A.request.operational_intent.volumes
+                )
             ), "flight_1_planned_time_range_A and flight_2_planned_time_range_A must intersect"
-            assert scd.vol4s_intersect(
-                self.flight_1_planned_time_range_A.request.operational_intent.volumes,
-                self.flight_1_planned_time_range_A_extended.request.operational_intent.volumes,
+            assert Volume4DCollection.from_f3548v21(
+                self.flight_1_planned_time_range_A.request.operational_intent.volumes
+            ).intersects_vol4s(
+                Volume4DCollection.from_f3548v21(
+                    self.flight_1_planned_time_range_A_extended.request.operational_intent.volumes
+                )
             ), "flight_1_planned_time_range_A and flight_1_planned_time_range_A_extended must intersect"
-            assert not scd.vol4s_intersect(
-                self.flight_1_planned_time_range_A.request.operational_intent.volumes,
-                self.flight_1_activated_time_range_B.request.operational_intent.volumes,
+            assert not Volume4DCollection.from_f3548v21(
+                self.flight_1_planned_time_range_A.request.operational_intent.volumes
+            ).intersects_vol4s(
+                Volume4DCollection.from_f3548v21(
+                    self.flight_1_activated_time_range_B.request.operational_intent.volumes
+                )
             ), "flight_1_planned_time_range_A and flight_1_activated_time_range_B must not intersect"
 
         except KeyError as e:
@@ -208,20 +216,23 @@ class ConflictHigherPriority(TestScenario):
         self.end_test_scenario()
 
     def _setup(self) -> bool:
-        if not check_capabilities(
-            self,
-            "Check for necessary capabilities",
-            required_capabilities=[
-                (
-                    [self.tested_uss, self.control_uss],
-                    Capability.BasicStrategicConflictDetection,
-                )
-            ],
-            prerequisite_capabilities=[
-                (self.control_uss, Capability.HighPriorityFlights)
-            ],
-        ):
-            return False
+        self.begin_test_step("Check for flight planning readiness")
+
+        for uss in (self.tested_uss, self.control_uss):
+            error, query = uss.get_readiness()
+            self.record_query(query)
+            with self.check(
+                "Flight planning USS not ready", [uss.participant_id]
+            ) as check:
+                if error:
+                    check.record_failed(
+                        "Error determining readiness",
+                        Severity.High,
+                        "Error: " + error,
+                        query_timestamps=[query.request.timestamp],
+                    )
+
+        self.end_test_step()
 
         clear_area(
             self,

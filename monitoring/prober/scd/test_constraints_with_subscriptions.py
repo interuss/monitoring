@@ -11,6 +11,8 @@
 import datetime
 from typing import Dict
 
+from monitoring.monitorlib.geo import Circle
+from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_CM, SCOPE_SC, SCOPE_CP
@@ -35,9 +37,13 @@ def _make_c1_request():
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
         "extents": [
-            scd.make_vol4(
-                time_start, time_end, 0, 120, scd.make_circle(-12.00001, 33.99999, 50)
-            )
+            Volume4D.from_values(
+                time_start,
+                time_end,
+                0,
+                120,
+                Circle.from_meters(-12.00001, 33.99999, 50),
+            ).to_f3548v21()
         ],
         "old_version": 0,
         "uss_base_url": CONSTRAINT_BASE_URL_1,
@@ -48,9 +54,9 @@ def _make_sub_req(base_url: str, notify_ops: bool, notify_constraints: bool) -> 
     time_start = datetime.datetime.utcnow()
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
-        "extents": scd.make_vol4(
-            time_start, time_end, 0, 1000, scd.make_circle(-12, 34, 300)
-        ),
+        "extents": Volume4D.from_values(
+            time_start, time_end, 0, 1000, Circle.from_meters(-12, 34, 300)
+        ).to_f3548v21(),
         "old_version": 0,
         "uss_base_url": base_url,
         "notify_for_operations": notify_ops,
