@@ -75,6 +75,8 @@ to reject or accept the flight. If the USS indicates that the injection attempt 
 ### [Plan valid flight intent test step](../../../flight_planning/plan_flight_intent.md)
 The valid flight intent should be successfully planned by the flight planner.
 
+### [Validate flight sharing test step](../validate_shared_operational_intent.md)
+
 ### Attempt to modify planned flight with an off-nominal volume test step
 The user flight intent that the test driver attempts to modify has an off-nominal volume and is in the `Accepted` state.
 As such, the modification attempt should be rejected.
@@ -94,6 +96,8 @@ Validate that the planned flight intent was not modified with an off-nominal vol
 
 ### [Activate valid flight intent test step](../../../flight_planning/activate_flight_intent.md)
 The valid flight intent should be successfully activated by the flight planner.
+
+### [Validate flight sharing test step](../validate_shared_operational_intent.md)
 
 ### Attempt to modify activated flight with an off-nominal volume test step
 The user flight intent that the test driver attempts to modify has an off-nominal volume and is in the `Activated` state.
@@ -125,6 +129,10 @@ Validate that the flight intent was shared correctly and is discoverable.
 The flight intent should be successfully transition to Ended state by the flight planner.
 
 ### Validate flight intent is non-discoverable test step
+
+#### DSS responses check
+**[astm.f3548.v21.DSS0005](../../../../requirements/astm/f3548/v21.md)**
+
 #### Operational intent not shared check
 If the operational intent is still discoverable after it was transitioned to Ended,
 this check will fail per **[astm.f3548.v21.OPIN0040](../../../../requirements/astm/f3548/v21.md)**.
