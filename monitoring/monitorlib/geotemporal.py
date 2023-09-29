@@ -405,7 +405,7 @@ class Volume4DCollection(ImplicitDict):
     @property
     def time_end(self) -> Optional[Time]:
         return (
-            Time(value=min(v.time_end.datetime for v in self.volumes))
+            Time(value=max(v.time_end.datetime for v in self.volumes))
             if all("time_end" in v and v.time_end for v in self.volumes)
             else None
         )
