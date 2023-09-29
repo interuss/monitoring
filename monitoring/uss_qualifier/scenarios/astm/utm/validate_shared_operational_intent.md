@@ -1,8 +1,8 @@
 # Validate flight sharing test step
 
-This step verifies that a created flight is shared properly per ASTM F3548-21 by querying the DSS for flights in the area of the flight intent, and then retrieving the details from the USS if the operational intent reference is found.  See `validate_shared_operational_intent` in [test_steps.py](test_steps.py).
+This step verifies that a created flight is shared properly per ASTM F3548-21 by querying the DSS for flights in the area of the flight intent, and then retrieving the details from the USS if the operational intent reference is found.  See `OpIntentValidator.expect_shared()` in [test_steps.py](test_steps.py).
 
-## DSS response check
+## DSS responses check
 
 **astm.f3548.v21.DSS0005**
 
