@@ -74,6 +74,8 @@ Both USSs are requested to remove all flights from the area under test.
 ### [Plan flight 2 test step](../../../../flight_planning/plan_flight_intent.md)
 Flight 2 on time range B should be successfully planned by the control USS.
 
+### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
+
 ### [Activate flight 2 test step](../../../../flight_planning/activate_flight_intent.md)
 Flight 2 on time range B should be successfully activated by the control USS.
 

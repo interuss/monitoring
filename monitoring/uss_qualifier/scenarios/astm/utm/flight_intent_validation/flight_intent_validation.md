@@ -9,7 +9,6 @@ Notably the following requirements:
 - **[astm.f3548.v21.OPIN0040](../../../../requirements/astm/f3548/v21.md)**
 - **[astm.f3548.v21.GEN0500](../../../../requirements/astm/f3548/v21.md)**
 
-
 ## Resources
 ### flight_intents
 FlightIntentsResource that provides the following flight intents:
@@ -25,7 +24,6 @@ FlightPlannerResource that will be tested for its validation of operational inte
 
 ### dss
 DSSInstanceResource that provides access to a DSS instance where flight creation/sharing can be verified.
-
 
 ## Setup test case
 ### Check for necessary capabilities test step
@@ -45,7 +43,6 @@ The tested USS is requested to remove all flights from the area under test.
 #### Area cleared successfully check
 **[interuss.automated_testing.flight_planning.ClearArea](../../../../requirements/interuss/automated_testing/flight_planning.md)**
 
-
 ## Attempt to plan invalid flight intents test case
 ### Attempt to plan flight intent too far ahead of time test step
 The user flight intent that the test driver attempts to plan has a reference time that is more than
@@ -62,7 +59,6 @@ to reject or accept the flight. If the USS indicates that the injection attempt 
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
 ### [Validate flight intent too far ahead of time not planned test step](../validate_not_shared_operational_intent.md)
-
 
 ## Attempt to specify off-nominal volume in Accepted and Activated states test case
 ### Attempt to plan flight with an off-nominal volume test step
@@ -84,6 +80,8 @@ to reject or accept the flight. If the USS indicates that the injection attempt 
 ### [Plan valid flight intent test step](../../../flight_planning/plan_flight_intent.md)
 The valid flight intent should be successfully planned by the flight planner.
 
+### [Validate flight sharing test step](../validate_shared_operational_intent.md)
+
 ### Attempt to modify planned flight with an off-nominal volume test step
 The user flight intent that the test driver attempts to modify has an off-nominal volume and is in the `Accepted` state.
 As such, the modification attempt should be rejected.
@@ -104,6 +102,8 @@ Validate that the planned flight intent was not modified with an off-nominal vol
 ### [Activate valid flight intent test step](../../../flight_planning/activate_flight_intent.md)
 The valid flight intent should be successfully activated by the flight planner.
 
+### [Validate flight sharing test step](../validate_shared_operational_intent.md)
+
 ### Attempt to modify activated flight with an off-nominal volume test step
 The user flight intent that the test driver attempts to modify has an off-nominal volume and is in the `Activated` state.
 As such, the modification attempt should be rejected.
@@ -123,7 +123,6 @@ Validate that the activated flight intent was not modified with an off-nominal v
 
 ### [Delete valid flight intent test step](../../../flight_planning/delete_flight_intent.md)
 
-
 ## Validate transition to Ended state after cancellation test case
 ### [Plan flight intent test step](../../../flight_planning/plan_flight_intent.md)
 The valid flight intent should be successfully planned by the flight planner.
@@ -135,10 +134,13 @@ Validate that the flight intent was shared correctly and is discoverable.
 The flight intent should be successfully transition to Ended state by the flight planner.
 
 ### Validate flight intent is non-discoverable test step
+
+#### DSS responses check
+**[astm.f3548.v21.DSS0005](../../../../requirements/astm/f3548/v21.md)**
+
 #### Operational intent not shared check
 If the operational intent is still discoverable after it was transitioned to Ended,
 this check will fail per **[astm.f3548.v21.OPIN0040](../../../../requirements/astm/f3548/v21.md)**.
-
 
 ## Validate precision of intersection computations test case
 ### [Plan control flight intent test step](../../../flight_planning/plan_flight_intent.md)
@@ -158,7 +160,6 @@ to reject or accept the flight. If the USS indicates that the injection attempt 
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
 ### [Validate conflicting flight not planned test step](../validate_not_shared_operational_intent.md)
-
 
 ## Cleanup
 ### Successful flight deletion check

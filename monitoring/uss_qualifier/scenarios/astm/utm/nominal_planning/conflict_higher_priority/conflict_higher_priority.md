@@ -68,13 +68,13 @@ Both USSs are requested to remove all flights from the area under test.
 ### [Plan flight 2 test step](../../../../flight_planning/plan_flight_intent.md)
 The higher priority flight should be successfully planned by the control USS.
 
+### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
+
 ### [Attempt to plan flight 1 test step](../../../../flight_planning/plan_priority_conflict_flight_intent.md)
 The test driver attempts to plan the flight 1 via the tested USS. However, it conflicts with flight 2, which is of
 higher priority. As such it should be rejected per **[astm.f3548.v21.SCD0015](../../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Validate flight 1 not shared test step](../../validate_not_shared_operational_intent.md)
-
-### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
 
 ### [Delete flight 2 test step](../../../../flight_planning/delete_flight_intent.md)
 
@@ -89,6 +89,8 @@ The first flight should be successfully planned by the tested USS.
 The second flight should be successfully planned by the control USS.
 It conflicts with flight 1, but it has higher priority.
 
+### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
+
 ### [Attempt to modify planned flight 1 in conflict test step](../../../../flight_planning/modify_planned_priority_conflict_flight_intent.md)
 The test driver attempts to modify flight 1 via the tested USS, which is planned.
 However, it conflicts with flight 2, which is of higher priority and was planned in the meantime.
@@ -97,8 +99,6 @@ As such it should be rejected per **[astm.f3548.v21.SCD0020](../../../../../requ
 ### [Validate flight 1 not modified test step](../../validate_shared_operational_intent.md)
 Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
-
-### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
 
 
 ## Attempt to activate flight in conflict test case
@@ -125,8 +125,12 @@ directly activated without being planned beforehand.
 ### [Plan flight 2 test step](../../../../flight_planning/plan_flight_intent.md)
 The second flight should be successfully planned by the control USS.
 
+### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
+
 ### [Activate flight 2 test step](../../../../flight_planning/activate_flight_intent.md)
 The test driver activates flight 2, which should be done successfully given that it is the highest-priority flight.
+
+### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
 
 ### [Modify activated flight 1 in conflict with activated flight 2 test step](../../../../flight_planning/modify_activated_flight_intent.md)
 Before execution of this step, flights 1 and 2 are activated and in conflict.
@@ -137,14 +141,14 @@ the modification is accepted per **[astm.f3548.v21.SCD0030](../../../../../requi
 ### [Validate flight 1 sharing test step](../../validate_shared_operational_intent.md)
 The first flight should have been modified.
 
-### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
-
 
 ## Attempt to modify activated flight in conflict test case
 ### [Modify activated flight 2 to not conflict with activated flight 1 test step](../../../../flight_planning/modify_planned_flight_intent.md)
 The test driver modifies (activated) flight 2 with the control USS so that it is not anymore in conflict with (activated)
 flight of test USS.
 As flight 2 is of higher priority, this should succeed and leave flight 1 clear of conflict.
+
+### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
 
 ### [Attempt to modify activated flight 1 in conflict test step](../../../../flight_planning/modify_activated_priority_conflict_flight_intent.md)
 The test driver attempts to modify flight 1 so that it becomes in conflict with flight 2. Both flights are activated at that point.
@@ -154,8 +158,6 @@ per **[astm.f3548.v21.SCD0030](../../../../../requirements/astm/f3548/v21.md)**.
 ### [Validate flight 1 not modified test step](../../validate_shared_operational_intent.md)
 Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
-
-### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
 
 
 ## Cleanup

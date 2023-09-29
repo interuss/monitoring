@@ -87,7 +87,6 @@ class InjectFlightResponse(ImplicitDict):
 
     result: InjectFlightResult
     notes: Optional[str]
-    operational_intent_id: Optional[str]
 
 
 class DeleteFlightResult(str, Enum):
