@@ -2,10 +2,8 @@ from typing import Optional, Dict
 
 from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
 
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    InjectFlightRequest,
-)
 from monitoring.uss_qualifier.fileio import FileReference
+from uas_standards.interuss.automated_testing.scd.v1.api import InjectFlightRequest
 
 
 class FlightIntent(ImplicitDict):

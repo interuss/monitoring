@@ -8,9 +8,6 @@ from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
 )
 
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    InjectFlightRequest,
-)
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
@@ -20,6 +17,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.evaluation import (
     validate_op_intent_details,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
+from uas_standards.interuss.automated_testing.scd.v1.api import InjectFlightRequest
 
 
 class ValidateNotSharedOperationalIntent(object):
@@ -53,7 +51,7 @@ class ValidateNotSharedOperationalIntent(object):
         self._dss = dss
         self._test_step = test_step
 
-        self._flight_intent_extent = Volume4DCollection.from_f3548v21(
+        self._flight_intent_extent = Volume4DCollection.from_interuss_scd_api(
             flight_intent.operational_intent.volumes
             + flight_intent.operational_intent.off_nominal_volumes
         ).bounding_volume.to_f3548v21()
@@ -112,7 +110,7 @@ def validate_shared_operational_intent(
     operational intent was not found and skip_if_not_found was True.
     """
     scenario.begin_test_step(test_step)
-    extent = Volume4DCollection.from_f3548v21(
+    extent = Volume4DCollection.from_interuss_scd_api(
         flight_intent.operational_intent.volumes
         + flight_intent.operational_intent.off_nominal_volumes
     ).bounding_volume.to_f3548v21()

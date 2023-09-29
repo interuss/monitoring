@@ -3,9 +3,6 @@ from monitoring.uss_qualifier.common_data_definitions import Severity
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays
 
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    InjectFlightResult,
-)
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
@@ -32,6 +29,9 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     activate_flight_intent,
     submit_flight_intent,
     delete_flight_intent,
+)
+from uas_standards.interuss.automated_testing.scd.v1.api import (
+    InjectFlightResponseResult,
 )
 
 
@@ -104,7 +104,7 @@ class FlightIntentValidation(TestScenario):
             ), "valid_conflict_tiny_overlap must have state Accepted"
 
             time_delta = (
-                Volume4DCollection.from_f3548v21(
+                Volume4DCollection.from_interuss_scd_api(
                     self.invalid_too_far_away.request.operational_intent.volumes
                 ).time_start.datetime
                 - self.invalid_too_far_away.reference_time.datetime
@@ -126,10 +126,10 @@ class FlightIntentValidation(TestScenario):
                 > 0
             ), "invalid_activated_offnominal must have at least one off-nominal volume"
 
-            assert Volume4DCollection.from_f3548v21(
+            assert Volume4DCollection.from_interuss_scd_api(
                 self.valid_flight.request.operational_intent.volumes
             ).intersects_vol4s(
-                Volume4DCollection.from_f3548v21(
+                Volume4DCollection.from_interuss_scd_api(
                     self.valid_conflict_tiny_overlap.request.operational_intent.volumes
                 )
             ), "valid_flight and valid_conflict_tiny_overlap must intersect"
@@ -221,8 +221,8 @@ class FlightIntentValidation(TestScenario):
                 self,
                 "Attempt to plan flight intent too far ahead of time",
                 "Incorrectly planned",
-                {InjectFlightResult.Rejected},
-                {InjectFlightResult.Failed: "Failure"},
+                {InjectFlightResponseResult.Rejected},
+                {InjectFlightResponseResult.Failed: "Failure"},
                 self.tested_uss,
                 self.invalid_too_far_away.request,
             )
@@ -239,8 +239,8 @@ class FlightIntentValidation(TestScenario):
                 self,
                 "Attempt to plan flight with an off-nominal volume",
                 "Incorrectly planned",
-                {InjectFlightResult.Rejected},
-                {InjectFlightResult.Failed: "Failure"},
+                {InjectFlightResponseResult.Rejected},
+                {InjectFlightResponseResult.Failed: "Failure"},
                 self.tested_uss,
                 self.invalid_accepted_offnominal.request,
             )
@@ -254,8 +254,8 @@ class FlightIntentValidation(TestScenario):
             self,
             "Attempt to modify planned flight with an off-nominal volume",
             "Incorrectly modified",
-            {InjectFlightResult.Rejected},
-            {InjectFlightResult.Failed: "Failure"},
+            {InjectFlightResponseResult.Rejected},
+            {InjectFlightResponseResult.Failed: "Failure"},
             self.tested_uss,
             self.invalid_accepted_offnominal.request,
         )
@@ -281,8 +281,8 @@ class FlightIntentValidation(TestScenario):
             self,
             "Attempt to modify activated flight with an off-nominal volume",
             "Incorrectly modified",
-            {InjectFlightResult.Rejected},
-            {InjectFlightResult.Failed: "Failure"},
+            {InjectFlightResponseResult.Rejected},
+            {InjectFlightResponseResult.Failed: "Failure"},
             self.tested_uss,
             self.invalid_activated_offnominal.request,
         )
@@ -342,8 +342,8 @@ class FlightIntentValidation(TestScenario):
                 self,
                 "Attempt to plan flight conflicting by a tiny overlap",
                 "Incorrectly planned",
-                {InjectFlightResult.ConflictWithFlight},
-                {InjectFlightResult.Failed: "Failure"},
+                {InjectFlightResponseResult.ConflictWithFlight},
+                {InjectFlightResponseResult.Failed: "Failure"},
                 self.tested_uss,
                 self.valid_conflict_tiny_overlap.request,
             )

@@ -2,7 +2,7 @@ import json
 from typing import Dict, Optional
 
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
-from monitoring.monitorlib.scd_automated_testing import scd_injection_api
+from uas_standards.interuss.automated_testing.scd.v1 import api as scd_injection_api
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,

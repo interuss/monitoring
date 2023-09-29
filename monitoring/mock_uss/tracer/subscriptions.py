@@ -14,9 +14,9 @@ import monitoring.monitorlib.mutate.rid
 import monitoring.monitorlib.mutate.scd
 from monitoring.mock_uss import config, webapp
 from monitoring.monitorlib.geo import make_latlng_rect, get_latlngrect_vertices
+from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.monitorlib.scd import Volume4D
 
 yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 

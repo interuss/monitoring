@@ -1,26 +1,26 @@
 import uuid
-from typing import Tuple, List, Optional, Set
+from typing import Tuple, Optional, Set
 from urllib.parse import urlparse
 
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
 from monitoring.monitorlib.fetch import QueryError, Query
-from monitoring.monitorlib.scd import Volume4D
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    InjectFlightResult,
-    DeleteFlightResult,
+from monitoring.monitorlib.geotemporal import Volume4D
+from uas_standards.interuss.automated_testing.scd.v1.api import (
+    InjectFlightResponseResult,
+    DeleteFlightResponseResult,
     InjectFlightResponse,
     DeleteFlightResponse,
     InjectFlightRequest,
-    Capability,
     ClearAreaResponse,
     ClearAreaRequest,
+)
+from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
 )
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     StatusResponse,
-    CapabilitiesResponse,
 )
 
 
@@ -104,7 +104,7 @@ class FlightPlanner:
                 [query],
             )
 
-        if result.result == InjectFlightResult.Planned:
+        if result.result == InjectFlightResponseResult.Planned:
             self.created_flight_ids.add(flight_id)
 
         return result, query, flight_id
@@ -134,7 +134,7 @@ class FlightPlanner:
                 [query],
             )
 
-        if result.result == DeleteFlightResult.Closed:
+        if result.result == DeleteFlightResponseResult.Closed:
             self.created_flight_ids.remove(flight_id)
         return result, query
 
@@ -163,7 +163,9 @@ class FlightPlanner:
         return None, version_query
 
     def clear_area(self, extent: Volume4D) -> Tuple[ClearAreaResponse, fetch.Query]:
-        req = ClearAreaRequest(request_id=str(uuid.uuid4()), extent=extent)
+        req = ClearAreaRequest(
+            request_id=str(uuid.uuid4()), extent=extent.to_f3548v21()
+        )
         url = f"{self.config.injection_base_url}/v1/clear_area_requests"
         query = fetch.query_and_describe(
             self.client,
