@@ -242,7 +242,8 @@ class OpIntentValidator(object):
                 oi_full.details,
                 flight_intent.operational_intent.priority,
                 Volume4DCollection.from_f3548v21(
-                    flight_intent.operational_intent.volumes + flight_intent.operational_intent.off_nominal_volumes
+                    flight_intent.operational_intent.volumes
+                    + flight_intent.operational_intent.off_nominal_volumes
                 ).bounding_volume.to_f3548v21(),
             )
             if error_text:
