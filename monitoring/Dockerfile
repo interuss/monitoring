@@ -13,6 +13,10 @@ FROM python:3.8-slim
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
 RUN apt-get update && apt-get install -y openssl curl libgeos-dev gcc && apt-get install ca-certificates
+
+# required for gevent to build without error in an ARM environment
+RUN apt-get update && apt-get install -y libffi-dev libssl-dev python3-dev build-essential
+
 RUN mkdir -p /app/monitoring
 COPY ./requirements.txt /app/monitoring/requirements.txt
 RUN pip install -r /app/monitoring/requirements.txt
