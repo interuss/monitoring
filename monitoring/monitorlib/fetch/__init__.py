@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import traceback
+import uuid
 from typing import Dict, Optional, List
 
 from enum import Enum
@@ -312,6 +313,12 @@ def query_and_describe(
     req_kwargs = kwargs.copy()
     if "timeout" not in req_kwargs:
         req_kwargs["timeout"] = TIMEOUTS
+
+    # Attach a request_id field to the JSON body of any outgoing request with a JSON body that doesn't already have one
+    if "json" in req_kwargs and "request_id" not in req_kwargs["json"]:
+        json_body = json.loads(json.dumps(req_kwargs["json"]))
+        json_body["request_id"] = str(uuid.uuid4())
+        req_kwargs["json"] = json_body
 
     failures = []
     # Note: retry logic could be attached to the `client` Session by `mount`ing an HTTPAdapter with custom
