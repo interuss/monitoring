@@ -9,6 +9,7 @@ import flask
 from loguru import logger
 import requests.exceptions
 
+from monitoring.mock_uss.database import fulfilled_request_ids
 from monitoring.mock_uss.scdsc.routes_scdsc import op_intent_from_flightrecord
 from monitoring.monitorlib.geo import Polygon
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
@@ -155,6 +156,20 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
     except ValueError as e:
         msg = "Create flight {} unable to parse JSON: {}".format(flight_id, e)
         return msg, 400
+    if "request_id" in json:
+        logger.debug(
+            f"[inject_flight/{os.getpid()}:{flight_id}] Request ID {json['request_id']}"
+        )
+        with fulfilled_request_ids as tx:
+            if json["request_id"] in tx:
+                logger.debug(
+                    f"[inject_flight/{os.getpid()}:{flight_id}] Already processed request ID {json['request_id']}"
+                )
+                return (
+                    f"Request ID {json['request_id']} has already been fulfilled",
+                    400,
+                )
+            tx.append(json["request_id"])
     json, code = inject_flight(flight_id, req_body)
     return flask.jsonify(json), code
 
@@ -360,6 +375,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         if existing_flight:
             id = existing_flight.op_intent_reference.id
             step_name = f"updating existing operational intent {id} in DSS"
+            logger.debug(f"[inject_flight/{pid}:{flight_id}] {step_name}")
             result = scd_client.update_operational_intent_reference(
                 utm_client,
                 id,
@@ -369,6 +385,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         else:
             id = str(uuid.uuid4())
             step_name = f"creating new operational intent {id} in DSS"
+            logger.debug(f"[inject_flight/{pid}:{flight_id}] {step_name}")
             result = scd_client.create_operational_intent_reference(utm_client, id, req)
 
         # Notify subscribers
@@ -558,10 +575,18 @@ def scdsc_clear_area() -> Tuple[str, int]:
         json = flask.request.json
         if json is None:
             raise ValueError("Request did not contain a JSON payload")
-        req = ImplicitDict.parse(json, ClearAreaRequest)
+        req: ClearAreaRequest = ImplicitDict.parse(json, ClearAreaRequest)
     except ValueError as e:
         msg = "Unable to parse ClearAreaRequest JSON request: {}".format(e)
         return msg, 400
+    with fulfilled_request_ids as tx:
+        logger.debug(f"[scdsc_clear_area] Processing request ID {req.request_id}")
+        if req.request_id in tx:
+            logger.debug(
+                f"[scdsc_clear_area] Already processed request ID {req.request_id}"
+            )
+            return f"Request ID {req.request_id} has already been fulfilled", 400
+        tx.append(json["request_id"])
     json, code = clear_area(req)
     return flask.jsonify(json), code
 
