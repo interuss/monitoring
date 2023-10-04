@@ -213,19 +213,19 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             return
         self.end_test_case()
 
-        self.begin_test_case("Attempt to plan flight in conflict")
+        self.begin_test_case("Attempt to plan flight into conflict")
         flight_2_oi_ref = self._attempt_plan_flight_conflict()
         self.end_test_case()
 
-        self.begin_test_case("Attempt to activate flight in conflict")
+        self.begin_test_case("Attempt to activate flight into conflict")
         self._attempt_activate_flight_conflict()
         self.end_test_case()
 
-        self.begin_test_case("Attempt to modify planned flight in conflict")
+        self.begin_test_case("Attempt to modify planned flight into conflict")
         flight_1_oi_ref = self._attempt_modify_planned_flight_conflict()
         self.end_test_case()
 
-        self.begin_test_case("Attempt to modify activated flight in conflict")
+        self.begin_test_case("Attempt to modify activated flight into conflict")
         flight_1_oi_ref = self._attempt_modify_activated_flight_conflict(
             flight_1_oi_ref
         )
@@ -377,7 +377,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
         ) as validator:
             modify_planned_conflict_flight_intent(
                 self,
-                "Attempt to modify planned flight 1 in conflict",
+                "Attempt to modify planned flight 1 into conflict",
                 self.tested_uss,
                 self.flight_1_planned_time_range_B.request,
                 self.flight_1_id,
@@ -420,7 +420,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
         ) as validator:
             modify_activated_conflict_flight_intent(
                 self,
-                "Attempt to modify activated flight 1 in conflict",
+                "Attempt to modify activated flight 1 into conflict",
                 self.tested_uss,
                 self.flight_1_activated_time_range_B.request,
                 self.flight_1_id,
@@ -499,7 +499,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
         ) as validator:
             resp_flight_1, _ = submit_flight_intent(
                 self,
-                "Attempt to modify activated flight 1 in conflict with activated flight 2",
+                "Attempt to modify activated flight 1 in conflict with nonconforming flight 2",
                 "Successful modification or rejection",
                 {
                     InjectFlightResponseResult.ReadyToFly,

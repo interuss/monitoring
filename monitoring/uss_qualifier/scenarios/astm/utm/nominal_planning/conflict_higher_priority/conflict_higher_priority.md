@@ -10,35 +10,74 @@ exists a conflict with a higher priority flight:
 
 It involves a tested USS and a control USS through which conflicting flights are injected.
 
-## Sequence
-
-![Sequence diagram](conflict_higher_priority.png)
-
 ## Resources
 ### flight_intents
-FlightIntentsResource that provides the 8 following flight intents:
+FlightIntentsResource that provides the following flight intents:
 
-- For flight 1:
-    - `flight_1_planned_time_range_A`: used for the test lower priority flight
-        - original time range `time_range_A` (e.g. 1pm to 2pm)
-    - `flight_1_planned_time_range_A_extended`: mutation of volume in time to extend original time range (e.g. 12pm to 2pm)
-    - `flight_1_activated_time_range_A`: state mutation `Activated`
-    - `flight_1_activated_time_range_A_extended`: mutation of volume in time to extend original time range (e.g. 12pm to 2pm)
-    - `flight_1_activated_time_range_B`: mutation of volume in time to not intersect with `time_range_A` or `time_range_A_extended` (e.g. 4pm to 5pm)
-
-- For flight 2:
-    - `flight_2_planned_time_range_A`: used for the higher priority flight
-        - original time range `time_range_A` (e.g. 1pm to 2pm)
-        - must have higher priority than flight 1
-        - must intersect flight 1 in space
-    - `flight_2_activated_time_range_A`: state mutation `Activated`
-    - `flight_2_activated_time_range_B`: mutation of volume in time to not intersect with `time_range_A` or `time_range_A_extended` (e.g. 4pm to 5pm)
+<table>
+  <tr>
+    <th>Flight intent ID</th><!-- TODO: remove mention of time ranges -->
+    <th>Flight name</th>
+    <th>Priority</th>
+    <th>State</th><!-- TODO: Update with usage_state and uas_state when new flight planning API is adopted -->
+    <th>Must conflict with</th>
+    <th>Must not conflict with</th>
+  </tr>
+  <tr>
+    <td><code>flight_1_planned_time_range_A</code></td>
+    <td rowspan="2">Flight 1</td>
+    <td rowspan="5">Any</td>
+    <td>Accepted</td>
+    <td rowspan="2">Flight 2</td>
+    <td rowspan="2">Flight 2m</td>
+  </tr>
+  <tr>
+    <td><code>flight_1_activated_time_range_A</code></td>
+    <td>Activated</td>
+  </tr>
+  <tr>
+    <td><code>flight_1_planned_time_range_A_extended</code></td>
+    <td rowspan="2">Flight 1m</td>
+    <td>Accepted</td>
+    <td rowspan="2">Flight 2</td>
+    <td rowspan="2">N/A</td>
+  </tr>
+  <tr>
+    <td><code>flight_1_activated_time_range_A_extended</code></td>
+    <td>Activated</td>
+  </tr>
+  <tr>
+    <td><code>flight_1_activated_time_range_B</code></td>
+    <td>Flight 1c</td>
+    <td>Activated</td>
+    <td>Flight 2</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td><code>flight_2_planned_time_range_A</code></td>
+    <td rowspan="2">Flight 2</td>
+    <td rowspan="3">Higher than Flight 1*</td>
+    <td>Accepted</td>
+    <td rowspan="2">Flight 1</td>
+    <td rowspan="2">N/A</td>
+  </tr>
+  <tr>
+    <td><code>flight_2_activated_time_range_A</code></td>
+    <td>Activated</td>
+  </tr>
+  <tr>
+    <td><code>flight_2_activated_time_range_B</code></td>
+    <td>Flight 2m</td>
+    <td>Activated</td>
+    <td>Flight 1c</td>
+    <td>Flight 1</td>
+</table>
 
 ### tested_uss
-FlightPlannerResource that is under test and will manage the first lower priority flight.
+FlightPlannerResource that is under test and will manage flight 1.
 
 ### control_uss
-FlightPlannerResource that will be used to inject conflicting flight 2.
+FlightPlannerResource that will manage conflicting flight 2.
 
 ### dss
 DSSInstanceResource that provides access to a DSS instance where flight creation/sharing can be verified.
@@ -59,6 +98,8 @@ Both USSs are requested to remove all flights from the area under test.
 
 
 ## Attempt to plan flight in conflict test case
+![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict.svg)
+
 ### [Plan flight 2 test step](../../../../flight_planning/plan_flight_intent.md)
 The higher priority flight should be successfully planned by the control USS.
 
@@ -74,6 +115,8 @@ higher priority. As such it should be rejected per **[astm.f3548.v21.SCD0015](..
 
 
 ## Attempt to modify planned flight in conflict test case
+![Test case summary illustration](assets/attempt_to_modify_planned_flight_into_conflict.svg)
+
 ### [Plan flight 1 test step](../../../../flight_planning/plan_flight_intent.md)
 The first flight should be successfully planned by the tested USS.
 
@@ -96,6 +139,8 @@ original accepted request), or it should have been removed (because the USS reje
 
 
 ## Attempt to activate flight in conflict test case
+![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict.svg)
+
 ### [Attempt to activate conflicting flight 1 test step](../../../../flight_planning/activate_priority_conflict_flight_intent.md)
 The test driver attempts to activate flight 1, however, it conflicts with flight 2, which is also planned and of
 higher priority. Note that flight 1 could be either planned or non-existent before this step.
@@ -107,6 +152,8 @@ original accepted request), or it should have been removed (because the USS reje
 
 
 ## Modify activated flight with pre-existing conflict test case
+![Test case summary illustration](assets/modify_activated_flight_with_preexisting_conflict.svg)
+
 ### [Delete flight 2 test step](../../../../flight_planning/delete_flight_intent.md)
 
 ### [Activate flight 1 test step](../../../../flight_planning/activate_flight_intent.md)
@@ -137,6 +184,8 @@ The first flight should have been modified.
 
 
 ## Attempt to modify activated flight in conflict test case
+![Test case summary illustration](assets/attempt_to_modify_activated_flight_into_conflict.svg)
+
 ### [Modify activated flight 2 to not conflict with activated flight 1 test step](../../../../flight_planning/modify_planned_flight_intent.md)
 The test driver modifies (activated) flight 2 with the control USS so that it is not anymore in conflict with (activated)
 flight of test USS.
