@@ -10,9 +10,6 @@ from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
 )
 
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    InjectFlightRequest,
-)
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
@@ -25,6 +22,7 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenarioType,
     TestRunCannotContinueError,
 )
+from uas_standards.interuss.automated_testing.scd.v1.api import InjectFlightRequest
 
 
 class OpIntentValidator(object):
@@ -241,7 +239,7 @@ class OpIntentValidator(object):
             error_text = validate_op_intent_details(
                 oi_full.details,
                 flight_intent.operational_intent.priority,
-                Volume4DCollection.from_f3548v21(
+                Volume4DCollection.from_interuss_scd_api(
                     flight_intent.operational_intent.volumes
                     + flight_intent.operational_intent.off_nominal_volumes
                 ).bounding_volume.to_f3548v21(),

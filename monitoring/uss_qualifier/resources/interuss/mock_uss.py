@@ -1,5 +1,3 @@
-import arrow
-
 from implicitdict import ImplicitDict
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession

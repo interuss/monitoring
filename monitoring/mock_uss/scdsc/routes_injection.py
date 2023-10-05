@@ -13,6 +13,7 @@ from monitoring.mock_uss.database import fulfilled_request_ids
 from monitoring.mock_uss.scdsc.routes_scdsc import op_intent_from_flightrecord
 from monitoring.monitorlib.geo import Polygon
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
+from uas_standards.astm.f3548.v21 import api
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntent,
     PutOperationalIntentDetailsParameters,
@@ -28,19 +29,20 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
 from monitoring.monitorlib import scd, versioning
 from monitoring.monitorlib.clients import scd as scd_client
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.scd import op_intent_transition_valid
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
+from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
     InjectFlightResponse,
-    SCOPE_SCD_QUALIFIER_INJECT,
-    InjectFlightResult,
+    InjectFlightResponseResult,
     DeleteFlightResponse,
-    DeleteFlightResult,
+    DeleteFlightResponseResult,
     ClearAreaRequest,
     ClearAreaOutcome,
     ClearAreaResponse,
     Capability,
     CapabilitiesResponse,
+)
+from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
+    SCOPE_SCD_QUALIFIER_INJECT,
 )
 from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.mock_uss import webapp, require_config_value
@@ -63,7 +65,7 @@ def _make_stacktrace(e) -> str:
 
 
 def query_operational_intents(
-    area_of_interest: scd.Volume4D,
+    area_of_interest: api.Volume4D,
 ) -> List[OperationalIntent]:
     """Retrieve a complete set of operational intents in an area, including details.
 
@@ -187,7 +189,8 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         if problems:
             return (
                 InjectFlightResponse(
-                    result=InjectFlightResult.Rejected, notes=", ".join(problems)
+                    result=InjectFlightResponseResult.Rejected,
+                    notes=", ".join(problems),
                 ),
                 200,
             )
@@ -206,14 +209,14 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
     if nb_vertices > OiMaxVertices:
         return (
             InjectFlightResponse(
-                result=InjectFlightResult.Rejected,
+                result=InjectFlightResponseResult.Rejected,
                 notes=f"Too many vertices across volumes of operational intent (max OiMaxVertices={OiMaxVertices})",
             ),
             200,
         )
 
     # Validate max planning horizon for creation
-    start_time = Volume4DCollection.from_f3548v21(
+    start_time = Volume4DCollection.from_interuss_scd_api(
         req_body.operational_intent.volumes
     ).time_start.datetime
     time_delta = start_time - datetime.now(tz=start_time.tzinfo)
@@ -223,7 +226,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
     ):
         return (
             InjectFlightResponse(
-                result=InjectFlightResult.Rejected,
+                result=InjectFlightResponseResult.Rejected,
                 notes=f"Operational intent to plan is too far away in time (max OiMaxPlanHorizonDays={OiMaxPlanHorizonDays})",
             ),
             200,
@@ -236,7 +239,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
     ):
         return (
             InjectFlightResponse(
-                result=InjectFlightResult.Rejected,
+                result=InjectFlightResponseResult.Rejected,
                 notes=f"Operational intent specifies an off-nominal volume while being in {req_body.operational_intent.state} state",
             ),
             200,
@@ -278,10 +281,10 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         else None
     )
     state_transition_to = OperationalIntentState(req_body.operational_intent.state)
-    if not op_intent_transition_valid(state_transition_from, state_transition_to):
+    if not scd.op_intent_transition_valid(state_transition_from, state_transition_to):
         return (
             InjectFlightResponse(
-                result=InjectFlightResult.Rejected,
+                result=InjectFlightResponseResult.Rejected,
                 notes=f"Operational intent state transition from {state_transition_from} to {state_transition_to} is invalid",
             ),
             200,
@@ -294,7 +297,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         logger.debug(
             f"[inject_flight/{pid}:{flight_id}] Obtaining latest operational intent information"
         )
-        vol4 = Volume4DCollection.from_f3548v21(
+        vol4 = Volume4DCollection.from_interuss_scd_api(
             req_body.operational_intent.volumes
         ).bounding_volume.to_f3548v21()
         op_intents = query_operational_intents(vol4)
@@ -304,7 +307,9 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         logger.debug(
             f"[inject_flight/{pid}:{flight_id}] Checking for intersections with {', '.join(op_intent.reference.id for op_intent in op_intents)}"
         )
-        v1 = Volume4DCollection.from_f3548v21(req_body.operational_intent.volumes)
+        v1 = Volume4DCollection.from_interuss_scd_api(
+            req_body.operational_intent.volumes
+        )
         for op_intent in op_intents:
             if (
                 existing_flight
@@ -330,7 +335,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 )
                 continue
 
-            v2 = Volume4DCollection.from_f3548v21(
+            v2 = Volume4DCollection.from_interuss_scd_api(
                 op_intent.details.volumes + op_intent.details.off_nominal_volumes
             )
 
@@ -353,7 +358,8 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 notes = f"Requested flight (priority {req_body.operational_intent.priority}) intersected {op_intent.reference.manager}'s operational intent {op_intent.reference.id} (priority {op_intent.details.priority})"
                 return (
                     InjectFlightResponse(
-                        result=InjectFlightResult.ConflictWithFlight, notes=notes
+                        result=InjectFlightResponseResult.ConflictWithFlight,
+                        notes=notes,
                     ),
                     200,
                 )
@@ -430,9 +436,9 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             result.operational_intent_reference.state
             == OperationalIntentState.Activated
         ):
-            injection_result = InjectFlightResult.ReadyToFly
+            injection_result = InjectFlightResponseResult.ReadyToFly
         else:
-            injection_result = InjectFlightResult.Planned
+            injection_result = InjectFlightResponseResult.Planned
         return (
             InjectFlightResponse(result=injection_result, operational_intent_id=id),
             200,
@@ -442,17 +448,21 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             f"{e.__class__.__name__} while {step_name} for flight {flight_id}: {str(e)}"
         )
         return (
-            InjectFlightResponse(result=InjectFlightResult.Failed, notes=notes),
+            InjectFlightResponse(result=InjectFlightResponseResult.Failed, notes=notes),
             200,
         )
     except requests.exceptions.ConnectionError as e:
         notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
-        response = InjectFlightResponse(result=InjectFlightResult.Failed, notes=notes)
+        response = InjectFlightResponse(
+            result=InjectFlightResponseResult.Failed, notes=notes
+        )
         response["stacktrace"] = _make_stacktrace(e)
         return response, 200
     except QueryError as e:
         notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
-        response = InjectFlightResponse(result=InjectFlightResult.Failed, notes=notes)
+        response = InjectFlightResponse(
+            result=InjectFlightResponseResult.Failed, notes=notes
+        )
         response["queries"] = e.queries
         response["stacktrace"] = e.stacktrace
         return response, 200
@@ -508,7 +518,7 @@ def delete_flight(flight_id) -> Tuple[dict, int]:
     if flight is None:
         return (
             DeleteFlightResponse(
-                result=DeleteFlightResult.Failed,
+                result=DeleteFlightResponseResult.Failed,
                 notes="Flight {} does not exist".format(flight_id),
             ),
             200,
@@ -547,25 +557,29 @@ def delete_flight(flight_id) -> Tuple[dict, int]:
         )
         logger.debug(f"[delete_flight/{pid}:{flight_id}] {notes}")
         return (
-            DeleteFlightResponse(result=DeleteFlightResult.Failed, notes=notes),
+            DeleteFlightResponse(result=DeleteFlightResponseResult.Failed, notes=notes),
             200,
         )
     except requests.exceptions.ConnectionError as e:
         notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
         logger.debug(f"[delete_flight/{pid}:{flight_id}] {notes}")
-        response = DeleteFlightResponse(result=DeleteFlightResult.Failed, notes=notes)
+        response = DeleteFlightResponse(
+            result=DeleteFlightResponseResult.Failed, notes=notes
+        )
         response["stacktrace"] = _make_stacktrace(e)
         return response, 200
     except QueryError as e:
         notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
         logger.debug(f"[delete_flight/{pid}:{flight_id}] {notes}")
-        response = DeleteFlightResponse(result=DeleteFlightResult.Failed, notes=notes)
+        response = DeleteFlightResponse(
+            result=DeleteFlightResponseResult.Failed, notes=notes
+        )
         response["queries"] = e.queries
         response["stacktrace"] = e.stacktrace
         return response, 200
 
     logger.debug(f"[delete_flight/{pid}:{flight_id}] Complete.")
-    return DeleteFlightResponse(result=DeleteFlightResult.Closed), 200
+    return DeleteFlightResponse(result=DeleteFlightResponseResult.Closed), 200
 
 
 @webapp.route("/scdsc/v1/clear_area_requests", methods=["POST"])
@@ -607,7 +621,7 @@ def clear_area(req: ClearAreaRequest) -> Tuple[dict, int]:
         # Find operational intents in the DSS
         step_name = "constructing DSS operational intent query"
         # TODO: Simply use the req.extent 4D volume more directly
-        extent = Volume4D.from_f3548v21(req.extent)
+        extent = Volume4D.from_interuss_scd_api(req.extent)
         start_time = extent.time_start.datetime
         end_time = extent.time_end.datetime
         area = extent.rect_bounds

@@ -77,7 +77,7 @@ class ConflictHigherPriority(TestScenario):
         for intent in flight_intents.values():
             extents.extend(intent.request.operational_intent.volumes)
             extents.extend(intent.request.operational_intent.off_nominal_volumes)
-        self._intents_extent = Volume4DCollection.from_f3548v21(
+        self._intents_extent = Volume4DCollection.from_interuss_scd_api(
             extents
         ).bounding_volume.to_f3548v21()
 
@@ -142,24 +142,24 @@ class ConflictHigherPriority(TestScenario):
                 self.flight_2_planned_time_range_A.request.operational_intent.priority
                 > self.flight_1_planned_time_range_A.request.operational_intent.priority
             ), "flight_2 must have higher priority than flight_1"
-            assert Volume4DCollection.from_f3548v21(
+            assert Volume4DCollection.from_interuss_scd_api(
                 self.flight_1_planned_time_range_A.request.operational_intent.volumes
             ).intersects_vol4s(
-                Volume4DCollection.from_f3548v21(
+                Volume4DCollection.from_interuss_scd_api(
                     self.flight_2_planned_time_range_A.request.operational_intent.volumes
                 )
             ), "flight_1_planned_time_range_A and flight_2_planned_time_range_A must intersect"
-            assert Volume4DCollection.from_f3548v21(
+            assert Volume4DCollection.from_interuss_scd_api(
                 self.flight_1_planned_time_range_A.request.operational_intent.volumes
             ).intersects_vol4s(
-                Volume4DCollection.from_f3548v21(
+                Volume4DCollection.from_interuss_scd_api(
                     self.flight_1_planned_time_range_A_extended.request.operational_intent.volumes
                 )
             ), "flight_1_planned_time_range_A and flight_1_planned_time_range_A_extended must intersect"
-            assert not Volume4DCollection.from_f3548v21(
+            assert not Volume4DCollection.from_interuss_scd_api(
                 self.flight_1_planned_time_range_A.request.operational_intent.volumes
             ).intersects_vol4s(
-                Volume4DCollection.from_f3548v21(
+                Volume4DCollection.from_interuss_scd_api(
                     self.flight_1_activated_time_range_B.request.operational_intent.volumes
                 )
             ), "flight_1_planned_time_range_A and flight_1_activated_time_range_B must not intersect"

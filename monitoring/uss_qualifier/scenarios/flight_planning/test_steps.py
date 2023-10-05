@@ -1,17 +1,15 @@
 import inspect
-from datetime import datetime
-from typing import List, Union, Optional, Tuple, Iterable, Set, Dict
+from typing import List, Optional, Tuple, Iterable, Set, Dict
 
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
+from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
-    Capability,
-    InjectFlightResult,
+    InjectFlightResponseResult,
     InjectFlightResponse,
-    DeleteFlightResult,
+    DeleteFlightResponseResult,
     DeleteFlightResponse,
 )
 from monitoring.uss_qualifier.common_data_definitions import Severity
@@ -48,7 +46,7 @@ def clear_area(
     for flight_intent in flight_intents:
         volumes += flight_intent.request.operational_intent.volumes
         volumes += flight_intent.request.operational_intent.off_nominal_volumes
-    extent = Volume4DCollection.from_f3548v21(volumes).bounding_volume.to_f3548v21()
+    extent = Volume4DCollection.from_f3548v21(volumes).bounding_volume
     for uss in flight_planners:
         with scenario.check("Area cleared successfully", [uss.participant_id]) as check:
             try:
@@ -111,8 +109,8 @@ def plan_flight_intent(
         scenario,
         test_step,
         "Successful planning",
-        {InjectFlightResult.Planned},
-        {InjectFlightResult.Failed: "Failure"},
+        {InjectFlightResponseResult.Planned},
+        {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
     )
@@ -140,8 +138,8 @@ def activate_flight_intent(
         scenario,
         test_step,
         "Successful activation",
-        {InjectFlightResult.ReadyToFly},
-        {InjectFlightResult.Failed: "Failure"},
+        {InjectFlightResponseResult.ReadyToFly},
+        {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
         flight_id,
@@ -170,8 +168,8 @@ def modify_planned_flight_intent(
         scenario,
         test_step,
         "Successful modification",
-        {InjectFlightResult.Planned},
-        {InjectFlightResult.Failed: "Failure"},
+        {InjectFlightResponseResult.Planned},
+        {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
         flight_id,
@@ -200,8 +198,8 @@ def modify_activated_flight_intent(
         scenario,
         test_step,
         "Successful modification",
-        {InjectFlightResult.ReadyToFly},
-        {InjectFlightResult.Failed: "Failure"},
+        {InjectFlightResponseResult.ReadyToFly},
+        {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
         flight_id,
@@ -212,8 +210,8 @@ def submit_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     success_check: str,
-    expected_results: Set[InjectFlightResult],
-    failed_checks: Dict[InjectFlightResult, str],
+    expected_results: Set[InjectFlightResponseResult],
+    failed_checks: Dict[InjectFlightResponseResult, str],
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: Optional[str] = None,
@@ -304,14 +302,14 @@ def delete_flight_intent(
         scenario.record_query(query)
         notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
 
-        if resp.result == DeleteFlightResult.Closed:
+        if resp.result == DeleteFlightResponseResult.Closed:
             scenario.end_test_step()
             return resp
         else:
             check.record_failed(
                 summary=f"Flight deletion attempt unexpectedly {resp.result}",
                 severity=Severity.High,
-                details=f"{flight_planner.participant_id} indicated {resp.result} rather than the expected {DeleteFlightResult.Closed}{notes_suffix}",
+                details=f"{flight_planner.participant_id} indicated {resp.result} rather than the expected {DeleteFlightResponseResult.Closed}{notes_suffix}",
                 query_timestamps=[query.request.timestamp],
             )
 
@@ -350,7 +348,7 @@ def cleanup_flights(
                     )
                     continue
 
-                if resp.result == DeleteFlightResult.Closed:
+                if resp.result == DeleteFlightResponseResult.Closed:
                     removed.append(flight_id)
                 else:
                     check.record_failed(

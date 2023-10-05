@@ -1,25 +1,9 @@
-import math
-from datetime import datetime, timedelta
-from enum import Enum
-from typing import Dict, List, Optional, Tuple, Literal
-from implicitdict import ImplicitDict, StringBasedDateTime
+from typing import Optional
 
-import arrow
-import s2sphere
-import shapely.geometry
-
-from monitoring.monitorlib.geo import LatLngPoint, Radius
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentState,
-    Polygon,
-    Volume4D,
-    Volume3D,
-    Time,
-    Altitude,
-    Circle,
 )
-
-from monitoring.monitorlib import geo
+from uas_standards.astm.f3548.v21.constants import Scope
 
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -28,11 +12,11 @@ DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 API_1_0_0 = "1.0.0"
 API_0_3_17 = API_1_0_0
 
-SCOPE_SC = "utm.strategic_coordination"
-SCOPE_CM = "utm.constraint_management"
-SCOPE_CP = "utm.constraint_processing"
-SCOPE_CM_SA = "utm.conformance_monitoring_sa"
-SCOPE_AA = "utm.availability_arbitration"
+SCOPE_SC = Scope.StrategicCoordination
+SCOPE_CM = Scope.ConstraintManagement
+SCOPE_CP = Scope.ConstraintProcessing
+SCOPE_CM_SA = Scope.ConformanceMonitoringForSituationalAwareness
+SCOPE_AA = Scope.AvailabilityArbitration
 
 NO_OVN_PHRASES = {"", "Available from USS"}
 

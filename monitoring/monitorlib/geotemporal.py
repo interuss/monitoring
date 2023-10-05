@@ -12,6 +12,7 @@ from pvlib.solarposition import get_solarposition
 import s2sphere as s2sphere
 from uas_standards.astm.f3411.v22a.api import Polygon
 from uas_standards.astm.f3548.v21 import api as f3548v21
+from uas_standards.interuss.automated_testing.scd.v1 import api as interuss_scd_api
 
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.geo import LatLngPoint, Circle, Altitude, Volume3D
@@ -327,6 +328,11 @@ class Volume4D(ImplicitDict):
             kwargs["time_end"] = Time(vol.time_end.value)
         return Volume4D(**kwargs)
 
+    @staticmethod
+    def from_interuss_scd_api(vol: interuss_scd_api.Volume4D) -> Volume4D:
+        # InterUSS SCD API is field-compatible with ASTM F3548-21
+        return Volume4D.from_f3548v21(vol)
+
     def to_f3548v21(self) -> f3548v21.Volume4D:
         kwargs = {"volume": self.volume.to_f3548v21()}
         if "time_start" in self and self.time_start:
@@ -334,6 +340,10 @@ class Volume4D(ImplicitDict):
         if "time_end" in self and self.time_end:
             kwargs["time_end"] = self.time_end.to_f3548v21()
         return f3548v21.Volume4D(**kwargs)
+
+    def to_interuss_scd_api(self) -> interuss_scd_api.Volume4D:
+        # InterUSS SCD API is field-compatible with ASTM F3548-21
+        return ImplicitDict.parse(self.to_f3548v21(), interuss_scd_api.Volume4D)
 
 
 def resolve_volume4d(template: Volume4DTemplate, start_of_test: datetime) -> Volume4D:
@@ -526,6 +536,13 @@ class Volume4DCollection(ImplicitDict):
         vol4s: List[Union[f3548v21.Volume4D, dict]]
     ) -> Volume4DCollection:
         volumes = [Volume4D.from_f3548v21(v) for v in vol4s]
+        return Volume4DCollection(volumes=volumes)
+
+    @staticmethod
+    def from_interuss_scd_api(
+        vol4s: List[interuss_scd_api.Volume4D],
+    ) -> Volume4DCollection:
+        volumes = [Volume4D.from_interuss_scd_api(v) for v in vol4s]
         return Volume4DCollection(volumes=volumes)
 
     def to_f3548v21(self) -> List[f3548v21.Volume4D]:
