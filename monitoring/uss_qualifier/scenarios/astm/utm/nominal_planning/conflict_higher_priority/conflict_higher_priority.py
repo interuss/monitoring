@@ -1,14 +1,16 @@
-from typing import Optional
+from typing import Optional, Tuple
 
+from uas_standards.astm.f3548.v21.api import (
+    OperationalIntentReference,
+)
+
+from monitoring.monitorlib.geotemporal import Volume4DCollection
+from monitoring.uss_qualifier.common_data_definitions import Severity
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightResponseResult,
 )
 
-from monitoring.monitorlib import scd
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    Capability,
-)
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
@@ -24,8 +26,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
-    validate_shared_operational_intent,
-    ValidateNotSharedOperationalIntent,
+    OpIntentValidator,
 )
 from monitoring.uss_qualifier.scenarios.flight_planning.prioritization_test_steps import (
     activate_priority_conflict_flight_intent,
@@ -36,7 +37,6 @@ from monitoring.uss_qualifier.scenarios.flight_planning.prioritization_test_step
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     clear_area,
-    check_capabilities,
     plan_flight_intent,
     cleanup_flights,
     activate_flight_intent,
@@ -75,6 +75,15 @@ class ConflictHigherPriority(TestScenario):
         self.dss = dss.dss
 
         flight_intents = flight_intents.get_flight_intents()
+
+        extents = []
+        for intent in flight_intents.values():
+            extents.extend(intent.request.operational_intent.volumes)
+            extents.extend(intent.request.operational_intent.off_nominal_volumes)
+        self._intents_extent = Volume4DCollection.from_interuss_scd_api(
+            extents
+        ).bounding_volume.to_f3548v21()
+
         try:
             (
                 self.flight_1_planned_time_range_A,
@@ -136,17 +145,26 @@ class ConflictHigherPriority(TestScenario):
                 self.flight_2_planned_time_range_A.request.operational_intent.priority
                 > self.flight_1_planned_time_range_A.request.operational_intent.priority
             ), "flight_2 must have higher priority than flight_1"
-            assert scd.vol4s_intersect(
-                self.flight_1_planned_time_range_A.request.operational_intent.volumes,
-                self.flight_2_planned_time_range_A.request.operational_intent.volumes,
+            assert Volume4DCollection.from_interuss_scd_api(
+                self.flight_1_planned_time_range_A.request.operational_intent.volumes
+            ).intersects_vol4s(
+                Volume4DCollection.from_interuss_scd_api(
+                    self.flight_2_planned_time_range_A.request.operational_intent.volumes
+                )
             ), "flight_1_planned_time_range_A and flight_2_planned_time_range_A must intersect"
-            assert scd.vol4s_intersect(
-                self.flight_1_planned_time_range_A.request.operational_intent.volumes,
-                self.flight_1_planned_time_range_A_extended.request.operational_intent.volumes,
+            assert Volume4DCollection.from_interuss_scd_api(
+                self.flight_1_planned_time_range_A.request.operational_intent.volumes
+            ).intersects_vol4s(
+                Volume4DCollection.from_interuss_scd_api(
+                    self.flight_1_planned_time_range_A_extended.request.operational_intent.volumes
+                )
             ), "flight_1_planned_time_range_A and flight_1_planned_time_range_A_extended must intersect"
-            assert not scd.vol4s_intersect(
-                self.flight_1_planned_time_range_A.request.operational_intent.volumes,
-                self.flight_1_activated_time_range_B.request.operational_intent.volumes,
+            assert not Volume4DCollection.from_interuss_scd_api(
+                self.flight_1_planned_time_range_A.request.operational_intent.volumes
+            ).intersects_vol4s(
+                Volume4DCollection.from_interuss_scd_api(
+                    self.flight_1_activated_time_range_B.request.operational_intent.volumes
+                )
             ), "flight_1_planned_time_range_A and flight_1_activated_time_range_B must not intersect"
 
         except KeyError as e:
@@ -180,38 +198,44 @@ class ConflictHigherPriority(TestScenario):
         self.end_test_case()
 
         self.begin_test_case("Attempt to modify planned flight in conflict")
-        flight_1_op_intent_id = self._attempt_modify_planned_flight_conflict()
+        flight_1_oi_ref = self._attempt_modify_planned_flight_conflict()
         self.end_test_case()
 
         self.begin_test_case("Attempt to activate flight in conflict")
-        self._attempt_activate_flight_conflict(flight_1_op_intent_id)
+        flight_1_oi_ref = self._attempt_activate_flight_conflict(flight_1_oi_ref)
         self.end_test_case()
 
         self.begin_test_case("Modify activated flight with pre-existing conflict")
-        flight_1_op_intent_id = self._modify_activated_flight_conflict_preexisting()
+        (
+            flight_1_oi_ref,
+            flight_2_oi_ref,
+        ) = self._modify_activated_flight_conflict_preexisting(flight_1_oi_ref)
         self.end_test_case()
 
         self.begin_test_case("Attempt to modify activated flight in conflict")
-        self._attempt_modify_activated_flight_conflict(flight_1_op_intent_id)
+        self._attempt_modify_activated_flight_conflict(flight_1_oi_ref, flight_2_oi_ref)
         self.end_test_case()
 
         self.end_test_scenario()
 
     def _setup(self) -> bool:
-        if not check_capabilities(
-            self,
-            "Check for necessary capabilities",
-            required_capabilities=[
-                (
-                    [self.tested_uss, self.control_uss],
-                    Capability.BasicStrategicConflictDetection,
-                )
-            ],
-            prerequisite_capabilities=[
-                (self.control_uss, Capability.HighPriorityFlights)
-            ],
-        ):
-            return False
+        self.begin_test_step("Check for flight planning readiness")
+
+        for uss in (self.tested_uss, self.control_uss):
+            error, query = uss.get_readiness()
+            self.record_query(query)
+            with self.check(
+                "Flight planning USS not ready", [uss.participant_id]
+            ) as check:
+                if error:
+                    check.record_failed(
+                        "Error determining readiness",
+                        Severity.High,
+                        "Error: " + error,
+                        query_timestamps=[query.request.timestamp],
+                    )
+
+        self.end_test_step()
 
         clear_area(
             self,
@@ -232,225 +256,255 @@ class ConflictHigherPriority(TestScenario):
         return True
 
     def _attempt_plan_flight_conflict(self):
-        resp_flight_2, self.flight_2_id = plan_flight_intent(
+        with OpIntentValidator(
             self,
-            "Plan flight 2",
             self.control_uss,
-            self.flight_2_planned_time_range_A.request,
-        )
+            self.dss,
+            "Validate flight 2 sharing",
+            self._intents_extent,
+        ) as validator:
+            resp_flight_2, self.flight_2_id = plan_flight_intent(
+                self,
+                "Plan flight 2",
+                self.control_uss,
+                self.flight_2_planned_time_range_A.request,
+            )
+            validator.expect_shared(self.flight_2_planned_time_range_A.request)
 
-        with ValidateNotSharedOperationalIntent(
+        with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
             "Validate flight 1 not shared",
-            self.flight_1_planned_time_range_A.request,
-        ):
+            self._intents_extent,
+        ) as validator:
             _ = plan_priority_conflict_flight_intent(
                 self,
                 "Attempt to plan flight 1",
                 self.tested_uss,
                 self.flight_1_planned_time_range_A.request,
             )
-
-        validate_shared_operational_intent(
-            self,
-            self.control_uss,
-            self.dss,
-            "Validate flight 2 sharing",
-            self.flight_2_planned_time_range_A.request,
-            resp_flight_2.operational_intent_id,
-        )
+            validator.expect_not_shared()
 
         _ = delete_flight_intent(
             self, "Delete flight 2", self.control_uss, self.flight_2_id
         )
         self.flight_2_id = None
 
-    def _attempt_modify_planned_flight_conflict(self) -> Optional[str]:
-        resp_flight_1, self.flight_1_id = plan_flight_intent(
-            self,
-            "Plan flight 1",
-            self.tested_uss,
-            self.flight_1_planned_time_range_A.request,
-        )
-        validate_shared_operational_intent(
+    def _attempt_modify_planned_flight_conflict(
+        self,
+    ) -> Optional[OperationalIntentReference]:
+        with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
             "Validate flight 1 sharing",
-            self.flight_1_planned_time_range_A.request,
-            resp_flight_1.operational_intent_id,
-        )
+            self._intents_extent,
+        ) as validator:
+            resp_flight_1, self.flight_1_id = plan_flight_intent(
+                self,
+                "Plan flight 1",
+                self.tested_uss,
+                self.flight_1_planned_time_range_A.request,
+            )
+            flight_1_oi_ref = validator.expect_shared(
+                self.flight_1_planned_time_range_A.request
+            )
 
-        resp_flight_2, self.flight_2_id = plan_flight_intent(
-            self,
-            "Plan flight 2",
-            self.control_uss,
-            self.flight_2_planned_time_range_A.request,
-        )
-
-        _ = modify_planned_priority_conflict_flight_intent(
-            self,
-            "Attempt to modify planned flight 1 in conflict",
-            self.tested_uss,
-            self.flight_1_planned_time_range_A_extended.request,
-            self.flight_1_id,
-        )
-
-        validate_shared_operational_intent(
-            self,
-            self.tested_uss,
-            self.dss,
-            "Validate flight 1 not modified",
-            self.flight_1_planned_time_range_A.request,
-            resp_flight_1.operational_intent_id,
-            skip_if_not_found=True,
-        )
-        validate_shared_operational_intent(
+        with OpIntentValidator(
             self,
             self.control_uss,
             self.dss,
             "Validate flight 2 sharing",
-            self.flight_2_planned_time_range_A.request,
-            resp_flight_2.operational_intent_id,
-        )
+            self._intents_extent,
+        ) as validator:
+            resp_flight_2, self.flight_2_id = plan_flight_intent(
+                self,
+                "Plan flight 2",
+                self.control_uss,
+                self.flight_2_planned_time_range_A.request,
+            )
+            validator.expect_shared(self.flight_2_planned_time_range_A.request)
 
-        return resp_flight_1.operational_intent_id
-
-    def _attempt_activate_flight_conflict(self, flight_1_op_intent_id: str):
-        _ = activate_priority_conflict_flight_intent(
+        with OpIntentValidator(
             self,
-            "Attempt to activate conflicting flight 1",
             self.tested_uss,
-            self.flight_1_activated_time_range_A.request,
-            self.flight_1_id,
-        )
+            self.dss,
+            "Validate flight 1 not modified",
+            self._intents_extent,
+            flight_1_oi_ref,
+        ) as validator:
+            _ = modify_planned_priority_conflict_flight_intent(
+                self,
+                "Attempt to modify planned flight 1 in conflict",
+                self.tested_uss,
+                self.flight_1_planned_time_range_A_extended.request,
+                self.flight_1_id,
+            )
+            flight_1_oi_ref = validator.expect_shared(
+                self.flight_1_planned_time_range_A.request, skip_if_not_found=True
+            )
 
-        validate_shared_operational_intent(
+        return flight_1_oi_ref
+
+    def _attempt_activate_flight_conflict(
+        self, flight_1_oi_ref: Optional[OperationalIntentReference]
+    ) -> Optional[OperationalIntentReference]:
+        with OpIntentValidator(
             self,
-            self.control_uss,
+            self.tested_uss,
             self.dss,
             "Validate flight 1 not activated",
-            self.flight_1_planned_time_range_A.request,
-            flight_1_op_intent_id,
-            skip_if_not_found=True,
-        )
+            self._intents_extent,
+            flight_1_oi_ref,
+        ) as validator:
+            _ = activate_priority_conflict_flight_intent(
+                self,
+                "Attempt to activate conflicting flight 1",
+                self.tested_uss,
+                self.flight_1_activated_time_range_A.request,
+                self.flight_1_id,
+            )
+            flight_1_oi_ref = validator.expect_shared(
+                self.flight_1_planned_time_range_A.request, skip_if_not_found=True
+            )
 
-    def _modify_activated_flight_conflict_preexisting(self) -> str:
+        return flight_1_oi_ref
+
+    def _modify_activated_flight_conflict_preexisting(
+        self, flight_1_oi_ref: Optional[OperationalIntentReference]
+    ) -> Tuple[OperationalIntentReference, OperationalIntentReference]:
         _ = delete_flight_intent(
             self, "Delete flight 2", self.control_uss, self.flight_2_id
         )
         self.flight_2_id = None
 
-        resp_flight_1 = activate_flight_intent(
-            self,
-            "Activate flight 1",
-            self.tested_uss,
-            self.flight_1_activated_time_range_A.request,
-            self.flight_1_id,
-        )
-        validate_shared_operational_intent(
+        with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
             "Validate flight 1 sharing",
-            self.flight_1_activated_time_range_A.request,
-            resp_flight_1.operational_intent_id,
-        )
+            self._intents_extent,
+            flight_1_oi_ref,
+        ) as validator:
+            activate_flight_intent(
+                self,
+                "Activate flight 1",
+                self.tested_uss,
+                self.flight_1_activated_time_range_A.request,
+                self.flight_1_id,
+            )
+            flight_1_oi_ref = validator.expect_shared(
+                self.flight_1_activated_time_range_A.request
+            )
 
-        _, self.flight_2_id = plan_flight_intent(
-            self,
-            "Plan flight 2",
-            self.control_uss,
-            self.flight_2_planned_time_range_A.request,
-        )
-
-        resp_flight_2 = activate_flight_intent(
-            self,
-            "Activate flight 2",
-            self.control_uss,
-            self.flight_2_activated_time_range_A.request,
-            self.flight_2_id,
-        )
-
-        resp_flight_1_modif = modify_activated_flight_intent(
-            self,
-            "Modify activated flight 1 in conflict with activated flight 2",
-            self.tested_uss,
-            self.flight_1_activated_time_range_A_extended.request,
-            self.flight_1_id,
-            preexisting_conflict=True,
-        )
-
-        # The tested USS may respond NotSupported to the modification of the activated flight in conflict.
-        # If that's the case, it will not impact the rest of the test scenario.
-        if (
-            resp_flight_1_modif.result == InjectFlightResponseResult.NotSupported
-            or resp_flight_1_modif.operational_intent_id is None
-        ):
-            flight_1_op_intent_id = resp_flight_1.operational_intent_id
-        else:
-            flight_1_op_intent_id = resp_flight_1_modif.operational_intent_id
-
-        if resp_flight_1_modif.result == InjectFlightResponseResult.NotSupported:
-            flight_1_op_intent = self.flight_1_activated_time_range_A
-        else:
-            flight_1_op_intent = self.flight_1_activated_time_range_A_extended
-
-        validate_shared_operational_intent(
-            self,
-            self.tested_uss,
-            self.dss,
-            "Validate flight 1 sharing",
-            flight_1_op_intent.request,
-            flight_1_op_intent_id,
-        )
-        validate_shared_operational_intent(
+        with OpIntentValidator(
             self,
             self.control_uss,
             self.dss,
             "Validate flight 2 sharing",
-            self.flight_2_activated_time_range_A.request,
-            resp_flight_2.operational_intent_id,
-        )
+            self._intents_extent,
+        ) as validator:
+            _, self.flight_2_id = plan_flight_intent(
+                self,
+                "Plan flight 2",
+                self.control_uss,
+                self.flight_2_planned_time_range_A.request,
+            )
+            flight_2_oi_ref = validator.expect_shared(
+                self.flight_2_planned_time_range_A.request
+            )
 
-        return flight_1_op_intent_id
-
-    def _attempt_modify_activated_flight_conflict(self, flight_1_op_intent_id: str):
-        resp_flight_2 = modify_activated_flight_intent(
+        with OpIntentValidator(
             self,
-            "Modify activated flight 2 to not conflict with activated flight 1",
             self.control_uss,
-            self.flight_2_activated_time_range_B.request,
-            self.flight_2_id,
-        )
+            self.dss,
+            "Validate flight 2 sharing",
+            self._intents_extent,
+            flight_2_oi_ref,
+        ) as validator:
+            activate_flight_intent(
+                self,
+                "Activate flight 2",
+                self.control_uss,
+                self.flight_2_activated_time_range_A.request,
+                self.flight_2_id,
+            )
+            flight_2_oi_ref = validator.expect_shared(
+                self.flight_2_activated_time_range_A.request
+            )
 
-        _ = modify_activated_priority_conflict_flight_intent(
+        with OpIntentValidator(
             self,
-            "Attempt to modify activated flight 1 in conflict",
             self.tested_uss,
-            self.flight_1_activated_time_range_B.request,
-            self.flight_1_id,
-        )
+            self.dss,
+            "Validate flight 1 sharing",
+            self._intents_extent,
+            flight_1_oi_ref,
+        ) as validator:
+            resp = modify_activated_flight_intent(
+                self,
+                "Modify activated flight 1 in conflict with activated flight 2",
+                self.tested_uss,
+                self.flight_1_activated_time_range_A_extended.request,
+                self.flight_1_id,
+                preexisting_conflict=True,
+            )
 
-        validate_shared_operational_intent(
+            # The tested USS may respond NotSupported to the modification of the activated flight in conflict.
+            # If that's the case, it will not impact the rest of the test scenario.
+            if resp.result == InjectFlightResponseResult.NotSupported:
+                flight_1_oi_ref = validator.expect_shared(
+                    self.flight_1_activated_time_range_A.request
+                )
+            else:
+                flight_1_oi_ref = validator.expect_shared(
+                    self.flight_1_activated_time_range_A_extended.request
+                )
+
+        return flight_1_oi_ref, flight_2_oi_ref
+
+    def _attempt_modify_activated_flight_conflict(
+        self,
+        flight_1_oi_ref: OperationalIntentReference,
+        flight_2_oi_ref: OperationalIntentReference,
+    ):
+        with OpIntentValidator(
+            self,
+            self.control_uss,
+            self.dss,
+            "Validate flight 2 sharing",
+            self._intents_extent,
+            flight_2_oi_ref,
+        ) as validator:
+            modify_activated_flight_intent(
+                self,
+                "Modify activated flight 2 to not conflict with activated flight 1",
+                self.control_uss,
+                self.flight_2_activated_time_range_B.request,
+                self.flight_2_id,
+            )
+            validator.expect_shared(self.flight_2_activated_time_range_B.request)
+
+        with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
             "Validate flight 1 not modified",
-            self.flight_1_activated_time_range_A_extended.request,
-            flight_1_op_intent_id,
-            skip_if_not_found=True,
-        )
-        validate_shared_operational_intent(
-            self,
-            self.control_uss,
-            self.dss,
-            "Validate flight 2 sharing",
-            self.flight_2_activated_time_range_B.request,
-            resp_flight_2.operational_intent_id,
-        )
+            self._intents_extent,
+            flight_1_oi_ref,
+        ) as validator:
+            modify_activated_priority_conflict_flight_intent(
+                self,
+                "Attempt to modify activated flight 1 in conflict",
+                self.tested_uss,
+                self.flight_1_activated_time_range_B.request,
+                self.flight_1_id,
+            )
+            validator.expect_shared(
+                self.flight_1_activated_time_range_A_extended.request,
+                skip_if_not_found=True,
+            )
 
     def cleanup(self):
         self.begin_cleanup()

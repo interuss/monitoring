@@ -1,26 +1,26 @@
 import uuid
-from typing import Tuple, List, Optional, Set
+from typing import Tuple, Optional, Set
 from urllib.parse import urlparse
 
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
-from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.scd import Volume4D
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    InjectFlightResult,
-    DeleteFlightResult,
+from monitoring.monitorlib.fetch import QueryError, Query
+from monitoring.monitorlib.geotemporal import Volume4D
+from uas_standards.interuss.automated_testing.scd.v1.api import (
+    InjectFlightResponseResult,
+    DeleteFlightResponseResult,
     InjectFlightResponse,
     DeleteFlightResponse,
     InjectFlightRequest,
-    Capability,
     ClearAreaResponse,
     ClearAreaRequest,
+)
+from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
 )
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     StatusResponse,
-    CapabilitiesResponse,
 )
 
 
@@ -42,13 +42,6 @@ class FlightPlannerConfiguration(ImplicitDict):
             raise ValueError(
                 "FlightPlannerConfiguration.injection_base_url must be a URL"
             )
-
-
-class FlightPlannerInformation(ImplicitDict):
-    version: str
-    capabilities: List[Capability]
-    version_query: fetch.Query
-    capabilities_query: fetch.Query
 
 
 class FlightPlanner:
@@ -111,7 +104,7 @@ class FlightPlanner:
                 [query],
             )
 
-        if result.result == InjectFlightResult.Planned:
+        if result.result == InjectFlightResponseResult.Planned:
             self.created_flight_ids.add(flight_id)
 
         return result, query, flight_id
@@ -141,11 +134,11 @@ class FlightPlanner:
                 [query],
             )
 
-        if result.result == DeleteFlightResult.Closed:
+        if result.result == DeleteFlightResponseResult.Closed:
             self.created_flight_ids.remove(flight_id)
         return result, query
 
-    def get_target_information(self) -> FlightPlannerInformation:
+    def get_readiness(self) -> Tuple[Optional[str], Query]:
         url_status = "{}/v1/status".format(self.config.injection_base_url)
         version_query = fetch.query_and_describe(
             self.client,
@@ -155,53 +148,24 @@ class FlightPlanner:
             server_id=self.config.participant_id,
         )
         if version_query.status_code != 200:
-            raise QueryError(
+            return (
                 f"Status query to {url_status} returned {version_query.status_code}",
-                [version_query],
+                version_query,
             )
         try:
-            status_body = ImplicitDict.parse(
-                version_query.response.get("json", {}), StatusResponse
-            )
+            ImplicitDict.parse(version_query.response.get("json", {}), StatusResponse)
         except ValueError as e:
-            raise QueryError(
+            return (
                 f"Status response from {url_status} could not be decoded: {str(e)}",
-                [version_query],
-            )
-        version = status_body.version if status_body.version is not None else "Unknown"
-
-        url_capabilities = "{}/v1/capabilities".format(self.config.injection_base_url)
-        capabilities_query = fetch.query_and_describe(
-            self.client,
-            "GET",
-            url_capabilities,
-            scope=SCOPE_SCD_QUALIFIER_INJECT,
-            server_id=self.config.participant_id,
-        )
-        if capabilities_query.status_code != 200:
-            raise QueryError(
-                f"Capabilities query to {url_capabilities} returned {capabilities_query.status_code}",
-                [version_query, capabilities_query],
-            )
-        try:
-            capabilities_body = ImplicitDict.parse(
-                capabilities_query.response.get("json", {}), CapabilitiesResponse
-            )
-        except ValueError as e:
-            raise QueryError(
-                f"Capabilities response from {url_capabilities} could not be decoded: {str(e)}",
-                [version_query],
+                version_query,
             )
 
-        return FlightPlannerInformation(
-            version=version,
-            capabilities=capabilities_body.capabilities,
-            version_query=version_query,
-            capabilities_query=capabilities_query,
-        )
+        return None, version_query
 
     def clear_area(self, extent: Volume4D) -> Tuple[ClearAreaResponse, fetch.Query]:
-        req = ClearAreaRequest(request_id=str(uuid.uuid4()), extent=extent)
+        req = ClearAreaRequest(
+            request_id=str(uuid.uuid4()), extent=extent.to_f3548v21()
+        )
         url = f"{self.config.injection_base_url}/v1/clear_area_requests"
         query = fetch.query_and_describe(
             self.client,

@@ -7,6 +7,7 @@ from loguru import logger
 import requests
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     ClearAreaRequest,
+    InjectFlightRequest,
 )
 
 from implicitdict import ImplicitDict
@@ -32,10 +33,6 @@ from monitoring.mock_uss.scdsc.routes_injection import (
     delete_flight,
     clear_area,
 )
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    InjectFlightRequest,
-)
-
 from monitoring.monitorlib import fetch
 
 TASK_POLL_ATPROXY = "poll atproxy"

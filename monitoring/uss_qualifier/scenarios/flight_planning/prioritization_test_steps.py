@@ -1,12 +1,10 @@
 from typing import Optional, Tuple
 
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
-from uas_standards.interuss.automated_testing.scd.v1.api import (
-    InjectFlightResponseResult,
-)
 
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
+from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
+    InjectFlightResponseResult,
     InjectFlightResponse,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (

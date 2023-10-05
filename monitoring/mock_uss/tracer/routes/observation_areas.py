@@ -27,8 +27,8 @@ from monitoring.mock_uss.tracer.observation_areas import (
 from monitoring.mock_uss.tracer.tracer_poll import TASK_POLL_OBSERVATION_AREAS
 from monitoring.monitorlib import fetch
 import monitoring.monitorlib.fetch.rid
-import monitoring.monitorlib.fetch.scd
-from monitoring.monitorlib.geo import Volume4D, Volume3D
+from monitoring.monitorlib.geo import Volume3D
+from monitoring.monitorlib.geotemporal import Volume4D
 
 
 @webapp.route("/tracer/observation_areas", methods=["GET"])

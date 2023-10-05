@@ -1,15 +1,13 @@
-from typing import List, Dict
+from typing import List
 
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    InjectFlightResult,
-    Capability,
+from uas_standards.interuss.automated_testing.scd.v1.api import (
+    InjectFlightResponseResult,
 )
 from monitoring.monitorlib.uspace import problems_with_flight_authorisation
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
-    FlightPlannersResource,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntent,
@@ -23,7 +21,6 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     clear_area,
-    check_capabilities,
     plan_flight_intent,
     cleanup_flights,
 )
@@ -92,14 +89,22 @@ class Validation(TestScenario):
         self.end_test_scenario()
 
     def _setup(self) -> bool:
-        if not check_capabilities(
-            self,
-            "Check for necessary capabilities",
-            required_capabilities=[
-                (self.ussp, Capability.FlightAuthorisationValidation)
-            ],
-        ):
-            return False
+        self.begin_test_step("Check for flight planning readiness")
+
+        error, query = self.ussp.get_readiness()
+        self.record_query(query)
+        with self.check(
+            "Flight planning USSP ready", [self.ussp.participant_id]
+        ) as check:
+            if error:
+                check.record_failed(
+                    "Error determining readiness",
+                    Severity.High,
+                    "Error: " + error,
+                    query_timestamps=[query.request.timestamp],
+                )
+
+        self.end_test_step()
 
         clear_area(
             self,
@@ -133,7 +138,7 @@ class Validation(TestScenario):
                 with self.check(
                     "Incorrectly planned", [self.ussp.participant_id]
                 ) as check:
-                    if resp.result == InjectFlightResult.Planned:
+                    if resp.result == InjectFlightResponseResult.Planned:
                         problems = ", ".join(
                             problems_with_flight_authorisation(
                                 flight_intent.request.flight_authorisation
@@ -146,7 +151,7 @@ class Validation(TestScenario):
                             query_timestamps=[query.request.timestamp],
                         )
 
-                if resp.result == InjectFlightResult.Failed:
+                if resp.result == InjectFlightResponseResult.Failed:
                     failure_check.record_failed(
                         summary="Failed to create flight",
                         severity=Severity.Medium,
