@@ -38,6 +38,8 @@ Test scenarios will usually be enumerated/identified/created by mapping a list o
     While unmapped requirements still exist:
         Create new, simple test scenario that verifies a set of remaining unmapped requirements.
 
+See [CONTRIBUTING.md](../../../CONTRIBUTING.md#ussqualifier-test-scenarios) for more information on how to develop test scenarios.
+
 ## Resources
 
 Most test scenarios will require [test resources](../resources/README.md) (like NetRID telemetry to inject, NetRID service providers under test, etc) usually customized to the ecosystem in which the tests are being performed.  A test scenario declares what kind of resource(s) it requires, and a test suite identifies which available resources should be used to fulfill each test scenario's needs.
@@ -91,7 +93,7 @@ If the text of this section includes `TODO:`, then the check will be indicated a
 
 ### Cleanup phase
 
-If a test scenario wants to perform a cleanup procedure follow any non-error termination of the rest of the scenario, it must:
+If a test scenario wants to perform a cleanup procedure following any non-error termination of the rest of the scenario, it must:
 
 1) Override the `cleanup()` method on the base `TestScenario` class
 2) Include a main section in the documentation named "Cleanup" that is documented like a test step (including, e.g., test checks when appropriate).
