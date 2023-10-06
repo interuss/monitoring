@@ -10,6 +10,12 @@ This step verifies that a created flight is shared properly per ASTM F3548-21 by
 
 If a reference to the operational intent for the flight is not found in the DSS, this check will fail per **astm.f3548.v21.USS0005** and **astm.f3548.v21.OPIN0025**.
 
+## Operational intent for active flight not deleted check
+
+If an activated operational intent is expected to exist after it has been modified or activated and that it is not found
+in the DSS, this means that there is an active flight without a corresponding operational intent, then this check will
+fail per **[interuss.automated_testing.flight_planning.FlightCoveredByOperationalIntent](../../../requirements/interuss/automated_testing/flight_planning.md)**.
+
 ## Operational intent details retrievable check
 
 If the operational intent details for the flight cannot be retrieved from the USS, this check will fail per **astm.f3548.v21.USS0105** and **astm.f3548.v21.OPIN0025**.

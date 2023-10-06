@@ -168,17 +168,36 @@ class OpIntentValidator(object):
                 oi_ref = self._new_oi_ref
 
             elif self._new_oi_ref is None:
-                # we expect the original op intent to have been either modified or left untouched, thus must be among the returned op intents
-                # exception made if skip_if_not_found=True and op intent was deleted: step is skipped
+                # We expect the original op intent to have been either modified or left untouched, thus must be among
+                # the returned op intents. If additionally the op intent corresponds to an active flight, we fail a
+                # different appropriate check. Exception made if skip_if_not_found=True and op intent was deleted: step
+                # is skipped.
                 modified_oi_ref = self._find_after_oi(self._orig_oi_ref.id)
                 if modified_oi_ref is None:
                     if not skip_if_not_found:
-                        check.record_failed(
-                            summary="Operational intent reference not found in DSS",
-                            severity=Severity.High,
-                            details=f"USS {self._flight_planner.participant_id} was supposed to have shared with the DSS an updated operational intent by modifying it, but no matching operational intent references were found in the DSS in the area of the flight intent",
-                            query_timestamps=[self._after_query.request.timestamp],
-                        )
+                        if (
+                            flight_intent.operational_intent.state
+                            == OperationalIntentState.Activated
+                        ):
+                            with self._scenario.check(
+                                "Operational intent for active flight not deleted",
+                                [self._flight_planner.participant_id],
+                            ) as active_flight_check:
+                                active_flight_check.record_failed(
+                                    summary="Operational intent reference for active flight not found in DSS",
+                                    severity=Severity.High,
+                                    details=f"USS {self._flight_planner.participant_id} was supposed to have shared with the DSS an updated operational intent by modifying it, but no matching operational intent references were found in the DSS in the area of the flight intent",
+                                    query_timestamps=[
+                                        self._after_query.request.timestamp
+                                    ],
+                                )
+                        else:
+                            check.record_failed(
+                                summary="Operational intent reference not found in DSS",
+                                severity=Severity.High,
+                                details=f"USS {self._flight_planner.participant_id} was supposed to have shared with the DSS an updated operational intent by modifying it, but no matching operational intent references were found in the DSS in the area of the flight intent",
+                                query_timestamps=[self._after_query.request.timestamp],
+                            )
                     else:
                         self._scenario.record_note(
                             self._flight_planner.participant_id,

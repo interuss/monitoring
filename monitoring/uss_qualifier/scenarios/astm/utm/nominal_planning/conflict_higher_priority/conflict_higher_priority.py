@@ -451,15 +451,13 @@ class ConflictHigherPriority(TestScenario):
                 preexisting_conflict=True,
             )
 
-            # The tested USS may respond NotSupported to the modification of the activated flight in conflict.
-            # If that's the case, it will not impact the rest of the test scenario.
-            if resp.result == InjectFlightResponseResult.NotSupported:
+            if resp.result == InjectFlightResponseResult.ReadyToFly:
                 flight_1_oi_ref = validator.expect_shared(
-                    self.flight_1_activated_time_range_A.request
+                    self.flight_1_activated_time_range_A_extended.request
                 )
             else:
                 flight_1_oi_ref = validator.expect_shared(
-                    self.flight_1_activated_time_range_A_extended.request
+                    self.flight_1_activated_time_range_A.request
                 )
 
         return flight_1_oi_ref, flight_2_oi_ref
