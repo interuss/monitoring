@@ -1,5 +1,5 @@
 import inspect
-from typing import List, Optional, Tuple, Iterable, Set, Dict
+from typing import List, Optional, Tuple, Iterable, Set, Dict, Union
 
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
@@ -182,8 +182,10 @@ def modify_activated_flight_intent(
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: str,
+    preexisting_conflict: bool = False,
 ) -> InjectFlightResponse:
-    """Modify an activated flight intent that should result in success.
+    """Attempt to modify an activated flight intent.
+    If present, a pre-existing conflict must be indicated with `preexisting_conflict=True`.
 
     This function implements the test step described in
     modify_activated_flight_intent.md.
@@ -194,12 +196,35 @@ def modify_activated_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario, test_step
     )
 
+    if preexisting_conflict:
+        expected_results = {
+            InjectFlightResponseResult.ReadyToFly,
+            InjectFlightResponseResult.NotSupported,
+            # the following two results are considered expected in order to fail another check as low severity
+            InjectFlightResponseResult.Rejected,
+            InjectFlightResponseResult.ConflictWithFlight,
+        }
+        failed_checks = {
+            InjectFlightResponseResult.Failed: "Failure",
+            InjectFlightResponseResult.Rejected: (
+                "Rejected modification",
+                Severity.Low,
+            ),
+            InjectFlightResponseResult.ConflictWithFlight: (
+                "Rejected modification",
+                Severity.Low,
+            ),
+        }
+    else:
+        expected_results = {InjectFlightResponseResult.ReadyToFly}
+        failed_checks = {InjectFlightResponseResult.Failed: "Failure"}
+
     return submit_flight_intent(
         scenario,
         test_step,
         "Successful modification",
-        {InjectFlightResponseResult.ReadyToFly},
-        {InjectFlightResponseResult.Failed: "Failure"},
+        expected_results,
+        failed_checks,
         flight_planner,
         flight_intent,
         flight_id,
@@ -211,13 +236,14 @@ def submit_flight_intent(
     test_step: str,
     success_check: str,
     expected_results: Set[InjectFlightResponseResult],
-    failed_checks: Dict[InjectFlightResponseResult, str],
+    failed_checks: Dict[InjectFlightResponseResult, Union[str, Tuple[str, Severity]]],
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: Optional[str] = None,
 ) -> Tuple[InjectFlightResponse, Optional[str]]:
     """Submit a flight intent with an expected result.
-    A check fail is considered of high severity and as such will raise an ScenarioCannotContinueError.
+    A check fail is considered by default of high severity and as such will raise an ScenarioCannotContinueError.
+    The severity of each failed check may be overridden if needed.
 
     This function does not directly implement a test step.
 
@@ -244,13 +270,19 @@ def submit_flight_intent(
         notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
 
         for unexpected_result, failed_test_check in failed_checks.items():
+            if isinstance(failed_test_check, str):
+                check_name = failed_test_check
+                check_severity = Severity.High
+            else:
+                check_name, check_severity = failed_test_check
+
             with scenario.check(
-                failed_test_check, [flight_planner.participant_id]
+                check_name, [flight_planner.participant_id]
             ) as specific_failed_check:
                 if resp.result == unexpected_result:
                     specific_failed_check.record_failed(
                         summary=f"Flight unexpectedly {resp.result}",
-                        severity=Severity.High,
+                        severity=check_severity,
                         details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}{notes_suffix}',
                         query_timestamps=[query.request.timestamp],
                     )

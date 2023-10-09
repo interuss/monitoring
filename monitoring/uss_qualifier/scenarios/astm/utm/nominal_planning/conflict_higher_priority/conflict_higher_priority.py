@@ -7,6 +7,9 @@ from uas_standards.astm.f3548.v21.api import (
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
+from uas_standards.interuss.automated_testing.scd.v1.api import (
+    InjectFlightResponseResult,
+)
 
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
@@ -439,16 +442,23 @@ class ConflictHigherPriority(TestScenario):
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
-            modify_activated_flight_intent(
+            resp = modify_activated_flight_intent(
                 self,
                 "Modify activated flight 1 in conflict with activated flight 2",
                 self.tested_uss,
                 self.flight_1_activated_time_range_A_extended.request,
                 self.flight_1_id,
+                preexisting_conflict=True,
             )
-            flight_1_oi_ref = validator.expect_shared(
-                self.flight_1_activated_time_range_A_extended.request
-            )
+
+            if resp.result == InjectFlightResponseResult.ReadyToFly:
+                flight_1_oi_ref = validator.expect_shared(
+                    self.flight_1_activated_time_range_A_extended.request
+                )
+            else:
+                flight_1_oi_ref = validator.expect_shared(
+                    self.flight_1_activated_time_range_A.request
+                )
 
         return flight_1_oi_ref, flight_2_oi_ref
 
