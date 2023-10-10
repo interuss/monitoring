@@ -10,6 +10,7 @@ from loguru import logger
 import requests.exceptions
 
 from monitoring.mock_uss.database import fulfilled_request_ids
+from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
 from monitoring.mock_uss.scdsc.routes_scdsc import op_intent_from_flightrecord
 from monitoring.monitorlib.geo import Polygon
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
@@ -22,7 +23,7 @@ from uas_standards.astm.f3548.v21.api import (
 )
 from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays, OiMaxVertices
 
-from monitoring.mock_uss.config import KEY_BASE_URL, KEY_BEHAVIOR_LOCALITY
+from monitoring.mock_uss.config import KEY_BASE_URL
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     OperationalIntentState,
 )
@@ -53,7 +54,6 @@ from monitoring.monitorlib.uspace import problems_with_flight_authorisation
 
 
 require_config_value(KEY_BASE_URL)
-require_config_value(KEY_BEHAVIOR_LOCALITY)
 
 DEADLOCK_TIMEOUT = timedelta(seconds=5)
 
@@ -178,7 +178,7 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
 
 def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, int]:
     pid = os.getpid()
-    locality = webapp.config[KEY_BEHAVIOR_LOCALITY]
+    locality = get_locality()
 
     if locality.is_uspace_applicable():
         # Validate flight authorisation
