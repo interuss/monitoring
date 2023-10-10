@@ -4,6 +4,7 @@ resources:
   all_dss_instances: resources.astm.f3411.DSSInstancesResource?
   id_generator: resources.interuss.IDGeneratorResource
   isa: resources.netrid.ServiceAreaResource
+  problematically_big_area: resources.VerticesResource
 actions:
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.dss.ISASimple
@@ -11,6 +12,14 @@ actions:
         dss: dss
         id_generator: id_generator
         isa: isa
+        problematically_big_area: problematically_big_area
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v22a.dss.ISAValidation
+      resources:
+        dss: dss
+        id_generator: id_generator
+        isa: isa
+        problematically_big_area: problematically_big_area
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.dss.SubscriptionValidation
       resources:
