@@ -30,7 +30,7 @@ If the operational intent details reported by the USS do not match the user's fl
 
 ## Off-nominal volumes check
 
-**astm.f3548.v21.OPIN0015**
+**astm.f3548.v21.OPIN0015** specifies that nominal operational intents (Accepted and Activated) must not include any off-nominal 4D volumes, so this check will fail if an Accepted or Activated operational intent includes off-nominal volumes.
 
 ## Vertices check
 
