@@ -61,11 +61,6 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 raise NotImplementedError(
                     f"Unsupported operator AirspaceUsageState '{usage_state}' with UasState '{uas_state}'"
                 )
-            volumes = [
-                v.to_scd_automated_testing_api()
-                for v in flight_info.basic_information.area
-            ]
-            off_nominal_volumes = []
         elif usage_state == AirspaceUsageState.InUse:
             if uas_state == UasState.OffNominal:
                 state = scd_api.OperationalIntentState.Nonconforming
@@ -75,15 +70,23 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 raise NotImplementedError(
                     f"Unsupported operator UasState '{uas_state}' with AirspaceUsageState '{usage_state}'"
                 )
+        else:
+            raise NotImplementedError(
+                f"Unsupported combination of operator AirspaceUsageState '{usage_state}' and UasState '{uas_state}'"
+            )
+
+        if uas_state == UasState.Nominal:
+            volumes = [
+                v.to_interuss_scd_api()
+                for v in flight_info.basic_information.area
+            ]
+            off_nominal_volumes = []
+        else:
             volumes = []
             off_nominal_volumes = [
                 v.to_scd_automated_testing_api()
                 for v in flight_info.basic_information.area
             ]
-        else:
-            raise NotImplementedError(
-                f"Unsupported combination of operator AirspaceUsageState '{usage_state}' and UasState '{uas_state}'"
-            )
 
         if "astm_f3548_21" in flight_info and flight_info.astm_f3548_21:
             priority = flight_info.astm_f3548_21.priority
@@ -242,7 +245,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
 
     def clear_area(self, area: Volume4D) -> TestPreparationActivityResponse:
         req = scd_api.ClearAreaRequest(
-            request_id=str(uuid.uuid4()), extent=area.to_scd_automated_testing_api()
+            request_id=str(uuid.uuid4()), extent=area.to_interuss_scd_api()
         )
 
         op = scd_api.OPERATIONS[scd_api.OperationID.ClearArea]
@@ -264,7 +267,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
             )
 
         if resp.outcome.success:
-            errors = []
+            errors = None
         else:
             errors = [f"[{resp.outcome.timestamp}]: {resp.outcome.message}"]
 
