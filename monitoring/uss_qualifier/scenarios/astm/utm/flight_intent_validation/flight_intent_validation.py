@@ -1,3 +1,5 @@
+import arrow
+
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
@@ -59,10 +61,10 @@ class FlightIntentValidation(TestScenario):
         self.tested_uss = tested_uss.flight_planner
         self.dss = dss.dss
 
-        flight_intents = flight_intents.get_flight_intents()
+        _flight_intents = flight_intents.get_flight_intents()
 
         extents = []
-        for intent in flight_intents.values():
+        for intent in _flight_intents.values():
             extents.extend(intent.request.operational_intent.volumes)
             extents.extend(intent.request.operational_intent.off_nominal_volumes)
         self._intents_extent = Volume4DCollection.from_interuss_scd_api(
@@ -78,13 +80,24 @@ class FlightIntentValidation(TestScenario):
                 self.invalid_activated_offnominal,
                 self.valid_conflict_tiny_overlap,
             ) = (
-                flight_intents["valid_flight"],
-                flight_intents["valid_activated"],
-                flight_intents["invalid_too_far_away"],
-                flight_intents["invalid_accepted_offnominal"],
-                flight_intents["invalid_activated_offnominal"],
-                flight_intents["valid_conflict_tiny_overlap"],
+                _flight_intents["valid_flight"],
+                _flight_intents["valid_activated"],
+                _flight_intents["invalid_too_far_away"],
+                _flight_intents["invalid_accepted_offnominal"],
+                _flight_intents["invalid_activated_offnominal"],
+                _flight_intents["valid_conflict_tiny_overlap"],
             )
+
+            now = arrow.utcnow()
+            for intent_name, intent in _flight_intents.items():
+                if (
+                    intent.request.operational_intent.state
+                    == OperationalIntentState.Activated
+                ):
+                    assert Volume4DCollection.from_interuss_scd_api(
+                        intent.request.operational_intent.volumes
+                        + intent.request.operational_intent.off_nominal_volumes
+                    ), f"at least one volume of activated intent {intent_name} must be active now (now is {now})"
 
             assert (
                 self.valid_flight.request.operational_intent.state

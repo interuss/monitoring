@@ -1,5 +1,6 @@
 from typing import Optional, Tuple
 
+import arrow
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
 )
@@ -47,16 +48,16 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
 
 class ConflictHigherPriority(TestScenario):
     flight_1_id: Optional[str] = None
-    flight_1_planned_time_range_A: FlightIntent
-    flight_1_planned_time_range_A_extended: FlightIntent
-    flight_1_activated_time_range_A: FlightIntent
-    flight_1_activated_time_range_A_extended: FlightIntent
-    flight_1_activated_time_range_B: FlightIntent
+    flight_1_planned_vol_A: FlightIntent
+    flight_1_planned_vol_A_extended: FlightIntent
+    flight_1_activated_vol_A: FlightIntent
+    flight_1_activated_vol_A_extended: FlightIntent
+    flight_1_activated_vol_B: FlightIntent
 
     flight_2_id: Optional[str] = None
-    flight_2_planned_time_range_A: FlightIntent
-    flight_2_activated_time_range_A: FlightIntent
-    flight_2_activated_time_range_B: FlightIntent
+    flight_2_planned_vol_A: FlightIntent
+    flight_2_activated_vol_A: FlightIntent
+    flight_2_activated_vol_B: FlightIntent
 
     tested_uss: FlightPlanner
     control_uss: FlightPlanner
@@ -74,10 +75,10 @@ class ConflictHigherPriority(TestScenario):
         self.control_uss = control_uss.flight_planner
         self.dss = dss.dss
 
-        flight_intents = flight_intents.get_flight_intents()
+        _flight_intents = flight_intents.get_flight_intents()
 
         extents = []
-        for intent in flight_intents.values():
+        for intent in _flight_intents.values():
             extents.extend(intent.request.operational_intent.volumes)
             extents.extend(intent.request.operational_intent.off_nominal_volumes)
         self._intents_extent = Volume4DCollection.from_interuss_scd_api(
@@ -86,86 +87,96 @@ class ConflictHigherPriority(TestScenario):
 
         try:
             (
-                self.flight_1_planned_time_range_A,
-                self.flight_1_planned_time_range_A_extended,
-                self.flight_1_activated_time_range_A,
-                self.flight_1_activated_time_range_A_extended,
-                self.flight_1_activated_time_range_B,
-                self.flight_2_planned_time_range_A,
-                self.flight_2_activated_time_range_A,
-                self.flight_2_activated_time_range_B,
+                self.flight_1_planned_vol_A,
+                self.flight_1_planned_vol_A_extended,
+                self.flight_1_activated_vol_A,
+                self.flight_1_activated_vol_A_extended,
+                self.flight_1_activated_vol_B,
+                self.flight_2_planned_vol_A,
+                self.flight_2_activated_vol_A,
+                self.flight_2_activated_vol_B,
             ) = (
-                flight_intents["flight_1_planned_time_range_A"],
-                flight_intents["flight_1_planned_time_range_A_extended"],
-                flight_intents["flight_1_activated_time_range_A"],
-                flight_intents["flight_1_activated_time_range_A_extended"],
-                flight_intents["flight_1_activated_time_range_B"],
-                flight_intents["flight_2_planned_time_range_A"],
-                flight_intents["flight_2_activated_time_range_A"],
-                flight_intents["flight_2_activated_time_range_B"],
+                _flight_intents["flight_1_planned_vol_A"],
+                _flight_intents["flight_1_planned_vol_A_extended"],
+                _flight_intents["flight_1_activated_vol_A"],
+                _flight_intents["flight_1_activated_vol_A_extended"],
+                _flight_intents["flight_1_activated_vol_B"],
+                _flight_intents["flight_2_planned_vol_A"],
+                _flight_intents["flight_2_activated_vol_A"],
+                _flight_intents["flight_2_activated_vol_B"],
             )
 
-            assert (
-                self.flight_1_planned_time_range_A.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "flight_1_planned_time_range_A must have state Accepted"
-            assert (
-                self.flight_1_planned_time_range_A_extended.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "flight_1_planned_time_range_A_extended must have state Accepted"
-            assert (
-                self.flight_1_activated_time_range_A.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight_1_activated_time_range_A must have state Activated"
-            assert (
-                self.flight_1_activated_time_range_A_extended.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight_1_activated_time_range_A_extended must have state Activated"
-            assert (
-                self.flight_1_activated_time_range_B.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight_1_activated_time_range_B must have state Activated"
-            assert (
-                self.flight_2_planned_time_range_A.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "flight_2_planned_time_range_A must have state Accepted"
-            assert (
-                self.flight_2_activated_time_range_A.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight_2_activated_time_range_A must have state Activated"
-            assert (
-                self.flight_2_activated_time_range_B.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight_2_activated_time_range_B must have state Activated"
+            now = arrow.utcnow()
+            for intent_name, intent in _flight_intents.items():
+                if (
+                    intent.request.operational_intent.state
+                    == OperationalIntentState.Activated
+                ):
+                    assert Volume4DCollection.from_interuss_scd_api(
+                        intent.request.operational_intent.volumes
+                        + intent.request.operational_intent.off_nominal_volumes
+                    ), f"at least one volume of activated intent {intent_name} must be active now (now is {now})"
 
-            # TODO: check that the time ranges are equal where they need to be
+            assert (
+                self.flight_1_planned_vol_A.request.operational_intent.state
+                == OperationalIntentState.Accepted
+            ), "flight_1_planned_vol_A must have state Accepted"
+            assert (
+                self.flight_1_planned_vol_A_extended.request.operational_intent.state
+                == OperationalIntentState.Accepted
+            ), "flight_1_planned_vol_A_extended must have state Accepted"
+            assert (
+                self.flight_1_activated_vol_A.request.operational_intent.state
+                == OperationalIntentState.Activated
+            ), "flight_1_activated_vol_A must have state Activated"
+            assert (
+                self.flight_1_activated_vol_A_extended.request.operational_intent.state
+                == OperationalIntentState.Activated
+            ), "flight_1_activated_vol_A_extended must have state Activated"
+            assert (
+                self.flight_1_activated_vol_B.request.operational_intent.state
+                == OperationalIntentState.Activated
+            ), "flight_1_activated_vol_B must have state Activated"
+            assert (
+                self.flight_2_planned_vol_A.request.operational_intent.state
+                == OperationalIntentState.Accepted
+            ), "flight_2_planned_vol_A must have state Accepted"
+            assert (
+                self.flight_2_activated_vol_A.request.operational_intent.state
+                == OperationalIntentState.Activated
+            ), "flight_2_activated_vol_A must have state Activated"
+            assert (
+                self.flight_2_activated_vol_B.request.operational_intent.state
+                == OperationalIntentState.Activated
+            ), "flight_2_activated_vol_B must have state Activated"
+
             # TODO: check that flight data is the same across the different versions of the flight
 
             assert (
-                self.flight_2_planned_time_range_A.request.operational_intent.priority
-                > self.flight_1_planned_time_range_A.request.operational_intent.priority
+                self.flight_2_planned_vol_A.request.operational_intent.priority
+                > self.flight_1_planned_vol_A.request.operational_intent.priority
             ), "flight_2 must have higher priority than flight_1"
             assert Volume4DCollection.from_interuss_scd_api(
-                self.flight_1_planned_time_range_A.request.operational_intent.volumes
+                self.flight_1_planned_vol_A.request.operational_intent.volumes
             ).intersects_vol4s(
                 Volume4DCollection.from_interuss_scd_api(
-                    self.flight_2_planned_time_range_A.request.operational_intent.volumes
+                    self.flight_2_planned_vol_A.request.operational_intent.volumes
                 )
-            ), "flight_1_planned_time_range_A and flight_2_planned_time_range_A must intersect"
+            ), "flight_1_planned_vol_A and flight_2_planned_vol_A must intersect"
             assert Volume4DCollection.from_interuss_scd_api(
-                self.flight_1_planned_time_range_A.request.operational_intent.volumes
+                self.flight_1_planned_vol_A.request.operational_intent.volumes
             ).intersects_vol4s(
                 Volume4DCollection.from_interuss_scd_api(
-                    self.flight_1_planned_time_range_A_extended.request.operational_intent.volumes
+                    self.flight_1_planned_vol_A_extended.request.operational_intent.volumes
                 )
-            ), "flight_1_planned_time_range_A and flight_1_planned_time_range_A_extended must intersect"
+            ), "flight_1_planned_vol_A and flight_1_planned_vol_A_extended must intersect"
             assert not Volume4DCollection.from_interuss_scd_api(
-                self.flight_1_planned_time_range_A.request.operational_intent.volumes
+                self.flight_1_planned_vol_A.request.operational_intent.volumes
             ).intersects_vol4s(
                 Volume4DCollection.from_interuss_scd_api(
-                    self.flight_1_activated_time_range_B.request.operational_intent.volumes
+                    self.flight_1_activated_vol_B.request.operational_intent.volumes
                 )
-            ), "flight_1_planned_time_range_A and flight_1_activated_time_range_B must not intersect"
+            ), "flight_1_planned_vol_A and flight_1_activated_vol_B must not intersect"
 
         except KeyError as e:
             raise ValueError(
@@ -241,14 +252,14 @@ class ConflictHigherPriority(TestScenario):
             self,
             "Area clearing",
             [
-                self.flight_1_planned_time_range_A,
-                self.flight_1_planned_time_range_A_extended,
-                self.flight_1_activated_time_range_A,
-                self.flight_1_activated_time_range_A_extended,
-                self.flight_1_activated_time_range_B,
-                self.flight_2_planned_time_range_A,
-                self.flight_2_activated_time_range_A,
-                self.flight_2_activated_time_range_B,
+                self.flight_1_planned_vol_A,
+                self.flight_1_planned_vol_A_extended,
+                self.flight_1_activated_vol_A,
+                self.flight_1_activated_vol_A_extended,
+                self.flight_1_activated_vol_B,
+                self.flight_2_planned_vol_A,
+                self.flight_2_activated_vol_A,
+                self.flight_2_activated_vol_B,
             ],
             [self.tested_uss, self.control_uss],
         )
@@ -267,9 +278,9 @@ class ConflictHigherPriority(TestScenario):
                 self,
                 "Plan flight 2",
                 self.control_uss,
-                self.flight_2_planned_time_range_A.request,
+                self.flight_2_planned_vol_A.request,
             )
-            validator.expect_shared(self.flight_2_planned_time_range_A.request)
+            validator.expect_shared(self.flight_2_planned_vol_A.request)
 
         with OpIntentValidator(
             self,
@@ -282,7 +293,7 @@ class ConflictHigherPriority(TestScenario):
                 self,
                 "Attempt to plan flight 1",
                 self.tested_uss,
-                self.flight_1_planned_time_range_A.request,
+                self.flight_1_planned_vol_A.request,
             )
             validator.expect_not_shared()
 
@@ -305,10 +316,10 @@ class ConflictHigherPriority(TestScenario):
                 self,
                 "Plan flight 1",
                 self.tested_uss,
-                self.flight_1_planned_time_range_A.request,
+                self.flight_1_planned_vol_A.request,
             )
             flight_1_oi_ref = validator.expect_shared(
-                self.flight_1_planned_time_range_A.request
+                self.flight_1_planned_vol_A.request
             )
 
         with OpIntentValidator(
@@ -322,9 +333,9 @@ class ConflictHigherPriority(TestScenario):
                 self,
                 "Plan flight 2",
                 self.control_uss,
-                self.flight_2_planned_time_range_A.request,
+                self.flight_2_planned_vol_A.request,
             )
-            validator.expect_shared(self.flight_2_planned_time_range_A.request)
+            validator.expect_shared(self.flight_2_planned_vol_A.request)
 
         with OpIntentValidator(
             self,
@@ -338,11 +349,11 @@ class ConflictHigherPriority(TestScenario):
                 self,
                 "Attempt to modify planned flight 1 in conflict",
                 self.tested_uss,
-                self.flight_1_planned_time_range_A_extended.request,
+                self.flight_1_planned_vol_A_extended.request,
                 self.flight_1_id,
             )
             flight_1_oi_ref = validator.expect_shared(
-                self.flight_1_planned_time_range_A.request, skip_if_not_found=True
+                self.flight_1_planned_vol_A.request, skip_if_not_found=True
             )
 
         return flight_1_oi_ref
@@ -362,11 +373,11 @@ class ConflictHigherPriority(TestScenario):
                 self,
                 "Attempt to activate conflicting flight 1",
                 self.tested_uss,
-                self.flight_1_activated_time_range_A.request,
+                self.flight_1_activated_vol_A.request,
                 self.flight_1_id,
             )
             flight_1_oi_ref = validator.expect_shared(
-                self.flight_1_planned_time_range_A.request, skip_if_not_found=True
+                self.flight_1_planned_vol_A.request, skip_if_not_found=True
             )
 
         return flight_1_oi_ref
@@ -391,11 +402,11 @@ class ConflictHigherPriority(TestScenario):
                 self,
                 "Activate flight 1",
                 self.tested_uss,
-                self.flight_1_activated_time_range_A.request,
+                self.flight_1_activated_vol_A.request,
                 self.flight_1_id,
             )
             flight_1_oi_ref = validator.expect_shared(
-                self.flight_1_activated_time_range_A.request
+                self.flight_1_activated_vol_A.request
             )
 
         with OpIntentValidator(
@@ -409,10 +420,10 @@ class ConflictHigherPriority(TestScenario):
                 self,
                 "Plan flight 2",
                 self.control_uss,
-                self.flight_2_planned_time_range_A.request,
+                self.flight_2_planned_vol_A.request,
             )
             flight_2_oi_ref = validator.expect_shared(
-                self.flight_2_planned_time_range_A.request
+                self.flight_2_planned_vol_A.request
             )
 
         with OpIntentValidator(
@@ -427,11 +438,11 @@ class ConflictHigherPriority(TestScenario):
                 self,
                 "Activate flight 2",
                 self.control_uss,
-                self.flight_2_activated_time_range_A.request,
+                self.flight_2_activated_vol_A.request,
                 self.flight_2_id,
             )
             flight_2_oi_ref = validator.expect_shared(
-                self.flight_2_activated_time_range_A.request
+                self.flight_2_activated_vol_A.request
             )
 
         with OpIntentValidator(
@@ -446,18 +457,18 @@ class ConflictHigherPriority(TestScenario):
                 self,
                 "Modify activated flight 1 in conflict with activated flight 2",
                 self.tested_uss,
-                self.flight_1_activated_time_range_A_extended.request,
+                self.flight_1_activated_vol_A_extended.request,
                 self.flight_1_id,
                 preexisting_conflict=True,
             )
 
             if resp.result == InjectFlightResponseResult.ReadyToFly:
                 flight_1_oi_ref = validator.expect_shared(
-                    self.flight_1_activated_time_range_A_extended.request
+                    self.flight_1_activated_vol_A_extended.request
                 )
             else:
                 flight_1_oi_ref = validator.expect_shared(
-                    self.flight_1_activated_time_range_A.request
+                    self.flight_1_activated_vol_A.request
                 )
 
         return flight_1_oi_ref, flight_2_oi_ref
@@ -479,10 +490,10 @@ class ConflictHigherPriority(TestScenario):
                 self,
                 "Modify activated flight 2 to not conflict with activated flight 1",
                 self.control_uss,
-                self.flight_2_activated_time_range_B.request,
+                self.flight_2_activated_vol_B.request,
                 self.flight_2_id,
             )
-            validator.expect_shared(self.flight_2_activated_time_range_B.request)
+            validator.expect_shared(self.flight_2_activated_vol_B.request)
 
         with OpIntentValidator(
             self,
@@ -496,11 +507,11 @@ class ConflictHigherPriority(TestScenario):
                 self,
                 "Attempt to modify activated flight 1 in conflict",
                 self.tested_uss,
-                self.flight_1_activated_time_range_B.request,
+                self.flight_1_activated_vol_B.request,
                 self.flight_1_id,
             )
             validator.expect_shared(
-                self.flight_1_activated_time_range_A_extended.request,
+                self.flight_1_activated_vol_A_extended.request,
                 skip_if_not_found=True,
             )
 

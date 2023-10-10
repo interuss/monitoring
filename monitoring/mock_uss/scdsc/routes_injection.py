@@ -5,6 +5,7 @@ import time
 from typing import List, Tuple
 import uuid
 
+import arrow
 import flask
 from loguru import logger
 import requests.exceptions
@@ -244,6 +245,26 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             ),
             200,
         )
+
+    # Validate intent is currently active if in Activated state
+    # I.e. at least one volume has start time in the past and end time in the future
+    now = arrow.utcnow()
+    if req_body.operational_intent.state == OperationalIntentState.Activated:
+        active_volume = False
+        for vol in (
+            req_body.operational_intent.volumes
+            + req_body.operational_intent.off_nominal_volumes
+        ):
+            if vol.time_start.value.datetime <= now <= vol.time_end.value.datetime:
+                active_volume = True
+        if not active_volume:
+            return (
+                InjectFlightResponse(
+                    result=InjectFlightResponseResult.Rejected,
+                    notes=f"Operational intent is activated but has no volume currently active (now: {now})",
+                ),
+                200,
+            )
 
     # Check if this is an existing flight being modified
     deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
