@@ -112,9 +112,15 @@ class FlightPlanner:
             OperationalIntentState.Nonconforming: UasState.OffNominal,
             OperationalIntentState.Contingent: UasState.Contingent,
         }
-        if request.operational_intent.state in (OperationalIntentState.Accepted, OperationalIntentState.Activated) and request.operational_intent.off_nominal_volumes:
+        if (
+            request.operational_intent.state
+            in (OperationalIntentState.Accepted, OperationalIntentState.Activated)
+            and request.operational_intent.off_nominal_volumes
+        ):
             # This invalid request can no longer be represented with a standard flight planning request; reject it at the client level instead
-            raise ValueError(f"Request for nominal {request.operational_intent.state} operational intent is invalid because it contains off-nominal volumes")
+            raise ValueError(
+                f"Request for nominal {request.operational_intent.state} operational intent is invalid because it contains off-nominal volumes"
+            )
         v4c = Volume4DCollection.from_interuss_scd_api(
             request.operational_intent.volumes
         ) + Volume4DCollection.from_interuss_scd_api(
@@ -138,13 +144,13 @@ class FlightPlanner:
         )
 
         if not flight_id:
-            flight_id = str(uuid.uuid4())
             try:
                 resp = self.scd_client.try_plan_flight(
                     flight_info, ExecutionStyle.IfAllowed
                 )
             except PlanningActivityError as e:
                 raise QueryError(str(e), e.queries)
+            flight_id = resp.flight_id
         else:
             try:
                 resp = self.scd_client.try_update_flight(

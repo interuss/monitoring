@@ -77,15 +77,13 @@ class SCDFlightPlannerClient(FlightPlannerClient):
 
         if uas_state == UasState.Nominal:
             volumes = [
-                v.to_interuss_scd_api()
-                for v in flight_info.basic_information.area
+                v.to_interuss_scd_api() for v in flight_info.basic_information.area
             ]
             off_nominal_volumes = []
         else:
             volumes = []
             off_nominal_volumes = [
-                v.to_scd_automated_testing_api()
-                for v in flight_info.basic_information.area
+                v.to_interuss_scd_api() for v in flight_info.basic_information.area
             ]
 
         if "astm_f3548_21" in flight_info and flight_info.astm_f3548_21:

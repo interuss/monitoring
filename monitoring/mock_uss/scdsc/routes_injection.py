@@ -216,9 +216,11 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         )
 
     # Validate max planning horizon for creation
-    start_time = Volume4DCollection.from_interuss_scd_api(
+    v4c = Volume4DCollection.from_interuss_scd_api(
         req_body.operational_intent.volumes
-    ).time_start.datetime
+        + req_body.operational_intent.off_nominal_volumes
+    )
+    start_time = v4c.time_start.datetime
     time_delta = start_time - datetime.now(tz=start_time.tzinfo)
     if (
         time_delta.days > OiMaxPlanHorizonDays
@@ -297,72 +299,79 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         logger.debug(
             f"[inject_flight/{pid}:{flight_id}] Obtaining latest operational intent information"
         )
-        vol4 = Volume4DCollection.from_interuss_scd_api(
-            req_body.operational_intent.volumes
-        ).bounding_volume.to_f3548v21()
-        op_intents = query_operational_intents(vol4)
-
-        # Check for intersections
-        step_name = "checking for intersections"
-        logger.debug(
-            f"[inject_flight/{pid}:{flight_id}] Checking for intersections with {', '.join(op_intent.reference.id for op_intent in op_intents)}"
-        )
         v1 = Volume4DCollection.from_interuss_scd_api(
             req_body.operational_intent.volumes
+            + req_body.operational_intent.off_nominal_volumes
         )
-        for op_intent in op_intents:
-            if (
-                existing_flight
-                and existing_flight.op_intent_reference.id == op_intent.reference.id
-            ):
-                logger.debug(
-                    f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with a past version of this flight"
-                )
-                continue
-            if req_body.operational_intent.priority > op_intent.details.priority:
-                logger.debug(
-                    f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with lower-priority operational intents"
-                )
-                continue
-            if (
-                req_body.operational_intent.priority == op_intent.details.priority
-                and locality.allows_same_priority_intersections(
-                    req_body.operational_intent.priority
-                )
-            ):
-                logger.debug(
-                    f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with same-priority operational intents (if allowed)"
-                )
-                continue
+        vol4 = v1.bounding_volume.to_f3548v21()
+        op_intents = query_operational_intents(vol4)
 
-            v2 = Volume4DCollection.from_interuss_scd_api(
-                op_intent.details.volumes + op_intent.details.off_nominal_volumes
+        if req_body.operational_intent.state in (
+            OperationalIntentState.Nonconforming,
+            OperationalIntentState.Contingent,
+        ):
+            logger.debug(
+                f"[inject_flight/{pid}:{flight_id}] Skipping intersection check because flight is {req_body.operational_intent.state}"
             )
+        else:
+            # Check for intersections
+            step_name = "checking for intersections"
+            logger.debug(
+                f"[inject_flight/{pid}:{flight_id}] Checking for intersections with {', '.join(op_intent.reference.id for op_intent in op_intents)}"
+            )
+            for op_intent in op_intents:
+                if (
+                    existing_flight
+                    and existing_flight.op_intent_reference.id == op_intent.reference.id
+                ):
+                    logger.debug(
+                        f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with a past version of this flight"
+                    )
+                    continue
+                if req_body.operational_intent.priority > op_intent.details.priority:
+                    logger.debug(
+                        f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with lower-priority operational intents"
+                    )
+                    continue
+                if (
+                    req_body.operational_intent.priority == op_intent.details.priority
+                    and locality.allows_same_priority_intersections(
+                        req_body.operational_intent.priority
+                    )
+                ):
+                    logger.debug(
+                        f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with same-priority operational intents (if allowed)"
+                    )
+                    continue
 
-            if (
-                existing_flight
-                and existing_flight.op_intent_reference.state
-                == OperationalIntentState.Activated
-                and req_body.operational_intent.state
-                == OperationalIntentState.Activated
-                and Volume4DCollection.from_f3548v21(
-                    existing_flight.op_intent_injection.volumes
-                ).intersects_vol4s(v2)
-            ):
-                logger.debug(
-                    f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: modification of Activated operational intent with a pre-existing conflict"
+                v2 = Volume4DCollection.from_interuss_scd_api(
+                    op_intent.details.volumes + op_intent.details.off_nominal_volumes
                 )
-                continue
 
-            if v1.intersects_vol4s(v2):
-                notes = f"Requested flight (priority {req_body.operational_intent.priority}) intersected {op_intent.reference.manager}'s operational intent {op_intent.reference.id} (priority {op_intent.details.priority})"
-                return (
-                    InjectFlightResponse(
-                        result=InjectFlightResponseResult.ConflictWithFlight,
-                        notes=notes,
-                    ),
-                    200,
-                )
+                if (
+                    existing_flight
+                    and existing_flight.op_intent_reference.state
+                    == OperationalIntentState.Activated
+                    and req_body.operational_intent.state
+                    == OperationalIntentState.Activated
+                    and Volume4DCollection.from_f3548v21(
+                        existing_flight.op_intent_injection.volumes
+                    ).intersects_vol4s(v2)
+                ):
+                    logger.debug(
+                        f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: modification of Activated operational intent with a pre-existing conflict"
+                    )
+                    continue
+
+                if v1.intersects_vol4s(v2):
+                    notes = f"Requested flight (priority {req_body.operational_intent.priority}) intersected {op_intent.reference.manager}'s operational intent {op_intent.reference.id} (priority {op_intent.details.priority})"
+                    return (
+                        InjectFlightResponse(
+                            result=InjectFlightResponseResult.ConflictWithFlight,
+                            notes=notes,
+                        ),
+                        200,
+                    )
 
         # Create operational intent in DSS
         step_name = "sharing operational intent in DSS"

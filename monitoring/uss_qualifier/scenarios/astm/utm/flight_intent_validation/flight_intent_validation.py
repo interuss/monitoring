@@ -247,7 +247,10 @@ class FlightIntentValidation(TestScenario):
                 self,
                 "Attempt to plan flight conflicting by a tiny overlap",
                 "Incorrectly planned",
-                {InjectFlightResponseResult.ConflictWithFlight},
+                {
+                    InjectFlightResponseResult.ConflictWithFlight,
+                    InjectFlightResponseResult.Rejected,
+                },
                 {InjectFlightResponseResult.Failed: "Failure"},
                 self.tested_uss,
                 self.valid_conflict_tiny_overlap.request,
