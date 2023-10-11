@@ -509,6 +509,17 @@ class TestScenario(GenericTestScenario):
     pass
 
 
+def get_scenario_type_name(scenario_type: Type[TestScenario]) -> TestScenarioTypeName:
+    full_name = fullname(scenario_type)
+    if not issubclass(scenario_type, TestScenario):
+        raise ValueError(f"{full_name} is not a TestScenario")
+    if not full_name.startswith("monitoring.uss_qualifier.scenarios"):
+        raise ValueError(
+            f"{full_name} does not appear to be located in the standard root path for test scenarios"
+        )
+    return TestScenarioTypeName(full_name[len("monitoring.uss_qualifier.") :])
+
+
 TestScenarioType = TypeVar("TestScenarioType", bound=TestScenario)
 
 

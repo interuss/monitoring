@@ -1,12 +1,23 @@
+from typing import Tuple, Optional, List
+
 from implicitdict import ImplicitDict
+
 from monitoring.monitorlib import fetch
+from monitoring.monitorlib.clients.mock_uss.locality import (
+    GetLocalityResponse,
+    PutLocalityRequest,
+)
 from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession
+from monitoring.monitorlib.locality import LocalityCode
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
 )
 from monitoring.uss_qualifier.reports.report import ParticipantID
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.resource import Resource
+
+
+MOCK_USS_CONFIG_SCOPE = "interuss.mock_uss.configure"
 
 
 class MockUSSClient(object):
@@ -28,6 +39,31 @@ class MockUSSClient(object):
             "/scdsc/v1/status",
             scope=SCOPE_SCD_QUALIFIER_INJECT,
             server_id=self.participant_id,
+        )
+
+    def get_locality(self) -> Tuple[Optional[LocalityCode], fetch.Query]:
+        query = fetch.query_and_describe(
+            self.session,
+            "GET",
+            "/configuration/locality",
+            server_id=self.participant_id,
+        )
+        if query.status_code != 200:
+            return None, query
+        try:
+            resp = ImplicitDict.parse(query.response.json, GetLocalityResponse)
+        except ValueError:
+            return None, query
+        return resp.locality_code, query
+
+    def set_locality(self, locality_code: LocalityCode) -> fetch.Query:
+        return fetch.query_and_describe(
+            self.session,
+            "PUT",
+            "/configuration/locality",
+            scope=MOCK_USS_CONFIG_SCOPE,
+            server_id=self.participant_id,
+            json=PutLocalityRequest(locality_code=locality_code),
         )
 
     # TODO: Add other methods to interact with the mock USS in other ways (like starting/stopping message signing data collection)
@@ -60,3 +96,19 @@ class MockUSSResource(Resource[MockUSSSpecification]):
             specification.mock_uss_base_url,
             auth_adapter.adapter,
         )
+
+
+class MockUSSsSpecification(ImplicitDict):
+    instances: List[MockUSSSpecification]
+
+
+class MockUSSsResource(Resource[MockUSSsSpecification]):
+    mock_uss_instances: List[MockUSSClient]
+
+    def __init__(
+        self, specification: MockUSSsSpecification, auth_adapter: AuthAdapterResource
+    ):
+        self.mock_uss_instances = [
+            MockUSSClient(s.participant_id, s.mock_uss_base_url, auth_adapter.adapter)
+            for s in specification.instances
+        ]

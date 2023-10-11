@@ -2,7 +2,6 @@ import os
 import traceback
 from datetime import datetime, timedelta
 import time
-from functools import wraps
 from typing import List, Tuple
 import uuid
 
@@ -10,7 +9,8 @@ import flask
 from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 import requests.exceptions
-from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
+
+from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
     InjectFlightResponse,
@@ -42,7 +42,7 @@ from monitoring.mock_uss.scdsc.flight_planning import (
 from monitoring.mock_uss.scdsc.routes_scdsc import op_intent_from_flightrecord
 from monitoring.monitorlib.geo import Polygon
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
-from monitoring.mock_uss.config import KEY_BASE_URL, KEY_BEHAVIOR_LOCALITY
+from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.monitorlib import versioning
 from monitoring.monitorlib.clients import scd as scd_client
 from monitoring.monitorlib.fetch import QueryError
@@ -56,7 +56,6 @@ from monitoring.mock_uss.scdsc.database import db
 
 
 require_config_value(KEY_BASE_URL)
-require_config_value(KEY_BEHAVIOR_LOCALITY)
 
 DEADLOCK_TIMEOUT = timedelta(seconds=5)
 
@@ -181,7 +180,7 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
 
 def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, int]:
     pid = os.getpid()
-    locality = webapp.config[KEY_BEHAVIOR_LOCALITY]
+    locality = get_locality()
 
     def log(msg: str):
         logger.debug(f"[inject_flight/{pid}:{flight_id}] {msg}")

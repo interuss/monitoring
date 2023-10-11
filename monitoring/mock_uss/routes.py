@@ -49,3 +49,6 @@ def handle_exception(e):
         flask.jsonify({"message": "Unhandled {}: {}".format(type(e).__name__, str(e))}),
         500,
     )
+
+
+from .dynamic_configuration import routes
