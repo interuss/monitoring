@@ -5,8 +5,25 @@ from urllib.parse import urlparse
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
+from monitoring.monitorlib.clients.flight_planning.client import PlanningActivityError
+from monitoring.monitorlib.clients.flight_planning.client_scd import (
+    SCDFlightPlannerClient,
+)
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    ExecutionStyle,
+    FlightInfo,
+    BasicFlightPlanInformation,
+    ASTMF354821OpIntentInformation,
+    FlightAuthorisationData,
+    AirspaceUsageState,
+    UasState,
+)
+from monitoring.monitorlib.clients.flight_planning.planning import (
+    PlanningActivityResult,
+    FlightPlanStatus,
+)
 from monitoring.monitorlib.fetch import QueryError, Query
-from monitoring.monitorlib.geotemporal import Volume4D
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightResponseResult,
     DeleteFlightResponseResult,
@@ -15,6 +32,8 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
     ClearAreaResponse,
     ClearAreaRequest,
+    OperationalIntentState,
+    ClearAreaOutcome,
 )
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
@@ -45,7 +64,9 @@ class FlightPlannerConfiguration(ImplicitDict):
 
 
 class FlightPlanner:
-    """Manages the state and the interactions with flight planner USS"""
+    """Manages the state and the interactions with flight planner USS.
+
+    Note: this class will be deprecated in favor of FlightPlannerClient."""
 
     def __init__(
         self,
@@ -53,9 +74,10 @@ class FlightPlanner:
         auth_adapter: infrastructure.AuthAdapter,
     ):
         self.config = config
-        self.client = infrastructure.UTMClientSession(
+        session = infrastructure.UTMClientSession(
             self.config.injection_base_url, auth_adapter, config.timeout_seconds
         )
+        self.scd_client = SCDFlightPlannerClient(session)
 
         # Flights injected by this target.
         self.created_flight_ids: Set[str] = set()
@@ -78,114 +100,137 @@ class FlightPlanner:
         request: InjectFlightRequest,
         flight_id: Optional[str] = None,
     ) -> Tuple[InjectFlightResponse, fetch.Query, str]:
-        if not flight_id:
-            flight_id = str(uuid.uuid4())
-        url = "{}/v1/flights/{}".format(self.config.injection_base_url, flight_id)
-
-        query = fetch.query_and_describe(
-            self.client,
-            "PUT",
-            url,
-            json=request,
-            scope=SCOPE_SCD_QUALIFIER_INJECT,
-            server_id=self.config.participant_id,
+        usage_states = {
+            OperationalIntentState.Accepted: AirspaceUsageState.Planned,
+            OperationalIntentState.Activated: AirspaceUsageState.InUse,
+            OperationalIntentState.Nonconforming: AirspaceUsageState.InUse,
+            OperationalIntentState.Contingent: AirspaceUsageState.InUse,
+        }
+        uas_states = {
+            OperationalIntentState.Accepted: UasState.Nominal,
+            OperationalIntentState.Activated: UasState.Nominal,
+            OperationalIntentState.Nonconforming: UasState.OffNominal,
+            OperationalIntentState.Contingent: UasState.Contingent,
+        }
+        if (
+            request.operational_intent.state
+            in (OperationalIntentState.Accepted, OperationalIntentState.Activated)
+            and request.operational_intent.off_nominal_volumes
+        ):
+            # This invalid request can no longer be represented with a standard flight planning request; reject it at the client level instead
+            raise ValueError(
+                f"Request for nominal {request.operational_intent.state} operational intent is invalid because it contains off-nominal volumes"
+            )
+        v4c = Volume4DCollection.from_interuss_scd_api(
+            request.operational_intent.volumes
+        ) + Volume4DCollection.from_interuss_scd_api(
+            request.operational_intent.off_nominal_volumes
         )
-        if query.status_code != 200:
-            raise QueryError(
-                f"Inject flight query to {url} returned {query.status_code}", [query]
-            )
-        try:
-            result = ImplicitDict.parse(
-                query.response.get("json", {}), InjectFlightResponse
-            )
-        except ValueError as e:
-            raise QueryError(
-                f"Inject flight response from {url} could not be decoded: {str(e)}",
-                [query],
-            )
+        basic_information = BasicFlightPlanInformation(
+            usage_state=usage_states[request.operational_intent.state],
+            uas_state=uas_states[request.operational_intent.state],
+            area=v4c.volumes,
+        )
+        astm_f3548v21 = ASTMF354821OpIntentInformation(
+            priority=request.operational_intent.priority
+        )
+        uspace_flight_authorisation = ImplicitDict.parse(
+            request.flight_authorisation, FlightAuthorisationData
+        )
+        flight_info = FlightInfo(
+            basic_information=basic_information,
+            astm_f3548_21=astm_f3548v21,
+            uspace_flight_authorisation=uspace_flight_authorisation,
+        )
 
-        if result.result == InjectFlightResponseResult.Planned:
+        if not flight_id:
+            try:
+                resp = self.scd_client.try_plan_flight(
+                    flight_info, ExecutionStyle.IfAllowed
+                )
+            except PlanningActivityError as e:
+                raise QueryError(str(e), e.queries)
+            flight_id = resp.flight_id
+        else:
+            try:
+                resp = self.scd_client.try_update_flight(
+                    flight_id, flight_info, ExecutionStyle.IfAllowed
+                )
+            except PlanningActivityError as e:
+                raise QueryError(str(e), e.queries)
+
+        if resp.activity_result == PlanningActivityResult.Failed:
+            result = InjectFlightResponseResult.Failed
+        elif resp.activity_result == PlanningActivityResult.NotSupported:
+            result = InjectFlightResponseResult.NotSupported
+        elif resp.activity_result == PlanningActivityResult.Rejected:
+            result = InjectFlightResponseResult.Rejected
+        elif resp.activity_result == PlanningActivityResult.Completed:
+            if resp.flight_plan_status == FlightPlanStatus.Planned:
+                result = InjectFlightResponseResult.Planned
+            elif resp.flight_plan_status == FlightPlanStatus.OkToFly:
+                result = InjectFlightResponseResult.ReadyToFly
+            elif resp.flight_plan_status == FlightPlanStatus.OffNominal:
+                result = InjectFlightResponseResult.ReadyToFly
+            else:
+                raise NotImplementedError(
+                    f"Unable to handle '{resp.flight_plan_status}' FlightPlanStatus with {resp.activity_result} PlanningActivityResult"
+                )
             self.created_flight_ids.add(flight_id)
+        else:
+            raise NotImplementedError(
+                f"Unable to handle '{resp.activity_result}' PlanningActivityResult"
+            )
 
-        return result, query, flight_id
+        response = InjectFlightResponse(
+            result=result,
+            operational_intent_id="<not provided>",
+        )
+
+        return response, resp.queries[0], flight_id
 
     def cleanup_flight(
         self, flight_id: str
     ) -> Tuple[DeleteFlightResponse, fetch.Query]:
-        url = "{}/v1/flights/{}".format(self.config.injection_base_url, flight_id)
-        query = fetch.query_and_describe(
-            self.client,
-            "DELETE",
-            url,
-            scope=SCOPE_SCD_QUALIFIER_INJECT,
-            server_id=self.config.participant_id,
-        )
-        if query.status_code != 200:
-            raise QueryError(
-                f"Delete flight query to {url} returned {query.status_code}", [query]
-            )
         try:
-            result = ImplicitDict.parse(
-                query.response.get("json", {}), DeleteFlightResponse
-            )
-        except ValueError as e:
-            raise QueryError(
-                f"Delete flight response from {url} could not be decoded: {str(e)}",
-                [query],
-            )
+            resp = self.scd_client.try_end_flight(flight_id, ExecutionStyle.IfAllowed)
+        except PlanningActivityError as e:
+            raise QueryError(str(e), e.queries)
 
-        if result.result == DeleteFlightResponseResult.Closed:
+        if (
+            resp.activity_result == PlanningActivityResult.Completed
+            and resp.flight_plan_status == FlightPlanStatus.Closed
+        ):
             self.created_flight_ids.remove(flight_id)
-        return result, query
+            return (
+                DeleteFlightResponse(result=DeleteFlightResponseResult.Closed),
+                resp.queries[0],
+            )
+        else:
+            return (
+                DeleteFlightResponse(result=DeleteFlightResponseResult.Failed),
+                resp.queries[0],
+            )
 
     def get_readiness(self) -> Tuple[Optional[str], Query]:
-        url_status = "{}/v1/status".format(self.config.injection_base_url)
-        version_query = fetch.query_and_describe(
-            self.client,
-            "GET",
-            url_status,
-            scope=SCOPE_SCD_QUALIFIER_INJECT,
-            server_id=self.config.participant_id,
-        )
-        if version_query.status_code != 200:
-            return (
-                f"Status query to {url_status} returned {version_query.status_code}",
-                version_query,
-            )
         try:
-            ImplicitDict.parse(version_query.response.get("json", {}), StatusResponse)
-        except ValueError as e:
-            return (
-                f"Status response from {url_status} could not be decoded: {str(e)}",
-                version_query,
-            )
-
-        return None, version_query
+            resp = self.scd_client.report_readiness()
+        except PlanningActivityError as e:
+            return str(e), e.queries[0]
+        return None, resp.queries[0]
 
     def clear_area(self, extent: Volume4D) -> Tuple[ClearAreaResponse, fetch.Query]:
-        req = ClearAreaRequest(
-            request_id=str(uuid.uuid4()), extent=extent.to_f3548v21()
-        )
-        url = f"{self.config.injection_base_url}/v1/clear_area_requests"
-        query = fetch.query_and_describe(
-            self.client,
-            "POST",
-            url,
-            scope=SCOPE_SCD_QUALIFIER_INJECT,
-            json=req,
-            server_id=self.config.participant_id,
-        )
-        if query.status_code != 200:
-            raise QueryError(
-                f"Clear area query to {url} returned {query.status_code}", [query]
-            )
         try:
-            result = ImplicitDict.parse(
-                query.response.get("json", {}), ClearAreaResponse
-            )
-        except ValueError as e:
-            raise QueryError(
-                f"Clear area response from {url} could not be decoded: {str(e)}",
-                [query],
-            )
-        return result, query
+            resp = self.scd_client.clear_area(extent)
+        except PlanningActivityError as e:
+            raise QueryError(str(e), e.queries)
+        success = False if resp.errors else True
+        return (
+            ClearAreaResponse(
+                outcome=ClearAreaOutcome(
+                    success=success,
+                    timestamp=resp.queries[0].response.reported,
+                )
+            ),
+            resp.queries[0],
+        )

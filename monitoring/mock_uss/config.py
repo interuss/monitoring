@@ -1,6 +1,5 @@
 from monitoring.mock_uss import import_environment_variable
 from monitoring.monitorlib import auth_validation
-from monitoring.monitorlib.locality import Locality
 
 
 KEY_TOKEN_PUBLIC_KEY = "MOCK_USS_PUBLIC_KEY"
@@ -27,7 +26,5 @@ import_environment_variable(
     mutator=lambda s: set(svc.strip().lower() for svc in s.split(",")),
 )
 import_environment_variable(KEY_DSS_URL, required=False)
-import_environment_variable(
-    KEY_BEHAVIOR_LOCALITY, default="CHE", mutator=Locality.from_locale
-)
+import_environment_variable(KEY_BEHAVIOR_LOCALITY, default="US.IndustryCollaboration")
 import_environment_variable(KEY_CODE_VERSION, default="Unknown")

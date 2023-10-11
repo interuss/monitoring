@@ -404,6 +404,26 @@ def resolve_volume4d(template: Volume4DTemplate, start_of_test: datetime) -> Vol
 class Volume4DCollection(ImplicitDict):
     volumes: List[Volume4D]
 
+    def __add__(self, other):
+        if isinstance(other, Volume4D):
+            return Volume4DCollection(volumes=self.volumes + [other])
+        elif isinstance(other, Volume4DCollection):
+            return Volume4DCollection(volumes=self.volumes + other.volumes)
+        else:
+            raise NotImplementedError(
+                f"Cannot add {type(other).__name__} to {type(self).__name__}"
+            )
+
+    def __iadd__(self, other):
+        if isinstance(other, Volume4D):
+            self.volumes.append(other)
+        elif isinstance(other, Volume4DCollection):
+            self.volumes.extend(other.volumes)
+        else:
+            raise NotImplementedError(
+                f"Cannot iadd {type(other).__name__} to {type(self).__name__}"
+            )
+
     @property
     def time_start(self) -> Optional[Time]:
         return (
@@ -547,3 +567,6 @@ class Volume4DCollection(ImplicitDict):
 
     def to_f3548v21(self) -> List[f3548v21.Volume4D]:
         return [v.to_f3548v21() for v in self.volumes]
+
+    def to_interuss_scd_api(self) -> List[interuss_scd_api.Volume4D]:
+        return [v.to_interuss_scd_api() for v in self.volumes]

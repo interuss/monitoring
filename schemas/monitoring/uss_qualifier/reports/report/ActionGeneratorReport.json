@@ -14,14 +14,32 @@
       },
       "type": "array"
     },
+    "end_time": {
+      "description": "Time at which the action generator completed or encountered an error",
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "generator_type": {
       "description": "Type of action generator",
       "type": "string"
+    },
+    "start_time": {
+      "description": "Time at which the action generator started",
+      "format": "date-time",
+      "type": "string"
+    },
+    "successful": {
+      "description": "True iff all actions completed normally with no failed checks",
+      "type": "boolean"
     }
   },
   "required": [
     "actions",
-    "generator_type"
+    "generator_type",
+    "start_time"
   ],
   "type": "object"
 }
