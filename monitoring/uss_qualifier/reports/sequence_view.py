@@ -262,20 +262,20 @@ def _compute_tested_scenario(
                         scenario_participants[query.server_id] = p
             if "notes" in report and report.notes:
                 for key, note in report.notes.items():
-                    if (
-                        step.start_time.datetime
-                        <= note.timestamp.datetime
-                        <= step.end_time.datetime
-                    ):
-                        events.append(
-                            Event(
-                                note=NoteEvent(
-                                    key=key,
-                                    message=note.message,
-                                    timestamp=note.timestamp.datetime,
+                    if step.start_time.datetime <= note.timestamp.datetime:
+                        if (
+                            "end_time" not in step
+                            or note.timestamp.datetime <= step.end_time.datetime
+                        ):
+                            events.append(
+                                Event(
+                                    note=NoteEvent(
+                                        key=key,
+                                        message=note.message,
+                                        timestamp=note.timestamp.datetime,
+                                    )
                                 )
                             )
-                        )
 
             # Sort this step's events by time
             events.sort(key=lambda e: e.timestamp)
