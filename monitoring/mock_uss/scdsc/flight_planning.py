@@ -9,6 +9,7 @@ from monitoring.mock_uss.scdsc.database import FlightRecord
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.monitorlib.locality import Locality
 from monitoring.monitorlib.uspace import problems_with_flight_authorisation
+from uas_standards.interuss.automated_testing.scd.v1.api import OperationalIntentState
 
 
 class PlanningError(Exception):
@@ -47,6 +48,7 @@ def validate_request(req_body: scd_api.InjectFlightRequest, locality: Locality) 
     # Validate max planning horizon for creation
     start_time = Volume4DCollection.from_interuss_scd_api(
         req_body.operational_intent.volumes
+        + req_body.operational_intent.off_nominal_volumes
     ).time_start.datetime
     time_delta = start_time - datetime.now(tz=start_time.tzinfo)
     if (
@@ -86,6 +88,13 @@ def check_for_disallowed_conflicts(
     """
     if log is None:
         log = lambda msg: None
+
+    if req_body.operational_intent.state not in (
+        OperationalIntentState.Accepted,
+        OperationalIntentState.Activated,
+    ):
+        # No conflicts are disallowed if the flight is not nominal
+        return
 
     v1 = Volume4DCollection.from_interuss_scd_api(req_body.operational_intent.volumes)
 

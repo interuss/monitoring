@@ -244,9 +244,11 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         # Check for operational intents in the DSS
         step_name = "querying for operational intents"
         log("Obtaining latest operational intent information")
-        vol4 = Volume4DCollection.from_interuss_scd_api(
+        v1 = Volume4DCollection.from_interuss_scd_api(
             req_body.operational_intent.volumes
-        ).bounding_volume.to_f3548v21()
+            + req_body.operational_intent.off_nominal_volumes
+        )
+        vol4 = v1.bounding_volume.to_f3548v21()
         op_intents = query_operational_intents(vol4)
 
         # Check for intersections
