@@ -122,7 +122,7 @@ class PendingCheck(object):
         kwargs = {
             "name": self._documentation.name,
             "documentation_url": self._documentation.url,
-            "timestamp": StringBasedDateTime(datetime.utcnow()),
+            "timestamp": StringBasedDateTime(arrow.utcnow()),
             "summary": summary,
             "details": details,
             "requirements": requirements,
@@ -157,6 +157,7 @@ class PendingCheck(object):
 
         passed_check = PassedCheck(
             name=self._documentation.name,
+            timestamp=StringBasedDateTime(arrow.utcnow()),
             participants=participants,
             requirements=requirements,
         )
