@@ -1,35 +1,41 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/PassedCheck.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.uss_qualifier.reports.report.PassedCheck, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
-    },
-    "participants": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Participants that may not have met the relevant requirements if this check had failed"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "Name of the check that passed"
+      "description": "Name of the check that passed",
+      "type": "string"
     },
-    "requirements": {
-      "type": "array",
+    "participants": {
+      "description": "Participants that may not have met the relevant requirements if this check had failed",
       "items": {
         "type": "string"
       },
-      "description": "Requirements that would not have been met if this check had failed"
+      "type": "array"
+    },
+    "requirements": {
+      "description": "Requirements that would not have been met if this check had failed",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "timestamp": {
+      "description": "Time the issue was discovered",
+      "format": "date-time",
+      "type": "string"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/PassedCheck.json",
-  "description": "monitoring.uss_qualifier.reports.report.PassedCheck, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "name",
     "participants",
-    "requirements"
-  ]
+    "requirements",
+    "timestamp"
+  ],
+  "type": "object"
 }

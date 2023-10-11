@@ -50,9 +50,14 @@ class TestedRequirementsConfiguration(ImplicitDict):
     """If a requirement collection is specified for a participant, only the requirements in the specified collection will be listed on that participant's report."""
 
 
+class SequenceViewConfiguration(ImplicitDict):
+    output_path: str
+    """Path of a folder into which report HTML files should be written"""
+
+
 class ReportHTMLConfiguration(ImplicitDict):
     html_path: str
-    """Path of HTML file to contain an HTML rendering of the test report"""
+    """Path of HTML file to contain an HTML rendering of the raw test report object"""
 
 
 class TemplatedReportInjectedConfiguration(ImplicitDict):
@@ -101,6 +106,9 @@ class ArtifactsConfiguration(ImplicitDict):
 
     tested_requirements: Optional[TestedRequirementsConfiguration] = None
     """If specified, configuration describing a desired report summarizing all tested requirements for each participant"""
+
+    sequence_view: Optional[SequenceViewConfiguration] = None
+    """If specified, configuration describing a desired report describing the sequence of events that occurred during the test"""
 
 
 class USSQualifierConfigurationV1(ImplicitDict):
