@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+{% from "explorer.html" import explorer_header, explorer_content, explorer_footer %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>s{{ test_scenario.scenario_index }} - {{ test_scenario.name }}</title>
+  <style>
+    body {
+      margin: 0;
+      color: #24292f;
+      background-color: #ffffff;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+      font-size: 16px;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+    table {
+      border-spacing: 0;
+      border-collapse: collapse;
+      width: max-content;
+      max-width: 100%;
+      overflow: auto;
+    }
+    tr {
+      border-top: 1px solid hsla(210,18%,87%,1);
+    }
+    table tr:nth-child(2n) {
+      background-color: #f6f8fa;
+    }
+    td {
+      padding: 6px 6px;
+      vertical-align: top;
+      border: 1px solid #d0d7de;
+    }
+    th {
+      padding: 6px 6px;
+      text-align: left;
+      background-color: rgb(230, 230, 230);
+      border: 1px solid #d0d7de;
+    }
+    a {
+      background-color: transparent;
+      color: #0969da;
+      text-decoration: none;
+    }
+    h2 {
+      margin-block-end: 0.1em;
+    }
+    .sticky_cell_value {
+      position: sticky;
+      top: 0px;
+      z-index: 0;
+    }
+    .pass_result {
+      background-color: rgb(192, 255, 192);
+    }
+    .fail_result {
+      background-color: rgb(255, 192, 192);
+    }
+    .not_tested {
+      background-color: rgb(192, 192, 192);
+    }
+  </style>
+  {{ explorer_header() }}
+</head>
+<body>
+{% set collapsible = namespace(queries=[]) %}
+<div>
+  {% if test_scenario.url %}
+    <h2><a href="{{ test_scenario.url }}">{{ test_scenario.name }}</a></h2>
+  {% else %}
+    <h2>{{ test_scenario.name }}</h2>
+  {% endif %}
+  <h3>{{ test_scenario.type }}</h3>
+  <table>
+    <tr class="header_row">
+      <th>Case</th>
+      <th>Step</th>
+      <th colspan="3">Event</th>
+      {% for participant_id in all_participants %}
+        <th>{{ participant_id }}</th>
+      {% endfor %}
+    </tr>
+
+    {% set first_row = namespace(epoch=True, step=True) %}
+    {% for epoch in test_scenario.epochs %}
+      {% set first_row.epoch = True %}
+      {% if epoch.type == EpochType.Case %}
+        {% for test_step in epoch.case.steps %}
+          {% set first_row.step = True %}
+          {% for event in test_step.events %}
+            <tr id="e{{ event.event_index }}">
+              {% if first_row.epoch %}
+                <td rowspan="{{ epoch.rows }}"><span class="sticky_cell_value">
+                  {% if epoch.case.url %}
+                    <a href="{{ epoch.case.url }}">{{ epoch.case.name }}</a>
+                  {% else %}
+                    {{ epoch.case.name }}
+                  {% endif %}
+                </span></td>
+              {% endif %}
+              {% if first_row.step %}
+                <td rowspan="{{ test_step.rows }}"><span class="sticky_cell_value">
+                  {% if test_step.url %}
+                    <a href="{{ test_step.url }}">{{ test_step.name }}</a>
+                  {% else %}
+                    {{ test_step.name }}
+                  {% endif %}
+                </span></td>
+              {% endif %}
+              <td><a href="#e{{ event.event_index }}">{{ event.event_index }}</a></td>
+              {% if event.type == EventType.PassedCheck %}
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  {{ event.passed_check.name }}
+                </td>
+                {% for participant_id in all_participants %}
+                  {% if participant_id in event.passed_check.participants %}
+                    <td class="pass_result">&#x2705;</td>
+                  {% else %}
+                    <td></td>
+                  {% endif %}
+                {% endfor %}
+              {% elif event.type == EventType.FailedCheck %}
+                <td>&#x274C;</td>
+                <td class="fail_result">
+                  {% if event.failed_check.documentation_url %}
+                    <a href="{{ event.failed_check.documentation_url }}">{{ event.failed_check.name }}</a>
+                  {% else %}
+                    {{ event.failed_check.name }}
+                  {% endif %}
+                </td>
+                {% for participant_id in all_participants %}
+                  {% if participant_id in event.failed_check.participants %}
+                    <td class="fail_result">&#x274C;</td>
+                  {% else %}
+                    <td></td>
+                  {% endif %}
+                {% endfor %}
+              {% elif event.type == EventType.Query %}
+                <td>&#x1F310;</td>
+                <td>
+                  {{ event.query.request.method }} {{ event.query.request.url_hostname }}
+                  {% set query_id = "e" + str(event.event_index) + "query" %}
+                  {{ explorer_content(query_id, event.query) }}
+                  {% set collapsible.queries = collapsible.queries + [query_id] %}
+                </td>
+                {% for participant_id in all_participants %}
+                  {% if participant_id == event.query.get("server_id", None) %}
+                    <td>&#x1F310;</td>
+                  {% else %}
+                    <td></td>
+                  {% endif %}
+                {% endfor %}
+              {% elif event.type == EventType.Note %}
+                <td>&#x1F4D3;</td>
+                <td colspan="{{ 1 + len(all_participants) }}">
+                  {{ event.note.key }}: {{ event.note.value }}
+                </td>
+              {% else %}
+                <td>???</td><td>Render error: unknown EventType '{{ event.type }}'</td>
+              {% endif %}
+            </tr>
+            {% set first_row.epoch = False %}
+            {% set first_row.step = False %}
+          {% endfor %}
+        {% endfor %}
+      {% elif epoch.type == EpochType.Events %}
+        {% for event in epoch.events %}
+          <tr id="e{{ event.event_index }}">
+            {% if first_row.epoch %}
+              <td rowspan="{{ epoch.rows }}" colspan="2"></td>
+            {% endif %}
+            <td><a href="#e{{ event.event_index }}">{{ event.event_index }}</a></td>
+            <td>&#x1F4D3;</td>
+            <td colspan="{{ 1 + len(all_participants) }}">
+              <code>{{ event.note.key }}</code>: {{ event.note.message }}
+            </td>
+          </tr>
+          {% set first_row.epoch = False %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+  </table>
+</div>
+{{ explorer_footer(collapsible.queries) }}
+</body>
+</html>

@@ -59,6 +59,9 @@ class PassedCheck(ImplicitDict):
     name: str
     """Name of the check that passed"""
 
+    timestamp: StringBasedDateTime
+    """Time the issue was discovered"""
+
     requirements: List[RequirementID]
     """Requirements that would not have been met if this check had failed"""
 

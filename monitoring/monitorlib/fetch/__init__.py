@@ -6,6 +6,7 @@ import uuid
 from typing import Dict, Optional, List
 
 from enum import Enum
+from urllib.parse import urlparse
 
 import flask
 from loguru import logger
@@ -55,6 +56,10 @@ class RequestDescription(ImplicitDict):
             raise KeyError(
                 "RequestDescription missing both initiated_at and received_at"
             )
+
+    @property
+    def url_hostname(self) -> str:
+        return urlparse(self.url).hostname
 
 
 yaml.add_representer(RequestDescription, Representer.represent_dict)

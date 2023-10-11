@@ -19,6 +19,7 @@ from monitoring.uss_qualifier.configurations.configuration import (
 )
 from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.documents import make_report_html
+from monitoring.uss_qualifier.reports.sequence_view import generate_sequence_view
 from monitoring.uss_qualifier.reports.tested_requirements import (
     generate_tested_requirements,
 )
@@ -203,6 +204,11 @@ def main() -> int:
             path = config.artifacts.tested_requirements.output_path
             logger.info(f"Writing tested requirements view to {path}")
             generate_tested_requirements(report, config.artifacts.tested_requirements)
+
+        if config.artifacts.sequence_view:
+            path = config.artifacts.sequence_view.output_path
+            logger.info(f"Writing sequence view to {path}")
+            generate_sequence_view(report, config.artifacts.sequence_view)
 
     return os.EX_OK
 

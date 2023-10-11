@@ -6,30 +6,11 @@ from typing import List, Tuple
 import uuid
 
 import flask
+from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 import requests.exceptions
 
-from monitoring.mock_uss.database import fulfilled_request_ids
 from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
-from monitoring.mock_uss.scdsc.routes_scdsc import op_intent_from_flightrecord
-from monitoring.monitorlib.geo import Polygon
-from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
-from uas_standards.astm.f3548.v21 import api
-from uas_standards.astm.f3548.v21.api import (
-    OperationalIntent,
-    PutOperationalIntentDetailsParameters,
-    ImplicitSubscriptionParameters,
-    PutOperationalIntentReferenceParameters,
-)
-from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays, OiMaxVertices
-
-from monitoring.mock_uss.config import KEY_BASE_URL
-from uas_standards.interuss.automated_testing.scd.v1.api import (
-    OperationalIntentState,
-)
-from monitoring.monitorlib import scd, versioning
-from monitoring.monitorlib.clients import scd as scd_client
-from monitoring.monitorlib.fetch import QueryError
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
     InjectFlightResponse,
@@ -41,16 +22,37 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     ClearAreaResponse,
     Capability,
     CapabilitiesResponse,
+    OperationalIntentState,
 )
+from uas_standards.astm.f3548.v21 import api
+from uas_standards.astm.f3548.v21.api import (
+    OperationalIntent,
+    PutOperationalIntentDetailsParameters,
+    ImplicitSubscriptionParameters,
+    PutOperationalIntentReferenceParameters,
+)
+
+from monitoring.mock_uss.database import fulfilled_request_ids
+from monitoring.mock_uss.scdsc.flight_planning import (
+    validate_request,
+    check_for_disallowed_conflicts,
+    PlanningError,
+    op_intent_transition_valid,
+)
+from monitoring.mock_uss.scdsc.routes_scdsc import op_intent_from_flightrecord
+from monitoring.monitorlib.geo import Polygon
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
+from monitoring.mock_uss.config import KEY_BASE_URL
+from monitoring.monitorlib import versioning
+from monitoring.monitorlib.clients import scd as scd_client
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
 )
-from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.mock_uss import webapp, require_config_value
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.scdsc import database, utm_client
 from monitoring.mock_uss.scdsc.database import db
-from monitoring.monitorlib.uspace import problems_with_flight_authorisation
 
 
 require_config_value(KEY_BASE_URL)
@@ -180,72 +182,23 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
     pid = os.getpid()
     locality = get_locality()
 
-    if locality.is_uspace_applicable():
-        # Validate flight authorisation
-        logger.debug(
-            f"[inject_flight/{pid}:{flight_id}] Validating flight authorisation"
-        )
-        problems = problems_with_flight_authorisation(req_body.flight_authorisation)
-        if problems:
-            return (
-                InjectFlightResponse(
-                    result=InjectFlightResponseResult.Rejected,
-                    notes=", ".join(problems),
-                ),
-                200,
-            )
+    def log(msg: str):
+        logger.debug(f"[inject_flight/{pid}:{flight_id}] {msg}")
 
-    # Validate max number of vertices
-    nb_vertices = 0
-    for volume in (
-        req_body.operational_intent.volumes
-        + req_body.operational_intent.off_nominal_volumes
-    ):
-        if volume.volume.has_field_with_value("outline_polygon"):
-            nb_vertices += len(volume.volume.outline_polygon.vertices)
-        if volume.volume.has_field_with_value("outline_circle"):
-            nb_vertices += 1
-
-    if nb_vertices > OiMaxVertices:
+    # Validate request
+    log("Validating request")
+    try:
+        validate_request(req_body, locality)
+    except PlanningError as e:
         return (
             InjectFlightResponse(
-                result=InjectFlightResponseResult.Rejected,
-                notes=f"Too many vertices across volumes of operational intent (max OiMaxVertices={OiMaxVertices})",
-            ),
-            200,
-        )
-
-    # Validate max planning horizon for creation
-    start_time = Volume4DCollection.from_interuss_scd_api(
-        req_body.operational_intent.volumes
-    ).time_start.datetime
-    time_delta = start_time - datetime.now(tz=start_time.tzinfo)
-    if (
-        time_delta.days > OiMaxPlanHorizonDays
-        and req_body.operational_intent.state == OperationalIntentState.Accepted
-    ):
-        return (
-            InjectFlightResponse(
-                result=InjectFlightResponseResult.Rejected,
-                notes=f"Operational intent to plan is too far away in time (max OiMaxPlanHorizonDays={OiMaxPlanHorizonDays})",
-            ),
-            200,
-        )
-
-    # Validate no off_nominal_volumes if in Accepted or Activated state
-    if len(req_body.operational_intent.off_nominal_volumes) > 0 and (
-        req_body.operational_intent.state == OperationalIntentState.Accepted
-        or req_body.operational_intent.state == OperationalIntentState.Activated
-    ):
-        return (
-            InjectFlightResponse(
-                result=InjectFlightResponseResult.Rejected,
-                notes=f"Operational intent specifies an off-nominal volume while being in {req_body.operational_intent.state} state",
+                result=InjectFlightResponseResult.Rejected, notes=str(e)
             ),
             200,
         )
 
     # Check if this is an existing flight being modified
+    log("Acquiring lock for flight")
     deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
     while True:
         with db as tx:
@@ -253,15 +206,11 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 # This is an existing flight being modified
                 existing_flight = tx.flights[flight_id]
                 if existing_flight and not existing_flight.locked:
-                    logger.debug(
-                        f"[inject_flight/{pid}:{flight_id}] Existing flight locked for update"
-                    )
+                    log("Existing flight locked for update")
                     existing_flight.locked = True
                     break
             else:
-                logger.debug(
-                    f"[inject_flight/{pid}:{flight_id}] Request is for a new flight (lock established)"
-                )
+                log("Request is for a new flight (lock established)")
                 tx.flights[flight_id] = None
                 existing_flight = None
                 break
@@ -281,7 +230,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         else None
     )
     state_transition_to = OperationalIntentState(req_body.operational_intent.state)
-    if not scd.op_intent_transition_valid(state_transition_from, state_transition_to):
+    if not op_intent_transition_valid(state_transition_from, state_transition_to):
         return (
             InjectFlightResponse(
                 result=InjectFlightResponseResult.Rejected,
@@ -294,9 +243,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
     try:
         # Check for operational intents in the DSS
         step_name = "querying for operational intents"
-        logger.debug(
-            f"[inject_flight/{pid}:{flight_id}] Obtaining latest operational intent information"
-        )
+        log("Obtaining latest operational intent information")
         vol4 = Volume4DCollection.from_interuss_scd_api(
             req_body.operational_intent.volumes
         ).bounding_volume.to_f3548v21()
@@ -304,71 +251,25 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
 
         # Check for intersections
         step_name = "checking for intersections"
-        logger.debug(
-            f"[inject_flight/{pid}:{flight_id}] Checking for intersections with {', '.join(op_intent.reference.id for op_intent in op_intents)}"
+        log(
+            f"Checking for intersections with {', '.join(op_intent.reference.id for op_intent in op_intents)}"
         )
-        v1 = Volume4DCollection.from_interuss_scd_api(
-            req_body.operational_intent.volumes
-        )
-        for op_intent in op_intents:
-            if (
-                existing_flight
-                and existing_flight.op_intent_reference.id == op_intent.reference.id
-            ):
-                logger.debug(
-                    f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with a past version of this flight"
-                )
-                continue
-            if req_body.operational_intent.priority > op_intent.details.priority:
-                logger.debug(
-                    f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with lower-priority operational intents"
-                )
-                continue
-            if (
-                req_body.operational_intent.priority == op_intent.details.priority
-                and locality.allows_same_priority_intersections(
-                    req_body.operational_intent.priority
-                )
-            ):
-                logger.debug(
-                    f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: intersection with same-priority operational intents (if allowed)"
-                )
-                continue
-
-            v2 = Volume4DCollection.from_interuss_scd_api(
-                op_intent.details.volumes + op_intent.details.off_nominal_volumes
+        try:
+            check_for_disallowed_conflicts(
+                req_body, existing_flight, op_intents, locality, log
             )
-
-            if (
-                existing_flight
-                and existing_flight.op_intent_reference.state
-                == OperationalIntentState.Activated
-                and req_body.operational_intent.state
-                == OperationalIntentState.Activated
-                and Volume4DCollection.from_f3548v21(
-                    existing_flight.op_intent_injection.volumes
-                ).intersects_vol4s(v2)
-            ):
-                logger.debug(
-                    f"[inject_flight/{pid}:{flight_id}] intersection with {op_intent.reference.id} not considered: modification of Activated operational intent with a pre-existing conflict"
-                )
-                continue
-
-            if v1.intersects_vol4s(v2):
-                notes = f"Requested flight (priority {req_body.operational_intent.priority}) intersected {op_intent.reference.manager}'s operational intent {op_intent.reference.id} (priority {op_intent.details.priority})"
-                return (
-                    InjectFlightResponse(
-                        result=InjectFlightResponseResult.ConflictWithFlight,
-                        notes=notes,
-                    ),
-                    200,
-                )
+        except PlanningError as e:
+            return (
+                InjectFlightResponse(
+                    result=InjectFlightResponseResult.ConflictWithFlight,
+                    notes=str(e),
+                ),
+                200,
+            )
 
         # Create operational intent in DSS
         step_name = "sharing operational intent in DSS"
-        logger.debug(
-            f"[inject_flight/{pid}:{flight_id}] Sharing operational intent with DSS"
-        )
+        log("Sharing operational intent with DSS")
         base_url = "{}/mock/scd".format(webapp.config[KEY_BASE_URL])
         req = PutOperationalIntentReferenceParameters(
             extents=req_body.operational_intent.volumes
@@ -381,7 +282,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         if existing_flight:
             id = existing_flight.op_intent_reference.id
             step_name = f"updating existing operational intent {id} in DSS"
-            logger.debug(f"[inject_flight/{pid}:{flight_id}] {step_name}")
+            log(step_name)
             result = scd_client.update_operational_intent_reference(
                 utm_client,
                 id,
@@ -391,7 +292,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         else:
             id = str(uuid.uuid4())
             step_name = f"creating new operational intent {id} in DSS"
-            logger.debug(f"[inject_flight/{pid}:{flight_id}] {step_name}")
+            log(step_name)
             result = scd_client.create_operational_intent_reference(utm_client, id, req)
 
         # Notify subscribers
@@ -410,9 +311,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 operational_intent=operational_intent,
                 subscriptions=subscriber.subscriptions,
             )
-            logger.debug(
-                f"[inject_flight/{pid}:{flight_id}] Notifying subscriber at {subscriber.uss_base_url}"
-            )
+            log(f"Notifying subscriber at {subscriber.uss_base_url}")
             step_name = f"notifying subscriber {{{subscriber.uss_base_url}}}"
             scd_client.notify_operational_intent_details_changed(
                 utm_client, subscriber.uss_base_url, update
@@ -420,7 +319,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
 
         # Store flight in database
         step_name = "storing flight in database"
-        logger.debug(f"[inject_flight/{pid}:{flight_id}] Storing flight in database")
+        log("Storing flight in database")
         record = database.FlightRecord(
             op_intent_reference=result.operational_intent_reference,
             op_intent_injection=req_body.operational_intent,
@@ -430,7 +329,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             tx.flights[flight_id] = record
 
         step_name = "returning final successful result"
-        logger.debug(f"[inject_flight/{pid}:{flight_id}] Complete.")
+        log("Complete.")
 
         if (
             result.operational_intent_reference.state
@@ -470,15 +369,11 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         with db as tx:
             if tx.flights[flight_id]:
                 # FlightRecord was a true existing flight
-                logger.debug(
-                    f"[inject_flight/{pid}] Releasing placeholder for flight_id {flight_id}"
-                )
+                log(f"Releasing placeholder for flight_id {flight_id}")
                 tx.flights[flight_id].locked = False
             else:
                 # FlightRecord was just a placeholder for a new flight
-                logger.debug(
-                    f"[inject_flight/{pid}] Releasing lock on existing flight_id {flight_id}"
-                )
+                log("Releasing lock on existing flight_id {flight_id}")
                 del tx.flights[flight_id]
 
 
