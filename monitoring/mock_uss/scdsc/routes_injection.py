@@ -2,7 +2,6 @@ import os
 import traceback
 from datetime import datetime, timedelta
 import time
-from functools import wraps
 from typing import List, Tuple
 import uuid
 
@@ -10,7 +9,8 @@ import flask
 from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 import requests.exceptions
-from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
+
+from monitoring.monitorlib.idempotency import idempotent_request
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
     InjectFlightResponse,
@@ -32,7 +32,6 @@ from uas_standards.astm.f3548.v21.api import (
     PutOperationalIntentReferenceParameters,
 )
 
-from monitoring.mock_uss.database import fulfilled_request_ids
 from monitoring.mock_uss.scdsc.flight_planning import (
     validate_request,
     check_for_disallowed_conflicts,
@@ -150,6 +149,7 @@ def scd_capabilities() -> Tuple[dict, int]:
 
 @webapp.route("/scdsc/v1/flights/<flight_id>", methods=["PUT"])
 @requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@idempotent_request()
 def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
     """Implements flight injection in SCD automated testing injection API."""
     logger.debug(f"[inject_flight/{os.getpid()}:{flight_id}] Starting handler")
@@ -161,20 +161,6 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
     except ValueError as e:
         msg = "Create flight {} unable to parse JSON: {}".format(flight_id, e)
         return msg, 400
-    if "request_id" in json:
-        logger.debug(
-            f"[inject_flight/{os.getpid()}:{flight_id}] Request ID {json['request_id']}"
-        )
-        with fulfilled_request_ids as tx:
-            if json["request_id"] in tx:
-                logger.debug(
-                    f"[inject_flight/{os.getpid()}:{flight_id}] Already processed request ID {json['request_id']}"
-                )
-                return (
-                    f"Request ID {json['request_id']} has already been fulfilled",
-                    400,
-                )
-            tx.append(json["request_id"])
     json, code = inject_flight(flight_id, req_body)
     return flask.jsonify(json), code
 
@@ -480,6 +466,7 @@ def delete_flight(flight_id) -> Tuple[dict, int]:
 
 @webapp.route("/scdsc/v1/clear_area_requests", methods=["POST"])
 @requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@idempotent_request()
 def scdsc_clear_area() -> Tuple[str, int]:
     try:
         json = flask.request.json
@@ -489,14 +476,6 @@ def scdsc_clear_area() -> Tuple[str, int]:
     except ValueError as e:
         msg = "Unable to parse ClearAreaRequest JSON request: {}".format(e)
         return msg, 400
-    with fulfilled_request_ids as tx:
-        logger.debug(f"[scdsc_clear_area] Processing request ID {req.request_id}")
-        if req.request_id in tx:
-            logger.debug(
-                f"[scdsc_clear_area] Already processed request ID {req.request_id}"
-            )
-            return f"Request ID {req.request_id} has already been fulfilled", 400
-        tx.append(json["request_id"])
     json, code = clear_area(req)
     return flask.jsonify(json), code
 
