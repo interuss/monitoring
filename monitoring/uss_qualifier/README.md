@@ -16,7 +16,7 @@ When building a custom configuration file, consider starting from [`configuratio
 
 This section provides a specific set of commands to execute uss_qualifier for demonstration purposes.
 
-1. Check out this repository: `git clone https://github.com/interuss/monitoring`
+1. Check out this repository, making sure to initialize submodules: `git clone --recurse-submodules https://github.com/interuss/monitoring`
 2. Go to repository root: `cd monitoring`
 3. Bring up a local UTM ecosystem (DSS + dummy auth): `make start-locally`
 4. Bring up mock USSs: `make start-uss-mocks`

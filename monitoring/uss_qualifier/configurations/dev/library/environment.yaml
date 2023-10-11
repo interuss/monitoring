@@ -169,3 +169,16 @@ f3548_single_scenario:
                 participant_id: uss2
                 injection_base_url: http://scdsc.uss2.localutm/scdsc
                 local_debug: true
+
+mock_uss_instances:
+    mock_uss_instances_scdsc:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+        resource_type: resources.interuss.mock_uss.client.MockUSSsResource
+        dependencies:
+            auth_adapter: utm_auth
+        specification:
+            instances:
+                - mock_uss_base_url: http://scdsc.uss1.localutm
+                  participant_id: uss1
+                - mock_uss_base_url: http://scdsc.uss2.localutm
+                  participant_id: uss2

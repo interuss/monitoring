@@ -6,9 +6,12 @@ v1:
       resource_declarations:
         $ref: ./library/resources.yaml#/all
     action:
-      test_suite:
-        suite_type: suites.uspace.required_services
+      action_generator:
+        generator_type: action_generators.interuss.mock_uss.WithLocality
         resources:
+          mock_uss_instances: mock_uss_instances_scdsc
+          locality: locality_che
+
           conflicting_flights: conflicting_flights
           priority_preemption_flights: priority_preemption_flights
           invalid_flight_intents: invalid_flight_intents
@@ -23,6 +26,28 @@ v1:
           netrid_dss_instances: netrid_dss_instances_v22a
           id_generator: id_generator
           service_area: service_area
+        specification:
+          mock_uss_instances_source: mock_uss_instances
+          locality_source: locality
+          action_to_wrap:
+            test_suite:
+              suite_type: suites.uspace.required_services
+              resources:
+                conflicting_flights: conflicting_flights
+                priority_preemption_flights: priority_preemption_flights
+                invalid_flight_intents: invalid_flight_intents
+                invalid_flight_auth_flights: invalid_flight_auth_flights
+                flight_planners: flight_planners
+                dss: dss
+
+                flights_data: flights_data
+                service_providers: service_providers
+                observers: observers
+                evaluation_configuration: evaluation_configuration
+                netrid_dss_instances: netrid_dss_instances
+                id_generator: id_generator
+                service_area: service_area
+            on_failure: Continue
   artifacts:
     tested_roles:
       report_path: output/tested_roles_uspace
@@ -44,3 +69,5 @@ v1:
       participant_requirements:
         uss1: uspace
         uss2: uspace
+    sequence_view:
+      output_path: output/sequence_uspace
