@@ -28,7 +28,7 @@ This step ensures that we remove any subscription that may already exist for the
 
 If the query for subscriptions fails, **[astm.f3411.v19.DSS0030,f](../../../../../requirements/astm/f3411/v19.md)** was not met.
 
-#### Successful subscription deletion
+#### Successful subscription deletion check
 
 If the deletion attempt fails, **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)** was not met.
 
