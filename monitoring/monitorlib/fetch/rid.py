@@ -1,15 +1,16 @@
 from __future__ import annotations
+
 import datetime
 from typing import Dict, List, Optional, Any, Union
 
-from implicitdict import ImplicitDict, StringBasedDateTime
 import s2sphere
-from uas_standards.astm.f3411 import v19, v22a
 import uas_standards.astm.f3411.v19.api
 import uas_standards.astm.f3411.v19.constants
 import uas_standards.astm.f3411.v22a.api
 import uas_standards.astm.f3411.v22a.constants
 import yaml
+from implicitdict import ImplicitDict, StringBasedDateTime
+from uas_standards.astm.f3411 import v19, v22a
 from uas_standards.astm.f3411.v22a.api import RIDHeight
 from yaml.representer import Representer
 
@@ -1163,7 +1164,7 @@ def all_flights(
     session: UTMClientSession,
     dss_base_url: str = "",
     enhanced_details: bool = False,
-    server_id: Optional[str] = None,
+    dss_server_id: Optional[str] = None,
 ) -> FetchedFlights:
     t = datetime.datetime.utcnow()
     isa_list = isas(
@@ -1173,7 +1174,7 @@ def all_flights(
         rid_version,
         session,
         dss_base_url,
-        server_id=server_id,
+        server_id=dss_server_id,
     )
 
     uss_flight_queries: Dict[str, FetchedUSSFlights] = {}
@@ -1185,7 +1186,9 @@ def all_flights(
             include_recent_positions,
             rid_version,
             session,
-            server_id=server_id,
+            # Note that we have no clue at this point which participant the flights_url is for,
+            # this can only be determined later by comparing injected and observed flights.
+            server_id=None,
         )
         uss_flight_queries[flights_url] = flights_for_url
 
@@ -1197,7 +1200,7 @@ def all_flights(
                     enhanced_details,
                     rid_version,
                     session,
-                    server_id=server_id,
+                    server_id=None,
                 )
                 uss_flight_details_queries[flight.id] = details
 

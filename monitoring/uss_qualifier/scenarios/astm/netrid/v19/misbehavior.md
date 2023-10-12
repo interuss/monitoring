@@ -48,7 +48,7 @@ It then repeats the exact same request while omitting the credentials, and expec
 
 #### Missing credentials check
 
-This check ensures that all requests are properly authenticated, as required by **[astm.f3411.v19.NET0500](../../../../requirements/astm/f3411/v19.md)**,
+This check ensures that all requests are properly authenticated, as required by **[astm.f3411.v19.NET0210](../../../../requirements/astm/f3411/v19.md)**,
 and that requests for existing flights that are executed with missing or incorrect credentials fail.
 
 ## Cleanup

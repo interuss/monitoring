@@ -1,23 +1,17 @@
 import time
 import traceback
-import uuid
-from typing import List
+from typing import List, Dict
 
 import arrow
 import s2sphere
-from implicitdict import ImplicitDict
 from loguru import logger
 from requests.exceptions import RequestException
-from uas_standards.interuss.automated_testing.rid.v1.injection import ChangeTestResponse
 
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.fetch import rid
+from monitoring.monitorlib.fetch.rid import FetchedFlights
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.monitorlib.rid_automated_testing.injection_api import (
-    CreateTestParameters,
-)
-from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
@@ -25,17 +19,14 @@ from monitoring.uss_qualifier.resources.netrid import (
     NetRIDServiceProviders,
     EvaluationConfigurationResource,
 )
-from monitoring.uss_qualifier.scenarios.astm.netrid import display_data_evaluator
 from monitoring.uss_qualifier.scenarios.astm.netrid.common import nominal_behavior
-from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection import (
-    InjectedFlightCollection,
+from monitoring.uss_qualifier.scenarios.astm.netrid.display_data_evaluator import (
+    DPObservedFlight,
+    map_observations_to_injected_flights,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid.injection import (
     InjectedFlight,
     InjectedTest,
-)
-from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
-    VirtualObserver,
 )
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 
@@ -167,67 +158,78 @@ class Misbehavior(GenericTestScenario):
         no flights were yet returned by the authenticated queries.
         """
 
-        with self.check("Missing credentials") as check:
-            # We grab all flights from the SP's. This is authenticated
-            # and is expected to succeed
-            sp_observation = rid.all_flights(
-                rect,
-                include_recent_positions=True,
-                get_details=True,
-                rid_version=self._rid_version,
-                session=self._dss.client,
-                server_id=self._dss.participant_id,
+        # We grab all flights from the SP's (which we know how to reach by first querying the DSS).
+        # This is authenticated and is expected to succeed
+        sp_observation = rid.all_flights(
+            rect,
+            include_recent_positions=True,
+            get_details=True,
+            rid_version=self._rid_version,
+            session=self._dss.client,
+            dss_server_id=self._dss.participant_id,
+        )
+
+        # Set the participant ID on the SP queries wherever possible
+        _attribute_sp_queries_to_participant_id(self._injected_flights, sp_observation)
+
+        # We fish out the queries that were used to grab the flights from the SP,
+        # and attempt to re-query without credentials. This should fail.
+        unauthenticated_session = UTMClientSession(
+            prefix_url=self._dss.client.get_prefix_url(),
+            auth_adapter=None,
+            timeout_seconds=self._dss.client.timeout_seconds,
+        )
+
+        queries_to_repeat = list(sp_observation.uss_flight_queries.values()) + list(
+            sp_observation.uss_flight_details_queries.values()
+        )
+
+        if len(queries_to_repeat) == 0:
+            logger.debug("no flights queries to repeat at this point.")
+            return False
+
+        logger.debug(
+            f"about to repeat {len(queries_to_repeat)} flights queries without credentials"
+        )
+
+        # Attempt to re-query the flights and flight details URLs:
+        for fq in queries_to_repeat:
+            sp_server_id = fq.query.get("server_id", "unknown")
+            # We may well have queried SP's for real flights that happen
+            # to be present in the area in which we inject flights;
+            if sp_server_id == "unknown":
+                # TODO we could skip these once development on the qualifier has stopped,
+                # however, unattributed queries are likely the cause of a bug,
+                # and we want to find out.
+                logger.error(f"got unattributed SP query to: {fq.query.request.url}")
+
+            failed_q = fetch.query_and_describe(
+                client=unauthenticated_session,
+                verb=fq.query.request.method,
+                url=fq.query.request.url,
+                json=fq.query.request.json,
+                data=fq.query.request.body,
+                server_id=sp_server_id,
             )
-            # We fish out the queries that were used to grab the flights from the SP,
-            # and attempt to re-query without credentials. This should fail.
-
-            unauthenticated_session = UTMClientSession(
-                prefix_url=self._dss.client.get_prefix_url(),
-                auth_adapter=None,
-                timeout_seconds=self._dss.client.timeout_seconds,
+            logger.info(
+                f"Repeating query to {fq.query.request.url} without credentials"
             )
-
-            queries_to_repeat = list(sp_observation.uss_flight_queries.values()) + list(
-                sp_observation.uss_flight_details_queries.values()
-            )
-
-            if len(queries_to_repeat) == 0:
-                logger.debug("no flights queries to repeat at this point.")
-                return False
-
-            logger.debug(
-                f"about to repeat {len(queries_to_repeat)} flights queries without credentials"
-            )
-
-            # Attempt to re-query the flights and flight details URLs:
-            for fq in queries_to_repeat:
-                failed_q = fetch.query_and_describe(
-                    client=unauthenticated_session,
-                    verb=fq.query.request.method,
-                    url=fq.query.request.url,
-                    json=fq.query.request.json,
-                    data=fq.query.request.body,
-                    server_id=self._dss.participant_id,
-                )
-                logger.info(
-                    f"Repeating query to {fq.query.request.url} without credentials"
-                )
-                server_id = fq.query.get("server_id", "unknown")
+            with self.check("Missing credentials", [sp_server_id]) as check:
                 if failed_q.response.code not in [401, 403]:
                     check.record_failed(
                         "unauthenticated request was fulfilled",
-                        participants=[server_id],
+                        participants=[sp_server_id],
                         severity=Severity.MEDIUM,
                         details=f"queried flights on {fq.query.request.url} with no credentials, expected a failure but got a success reply",
                     )
                 else:
                     logger.info(
-                        f"participant with id {server_id} properly authenticated the request"
+                        f"participant with id {sp_server_id} properly authenticated the request"
                     )
                 # Keep track of the failed queries, too
                 self.record_query(failed_q)
 
-            return True
+        return True
 
     def cleanup(self):
         self.begin_cleanup()
@@ -263,3 +265,24 @@ class Misbehavior(GenericTestScenario):
                     details=f"While trying to delete a test flight from {sp.participant_id}, encountered error:\n{stacktrace}",
                 )
         self.end_cleanup()
+
+
+def _attribute_sp_queries_to_participant_id(
+    injected_flights: List[InjectedFlight],
+    fetched_flights: FetchedFlights,
+):
+    observed_flights = []
+    for uss_query in fetched_flights.uss_flight_queries.values():
+        for f in range(len(uss_query.flights)):
+            observed_flights.append(DPObservedFlight(query=uss_query, flight=f))
+
+    mapping_by_injection_id = map_observations_to_injected_flights(
+        injected_flights, observed_flights
+    )
+
+    for telemetry_mapping in mapping_by_injection_id.values():
+        # For flights that were mapped to an injection ID,
+        # update the observation queries with the participant id for future use in the aggregate checks
+        telemetry_mapping.observed_flight.query.set_server_id(
+            telemetry_mapping.injected_flight.uss_participant_id
+        )

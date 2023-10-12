@@ -114,7 +114,7 @@ class TelemetryMapping(object):
     observed_flight: ObservationType
 
 
-def _make_flight_mapping(
+def map_observations_to_injected_flights(
     injected_flights: List[InjectedFlight],
     observed_flights: List[ObservationType],
 ) -> Dict[str, TelemetryMapping]:
@@ -239,11 +239,14 @@ class RIDObservationEvaluator(object):
                 get_details=True,
                 rid_version=self._rid_version,
                 session=self._dss.client,
-                server_id=self._dss.participant_id,
+                dss_server_id=self._dss.participant_id,
             )
             for q in sp_observation.queries:
                 self._test_scenario.record_query(q)
 
+            # Evaluate observations
+            # (Note this also takes care of setting the server_id to the relevant
+            # participant_id on queries where possible)
             self._evaluate_sp_observation(sp_observation, rect)
 
             step_report = self._test_scenario.end_test_step()
@@ -341,9 +344,11 @@ class RIDObservationEvaluator(object):
                     query_timestamps=[query.request.timestamp],
                 )
 
-        mapping_by_injection_id = _make_flight_mapping(
+        mapping_by_injection_id = map_observations_to_injected_flights(
             self._injected_flights, observation.flights
         )
+        # TODO check if we need to set some server ids on observation
+        #  queries here (if we have unattributed queries this might be a source)
 
         self._evaluate_flight_presence(
             observer.participant_id,
@@ -839,7 +844,7 @@ class RIDObservationEvaluator(object):
         for uss_query in sp_observation.uss_flight_queries.values():
             for f in range(len(uss_query.flights)):
                 observed_flights.append(DPObservedFlight(query=uss_query, flight=f))
-        mapping_by_injection_id = _make_flight_mapping(
+        mapping_by_injection_id = map_observations_to_injected_flights(
             self._injected_flights, observed_flights
         )
 

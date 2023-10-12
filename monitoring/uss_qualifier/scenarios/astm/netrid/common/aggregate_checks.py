@@ -51,8 +51,9 @@ class AggregateChecks(ReportEvaluationScenario):
 
         # identify SPs and observers by their base URL
         self._participants_by_base_url.update(
-            {sp.base_url: sp.participant_id for sp in self._service_providers}
+            {sp.injection_base_url: sp.participant_id for sp in self._service_providers}
         )
+
         self._participants_by_base_url.update(
             {dp.base_url: dp.participant_id for dp in self._observers}
         )
@@ -101,7 +102,7 @@ class AggregateChecks(ReportEvaluationScenario):
         for sp in self._service_providers:
             self.record_note(
                 "service_providers",
-                f"configured service providers: {sp.participant_id} - {sp.base_url}",
+                f"configured service providers: {sp.participant_id} - {sp.injection_base_url}",
             )
 
         for o in self._observers:
