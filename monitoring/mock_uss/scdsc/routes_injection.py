@@ -10,7 +10,13 @@ from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 import requests.exceptions
 
-from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
+from uas_standards.astm.f3548.v21 import api
+from uas_standards.astm.f3548.v21.api import (
+    OperationalIntent,
+    PutOperationalIntentDetailsParameters,
+    ImplicitSubscriptionParameters,
+    PutOperationalIntentReferenceParameters,
+)
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
     InjectFlightResponse,
@@ -24,15 +30,14 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     CapabilitiesResponse,
     OperationalIntentState,
 )
-from uas_standards.astm.f3548.v21 import api
-from uas_standards.astm.f3548.v21.api import (
-    OperationalIntent,
-    PutOperationalIntentDetailsParameters,
-    ImplicitSubscriptionParameters,
-    PutOperationalIntentReferenceParameters,
-)
 
+from monitoring.mock_uss import webapp, require_config_value
+from monitoring.mock_uss.auth import requires_scope
+from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.mock_uss.database import fulfilled_request_ids
+from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
+from monitoring.mock_uss.scdsc import database, utm_client
+from monitoring.mock_uss.scdsc.database import db
 from monitoring.mock_uss.scdsc.flight_planning import (
     validate_request,
     check_for_disallowed_conflicts,
@@ -40,19 +45,14 @@ from monitoring.mock_uss.scdsc.flight_planning import (
     op_intent_transition_valid,
 )
 from monitoring.mock_uss.scdsc.routes_scdsc import op_intent_from_flightrecord
-from monitoring.monitorlib.geo import Polygon
-from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
-from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.monitorlib import versioning
 from monitoring.monitorlib.clients import scd as scd_client
 from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.geo import Polygon
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
 )
-from monitoring.mock_uss import webapp, require_config_value
-from monitoring.mock_uss.auth import requires_scope
-from monitoring.mock_uss.scdsc import database, utm_client
-from monitoring.mock_uss.scdsc.database import db
 
 
 require_config_value(KEY_BASE_URL)
@@ -197,7 +197,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             200,
         )
 
-    # Check if this is an existing flight being modified
+    # If this is a change to an existing flight, acquire lock to that flight
     log("Acquiring lock for flight")
     deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
     while True:
@@ -223,51 +223,62 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
                 f"Deadlock in inject_flight while attempting to gain access to flight {flight_id}"
             )
 
-    # Check the transition is valid
-    state_transition_from = (
-        OperationalIntentState(existing_flight.op_intent_reference.state)
-        if existing_flight
-        else None
-    )
-    state_transition_to = OperationalIntentState(req_body.operational_intent.state)
-    if not op_intent_transition_valid(state_transition_from, state_transition_to):
-        return (
-            InjectFlightResponse(
-                result=InjectFlightResponseResult.Rejected,
-                notes=f"Operational intent state transition from {state_transition_from} to {state_transition_to} is invalid",
-            ),
-            200,
-        )
-
     step_name = "performing unknown operation"
     try:
-        # Check for operational intents in the DSS
-        step_name = "querying for operational intents"
-        log("Obtaining latest operational intent information")
-        v1 = Volume4DCollection.from_interuss_scd_api(
-            req_body.operational_intent.volumes
-            + req_body.operational_intent.off_nominal_volumes
+        # Check the transition is valid
+        state_transition_from = (
+            OperationalIntentState(existing_flight.op_intent_reference.state)
+            if existing_flight
+            else None
         )
-        vol4 = v1.bounding_volume.to_f3548v21()
-        op_intents = query_operational_intents(vol4)
-
-        # Check for intersections
-        step_name = "checking for intersections"
-        log(
-            f"Checking for intersections with {', '.join(op_intent.reference.id for op_intent in op_intents)}"
-        )
-        try:
-            check_for_disallowed_conflicts(
-                req_body, existing_flight, op_intents, locality, log
-            )
-        except PlanningError as e:
+        state_transition_to = OperationalIntentState(req_body.operational_intent.state)
+        if not op_intent_transition_valid(state_transition_from, state_transition_to):
             return (
                 InjectFlightResponse(
-                    result=InjectFlightResponseResult.ConflictWithFlight,
-                    notes=str(e),
+                    result=InjectFlightResponseResult.Rejected,
+                    notes=f"Operational intent state transition from {state_transition_from} to {state_transition_to} is invalid",
                 ),
                 200,
             )
+
+        if req_body.operational_intent.state in (
+            OperationalIntentState.Accepted,
+            OperationalIntentState.Activated,
+        ):
+            # Check for intersections if the flight is nominal
+
+            # Check for operational intents in the DSS
+            step_name = "querying for operational intents"
+            log("Obtaining latest operational intent information")
+            v1 = Volume4DCollection.from_interuss_scd_api(
+                req_body.operational_intent.volumes
+                + req_body.operational_intent.off_nominal_volumes
+            )
+            vol4 = v1.bounding_volume.to_f3548v21()
+            op_intents = query_operational_intents(vol4)
+
+            # Check for intersections
+            step_name = "checking for intersections"
+            log(
+                f"Checking for intersections with {', '.join(op_intent.reference.id for op_intent in op_intents)}"
+            )
+            try:
+                check_for_disallowed_conflicts(
+                    req_body, existing_flight, op_intents, locality, log
+                )
+            except PlanningError as e:
+                return (
+                    InjectFlightResponse(
+                        result=InjectFlightResponseResult.ConflictWithFlight,
+                        notes=str(e),
+                    ),
+                    200,
+                )
+
+            key = [op.reference.ovn for op in op_intents]
+        else:
+            # Flight is not nominal and therefore doesn't need to check intersections
+            key = []
 
         # Create operational intent in DSS
         step_name = "sharing operational intent in DSS"
@@ -276,7 +287,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         req = PutOperationalIntentReferenceParameters(
             extents=req_body.operational_intent.volumes
             + req_body.operational_intent.off_nominal_volumes,
-            key=[op.reference.ovn for op in op_intents],
+            key=key,
             state=req_body.operational_intent.state,
             uss_base_url=base_url,
             new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url),
