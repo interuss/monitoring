@@ -2,6 +2,7 @@ import inspect
 from typing import List
 
 from monitoring.monitorlib.inspection import fullname
+from monitoring.uss_qualifier.requirements.documentation import get_requirement
 from monitoring.uss_qualifier.scenarios.documentation.autoformat import (
     format_scenario_documentation,
 )
@@ -16,6 +17,18 @@ def validate(test_scenarios: List[TestScenarioType]):
     for test_scenario in test_scenarios:
         # Verify that documentation parses
         docs = get_documentation(test_scenario)
+
+        # Verify that all requirements are documented
+        for case in docs.cases:
+            for step in case.steps:
+                for check in step.checks:
+                    for req in check.applicable_requirements:
+                        try:
+                            get_requirement(req)
+                        except ValueError as e:
+                            raise ValueError(
+                                f"In {fullname(test_scenario)} documentation, test case '{case.name}', test step '{step.name}', check '{check.name}': {str(e)}"
+                            )
 
         # Verify that all resources are documented
         constructor_signature = inspect.signature(test_scenario.__init__)
