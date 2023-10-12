@@ -2,12 +2,28 @@ name: ASTM F3548-21
 resources:
   flight_planners: resources.flight_planning.FlightPlannersResource
   dss: resources.astm.f3548.v21.DSSInstanceResource
+  dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   conflicting_flights: resources.flight_planning.FlightIntentsResource
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
   nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   priority_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
 actions:
+- action_generator:
+    generator_type: action_generators.astm.f3548.ForEachDSS
+    resources:
+      dss_instances: dss_instances
+    specification:
+      action_to_repeat:
+        test_suite:
+          suite_type: suites.astm.utm.dss_probing
+          resources:
+            dss: dss
+            all_dss_instances: dss_instances
+        on_failure: Continue
+      dss_instances_source: dss_instances
+      dss_instance_id: dss
+    on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:

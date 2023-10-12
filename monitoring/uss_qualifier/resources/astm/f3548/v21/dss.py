@@ -1,4 +1,5 @@
-from typing import Tuple, List
+from __future__ import annotations
+from typing import Tuple, List, Optional
 from urllib.parse import urlparse
 
 from implicitdict import ImplicitDict
@@ -24,6 +25,9 @@ class DSSInstanceSpecification(ImplicitDict):
     base_url: str
     """Base URL for the DSS instance according to the ASTM F3548-21 API"""
 
+    has_private_address: Optional[bool]
+    """Whether this DSS instance is expected to have a private address that is not publicly addressable."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         try:
@@ -34,16 +38,21 @@ class DSSInstanceSpecification(ImplicitDict):
 
 class DSSInstance(object):
     participant_id: str
+    base_url: str
+    has_private_address: bool = False
     client: infrastructure.UTMClientSession
 
     def __init__(
         self,
         participant_id: str,
         base_url: str,
+        has_private_address: Optional[bool],
         auth_adapter: infrastructure.AuthAdapter,
     ):
         self.participant_id = participant_id
-        self._base_url = base_url
+        self.base_url = base_url
+        if has_private_address is not None:
+            self.has_private_address = has_private_address
         self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
 
     def find_op_intent(
@@ -82,6 +91,13 @@ class DSSInstance(object):
             ).operational_intent
         return result, query
 
+    def is_same_as(self, other: DSSInstance) -> bool:
+        return (
+            self.participant_id == other.participant_id
+            and self.base_url == other.base_url
+            and self.has_private_address == other.has_private_address
+        )
+
 
 class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     dss: DSSInstance
@@ -92,5 +108,37 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
         auth_adapter: AuthAdapterResource,
     ):
         self.dss = DSSInstance(
-            specification.participant_id, specification.base_url, auth_adapter.adapter
+            specification.participant_id,
+            specification.base_url,
+            specification.get("has_private_address"),
+            auth_adapter.adapter,
         )
+
+    @classmethod
+    def from_dss_instance(cls, dss_instance: DSSInstance) -> DSSInstanceResource:
+        self = cls.__new__(cls)
+        self.dss = dss_instance
+        return self
+
+
+class DSSInstancesSpecification(ImplicitDict):
+    dss_instances: List[DSSInstanceSpecification]
+
+
+class DSSInstancesResource(Resource[DSSInstancesSpecification]):
+    dss_instances: List[DSSInstance]
+
+    def __init__(
+        self,
+        specification: DSSInstancesSpecification,
+        auth_adapter: AuthAdapterResource,
+    ):
+        self.dss_instances = [
+            DSSInstance(
+                s.participant_id,
+                s.base_url,
+                s.has_private_address,
+                auth_adapter.adapter,
+            )
+            for s in specification.dss_instances
+        ]
