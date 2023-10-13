@@ -21,6 +21,9 @@ class SynchronizedValue(object):
         >  {"foo":"baz"}
     """
 
+    SIZE_BYTES = 4
+    """Number of bytes at the beginning of the memory buffer dedicated to defining the size of the content."""
+
     _lock: multiprocessing.RLock
     _shared_memory: multiprocessing.shared_memory.SharedMemory
     _encoder: Callable[[Any], bytes]
@@ -43,7 +46,7 @@ class SynchronizedValue(object):
         """
         self._lock = multiprocessing.RLock()
         self._shared_memory = multiprocessing.shared_memory.SharedMemory(
-            create=True, size=capacity_bytes + 4
+            create=True, size=capacity_bytes + self.SIZE_BYTES
         )
         self._encoder = (
             encoder
@@ -57,27 +60,35 @@ class SynchronizedValue(object):
         self._set_value(initial_value)
 
     def _get_value(self):
-        content_len = int.from_bytes(bytes(self._shared_memory.buf[0:4]), "big")
-        if content_len + 4 > self._shared_memory.size:
+        content_len = int.from_bytes(
+            bytes(self._shared_memory.buf[0 : self.SIZE_BYTES]), "big"
+        )
+        if content_len + self.SIZE_BYTES > self._shared_memory.size:
             raise RuntimeError(
-                "Shared memory claims to have {} bytes of content when buffer size is only {}".format(
-                    content_len, self._shared_memory.size
+                "Shared memory claims to have {} bytes of content when buffer size only allows {}".format(
+                    content_len, self._shared_memory.size - self.SIZE_BYTES
                 )
             )
-        content = bytes(self._shared_memory.buf[4 : content_len + 4])
+        content = bytes(
+            self._shared_memory.buf[self.SIZE_BYTES : content_len + self.SIZE_BYTES]
+        )
         return self._decoder(content)
 
     def _set_value(self, value):
         content = self._encoder(value)
         content_len = len(content)
-        if content_len + 4 > self._shared_memory.size:
+        if content_len + self.SIZE_BYTES > self._shared_memory.size:
             raise RuntimeError(
                 "Tried to write {} bytes into a SynchronizedValue with only {} bytes of capacity".format(
-                    content_len, self._shared_memory.size
+                    content_len, self._shared_memory.size - self.SIZE_BYTES
                 )
             )
-        self._shared_memory.buf[0:4] = content_len.to_bytes(4, "big")
-        self._shared_memory.buf[4 : content_len + 4] = content
+        self._shared_memory.buf[0 : self.SIZE_BYTES] = content_len.to_bytes(
+            self.SIZE_BYTES, "big"
+        )
+        self._shared_memory.buf[
+            self.SIZE_BYTES : content_len + self.SIZE_BYTES
+        ] = content
 
     @property
     def value(self):
