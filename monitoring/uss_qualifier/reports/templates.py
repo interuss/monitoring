@@ -65,7 +65,9 @@ class TemplateRenderer:
         # Configure application
         rendered_configuration = json.dumps(
             InjectedConfiguration(self._template.configuration, report=self._report)
-        )
+        ).replace(
+            "</", "<\/"
+        )  # Replace closing html tags in json strings
         injected_configuration = f"""
 <script id="interuss_report_json" type="application/json">
     {rendered_configuration}
