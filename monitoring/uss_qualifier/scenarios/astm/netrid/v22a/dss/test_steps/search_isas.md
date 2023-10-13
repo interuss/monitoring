@@ -5,4 +5,4 @@ See `DSSWrapper.search_isa` in [`dss_wrapper.py`](../../../dss_wrapper.py).
 
 ## ISAs search response format check
 
-The API for **[astm.f3411.v22a.DSS0030](../../../../../../requirements/astm/f3411/v22a.md)** specifies an explicit format that the DSS responses must follow.  If the DSS response does not validate against this format, this check will fail.
+While F3411-22a does not explicitly require the implementation of the ISA search endpoint, Annex A4 specifies the explicit format for this endpoint.  If this format is not followed, this check will fail per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../../requirements/interuss/f3411/dss_endpoints.md)**.

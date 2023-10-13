@@ -30,7 +30,7 @@ This file describes the set of ASTM F3411-19 requirements with which a USS fulfi
 * **astm.f3411.v19.NET0440**
 * **astm.f3411.v19.NET0450**
 * **astm.f3411.v19.NET0460**
-* **astm.f3411.v19.NET0470**
+* NET0470 is not included in this list because the Display Application may not request any particular enumerated data field.
 * **astm.f3411.v19.NET0480**
 * **astm.f3411.v19.NET0490**
 

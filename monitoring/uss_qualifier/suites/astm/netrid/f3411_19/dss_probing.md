@@ -20,80 +20,30 @@
     <th><a href="../../../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="33" style="vertical-align:top;"><a href="../../../../requirements/astm/f3411/v19.md">astm<br>.f3411<br>.v19</a></td>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,1a</a></td>
+    <td rowspan="36" style="vertical-align:top;"><a href="../../../../requirements/astm/f3411/v19.md">astm<br>.f3411<br>.v19</a></td>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0030,a</a></td>
     <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
   </tr>
   <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,1b</a></td>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0030,b</a></td>
     <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></td>
   </tr>
   <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,1c</a></td>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0030,c</a></td>
     <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
   </tr>
   <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,1d</a></td>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0030,d</a></td>
     <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
   </tr>
   <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,2a</a></td>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0030,f</a></td>
     <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,2b</a></td>
-    <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,3a</a></td>
-    <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,3b</a></td>
-    <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,3c</a></td>
-    <td>Implemented + TODO</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,3d</a></td>
-    <td>Implemented + TODO</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,4a</a></td>
-    <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,4b</a></td>
-    <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,5</a></td>
-    <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">A2-6-1,6</a></td>
-    <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0030</a></td>
-    <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
   </tr>
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0050</a></td>
@@ -119,11 +69,6 @@
     <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0120</a></td>
     <td>TODO</td>
     <td><a href="../../../../scenarios/astm/netrid/v19/dss/crdb_access.md">ASTM NetRID DSS: Direct CRDB access</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130</a></td>
-    <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
   </tr>
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,2,a</a></td>
@@ -171,18 +116,99 @@
     <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
   </tr>
   <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,3,e</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,1a</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,1b</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,1c</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,1d</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,2a</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,2b</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,3a</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,3b</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,3c</a></td>
+    <td>Implemented + TODO</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,3d</a></td>
+    <td>Implemented + TODO</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,4a</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,4b</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,5</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,6</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
+  </tr>
+  <tr>
     <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0210</a></td>
     <td>Implemented</td>
     <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
   </tr>
   <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">NET0710</a></td>
+    <td><a href="../../../../requirements/astm/f3411/v19.md">NET0730</a></td>
     <td>Implemented</td>
     <td><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></td>
   </tr>
   <tr>
-    <td><a href="../../../../requirements/astm/f3411/v19.md">NET0730</a></td>
+    <td rowspan="2" style="vertical-align:top;"><a href="../../../../requirements/interuss/f3411/dss_endpoints.md">interuss<br>.f3411<br>.dss_endpoints</a></td>
+    <td><a href="../../../../requirements/interuss/f3411/dss_endpoints.md">GetISA</a></td>
     <td>Implemented</td>
     <td><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/interuss/f3411/dss_endpoints.md">SearchISAs</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
   </tr>
 </table>
