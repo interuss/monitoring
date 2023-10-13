@@ -1,0 +1,1 @@
+from .vertices import VerticesResource

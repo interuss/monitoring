@@ -46,6 +46,21 @@ net_rid:
             reference_time: '2023-01-10T00:00:00.123456+00:00'
             time_start: '2023-01-10T00:00:01.123456+00:00'
             time_end: '2023-01-10T01:00:01.123456+00:00'
+    problematically_big_area: # A huge (as in "too big") area for checks around area sizes
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+        resource_type: resources.VerticesResource
+        specification:
+            vertices:
+              - lat: -23
+                lng: 130
+              - lat: -24
+                lng: 130
+              - lat: -24
+                lng: 132
+              - lat: -23
+                lng: 132
+
+
 
 net_rid_sims:
     adjacent_circular_flights_data:

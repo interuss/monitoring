@@ -5,9 +5,10 @@
 ## [Actions](../../../README.md#actions)
 
 1. Scenario: [ASTM NetRID DSS: Simple ISA](../../../../scenarios/astm/netrid/v19/dss/isa_simple.md) ([`scenarios.astm.netrid.v19.dss.ISASimple`](../../../../scenarios/astm/netrid/v19/dss/isa_simple.py))
-2. Scenario: [ASTM NetRID DSS: Subscription Validation](../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md) ([`scenarios.astm.netrid.v19.dss.SubscriptionValidation`](../../../../scenarios/astm/netrid/v19/dss/subscription_validation.py))
-3. Scenario: [ASTM F3411-19 NetRID DSS interoperability](../../../../scenarios/astm/netrid/v19/dss_interoperability.md) ([`scenarios.astm.netrid.v19.DSSInteroperability`](../../../../scenarios/astm/netrid/v19/dss_interoperability.py))
-4. Scenario: [ASTM NetRID DSS: Direct CRDB access](../../../../scenarios/astm/netrid/v19/dss/crdb_access.md) ([`scenarios.astm.netrid.v19.dss.CRDBAccess`](../../../../scenarios/astm/netrid/v19/dss/crdb_access.py))
+2. Scenario: [ASTM NetRID DSS: Submitted ISA Validations](../../../../scenarios/astm/netrid/v19/dss/isa_validation.md) ([`scenarios.astm.netrid.v19.dss.ISAValidation`](../../../../scenarios/astm/netrid/v19/dss/isa_validation.py))
+3. Scenario: [ASTM NetRID DSS: Subscription Validation](../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md) ([`scenarios.astm.netrid.v19.dss.SubscriptionValidation`](../../../../scenarios/astm/netrid/v19/dss/subscription_validation.py))
+4. Scenario: [ASTM F3411-19 NetRID DSS interoperability](../../../../scenarios/astm/netrid/v19/dss_interoperability.md) ([`scenarios.astm.netrid.v19.DSSInteroperability`](../../../../scenarios/astm/netrid/v19/dss_interoperability.py))
+5. Scenario: [ASTM NetRID DSS: Direct CRDB access](../../../../scenarios/astm/netrid/v19/dss/crdb_access.md) ([`scenarios.astm.netrid.v19.dss.CRDBAccess`](../../../../scenarios/astm/netrid/v19/dss/crdb_access.py))
 
 ## [Checked requirements](../../../README.md#checked-requirements)
 
@@ -92,7 +93,7 @@
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0030</a></td>
     <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a></td>
   </tr>
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0050</a></td>
@@ -177,11 +178,11 @@
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v19.md">NET0710</a></td>
     <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></td>
   </tr>
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v19.md">NET0730</a></td>
     <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></td>
   </tr>
 </table>
