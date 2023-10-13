@@ -54,7 +54,3 @@ db = SynchronizedValue(
     Database(one_time_tasks=[], task_errors=[], periodic_tasks={}),
     decoder=lambda b: ImplicitDict.parse(json.loads(b.decode("utf-8")), Database),
 )
-
-fulfilled_request_ids = SynchronizedValue(
-    [], decoder=lambda b: json.loads(b.decode("utf-8"))
-)

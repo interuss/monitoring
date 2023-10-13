@@ -27,7 +27,7 @@
   <tr>
     <td><a href="../../../requirements/astm/f3411/v19.md">DSS0030,b</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a><br><a href="../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
+    <td><a href="../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a><br><a href="../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../scenarios/astm/netrid/v19/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3411/v19.md">DSS0030,c</a></td>
@@ -197,7 +197,7 @@
   <tr>
     <td><a href="../../../requirements/astm/f3411/v19.md">NET0730</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
+    <td><a href="../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../scenarios/astm/netrid/v19/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></td>
   </tr>
   <tr>
     <td rowspan="37" style="vertical-align:top;"><a href="../../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
@@ -208,7 +208,7 @@
   <tr>
     <td><a href="../../../requirements/astm/f3411/v22a.md">DSS0030,b</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/netrid/v22a/dss_interoperability.md">ASTM F3411-22a NetRID DSS interoperability</a><br><a href="../../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
+    <td><a href="../../../scenarios/astm/netrid/v22a/dss_interoperability.md">ASTM F3411-22a NetRID DSS interoperability</a><br><a href="../../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../scenarios/astm/netrid/v22a/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3411/v22a.md">DSS0030,c</a></td>
@@ -383,13 +383,13 @@
   <tr>
     <td><a href="../../../requirements/astm/f3411/v22a.md">NET0730</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
+    <td><a href="../../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../scenarios/astm/netrid/v22a/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></td>
   </tr>
   <tr>
     <td rowspan="2" style="vertical-align:top;"><a href="../../../requirements/interuss/f3411/dss_endpoints.md">interuss<br>.f3411<br>.dss_endpoints</a></td>
     <td><a href="../../../requirements/interuss/f3411/dss_endpoints.md">GetISA</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
+    <td><a href="../../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../scenarios/astm/netrid/v22a/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/interuss/f3411/dss_endpoints.md">SearchISAs</a></td>

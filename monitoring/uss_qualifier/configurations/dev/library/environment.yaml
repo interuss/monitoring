@@ -147,6 +147,19 @@ f3548:
             participant_id: uss1
             base_url: http://dss.uss1.localutm
             has_private_address: true
+    dss_instances:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+        resource_type: resources.astm.f3548.v21.DSSInstancesResource
+        dependencies:
+            auth_adapter: utm_auth
+        specification:
+            dss_instances:
+                - participant_id: uss1
+                  base_url: http://dss.uss1.localutm
+                  has_private_address: true
+                - participant_id: uss2
+                  base_url: http://dss.uss2.localutm
+                  has_private_address: true
 
 f3548_single_scenario:
     uss1:

@@ -11,15 +11,9 @@ from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
+from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
-
-HUGE_VERTICES: List[s2sphere.LatLng] = [
-    s2sphere.LatLng.from_degrees(lng=130, lat=-23),
-    s2sphere.LatLng.from_degrees(lng=130, lat=-24),
-    s2sphere.LatLng.from_degrees(lng=132, lat=-24),
-    s2sphere.LatLng.from_degrees(lng=132, lat=-23),
-]
 
 
 class ISASimple(GenericTestScenario):
@@ -27,11 +21,14 @@ class ISASimple(GenericTestScenario):
 
     ISA_TYPE = register_resource_type(348, "ISA")
 
+    _huge_are: List[s2sphere.LatLng]
+
     def __init__(
         self,
         dss: DSSInstanceResource,
         id_generator: IDGeneratorResource,
         isa: ServiceAreaResource,
+        problematically_big_area: VerticesResource,
     ):
         super().__init__()
         self._dss = (
@@ -46,6 +43,9 @@ class ISASimple(GenericTestScenario):
         self._isa_start_time = self._isa.shifted_time_start(now)
         self._isa_end_time = self._isa.shifted_time_end(now)
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._huge_area = [
+            v.as_s2sphere() for v in problematically_big_area.specification.vertices
+        ]
 
     def run(self):
         self.begin_test_scenario()
@@ -362,7 +362,7 @@ class ISASimple(GenericTestScenario):
                 _ = self._dss_wrapper.search_isas_expect_response_code(
                     check,
                     expected_error_codes={413},
-                    area=HUGE_VERTICES,
+                    area=self._huge_area,
                 )
 
             self.end_test_step()

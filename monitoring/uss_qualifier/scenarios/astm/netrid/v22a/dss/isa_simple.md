@@ -19,6 +19,10 @@ after its time of applicability.
 
 [`ServiceAreaResource`](../../../../../resources/netrid/service_area.py) describing an ISA to be created.
 
+### problematically_big_area
+
+[`VerticesResource`](../../../../../resources/vertices.py) describing an area designed to be too big to be accepted by the DSS.
+
 ## Setup test case
 
 ### Ensure clean workspace test step
