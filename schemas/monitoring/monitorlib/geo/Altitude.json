@@ -1,0 +1,34 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/geo/Altitude.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.monitorlib.geo.Altitude, as defined in monitoring/monitorlib/geo.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "reference": {
+      "enum": [
+        "W84",
+        "SFC"
+      ],
+      "type": "string"
+    },
+    "units": {
+      "enum": [
+        "M",
+        "FT"
+      ],
+      "type": "string"
+    },
+    "value": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "reference",
+    "units",
+    "value"
+  ],
+  "type": "object"
+}

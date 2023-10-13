@@ -212,7 +212,8 @@ def generate_tested_requirements(
     os.makedirs(config.output_path, exist_ok=True)
     index_file = os.path.join(config.output_path, "index.html")
 
-    participant_ids = report.report.participant_ids()
+    participant_ids = list(report.report.participant_ids())
+    participant_ids.sort()
     template = jinja_env.get_template("tested_requirements/test_run_report.html")
     with open(index_file, "w") as f:
         f.write(template.render(participant_ids=participant_ids))
@@ -235,10 +236,14 @@ def generate_tested_requirements(
             )
         _sort_breakdown(participant_breakdown)
         participant_file = os.path.join(config.output_path, f"{participant_id}.html")
+        other_participants = ", ".join(
+            p for p in participant_ids if p != participant_id
+        )
         with open(participant_file, "w") as f:
             f.write(
                 template.render(
                     participant_id=participant_id,
+                    other_participants=other_participants,
                     breakdown=participant_breakdown,
                     test_run=_compute_test_run_information(report),
                 )
