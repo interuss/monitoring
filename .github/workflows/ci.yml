@@ -91,6 +91,11 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
       - name: Get uss_qualifier reports
         uses: actions/download-artifact@v3
         with:
