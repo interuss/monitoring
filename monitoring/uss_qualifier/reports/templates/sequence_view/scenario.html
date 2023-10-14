@@ -155,7 +155,7 @@
               {% elif event.type == EventType.Note %}
                 <td>&#x1F4D3;</td>
                 <td colspan="{{ 1 + len(all_participants) }}">
-                  {{ event.note.key }}: {{ event.note.value }}
+                  <code>{{ event.note.key }}</code>: {{ event.note.message }}
                 </td>
               {% else %}
                 <td>???</td><td>Render error: unknown EventType '{{ event.type }}'</td>

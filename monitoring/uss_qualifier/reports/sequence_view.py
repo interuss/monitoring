@@ -3,6 +3,7 @@ import os
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+import html
 from typing import List, Dict, Optional, Iterator
 
 from implicitdict import ImplicitDict
@@ -190,7 +191,9 @@ def _compute_tested_scenario(
             events.append(
                 Event(
                     note=NoteEvent(
-                        key=k, message=v.message, timestamp=v.timestamp.datetime
+                        key=html.escape(k),
+                        message=html.escape(v.message),
+                        timestamp=v.timestamp.datetime,
                     ),
                     event_index=event_index,
                 )
@@ -270,8 +273,8 @@ def _compute_tested_scenario(
                             events.append(
                                 Event(
                                     note=NoteEvent(
-                                        key=key,
-                                        message=note.message,
+                                        key=html.escape(key),
+                                        message=html.escape(note.message),
                                         timestamp=note.timestamp.datetime,
                                     )
                                 )

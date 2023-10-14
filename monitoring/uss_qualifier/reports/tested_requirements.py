@@ -1,5 +1,7 @@
 import os
 from dataclasses import dataclass
+import re
+from functools import cmp_to_key
 from typing import List, Union, Dict, Set, Optional
 
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -265,10 +267,70 @@ def _compute_test_run_information(report: TestRunReport) -> TestRunInformation:
     )
 
 
+def _split_strings_numbers(s: str) -> List[Union[int, str]]:
+    digits = "0123456789"
+    current_number = ""
+    current_string = ""
+    parts = []
+    for si in s:
+        if si in digits:
+            if current_string:
+                parts.append(current_string)
+                current_string = ""
+            current_number += si
+        else:
+            if current_number:
+                parts.append(int(current_number))
+                current_number = ""
+            current_string += si
+    if current_number:
+        parts.append(int(current_number))
+    elif current_string:
+        parts.append(current_string)
+    return parts
+
+
+def _requirement_id_parts(req_id: str):
+    old_parts = req_id.split(".")
+    parts = []
+    for p in old_parts:
+        parts.extend(p.split(","))
+    old_parts = parts
+    parts = []
+    for p in old_parts:
+        parts.extend(_split_strings_numbers(p))
+    return parts
+
+
+def _compare_requirement_ids(r1: TestedRequirement, r2: TestedRequirement) -> int:
+    parts1 = _requirement_id_parts(r1.id)
+    parts2 = _requirement_id_parts(r2.id)
+    i = 0
+    while i < min(len(parts1), len(parts2)):
+        p1 = parts1[i]
+        p2 = parts2[i]
+        if p1 == p2:
+            i += 1
+            continue
+        if isinstance(p1, int):
+            if isinstance(p2, int):
+                return -1 if p1 < p2 else 1
+            else:
+                return -1
+        else:
+            if isinstance(p2, int):
+                return 1
+            else:
+                return -1 if p1 < p2 else 1
+    if i == len(parts1) and i == len(parts2):
+        return 0
+    return -1 if len(parts1) < len(parts2) else 1
+
+
 def _sort_breakdown(breakdown: TestedBreakdown) -> None:
     breakdown.packages.sort(key=lambda p: p.id)
     for package in breakdown.packages:
-        package.requirements.sort(key=lambda r: r.id)
+        package.requirements.sort(key=cmp_to_key(_compare_requirement_ids))
         for requirement in package.requirements:
             requirement.scenarios.sort(key=lambda s: s.name)
 
