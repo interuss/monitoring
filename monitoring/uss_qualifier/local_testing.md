@@ -32,6 +32,8 @@ To tear down the complete set of local mocks (or ensure it is completely torn do
 
 Once the local interoperability ecosystem infrastructure and complete set of local mocks are deployed, execute uss_qualifier with [`./monitoring/uss_qualifier/run_locally.sh [CONFIG_NAME]`](run_locally.sh).  If no `CONFIG_NAME` is specified, all configurations used for the [continuous integration](../../.github/workflows) are executed; this involves multiple invocations of uss_qualifier.  Otherwise, a specific [configuration name](configurations/README.md#specifying) can be specified; e.g., [`configurations.dev.uspace`](configurations/dev/uspace.yaml).
 
+To cause uss_qualifier to stop at the first test failure (this is often useful when attempting to debug a test that should run fully successfully), set the USS_QUALIFIER_STOP_FAST environment variable with `export USS_QUALIFIER_STOP_FAST=true`.  To disable this behavior, `unset USS_QUALIFIER_STOP_FAST`.
+
 ## Presubmit testing
 
 The command `make presubmit` will perform local actions equivalent to the full [continuous integration pipeline](../../.github/workflows) including, relevant to local testing:
