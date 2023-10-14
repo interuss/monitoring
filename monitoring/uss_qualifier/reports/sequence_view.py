@@ -11,6 +11,7 @@ from monitoring.monitorlib.fetch import Query
 from monitoring.uss_qualifier.configurations.configuration import (
     ParticipantID,
     SequenceViewConfiguration,
+    TestConfiguration,
 )
 from monitoring.uss_qualifier.reports import jinja_env
 from monitoring.uss_qualifier.reports.report import (
@@ -19,6 +20,9 @@ from monitoring.uss_qualifier.reports.report import (
     TestScenarioReport,
     PassedCheck,
     FailedCheck,
+)
+from monitoring.uss_qualifier.reports.tested_requirements import (
+    compute_test_run_information,
 )
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 
@@ -482,6 +486,8 @@ def generate_sequence_view(
     with open(overview_file, "w") as f:
         f.write(
             template.render(
+                report=report,
+                test_run=compute_test_run_information(report),
                 overview_rows=overview_rows,
                 max_suite_cols=max_suite_cols,
                 all_participants=all_participants,
