@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 import html
-from typing import List, Dict, Optional, Iterator
+from typing import List, Dict, Optional, Iterator, Union
 
 from implicitdict import ImplicitDict
 
@@ -41,6 +41,7 @@ class Event(ImplicitDict):
     event_index: int = 0
     passed_check: Optional[PassedCheck] = None
     failed_check: Optional[FailedCheck] = None
+    query_events: Optional[List[Union[Event, str]]] = None
     query: Optional[Query] = None
     note: Optional[NoteEvent] = None
 
@@ -69,6 +70,15 @@ class Event(ImplicitDict):
             return self.note.timestamp
         else:
             raise ValueError("Invalid Event type")
+
+    def get_query_links(self) -> str:
+        links = []
+        for e in self.query_events:
+            if isinstance(e, str):
+                links.append(e)
+            else:
+                links.append(f'<a href="#e{e.event_index}">{e.event_index}</a>')
+        return ", ".join(links)
 
 
 class TestedStep(ImplicitDict):
@@ -182,10 +192,11 @@ def _compute_tested_scenario(
     report: TestScenarioReport, indexer: Indexer
 ) -> TestedScenario:
     epochs = []
+    all_events = []
     event_index = 1
 
     def append_notes(new_notes):
-        nonlocal event_index
+        nonlocal event_index, all_events
         events = []
         for k, v in new_notes.items():
             events.append(
@@ -198,6 +209,7 @@ def _compute_tested_scenario(
                     event_index=event_index,
                 )
             )
+            all_events.append(events[-1])
             event_index += 1
         events.sort(key=lambda e: e.timestamp)
         epochs.append(Epoch(events=events))
@@ -242,27 +254,45 @@ def _compute_tested_scenario(
             events = []
             for passed_check in step.passed_checks:
                 events.append(Event(passed_check=passed_check))
+                all_events.append(events[-1])
                 for pid in passed_check.participants:
                     p = scenario_participants.get(
                         pid, TestedParticipant(has_failures=False)
                     )
                     scenario_participants[pid] = p
+            if "queries" in step and step.queries:
+                for query in step.queries:
+                    events.append(Event(query=query))
+                    all_events.append(events[-1])
+                    if "server_id" in query and query.server_id:
+                        p = scenario_participants.get(
+                            query.server_id, TestedParticipant(has_failures=False)
+                        )
+                        scenario_participants[query.server_id] = p
             for failed_check in step.failed_checks:
-                events.append(Event(failed_check=failed_check))
+                query_events = []
+                for query_timestamp in failed_check.query_report_timestamps:
+                    found = False
+                    for e in all_events:
+                        if (
+                            e.type == EventType.Query
+                            and e.query.request.initiated_at == query_timestamp
+                        ):
+                            query_events.append(e)
+                            found = True
+                            break
+                    if not found:
+                        query_events.append(query_timestamp)
+                events.append(
+                    Event(failed_check=failed_check, query_events=query_events)
+                )
+                all_events.append(events[-1])
                 for pid in failed_check.participants:
                     p = scenario_participants.get(
                         pid, TestedParticipant(has_failures=True)
                     )
                     p.has_failures = True
                     scenario_participants[pid] = p
-            if "queries" in step and step.queries:
-                for query in step.queries:
-                    events.append(Event(query=query))
-                    if "server_id" in query and query.server_id:
-                        p = scenario_participants.get(
-                            query.server_id, TestedParticipant(has_failures=False)
-                        )
-                        scenario_participants[query.server_id] = p
             if "notes" in report and report.notes:
                 for key, note in report.notes.items():
                     if step.start_time.datetime <= note.timestamp.datetime:
@@ -279,6 +309,7 @@ def _compute_tested_scenario(
                                     )
                                 )
                             )
+                            all_events.append(events[-1])
 
             # Sort this step's events by time
             events.sort(key=lambda e: e.timestamp)
