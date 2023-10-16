@@ -60,6 +60,9 @@
     .not_tested {
       background-color: rgb(192, 192, 192);
     }
+    .failed_check_summary {
+      font-style: italic;
+    }
   </style>
   {{ explorer_header() }}
 </head>
@@ -129,6 +132,17 @@
                   {% else %}
                     {{ event.failed_check.name }}
                   {% endif %}
+                  {% if event.query_events %}
+                    <sup>[{{ event.get_query_links() }}]</sup>
+                  {% endif %}
+                  {% if event.failed_check.summary %}
+                    <br>
+                    <span class="failed_check_summary">{{ event.failed_check.summary }}</span>
+                  {% endif %}
+                  {% if event.failed_check.details %}
+                    <br>
+                    <span class="failed_check_details">{{ event.failed_check.details.replace("\n", "<br>") }}</span>
+                  {% endif %}
                 </td>
                 {% for participant_id in all_participants %}
                   {% if participant_id in event.failed_check.participants %}
@@ -155,7 +169,7 @@
               {% elif event.type == EventType.Note %}
                 <td>&#x1F4D3;</td>
                 <td colspan="{{ 1 + len(all_participants) }}">
-                  {{ event.note.key }}: {{ event.note.value }}
+                  <code>{{ event.note.key }}</code>: {{ event.note.message }}
                 </td>
               {% else %}
                 <td>???</td><td>Render error: unknown EventType '{{ event.type }}'</td>

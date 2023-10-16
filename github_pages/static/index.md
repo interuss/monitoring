@@ -9,5 +9,5 @@ These reports were generated during continuous integration for the most recent P
 ### [U-space developer](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/uspace.yaml) [test configuration](https://github.com/interuss/monitoring/tree/main/monitoring/uss_qualifier/configurations)
 
 * [Sequence view](./artifacts/uss_qualifier/reports/sequence_uspace)
-* [Tested requirements](./artifacts/uss_qualifier/tested_requirements_uspace)
-* [Demonstrated capabilities](./artifacts/uss_qualifier/capabilities_uspace.html)
+* [Tested requirements](./artifacts/uss_qualifier/reports/tested_requirements_uspace)
+* [Demonstrated capabilities](./artifacts/uss_qualifier/reports/capabilities_uspace.html)
