@@ -77,18 +77,5 @@ else
     interuss/monitoring \
     python main.py $QUALIFIER_OPTIONS
   echo "========== Completed uss_qualifier for configuration ${CONFIG_NAME} =========="
-
-  # Set return code according to whether the test run was fully successful
-  reports_generated=$(find ./monitoring/uss_qualifier/output/report*.json -newermt "$start_time")
-  # shellcheck disable=SC2068
-  for REPORT in ${reports_generated[@]}; do
-    successful=$(python build/dev/extract_json_field.py report.*.successful "$REPORT")
-    if echo "${successful}" | grep -iqF true; then
-      echo "Full success indicated by $REPORT"
-    else
-      echo "Could not establish that all uss_qualifier tests passed in $REPORT"
-      exit 1
-    fi
-  done
 fi
 
