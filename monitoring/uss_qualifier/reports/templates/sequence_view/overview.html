@@ -1,5 +1,8 @@
-<html>
+<!DOCTYPE html>
+{% from "explorer.html" import explorer_header, explorer_content, explorer_footer %}
+<html lang="en">
 <head>
+  <title>TR-{{ test_run.test_run_id[0:7] }} sequence view</title>
   <style>
     body {
       margin: 0;
@@ -58,9 +61,91 @@
       background-color: rgb(192, 192, 192);
     }
   </style>
+  {{ explorer_header() }}
 </head>
 <body>
+{% set collapsible = namespace(queries=[]) %}
+
+<h1>Sequence view of uss_qualifier test run</h1>
+
+<div id="test_run_section" class="collapseable">
+  <div class="node_key" onclick="showHide(document.getElementById('test_run_section'))"><h2>Test run</h2></div>
+  <div class="node_value">
+    <table>
+      <tr>
+        <th>Test characteristic</th>
+        <th>Value</th>
+      </tr>
+      <tr>
+        <td>Test run identifier</td>
+        <td>TR-{{ test_run.test_run_id[0:7] }}</td>
+      </tr>
+      {% if test_run.start_time %}
+      <tr>
+        <td>Start time</td>
+        <td>{{ test_run.start_time }}</td>
+      </tr>
+      {% endif %}
+      {% if test_run.end_time %}
+      <tr>
+        <td>End time</td>
+        <td>{{ test_run.end_time }}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <td>Test baseline identifier</td>
+        <td>TB-{{ test_run.baseline[0:7] }}</td>
+      </tr>
+      <tr>
+        <td>Environment identifier</td>
+        <td>TE-{{ test_run.environment[0:7] }}</td>
+      </tr>
+      <tr>
+        <td>Codebase version</td>
+        <td>{{ report.codebase_version }}</td>
+      </tr>
+      <tr>
+        <td>Commit hash</td>
+        <td>{{ report.commit_hash }}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div id="configuration_section" class="collapseable">
+  <div class="node_key" onclick="showHide(document.getElementById('configuration_section'))"><h2>Configuration</h2></div>
+  <div class="node_value">
+    {% for is_baseline in (True, False) %}
+      <h3>{{ "Baseline" if is_baseline else "Environment" }}</h3>
+      <ul>
+        {% set current = namespace(address="v1.test_run.resources.resource_declarations") %}
+        {% for resource_id, resource_dec in report.configuration.resources.resource_declarations.items() %}
+          {% set current.address = current.address + "." + resource_id %}
+          {% if (current.address in report.configuration.non_baseline_inputs) != is_baseline %}
+            <li id="resource_{{ resource_id }}"><code>{{ resource_id }}</code> ({{ resource_dec.resource_type }})
+              <ul>
+                {% if resource_dec.dependencies %}
+                  {% for local_name, source_name in resource_dec.dependencies.items() %}
+                    <li><code>{{ local_name }}</code>: From <a href="#resource_{{ source_name }}"><code>{{ source_name }}</code> resource</a></li>
+                  {% endfor %}
+                {% endif %}
+                <li>Specification:
+                  {% set spec_id = "specification_" + resource_id %}
+                  {{ explorer_content(spec_id, resource_dec.specification) }}
+                  {% set collapsible.queries = collapsible.queries + [spec_id] %}
+                </li>
+              </ul>
+            </li>
+          {% endif %}
+          {% set current.address = ".".join(current.address.split(".")[0:-1]) %}
+        {% endfor %}
+      </ul>
+    {% endfor %}
+  </div>
+</div>
+
 <div>
+  <h2>Scenarios executed</h2>
   <table>
     <tr>
       {% if max_suite_cols > 0 %}
@@ -78,7 +163,7 @@
             {% if suite_cell.node != None %}
               <td rowspan="{{ suite_cell.node.rows }}" colspan="{{ suite_cell.colspan }}">{{ suite_cell.node.name }}</td>
             {% else %}
-              <td rowspan="{{ suite_cell.rowspan }}" colspan="{{ suite_cell.colspan }}"></td>
+              <td rowspan="{{ suite_cell.rowspan }}" colspan="{{ suite_cell.colspan }}">&rarr;</td>
             {% endif %}
           {% endif %}
         {% endfor %}
@@ -100,5 +185,9 @@
     {% endfor %}
   </table>
 </div>
+{{ explorer_footer(collapsible.queries) }}
+<script>
+  showHide(document.getElementById('configuration_section'));
+</script>
 </body>
 </html>

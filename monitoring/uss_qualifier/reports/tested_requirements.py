@@ -247,12 +247,12 @@ def generate_tested_requirements(
                     participant_id=participant_id,
                     other_participants=other_participants,
                     breakdown=participant_breakdown,
-                    test_run=_compute_test_run_information(report),
+                    test_run=compute_test_run_information(report),
                 )
             )
 
 
-def _compute_test_run_information(report: TestRunReport) -> TestRunInformation:
+def compute_test_run_information(report: TestRunReport) -> TestRunInformation:
     def print_datetime(t: Optional[StringBasedDateTime]) -> Optional[str]:
         if t is None:
             return None
