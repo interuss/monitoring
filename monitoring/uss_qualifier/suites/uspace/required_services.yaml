@@ -5,7 +5,8 @@ resources:
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
   invalid_flight_auth_flights: resources.flight_planning.FlightIntentsResource
   flight_planners: resources.flight_planning.FlightPlannersResource
-  dss: resources.astm.f3548.v21.DSSInstanceResource
+  scd_dss: resources.astm.f3548.v21.DSSInstanceResource
+  scd_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
 
   flights_data: resources.netrid.FlightDataResource
   service_providers: resources.netrid.NetRIDServiceProviders
@@ -14,6 +15,7 @@ resources:
   netrid_dss_instances: resources.astm.f3411.DSSInstancesResource
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
+  problematically_big_area: resources.VerticesResource
 actions:
 - test_suite:
     suite_type: suites.uspace.flight_auth
@@ -23,7 +25,8 @@ actions:
       invalid_flight_intents: invalid_flight_intents
       invalid_flight_auth_flights: invalid_flight_auth_flights
       flight_planners: flight_planners
-      dss: dss
+      dss: scd_dss
+      dss_instances: scd_dss_instances
   on_failure: Continue
 - test_suite:
     suite_type: suites.uspace.network_identification
@@ -35,6 +38,7 @@ actions:
       dss_instances: netrid_dss_instances
       id_generator: id_generator
       service_area: service_area
+      problematically_big_area: problematically_big_area
   on_failure: Continue
 participant_verifiable_capabilities:
     - id: required_services

@@ -6,6 +6,7 @@ resources:
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
   flight_planners: resources.flight_planning.FlightPlannersResource
   dss: resources.astm.f3548.v21.DSSInstanceResource
+  dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
 
 actions:
 - test_suite:
@@ -16,6 +17,7 @@ actions:
       invalid_flight_intents: invalid_flight_intents
       flight_planners: flight_planners
       dss: dss
+      dss_instances: dss_instances
   on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations

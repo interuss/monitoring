@@ -60,6 +60,9 @@
     .not_tested {
       background-color: rgb(192, 192, 192);
     }
+    .skipped_explanation {
+      font-style: italic;
+    }
   </style>
   {{ explorer_header() }}
 </head>
@@ -167,11 +170,19 @@
             {% endif %}
           {% endif %}
         {% endfor %}
-        <td>
-          <a href="s{{ row.scenario_node.scenario.scenario_index }}.html">{{ row.scenario_node.scenario.name }}</a>
-        </td>
+        {% if row.scenario_node %}
+          <td>
+            <a href="s{{ row.scenario_node.scenario.scenario_index }}.html">{{ row.scenario_node.scenario.name }}</a>
+          </td>
+        {% endif %}
+        {% if row.skipped_action_node %}
+          <td>
+            <p>Skipped: {{ row.skipped_action_node.name }}</p>
+            <p class="skipped_explanation">{{ row.skipped_action_node.skipped_action.reason }}</p>
+          </td>
+        {% endif %}
         {% for participant_id in all_participants %}
-          {% if participant_id in row.scenario_node.scenario.participants %}
+          {% if row.scenario_node and participant_id in row.scenario_node.scenario.participants %}
             {% if row.scenario_node.scenario.participants[participant_id].has_failures %}
               <td class="fail_result">&#x274C;</td>
             {% else %}
