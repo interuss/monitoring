@@ -609,6 +609,9 @@ class ParticipantCapabilityEvaluationReport(ImplicitDict):
 
 
 class SkippedActionReport(ImplicitDict):
+    timestamp: StringBasedDateTime
+    """The time at which the action was skipped."""
+
     reason: str
     """The reason the action was skipped."""
 

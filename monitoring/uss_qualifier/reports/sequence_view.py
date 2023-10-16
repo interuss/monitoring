@@ -14,6 +14,7 @@ from monitoring.uss_qualifier.configurations.configuration import (
     SequenceViewConfiguration,
     TestConfiguration,
 )
+from monitoring.uss_qualifier.fileio import load_content, load_dict_with_references
 from monitoring.uss_qualifier.reports import jinja_env
 from monitoring.uss_qualifier.reports.report import (
     TestRunReport,
@@ -21,11 +22,16 @@ from monitoring.uss_qualifier.reports.report import (
     TestScenarioReport,
     PassedCheck,
     FailedCheck,
+    SkippedActionReport,
 )
 from monitoring.uss_qualifier.reports.tested_requirements import (
     compute_test_run_information,
 )
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
+from monitoring.uss_qualifier.scenarios.documentation.parsing import (
+    get_documentation_by_name,
+)
+from monitoring.uss_qualifier.suites.definitions import ActionType, TestSuiteDefinition
 
 
 class NoteEvent(ImplicitDict):
@@ -151,10 +157,16 @@ class TestedScenario(ImplicitDict):
         return sum(c.rows for c in self.epochs)
 
 
+@dataclass
+class SkippedAction(object):
+    reason: str
+
+
 class ActionNodeType(str, Enum):
     Scenario = "Scenario"
     Suite = "Suite"
     ActionGenerator = "ActionGenerator"
+    SkippedAction = "SkippedAction"
 
 
 class ActionNode(ImplicitDict):
@@ -162,6 +174,7 @@ class ActionNode(ImplicitDict):
     node_type: ActionNodeType
     children: List[ActionNode]
     scenario: Optional[TestedScenario] = None
+    skipped_action: Optional[SkippedAction] = None
 
     @property
     def rows(self) -> int:
@@ -188,7 +201,8 @@ class SuiteCell(object):
 @dataclass
 class OverviewRow(object):
     suite_cells: List[SuiteCell]
-    scenario_node: ActionNode
+    scenario_node: Optional[ActionNode] = None
+    skipped_action_node: Optional[ActionNode] = None
     filled: bool = False
 
 
@@ -373,6 +387,62 @@ def _compute_tested_scenario(
     return scenario
 
 
+def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
+    if report.declaration.get_action_type() == ActionType.TestSuite:
+        if (
+            "suite_type" in report.declaration.test_suite
+            and report.declaration.test_suite.suite_type
+        ):
+            suite: TestSuiteDefinition = ImplicitDict.parse(
+                load_dict_with_references(report.declaration.test_suite.suite_type),
+                TestSuiteDefinition,
+            )
+            parent = ActionNode(
+                name=suite.name,
+                node_type=ActionNodeType.Suite,
+                children=[],
+            )
+        elif report.declaration.test_suite.suite_definition:
+            parent = ActionNode(
+                name=report.declaration.test_suite.suite_definition.name,
+                node_type=ActionNodeType.Suite,
+                children=[],
+            )
+        else:
+            raise ValueError(
+                f"Cannot process skipped action for test suite that does not define suite_type nor suite_definition"
+            )
+        name = "All scenarios in test suite"
+    elif report.declaration.get_action_type() == ActionType.TestScenario:
+        docs = get_documentation_by_name(report.declaration.test_scenario.scenario_type)
+        return ActionNode(
+            name=docs.name,
+            node_type=ActionNodeType.SkippedAction,
+            children=[],
+            skipped_action=SkippedAction(reason=report.reason),
+        )
+    elif report.declaration.get_action_type() == ActionType.ActionGenerator:
+        parent = ActionNode(
+            name=report.declaration.action_generator.generator_type,
+            node_type=ActionNodeType.ActionGenerator,
+            children=[],
+        )
+        name = f"All scenarios from action generator"
+    else:
+        raise ValueError(
+            f"Cannot process skipped action of type '{report.declaration.get_action_type()}'"
+        )
+    parent.children.append(
+        ActionNode(
+            name=name,
+            node_type=ActionNodeType.SkippedAction,
+            children=[],
+            skipped_action=SkippedAction(reason=report.reason),
+        )
+    )
+    return parent
+
+
 def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> ActionNode:
     (
         is_test_suite,
@@ -387,12 +457,17 @@ def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Act
             scenario=_compute_tested_scenario(report.test_scenario, indexer),
         )
     elif is_test_suite:
+        children = [_compute_action_node(a, indexer) for a in report.test_suite.actions]
+        for skipped_action in report.test_suite.skipped_actions:
+            i = 0
+            for i, a in enumerate(report.test_suite.actions):
+                if a.start_time.datetime > skipped_action.timestamp.datetime:
+                    break
+            children.insert(i, _skipped_action_of(skipped_action))
         return ActionNode(
             name=report.test_suite.name,
             node_type=ActionNodeType.Suite,
-            children=[
-                _compute_action_node(a, indexer) for a in report.test_suite.actions
-            ],
+            children=children,
         )
     elif is_action_generator:
         return ActionNode(
@@ -412,6 +487,8 @@ def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Act
 def _compute_overview_rows(node: ActionNode) -> Iterator[OverviewRow]:
     if node.node_type == ActionNodeType.Scenario:
         yield OverviewRow(suite_cells=[], scenario_node=node)
+    elif node.node_type == ActionNodeType.SkippedAction:
+        yield OverviewRow(suite_cells=[], skipped_action_node=node)
     else:
         first_row = True
         for child in node.children:
@@ -420,6 +497,7 @@ def _compute_overview_rows(node: ActionNode) -> Iterator[OverviewRow]:
                     suite_cells=[SuiteCell(node=node, first_row=first_row)]
                     + row.suite_cells,
                     scenario_node=row.scenario_node,
+                    skipped_action_node=row.skipped_action_node,
                 )
                 first_row = False
 
