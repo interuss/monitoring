@@ -290,7 +290,22 @@ def _split_strings_numbers(s: str) -> List[Union[int, str]]:
     return parts
 
 
-def _requirement_id_parts(req_id: str):
+def _requirement_id_parts(req_id: str) -> List[str]:
+    """Split a requirement ID into sortable parts.
+
+    Each ID is split into parts in multiple phases (example: astm.f3411.v22a.NET0260,Table1,1b):
+      * Split at periods (splits into package and plain ID)
+        * Example: ["astm", "f3411", "v22a", "NET0260,Table1,1b"]
+      * Split at commas (splits portions of plain ID by convention)
+        * Example: ["astm", "f3411", "v22a", "NET0260", "Table1", "1b"]
+      * Split at transitions between words and numbers (so numbers are their own parts and non-numbers are their own parts)
+        * Example: ["astm", "f", 3411, "v", 22, "a", "NET", 260, "Table", 1, 1, "b"]
+
+    Args:
+        req_id: Requirement ID to split.
+
+    Returns: Constituent parts of req_id.
+    """
     old_parts = req_id.split(".")
     parts = []
     for p in old_parts:
@@ -303,6 +318,16 @@ def _requirement_id_parts(req_id: str):
 
 
 def _compare_requirement_ids(r1: TestedRequirement, r2: TestedRequirement) -> int:
+    """Compare requirement IDs for the purpose of sorting.
+
+    The requirement IDs are split into parts and then the parts compared.  If all parts are equal but one ID has more
+    parts, the ID with fewer parts is first.  See _requirement_id_parts for how requirement IDs are split.
+
+    Returns:
+        * -1 if r1 should be before r2
+        * 0 if r1 is equal to r2
+        * 1 if r1 should be after r2
+    """
     parts1 = _requirement_id_parts(r1.id)
     parts2 = _requirement_id_parts(r2.id)
     i = 0
