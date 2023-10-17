@@ -60,8 +60,6 @@ net_rid:
               - lat: -23
                 lng: 132
 
-
-
 net_rid_sims:
     adjacent_circular_flights_data:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -78,7 +76,8 @@ net_rid_sims:
         resource_type: resources.netrid.FlightDataResource
         specification:
             kml_source:
-                kml_location: file://./test_data/usa/netrid/dcdemo.kml
+                kml_file:
+                    path: file://./test_data/usa/netrid/dcdemo.kml
     kml_storage_config:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.netrid.FlightDataStorageResource
@@ -89,7 +88,8 @@ net_rid_sims:
         resource_type: resources.netrid.FlightDataResource
         specification:
             kml_source:
-                kml_location: file://./test_data/usa/kentland/rid.kml
+                kml_file:
+                    path: file://./test_data/usa/kentland/rid.kml
 
 flight_auth:
     $ref: '#/f3548_che'
@@ -98,7 +98,8 @@ flight_auth:
         resource_type: resources.flight_planning.FlightIntentsResource
         specification:
             planning_time: '0:05:00'
-            file_source: file://./test_data/che/flight_intents/invalid_flight_auths.json
+            file:
+                path: file://./test_data/che/flight_intents/invalid_flight_auths.json
 
 che_flight_intents:
     conflicting_flights:
@@ -106,19 +107,24 @@ che_flight_intents:
         resource_type: resources.flight_planning.FlightIntentsResource
         specification:
             planning_time: '0:05:00'
-            file_source: file://./test_data/che/flight_intents/conflicting_flights.json
+            file:
+                path: file://./test_data/che/flight_intents/conflicting_flights.json
     priority_preemption_flights:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.flight_planning.FlightIntentsResource
         specification:
             planning_time: '0:05:00'
-            file_source: test_data.che.flight_intents.priority_preemption
+            file:
+                path: test_data.che.flight_intents.priority_preemption
+                # Note that this hash_sha512 field can be safely deleted if the content changes
+                hash_sha512: 7c6b7d6ecca173c61dd05a60e1555a3e5b449d31efd671354ee80253e06f866a7c57ecbaab89647bac6a45e8627999511c0f42dfa53c69f23695963bd4362e4c
     invalid_flight_intents:
-      $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-      resource_type: resources.flight_planning.FlightIntentsResource
-      specification:
-        planning_time: '0:05:00'
-        file_source: test_data.che.flight_intents.invalid_flight_intents
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+        resource_type: resources.flight_planning.FlightIntentsResource
+        specification:
+            planning_time: '0:05:00'
+            file:
+                path: test_data.che.flight_intents.invalid_flight_intents
 
 kentland_flight_intents:
     conflicting_flights:
@@ -126,19 +132,22 @@ kentland_flight_intents:
         resource_type: resources.flight_planning.FlightIntentsResource
         specification:
             planning_time: '0:05:00'
-            file_source: file://./test_data/usa/kentland/flight_intents/conflicting_flights.yaml
+            file:
+                path: file://./test_data/usa/kentland/flight_intents/conflicting_flights.yaml
     priority_preemption_flights:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.flight_planning.FlightIntentsResource
         specification:
             planning_time: '0:05:00'
-            file_source: test_data.usa.kentland.flight_intents.priority_preemption
+            file:
+                path: test_data.usa.kentland.flight_intents.priority_preemption
     invalid_flight_intents:
       $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
       resource_type: resources.flight_planning.FlightIntentsResource
       specification:
         planning_time: '0:05:00'
-        file_source: test_data.usa.kentland.flight_intents.invalid_flight_intents
+        file:
+            path: test_data.usa.kentland.flight_intents.invalid_flight_intents
 
 f3548_che:
     allOf:

@@ -12,7 +12,6 @@ import yaml
 from monitoring.monitorlib.dicts import remove_elements
 from monitoring.monitorlib.versioning import get_code_version, get_commit_hash
 from monitoring.uss_qualifier.configurations.configuration import (
-    TestConfiguration,
     USSQualifierConfiguration,
     ArtifactsConfiguration,
     ReportConfiguration,
@@ -72,13 +71,15 @@ def parseArgs() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def execute_test_run(
-    config: TestConfiguration, whole_config: USSQualifierConfiguration
-):
+def execute_test_run(whole_config: USSQualifierConfiguration):
+    config = whole_config.v1.test_run
     codebase_version = get_code_version()
     commit_hash = get_commit_hash()
 
-    # Compute signatures of inputs
+    logger.info("Instantiating resources")
+    resources = create_resources(config.resources.resource_declarations)
+
+    logger.info("Computing signatures of inputs")
     if config.non_baseline_inputs:
         baseline, environment = remove_elements(
             whole_config, config.non_baseline_inputs
@@ -93,8 +94,9 @@ def execute_test_run(
     )
     environment_signature = compute_signature(environment)
 
-    resources = create_resources(config.resources.resource_declarations)
+    logger.info("Instantiating top-level test suite action")
     action = TestSuiteAction(config.action, resources)
+    logger.info("Running top-level test suite action")
     report = action.run()
     if report.successful():
         logger.info("Final result: SUCCESS")
@@ -158,7 +160,8 @@ def main() -> int:
 
     do_not_save_report = False
     if config.test_run:
-        report = execute_test_run(config.test_run, whole_config)
+        logger.info("Executing test run")
+        report = execute_test_run(whole_config)
     elif config.artifacts and config.artifacts.report:
         with open(config.artifacts.report.report_path, "r") as f:
             report = ImplicitDict.parse(json.load(f), TestRunReport)

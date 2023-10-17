@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import json
 from typing import get_type_hints, Dict, Generic, Tuple, TypeVar, Type
 
 from implicitdict import ImplicitDict
@@ -50,6 +49,16 @@ class MissingResourceError(ValueError):
 def create_resources(
     resource_declarations: Dict[ResourceID, ResourceDeclaration]
 ) -> Dict[ResourceID, ResourceType]:
+    """Instantiate all resources from the provided declarations.
+
+    Note that some declarations, such as resources whose specifications contain ExternalFiles, may be mutated while the
+    resource is loaded.
+
+    Args:
+        resource_declarations: Mapping between resource ID and declaration for that resource.
+
+    Returns: Mapping between resource ID and an instance of that declared resource.
+    """
     resource_pool: Dict[ResourceID, ResourceType] = {}
 
     resources_created = 1
@@ -148,9 +157,11 @@ def _make_resource(
             )
         constructor_args[arg_name] = resource_pool[pool_source]
     if specification_type is not None:
-        constructor_args["specification"] = ImplicitDict.parse(
+        specification = ImplicitDict.parse(
             declaration.specification, specification_type
         )
+        declaration.specification = specification
+        constructor_args["specification"] = specification
 
     return resource_type(**constructor_args)
 

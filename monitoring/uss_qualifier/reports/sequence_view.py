@@ -289,18 +289,22 @@ def _compute_tested_scenario(
                         scenario_participants[query.server_id] = p
             for failed_check in step.failed_checks:
                 query_events = []
-                for query_timestamp in failed_check.query_report_timestamps:
-                    found = False
-                    for e in all_events:
-                        if (
-                            e.type == EventType.Query
-                            and e.query.request.initiated_at == query_timestamp
-                        ):
-                            query_events.append(e)
-                            found = True
-                            break
-                    if not found:
-                        query_events.append(query_timestamp)
+                if (
+                    "query_report_timestamps" in failed_check
+                    and failed_check.query_report_timestamps
+                ):
+                    for query_timestamp in failed_check.query_report_timestamps:
+                        found = False
+                        for e in all_events:
+                            if (
+                                e.type == EventType.Query
+                                and e.query.request.initiated_at == query_timestamp
+                            ):
+                                query_events.append(e)
+                                found = True
+                                break
+                        if not found:
+                            query_events.append(query_timestamp)
                 events.append(
                     Event(failed_check=failed_check, query_events=query_events)
                 )
