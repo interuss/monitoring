@@ -18,7 +18,7 @@ jobs:
         echo "Branch: ${{ github.ref }}"
         docker images
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         submodules: true
     - name: Python lint
@@ -92,7 +92,7 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: true
           path: monitoring

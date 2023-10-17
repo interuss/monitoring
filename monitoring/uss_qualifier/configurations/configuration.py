@@ -3,9 +3,10 @@ from typing import Optional, List, Dict
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.dicts import JSONAddress
-from monitoring.uss_qualifier.fileio import load_dict_with_references
+from monitoring.uss_qualifier.reports.validation.definitions import (
+    ValidationConfiguration,
+)
 from monitoring.uss_qualifier.requirements.definitions import RequirementCollection
-from monitoring.uss_qualifier.requirements.documentation import RequirementSetID
 from monitoring.uss_qualifier.resources.definitions import ResourceCollection
 from monitoring.uss_qualifier.suites.definitions import (
     TestSuiteActionDeclaration,
@@ -117,6 +118,9 @@ class USSQualifierConfigurationV1(ImplicitDict):
 
     artifacts: Optional[ArtifactsConfiguration] = None
     """If specified, configuration describing the artifacts related to the test run"""
+
+    validation: Optional[ValidationConfiguration] = None
+    """If specified, configuration describing how to validate the output report (and return an error code if validation fails)"""
 
 
 class USSQualifierConfiguration(ImplicitDict):

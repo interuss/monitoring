@@ -9,6 +9,9 @@ from typing import List, Dict, Optional, Iterator, Union
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.fetch import Query
+from monitoring.uss_qualifier.action_generators.action_generator import (
+    action_generator_type_from_name,
+)
 from monitoring.uss_qualifier.configurations.configuration import (
     ParticipantID,
     SequenceViewConfiguration,
@@ -426,8 +429,11 @@ def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
             skipped_action=SkippedAction(reason=report.reason),
         )
     elif report.declaration.get_action_type() == ActionType.ActionGenerator:
+        generator_type = action_generator_type_from_name(
+            report.declaration.action_generator.generator_type
+        )
         parent = ActionNode(
-            name=report.declaration.action_generator.generator_type,
+            name=generator_type.get_name(),
             node_type=ActionNodeType.ActionGenerator,
             children=[],
         )
@@ -474,8 +480,11 @@ def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Act
             children=children,
         )
     elif is_action_generator:
+        generator_type = action_generator_type_from_name(
+            report.action_generator.generator_type
+        )
         return ActionNode(
-            name=report.action_generator.generator_type,
+            name=generator_type.get_name(),
             node_type=ActionNodeType.ActionGenerator,
             children=[
                 _compute_action_node(a, indexer)

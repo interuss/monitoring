@@ -15,6 +15,7 @@ from monitoring.uss_qualifier.configurations.configuration import (
     USSQualifierConfiguration,
     ArtifactsConfiguration,
     ReportConfiguration,
+    USSQualifierConfigurationV1,
 )
 from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.documents import make_report_html
@@ -26,6 +27,9 @@ from monitoring.uss_qualifier.reports.tested_roles import generate_tested_roles
 from monitoring.uss_qualifier.reports.graphs import make_graph
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
 from monitoring.uss_qualifier.reports.templates import render_templates
+from monitoring.uss_qualifier.reports.validation.report_validation import (
+    validate_report,
+)
 from monitoring.uss_qualifier.resources.resource import create_resources
 from monitoring.uss_qualifier.signatures import (
     compute_signature,
@@ -147,7 +151,7 @@ def main() -> int:
         logger.info("Exiting because --exit-before-execution specified.")
         return os.EX_OK
 
-    config = whole_config.v1
+    config: USSQualifierConfigurationV1 = whole_config.v1
     if args.report:
         if not config.artifacts:
             config.artifacts = ArtifactsConfiguration(
@@ -212,6 +216,14 @@ def main() -> int:
             path = config.artifacts.sequence_view.output_path
             logger.info(f"Writing sequence view to {path}")
             generate_sequence_view(report, config.artifacts.sequence_view)
+
+    if "validation" in config and config.validation:
+        logger.info(f"Validating test run report for configuration '{args.config}'")
+        if not validate_report(report, config.validation):
+            logger.error(
+                f"Validation failed on test run report for configuration '{args.config}'"
+            )
+            return -1
 
     return os.EX_OK
 
