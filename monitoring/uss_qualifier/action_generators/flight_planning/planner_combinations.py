@@ -60,6 +60,10 @@ class FlightPlannerCombinations(
             specification.action_to_repeat
         )
 
+    @classmethod
+    def get_name(cls) -> str:
+        return "For each appropriate combination of flight planner(s)"
+
     def __init__(
         self,
         specification: FlightPlannerCombinationsSpecification,
