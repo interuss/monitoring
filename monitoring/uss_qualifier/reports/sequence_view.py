@@ -38,6 +38,9 @@ from monitoring.uss_qualifier.scenarios.documentation.parsing import (
 from monitoring.uss_qualifier.suites.definitions import ActionType, TestSuiteDefinition
 
 
+UNATTRIBUTED_PARTICIPANT = "unattributed"
+
+
 class NoteEvent(ImplicitDict):
     key: str
     message: str
@@ -145,7 +148,9 @@ class Epoch(ImplicitDict):
 
 @dataclass
 class TestedParticipant(object):
-    has_failures: bool
+    has_failures: bool = False
+    has_successes: bool = False
+    has_queries: bool = False
 
 
 class TestedScenario(ImplicitDict):
@@ -278,42 +283,57 @@ def _compute_tested_scenario(
             for passed_check in step.passed_checks:
                 events.append(Event(passed_check=passed_check))
                 all_events.append(events[-1])
-                for pid in passed_check.participants:
-                    p = scenario_participants.get(
-                        pid, TestedParticipant(has_failures=False)
-                    )
+                participants = (
+                    passed_check.participants
+                    if passed_check.participants
+                    else [UNATTRIBUTED_PARTICIPANT]
+                )
+                for pid in participants:
+                    p = scenario_participants.get(pid, TestedParticipant())
+                    p.has_successes = True
                     scenario_participants[pid] = p
             if "queries" in step and step.queries:
                 for query in step.queries:
                     events.append(Event(query=query))
                     all_events.append(events[-1])
-                    if "server_id" in query and query.server_id:
-                        p = scenario_participants.get(
-                            query.server_id, TestedParticipant(has_failures=False)
-                        )
-                        scenario_participants[query.server_id] = p
+                    participant_id = (
+                        query.server_id
+                        if "server_id" in query and query.server_id
+                        else UNATTRIBUTED_PARTICIPANT
+                    )
+                    p = scenario_participants.get(participant_id, TestedParticipant())
+                    p.has_queries = True
+                    scenario_participants[participant_id] = p
+
             for failed_check in step.failed_checks:
                 query_events = []
-                for query_timestamp in failed_check.query_report_timestamps:
-                    found = False
-                    for e in all_events:
-                        if (
-                            e.type == EventType.Query
-                            and e.query.request.initiated_at == query_timestamp
-                        ):
-                            query_events.append(e)
-                            found = True
-                            break
-                    if not found:
-                        query_events.append(query_timestamp)
+                if (
+                    "query_report_timestamps" in failed_check
+                    and failed_check.query_report_timestamps
+                ):
+                    for query_timestamp in failed_check.query_report_timestamps:
+                        found = False
+                        for e in all_events:
+                            if (
+                                e.type == EventType.Query
+                                and e.query.request.initiated_at == query_timestamp
+                            ):
+                                query_events.append(e)
+                                found = True
+                                break
+                        if not found:
+                            query_events.append(query_timestamp)
                 events.append(
                     Event(failed_check=failed_check, query_events=query_events)
                 )
                 all_events.append(events[-1])
-                for pid in failed_check.participants:
-                    p = scenario_participants.get(
-                        pid, TestedParticipant(has_failures=True)
-                    )
+                participants = (
+                    failed_check.participants
+                    if failed_check.participants
+                    else [UNATTRIBUTED_PARTICIPANT]
+                )
+                for pid in participants:
+                    p = scenario_participants.get(pid, TestedParticipant())
                     p.has_failures = True
                     scenario_participants[pid] = p
             if "notes" in report and report.notes:
@@ -582,6 +602,9 @@ def _generate_scenario_pages(
     if node.node_type == ActionNodeType.Scenario:
         all_participants = list(node.scenario.participants)
         all_participants.sort()
+        if UNATTRIBUTED_PARTICIPANT in all_participants:
+            all_participants.remove(UNATTRIBUTED_PARTICIPANT)
+            all_participants.append(UNATTRIBUTED_PARTICIPANT)
         scenario_file = os.path.join(
             config.output_path, f"s{node.scenario.scenario_index}.html"
         )
@@ -615,6 +638,9 @@ def generate_sequence_view(
     max_suite_cols = max(len(r.suite_cells) for r in overview_rows)
     all_participants = _enumerate_all_participants(node)
     all_participants.sort()
+    if UNATTRIBUTED_PARTICIPANT in all_participants:
+        all_participants.remove(UNATTRIBUTED_PARTICIPANT)
+        all_participants.append(UNATTRIBUTED_PARTICIPANT)
     overview_file = os.path.join(config.output_path, "index.html")
     template = jinja_env.get_template("sequence_view/overview.html")
     with open(overview_file, "w") as f:

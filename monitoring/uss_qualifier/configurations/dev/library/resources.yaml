@@ -90,6 +90,14 @@ net_rid_sims:
         specification:
             kml_source:
                 kml_location: file://./test_data/usa/kentland/rid.kml
+            flight_start_delay: 5s
+    foca_flights_data:
+      $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+      resource_type: resources.netrid.FlightDataResource
+      specification:
+        kml_source:
+          kml_location: file://./test_data/che/rid/foca.kml
+        flight_start_delay: 5s
 
 flight_auth:
     $ref: '#/f3548_che'
