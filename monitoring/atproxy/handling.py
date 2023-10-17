@@ -51,12 +51,14 @@ def fulfill_query(req: ImplicitDict, timeout: timedelta) -> Tuple[str, int]:
     t_start = datetime.utcnow()
     query = Query(type=req.request_type_name(), request=req)
     id = str(uuid.uuid4())
-    logger.debug('Attempting to fulfill {} query {} from worker {}', query.type, id, os.getpid())
+    logger.debug(
+        "Attempting to fulfill {} query {} from worker {}", query.type, id, os.getpid()
+    )
 
     # Add query to be handled to the set of handleable queries
     with db as tx:
         tx.queries[id] = query
-        logger.debug('Added {} query {} to handler queue'.format(query.type, id))
+        logger.debug("Added {} query {} to handler queue".format(query.type, id))
 
     # Frequently check if the query has been fulfilled
     while datetime.utcnow() < t_start + timeout:
@@ -64,16 +66,32 @@ def fulfill_query(req: ImplicitDict, timeout: timedelta) -> Tuple[str, int]:
         with db as tx:
             if tx.queries[id].state == QueryState.Complete:
                 # Query was successfully fulfilled; return the result
-                logger.debug('Fulfilling {} query {}'.format(query.type, id))
+                logger.debug("Fulfilling {} query {}".format(query.type, id))
                 query = tx.queries.pop(id)
-                logger.debug('Fulfilled {} query {} with {} from worker {}', query.type, id, query.return_code, os.getpid())
+                logger.debug(
+                    "Fulfilled {} query {} with {} from worker {}",
+                    query.type,
+                    id,
+                    query.return_code,
+                    os.getpid(),
+                )
                 if query.response is not None:
                     return flask.jsonify(query.response), query.return_code
                 else:
-                    return '', query.return_code
+                    return "", query.return_code
 
     # Time expired; remove request from queue and indicate error
     with db as tx:
         tx.queries.pop(id)
-    logger.debug('Failed to fulfill {} query {} in time (backend handler did not provide a response) from worker {}', query.type, id, os.getpid())
-    return flask.jsonify({'message': 'Backend handler did not respond within the alotted time'}), 500
+    logger.debug(
+        "Failed to fulfill {} query {} in time (backend handler did not provide a response) from worker {}",
+        query.type,
+        id,
+        os.getpid(),
+    )
+    return (
+        flask.jsonify(
+            {"message": "Backend handler did not respond within the alotted time"}
+        ),
+        500,
+    )

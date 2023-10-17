@@ -3,7 +3,8 @@ from enum import Enum
 from monitoring.monitorlib.rid_automated_testing import injection_api
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.scd.v1.api import (
-    ClearAreaRequest, InjectFlightRequest,
+    ClearAreaRequest,
+    InjectFlightRequest,
 )
 
 
@@ -19,7 +20,13 @@ class RequestType(str, Enum):
     SCD_CreateClearAreaRequest = "scd.createClearAreaRequest"
 
 
-SCD_REQUESTS = {RequestType.SCD_GetStatus, RequestType.SCD_GetCapabilities, RequestType.SCD_PutFlight, RequestType.SCD_DeleteFlight, RequestType.SCD_CreateClearAreaRequest}
+SCD_REQUESTS = {
+    RequestType.SCD_GetStatus,
+    RequestType.SCD_GetCapabilities,
+    RequestType.SCD_PutFlight,
+    RequestType.SCD_DeleteFlight,
+    RequestType.SCD_CreateClearAreaRequest,
+}
 
 
 # Each request descriptor in this file is expected to implement a static
