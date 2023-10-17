@@ -75,6 +75,10 @@ class WithLocality(ActionGenerator[WithLocalitySpecification]):
         )
         return actions
 
+    @classmethod
+    def get_name(cls) -> str:
+        return "With mock_uss instances configured for a locality"
+
     def __init__(
         self,
         specification: WithLocalitySpecification,

@@ -52,6 +52,10 @@ class ForEachDSS(ActionGenerator[ForEachDSSSpecification]):
             specification.action_to_repeat
         )
 
+    @classmethod
+    def get_name(cls) -> str:
+        return "For each F3548 DSS instance"
+
     def __init__(
         self,
         specification: ForEachDSSSpecification,

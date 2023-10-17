@@ -68,6 +68,17 @@ class ActionGenerator(ABC, Generic[ActionGeneratorSpecificationType]):
             "A concrete action generator must implement `list_potential_actions` classmethod"
         )
 
+    @classmethod
+    def get_name(cls) -> str:
+        """Indicate the human-readable name of the action generator.
+
+        Concrete subclasses of ActionGenerator may implement a classmethod that shadows this one according to this
+        specification.
+
+        Returns: Human-readable name of this action generator.
+        """
+        return cls.__name__
+
     @staticmethod
     def make_from_definition(
         definition: ActionGeneratorDefinition, resources: Dict[ResourceID, ResourceType]
