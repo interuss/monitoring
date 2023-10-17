@@ -158,6 +158,7 @@
       {% for participant_id in all_participants %}
         <th>{{ participant_id }}</th>
       {% endfor %}
+      <th>Time</th>
     </tr>
     {% for row in overview_rows %}
       <tr>
@@ -192,6 +193,11 @@
             <td></td>
           {% endif %}
         {% endfor %}
+        <td>
+          {% if row.scenario_node %}
+            {{ row.scenario_node.scenario.duration }}
+          {% endif %}
+        </td>
       </tr>
     {% endfor %}
   </table>

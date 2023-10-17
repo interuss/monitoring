@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import math
 import os
 from dataclasses import dataclass
 from datetime import datetime
@@ -15,9 +17,8 @@ from monitoring.uss_qualifier.action_generators.action_generator import (
 from monitoring.uss_qualifier.configurations.configuration import (
     ParticipantID,
     SequenceViewConfiguration,
-    TestConfiguration,
 )
-from monitoring.uss_qualifier.fileio import load_content, load_dict_with_references
+from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports import jinja_env
 from monitoring.uss_qualifier.reports.report import (
     TestRunReport,
@@ -152,6 +153,7 @@ class TestedScenario(ImplicitDict):
     name: str
     url: str
     scenario_index: int
+    duration: str
     epochs: List[Epoch]
     participants: Dict[ParticipantID, TestedParticipant]
 
@@ -376,12 +378,23 @@ def _compute_tested_scenario(
         else:
             post_notes = {}
         if post_notes:
+            latest_step_time = max(v.timestamp.datetime for v in post_notes.values())
             append_notes(post_notes)
+
+    if "end_time" in report and report.end_time:
+        latest_step_time = report.end_time.datetime
+
+    dt_s = round((latest_step_time - report.start_time.datetime).total_seconds())
+    dt_m = math.floor(dt_s / 60)
+    dt_s -= dt_m * 60
+    padding = "0" if dt_s < 10 else ""
+    duration = f"{dt_m}:{padding}{dt_s}"
 
     scenario = TestedScenario(
         type=report.scenario_type,
         name=report.name,
         url=report.documentation_url,
+        duration=duration,
         epochs=epochs,
         scenario_index=indexer.scenario_index,
         participants=scenario_participants,
