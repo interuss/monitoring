@@ -60,7 +60,6 @@ else
     docker_args="-it"
   fi
 
-  start_time=$(date +%Y-%m-%dT%H:%M:%S)
   echo "========== Running uss_qualifier for configuration ${CONFIG_NAME} =========="
   # shellcheck disable=SC2086
   docker run ${docker_args} --name uss_qualifier \
