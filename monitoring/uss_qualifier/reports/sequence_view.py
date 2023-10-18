@@ -616,6 +616,7 @@ def _generate_scenario_pages(
                     all_participants=all_participants,
                     EpochType=EpochType,
                     EventType=EventType,
+                    UNATTRIBUTED_PARTICIPANT=UNATTRIBUTED_PARTICIPANT,
                     len=len,
                     str=str,
                 )
@@ -652,6 +653,7 @@ def generate_sequence_view(
                 max_suite_cols=max_suite_cols,
                 all_participants=all_participants,
                 ActionNodeType=ActionNodeType,
+                UNATTRIBUTED_PARTICIPANT=UNATTRIBUTED_PARTICIPANT,
                 len=len,
             )
         )
