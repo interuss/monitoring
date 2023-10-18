@@ -10,6 +10,8 @@ The `uss_qualifier` tool is a synchronous executable built into the `interuss/mo
 
 The primary input accepted by uss_qualifier is the "configuration" specified with the `--config` option.  This option should be a [reference to a configuration file](configurations/README.md) that the user has constructed or been provided to test the desired system for the desired characteristics.  If testing a standard local system (DSS + dummy auth + mock USSs), the user can specify an alternate configuration reference as a single argument to `run_locally.sh` (the default configuration is `configurations.dev.local_test`).
 
+Several comma-separated "configurations" may be passed via the `--config` option.  If specified, the `--report` and `--config-output` options must have the same number of comma-separated values, which may be empty.
+
 When building a custom configuration file, consider starting from [`configurations.dev.f3548_self_contained`](configurations/dev/f3548_self_contained.yaml), as it contains all information necessary to run the test without the usage of sometimes-configuring `$ref`s and `allOf`s.  See [configurations documentation](configurations/README.md) for more information.
 
 ### Quick start
