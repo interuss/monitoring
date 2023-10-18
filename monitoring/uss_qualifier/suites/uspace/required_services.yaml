@@ -1,5 +1,8 @@
 name: U-space required services
 resources:
+  version_providers: resources.versioning.VersionProvidersResource
+  system_identity: resources.versioning.SystemIdentityResource
+
   conflicting_flights: resources.flight_planning.FlightIntentsResource
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
@@ -17,6 +20,12 @@ resources:
   service_area: resources.netrid.ServiceAreaResource
   problematically_big_area: resources.VerticesResource
 actions:
+- test_scenario:
+    scenario_type: scenarios.versioning.GetSystemVersions
+    resources:
+      version_providers: version_providers
+      system_identity: system_identity
+    on_failure: Continue
 - test_suite:
     suite_type: suites.uspace.flight_auth
     resources:

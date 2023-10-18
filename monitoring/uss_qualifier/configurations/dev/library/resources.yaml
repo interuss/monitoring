@@ -5,11 +5,13 @@ all:
         -   $ref: '#/general_flight_authorization'
         -   $ref: '#/geospatial_map'
         -   $ref: '#/mock_uss_instances'
+        -   $ref: '#/uspace_versioning'
 
 uspace:
     allOf:
         -   $ref: '#/net_rid'
         -   $ref: '#/flight_auth'
+        -   $ref: '#/uspace_versioning'
 
 net_rid:
     allOf:
@@ -363,3 +365,11 @@ mock_uss_instances:
         resource_type: resources.interuss.mock_uss.locality.LocalityResource
         specification:
             locality_code: CHE
+
+uspace_versioning:
+    $ref: 'environment.yaml#/scd_version_providers'
+    uspace_system_identity:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+        resource_type: resources.versioning.SystemIdentityResource
+        specification:
+            system_identity: uspace.ussp
