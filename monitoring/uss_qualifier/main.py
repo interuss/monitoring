@@ -44,20 +44,20 @@ def parseArgs() -> argparse.Namespace:
 
     parser.add_argument(
         "--config",
-        help="Configuration string according to monitoring/uss_qualifier/configurations/README.md",
+        help="Configuration string according to monitoring/uss_qualifier/configurations/README.md; Several comma-separated strings may be specified",
         required=True,
     )
 
     parser.add_argument(
         "--report",
         default=None,
-        help="(Overrides setting in artifacts configuration) File name of the report to write (if test configuration provided) or read (if test configuration not provided)",
+        help="(Overrides setting in artifacts configuration) File name of the report to write (if test configuration provided) or read (if test configuration not provided); Several comma-separated file names matching the configurations may be specified",
     )
 
     parser.add_argument(
         "--config-output",
         default=None,
-        help="If specified, write the configuration as parsed (potentially from multiple files) to the single file specified by this path",
+        help="If specified, write the configuration as parsed (potentially from multiple files) to the single file specified by this path; Several comma-separated file names matching the configurations may be specified",
     )
 
     parser.add_argument(
@@ -117,12 +117,16 @@ def execute_test_run(whole_config: USSQualifierConfiguration):
     )
 
 
-def main() -> int:
-    args = parseArgs()
+def run_config(
+    config_name: str,
+    config_output: str,
+    report_path: str,
+    skip_validation: bool,
+    exit_before_execution: bool,
+):
+    config_src = load_dict_with_references(config_name)
 
-    config_src = load_dict_with_references(args.config)
-
-    if not args.skip_validation:
+    if not skip_validation:
         logger.info("Validating configuration...")
         validation_errors = validate_config(config_src)
         if validation_errors:
@@ -134,33 +138,33 @@ def main() -> int:
 
     whole_config = ImplicitDict.parse(config_src, USSQualifierConfiguration)
 
-    if args.config_output:
-        logger.info("Writing flattened configuration to {}", args.config_output)
-        if args.config_output.lower().endswith(".json"):
-            with open(args.config_output, "w") as f:
+    if config_output:
+        logger.info("Writing flattened configuration to {}", config_output)
+        if config_output.lower().endswith(".json"):
+            with open(config_output, "w") as f:
                 json.dump(whole_config, f, indent=2, sort_keys=True)
-        elif args.config_output.lower().endswith(".yaml"):
-            with open(args.config_output, "w") as f:
+        elif config_output.lower().endswith(".yaml"):
+            with open(config_output, "w") as f:
                 yaml.dump(json.loads(json.dumps(whole_config)), f, sort_keys=True)
         else:
             raise ValueError(
                 "Unsupported extension for --config-output; only .json or .yaml file paths may be specified"
             )
 
-    if args.exit_before_execution:
+    if exit_before_execution:
         logger.info("Exiting because --exit-before-execution specified.")
-        return os.EX_OK
+        return
 
     config: USSQualifierConfigurationV1 = whole_config.v1
-    if args.report:
+    if report_path:
         if not config.artifacts:
             config.artifacts = ArtifactsConfiguration(
-                ReportConfiguration(report_path=args.report)
+                ReportConfiguration(report_path=report_path)
             )
         elif not config.artifacts.report:
-            config.artifacts.report = ReportConfiguration(report_path=args.report)
+            config.artifacts.report = ReportConfiguration(report_path=report_path)
         else:
-            config.artifacts.report.report_path = args.report
+            config.artifacts.report.report_path = report_path
 
     do_not_save_report = False
     if config.test_run:
@@ -218,12 +222,53 @@ def main() -> int:
             generate_sequence_view(report, config.artifacts.sequence_view)
 
     if "validation" in config and config.validation:
-        logger.info(f"Validating test run report for configuration '{args.config}'")
+        logger.info(f"Validating test run report for configuration '{config_name}'")
         if not validate_report(report, config.validation):
             logger.error(
-                f"Validation failed on test run report for configuration '{args.config}'"
+                f"Validation failed on test run report for configuration '{config_name}'"
             )
             return -1
+
+    return os.EX_OK
+
+
+def main() -> int:
+    args = parseArgs()
+
+    config_names = str(args.config).split(",")
+
+    if args.config_output:
+        config_outputs = str(args.config_output).split(",")
+        if len(config_outputs) != len(config_names):
+            raise ValueError(
+                f"Need matching number of config_output, expected {len(config_names)}, got {len(config_outputs)}"
+            )
+    else:
+        config_outputs = ["" for _ in config_names]
+
+    if args.report:
+        report_paths = str(args.report).split(",")
+        if len(report_paths) != len(config_names):
+            raise ValueError(
+                f"Need matching number of report, expected {len(config_names)}, got {len(report_paths)}"
+            )
+    else:
+        report_paths = ["" for _ in config_names]
+
+    for idx, config_name in enumerate(config_names):
+        logger.info(
+            f"========== Running uss_qualifier for configuration {config_name} =========="
+        )
+        run_config(
+            config_name,
+            config_outputs[idx],
+            report_paths[idx],
+            args.skip_validation,
+            args.exit_before_execution,
+        )
+        logger.info(
+            f"========== Completed uss_qualifier for configuration {config_name} =========="
+        )
 
     return os.EX_OK
 

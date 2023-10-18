@@ -13,6 +13,7 @@ SERVICE_MESSAGESIGNING = "msgsigning"
 SERVICE_ATPROXY_CLIENT = "atproxy_client"
 SERVICE_TRACER = "tracer"
 SERVICE_INTERACTION_LOGGING = "interaction_logging"
+SERVICE_VERSIONING = "versioning"
 
 webapp = MockUSS(__name__)
 enabled_services = set()
@@ -102,6 +103,9 @@ if SERVICE_TRACER in webapp.config[config.KEY_SERVICES]:
     from monitoring.mock_uss import tracer
     from monitoring.mock_uss.tracer import routes as tracer_routes
 
+if SERVICE_VERSIONING in webapp.config[config.KEY_SERVICES]:
+    enabled_services.add(SERVICE_VERSIONING)
+    from monitoring.mock_uss.versioning import routes as versioning_routes
 
 msg = (
     "################################################################################\n"

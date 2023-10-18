@@ -12,12 +12,6 @@ python-lint:
 	cd monitorlib && make python-lint
 	cd prober && make python-lint
 
-.PHONY: shell-lint
-shell-lint:
-	cd uss_qualifier && make shell-lint
-	cd mock_uss && make shell-lint
-	cd prober && make shell-lint
-
 .PHONY: format
 format:
 	cd uss_qualifier && make format

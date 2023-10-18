@@ -19,7 +19,7 @@ services:
       - MOCK_USS_TOKEN_AUDIENCE=scdsc.uss1.localutm,localhost,host.docker.internal
       - MOCK_USS_BASE_URL=http://scdsc.uss1.localutm
       # TODO: remove interaction_logging once dedicated mock_uss is involved in tests
-      - MOCK_USS_SERVICES=scdsc,interaction_logging
+      - MOCK_USS_SERVICES=scdsc,versioning,interaction_logging
       - MOCK_USS_INTERACTIONS_LOG_DIR=output/scdsc_a_interaction_logs
       - MOCK_USS_PORT=80
     expose:
@@ -47,7 +47,7 @@ services:
       - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
       - MOCK_USS_TOKEN_AUDIENCE=scdsc.uss2.localutm,localhost,host.docker.internal
       - MOCK_USS_BASE_URL=http://scdsc.uss2.localutm
-      - MOCK_USS_SERVICES=scdsc
+      - MOCK_USS_SERVICES=scdsc,versioning
       - MOCK_USS_PORT=80
     expose:
       - 80

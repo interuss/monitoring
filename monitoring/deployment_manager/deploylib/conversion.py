@@ -5,20 +5,23 @@ import kubernetes
 
 
 def to_openapi_object(value: Any, type_name: str) -> Any:
-    primitives = {'int', 'str'}
+    primitives = {"int", "str"}
 
     # Do not convert primitives
     if type_name in primitives:
         return value
 
     # Convert dicts
-    dict_regex = r'dict\(([^,]+), ([^,]+)\)'
+    dict_regex = r"dict\(([^,]+), ([^,]+)\)"
     m = re.fullmatch(dict_regex, type_name)
     if m:
-        return {to_openapi_object(k, m.group(1)): to_openapi_object(v, m.group(2)) for k, v in value.items()}
+        return {
+            to_openapi_object(k, m.group(1)): to_openapi_object(v, m.group(2))
+            for k, v in value.items()
+        }
 
     # Convert lists
-    list_regex = r'list\[([^]]+)\]'
+    list_regex = r"list\[([^]]+)\]"
     m = re.fullmatch(list_regex, type_name)
     if m:
         return [to_openapi_object(v, m.group(1)) for v in value]

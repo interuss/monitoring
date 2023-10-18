@@ -9,5 +9,5 @@ class V1DSS(ImplicitDict):
     Kubernetes cluster with Tanka.
     """
 
-    namespace: str = 'default'
+    namespace: str = "default"
     """Namespace in which all DSS components are located"""
