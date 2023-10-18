@@ -40,7 +40,9 @@ class DSSClient(infrastructure.UTMClientSession):
                 )
         return result
 
-    def log_exception(self, real_method: str, name: str, start_time: float, e: Exception):
+    def log_exception(
+        self, real_method: str, name: str, start_time: float, e: Exception
+    ):
         total_time = int((time.time() - start_time) * 1000)
         self._locust_environment.events.request_failure.fire(
             request_type=real_method,
@@ -49,6 +51,7 @@ class DSSClient(infrastructure.UTMClientSession):
             exception=e,
             response_length=0,
         )
+
 
 class USS(User):
     # Suggested by Locust 1.2.2 API Docs https://docs.locust.io/en/stable/api.html#locust.User.abstract
@@ -65,7 +68,9 @@ class USS(User):
         if not auth_spec:
             # logging after creation of client so that we surface the error in the UI
             e = Exception("Missing AUTH_SPEC environment variable, please check README")
-            self.client.log_exception("Initialization", "Create DSS Client", time.time(), e)
+            self.client.log_exception(
+                "Initialization", "Create DSS Client", time.time(), e
+            )
             # raising exception to not allow things to proceed further
             raise e
         # This is a load tester its acceptable to have all the scopes required to operate anything.

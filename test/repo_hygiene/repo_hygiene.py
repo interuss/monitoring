@@ -14,7 +14,9 @@ from md_files.md_files import check_md_files
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check repo hygiene")
 
-    parser.add_argument("repo_location", metavar="REPO", type=str, help="path to repository")
+    parser.add_argument(
+        "repo_location", metavar="REPO", type=str, help="path to repository"
+    )
 
     return parser.parse_args()
 

@@ -3,7 +3,7 @@ from implicitdict import ImplicitDict
 
 
 class TestV1(ImplicitDict):
-    namespace: str = 'test'
+    namespace: str = "test"
 
 
 class Test(ImplicitDict):

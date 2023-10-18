@@ -16,22 +16,10 @@ class Sub(client.USS):
         base_lng = random.randint(0, 180)
         base_lat = random.randint(-90, 90)
         return [
-            {
-                'lng': base_lng + 0.6205,
-                'lat': base_lat + 0.6558
-            },
-            {
-                'lng': base_lng + 0.6301,
-                'lat': base_lat + 0.6898
-            },
-            {
-                'lng': base_lng + 0.6700,
-                'lat': base_lat + 0.6709
-            },
-            {
-                'lng': base_lng + 0.6466,
-                'lat': base_lat + 0.6407
-            },
+            {"lng": base_lng + 0.6205, "lat": base_lat + 0.6558},
+            {"lng": base_lng + 0.6301, "lat": base_lat + 0.6898},
+            {"lng": base_lng + 0.6700, "lat": base_lat + 0.6709},
+            {"lng": base_lng + 0.6466, "lat": base_lat + 0.6407},
         ]
 
     @task(100)
@@ -64,7 +52,9 @@ class Sub(client.USS):
 
     @task(20)
     def get_sub(self):
-        target_sub = random.choice(list(self.sub_dict.keys())) if self.sub_dict else None
+        target_sub = (
+            random.choice(list(self.sub_dict.keys())) if self.sub_dict else None
+        )
         if not target_sub:
             print("Nothing to pick from sub_dict for GET")
             return
@@ -111,7 +101,9 @@ class Sub(client.USS):
 
     def checkout_sub(self):
         self.lock.acquire()
-        target_sub = random.choice(list(self.sub_dict.keys())) if self.sub_dict else None
+        target_sub = (
+            random.choice(list(self.sub_dict.keys())) if self.sub_dict else None
+        )
         target_version = self.sub_dict.pop(target_sub, None)
         self.lock.release()
         return target_sub, target_version

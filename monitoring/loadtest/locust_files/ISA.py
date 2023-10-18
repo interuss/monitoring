@@ -9,6 +9,7 @@ from monitoring.monitorlib import rid_v1
 from monitoring.prober.rid.v1 import common
 from locust import task, between
 
+
 class ISA(client.USS):
     wait_time = between(0.01, 1)
     lock = threading.Lock()
@@ -70,7 +71,9 @@ class ISA(client.USS):
 
     @task(100)
     def get_isa(self):
-        target_isa = random.choice(list(self.isa_dict.keys())) if self.isa_dict else None
+        target_isa = (
+            random.choice(list(self.isa_dict.keys())) if self.isa_dict else None
+        )
         if not target_isa:
             print("Nothing to pick from isa_dict for GET")
             return
@@ -88,7 +91,9 @@ class ISA(client.USS):
 
     def checkout_isa(self):
         self.lock.acquire()
-        target_isa = random.choice(list(self.isa_dict.keys())) if self.isa_dict else None
+        target_isa = (
+            random.choice(list(self.isa_dict.keys())) if self.isa_dict else None
+        )
         target_version = self.isa_dict.pop(target_isa, None)
         self.lock.release()
         return target_isa, target_version
@@ -99,4 +104,3 @@ class ISA(client.USS):
 
     def on_stop(self):
         self.isa_dict = {}
-
