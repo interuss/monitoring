@@ -248,15 +248,12 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
 
     # Validate intent is currently active if in Activated state
     # I.e. at least one volume has start time in the past and end time in the future
-    now = arrow.utcnow()
+    now = arrow.utcnow().datetime
     if req_body.operational_intent.state == OperationalIntentState.Activated:
-        active_volume = False
-        for vol in (
+        active_volume = Volume4DCollection.from_interuss_scd_api(
             req_body.operational_intent.volumes
             + req_body.operational_intent.off_nominal_volumes
-        ):
-            if vol.time_start.value.datetime <= now <= vol.time_end.value.datetime:
-                active_volume = True
+        ).has_active_volume(now)
         if not active_volume:
             return (
                 InjectFlightResponse(

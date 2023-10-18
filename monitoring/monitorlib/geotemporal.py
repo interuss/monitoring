@@ -549,8 +549,7 @@ class Volume4DCollection(ImplicitDict):
         return [v.to_f3548v21() for v in self.volumes]
 
     def has_active_volume(self, time_ref: datetime) -> bool:
-        active_volume = False
-        for vol in self.volumes:
-            if vol.time_start.datetime <= time_ref <= vol.time_end.datetime:
-                active_volume = True
-        return active_volume
+        return any(
+            vol.time_start.datetime <= time_ref <= vol.time_end.datetime
+            for vol in self.volumes
+        )

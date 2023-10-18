@@ -115,7 +115,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 _flight_intents["flight_2_equal_prio_nonconforming_vol_A"],
             )
 
-            now = arrow.utcnow()
+            now = arrow.utcnow().datetime
             for intent_name, intent in _flight_intents.items():
                 if (
                     intent.request.operational_intent.state
@@ -124,6 +124,8 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                     assert Volume4DCollection.from_interuss_scd_api(
                         intent.request.operational_intent.volumes
                         + intent.request.operational_intent.off_nominal_volumes
+                    ).has_active_volume(
+                        now
                     ), f"at least one volume of activated intent {intent_name} must be active now (now is {now})"
 
             assert (
