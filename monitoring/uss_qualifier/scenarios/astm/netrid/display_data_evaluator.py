@@ -59,7 +59,7 @@ def _telemetry_match(t1: RIDAircraftState, t2: RIDAircraftState) -> bool:
     """Determine whether two telemetry points may be mistaken for each other."""
     return (
         abs(t1.position.lat - t2.position.lat) < COORD_TOLERANCE_DEG
-        and abs(t1.position.lng == t2.position.lng) < COORD_TOLERANCE_DEG
+        and abs(t1.position.lng - t2.position.lng) < COORD_TOLERANCE_DEG
     )
 
 
@@ -74,18 +74,18 @@ def injected_flights_errors(injected_flights: List[InjectedFlight]) -> List[str]
     errors: List[str] = []
     for f1, injected_flight in enumerate(injected_flights):
         for t1, injected_telemetry in enumerate(injected_flight.flight.telemetry):
-            for t2, other_telmetry in enumerate(
+            for t2, other_telemetry in enumerate(
                 injected_flight.flight.telemetry[t1 + 1 :]
             ):
-                if _telemetry_match(injected_telemetry, other_telmetry):
+                if _telemetry_match(injected_telemetry, other_telemetry):
                     errors.append(
-                        f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at indices {t1} and {t1 + 1 + t2} which can be mistaken for each other"
+                        f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at indices {t1} and {t1 + 1 + t2} which can be mistaken for each other; (lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}) and (lat={other_telemetry.position.lat}, lng={other_telemetry.position.lng}) respectively"
                     )
             for f2, other_flight in enumerate(injected_flights[f1 + 1 :]):
                 for t2, other_telemetry in enumerate(other_flight.flight.telemetry):
                     if _telemetry_match(injected_telemetry, other_telemetry):
                         errors.append(
-                            f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at index {t1} that can be mistaken for telemetry index {t2} in {other_flight.uss_participant_id}'s flight with injection ID {other_flight.flight.injection_id} in test {other_flight.test_id}"
+                            f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at index {t1} that can be mistaken for telemetry index {t2} in {other_flight.uss_participant_id}'s flight with injection ID {other_flight.flight.injection_id} in test {other_flight.test_id}; (lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}) and (lat={other_telemetry.position.lat}, lng={other_telemetry.position.lng}) respectively"
                         )
     return errors
 

@@ -247,6 +247,8 @@ def inject_flights(
             )
             raise RuntimeError("High-severity issue did not abort test scenario")
 
+        start_time = None
+        end_time = None
         for flight in injections:
             injected_flights.append(
                 InjectedFlight(
@@ -256,6 +258,19 @@ def inject_flights(
                     query_timestamp=query.request.timestamp,
                 )
             )
+            earliest_time = min(t.timestamp.datetime for t in flight.telemetry)
+            latest_time = max(t.timestamp.datetime for t in flight.telemetry)
+            if start_time is None or earliest_time < start_time:
+                start_time = earliest_time
+            if end_time is None or latest_time > end_time:
+                end_time = latest_time
+        now = arrow.utcnow().datetime
+        dt0 = (start_time - now).total_seconds()
+        dt1 = (end_time - now).total_seconds()
+        test_scenario.record_note(
+            f"{test_id} time range",
+            f"Injected flights start {dt0:.1f} seconds from now and end {dt1:.1f} seconds from now",
+        )
 
     # Make sure the injected flights can be identified correctly by the test harness
     with test_scenario.check("Identifiable flights") as check:

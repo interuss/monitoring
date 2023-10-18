@@ -34,9 +34,9 @@ configurations.dev.general_flight_auth,\
 configurations.dev.f3548,\
 configurations.dev.f3548_self_contained,\
 configurations.dev.netrid_v22a,\
+configurations.dev.netrid_v19,\
 configurations.dev.uspace"
 fi
-# TODO: Add configurations.dev.netrid_v19
 
 echo "Running configuration(s): ${CONFIG_NAME}"
 

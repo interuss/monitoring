@@ -344,7 +344,7 @@ class GenericTestScenario(ABC):
             self._step_report.queries = []
         self._step_report.queries.append(query)
         logger.debug(
-            f"Queried {query.request['method']} {query.request['url']} -> {query.response.status_code}"
+            f"Queried {query.request['method']} {query.request['url']} -> {query.response.status_code} ({query.response.elapsed_s:.1f}s)"
         )
 
     def _get_check(self, name: str) -> TestCheckDocumentation:

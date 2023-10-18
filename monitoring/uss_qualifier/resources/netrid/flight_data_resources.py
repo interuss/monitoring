@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 from typing import List, Optional
 import uuid
@@ -49,7 +50,8 @@ class FlightDataResource(Resource[FlightDataSpecification]):
             )
         else:
             raise ValueError(
-                "A source of flight data was not identified in the specification for a FlightDataSpecification"
+                "A source of flight data was not identified in the specification for a FlightDataSpecification:\n"
+                + json.dumps(specification, indent=2)
             )
         self._flight_start_delay = specification.flight_start_delay.timedelta
 

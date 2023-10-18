@@ -81,7 +81,13 @@
       <th>Step</th>
       <th colspan="3">Event</th>
       {% for participant_id in all_participants %}
-        <th>{{ participant_id }}</th>
+        <th>
+          {% if participant_id != UNATTRIBUTED_PARTICIPANT %}
+            {{ participant_id }}
+          {% else %}
+            &lt;None&gt;
+          {% endif %}
+        </th>
       {% endfor %}
     </tr>
 
@@ -118,7 +124,7 @@
                   {{ event.passed_check.name }}
                 </td>
                 {% for participant_id in all_participants %}
-                  {% if participant_id in event.passed_check.participants %}
+                  {% if (participant_id != UNATTRIBUTED_PARTICIPANT and participant_id in event.passed_check.participants) or (participant_id == UNATTRIBUTED_PARTICIPANT and not event.passed_check.participants) %}
                     <td class="pass_result">&#x2705;</td>
                   {% else %}
                     <td></td>
@@ -145,7 +151,7 @@
                   {% endif %}
                 </td>
                 {% for participant_id in all_participants %}
-                  {% if participant_id in event.failed_check.participants %}
+                  {% if (participant_id != UNATTRIBUTED_PARTICIPANT and participant_id in event.failed_check.participants) or (participant_id == UNATTRIBUTED_PARTICIPANT and not event.failed_check.participants) %}
                     <td class="fail_result">&#x274C;</td>
                   {% else %}
                     <td></td>
@@ -160,7 +166,7 @@
                   {% set collapsible.queries = collapsible.queries + [query_id] %}
                 </td>
                 {% for participant_id in all_participants %}
-                  {% if participant_id == event.query.get("server_id", None) %}
+                  {% if (participant_id != UNATTRIBUTED_PARTICIPANT and participant_id == event.query.get("server_id", None)) or (participant_id == UNATTRIBUTED_PARTICIPANT and not event.query.get("server_id", None)) %}
                     <td>&#x1F310;</td>
                   {% else %}
                     <td></td>
