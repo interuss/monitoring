@@ -13,23 +13,12 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
 )
-from monitoring.monitorlib.fetch import Query
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4D
 
 
-class PlanningActivityError(Exception):
-    queries: List[Query]
-
-    def __init__(
-        self, message: str, queries: Optional[Union[Query, List[Query]]] = None
-    ):
-        super(PlanningActivityError, self).__init__(message)
-        if queries is None:
-            self.queries = []
-        elif isinstance(queries, Query):
-            self.queries = [queries]
-        else:
-            self.queries = queries
+class PlanningActivityError(QueryError):
+    pass
 
 
 class FlightPlannerClient(ABC):
