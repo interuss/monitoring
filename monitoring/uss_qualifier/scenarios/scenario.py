@@ -4,7 +4,6 @@ from datetime import datetime
 from enum import Enum
 import inspect
 from typing import Callable, Dict, List, Optional, TypeVar, Union, Set, Type
-
 import arrow
 from implicitdict import StringBasedDateTime
 from loguru import logger
@@ -12,6 +11,7 @@ from loguru import logger
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib import fetch, inspection
 from monitoring.monitorlib.inspection import fullname
+from monitoring.mock_uss.interaction_logging.interactions import Interaction
 from monitoring.uss_qualifier import scenarios as scenarios_module
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.reports.report import (
@@ -346,6 +346,24 @@ class GenericTestScenario(ABC):
         logger.debug(
             f"Queried {query.request['method']} {query.request['url']} -> {query.response.status_code} ({query.response.elapsed_s:.1f}s)"
         )
+
+    def record_interuss_interactions(self, interactions: List[Interaction]) -> None:
+        """
+        Recording interuss interaction in test step report
+        Args:
+            interactions: list of interactions
+            exclude_sub: sub to exclude mock_uss interactions with uss_qualifier
+        Returns: None
+        """
+        self._expect_phase({ScenarioPhase.RunningTestStep, ScenarioPhase.CleaningUp})
+        if "interuss_interactions" not in self._step_report:
+            self._step_report.interuss_interactions = []
+        for interaction in interactions:
+            self._step_report.interuss_interactions.append(interaction)
+            logger.debug(
+                f"Interuss interaction reported : {interaction.query.request.method} {interaction.query.request.url} "
+                f"with response {interaction.query.response.status_code}"
+            )
 
     def _get_check(self, name: str) -> TestCheckDocumentation:
         available_checks = {c.name: c for c in self._current_step.checks}

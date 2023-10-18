@@ -39,18 +39,12 @@ def interaction_logs() -> Tuple[str, int]:
             try:
                 obj = json.load(f)
                 interaction = ImplicitDict.parse(obj, Interaction)
-                if (
-                    ("received_at" in interaction.query.request)
-                    and interaction.query.request.received_at.datetime
-                    >= from_time.datetime
-                ):
-                    interactions.append(interaction)
-                elif (
-                    "initiated_at" in interaction.query.request
-                    and interaction.query.request.initiated_at.datetime
-                    >= from_time.datetime
-                ):
-                    interactions.append(interaction)
+                if "received_at" in interaction.query.request:
+                    if interaction.query.request.received_at.datetime >= from_time.datetime:
+                        interactions.append(interaction)
+                elif "initiated_at" in interaction.query.request:
+                    if interaction.query.request.initiated_at.datetime >= from_time.datetime:
+                        interactions.append(interaction)
                 else:
                     raise ValueError(
                         f"There is no received_at or initiated_at field in the request in {fname}"
