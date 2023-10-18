@@ -24,7 +24,7 @@ gunicorn \
     --workers=4 \
     --threads=2 \
     --timeout 60 \
-    --bind=0.0.0.0:${port} \
+    "--bind=0.0.0.0:${port}" \
     --log-level debug \
     --config ./gunicorn.conf.py \
     monitoring.atproxy.app:webapp
