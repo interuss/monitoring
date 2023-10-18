@@ -4,8 +4,9 @@
 
 ## [Actions](../README.md#actions)
 
-1. Suite: [U-space flight authorisation](flight_auth.md) ([`suites.uspace.flight_auth`](flight_auth.yaml))
-2. Suite: [U-Space network identification](network_identification.md) ([`suites.uspace.network_identification`](network_identification.yaml))
+1. Scenario: [Get system versions](../../scenarios/versioning/get_system_versions.md) ([`scenarios.versioning.GetSystemVersions`](../../scenarios/versioning/get_system_versions.py))
+2. Suite: [U-space flight authorisation](flight_auth.md) ([`suites.uspace.flight_auth`](flight_auth.yaml))
+3. Suite: [U-Space network identification](network_identification.md) ([`suites.uspace.network_identification`](network_identification.yaml))
 
 ## [Checked requirements](../README.md#checked-requirements)
 
@@ -601,5 +602,11 @@
     <td><a href="../../requirements/interuss/f3411/dss_endpoints.md">SearchISAs</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/versioning.md">versioning</a></td>
+    <td><a href="../../requirements/versioning.md">ReportSystemVersion</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/versioning/get_system_versions.md">Get system versions</a></td>
   </tr>
 </table>

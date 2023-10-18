@@ -24,57 +24,66 @@ CONFIG_NAME="${1:-ALL}"
 OTHER_ARGS=${@:2}
 
 if [ "$CONFIG_NAME" == "ALL" ]; then
-  declare -a all_configurations=( \
-    "configurations.dev.noop" \
-    "configurations.dev.dss_probing" \
-    "configurations.dev.geoawareness_cis" \
-    "configurations.dev.generate_rid_test_data" \
-    "configurations.dev.geospatial_comprehension" \
-    "configurations.dev.general_flight_auth" \
-    "configurations.dev.f3548" \
-    "configurations.dev.f3548_self_contained" \
-    "configurations.dev.netrid_v22a" \
-    "configurations.dev.netrid_v19" \
-    "configurations.dev.uspace" \
-  )
-  echo "Running configurations: ${all_configurations[*]}"
-  for configuration_name in "${all_configurations[@]}"; do
-    monitoring/uss_qualifier/run_locally.sh "$configuration_name"
-  done
-else
-  CONFIG_FLAG="--config ${CONFIG_NAME}"
-
-  AUTH_SPEC='DummyOAuth(http://oauth.authority.localutm:8085/token,uss_qualifier)'
-
-  QUALIFIER_OPTIONS="$CONFIG_FLAG $OTHER_ARGS"
-
-  OUTPUT_DIR="monitoring/uss_qualifier/output"
-  mkdir -p "$OUTPUT_DIR"
-
-  CACHE_DIR="monitoring/uss_qualifier/.templates_cache"
-  mkdir -p "$CACHE_DIR"
-
-  if [ "$CI" == "true" ]; then
-    docker_args="--add-host host.docker.internal:host-gateway" # Required to reach other containers in Ubuntu (used for Github Actions)
-  else
-    docker_args="-it"
-  fi
-
-  echo "========== Running uss_qualifier for configuration ${CONFIG_NAME} =========="
-  # shellcheck disable=SC2086
-  docker run ${docker_args} --name uss_qualifier \
-    --rm \
-    --network interop_ecosystem_network \
-    -u "$(id -u):$(id -g)" \
-    -e PYTHONBUFFERED=1 \
-    -e AUTH_SPEC=${AUTH_SPEC} \
-    -e USS_QUALIFIER_STOP_FAST=${USS_QUALIFIER_STOP_FAST:-} \
-    -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
-    -v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \
-    -v "$(pwd)/$CACHE_DIR:/app/$CACHE_DIR" \
-    -w /app/monitoring/uss_qualifier \
-    interuss/monitoring \
-    python main.py $QUALIFIER_OPTIONS
-  echo "========== Completed uss_qualifier for configuration ${CONFIG_NAME} =========="
+  CONFIG_NAME="\
+configurations.dev.noop,\
+configurations.dev.dss_probing,\
+configurations.dev.geoawareness_cis,\
+configurations.dev.generate_rid_test_data,\
+configurations.dev.geospatial_comprehension,\
+configurations.dev.general_flight_auth,\
+configurations.dev.f3548,\
+configurations.dev.f3548_self_contained,\
+configurations.dev.netrid_v22a,\
+configurations.dev.netrid_v19,\
+configurations.dev.uspace"
 fi
 
+echo "Running configuration(s): ${CONFIG_NAME}"
+
+CONFIG_FLAG="--config ${CONFIG_NAME}"
+
+AUTH_SPEC='DummyOAuth(http://oauth.authority.localutm:8085/token,uss_qualifier)'
+
+QUALIFIER_OPTIONS="$CONFIG_FLAG $OTHER_ARGS"
+
+OUTPUT_DIR="monitoring/uss_qualifier/output"
+mkdir -p "$OUTPUT_DIR"
+
+CACHE_DIR="monitoring/uss_qualifier/.templates_cache"
+mkdir -p "$CACHE_DIR"
+
+if [ "$CI" == "true" ]; then
+  docker_args="--add-host host.docker.internal:host-gateway" # Required to reach other containers in Ubuntu (used for Github Actions)
+else
+  docker_args="-it"
+fi
+
+start_time=$(date +%Y-%m-%dT%H:%M:%S)
+# shellcheck disable=SC2086
+docker run ${docker_args} --name uss_qualifier \
+  --rm \
+  --network interop_ecosystem_network \
+  --add-host=host.docker.internal:host-gateway \
+  -u "$(id -u):$(id -g)" \
+  -e PYTHONBUFFERED=1 \
+  -e AUTH_SPEC=${AUTH_SPEC} \
+  -e USS_QUALIFIER_STOP_FAST=${USS_QUALIFIER_STOP_FAST:-} \
+  -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
+  -v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \
+  -v "$(pwd)/$CACHE_DIR:/app/$CACHE_DIR" \
+  -w /app/monitoring/uss_qualifier \
+  interuss/monitoring \
+  python main.py $QUALIFIER_OPTIONS
+
+# Set return code according to whether the test run was fully successful
+reports_generated=$(find ./monitoring/uss_qualifier/output/report*.json -newermt "$start_time")
+# shellcheck disable=SC2068
+for REPORT in ${reports_generated[@]}; do
+  successful=$(python build/dev/extract_json_field.py report.*.successful "$REPORT")
+  if echo "${successful}" | grep -iqF true; then
+    echo "Full success indicated by $REPORT"
+  else
+    echo "Could not establish that all uss_qualifier tests passed in $REPORT"
+    exit 1
+  fi
+done

@@ -3,6 +3,7 @@ from typing import Optional, Dict
 from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
 
 from monitoring.uss_qualifier.fileio import FileReference
+from monitoring.uss_qualifier.resources.files import ExternalFile
 from uas_standards.interuss.automated_testing.scd.v1.api import InjectFlightRequest
 
 
@@ -51,5 +52,5 @@ class FlightIntentsSpecification(ImplicitDict):
     planning_time: StringBasedTimeDelta
     """Time delta between the time uss_qualifier initiates this FlightInjectionAttempt and when a timestamp within the test_injection equal to reference_time occurs"""
 
-    file_source: FileReference
+    file: ExternalFile
     """Location of file to load"""

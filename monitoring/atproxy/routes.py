@@ -9,20 +9,20 @@ from monitoring.monitorlib import auth_validation, versioning
 from .app import webapp, basic_auth, users
 
 
-@webapp.route('/')
+@webapp.route("/")
 def root() -> Tuple[str, int]:
-    return 'ok', 200
+    return "ok", 200
 
 
-@webapp.route('/favicon.ico')
+@webapp.route("/favicon.ico")
 def favicon():
-  flask.abort(404)
+    flask.abort(404)
 
 
-@webapp.route('/status')
+@webapp.route("/status")
 @basic_auth.login_required
 def status():
-    return 'atproxy ok {}'.format(versioning.get_code_version())
+    return "atproxy ok {}".format(versioning.get_code_version())
 
 
 @webapp.errorhandler(Exception)
@@ -31,17 +31,31 @@ def handle_exception(e):
     if isinstance(e, HTTPException):
         return e
     elif isinstance(e, auth_validation.InvalidScopeError):
-        return flask.jsonify({
-            'message': 'Invalid scope; expected one of {%s}, but received only {%s}' % (' '.join(e.permitted_scopes),
-                                                                                        ' '.join(e.provided_scopes))}), 403
+        return (
+            flask.jsonify(
+                {
+                    "message": "Invalid scope; expected one of {%s}, but received only {%s}"
+                    % (" ".join(e.permitted_scopes), " ".join(e.provided_scopes))
+                }
+            ),
+            403,
+        )
     elif isinstance(e, auth_validation.InvalidAccessTokenError):
-        return flask.jsonify({'message': e.message}), 401
+        return flask.jsonify({"message": e.message}), 401
     elif isinstance(e, auth_validation.ConfigurationError):
-        return flask.jsonify({'message': 'Auth validation configuration error: ' + e.message}), 500
+        return (
+            flask.jsonify(
+                {"message": "Auth validation configuration error: " + e.message}
+            ),
+            500,
+        )
     elif isinstance(e, ValueError):
-        return flask.jsonify({'message': str(e)}), 400
+        return flask.jsonify({"message": str(e)}), 400
 
-    return flask.jsonify({'message': 'Unhandled {}: {}'.format(type(e).__name__, str(e))}), 500
+    return (
+        flask.jsonify({"message": "Unhandled {}: {}".format(type(e).__name__, str(e))}),
+        500,
+    )
 
 
 @basic_auth.verify_password

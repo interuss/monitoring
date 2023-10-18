@@ -1,6 +1,6 @@
 {
   "intents": {
-    "flight_1_planned_time_range_A": {
+    "flight_1_planned_vol_A": {
       "full": {
         "reference_time": "2023-02-12T10:34:14.483425+00:00",
         "request": {
@@ -240,11 +240,11 @@
                   }
                 },
                 "time_start": {
-                  "value": "2023-02-12T10:37:14.483425+00:00",
+                  "value": "2023-02-12T10:27:14.483425+00:00",
                   "format": "RFC3339"
                 },
                 "time_end": {
-                  "value": "2023-02-12T10:42:14.483425+00:00",
+                  "value": "2023-02-12T10:52:14.483425+00:00",
                   "format": "RFC3339"
                 }
               }
@@ -273,9 +273,9 @@
         }
       }
     },
-    "flight_1_activated_time_range_A": {
+    "flight_1_activated_vol_A": {
       "delta": {
-        "source": "flight_1_planned_time_range_A",
+        "source": "flight_1_planned_vol_A",
         "mutation": {
           "request": {
             "operational_intent": {
@@ -285,17 +285,18 @@
         }
       }
     },
-    "flight_1_planned_time_range_A_extended": {
+    "flight_1_planned_vol_A_extended": {
       "delta": {
-        "source": "flight_1_planned_time_range_A",
+        "source": "flight_1_planned_vol_A",
         "mutation": {
           "request": {
             "operational_intent": {
               "volumes": [
                 {
-                  "time_start": {
-                    "value": "2023-02-12T10:36:12.256896+00:00",
-                    "format": "RFC3339"
+                  "volume": {
+                    "altitude_lower": {
+                      "value": 575.0
+                    }
                   }
                 }
               ]
@@ -304,9 +305,9 @@
         }
       }
     },
-    "flight_1_activated_time_range_A_extended": {
+    "flight_1_activated_vol_A_extended": {
       "delta": {
-        "source": "flight_1_planned_time_range_A_extended",
+        "source": "flight_1_planned_vol_A_extended",
         "mutation": {
           "request": {
             "operational_intent": {
@@ -316,21 +317,21 @@
         }
       }
     },
-    "flight_1_planned_time_range_B": {
+    "flight_1_planned_vol_B": {
       "delta": {
-        "source": "flight_1_planned_time_range_A",
+        "source": "flight_1_planned_vol_A",
         "mutation": {
           "request": {
             "operational_intent": {
               "volumes": [
                 {
-                  "time_start": {
-                    "value": "2023-02-12T10:44:41.251669+00:00",
-                    "format": "RFC3339"
-                  },
-                  "time_end": {
-                    "value": "2023-02-12T10:48:55.233778+00:00",
-                    "format": "RFC3339"
+                  "volume": {
+                    "altitude_lower": {
+                      "value": 650.0
+                    },
+                    "altitude_upper": {
+                      "value": 705.0
+                    }
                   }
                 }
               ]
@@ -339,9 +340,9 @@
         }
       }
     },
-    "flight_1_activated_time_range_B": {
+    "flight_1_activated_vol_B": {
       "delta": {
-        "source": "flight_1_planned_time_range_B",
+        "source": "flight_1_planned_vol_B",
         "mutation": {
           "request": {
             "operational_intent": {
@@ -351,7 +352,7 @@
         }
       }
     },
-    "flight_2_planned_time_range_A": {
+    "flight_2_planned_vol_A": {
       "full": {
         "reference_time": "2023-02-12T10:34:14.483425+00:00",
         "request": {
@@ -639,11 +640,11 @@
                   }
                 },
                 "time_start": {
-                  "value": "2023-02-12T10:37:14.483425+00:00",
+                  "value": "2023-02-12T10:27:14.483425+00:00",
                   "format": "RFC3339"
                 },
                 "time_end": {
-                  "value": "2023-02-12T10:42:14.483425+00:00",
+                  "value": "2023-02-12T10:52:14.483425+00:00",
                   "format": "RFC3339"
                 }
               }
@@ -672,9 +673,9 @@
         }
       }
     },
-    "flight_2_activated_time_range_A": {
+    "flight_2_activated_vol_A": {
       "delta": {
-        "source": "flight_2_planned_time_range_A",
+        "source": "flight_2_planned_vol_A",
         "mutation": {
           "request": {
             "operational_intent": {
@@ -684,21 +685,21 @@
         }
       }
     },
-    "flight_2_activated_time_range_B": {
+    "flight_2_activated_vol_B": {
       "delta": {
-        "source": "flight_2_activated_time_range_A",
+        "source": "flight_2_activated_vol_A",
         "mutation": {
           "request": {
             "operational_intent": {
               "volumes": [
                 {
-                  "time_start": {
-                    "value": "2023-02-12T10:44:41.251669+00:00",
-                    "format": "RFC3339"
-                  },
-                  "time_end": {
-                    "value": "2023-02-12T10:48:55.233778+00:00",
-                    "format": "RFC3339"
+                  "volume": {
+                    "altitude_lower": {
+                      "value": 650.0
+                    },
+                    "altitude_upper": {
+                      "value": 705.0
+                    }
                   }
                 }
               ]
@@ -707,9 +708,9 @@
         }
       }
     },
-    "flight_2_equal_prio_planned_time_range_B": {
+    "flight_2_equal_prio_planned_vol_B": {
       "delta": {
-        "source": "flight_2_activated_time_range_B",
+        "source": "flight_2_activated_vol_B",
         "mutation": {
           "request": {
             "operational_intent": {
@@ -720,9 +721,9 @@
         }
       }
     },
-    "flight_2_equal_prio_activated_time_range_B": {
+    "flight_2_equal_prio_activated_vol_B": {
       "delta": {
-        "source": "flight_2_equal_prio_planned_time_range_B",
+        "source": "flight_2_equal_prio_planned_vol_B",
         "mutation": {
           "request": {
             "operational_intent": {
@@ -732,9 +733,9 @@
         }
       }
     },
-    "flight_2_equal_prio_nonconforming_time_range_A": {
+    "flight_2_equal_prio_nonconforming_vol_A": {
       "delta": {
-        "source": "flight_2_equal_prio_activated_time_range_B",
+        "source": "flight_2_equal_prio_activated_vol_B",
         "mutation": {
           "request": {
             "operational_intent": {
@@ -1022,11 +1023,11 @@
                     }
                   },
                   "time_start": {
-                    "value": "2023-02-12T10:37:14.483425+00:00",
+                    "value": "2023-02-12T10:27:14.483425+00:00",
                     "format": "RFC3339"
                   },
                   "time_end": {
-                    "value": "2023-02-12T10:42:14.483425+00:00",
+                    "value": "2023-02-12T10:52:14.483425+00:00",
                     "format": "RFC3339"
                   }
                 }

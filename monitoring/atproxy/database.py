@@ -10,9 +10,10 @@ from implicitdict import ImplicitDict
 # --- All queries ---
 class QueryState(str, enum.Enum):
     """Whether a query is being handled, or has already been handled."""
-    Queued = 'Queued'
-    BeingHandled = 'BeingHandled'
-    Complete = 'Complete'
+
+    Queued = "Queued"
+    BeingHandled = "BeingHandled"
+    Complete = "Complete"
 
 
 class Query(ImplicitDict):
@@ -51,4 +52,5 @@ class Database(ImplicitDict):
 
 db = SynchronizedValue(
     Database(),
-    decoder=lambda b: ImplicitDict.parse(json.loads(b.decode('utf-8')), Database))
+    decoder=lambda b: ImplicitDict.parse(json.loads(b.decode("utf-8")), Database),
+)

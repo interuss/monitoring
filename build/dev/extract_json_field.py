@@ -18,5 +18,7 @@ for field in fields:
         try:
             obj = obj[field]
         except KeyError:
-            raise ValueError(f"Could not find field '{field}' in '{sys.argv[1]}' for {sys.argv[2]}; available keys: {list(obj.keys())}")
+            raise ValueError(
+                f"Could not find field '{field}' in '{sys.argv[1]}' for {sys.argv[2]}; available keys: {list(obj.keys())}"
+            )
 print(obj)

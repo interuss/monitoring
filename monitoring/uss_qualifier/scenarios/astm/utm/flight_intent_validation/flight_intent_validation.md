@@ -17,6 +17,11 @@ FlightIntentsResource that provides the following flight intents:
   - `invalid_too_far_away`: reference time mutation: reference time pulled back so that it is like the operational intent is attempted to be planned more than OiMaxPlanHorizon = 30 days ahead of time
   - `valid_conflict_tiny_overlap`: volumes mutation: has a volume that overlaps with `valid_op_intent` just above IntersectionMinimumPrecision = 1cm in a way that must result as a conflict
 
+Because the scenario involves activation of intents, all activated intents must be active during the execution of the
+test scenario, i.e. they must start before the reference time plus planning time duration. Additionally, their end time
+must leave sufficient time for the execution of the test scenario. For the sake of simplicity, it is recommended to set
+the start and end times of all the intents to the same range.
+
 ### tested_uss
 FlightPlannerResource that will be tested for its validation of operational intents.
 
