@@ -18,16 +18,15 @@ class ExternalFile(ImplicitDict):
 
     If not specified, will be populated with the hash of the external file at the time of execution."""
 
-
-def _verify_or_set_hash(file: ExternalFile, content: str) -> None:
-    hash_sha512 = hashlib.sha512(content.encode("utf-8")).hexdigest()
-    if "hash_sha512" in file and file.hash_sha512:
-        if hash_sha512 != file.hash_sha512:
-            raise ValueError(
-                f"Provided SHA-512 hash for external file at {file.path} is {file.hash_sha512}, but this does not match the hash computed for the content of that file which is {hash_sha512}"
-            )
-    else:
-        file.hash_sha512 = hash_sha512
+    def verify_or_set_hash(self, content: str) -> None:
+        hash_sha512 = hashlib.sha512(content.encode("utf-8")).hexdigest()
+        if "hash_sha512" in self and self.hash_sha512:
+            if hash_sha512 != self.hash_sha512:
+                raise ValueError(
+                    f"Provided SHA-512 hash for external file at {self.path} is {self.hash_sha512}, but this does not match the hash computed for the content of that file which is {hash_sha512}"
+                )
+        else:
+            self.hash_sha512 = hash_sha512
 
 
 def load_content(file: ExternalFile) -> str:
@@ -41,7 +40,7 @@ def load_content(file: ExternalFile) -> str:
     Returns: Content of external file.
     """
     content = fileio.load_content(file.path)
-    _verify_or_set_hash(file, content)
+    file.verify_or_set_hash(content)
     return content
 
 
@@ -57,5 +56,5 @@ def load_dict(file: ExternalFile) -> dict:
     """
     result = fileio.load_dict_with_references(file.path)
     content = json.dumps(result)
-    _verify_or_set_hash(file, content)
+    file.verify_or_set_hash(content)
     return result
