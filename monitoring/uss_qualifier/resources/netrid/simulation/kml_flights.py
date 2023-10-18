@@ -205,7 +205,7 @@ def generate_flight_record(
             accuracy_v=flight_description.get("accuracy_v"),
             extrapolated=False,
         )
-        aircraft_height = None  # TODO: not None!
+        aircraft_height = None
         rid_aircraft_state = RIDAircraftState(
             timestamp=StringBasedDateTime(timestamp_isoformat),
             operational_status="Airborne",
