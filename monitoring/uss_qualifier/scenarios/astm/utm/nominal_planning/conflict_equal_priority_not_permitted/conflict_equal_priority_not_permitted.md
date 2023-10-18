@@ -21,7 +21,7 @@ Otherwise, the FlightIntentsResource must provide the following flight intents:
 
 <table>
   <tr>
-    <th>Flight intent ID</th><!-- TODO: remove mention of time ranges -->
+    <th>Flight intent ID</th><
     <th>Flight name</th>
     <th>Priority</th>
     <th>State</th><!-- TODO: Update with usage_state and uas_state when new flight planning API is adopted -->
@@ -29,7 +29,7 @@ Otherwise, the FlightIntentsResource must provide the following flight intents:
     <th>Must not conflict with</th>
   </tr>
   <tr>
-    <td><code>flight_1_planned_time_range_A</code></td>
+    <td><code>flight_1_planned_vol_A</code></td>
     <td rowspan="2">Flight 1</td>
     <td rowspan="8">Any (but all the same)</td>
     <td>Accepted</td>
@@ -37,43 +37,48 @@ Otherwise, the FlightIntentsResource must provide the following flight intents:
     <td rowspan="2">N/A</td>
   </tr>
   <tr>
-    <td><code>flight_1_activated_time_range_A</code></td>
+    <td><code>flight_1_activated_vol_A</code></td>
     <td>Activated</td>
   </tr>
   <tr>
-    <td><code>flight_1_activated_time_range_A_extended</code></td>
+    <td><code>flight_1_activated_vol_A_extended</code></td>
     <td>Flight 1m</td>
     <td>Activated</td>
     <td>Flight 2</td>
     <td>N/A</td>
   </tr>
   <tr>
-    <td><code>flight_1_planned_time_range_B</code></td>
+    <td><code>flight_1_planned_vol_B</code></td>
     <td rowspan="2">Flight 1c</td>
     <td>Planned</td>
     <td rowspan="2">N/A</td>
     <td rowspan="2">Flight 2</td>
   </tr>
   <tr>
-    <td><code>flight_1_activated_time_range_B</code></td>
+    <td><code>flight_1_activated_vol_B</code></td>
     <td>Activated</td>
   </tr>
   <tr>
-    <td><code>flight_2_equal_prio_planned_time_range_B</code></td>
+    <td><code>flight_2_equal_prio_planned_vol_B</code></td>
     <td rowspan="3">Flight 2</td>
     <td>Planned</td>
     <td rowspan="3">Flight 1, Flight 1m</td>
     <td rowspan="3">Flight 1c</td>
   </tr>
   <tr>
-    <td><code>flight_2_equal_prio_activated_time_range_B</code></td>
+    <td><code>flight_2_equal_prio_activated_vol_B</code></td>
     <td>Activated</td>
   </tr>
   <tr>
-    <td><code>flight_2_equal_prio_nonconforming_time_range_A</code></td>
+    <td><code>flight_2_equal_prio_nonconforming_vol_A</code></td>
     <td>Nonconforming</td>
   </tr>
 </table>
+
+Because the scenario involves activation of intents, all activated intents must be active during the execution of the
+test scenario, i.e. they must start before the reference time plus planning time duration. Additionally, their end time
+must leave sufficient time for the execution of the test scenario. For the sake of simplicity, it is recommended to set
+the start and end times of all the intents to the same range.
 
 ### tested_uss
 FlightPlannerResource that is under test and will manage flight 1.

@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional, List, Callable
 
+import arrow
 from uas_standards.astm.f3548.v21 import api as f3548_v21
 from uas_standards.astm.f3548.v21.constants import OiMaxVertices, OiMaxPlanHorizonDays
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
@@ -67,6 +68,19 @@ def validate_request(req_body: scd_api.InjectFlightRequest, locality: Locality) 
         raise PlanningError(
             f"Operational intent specifies an off-nominal volume while being in {req_body.operational_intent.state} state"
         )
+
+    # Validate intent is currently active if in Activated state
+    # I.e. at least one volume has start time in the past and end time in the future
+    if req_body.operational_intent.state == OperationalIntentState.Activated:
+        now = arrow.utcnow().datetime
+        active_volume = Volume4DCollection.from_interuss_scd_api(
+            req_body.operational_intent.volumes
+            + req_body.operational_intent.off_nominal_volumes
+        ).has_active_volume(now)
+        if not active_volume:
+            raise PlanningError(
+                f"Operational intent is activated but has no volume currently active (now: {now})"
+            )
 
 
 def check_for_disallowed_conflicts(

@@ -1,7 +1,7 @@
 intents:
-  flight_1_planned_time_range_A:
+  flight_1_planned_vol_A:
     full:
-      reference_time: '2023-01-01T00:00:00+00:00'
+      reference_time: '2023-01-01T00:12:00+00:00'
       request:
         operational_intent:
           volumes:
@@ -39,10 +39,10 @@ intents:
                   reference: W84
                   units: M
               time_start:
-                value: '2023-01-01T00:03:00+00:00'
+                value: '2023-01-01T00:05:00+00:00'
                 format: RFC3339
               time_end:
-                value: '2023-01-01T00:08:00+00:00'
+                value: '2023-01-01T00:17:00+00:00'
                 format: RFC3339
           state: Accepted
           off_nominal_volumes: [ ]
@@ -61,58 +61,57 @@ intents:
           uas_id: ''
           uas_type_certificate: ''
 
-  flight_1_activated_time_range_A:
+  flight_1_activated_vol_A:
     delta:
-      source: flight_1_planned_time_range_A
+      source: flight_1_planned_vol_A
       mutation:
         request:
           operational_intent:
             state: Activated
 
-  flight_1_planned_time_range_A_extended:
+  flight_1_planned_vol_A_extended:
     delta:
-      source: flight_1_planned_time_range_A
+      source: flight_1_planned_vol_A
       mutation:
         request:
           operational_intent:
             volumes:
-              - time_start:
-                  value: '2023-01-01T00:02:00+00:00'
-                  format: RFC3339
+              - volume:
+                  altitude_lower:
+                    value: 425
 
-  flight_1_activated_time_range_A_extended:
+  flight_1_activated_vol_A_extended:
     delta:
-      source: flight_1_planned_time_range_A_extended
+      source: flight_1_planned_vol_A_extended
       mutation:
         request:
           operational_intent:
             state: Activated
 
-  flight_1_planned_time_range_B:
+  flight_1_planned_vol_B:
     delta:
-      source: flight_1_planned_time_range_A
+      source: flight_1_planned_vol_A
       mutation:
         request:
           operational_intent:
             volumes:
-              - time_start:
-                  value: '2023-01-01T00:09:00+00:00'
-                  format: RFC3339
-                time_end:
-                  value: '2023-01-01T00:10:00+00:00'
-                  format: RFC3339
+              - volume:
+                  altitude_lower:
+                    value: 602
+                  altitude_upper:
+                    value: 750
 
-  flight_1_activated_time_range_B:
+  flight_1_activated_vol_B:
     delta:
-      source: flight_1_planned_time_range_B
+      source: flight_1_planned_vol_B
       mutation:
         request:
           operational_intent:
             state: Activated
 
-  flight_2_planned_time_range_A:
+  flight_2_planned_vol_A:
     full:
-      reference_time: '2023-01-01T00:00:00+00:00'
+      reference_time: '2023-01-01T00:12:00+00:00'
       request:
         operational_intent:
           volumes:
@@ -140,10 +139,10 @@ intents:
                   reference: W84
                   units: M
               time_start:
-                value: '2023-01-01T00:02:00+00:00'
+                value: '2023-01-01T00:05:00+00:00'
                 format: RFC3339
               time_end:
-                value: '2023-01-01T00:12:15+00:00'
+                value: '2023-01-01T00:17:00+00:00'
                 format: RFC3339
           state: Accepted
           off_nominal_volumes: [ ]
@@ -162,48 +161,47 @@ intents:
           uas_id: ''
           uas_type_certificate: ''
 
-  flight_2_activated_time_range_A:
+  flight_2_activated_vol_A:
     delta:
-      source: flight_2_planned_time_range_A
+      source: flight_2_planned_vol_A
       mutation:
         request:
           operational_intent:
             state: Activated
 
-  flight_2_activated_time_range_B:
+  flight_2_activated_vol_B:
     delta:
-      source: flight_2_activated_time_range_A
+      source: flight_2_activated_vol_A
       mutation:
         request:
           operational_intent:
             volumes:
-              - time_start:
-                  value: '2023-01-01T00:09:00+00:00'
-                  format: RFC3339
-                time_end:
-                  value: '2023-01-01T00:10:00+00:00'
-                  format: RFC3339
+              - volume:
+                  altitude_lower:
+                    value: 483
+                  altitude_upper:
+                    value: 519
 
-  flight_2_equal_prio_planned_time_range_B:
+  flight_2_equal_prio_planned_vol_B:
     delta:
-      source: flight_2_activated_time_range_B
+      source: flight_2_activated_vol_B
       mutation:
         request:
           operational_intent:
             state: Accepted
             priority: 0
 
-  flight_2_equal_prio_activated_time_range_B:
+  flight_2_equal_prio_activated_vol_B:
     delta:
-      source: flight_2_equal_prio_planned_time_range_B
+      source: flight_2_equal_prio_planned_vol_B
       mutation:
         request:
           operational_intent:
             state: Activated
 
-  flight_2_equal_prio_nonconforming_time_range_A:
+  flight_2_equal_prio_nonconforming_vol_A:
     delta:
-      source: flight_2_equal_prio_activated_time_range_B
+      source: flight_2_equal_prio_activated_vol_B
       mutation:
         request:
           operational_intent:
@@ -233,8 +231,8 @@ intents:
                     reference: W84
                     units: M
                 time_start:
-                  value: '2023-01-01T00:02:00+00:00'
+                  value: '2023-01-01T00:05:00+00:00'
                   format: RFC3339
                 time_end:
-                  value: '2023-01-01T00:12:15+00:00'
+                  value: '2023-01-01T00:17:00+00:00'
                   format: RFC3339
