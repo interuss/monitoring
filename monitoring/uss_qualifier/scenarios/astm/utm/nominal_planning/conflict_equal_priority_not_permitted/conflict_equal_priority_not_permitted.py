@@ -469,10 +469,6 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 self.flight_1_activated_vol_A.request
             )
 
-        # TODO: the following call requires the control USS to support CMSA role,
-        #  but as there is currently no explicit way of knowing if it is the case
-        #  or not, we assume that a Rejected result means the USS does not
-        #  support the CMSA role, in which case we interrupt the scenario.
         with OpIntentValidator(
             self,
             self.control_uss,
@@ -487,15 +483,15 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 "Successful transition to non-conforming state",
                 {
                     InjectFlightResponseResult.Planned,
-                    InjectFlightResponseResult.Rejected,
+                    InjectFlightResponseResult.NotSupported,
                 },
                 {InjectFlightResponseResult.Failed: "Failure"},
                 self.control_uss,
                 self.flight_2_equal_prio_nonconforming_vol_A.request,
                 self.flight_2_id,
             )
-            if resp_flight_2.result == InjectFlightResponseResult.Rejected:
-                msg = f"{self.control_uss.config.participant_id} rejected transition to a Nonconforming state because it does not support CMSA role, execution of the scenario was stopped without failure"
+            if resp_flight_2.result == InjectFlightResponseResult.NotSupported:
+                msg = f"{self.control_uss.config.participant_id} does not support the transition to a Nonconforming state; execution of the scenario was stopped without failure"
                 self.record_note("Control USS does not support CMSA role", msg)
                 raise ScenarioCannotContinueError(msg)
 

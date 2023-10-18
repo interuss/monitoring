@@ -115,11 +115,8 @@ class UTMClientSession(requests.Session):
             def auth(
                 prepared_request: requests.PreparedRequest,
             ) -> requests.PreparedRequest:
-                if not scopes:
-                    raise ValueError(
-                        "All tests must specify auth scope for all session requests.  Either specify as an argument for each individual HTTP call, or decorate the test with @default_scope."
-                    )
-                self.auth_adapter.add_headers(prepared_request, scopes)
+                if scopes:
+                    self.auth_adapter.add_headers(prepared_request, scopes)
                 return prepared_request
 
             kwargs["auth"] = auth

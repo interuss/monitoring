@@ -1,10 +1,17 @@
 import datetime
 import s2sphere
 
-from typing import Optional, List, Set
+from typing import Optional, List, Set, Dict, Any
+
+from implicitdict import StringBasedDateTime
 
 from monitoring.monitorlib import schema_validation
-from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.fetch import (
+    QueryError,
+    Query,
+    RequestDescription,
+    ResponseDescription,
+)
 from monitoring.monitorlib.fetch.rid import (
     FetchedSubscription,
     FetchedSubscriptions,
@@ -15,6 +22,7 @@ from monitoring.monitorlib.fetch.rid import (
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.mutate.rid import ISAChange, ChangedSubscription
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
 from monitoring.uss_qualifier.scenarios.scenario import (
@@ -249,6 +257,43 @@ class DSSWrapper(object):
         )
 
         return isa
+
+    def put_isa_expect_response_code(
+        self,
+        check: PendingCheck,
+        expected_error_codes: Set[int],
+        area_vertices: List[s2sphere.LatLng],
+        alt_lo: float,
+        alt_hi: float,
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+        uss_base_url: str,
+        isa_id: str,
+        isa_version: Optional[str] = None,
+    ) -> ISAChange:
+        mutated_isa = mutate.put_isa(
+            area_vertices=area_vertices,
+            alt_lo=alt_lo,
+            alt_hi=alt_hi,
+            start_time=start_time,
+            end_time=end_time,
+            uss_base_url=uss_base_url,
+            isa_id=isa_id,
+            isa_version=isa_version,
+            rid_version=self._dss.rid_version,
+            utm_client=self._dss.client,
+            server_id=self._dss.participant_id,
+        )
+
+        self._handle_query_result(
+            check=check,
+            q=mutated_isa.dss_query,
+            fail_msg="ISA Put succeeded when expecting a failure",
+            required_status_code=expected_error_codes,
+            severity=Severity.High,
+            fail_details=f"The submitted query was expected to fail. Payload: {mutated_isa.dss_query.query.request.json}",
+        )
+        return mutated_isa
 
     def put_isa(
         self,
@@ -846,3 +891,54 @@ class DSSWrapper(object):
         raise RuntimeError(
             "DSS query was not successful, but a High Severity issue didn't interrupt execution"
         )
+
+    def raw_request_with_expected_code(
+        self,
+        check: PendingCheck,
+        method: str,
+        url_path: str,
+        json: Dict[str, Any],
+        expected_error_codes: Set[int],
+        fail_msg: str,
+    ) -> RIDQuery:
+        """For passing raw requests to the underlying client.
+        Mostly useful for sending malformed requests when testing validations.
+        """
+
+        req_descr = RequestDescription(
+            method=method,
+            url=url_path,
+            json=json,
+            timestamp=datetime.datetime.utcnow(),
+        )
+
+        resp = self._dss.client.put(url_path, json=json)
+
+        q = Query(
+            request=req_descr,
+            response=ResponseDescription(
+                code=resp.status_code,
+                json=resp.json(),
+                body=resp.content,
+                headers=resp.headers,
+                reported=StringBasedDateTime(datetime.datetime.utcnow()),
+            ),
+        )
+        self._scenario.record_query(q)
+
+        if self._dss.rid_version == RIDVersion.f3411_19:
+            rid_query = RIDQuery(v19_query=q)
+        elif self._dss.rid_version == RIDVersion.f3411_22a:
+            rid_query = RIDQuery(v22a_query=q)
+        else:
+            raise ValueError(f"Unknown RID version: {self._dss.rid_version}")
+
+        self._handle_query_result(
+            check,
+            rid_query,
+            fail_msg,
+            expected_error_codes,
+            Severity.Medium,
+        )
+
+        return rid_query

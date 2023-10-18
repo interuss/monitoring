@@ -1,0 +1,10 @@
+name: DSS testing for ASTM NetRID F3548-21
+resources:
+  dss: resources.astm.f3548.v21.DSSInstanceResource
+  all_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
+actions:
+  - test_scenario:
+      scenario_type: scenarios.astm.utm.DSSInteroperability
+      resources:
+        primary_dss_instance: dss
+        all_dss_instances: all_dss_instances

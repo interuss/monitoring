@@ -64,6 +64,18 @@ v1:
             reference_time: '2023-01-10T00:00:00.123456+00:00'
             time_start: '2023-01-10T00:00:01.123456+00:00'
             time_end: '2023-01-10T01:00:01.123456+00:00'
+        problematically_big_area:
+          resource_type: resources.VerticesResource
+          specification:
+            vertices:
+              - lat: 38
+                lng: -81
+              - lat: 37
+                lng: -81
+              - lat: 37
+                lng: -80
+              - lat: 38
+                lng: -80
     action:
       test_suite:
         suite_type: suites.interuss.dss.all_tests
@@ -72,6 +84,7 @@ v1:
           f3411v22a_dss_instances: netrid_dss_instances_v22a
           id_generator: id_generator
           service_area: service_area
+          problematically_big_area: problematically_big_area
   artifacts:
     report:
       report_path: output/report_dss_probing.json
@@ -86,3 +99,7 @@ v1:
       participant_requirements:
         uss1: all_astm_dss_requirements
         uss2: all_astm_dss_requirements
+  validation:
+    criteria:
+      - full_success: {}
+      - no_skipped_actions: {}

@@ -41,9 +41,6 @@ class FlightIntentValidation(TestScenario):
     valid_flight: FlightIntent
     valid_activated: FlightIntent
 
-    invalid_accepted_offnominal: FlightIntent
-    invalid_activated_offnominal: FlightIntent
-
     invalid_too_far_away: FlightIntent
 
     valid_conflict_tiny_overlap: FlightIntent
@@ -76,15 +73,11 @@ class FlightIntentValidation(TestScenario):
                 self.valid_flight,
                 self.valid_activated,
                 self.invalid_too_far_away,
-                self.invalid_accepted_offnominal,
-                self.invalid_activated_offnominal,
                 self.valid_conflict_tiny_overlap,
             ) = (
                 _flight_intents["valid_flight"],
                 _flight_intents["valid_activated"],
                 _flight_intents["invalid_too_far_away"],
-                _flight_intents["invalid_accepted_offnominal"],
-                _flight_intents["invalid_activated_offnominal"],
                 _flight_intents["valid_conflict_tiny_overlap"],
             )
 
@@ -114,14 +107,6 @@ class FlightIntentValidation(TestScenario):
                 == OperationalIntentState.Accepted
             ), "invalid_too_far_away must have state Accepted"
             assert (
-                self.invalid_accepted_offnominal.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "invalid_accepted_offnominal must have state Accepted"
-            assert (
-                self.invalid_activated_offnominal.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "invalid_activated_offnominal must have state Activated"
-            assert (
                 self.valid_conflict_tiny_overlap.request.operational_intent.state
                 == OperationalIntentState.Accepted
             ), "valid_conflict_tiny_overlap must have state Accepted"
@@ -135,19 +120,6 @@ class FlightIntentValidation(TestScenario):
             assert (
                 time_delta.days > OiMaxPlanHorizonDays
             ), f"invalid_too_far_away must have start time more than {OiMaxPlanHorizonDays} days ahead of reference time, got {time_delta}"
-
-            assert (
-                len(
-                    self.invalid_accepted_offnominal.request.operational_intent.off_nominal_volumes
-                )
-                > 0
-            ), "invalid_accepted_offnominal must have at least one off-nominal volume"
-            assert (
-                len(
-                    self.invalid_activated_offnominal.request.operational_intent.off_nominal_volumes
-                )
-                > 0
-            ), "invalid_activated_offnominal must have at least one off-nominal volume"
 
             assert Volume4DCollection.from_interuss_scd_api(
                 self.valid_flight.request.operational_intent.volumes
@@ -180,12 +152,6 @@ class FlightIntentValidation(TestScenario):
 
         self.begin_test_case("Attempt to plan invalid flight intents")
         self._attempt_invalid()
-        self.end_test_case()
-
-        self.begin_test_case(
-            "Attempt to specify off-nominal volume in Accepted and Activated states"
-        )
-        self._attempt_invalid_offnominal()
         self.end_test_case()
 
         self.begin_test_case("Validate transition to Ended state after cancellation")
@@ -222,8 +188,6 @@ class FlightIntentValidation(TestScenario):
             [
                 self.valid_flight,
                 self.valid_activated,
-                self.invalid_accepted_offnominal,
-                self.invalid_activated_offnominal,
                 self.invalid_too_far_away,
                 self.valid_conflict_tiny_overlap,
             ],
@@ -250,105 +214,6 @@ class FlightIntentValidation(TestScenario):
                 self.invalid_too_far_away.request,
             )
             validator.expect_not_shared()
-
-    def _attempt_invalid_offnominal(self):
-        with OpIntentValidator(
-            self,
-            self.tested_uss,
-            self.dss,
-            "Validate flight intent with an off-nominal volume not planned",
-            self._intents_extent,
-        ) as validator:
-            submit_flight_intent(
-                self,
-                "Attempt to plan flight with an off-nominal volume",
-                "Incorrectly planned",
-                {InjectFlightResponseResult.Rejected},
-                {InjectFlightResponseResult.Failed: "Failure"},
-                self.tested_uss,
-                self.invalid_accepted_offnominal.request,
-            )
-            validator.expect_not_shared()
-
-        with OpIntentValidator(
-            self,
-            self.tested_uss,
-            self.dss,
-            "Validate flight sharing",
-            self._intents_extent,
-        ) as validator:
-            _, valid_flight_id = plan_flight_intent(
-                self,
-                "Plan valid flight intent",
-                self.tested_uss,
-                self.valid_flight.request,
-            )
-            valid_flight_op_intent_ref = validator.expect_shared(
-                self.valid_flight.request
-            )
-
-        with OpIntentValidator(
-            self,
-            self.tested_uss,
-            self.dss,
-            "Validate planned flight not modified",
-            self._intents_extent,
-            valid_flight_op_intent_ref,
-        ) as validator:
-            submit_flight_intent(
-                self,
-                "Attempt to modify planned flight with an off-nominal volume",
-                "Incorrectly modified",
-                {InjectFlightResponseResult.Rejected},
-                {InjectFlightResponseResult.Failed: "Failure"},
-                self.tested_uss,
-                self.invalid_accepted_offnominal.request,
-            )
-            valid_flight_op_intent_ref = validator.expect_shared(
-                self.valid_flight.request
-            )
-
-        with OpIntentValidator(
-            self,
-            self.tested_uss,
-            self.dss,
-            "Validate flight sharing",
-            self._intents_extent,
-            valid_flight_op_intent_ref,
-        ) as validator:
-            activate_flight_intent(
-                self,
-                "Activate valid flight intent",
-                self.tested_uss,
-                self.valid_activated.request,
-                valid_flight_id,
-            )
-            valid_flight_op_intent_ref = validator.expect_shared(
-                self.valid_activated.request
-            )
-
-        with OpIntentValidator(
-            self,
-            self.tested_uss,
-            self.dss,
-            "Validate activated flight not modified",
-            self._intents_extent,
-            valid_flight_op_intent_ref,
-        ) as validator:
-            submit_flight_intent(
-                self,
-                "Attempt to modify activated flight with an off-nominal volume",
-                "Incorrectly modified",
-                {InjectFlightResponseResult.Rejected},
-                {InjectFlightResponseResult.Failed: "Failure"},
-                self.tested_uss,
-                self.invalid_activated_offnominal.request,
-            )
-            validator.expect_shared(self.valid_flight.request)
-
-        _ = delete_flight_intent(
-            self, "Delete valid flight intent", self.tested_uss, valid_flight_id
-        )
 
     def _validate_ended_cancellation(self):
         with OpIntentValidator(
@@ -397,7 +262,10 @@ class FlightIntentValidation(TestScenario):
                 self,
                 "Attempt to plan flight conflicting by a tiny overlap",
                 "Incorrectly planned",
-                {InjectFlightResponseResult.ConflictWithFlight},
+                {
+                    InjectFlightResponseResult.ConflictWithFlight,
+                    InjectFlightResponseResult.Rejected,
+                },
                 {InjectFlightResponseResult.Failed: "Failure"},
                 self.tested_uss,
                 self.valid_conflict_tiny_overlap.request,

@@ -138,7 +138,7 @@ f3548:
                 -   participant_id: uss2
                     injection_base_url: http://scdsc.uss2.localutm/scdsc
                     local_debug: true
-    dss:
+    scd_dss:
         $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
         resource_type: resources.astm.f3548.v21.DSSInstanceResource
         dependencies:
@@ -147,6 +147,19 @@ f3548:
             participant_id: uss1
             base_url: http://dss.uss1.localutm
             has_private_address: true
+    scd_dss_instances:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+        resource_type: resources.astm.f3548.v21.DSSInstancesResource
+        dependencies:
+            auth_adapter: utm_auth
+        specification:
+            dss_instances:
+                - participant_id: uss1
+                  base_url: http://dss.uss1.localutm
+                  has_private_address: true
+                - participant_id: uss2
+                  base_url: http://dss.uss2.localutm
+                  has_private_address: true
 
 f3548_single_scenario:
     uss1:
@@ -169,3 +182,16 @@ f3548_single_scenario:
                 participant_id: uss2
                 injection_base_url: http://scdsc.uss2.localutm/scdsc
                 local_debug: true
+
+mock_uss_instances:
+    mock_uss_instances_scdsc:
+        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+        resource_type: resources.interuss.mock_uss.client.MockUSSsResource
+        dependencies:
+            auth_adapter: utm_auth
+        specification:
+            instances:
+                - mock_uss_base_url: http://scdsc.uss1.localutm
+                  participant_id: uss1
+                - mock_uss_base_url: http://scdsc.uss2.localutm
+                  participant_id: uss2

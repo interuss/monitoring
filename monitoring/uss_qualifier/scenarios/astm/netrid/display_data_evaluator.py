@@ -361,7 +361,9 @@ class RIDObservationEvaluator(object):
             observed_position = mapping.observed_flight.most_recent_position
             injected_position = injected_telemetry.position
 
-            with self._test_scenario.check("Altitude is present") as check:
+            with self._test_scenario.check(
+                "Altitude is present", [observer.participant_id]
+            ) as check:
                 if "alt" not in observed_position:
                     check.record_failed(
                         summary="Displayed flight is missing altitude",
@@ -822,7 +824,9 @@ class RIDObservationEvaluator(object):
         # endpoints (and therefore cannot provide a callback/base URL), calling the one-time query endpoint
         # is currently much cleaner.  If this test is applied to a DSS that does not implement the one-time
         # ISA query endpoint, this check can be adapted.
-        with self._test_scenario.check("ISA query") as check:
+        with self._test_scenario.check(
+            "ISA query", [self._dss.participant_id]
+        ) as check:
             if not sp_observation.dss_isa_query.success:
                 check.record_failed(
                     summary="Could not query ISAs from DSS",

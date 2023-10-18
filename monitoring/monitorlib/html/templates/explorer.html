@@ -1,7 +1,7 @@
 {# Renders the provided `obj` dict as interactive HTML #}
 {# Content of explorer_header() should be added to the header of the page #}
-{# Content of explorer_content(obj) represents the `obj` dict as interactive HTML content #}
-{# Content of explorer_footer() should be added to the page such that it is loaded after draw_node #}
+{# Content of explorer_content(div_id, obj) represents the `obj` dict as interactive HTML content #}
+{# Content of explorer_footer(div_ids) should be added to the page such that it is loaded after explorer_content/draw_node #}
 
 {% macro collapseable(v) %}{% if v is mapping or (v is iterable and v is not string) %}collapseable{% else %}not_collapseable{% endif %}{% endmacro %}
 
@@ -58,7 +58,7 @@
       cursor: pointer;
     }
     .collapsed>.node_key {
-      color: red;
+      color: blue;
     }
     .node_key {
       font-weight: bold;
@@ -66,13 +66,13 @@
   </style>
 {% endmacro %}
 
-{% macro explorer_content(obj) %}
-  <div id="top_node">
+{% macro explorer_content(div_id, obj) %}
+  <div id="{{ div_id }}">
     {{ draw_node(obj) }}
   </div>
 {% endmacro %}
 
-{% macro explorer_footer() %}
+{% macro explorer_footer(div_ids) %}
   <script>
     function showHide(node) {
       var value = node.querySelector(".node_value");
@@ -103,6 +103,8 @@
       }
     }
 
-    addShowHide(document.getElementById("top_node"));
+    {% for div_id in div_ids %}
+      addShowHide(document.getElementById("{{ div_id }}"));
+    {% endfor %}
   </script>
 {% endmacro %}

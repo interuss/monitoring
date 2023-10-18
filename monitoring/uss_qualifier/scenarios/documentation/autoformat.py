@@ -1,5 +1,5 @@
 import os
-from typing import Iterable, Dict
+from typing import Iterable, Dict, List
 
 import marko.block
 import marko.element
@@ -10,6 +10,7 @@ from monitoring.uss_qualifier.documentation import text_of
 from monitoring.uss_qualifier.requirements.documentation import RequirementID
 from monitoring.uss_qualifier.scenarios.documentation.parsing import (
     get_documentation_filename,
+    TEST_STEP_SUFFIX,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
@@ -24,16 +25,30 @@ def format_scenario_documentation(
         different from what it currently contains).
     """
     new_versions: Dict[str, str] = {}
+    to_check = []
     for test_scenario in test_scenarios:
-        md = marko.Markdown(renderer=MarkdownRenderer)
-        # Load the .md file if it exists
         doc_filename = get_documentation_filename(test_scenario)
         if not os.path.exists(doc_filename):
             continue
+        to_check.append(doc_filename)
+
+    checked = set()
+    while to_check:
+        # Pick the next documentation file to check
+        doc_filename = to_check.pop(0)
+        if doc_filename in checked:
+            continue
+        checked.add(doc_filename)
+
+        # Load the .md file if it exists
         with open(doc_filename, "r") as f:
             original = f.read()
+        md = marko.Markdown(renderer=MarkdownRenderer)
         doc = md.parse(original)
         original = md.render(doc)
+
+        linked_test_steps = _enumerate_linked_test_steps(doc, doc_filename)
+        to_check.extend(linked_test_steps)
 
         _add_requirement_links(doc, doc_filename)
 
@@ -94,3 +109,26 @@ def _add_requirement_links(parent: marko.element.Element, doc_path: str) -> None
                     )
             else:
                 _add_requirement_links(child, doc_path)
+
+
+def _enumerate_linked_test_steps(
+    parent: marko.element.Element, doc_path: str
+) -> List[str]:
+    linked_test_steps = []
+    if hasattr(parent, "children") and not isinstance(parent.children, str):
+        for i, child in enumerate(parent.children):
+            if isinstance(child, str):
+                continue
+            elif (
+                isinstance(child, marko.block.Heading)
+                and text_of(child).lower().endswith(TEST_STEP_SUFFIX)
+                and child.children
+                and isinstance(child.children[0], marko.block.inline.Link)
+            ):
+                href = child.children[0].dest
+                doc_dir = os.path.dirname(doc_path)
+                linked_path = os.path.normpath(os.path.join(doc_dir, href))
+                linked_test_steps.append(linked_path)
+            else:
+                linked_test_steps.extend(_enumerate_linked_test_steps(child, doc_path))
+    return linked_test_steps

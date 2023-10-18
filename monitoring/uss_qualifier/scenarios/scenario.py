@@ -122,7 +122,7 @@ class PendingCheck(object):
         kwargs = {
             "name": self._documentation.name,
             "documentation_url": self._documentation.url,
-            "timestamp": StringBasedDateTime(datetime.utcnow()),
+            "timestamp": StringBasedDateTime(arrow.utcnow()),
             "summary": summary,
             "details": details,
             "requirements": requirements,
@@ -157,6 +157,7 @@ class PendingCheck(object):
 
         passed_check = PassedCheck(
             name=self._documentation.name,
+            timestamp=StringBasedDateTime(arrow.utcnow()),
             participants=participants,
             requirements=requirements,
         )
@@ -506,6 +507,17 @@ class TestScenario(GenericTestScenario):
     """
 
     pass
+
+
+def get_scenario_type_name(scenario_type: Type[TestScenario]) -> TestScenarioTypeName:
+    full_name = fullname(scenario_type)
+    if not issubclass(scenario_type, TestScenario):
+        raise ValueError(f"{full_name} is not a TestScenario")
+    if not full_name.startswith("monitoring.uss_qualifier.scenarios"):
+        raise ValueError(
+            f"{full_name} does not appear to be located in the standard root path for test scenarios"
+        )
+    return TestScenarioTypeName(full_name[len("monitoring.uss_qualifier.") :])
 
 
 TestScenarioType = TypeVar("TestScenarioType", bound=TestScenario)

@@ -1,5 +1,5 @@
 from monitoring.uss_qualifier.common_data_definitions import Severity
-from monitoring.uss_qualifier.resources.interuss.mock_uss import (
+from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSResource,
     MockUSSClient,
 )

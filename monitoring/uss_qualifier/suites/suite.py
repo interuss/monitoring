@@ -5,6 +5,8 @@ from datetime import datetime
 import json
 from typing import Dict, List, Optional
 
+import arrow
+
 from implicitdict import StringBasedDateTime, ImplicitDict
 from loguru import logger
 import yaml
@@ -139,7 +141,9 @@ class TestSuiteAction(object):
 
     def _run_action_generator(self) -> ActionGeneratorReport:
         report = ActionGeneratorReport(
-            actions=[], generator_type=self.action_generator.definition.generator_type
+            actions=[],
+            generator_type=self.action_generator.definition.generator_type,
+            start_time=StringBasedDateTime(arrow.utcnow()),
         )
         while True:
             action_report = self.action_generator.run_next_action()
@@ -148,6 +152,8 @@ class TestSuiteAction(object):
             report.actions.append(action_report)
             if action_report.has_critical_problem():
                 break
+        report.end_time = StringBasedDateTime(arrow.utcnow())
+        report.successful = all(a.successful() for a in report.actions)
         return report
 
 
@@ -214,6 +220,7 @@ class TestSuite(object):
             except MissingResourceError as e:
                 skipped_actions.append(
                     SkippedActionReport(
+                        timestamp=StringBasedDateTime(arrow.utcnow().datetime),
                         reason=str(e),
                         action_declaration_index=a,
                         declaration=action_dec,

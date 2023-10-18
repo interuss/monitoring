@@ -1,0 +1,22 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/vertices/VerticesSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Specifies a list of vertices representing a 2D area.\nUseful for passing arbitrary areas to test scenarios.\n\nmonitoring.uss_qualifier.resources.vertices.VerticesSpecification, as defined in monitoring/uss_qualifier/resources/vertices.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "vertices": {
+      "description": "Represents a 2D area",
+      "items": {
+        "$ref": "../../../monitorlib/geo/LatLngPoint.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "vertices"
+  ],
+  "type": "object"
+}

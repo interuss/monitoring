@@ -26,7 +26,7 @@ For this step, all successful display data queries made during the execution of 
 
 #### Performance of /display_data/<flight_id> requests check
 
-**[astm.f3411.v22a.NET0460](../../../../requirements/astm/f3411/v22a.md) Checks that the DP response times for the
+**[astm.f3411.v22a.NET0460](../../../../requirements/astm/f3411/v22a.md)** Checks that the DP response times for the
 Display Application's flight details requests have a p95 and p99 that are respectively below
 `NetDpDetailsResponse95thPercentileSeconds` (2 seconds) and `NetDpDetailsResponse99thPercentileSeconds` (6 seconds).
 
@@ -50,11 +50,17 @@ of the durations for the subsequent display data queries do not exceed the respe
 
 ### Performance of /flights?view requests test step
 
-#### Performance for replies to requested flights in an area check
+#### 95th percentile response time check
 
-**[astm.f3411.v22a.NET0260-a](../../../../requirements/astm/f3411/v22a.md)** requires that the 95th and 99th percentiles
-of the durations for the replies to requested flights in an area do not exceed the respective thresholds
-`NetSpDataResponseTime95thPercentile` (1 second) and `NetSpDataResponseTime99thPercentile` (3 seconds).
+**[astm.f3411.v22a.NET0260,NetSpDataResponseTime95thPercentile](../../../../requirements/astm/f3411/v22a.md)** requires that the 95th percentile
+of the durations for the replies to requested flights in an area does not exceed the threshold
+`NetSpDataResponseTime95thPercentile` (1 second).
+
+#### 99th percentile response time check
+
+**[astm.f3411.v22a.NET0260,NetSpDataResponseTime99thPercentile](../../../../requirements/astm/f3411/v22a.md)** requires that the 99th percentile
+of the durations for the replies to requested flights in an area does not exceed the threshold
+`NetSpDataResponseTime99thPercentile` (3 seconds).
 
 ## Verify https is in use test case
 

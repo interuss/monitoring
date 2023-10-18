@@ -26,11 +26,11 @@ This step ensures that we remove any subscription that may already exist for the
 
 #### Successful subscription query check
 
-If the query for subscriptions fails, the "GET Subscriptions" portion of **[astm.f3411.v19.DSS0030](../../../../../requirements/astm/f3411/v19.md)** was not met.
+If the query for subscriptions fails, **[astm.f3411.v19.DSS0030,f](../../../../../requirements/astm/f3411/v19.md)** was not met.
 
 #### Successful subscription deletion
 
-If the deletion attempt fails, the "DELETE Subscription" portion of **[astm.f3411.v19.DSS0030](../../../../../requirements/astm/f3411/v19.md)** was not met.
+If the deletion attempt fails, **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)** was not met.
 
 ## Subscription quantity limitations test case
 
@@ -40,7 +40,7 @@ The test will attempt to create 10 identical subscriptions for the same area and
 
 #### Create up to the maximum allowed number of subscriptions in an area check
 
-As per **[astm.f3411.v19.DSS0030](../../../../../requirements/astm/f3411/v19.md)**, the DSS API is expected to allow us
+As per **[astm.f3411.v19.DSS0030,c](../../../../../requirements/astm/f3411/v19.md)**, the DSS API is expected to allow us
 to create multiple subscriptions.
 
 ### Exceed maximum number of subscriptions test step
@@ -58,11 +58,11 @@ Clean up any subscriptions created.
 
 #### Successful subscription query check
 
-If the query for subscriptions fails, the "GET Subscriptions" portion of **[astm.f3411.v19.DSS0030](../../../../../requirements/astm/f3411/v19.md)** was not met.
+If the query for subscriptions fails, **[astm.f3411.v19.DSS0030,f](../../../../../requirements/astm/f3411/v19.md)** was not met.
 
 #### Successful subscription deletion check
 
-If the deletion attempt fails, the "DELETE Subscription" portion of **[astm.f3411.v19.DSS0030](../../../../../requirements/astm/f3411/v19.md)** was not met.
+If the deletion attempt fails, **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)** was not met.
 
 ## Subscription duration limitations test case
 
@@ -83,7 +83,7 @@ expecting this update to fail.
 
 #### Valid subscription created check
 
-The ability to create a valid subscription is required in **[astm.f3411.v19.DSS0030](../../../../../requirements/astm/f3411/v19.md)**.
+The ability to create a valid subscription is required in **[astm.f3411.v19.DSS0030,c](../../../../../requirements/astm/f3411/v19.md)**.
 
 #### Subscription duration limited during update check
 
@@ -95,7 +95,7 @@ To clean up after itself, the test deletes the subscription created in the previ
 
 #### Subscription deleted check
 
-The ability to delete an existing subscription is required in **[astm.f3411.v19.DSS0030](../../../../../requirements/astm/f3411/v19.md)**.
+The ability to delete an existing subscription is required in **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)**.
 
 ## Cleanup
 
@@ -103,8 +103,8 @@ The cleanup phase of this test scenario will remove any subscription that may ha
 
 ### Successful subscription query check
 
-If the query for subscriptions fails, the "GET Subscriptions" portion of **[astm.f3411.v19.DSS0030](../../../../../requirements/astm/f3411/v19.md)** was not met.
+If the query for subscriptions fails, the "GET Subscriptions" portion of **[astm.f3411.v19.DSS0030,f](../../../../../requirements/astm/f3411/v19.md)** was not met.
 
 ### Successful subscription deletion
 
-If the deletion attempt fails, the "DELETE Subscription" portion of **[astm.f3411.v19.DSS0030](../../../../../requirements/astm/f3411/v19.md)** was not met.
+If the deletion attempt fails, the "DELETE Subscription" portion of **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)** was not met.

@@ -1,4 +1,4 @@
-# Monitoring Tools [![GoDoc](https://godoc.org/github.com/interuss/monitoring?status.svg)](https://godoc.org/github.com/interuss/monitoring)
+# Monitoring Tools
 
 <img src="assets/color_logo_transparent.png" width="200">
 
@@ -15,6 +15,11 @@ The monitoring tools target compliance with the following standards and regulati
 - [ASTM F3548-21](https://www.astm.org/f3548-21.html): UAS Traffic Management (UTM) UAS
 Service Supplier (USS) Interoperability Specification.
     - [F3548-22 OpenAPI interface](./interfaces/astm-utm)
+    - Useful resources for understanding this standard include these Drone Talk videos:
+        - [Interoperability standard](https://www.youtube.com/watch?v=ukbjIU_Ojh0)
+        - [Interoperability standard, part 2](https://www.youtube.com/watch?v=qKW2PkzZ_mE)
+        - [DSS and ASTM UTM interoperability paradigm](https://youtu.be/Nh53ibxcnBM)
+        - [Operational intents](https://www.youtube.com/watch?v=lS6tTQTmVO4)
 
 U-Space specific:
 - [COMMISSION IMPLEMENTING REGULATION (EU) 2021/664](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32021R0664&from=EN#d1e32-178-1)
@@ -26,7 +31,7 @@ services such as Remote ID (ASTM F3411-19/22) and Strategic Conflict Detection d
 Management (UTM) UAS Service Supplier (USS) Interoperability Specification.
 
 - [Introduction to monitoring, conformance and interoperability testing](./monitoring/README.md)<br>Modules:
-  - [USS qualifier](./monitoring/uss_qualifier)
+  - [USS qualifier](./monitoring/uss_qualifier) (automated testing framework)
   - [DSS integration test: prober](./monitoring/prober)
   - [DSS load test](./monitoring/loadtest)
   - [Mock USS](./monitoring/mock_uss), with multiple capabilities

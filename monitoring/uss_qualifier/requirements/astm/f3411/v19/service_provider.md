@@ -26,7 +26,24 @@ This file describes the set of ASTM F3411-19 requirements with which a USS fulfi
 * **astm.f3411.v19.NET0210**
 * **astm.f3411.v19.NET0220**
 * **astm.f3411.v19.NET0250**
-* **astm.f3411.v19.NET0260**
+* NET0260
+  * **astm.f3411.v19.NET0260,NetSpDataResponseTime95thPercentile**
+  * **astm.f3411.v19.NET0260,NetSpDataResponseTime99thPercentile**
+  * **astm.f3411.v19.NET0260,NearRealTime**
+  * **astm.f3411.v19.NET0260,Table1,1**
+  * **astm.f3411.v19.NET0260,Table1,2**
+  * **astm.f3411.v19.NET0260,Table1,3**
+  * **astm.f3411.v19.NET0260,Table1,4**
+  * **astm.f3411.v19.NET0260,Table1,5**
+  * **astm.f3411.v19.NET0260,Table1,9**
+  * **astm.f3411.v19.NET0260,Table1,10**
+  * **astm.f3411.v19.NET0260,Table1,11**
+  * **astm.f3411.v19.NET0260,Table1,15**
+  * **astm.f3411.v19.NET0260,Table1,16**
+  * **astm.f3411.v19.NET0260,Table1,17**
+  * **astm.f3411.v19.NET0260,Table1,18**
+  * **astm.f3411.v19.NET0260,Table1,19**
+  * **astm.f3411.v19.NET0260,Table1,20**
 * **astm.f3411.v19.NET0270**
 * **astm.f3411.v19.NET0280**
 * **astm.f3411.v19.NET0290**
@@ -46,4 +63,5 @@ This file describes the set of ASTM F3411-19 requirements with which a USS fulfi
 
 #### USS-USS Interfaces
 
-* **astm.f3411.v19.NET0710**
+* **astm.f3411.v19.NET0710,1**
+* **astm.f3411.v19.NET0710,2**

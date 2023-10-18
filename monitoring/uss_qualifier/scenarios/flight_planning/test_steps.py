@@ -65,7 +65,9 @@ def clear_area(
                 check.record_failed(
                     summary="Area could not be cleared",
                     severity=Severity.High,
-                    details=f'Participant indicated "{resp.outcome.message}"',
+                    details=f'Participant indicated "{resp.outcome.message}"'
+                    if "message" in resp.outcome
+                    else "See query",
                     query_timestamps=[query.request.timestamp],
                 )
 
@@ -385,7 +387,9 @@ def cleanup_flights(
                 else:
                     check.record_failed(
                         summary="Failed to delete flight",
-                        details=f"USS indicated: {resp.notes}",
+                        details=f"USS indicated: {resp.notes}"
+                        if "notes" in resp
+                        else "See query",
                         severity=Severity.Medium,
                         query_timestamps=[query.request.timestamp],
                     )
