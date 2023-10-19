@@ -1,18 +1,13 @@
 .PHONY: lint
-lint: validate-docs python-lint
+lint: validate-docs
 
 .PHONY: validate-docs
 validate-docs:
 	./scripts/validate_test_definitions.sh
 	./scripts/format_test_suite_docs.sh --lint
 
-.PHONY: python-lint
-python-lint:
-	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:22.10.0 black --check . || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
-
 .PHONY: format
 format: format-documentation
-	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:22.10.0 black .
 
 .PHONY: format-documentation
 format-documentation:
