@@ -62,7 +62,7 @@ jobs:
 
   publish-gh-pages:
     name: Publish GitHub Pages
-    needs: [hygiene-tests, monitorlib-test, mock_uss-test, uss_qualifier-test, prober-test]
+    needs: [hygiene-tests, mock_uss-test, uss_qualifier-test, prober-test]
     if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
     runs-on: ubuntu-latest
     permissions:
