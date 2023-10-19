@@ -7,6 +7,10 @@ from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
     OperationalIntent,
+    OperationalIntentDetails,
+)
+from monitoring.monitorlib.mock_uss_interface.mock_uss_scd_injection_api import (
+    MockUssFlightBehavior,
 )
 
 
@@ -16,6 +20,7 @@ class FlightRecord(ImplicitDict):
     op_intent_injection: scd_injection_api.OperationalIntentTestInjection
     flight_authorisation: scd_injection_api.FlightAuthorisationData
     op_intent_reference: OperationalIntentReference
+    mod_op_sharing_behavior: Optional[MockUssFlightBehavior]
     locked: bool = False
 
 

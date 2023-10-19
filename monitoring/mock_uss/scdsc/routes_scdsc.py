@@ -1,11 +1,13 @@
 import flask
-
 from monitoring.monitorlib import scd
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
-from monitoring.mock_uss.scdsc.database import db, FlightRecord
+from monitoring.mock_uss.scdsc.database import db
+from monitoring.mock_uss.scdsc.database import FlightRecord
+from monitoring.uss_qualifier.resources.overrides import (
+    apply_overrides_without_parse_type,
+)
 from uas_standards.astm.f3548.v21.api import (
-    GetOperationalIntentDetailsResponse,
     ErrorResponse,
     OperationalIntent,
     OperationalIntentDetails,
@@ -39,21 +41,42 @@ def scdsc_get_operational_intent_details(entityid: str):
         )
 
     # Return nominal response with details
-    response = GetOperationalIntentDetailsResponse(
-        operational_intent=op_intent_from_flightrecord(flight),
-    )
+    response = {"operational_intent": op_intent_from_flightrecord(flight)}
     return flask.jsonify(response), 200
 
 
 def op_intent_from_flightrecord(flight: FlightRecord) -> OperationalIntent:
-    return OperationalIntent(
-        reference=flight.op_intent_reference,
-        details=OperationalIntentDetails(
-            volumes=flight.op_intent_injection.volumes,
-            off_nominal_volumes=flight.op_intent_injection.off_nominal_volumes,
-            priority=flight.op_intent_injection.priority,
-        ),
+    ref = flight.op_intent_reference
+    details = OperationalIntentDetails(
+        volumes=flight.op_intent_injection.volumes,
+        off_nominal_volumes=flight.op_intent_injection.off_nominal_volumes,
+        priority=flight.op_intent_injection.priority,
     )
+    op_intent = OperationalIntent(reference=ref, details=details)
+    method = "GET"
+    if "mod_op_sharing_behavior" in flight:
+        mod_op_sharing_behavior = flight.mod_op_sharing_behavior
+        if "modify_sharing_methods" in mod_op_sharing_behavior:
+            if method not in mod_op_sharing_behavior.modify_sharing_methods:
+                return OperationalIntent(reference=ref, details=details)
+        if "modify_fields" in mod_op_sharing_behavior:
+            if "operational_intent_reference" in mod_op_sharing_behavior.modify_fields:
+                ref = apply_overrides_without_parse_type(
+                    ref,
+                    mod_op_sharing_behavior.modify_fields[
+                        "operational_intent_reference"
+                    ],
+                )
+                ref = ref[0]
+            if "operational_intent_details" in mod_op_sharing_behavior.modify_fields:
+                details = apply_overrides_without_parse_type(
+                    details,
+                    mod_op_sharing_behavior.modify_fields["operational_intent_details"],
+                )
+                details = details[0]
+            op_intent = {"reference": ref, "details": details}
+
+    return op_intent
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents", methods=["POST"])

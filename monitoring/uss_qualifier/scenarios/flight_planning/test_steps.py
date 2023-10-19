@@ -1,5 +1,7 @@
 import inspect
 from typing import List, Optional, Tuple, Iterable, Set, Dict, Union
+import time
+from datetime import datetime
 
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
@@ -11,6 +13,9 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightResponse,
     DeleteFlightResponseResult,
     DeleteFlightResponse,
+)
+from monitoring.monitorlib.mock_uss_interface.mock_uss_scd_injection_api import (
+    MockUssInjectFlightRequest,
 )
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
@@ -92,7 +97,7 @@ def plan_flight_intent(
     scenario: TestScenarioType,
     test_step: str,
     flight_planner: FlightPlanner,
-    flight_intent: InjectFlightRequest,
+    flight_intent: MockUssInjectFlightRequest,
 ) -> Tuple[InjectFlightResponse, Optional[str]]:
     """Plan a flight intent that should result in success.
 
@@ -240,7 +245,7 @@ def submit_flight_intent(
     expected_results: Set[InjectFlightResponseResult],
     failed_checks: Dict[InjectFlightResponseResult, Union[str, Tuple[str, Severity]]],
     flight_planner: FlightPlanner,
-    flight_intent: InjectFlightRequest,
+    flight_intent: MockUssInjectFlightRequest,
     flight_id: Optional[str] = None,
 ) -> Tuple[InjectFlightResponse, Optional[str]]:
     """Submit a flight intent with an expected result.

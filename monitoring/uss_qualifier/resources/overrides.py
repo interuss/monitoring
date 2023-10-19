@@ -19,6 +19,18 @@ def apply_overrides(base_object: ImplicitDictType, overrides: dict) -> ImplicitD
     )
 
 
+def apply_overrides_without_parse_type(
+    base_object: ImplicitDictType, overrides: dict
+) -> ImplicitDictType:
+    """Returns a Dict with overrides applied, and no parsing into base object."""
+
+    cpy = ImplicitDict.parse(
+        json.loads(json.dumps(base_object)),
+        type(base_object),
+    )
+    return (_apply_overrides(cpy, overrides),)
+
+
 def _apply_overrides(base_object, overrides):
     if base_object is None:
         return overrides

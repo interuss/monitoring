@@ -1,6 +1,6 @@
 import uuid
-from typing import Dict
-
+from typing import Dict, Optional
+from loguru import logger
 from implicitdict import ImplicitDict
 from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
@@ -26,6 +26,10 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResult,
     FlightPlanStatus,
 )
+from monitoring.monitorlib.mock_uss_interface.mock_uss_scd_injection_api import (
+    MockUssInjectFlightRequest,
+    MockUssFlightBehavior,
+)
 from monitoring.monitorlib.fetch import query_and_describe
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
@@ -45,6 +49,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         flight_id: FlightID,
         flight_info: FlightInfo,
         execution_style: ExecutionStyle,
+        mod_flight_behavior: Optional[MockUssFlightBehavior] = None,
     ) -> PlanningActivityResponse:
         if execution_style != ExecutionStyle.IfAllowed:
             raise PlanningActivityError(
@@ -106,7 +111,9 @@ class SCDFlightPlannerClient(FlightPlannerClient):
             kwargs["flight_authorisation"] = ImplicitDict.parse(
                 flight_info.uspace_flight_authorisation, scd_api.FlightAuthorisationData
             )
-        req = scd_api.InjectFlightRequest(**kwargs)
+        if mod_flight_behavior is not None:
+            kwargs["mock_uss_flight_behavior"] = mod_flight_behavior
+        req = MockUssInjectFlightRequest(**kwargs)
 
         op = scd_api.OPERATIONS[scd_api.OperationID.InjectFlight]
         url = op.path.format(flight_id=flight_id)
@@ -156,9 +163,14 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         return response
 
     def try_plan_flight(
-        self, flight_info: FlightInfo, execution_style: ExecutionStyle
+        self,
+        flight_info: FlightInfo,
+        execution_style: ExecutionStyle,
+        mod_flight_behavior: Optional[MockUssFlightBehavior],
     ) -> PlanningActivityResponse:
-        return self._inject(str(uuid.uuid4()), flight_info, execution_style)
+        return self._inject(
+            str(uuid.uuid4()), flight_info, execution_style, mod_flight_behavior
+        )
 
     def try_update_flight(
         self,
