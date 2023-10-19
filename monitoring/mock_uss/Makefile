@@ -1,3 +1,3 @@
 .PHONY: test
-test: lint
+test:
 	./run_locally_test_geoawareness.sh
