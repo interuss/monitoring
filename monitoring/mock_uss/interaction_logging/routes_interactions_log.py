@@ -40,10 +40,16 @@ def interaction_logs() -> Tuple[str, int]:
                 obj = json.load(f)
                 interaction = ImplicitDict.parse(obj, Interaction)
                 if "received_at" in interaction.query.request:
-                    if interaction.query.request.received_at.datetime >= from_time.datetime:
+                    if (
+                        interaction.query.request.received_at.datetime
+                        >= from_time.datetime
+                    ):
                         interactions.append(interaction)
                 elif "initiated_at" in interaction.query.request:
-                    if interaction.query.request.initiated_at.datetime >= from_time.datetime:
+                    if (
+                        interaction.query.request.initiated_at.datetime
+                        >= from_time.datetime
+                    ):
                         interactions.append(interaction)
                 else:
                     raise ValueError(
