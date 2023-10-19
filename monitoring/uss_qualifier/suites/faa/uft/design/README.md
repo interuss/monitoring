@@ -25,7 +25,7 @@ Note - As different USSes have different implementations, it could happen that y
 
 ## Steps to run the test
 
-1. Set your uss_qualifier Interface implementation url in the [configuration file ](../../../../configurations/dev/faa/uft/local_message_signing.yaml) to run 
+1. Set your uss_qualifier Interface implementation url in the [configuration file ](../../../../configurations/dev/local_message_signing.yaml) to run
 the UFT message signing tests. If personal changes are needed, copy this yaml
 file to a personal configuration file in the [personal configuration folder](../../../../configurations/personal), and edit this file instead.
 The property to set is `resources.resource_declarations.flight_planners.specification.flight_planners.participant_id`
@@ -48,17 +48,17 @@ The property to set is `resources.resource_declarations.flight_planners.specific
 
 ## Results
 SCD tests report is generated under [uss_qualifier](../../../../../../monitoring/uss_qualifier).
-The message signing results will be in the report created for the overall run - report.json. Failed message signing checks will show up as `FailedChecks` within the `FinalizeMessageSigningReport` test scenario.  
+The message signing results will be in the report created for the overall run - report.json. Failed message signing checks will show up as `FailedChecks` within the `FinalizeMessageSigningReport` test scenario.
 
 ### Positive tests -
 A set of private/public keys are provided for use by mock_uss in message
-signing analysis under the [build/test-certs/message-signing] folder. 
-This key pair, mock_faa_priv.pem/mock_faa_pub.der, is used by mock_uss 
-(when requested from an instance with the capability enabled) to sign its responses, and by `AuthAdapter` to sign requests of outgoing messages. 
+signing analysis under the [build/test-certs/message-signing] folder.
+This key pair, mock_faa_priv.pem/mock_faa_pub.der, is used by mock_uss
+(when requested from an instance with the capability enabled) to sign its responses, and by `AuthAdapter` to sign requests of outgoing messages.
 When the message signing mock_uss capability is enabled, the public key is served under the mock_uss endpoint
- /mock/msgsigning/.well-known/uas-traffic-management/pub.der, 
- and can be retrieved by the USS under test in order for it to validate the 
- mock_uss responses, per UFT message signing requirements. This public key was provided by the FAA 
+ /mock/msgsigning/.well-known/uas-traffic-management/pub.der,
+ and can be retrieved by the USS under test in order for it to validate the
+ mock_uss responses, per UFT message signing requirements. This public key was provided by the FAA
  and will pass SCVP validation for the UFT activity.
 
 A USS should pass all the uss_qualifier tests in this suite. No failed checks indicate the USS-under-test message-signed all its requests and responses.

@@ -1,0 +1,55 @@
+v1:
+  test_run:
+    resources:
+      resource_declarations:
+        che_conflicting_flights: {$ref: 'library/resources.yaml#/che_conflicting_flights'}
+        che_priority_preemption_flights: {$ref: 'library/resources.yaml#/che_priority_preemption_flights'}
+        che_invalid_flight_intents: {$ref: 'library/resources.yaml#/che_invalid_flight_intents'}
+        combination_selector:
+          resource_type: resources.flight_planning.FlightPlannerCombinationSelectorResource
+          specification:
+            must_include:
+              - mock_uss
+            maximum_roles:
+              mock_uss: 1
+
+        utm_auth: {$ref: 'library/environment.yaml#/utm_auth'}
+        scd_dss: {$ref: 'library/environment.yaml#/scd_dss'}
+        flight_planners:
+          resource_type: resources.flight_planning.FlightPlannersResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            flight_planners:
+              - participant_id: uss1
+                injection_base_url: http://host.docker.internal:8074/scdsc
+              - participant_id: uss2
+                injection_base_url: http://host.docker.internal:8074/scdsc
+              - participant_id: mock_uss
+                injection_base_url: http://host.docker.internal:8074/scdsc
+        mock_uss:
+          resource_type: resources.interuss.mock_uss.client.MockUSSResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            participant_id: mock_uss
+            mock_uss_base_url: http://host.docker.internal:8074
+    non_baseline_inputs:
+      - v1.test_run.resources.resource_declarations.utm_auth
+      - v1.test_run.resources.resource_declarations.all_flight_planners
+      - v1.test_run.resources.resource_declarations.scd_dss
+      - v1.test_run.resources.resource_declarations.mock_uss_instance_uss1
+    action:
+      test_suite:
+        suite_type: suites.faa.uft.message_signing
+        resources:
+          mock_uss: mock_uss
+          flight_planners: flight_planners
+          combination_selector: combination_selector
+          conflicting_flights: che_conflicting_flights
+          priority_preemption_flights: che_priority_preemption_flights
+          dss: scd_dss
+
+  artifacts:
+    report:
+      report_path: output/report_message_signing.json

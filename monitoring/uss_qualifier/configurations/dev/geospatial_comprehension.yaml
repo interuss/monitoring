@@ -3,13 +3,12 @@ v1:
   test_run:
     resources:
       resource_declarations:
-        $ref: ./library/resources.yaml#/geospatial_map
+        example_feature_check_table: {$ref: 'library/resources.yaml#/example_feature_check_table'}
     action:
       test_scenario:
         scenario_type: scenarios.interuss.geospatial_map.GeospatialFeatureComprehension
         resources:
-          table: feature_check_table
-        on_failure: Abort
+          table: example_feature_check_table
   artifacts:
     report:
       report_path: output/report_geospatial_comprehension.json

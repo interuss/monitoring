@@ -1,0 +1,65 @@
+$content_schema: monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json
+v1:
+  test_run:
+    resources:
+      resource_declarations:
+        che_adjacent_circular_flights_data: {$ref: 'library/resources.yaml#/che_adjacent_circular_flights_data'}
+        dc_flights_data: {$ref: 'library/resources.yaml#/dc_flights_data'}
+
+        adjacent_circular_storage_config: {$ref: 'library/resources.yaml#/adjacent_circular_storage_config'}
+        kml_storage_config: {$ref: 'library/resources.yaml#/kml_storage_config'}
+    action:
+      test_suite:
+        resources:
+          adjacent_circular_flights_data: che_adjacent_circular_flights_data
+          adjacent_circular_storage_config: adjacent_circular_storage_config
+          kml_flights_data: dc_flights_data
+          kml_storage_config: kml_storage_config
+        suite_definition:
+          name: Generate RID test data twice
+          resources:
+            adjacent_circular_flights_data: resources.netrid.FlightDataResource
+            adjacent_circular_storage_config: resources.netrid.FlightDataStorageResource
+            kml_flights_data: resources.netrid.FlightDataResource
+            kml_storage_config: resources.netrid.FlightDataStorageResource
+          actions:
+            - action_generator:
+                generator_type: action_generators.repetition.Repeat
+                specification:
+                  action_to_repeat:
+                    test_suite:
+                      suite_definition:
+                        name: Generate RID test data
+                        resources:
+                          adjacent_circular_flights_data: resources.netrid.FlightDataResource
+                          adjacent_circular_storage_config: resources.netrid.FlightDataStorageResource
+                          kml_flights_data: resources.netrid.FlightDataResource
+                          kml_storage_config: resources.netrid.FlightDataStorageResource
+                        actions:
+                          - test_scenario:
+                              scenario_type: scenarios.astm.netrid.StoreFlightData
+                              resources:
+                                flights_data: adjacent_circular_flights_data
+                                storage_configuration: adjacent_circular_storage_config
+                            on_failure: Continue
+                          - test_scenario:
+                              scenario_type: scenarios.astm.netrid.StoreFlightData
+                              resources:
+                                flights_data: kml_flights_data
+                                storage_configuration: kml_storage_config
+                            on_failure: Continue
+                      resources:
+                        adjacent_circular_flights_data: adjacent_circular_flights_data
+                        adjacent_circular_storage_config: adjacent_circular_storage_config
+                        kml_flights_data: kml_flights_data
+                        kml_storage_config: kml_storage_config
+                    on_failure: Abort
+                  times_to_repeat: 2
+                resources:
+                  adjacent_circular_flights_data: adjacent_circular_flights_data
+                  adjacent_circular_storage_config: adjacent_circular_storage_config
+                  kml_flights_data: kml_flights_data
+                  kml_storage_config: kml_storage_config
+              on_failure: Continue
+  validation:
+    "$ref": "./library/validation.yaml#/normal_test"
