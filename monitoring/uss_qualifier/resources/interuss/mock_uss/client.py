@@ -85,7 +85,9 @@ class MockUSSClient(object):
         Returns:
             List of Interactions
         """
-        url = "{}/mock_uss/interuss_logging/logs?from_time={}".format(self.base_url, from_time)
+        url = "{}/mock_uss/interuss_logging/logs?from_time={}".format(
+            self.base_url, from_time
+        )
         logger.debug(f"Getting interactions from {from_time} : {url}")
         query = fetch.query_and_describe(
             self.session, "GET", url, scope=SCOPE_SCD_QUALIFIER_INJECT
@@ -98,11 +100,13 @@ class MockUSSClient(object):
             response = ImplicitDict.parse(query.response.get("json"), ListLogsResponse)
         except KeyError:
             raise QueryError(
-                msg=f"RecordedInteractionsResponse from mock_uss response did not contain JSON body", queries=[query]
+                msg=f"RecordedInteractionsResponse from mock_uss response did not contain JSON body",
+                queries=[query],
             )
         except ValueError as e:
             raise QueryError(
-                msg=f"RecordedInteractionsResponse from mock_uss response contained invalid JSON: {str(e)}", queries=[query]
+                msg=f"RecordedInteractionsResponse from mock_uss response contained invalid JSON: {str(e)}",
+                queries=[query],
             )
         return response.interactions
 

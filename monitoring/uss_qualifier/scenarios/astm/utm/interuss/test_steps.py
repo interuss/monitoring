@@ -11,6 +11,7 @@ from implicitdict import StringBasedDateTime
 from loguru import logger
 from monitoring.mock_uss.interaction_logging.interactions import Interaction
 
+
 def expect_interuss_post_interactions(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
@@ -22,7 +23,7 @@ def expect_interuss_post_interactions(
     if mock_uss is not None:
         interactions = _get_interuss_interactions(scenario, mock_uss, st, test_step)
         logger.debug(f"Checking for Post to {posted_to_url}")
-        with scenario.check("Expect Notification sent" ) as check:
+        with scenario.check("Expect Notification sent") as check:
             found = False
             for interaction in interactions:
                 method = interaction.query.request.method
@@ -34,11 +35,12 @@ def expect_interuss_post_interactions(
                     summary=f"Notification to {posted_to_url} not received",
                     severity=Severity.Medium,
                     details=f"Notification to {posted_to_url} not received",
-                    requirements="SCDxxxx"
+                    requirements="SCD0085,USS0105",
                 )
         scenario.end_test_step()
 
     return found
+
 
 def expect_no_interuss_post_interactions(
     scenario: TestScenarioType,
@@ -51,7 +53,7 @@ def expect_no_interuss_post_interactions(
     if mock_uss is not None:
         interactions = _get_interuss_interactions(scenario, mock_uss, st, test_step)
         logger.debug(f"Checking for Post to {posted_to_url}")
-        with scenario.check("Expect Notification not sent" ) as check:
+        with scenario.check("Expect Notification not sent") as check:
             found = False
             for interaction in interactions:
                 method = interaction.query.request.method
@@ -63,11 +65,12 @@ def expect_no_interuss_post_interactions(
                     summary=f"Notification to {posted_to_url} wrongly sent",
                     severity=Severity.Medium,
                     details=f"Notification to {posted_to_url} wrongly sent",
-                    requirements="SCDxxxx"
+                    requirements="SCD0085",
                 )
         scenario.end_test_step()
 
     return found
+
 
 def expect_interuss_get_interactions(
     scenario: TestScenarioType,
@@ -81,7 +84,7 @@ def expect_interuss_get_interactions(
     if mock_uss is not None:
         interactions = _get_interuss_interactions(scenario, mock_uss, st, test_step)
         logger.debug(f"Checking for Get to {get_from_url} for id {id}")
-        with scenario.check("Expect GET interaction" ) as check:
+        with scenario.check("Expect GET interaction") as check:
             found = False
             for interaction in interactions:
                 method = interaction.query.request.method
@@ -93,11 +96,12 @@ def expect_interuss_get_interactions(
                     summary=f"No GET request received at {get_from_url} for {id} ",
                     severity=Severity.Medium,
                     details=f"No GET request received at  {get_from_url} for {id}",
-                    requirements="SCDxxxx"
+                    requirements="USS0105",
                 )
 
         scenario.end_test_step()
     return found
+
 
 def _get_interuss_interactions(
     scenario: TestScenarioType,
@@ -114,7 +118,9 @@ def _get_interuss_interactions(
         headers = interaction.query.request.headers
         if "Authorization" in headers:
             token = headers.get("Authorization").split(" ")[1]
-            payload = jwt.decode(token, algorithms="RS256", options={"verify_signature": False})
+            payload = jwt.decode(
+                token, algorithms="RS256", options={"verify_signature": False}
+            )
             sub = payload["sub"]
             logger.debug(f"sub of interuss_interaction token: {sub}")
             if sub == excl_sub:

@@ -24,6 +24,7 @@ from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclarati
 
 from monitoring.mock_uss.interaction_logging.interactions import Interaction
 
+
 class FailedCheck(ImplicitDict):
     name: str
     """Name of the check that failed"""
