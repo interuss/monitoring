@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 # Find and change to repo root directory
 OS=$(uname)
 if [[ "$OS" == "Darwin" ]]; then
@@ -10,9 +12,10 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
-cd monitoring
+(
+cd monitoring || exit 1
 make image
-cd ..
+)
 
 AUTH="DummyOAuth(http://host.docker.internal:8085/token,uss1)"
 DSS="http://host.docker.internal:8082"

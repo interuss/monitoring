@@ -13,9 +13,10 @@ else
 fi
 cd "${BASEDIR}/../../.." || exit 1
 
-cd monitoring
+(
+cd monitoring || exit 1
 make image
-cd ..
+)
 
 # shellcheck disable=SC2086
 docker run --name test_definition_validator \

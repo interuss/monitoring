@@ -12,9 +12,10 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
-cd monitoring
+(
+cd monitoring || exit 1
 make image
-cd ..
+)
 
 CONFIG_NAME="${1:-ALL}"
 

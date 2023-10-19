@@ -10,9 +10,10 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
-cd monitoring
+(
+cd monitoring || exit 1
 make image
-cd ..
+)
 
 PUBLIC_KEY="/var/test-certs/auth2.pem"
 container_name="mock_uss_geoawareness_test"

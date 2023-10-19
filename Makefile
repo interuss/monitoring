@@ -35,7 +35,7 @@ validate-uss-qualifier-docs:
 
 .PHONY: shell-lint
 shell-lint:
-	find . -name '*.sh' | grep -v '^./interfaces' | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck
+	find . -name '*.sh' ! -path "./interfaces/*" | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck
 
 .PHONY: json-schema
 json-schema:

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -eo pipefail
 
@@ -12,9 +12,10 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
-cd monitoring
+(
+cd monitoring || exit 1
 make image
-cd ..
+)
 
 ./monitoring/mock_uss/run_locally.sh up -d
 
