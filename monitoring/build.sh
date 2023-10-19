@@ -21,3 +21,4 @@ docker image build \
     --build-arg commit_hash="$(git rev-parse HEAD)" \
     . \
   || exit 1
+touch monitoring/image

@@ -30,10 +30,9 @@ AUTH="${2:-NoAuth()}"
 
 QUALIFIER_OPTIONS="--auth $AUTH --config /config.json --report output/report.json"
 
-if [ -z "${DO_NOT_BUILD_MONITORING}" ]; then
-  "$(pwd)"/monitoring/build.sh
-  export DO_NOT_BUILD_MONITORING=true
-fi
+cd monitoring
+make image
+cd ..
 
 if [ "$CI" == "true" ]; then
   docker_args="--add-host host.docker.internal:host-gateway" # Required to reach other containers in Ubuntu (used for Github Actions)

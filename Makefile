@@ -49,9 +49,9 @@ json-schema-lint:
 .PHONY: hygiene-tests
 hygiene-tests: check-hygiene
 
-.PHONY: build-monitoring
-build-monitoring:
-	cd monitoring && make build
+.PHONY: image
+image:
+	cd monitoring && make image
 
 tag:
 	scripts/tag.sh $(UPSTREAM_OWNER)/monitoring/v$(VERSION)

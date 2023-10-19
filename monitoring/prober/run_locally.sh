@@ -13,10 +13,9 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
-if [ -z "$DO_NOT_BUILD_MONITORING" ]; then
-  monitoring/build.sh || exit 1
-  export DO_NOT_BUILD_MONITORING=true
-fi
+cd monitoring
+make image
+cd ..
 
 CORE_SERVICE_CONTAINER="local_infra-dss-1"
 OAUTH_CONTAINER="local_infra-oauth-1"
