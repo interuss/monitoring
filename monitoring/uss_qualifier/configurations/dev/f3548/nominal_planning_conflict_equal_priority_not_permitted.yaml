@@ -2,17 +2,27 @@ v1:
   test_run:
     resources:
       resource_declarations:
-        "$ref": ../library/resources.yaml#/f3548_single_scenario
+        che_conflicting_flights: {$ref: '../library/resources.yaml#/che_conflicting_flights'}
+
+        utm_auth: {$ref: '../library/environment.yaml#/utm_auth'}
+        uss1_flight_planner: {$ref: '../library/environment.yaml#/uss1_flight_planner'}
+        uss2_flight_planner: {$ref: '../library/environment.yaml#/uss2_flight_planner'}
+        scd_dss: {$ref: '../library/environment.yaml#/scd_dss'}
+    non_baseline_inputs:
+      - v1.test_run.resources.resource_declarations.utm_auth
+      - v1.test_run.resources.resource_declarations.uss1_flight_planner
+      - v1.test_run.resources.resource_declarations.uss1_flight_planner
+      - v1.test_run.resources.resource_declarations.scd_dss
     action:
       test_scenario:
         scenario_type: scenarios.astm.utm.ConflictEqualPriorityNotPermitted
         resources:
-          tested_uss: uss1
-          control_uss: uss2
-          flight_intents: priority_preemption_flights
-          dss: dss
+          tested_uss: uss1_flight_planner
+          control_uss: uss2_flight_planner
+          flight_intents: che_conflicting_flights
+          dss: scd_dss
   artifacts:
     report:
       report_path: output/report_f3548_nominal_planning_conflict_equal_priority_not_permitted.json
   validation:
-    $ref: ./library/validation.yaml#/normal_test
+    $ref: ../library/validation.yaml#/normal_test

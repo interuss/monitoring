@@ -41,39 +41,41 @@ class NetRIDServiceProvidersSpecification(ImplicitDict):
 
 class NetRIDServiceProvider(object):
     participant_id: str
-    base_url: str
-    client: infrastructure.UTMClientSession
+    injection_base_url: str
+    injection_client: infrastructure.UTMClientSession
     local_debug: bool
 
     def __init__(
         self,
         participant_id: str,
-        base_url: str,
+        injection_base_url: str,
         auth_adapter: infrastructure.AuthAdapter,
         local_debug: bool,
     ):
         self.participant_id = participant_id
-        self.base_url = base_url
-        self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
+        self.injection_base_url = injection_base_url
+        self.injection_client = infrastructure.UTMClientSession(
+            injection_base_url, auth_adapter
+        )
         self.local_debug = local_debug
 
     def submit_test(self, request: CreateTestParameters, test_id: str) -> fetch.Query:
         return fetch.query_and_describe(
-            self.client,
+            self.injection_client,
             "PUT",
             url=f"/tests/{test_id}",
             json=request,
             scope=SCOPE_RID_QUALIFIER_INJECT,
-            server_id=self.participant_id,
+            participant_id=self.participant_id,
         )
 
     def delete_test(self, test_id: str, version: str) -> fetch.Query:
         return fetch.query_and_describe(
-            self.client,
+            self.injection_client,
             "DELETE",
             url=f"/tests/{test_id}/{version}",
             scope=SCOPE_RID_QUALIFIER_INJECT,
-            server_id=self.participant_id,
+            participant_id=self.participant_id,
         )
 
 
@@ -87,10 +89,10 @@ class NetRIDServiceProviders(Resource[NetRIDServiceProvidersSpecification]):
     ):
         self.service_providers = [
             NetRIDServiceProvider(
-                s.participant_id,
-                s.injection_base_url,
-                auth_adapter.adapter,
-                s.get("local_debug", False),
+                participant_id=s.participant_id,
+                injection_base_url=s.injection_base_url,
+                auth_adapter=auth_adapter.adapter,
+                local_debug=s.get("local_debug", False),
             )
             for s in specification.service_providers
         ]

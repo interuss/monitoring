@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Iterator
 
 from implicitdict import ImplicitDict
 
@@ -9,7 +9,6 @@ from monitoring.uss_qualifier.action_generators.documentation.definitions import
 from monitoring.uss_qualifier.action_generators.documentation.documentation import (
     list_potential_actions_for_action_declaration,
 )
-from monitoring.uss_qualifier.reports.report import TestSuiteActionReport
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import (
     DSSInstancesResource,
     DSSInstanceResource,
@@ -24,7 +23,6 @@ from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclarati
 from monitoring.uss_qualifier.suites.suite import (
     ActionGenerator,
     TestSuiteAction,
-    ReactionToFailure,
 )
 
 
@@ -42,7 +40,6 @@ class ForEachDSSSpecification(ImplicitDict):
 class ForEachDSS(ActionGenerator[ForEachDSSSpecification]):
     _actions: List[TestSuiteAction]
     _current_action: int
-    _failure_reaction: ReactionToFailure
 
     @classmethod
     def list_potential_actions(
@@ -87,15 +84,7 @@ class ForEachDSS(ActionGenerator[ForEachDSSSpecification]):
             )
 
         self._current_action = 0
-        self._failure_reaction = specification.action_to_repeat.on_failure
 
-    def run_next_action(self) -> Optional[TestSuiteActionReport]:
-        if self._current_action < len(self._actions):
-            report = self._actions[self._current_action].run()
-            self._current_action += 1
-            if not report.successful():
-                if self._failure_reaction == ReactionToFailure.Abort:
-                    self._current_action = len(self._actions)
-            return report
-        else:
-            return None
+    def actions(self) -> Iterator[TestSuiteAction]:
+        for a in self._actions:
+            yield a

@@ -1,6 +1,6 @@
 {
   "intents": {
-    "first_flight": {
+    "flight_1_planned_vol_A": {
       "full": {
         "reference_time": "2023-02-12T10:34:14.483425+00:00",
         "request": {
@@ -225,14 +225,6 @@
                       {
                         "lng": 7.477601673804613,
                         "lat": 46.974785690027296
-                      },
-                      {
-                        "lng": 7.477582533186026,
-                        "lat": 46.974787633340085
-                      },
-                      {
-                        "lng": 7.477563763022608,
-                        "lat": 46.97479085141769
                       }
                     ]
                   },
@@ -273,7 +265,7 @@
               "cellular"
             ],
             "endurance_minutes": 30,
-            "emergency_procedure_url": "https://example.uav.com/emergency",
+            "emergency_procedure_url": "https://example.interussplatform.org/emergency",
             "operator_id": "CHEo5kut30e0mt01-qwe",
             "uas_id": "",
             "uas_type_certificate": ""
@@ -281,9 +273,9 @@
         }
       }
     },
-    "first_flight_activated": {
+    "flight_1_activated_vol_A": {
       "delta": {
-        "source": "first_flight",
+        "source": "flight_1_planned_vol_A",
         "mutation": {
           "request": {
             "operational_intent": {
@@ -293,7 +285,74 @@
         }
       }
     },
-    "conflicting_flight": {
+    "flight_1_planned_vol_A_extended": {
+      "delta": {
+        "source": "flight_1_planned_vol_A",
+        "mutation": {
+          "request": {
+            "operational_intent": {
+              "volumes": [
+                {
+                  "volume": {
+                    "altitude_lower": {
+                      "value": 575.0
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "flight_1_activated_vol_A_extended": {
+      "delta": {
+        "source": "flight_1_planned_vol_A_extended",
+        "mutation": {
+          "request": {
+            "operational_intent": {
+              "state": "Activated"
+            }
+          }
+        }
+      }
+    },
+    "flight_1_planned_vol_B": {
+      "delta": {
+        "source": "flight_1_planned_vol_A",
+        "mutation": {
+          "request": {
+            "operational_intent": {
+              "volumes": [
+                {
+                  "volume": {
+                    "altitude_lower": {
+                      "value": 650.0
+                    },
+                    "altitude_upper": {
+                      "value": 705.0
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "flight_1_activated_vol_B": {
+      "delta": {
+        "source": "flight_1_planned_vol_B",
+        "mutation": {
+          "request": {
+            "operational_intent": {
+              "state": "Activated"
+            }
+          }
+        }
+      }
+    },
+    "flight_2_planned_vol_A": {
       "full": {
         "reference_time": "2023-02-12T10:34:14.483425+00:00",
         "request": {
@@ -592,7 +651,7 @@
             ],
             "state": "Accepted",
             "off_nominal_volumes": [],
-            "priority": 0
+            "priority": 100
           },
           "flight_authorisation": {
             "uas_serial_number": "1AF49UL5CC5J6K",
@@ -606,10 +665,374 @@
               "cellular"
             ],
             "endurance_minutes": 30,
-            "emergency_procedure_url": "https://example.uav.com/emergency",
+            "emergency_procedure_url": "https://example.interussplatform.org/emergency",
             "operator_id": "CHEo5kut30e0mt01-qwe",
             "uas_id": "",
             "uas_type_certificate": ""
+          }
+        }
+      }
+    },
+    "flight_2_activated_vol_A": {
+      "delta": {
+        "source": "flight_2_planned_vol_A",
+        "mutation": {
+          "request": {
+            "operational_intent": {
+              "state": "Activated"
+            }
+          }
+        }
+      }
+    },
+    "flight_2_activated_vol_B": {
+      "delta": {
+        "source": "flight_2_activated_vol_A",
+        "mutation": {
+          "request": {
+            "operational_intent": {
+              "volumes": [
+                {
+                  "volume": {
+                    "altitude_lower": {
+                      "value": 650.0
+                    },
+                    "altitude_upper": {
+                      "value": 705.0
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "flight_2_equal_prio_planned_vol_B": {
+      "delta": {
+        "source": "flight_2_activated_vol_B",
+        "mutation": {
+          "request": {
+            "operational_intent": {
+              "state": "Accepted",
+              "priority": 0
+            }
+          }
+        }
+      }
+    },
+    "flight_2_equal_prio_activated_vol_B": {
+      "delta": {
+        "source": "flight_2_equal_prio_planned_vol_B",
+        "mutation": {
+          "request": {
+            "operational_intent": {
+              "state": "Activated"
+            }
+          }
+        }
+      }
+    },
+    "flight_2_equal_prio_nonconforming_vol_A": {
+      "delta": {
+        "source": "flight_2_equal_prio_activated_vol_B",
+        "mutation": {
+          "request": {
+            "operational_intent": {
+              "state": "Nonconforming",
+              "off_nominal_volumes": [
+                {
+                  "volume": {
+                    "outline_polygon": {
+                      "vertices": [
+                        {
+                          "lng": 7.474315728091042,
+                          "lat": 46.97716400145211
+                        },
+                        {
+                          "lng": 7.474303247689658,
+                          "lat": 46.97717412304557
+                        },
+                        {
+                          "lng": 7.474292276891787,
+                          "lat": 46.9771850331586
+                        },
+                        {
+                          "lng": 7.474282921352688,
+                          "lat": 46.97719662672131
+                        },
+                        {
+                          "lng": 7.474275271172041,
+                          "lat": 46.97720879208173
+                        },
+                        {
+                          "lng": 7.474269400026217,
+                          "lat": 46.97722141208117
+                        },
+                        {
+                          "lng": 7.4742653644586845,
+                          "lat": 46.977234365182404
+                        },
+                        {
+                          "lng": 7.474263203335437,
+                          "lat": 46.97724752664021
+                        },
+                        {
+                          "lng": 7.474262937470636,
+                          "lat": 46.97726076970267
+                        },
+                        {
+                          "lng": 7.474264569426098,
+                          "lat": 46.97727396683188
+                        },
+                        {
+                          "lng": 7.47426808348659,
+                          "lat": 46.97728699093222
+                        },
+                        {
+                          "lng": 7.474273445811106,
+                          "lat": 46.97729971657432
+                        },
+                        {
+                          "lng": 7.474280604758724,
+                          "lat": 46.97731202120303
+                        },
+                        {
+                          "lng": 7.4742894913859015,
+                          "lat": 46.97732378631779
+                        },
+                        {
+                          "lng": 7.47430002011039,
+                          "lat": 46.977334898613684
+                        },
+                        {
+                          "lng": 7.474312089535409,
+                          "lat": 46.97734525107282
+                        },
+                        {
+                          "lng": 7.4743255834261335,
+                          "lat": 46.97735474399491
+                        },
+                        {
+                          "lng": 7.47434037182908,
+                          "lat": 46.977363285957416
+                        },
+                        {
+                          "lng": 7.474356312323634,
+                          "lat": 46.97737079469613
+                        },
+                        {
+                          "lng": 7.47437325139364,
+                          "lat": 46.977377197897326
+                        },
+                        {
+                          "lng": 7.474391025905868,
+                          "lat": 46.97738243389426
+                        },
+                        {
+                          "lng": 7.474409464681103,
+                          "lat": 46.977386452261086
+                        },
+                        {
+                          "lng": 7.474428390142731,
+                          "lat": 46.97738921429845
+                        },
+                        {
+                          "lng": 7.4744476200269405,
+                          "lat": 46.97739069340619
+                        },
+                        {
+                          "lng": 7.474466969138073,
+                          "lat": 46.97739087533958
+                        },
+                        {
+                          "lng": 7.474486251132214,
+                          "lat": 46.97738975834647
+                        },
+                        {
+                          "lng": 7.474505280311834,
+                          "lat": 46.97738735318418
+                        },
+                        {
+                          "lng": 7.47452387341421,
+                          "lat": 46.97738368301589
+                        },
+                        {
+                          "lng": 7.474541851376407,
+                          "lat": 46.97737878318756
+                        },
+                        {
+                          "lng": 7.474559041059788,
+                          "lat": 46.97737270088755
+                        },
+                        {
+                          "lng": 7.474575276917473,
+                          "lat": 46.9773654946921
+                        },
+                        {
+                          "lng": 7.474590402588685,
+                          "lat": 46.977357234001225
+                        },
+                        {
+                          "lng": 7.474604272404609,
+                          "lat": 46.97734799837037
+                        },
+                        {
+                          "lng": 7.4780602717187445,
+                          "lat": 46.97480899404357
+                        },
+                        {
+                          "lng": 7.478072750859629,
+                          "lat": 46.97479887202181
+                        },
+                        {
+                          "lng": 7.47808372039712,
+                          "lat": 46.97478796152745
+                        },
+                        {
+                          "lng": 7.478093074689058,
+                          "lat": 46.97477636763495
+                        },
+                        {
+                          "lng": 7.478100723649223,
+                          "lat": 46.97476420200029
+                        },
+                        {
+                          "lng": 7.478106593614889,
+                          "lat": 46.974751581785505
+                        },
+                        {
+                          "lng": 7.478110628056212,
+                          "lat": 46.97473862853046
+                        },
+                        {
+                          "lng": 7.4781127881205816,
+                          "lat": 46.9747254669823
+                        },
+                        {
+                          "lng": 7.478113053006759,
+                          "lat": 46.97471222389403
+                        },
+                        {
+                          "lng": 7.478111420165148,
+                          "lat": 46.974699026803876
+                        },
+                        {
+                          "lng": 7.478107905322289,
+                          "lat": 46.97468600280696
+                        },
+                        {
+                          "lng": 7.478102542329355,
+                          "lat": 46.974673277331334
+                        },
+                        {
+                          "lng": 7.478095382836098,
+                          "lat": 46.97466097293006
+                        },
+                        {
+                          "lng": 7.478086495793389,
+                          "lat": 46.9746492081009
+                        },
+                        {
+                          "lng": 7.478075966789133,
+                          "lat": 46.97463809614524
+                        },
+                        {
+                          "lng": 7.47806389722399,
+                          "lat": 46.97462774407688
+                        },
+                        {
+                          "lng": 7.478050403334804,
+                          "lat": 46.97461825159139
+                        },
+                        {
+                          "lng": 7.4780356150751714,
+                          "lat": 46.97460971010614
+                        },
+                        {
+                          "lng": 7.478019674863899,
+                          "lat": 46.97460220187985
+                        },
+                        {
+                          "lng": 7.478002736213457,
+                          "lat": 46.97459579922035
+                        },
+                        {
+                          "lng": 7.477984962251586,
+                          "lat": 46.97459056378839
+                        },
+                        {
+                          "lng": 7.477966524150307,
+                          "lat": 46.974586546003664
+                        },
+                        {
+                          "lng": 7.477947599477487,
+                          "lat": 46.974583784559336
+                        },
+                        {
+                          "lng": 7.477928370486799,
+                          "lat": 46.97458230604945
+                        },
+                        {
+                          "lng": 7.477909022362576,
+                          "lat": 46.974582124712704
+                        },
+                        {
+                          "lng": 7.4778897414364325,
+                          "lat": 46.97458324229544
+                        },
+                        {
+                          "lng": 7.47787071339284,
+                          "lat": 46.974585648034825
+                        },
+                        {
+                          "lng": 7.477852121480946,
+                          "lat": 46.974589318762405
+                        },
+                        {
+                          "lng": 7.477834144749823,
+                          "lat": 46.974594219127326
+                        },
+                        {
+                          "lng": 7.47781695632419,
+                          "lat": 46.97460030193667
+                        },
+                        {
+                          "lng": 7.477800721737151,
+                          "lat": 46.97460750861006
+                        },
+                        {
+                          "lng": 7.47778559733606,
+                          "lat": 46.974615769743735
+                        },
+                        {
+                          "lng": 7.477771728776835,
+                          "lat": 46.97462500577891
+                        }
+                      ]
+                    },
+                    "altitude_lower": {
+                      "value": 605.0,
+                      "reference": "W84",
+                      "units": "M"
+                    },
+                    "altitude_upper": {
+                      "value": 635.0,
+                      "reference": "W84",
+                      "units": "M"
+                    }
+                  },
+                  "time_start": {
+                    "value": "2023-02-12T10:27:14.483425+00:00",
+                    "format": "RFC3339"
+                  },
+                  "time_end": {
+                    "value": "2023-02-12T10:52:14.483425+00:00",
+                    "format": "RFC3339"
+                  }
+                }
+              ]
+            }
           }
         }
       }

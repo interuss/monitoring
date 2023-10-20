@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from datetime import datetime
 import json
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union, Callable, Iterator
 
 import arrow
 
@@ -145,15 +145,9 @@ class TestSuiteAction(object):
             generator_type=self.action_generator.definition.generator_type,
             start_time=StringBasedDateTime(arrow.utcnow()),
         )
-        while True:
-            action_report = self.action_generator.run_next_action()
-            if action_report is None:
-                break
-            report.actions.append(action_report)
-            if action_report.has_critical_problem():
-                break
-        report.end_time = StringBasedDateTime(arrow.utcnow())
-        report.successful = all(a.successful() for a in report.actions)
+
+        _run_actions(self.action_generator.actions(), report)
+
         return report
 
 
@@ -218,6 +212,9 @@ class TestSuite(object):
                     TestSuiteAction(action=action_dec, resources=self.local_resources)
                 )
             except MissingResourceError as e:
+                logger.warning(
+                    f"Skipping action {a} ({action_dec.get_action_type()} {action_dec.get_child_type()}) because {str(e)}"
+                )
                 skipped_actions.append(
                     SkippedActionReport(
                         timestamp=StringBasedDateTime(arrow.utcnow().datetime),
@@ -264,34 +261,15 @@ class TestSuite(object):
             skipped_actions=self.skipped_actions,
             capability_evaluations=[],
         )
-        success = True
-        for a in range(len(self.actions) + 1):
-            if a == len(self.actions):
-                # Execute report evaluation scenario as last action if specified, otherwise break loop
-                if self.definition.has_field_with_value("report_evaluation_scenario"):
-                    action = self._make_report_evaluation_action(report)
-                else:
-                    break
-            else:
-                action = self.actions[a]
 
-            action_report = action.run()
-            report.actions.append(action_report)
-            if action_report.has_critical_problem():
-                success = False
-                break
-            if not action_report.successful():
-                success = False
-                if action.declaration.on_failure == ReactionToFailure.Abort:
-                    break
-                elif action.declaration.on_failure == ReactionToFailure.Continue:
-                    continue
-                else:
-                    raise ValueError(
-                        f"Action {a} of test suite {self.definition.name} indicate an unrecognized reaction to failure: {str(action.declaration.on_failure)}"
-                    )
-        report.successful = success
-        report.end_time = StringBasedDateTime(datetime.utcnow())
+        def actions() -> Iterator[TestSuiteAction]:
+            for a in self.actions:
+                yield a
+            # Execute report evaluation scenario as last action if specified, otherwise break loop
+            if self.definition.has_field_with_value("report_evaluation_scenario"):
+                yield self._make_report_evaluation_action(report)
+
+        _run_actions(actions(), report)
 
         # Evaluate participants' capabilities
         if (
@@ -322,3 +300,28 @@ class TestSuite(object):
                         )
 
         return report
+
+
+def _run_actions(
+    actions: Iterator[TestSuiteAction],
+    report: Union[TestSuiteReport, ActionGeneratorReport],
+) -> None:
+    success = True
+    for a, action in enumerate(actions):
+        action_report = action.run()
+        report.actions.append(action_report)
+        if action_report.has_critical_problem():
+            success = False
+            break
+        if not action_report.successful():
+            success = False
+            if action.declaration.on_failure == ReactionToFailure.Abort:
+                break
+            elif action.declaration.on_failure == ReactionToFailure.Continue:
+                continue
+            else:
+                raise ValueError(
+                    f"Action {a} indicated an unrecognized reaction to failure: {str(action.declaration.on_failure)}"
+                )
+    report.successful = success
+    report.end_time = StringBasedDateTime(datetime.utcnow())

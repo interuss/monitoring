@@ -297,8 +297,8 @@ def _compute_tested_scenario(
                     events.append(Event(query=query))
                     all_events.append(events[-1])
                     participant_id = (
-                        query.server_id
-                        if "server_id" in query and query.server_id
+                        query.participant_id
+                        if "participant_id" in query and query.participant_id
                         else UNATTRIBUTED_PARTICIPANT
                     )
                     p = scenario_participants.get(participant_id, TestedParticipant())

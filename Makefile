@@ -11,10 +11,11 @@ endif
 
 .PHONY: format
 format: json-schema
+	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:22.10.0 black --exclude /interfaces .
 	cd monitoring && make format
 
 .PHONY: lint
-lint: shell-lint
+lint: shell-lint python-lint
 	cd monitoring && make lint
 	cd schemas && make lint
 
@@ -23,7 +24,7 @@ check-hygiene: python-lint hygiene validate-uss-qualifier-docs shell-lint
 
 .PHONY: python-lint
 python-lint:
-	cd monitoring && make python-lint
+	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:22.10.0 black --check --exclude /interfaces . || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
 
 .PHONY: hygiene
 hygiene:

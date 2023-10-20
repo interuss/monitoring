@@ -7,6 +7,13 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
+    "participant_id": {
+      "description": "If specified, identifier of the USS/participant hosting the server involved in this query.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "query_type": {
       "description": "If specified, the recognized type of this query.",
       "enum": [
@@ -50,13 +57,6 @@
     },
     "response": {
       "$ref": "ResponseDescription.json"
-    },
-    "server_id": {
-      "description": "If specified, identifier of the USS/participant hosting the server involved in this query.",
-      "type": [
-        "string",
-        "null"
-      ]
     }
   },
   "required": [
