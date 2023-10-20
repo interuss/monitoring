@@ -137,16 +137,16 @@ def injected_flights_errors(injected_flights: List[InjectedFlight]) -> List[str]
             for t2, other_telemetry in enumerate(
                 injected_flight.flight.telemetry[t1 + 1 :]
             ):
-                if geo.LatLngPoint.from_f3411(injected_telemetry).match(
-                    geo.LatLngPoint.from_f3411(other_telemetry)
+                if geo.LatLngPoint.from_f3411(injected_telemetry.position).match(
+                    geo.LatLngPoint.from_f3411(other_telemetry.position)
                 ):
                     errors.append(
                         f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at indices {t1} and {t1 + 1 + t2} which can be mistaken for each other; (lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}) and (lat={other_telemetry.position.lat}, lng={other_telemetry.position.lng}) respectively"
                     )
             for f2, other_flight in enumerate(injected_flights[f1 + 1 :]):
                 for t2, other_telemetry in enumerate(other_flight.flight.telemetry):
-                    if geo.LatLngPoint.from_f3411(injected_telemetry).match(
-                        geo.LatLngPoint.from_f3411(other_telemetry)
+                    if geo.LatLngPoint.from_f3411(injected_telemetry.position).match(
+                        geo.LatLngPoint.from_f3411(other_telemetry.position)
                     ):
                         errors.append(
                             f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at index {t1} that can be mistaken for telemetry index {t2} in {other_flight.uss_participant_id}'s flight with injection ID {other_flight.flight.injection_id} in test {other_flight.test_id}; (lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}) and (lat={other_telemetry.position.lat}, lng={other_telemetry.position.lng}) respectively"

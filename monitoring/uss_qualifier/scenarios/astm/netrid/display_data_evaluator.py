@@ -164,7 +164,7 @@ def map_fetched_to_injected_flights(
 
     for mapping in tel_mapping.values():
         if mapping.observed_flight.query.participant_id is None:
-            mapping.observed_flight.query.participant_id = (
+            mapping.observed_flight.query.set_participant_id(
                 mapping.injected_flight.uss_participant_id
             )
 

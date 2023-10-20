@@ -5,6 +5,7 @@ import s2sphere
 from requests.exceptions import RequestException
 from s2sphere import LatLngRect
 
+from monitoring.monitorlib import auth
 from monitoring.monitorlib.fetch import rid
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
@@ -156,7 +157,9 @@ class Misbehavior(GenericTestScenario):
         for injection_id, mapping in mapping_by_injection_id.items():
             participant_id = mapping.injected_flight.uss_participant_id
             flights_url = mapping.observed_flight.query.flights_url
-            unauthenticated_session = UTMClientSession(flights_url, None)
+            unauthenticated_session = UTMClientSession(
+                flights_url, auth.NoAuth(aud_override="")
+            )
 
             self.record_note(
                 f"{participant_id}/{injection_id}/missing_credentials_queries",
