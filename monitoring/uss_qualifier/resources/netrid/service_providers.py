@@ -42,7 +42,7 @@ class NetRIDServiceProvidersSpecification(ImplicitDict):
 class NetRIDServiceProvider(object):
     participant_id: str
     injection_base_url: str
-    flights_injection_client: infrastructure.UTMClientSession
+    injection_client: infrastructure.UTMClientSession
     local_debug: bool
 
     def __init__(
@@ -54,14 +54,14 @@ class NetRIDServiceProvider(object):
     ):
         self.participant_id = participant_id
         self.injection_base_url = injection_base_url
-        self.flights_injection_client = infrastructure.UTMClientSession(
+        self.injection_client = infrastructure.UTMClientSession(
             injection_base_url, auth_adapter
         )
         self.local_debug = local_debug
 
     def submit_test(self, request: CreateTestParameters, test_id: str) -> fetch.Query:
         return fetch.query_and_describe(
-            self.flights_injection_client,
+            self.injection_client,
             "PUT",
             url=f"/tests/{test_id}",
             json=request,
@@ -71,7 +71,7 @@ class NetRIDServiceProvider(object):
 
     def delete_test(self, test_id: str, version: str) -> fetch.Query:
         return fetch.query_and_describe(
-            self.flights_injection_client,
+            self.injection_client,
             "DELETE",
             url=f"/tests/{test_id}/{version}",
             scope=SCOPE_RID_QUALIFIER_INJECT,

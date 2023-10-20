@@ -1001,9 +1001,9 @@ def uss_flights(
                 else "false",
             },
             scope=v19.constants.Scope.Read,
+            query_type=QueryType.F3411v19Flights,
             participant_id=participant_id,
         )
-        query.query_type = QueryType.F3411v19Flights
         return FetchedUSSFlights(v19_query=query)
     elif rid_version == RIDVersion.f3411_22a:
         params = {
@@ -1022,9 +1022,9 @@ def uss_flights(
             flights_url,
             params=params,
             scope=v22a.constants.Scope.DisplayProvider,
+            query_type=QueryType.F3411v22aFlights,
             participant_id=participant_id,
         )
-        query.query_type = QueryType.F3411v22aFlights
         return FetchedUSSFlights(v22a_query=query)
     else:
         raise NotImplementedError(

@@ -282,7 +282,7 @@ class DSSWrapper(object):
             isa_version=isa_version,
             rid_version=self._dss.rid_version,
             utm_client=self._dss.client,
-            server_id=self._dss.participant_id,
+            participant_id=self._dss.participant_id,
         )
 
         self._handle_query_result(
