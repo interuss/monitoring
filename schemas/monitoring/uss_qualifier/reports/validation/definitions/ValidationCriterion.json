@@ -1,0 +1,32 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/validation/definitions/ValidationCriterion.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Wrapper for all the potential types of validation criteria.\n\nmonitoring.uss_qualifier.reports.validation.definitions.ValidationCriterion, as defined in monitoring/uss_qualifier/reports/validation/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "full_success": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "FullSuccessCriterion.json"
+        }
+      ]
+    },
+    "no_skipped_actions": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "NoSkippedActionsCriterion.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

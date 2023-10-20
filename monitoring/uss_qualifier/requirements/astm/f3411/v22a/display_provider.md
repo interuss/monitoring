@@ -30,7 +30,7 @@ This file describes the set of ASTM F3411-22a requirements with which a USS fulf
 * **astm.f3411.v22a.NET0440**
 * **astm.f3411.v22a.NET0450**
 * **astm.f3411.v22a.NET0460**
-* **astm.f3411.v22a.NET0470**
+* NET0470 is not included in this list because the Display Application may not request any particular enumerated data field.
 * **astm.f3411.v22a.NET0480**
 * **astm.f3411.v22a.NET0490**
 

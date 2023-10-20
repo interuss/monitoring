@@ -22,7 +22,10 @@ All Service Provider Role requirements can be verified by automation.
 * **astm.f3411.v22a.NET0210**
 * **astm.f3411.v22a.NET0220**
 * **astm.f3411.v22a.NET0250**
-* **astm.f3411.v22a.NET0260**
+* NET0260
+  * **astm.f3411.v22a.NET0260,NetSpDataResponseTime95thPercentile**
+  * **astm.f3411.v22a.NET0260,NetSpDataResponseTime99thPercentile**
+  * **astm.f3411.v22a.NET0260,NearRealTime**
   * **astm.f3411.v22a.NET0260,Table1,1**
   * **astm.f3411.v22a.NET0260,Table1,2**
   * **astm.f3411.v22a.NET0260,Table1,4**
@@ -53,7 +56,8 @@ All Service Provider Role requirements can be verified by automation.
 
 #### USS-USS Interfaces
 
-* **astm.f3411.v22a.NET0710**
+* **astm.f3411.v22a.NET0710,1**
+* **astm.f3411.v22a.NET0710,2**
 * **astm.f3411.v22a.NET0740**
 
 ## Additional Capabilities

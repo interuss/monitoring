@@ -272,9 +272,7 @@ class AggregateChecks(ReportEvaluationScenario):
             durations = [query.response.elapsed_s for query in relevant_queries]
             (p95, p99) = evaluation.compute_percentiles(durations, [95, 99])
 
-            with self.check(
-                "Performance for replies to requested flights in an area", [participant]
-            ) as check:
+            with self.check("95th percentile response time", [participant]) as check:
                 if p95 > self._rid_version.sp_data_resp_percentile95_s:
                     check.record_failed(
                         summary=f"95th percentile of /flights?view requests is {p95} s",
@@ -282,6 +280,7 @@ class AggregateChecks(ReportEvaluationScenario):
                         participants=[participant],
                         details=f"expected less than {self._rid_version.sp_data_resp_percentile95_s} s, was {p95}",
                     )
+            with self.check("99th percentile response time", [participant]) as check:
                 if p99 > self._rid_version.sp_data_resp_percentile99_s:
                     check.record_failed(
                         summary=f"99th percentile of /flights?view requests is {p99} s",

@@ -570,3 +570,9 @@ class Volume4DCollection(ImplicitDict):
 
     def to_interuss_scd_api(self) -> List[interuss_scd_api.Volume4D]:
         return [v.to_interuss_scd_api() for v in self.volumes]
+
+    def has_active_volume(self, time_ref: datetime) -> bool:
+        return any(
+            vol.time_start.datetime <= time_ref <= vol.time_end.datetime
+            for vol in self.volumes
+        )

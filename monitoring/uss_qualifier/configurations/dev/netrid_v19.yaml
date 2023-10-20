@@ -15,8 +15,28 @@ v1:
                     dss_instances: netrid_dss_instances_v19
                     id_generator: id_generator
                     service_area: service_area
+                    problematically_big_area: problematically_big_area
     artifacts:
         report:
             report_path: output/report_netrid_v19.json
         tested_roles:
             report_path: output/tested_roles_netrid_v19
+        tested_requirements:
+          output_path: output/tested_requirements_f3411v19
+          requirement_collections:
+            sp_dp_dss:
+              requirement_sets:
+                - astm.f3411.v19.service_provider#Tested by automated tests
+                - astm.f3411.v19.display_provider#Automated verification
+                - astm.f3411.v19.dss_provider
+            sp_dss:
+              requirement_sets:
+                - astm.f3411.v19.service_provider#Tested by automated tests
+                - astm.f3411.v19.dss_provider
+          participant_requirements:
+            uss1: sp_dp_dss
+            uss2: sp_dss
+        sequence_view:
+          output_path: output/sequence_netrid_v19
+    validation:
+      $ref: ./library/validation.yaml#/normal_test

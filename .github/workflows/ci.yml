@@ -18,7 +18,7 @@ jobs:
         echo "Branch: ${{ github.ref }}"
         docker images
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         submodules: true
     - name: Python lint
@@ -60,18 +60,6 @@ jobs:
         cd monitoring/uss_qualifier
         make test
 
-  uss_qualifier_F3411-19-test:
-    name: uss_qualifier F3411-19 tests
-    uses: ./.github/workflows/monitoring-test.yml
-    with:
-      name: uss_qualifier_F3411-19
-      script: |
-        export CONFIG_NAME=configurations.dev.netrid_v19 \
-          USS_QUALIFIER_STOP_FAST=true
-
-        cd monitoring/uss_qualifier
-        make test
-
   prober-test:
     name: prober tests
     uses: ./.github/workflows/monitoring-test.yml
@@ -80,3 +68,39 @@ jobs:
       script: |
         cd monitoring/prober
         make test
+
+  publish-gh-pages:
+    name: Publish GitHub Pages
+    needs: [hygiene-tests, monitorlib-test, mock_uss-test, uss_qualifier-test, prober-test]
+    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          path: monitoring
+
+      - name: Get uss_qualifier reports
+        uses: actions/download-artifact@v3
+        with:
+          name: monitoring-test-uss_qualifier-reports
+          path: ./artifacts
+
+      - name: Make site content
+        run: ./monitoring/github_pages/make_site_content.sh
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          enable_jekyll: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: ${{ github.event.head_commit.message }}

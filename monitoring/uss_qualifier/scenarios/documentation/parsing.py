@@ -9,6 +9,7 @@ import marko.inline
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib.inspection import fullname, get_module_object_by_name
 from monitoring.monitorlib.versioning import repo_url_of
+from monitoring.uss_qualifier.documentation import text_of
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
@@ -29,29 +30,6 @@ TEST_CHECK_SUFFIX = " check"
 _test_step_cache: Dict[str, TestStepDocumentation] = {}
 
 
-def _text_of(value) -> str:
-    if isinstance(value, str):
-        return value
-    elif isinstance(value, marko.block.BlockElement):
-        result = ""
-        for child in value.children:
-            result += _text_of(child)
-        return result
-    elif isinstance(value, marko.inline.InlineElement):
-        if isinstance(value, marko.inline.LineBreak):
-            return "\n"
-        if isinstance(value.children, str):
-            return value.children
-        result = ""
-        for child in value.children:
-            result += _text_of(child)
-        return result
-    else:
-        raise NotImplementedError(
-            "Cannot yet extract raw text from {}".format(value.__class__.__name__)
-        )
-
-
 def _length_of_section(values, start_of_section: int) -> int:
     level = values[start_of_section].level
     c = start_of_section + 1
@@ -65,7 +43,7 @@ def _length_of_section(values, start_of_section: int) -> int:
 def _parse_test_check(
     values, doc_filename: str, anchors: Dict[Any, str]
 ) -> TestCheckDocumentation:
-    name = _text_of(values[0])[0 : -len(TEST_CHECK_SUFFIX)]
+    name = text_of(values[0])[0 : -len(TEST_CHECK_SUFFIX)]
     url = repo_url_of(doc_filename + anchors[values[0]])
     has_todo = False
 
@@ -73,11 +51,11 @@ def _parse_test_check(
     c = 1
     while c < len(values):
         if isinstance(values[c], marko.block.Paragraph):
-            if "TODO:" in _text_of(values[c]):
+            if "TODO:" in text_of(values[c]):
                 has_todo = True
             for child in values[c].children:
                 if isinstance(child, marko.inline.StrongEmphasis):
-                    reqs.append(RequirementID(_text_of(child)))
+                    reqs.append(RequirementID(text_of(child)))
         c += 1
 
     return TestCheckDocumentation(
@@ -102,7 +80,7 @@ def _get_linked_test_step(
         if (
             not isinstance(doc.children[0], marko.block.Heading)
             or doc.children[0].level != 1
-            or not _text_of(doc.children[0]).lower().endswith(TEST_STEP_SUFFIX)
+            or not text_of(doc.children[0]).lower().endswith(TEST_STEP_SUFFIX)
         ):
             raise ValueError(
                 f'The first line of "{absolute_path}" must be a level-1 heading with the name of the test step + "{TEST_STEP_SUFFIX}" (e.g., "# Successful flight injection{TEST_STEP_SUFFIX}")'
@@ -120,7 +98,7 @@ def _get_linked_test_step(
 def _parse_test_step(
     values, doc_filename: str, anchors: Dict[Any, str]
 ) -> TestStepDocumentation:
-    name = _text_of(values[0])
+    name = text_of(values[0])
     if name.lower().endswith(TEST_STEP_SUFFIX):
         name = name[0 : -len(TEST_STEP_SUFFIX)]
     url = repo_url_of(doc_filename + anchors[values[0]])
@@ -138,7 +116,7 @@ def _parse_test_step(
     c = 1
     while c < len(values):
         if isinstance(values[c], marko.block.Heading):
-            if _text_of(values[c]).lower().endswith(TEST_CHECK_SUFFIX):
+            if text_of(values[c]).lower().endswith(TEST_CHECK_SUFFIX):
                 # Start of a test step section
                 dc = _length_of_section(values, c)
                 check = _parse_test_check(values[c : c + dc + 1], doc_filename, anchors)
@@ -154,7 +132,7 @@ def _parse_test_step(
 def _parse_test_case(
     values, doc_filename: str, anchors: Dict[Any, str]
 ) -> TestCaseDocumentation:
-    name = _text_of(values[0])[0 : -len(TEST_CASE_SUFFIX)]
+    name = text_of(values[0])[0 : -len(TEST_CASE_SUFFIX)]
 
     url = repo_url_of(doc_filename + anchors[values[0]])
 
@@ -162,7 +140,7 @@ def _parse_test_case(
     c = 1
     while c < len(values):
         if isinstance(values[c], marko.block.Heading):
-            if _text_of(values[c]).lower().endswith(TEST_STEP_SUFFIX):
+            if text_of(values[c]).lower().endswith(TEST_STEP_SUFFIX):
                 # Start of a test step section
                 dc = _length_of_section(values, c)
                 step = _parse_test_step(values[c : c + dc + 1], doc_filename, anchors)
@@ -186,7 +164,7 @@ def _parse_resources(values) -> List[str]:
             and values[c].level == resource_level
         ):
             # This is a resource
-            resources.append(_text_of(values[c]))
+            resources.append(text_of(values[c]))
         c += 1
     return resources
 
@@ -203,7 +181,7 @@ def _get_anchors(
     anchors = {}
 
     if isinstance(value, marko.block.Heading):
-        base_anchor = "#" + _text_of(value).lower().replace(" ", "-")
+        base_anchor = "#" + text_of(value).lower().replace(" ", "-")
         if base_anchor not in header_counts:
             anchors[value] = base_anchor
         else:
@@ -237,14 +215,14 @@ def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
     if (
         not isinstance(doc.children[0], marko.block.Heading)
         or doc.children[0].level != 1
-        or not _text_of(doc.children[0]).lower().endswith(TEST_SCENARIO_SUFFIX)
+        or not text_of(doc.children[0]).lower().endswith(TEST_SCENARIO_SUFFIX)
     ):
         raise ValueError(
             'The first line of {} must be a level-1 heading with the name of the scenario + "{}" (e.g., "# ASTM NetRID nominal behavior{}")'.format(
                 doc_filename, TEST_SCENARIO_SUFFIX, TEST_SCENARIO_SUFFIX
             )
         )
-    scenario_name = _text_of(doc.children[0])[0 : -len(TEST_SCENARIO_SUFFIX)]
+    scenario_name = text_of(doc.children[0])[0 : -len(TEST_SCENARIO_SUFFIX)]
 
     # Step through the document to extract important structured components
     test_cases: List[TestCaseDocumentation] = []
@@ -256,7 +234,7 @@ def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
             c += 1
             continue
 
-        header_text = _text_of(doc.children[c])
+        header_text = text_of(doc.children[c])
 
         if header_text.lower().strip() == RESOURCES_HEADING:
             # Start of the Resources section

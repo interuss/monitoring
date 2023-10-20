@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 from typing import List, Tuple
 
+import arrow
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.rid.v1.injection import ChangeTestResponse
 
@@ -82,6 +83,8 @@ def inject_flights(
             )
         )
 
+        start_time = None
+        end_time = None
         for flight in changed_test.injected_flights:
             injected_flights.append(
                 InjectedFlight(
@@ -91,6 +94,19 @@ def inject_flights(
                     query_timestamp=query.request.timestamp,
                 )
             )
+            earliest_time = min(t.timestamp.datetime for t in flight.telemetry)
+            latest_time = max(t.timestamp.datetime for t in flight.telemetry)
+            if start_time is None or earliest_time < start_time:
+                start_time = earliest_time
+            if end_time is None or latest_time > end_time:
+                end_time = latest_time
+        now = arrow.utcnow().datetime
+        dt0 = (start_time - now).total_seconds()
+        dt1 = (end_time - now).total_seconds()
+        test_scenario.record_note(
+            f"{test_id} time range",
+            f"Injected flights start {dt0:.1f} seconds from now and end {dt1:.1f} seconds from now",
+        )
 
     # Make sure the injected flights can be identified correctly by the test harness
     with test_scenario.check("Identifiable flights") as check:
@@ -125,7 +141,7 @@ def injected_flights_errors(injected_flights: List[InjectedFlight]) -> List[str]
                     geo.LatLngPoint.from_f3411(other_telemetry)
                 ):
                     errors.append(
-                        f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at indices {t1} and {t1 + 1 + t2} which can be mistaken for each other"
+                        f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at indices {t1} and {t1 + 1 + t2} which can be mistaken for each other; (lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}) and (lat={other_telemetry.position.lat}, lng={other_telemetry.position.lng}) respectively"
                     )
             for f2, other_flight in enumerate(injected_flights[f1 + 1 :]):
                 for t2, other_telemetry in enumerate(other_flight.flight.telemetry):
@@ -133,6 +149,6 @@ def injected_flights_errors(injected_flights: List[InjectedFlight]) -> List[str]
                         geo.LatLngPoint.from_f3411(other_telemetry)
                     ):
                         errors.append(
-                            f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at index {t1} that can be mistaken for telemetry index {t2} in {other_flight.uss_participant_id}'s flight with injection ID {other_flight.flight.injection_id} in test {other_flight.test_id}"
+                            f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at index {t1} that can be mistaken for telemetry index {t2} in {other_flight.uss_participant_id}'s flight with injection ID {other_flight.flight.injection_id} in test {other_flight.test_id}; (lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}) and (lat={other_telemetry.position.lat}, lng={other_telemetry.position.lng}) respectively"
                         )
     return errors

@@ -23,7 +23,8 @@ export PYTHONUNBUFFERED=TRUE
 gunicorn \
     --preload \
     --config ./gunicorn.conf.py \
+    --worker-class="gevent" \
     --workers=4 \
-    --threads=2 \
+    --worker-tmp-dir="/dev/shm" \
     "--bind=0.0.0.0:${port}" \
     monitoring.mock_uss:webapp

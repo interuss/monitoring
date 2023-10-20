@@ -220,6 +220,7 @@ class TestSuite(object):
             except MissingResourceError as e:
                 skipped_actions.append(
                     SkippedActionReport(
+                        timestamp=StringBasedDateTime(arrow.utcnow().datetime),
                         reason=str(e),
                         action_declaration_index=a,
                         declaration=action_dec,

@@ -1,6 +1,7 @@
 from http.client import HTTPConnection
 from urllib3 import PoolManager, HTTPConnectionPool, HTTPSConnectionPool
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import urllib3.connection
 from typing import Tuple
@@ -16,12 +17,14 @@ def _get_session_for_socket(sock, host: str, port: int) -> requests.Session:
     s = requests.Session()
     s.verify = False
     http_adapter = SocketHTTPAdapter(sock, host, port)
-    s.mount('http://', http_adapter)
-    s.mount('https://', http_adapter)
+    s.mount("http://", http_adapter)
+    s.mount("https://", http_adapter)
     return s
 
 
-def get_requests_session_for_pod(pod_name: str, namespace: str, port: int, client: CoreV1Api) -> Tuple[requests.Session, str]:
+def get_requests_session_for_pod(
+    pod_name: str, namespace: str, port: int, client: CoreV1Api
+) -> Tuple[requests.Session, str]:
     """Make a Session to connect to the specified port on the named pod.
 
     Retrieves a requests Session that will send http(s) queries to the specified
@@ -38,10 +41,14 @@ def get_requests_session_for_pod(pod_name: str, namespace: str, port: int, clien
     """
     pf = kubernetes.stream.portforward(
         client.connect_get_namespaced_pod_portforward,
-        pod_name, namespace, ports=str(port),
+        pod_name,
+        namespace,
+        ports=str(port),
     )
-    host = '{}.pod.{}'.format(pod_name, namespace)
-    return _get_session_for_socket(pf.socket(port), host, port), '{}:{}'.format(host, port)
+    host = "{}.pod.{}".format(pod_name, namespace)
+    return _get_session_for_socket(pf.socket(port), host, port), "{}:{}".format(
+        host, port
+    )
 
 
 # ==== Custom requests handlers to inject/use an explicitly-provided socket ====
@@ -54,9 +61,17 @@ class SocketHTTPAdapter(HTTPAdapter):
         self._port = port
         super(SocketHTTPAdapter, self).__init__(*args, **kwargs)
 
-    def init_poolmanager(self, connections, maxsize, block=requests.adapters.DEFAULT_POOLBLOCK, **pool_kwargs):
+    def init_poolmanager(
+        self,
+        connections,
+        maxsize,
+        block=requests.adapters.DEFAULT_POOLBLOCK,
+        **pool_kwargs
+    ):
         """Overrides method in base class"""
-        self.poolmanager = SocketPoolManager(self._socket, self._host, self._port, num_pools=connections, maxsize=maxsize)
+        self.poolmanager = SocketPoolManager(
+            self._socket, self._host, self._port, num_pools=connections, maxsize=maxsize
+        )
 
 
 class SocketPoolManager(PoolManager):
@@ -70,11 +85,19 @@ class SocketPoolManager(PoolManager):
         """Overrides method in base class"""
         # return super(SocketPoolManager, self)._new_pool(scheme, host, port, request_context)
         if host == self._host and port == self._port:
-            if scheme == 'http':
-                return SocketHTTPConnectionPool(self._socket, host, port, **self.connection_pool_kw)
-            elif scheme == 'https':
-                return SocketHTTPSConnectionPool(self._socket, host, port, **self.connection_pool_kw)
-        raise ValueError('{}:{} is not supported by SocketPoolManager intended for {}:{}'.format(host, port, self._host, self._port))
+            if scheme == "http":
+                return SocketHTTPConnectionPool(
+                    self._socket, host, port, **self.connection_pool_kw
+                )
+            elif scheme == "https":
+                return SocketHTTPSConnectionPool(
+                    self._socket, host, port, **self.connection_pool_kw
+                )
+        raise ValueError(
+            "{}:{} is not supported by SocketPoolManager intended for {}:{}".format(
+                host, port, self._host, self._port
+            )
+        )
 
 
 class SocketHTTPConnectionPool(HTTPConnectionPool):
@@ -109,7 +132,7 @@ class SocketHTTPConnection(HTTPConnection):
 class SocketHTTPSConnectionPool(HTTPSConnectionPool):
     def __init__(self, sock, *args, **kwargs):
         self._socket = sock
-        kwargs['assert_hostname'] = False
+        kwargs["assert_hostname"] = False
         super(SocketHTTPSConnectionPool, self).__init__(*args, **kwargs)
 
     def _new_conn(self):

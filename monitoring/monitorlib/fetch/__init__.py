@@ -3,7 +3,7 @@ import json
 import os
 import traceback
 import uuid
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Union
 
 from enum import Enum
 from urllib.parse import urlparse
@@ -218,6 +218,9 @@ class QueryType(str, Enum):
     )
     F3548v21USSMakeUssReport = "astm.f3548.v21.uss.makeUssReport"
 
+    # InterUSS automated testing versioning interface
+    InterUSSVersioningGetVersion = "interuss.automated_testing.versioning.GetVersion"
+
     @staticmethod
     def flight_details(rid_version: RIDVersion):
         if rid_version == RIDVersion.f3411_19:
@@ -250,10 +253,17 @@ class Query(ImplicitDict):
 class QueryError(RuntimeError):
     """Error encountered when interacting with a server in the UTM ecosystem."""
 
-    def __init__(self, msg, queries: Optional[List[Query]] = None):
-        super(RuntimeError, self).__init__(msg)
+    queries: List[Query]
+
+    def __init__(self, msg: str, queries: Optional[Union[Query, List[Query]]] = None):
+        super(QueryError, self).__init__(msg)
         self.msg = msg
-        self.queries = queries or []
+        if queries is None:
+            self.queries = []
+        elif isinstance(queries, Query):
+            self.queries = [queries]
+        else:
+            self.queries = queries
 
     @property
     def stacktrace(self) -> str:

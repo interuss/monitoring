@@ -15,6 +15,7 @@ v1:
                     dss_instances: netrid_dss_instances_v22a
                     id_generator: id_generator
                     service_area: service_area
+                    problematically_big_area: problematically_big_area
     artifacts:
         report:
             report_path: output/report_netrid_v22a.json
@@ -32,7 +33,10 @@ v1:
                   requirement_sets:
                       - astm.f3411.v22a.service_provider#Mandatory requirements
                       - astm.f3411.v22a.dss_provider
-                      - astm.f3548.v21.scd#Automated verification
             participant_requirements:
                 uss1: sp_dp_dss
                 uss2: sp_dss
+        sequence_view:
+            output_path: output/sequence_netrid_v22a
+    validation:
+      $ref: ./library/validation.yaml#/normal_test

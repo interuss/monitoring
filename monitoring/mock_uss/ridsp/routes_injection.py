@@ -18,7 +18,7 @@ from monitoring.mock_uss.ridsp import utm_client
 from . import database
 from .database import db
 from monitoring.monitorlib import geo
-from ..database import fulfilled_request_ids
+from monitoring.monitorlib.idempotency import idempotent_request
 
 require_config_value(KEY_BASE_URL)
 require_config_value(KEY_RID_VERSION)
@@ -34,6 +34,7 @@ class ErrorResponse(ImplicitDict):
 
 @webapp.route("/ridsp/injection/tests/<test_id>", methods=["PUT"])
 @requires_scope([injection_api.SCOPE_RID_QUALIFIER_INJECT])
+@idempotent_request()
 def ridsp_create_test(test_id: str) -> Tuple[str, int]:
     """Implements test creation in RID automated testing injection API."""
     logger.info(f"Create test {test_id}")
@@ -51,18 +52,6 @@ def ridsp_create_test(test_id: str) -> Tuple[str, int]:
     except ValueError as e:
         msg = "Create test {} unable to parse JSON: {}".format(test_id, e)
         return msg, 400
-    if "request_id" in json:
-        logger.debug(f"[ridsp_create_test] Request ID {json['request_id']}")
-        with fulfilled_request_ids as tx:
-            if json["request_id"] in tx:
-                logger.debug(
-                    f"[ridsp_create_test] Already processed request ID {json['request_id']}"
-                )
-                return (
-                    f"Request ID {json['request_id']} has already been fulfilled",
-                    400,
-                )
-            tx.append(json["request_id"])
 
     # Create ISA in DSS
     (t0, t1) = req_body.get_span()

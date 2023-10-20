@@ -1,17 +1,24 @@
 from __future__ import annotations
+
+import math
 import os
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List, Dict, Optional, Iterator
+import html
+from typing import List, Dict, Optional, Iterator, Union
 
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.fetch import Query
+from monitoring.uss_qualifier.action_generators.action_generator import (
+    action_generator_type_from_name,
+)
 from monitoring.uss_qualifier.configurations.configuration import (
     ParticipantID,
     SequenceViewConfiguration,
 )
+from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports import jinja_env
 from monitoring.uss_qualifier.reports.report import (
     TestRunReport,
@@ -19,8 +26,19 @@ from monitoring.uss_qualifier.reports.report import (
     TestScenarioReport,
     PassedCheck,
     FailedCheck,
+    SkippedActionReport,
+)
+from monitoring.uss_qualifier.reports.tested_requirements import (
+    compute_test_run_information,
 )
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
+from monitoring.uss_qualifier.scenarios.documentation.parsing import (
+    get_documentation_by_name,
+)
+from monitoring.uss_qualifier.suites.definitions import ActionType, TestSuiteDefinition
+
+
+UNATTRIBUTED_PARTICIPANT = "unattributed"
 
 
 class NoteEvent(ImplicitDict):
@@ -40,6 +58,7 @@ class Event(ImplicitDict):
     event_index: int = 0
     passed_check: Optional[PassedCheck] = None
     failed_check: Optional[FailedCheck] = None
+    query_events: Optional[List[Union[Event, str]]] = None
     query: Optional[Query] = None
     note: Optional[NoteEvent] = None
 
@@ -68,6 +87,15 @@ class Event(ImplicitDict):
             return self.note.timestamp
         else:
             raise ValueError("Invalid Event type")
+
+    def get_query_links(self) -> str:
+        links = []
+        for e in self.query_events:
+            if isinstance(e, str):
+                links.append(e)
+            else:
+                links.append(f'<a href="#e{e.event_index}">{e.event_index}</a>')
+        return ", ".join(links)
 
 
 class TestedStep(ImplicitDict):
@@ -120,7 +148,9 @@ class Epoch(ImplicitDict):
 
 @dataclass
 class TestedParticipant(object):
-    has_failures: bool
+    has_failures: bool = False
+    has_successes: bool = False
+    has_queries: bool = False
 
 
 class TestedScenario(ImplicitDict):
@@ -128,6 +158,7 @@ class TestedScenario(ImplicitDict):
     name: str
     url: str
     scenario_index: int
+    duration: str
     epochs: List[Epoch]
     participants: Dict[ParticipantID, TestedParticipant]
 
@@ -136,10 +167,16 @@ class TestedScenario(ImplicitDict):
         return sum(c.rows for c in self.epochs)
 
 
+@dataclass
+class SkippedAction(object):
+    reason: str
+
+
 class ActionNodeType(str, Enum):
     Scenario = "Scenario"
     Suite = "Suite"
     ActionGenerator = "ActionGenerator"
+    SkippedAction = "SkippedAction"
 
 
 class ActionNode(ImplicitDict):
@@ -147,6 +184,7 @@ class ActionNode(ImplicitDict):
     node_type: ActionNodeType
     children: List[ActionNode]
     scenario: Optional[TestedScenario] = None
+    skipped_action: Optional[SkippedAction] = None
 
     @property
     def rows(self) -> int:
@@ -173,7 +211,8 @@ class SuiteCell(object):
 @dataclass
 class OverviewRow(object):
     suite_cells: List[SuiteCell]
-    scenario_node: ActionNode
+    scenario_node: Optional[ActionNode] = None
+    skipped_action_node: Optional[ActionNode] = None
     filled: bool = False
 
 
@@ -181,20 +220,24 @@ def _compute_tested_scenario(
     report: TestScenarioReport, indexer: Indexer
 ) -> TestedScenario:
     epochs = []
+    all_events = []
     event_index = 1
 
     def append_notes(new_notes):
-        nonlocal event_index
+        nonlocal event_index, all_events
         events = []
         for k, v in new_notes.items():
             events.append(
                 Event(
                     note=NoteEvent(
-                        key=k, message=v.message, timestamp=v.timestamp.datetime
+                        key=html.escape(k),
+                        message=html.escape(v.message),
+                        timestamp=v.timestamp.datetime,
                     ),
                     event_index=event_index,
                 )
             )
+            all_events.append(events[-1])
             event_index += 1
         events.sort(key=lambda e: e.timestamp)
         epochs.append(Epoch(events=events))
@@ -239,27 +282,60 @@ def _compute_tested_scenario(
             events = []
             for passed_check in step.passed_checks:
                 events.append(Event(passed_check=passed_check))
-                for pid in passed_check.participants:
-                    p = scenario_participants.get(
-                        pid, TestedParticipant(has_failures=False)
-                    )
-                    scenario_participants[pid] = p
-            for failed_check in step.failed_checks:
-                events.append(Event(failed_check=failed_check))
-                for pid in failed_check.participants:
-                    p = scenario_participants.get(
-                        pid, TestedParticipant(has_failures=True)
-                    )
-                    p.has_failures = True
+                all_events.append(events[-1])
+                participants = (
+                    passed_check.participants
+                    if passed_check.participants
+                    else [UNATTRIBUTED_PARTICIPANT]
+                )
+                for pid in participants:
+                    p = scenario_participants.get(pid, TestedParticipant())
+                    p.has_successes = True
                     scenario_participants[pid] = p
             if "queries" in step and step.queries:
                 for query in step.queries:
                     events.append(Event(query=query))
-                    if "participant_id" in query and query.participant_id:
-                        p = scenario_participants.get(
-                            query.participant_id, TestedParticipant(has_failures=False)
-                        )
-                        scenario_participants[query.participant_id] = p
+                    all_events.append(events[-1])
+                    participant_id = (
+                        query.participant_id
+                        if "participant_id" in query and query.participant_id
+                        else UNATTRIBUTED_PARTICIPANT
+                    )
+                    p = scenario_participants.get(participant_id, TestedParticipant())
+                    p.has_queries = True
+                    scenario_participants[participant_id] = p
+
+            for failed_check in step.failed_checks:
+                query_events = []
+                if (
+                    "query_report_timestamps" in failed_check
+                    and failed_check.query_report_timestamps
+                ):
+                    for query_timestamp in failed_check.query_report_timestamps:
+                        found = False
+                        for e in all_events:
+                            if (
+                                e.type == EventType.Query
+                                and e.query.request.initiated_at == query_timestamp
+                            ):
+                                query_events.append(e)
+                                found = True
+                                break
+                        if not found:
+                            query_events.append(query_timestamp)
+                events.append(
+                    Event(failed_check=failed_check, query_events=query_events)
+                )
+                all_events.append(events[-1])
+                participants = (
+                    failed_check.participants
+                    if failed_check.participants
+                    else [UNATTRIBUTED_PARTICIPANT]
+                )
+                for pid in participants:
+                    p = scenario_participants.get(pid, TestedParticipant())
+                    p.has_failures = True
+                    scenario_participants[pid] = p
             if "notes" in report and report.notes:
                 for key, note in report.notes.items():
                     if step.start_time.datetime <= note.timestamp.datetime:
@@ -270,12 +346,13 @@ def _compute_tested_scenario(
                             events.append(
                                 Event(
                                     note=NoteEvent(
-                                        key=key,
-                                        message=note.message,
+                                        key=html.escape(key),
+                                        message=html.escape(note.message),
                                         timestamp=note.timestamp.datetime,
                                     )
                                 )
                             )
+                            all_events.append(events[-1])
 
             # Sort this step's events by time
             events.sort(key=lambda e: e.timestamp)
@@ -321,18 +398,88 @@ def _compute_tested_scenario(
         else:
             post_notes = {}
         if post_notes:
+            latest_step_time = max(v.timestamp.datetime for v in post_notes.values())
             append_notes(post_notes)
+
+    if "end_time" in report and report.end_time:
+        latest_step_time = report.end_time.datetime
+
+    dt_s = round((latest_step_time - report.start_time.datetime).total_seconds())
+    dt_m = math.floor(dt_s / 60)
+    dt_s -= dt_m * 60
+    padding = "0" if dt_s < 10 else ""
+    duration = f"{dt_m}:{padding}{dt_s}"
 
     scenario = TestedScenario(
         type=report.scenario_type,
         name=report.name,
         url=report.documentation_url,
+        duration=duration,
         epochs=epochs,
         scenario_index=indexer.scenario_index,
         participants=scenario_participants,
     )
     indexer.scenario_index += 1
     return scenario
+
+
+def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
+    if report.declaration.get_action_type() == ActionType.TestSuite:
+        if (
+            "suite_type" in report.declaration.test_suite
+            and report.declaration.test_suite.suite_type
+        ):
+            suite: TestSuiteDefinition = ImplicitDict.parse(
+                load_dict_with_references(report.declaration.test_suite.suite_type),
+                TestSuiteDefinition,
+            )
+            parent = ActionNode(
+                name=suite.name,
+                node_type=ActionNodeType.Suite,
+                children=[],
+            )
+        elif report.declaration.test_suite.suite_definition:
+            parent = ActionNode(
+                name=report.declaration.test_suite.suite_definition.name,
+                node_type=ActionNodeType.Suite,
+                children=[],
+            )
+        else:
+            raise ValueError(
+                f"Cannot process skipped action for test suite that does not define suite_type nor suite_definition"
+            )
+        name = "All scenarios in test suite"
+    elif report.declaration.get_action_type() == ActionType.TestScenario:
+        docs = get_documentation_by_name(report.declaration.test_scenario.scenario_type)
+        return ActionNode(
+            name=docs.name,
+            node_type=ActionNodeType.SkippedAction,
+            children=[],
+            skipped_action=SkippedAction(reason=report.reason),
+        )
+    elif report.declaration.get_action_type() == ActionType.ActionGenerator:
+        generator_type = action_generator_type_from_name(
+            report.declaration.action_generator.generator_type
+        )
+        parent = ActionNode(
+            name=generator_type.get_name(),
+            node_type=ActionNodeType.ActionGenerator,
+            children=[],
+        )
+        name = f"All scenarios from action generator"
+    else:
+        raise ValueError(
+            f"Cannot process skipped action of type '{report.declaration.get_action_type()}'"
+        )
+    parent.children.append(
+        ActionNode(
+            name=name,
+            node_type=ActionNodeType.SkippedAction,
+            children=[],
+            skipped_action=SkippedAction(reason=report.reason),
+        )
+    )
+    return parent
 
 
 def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> ActionNode:
@@ -349,16 +496,24 @@ def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Act
             scenario=_compute_tested_scenario(report.test_scenario, indexer),
         )
     elif is_test_suite:
+        children = [_compute_action_node(a, indexer) for a in report.test_suite.actions]
+        for skipped_action in report.test_suite.skipped_actions:
+            i = 0
+            for i, a in enumerate(report.test_suite.actions):
+                if a.start_time.datetime > skipped_action.timestamp.datetime:
+                    break
+            children.insert(i, _skipped_action_of(skipped_action))
         return ActionNode(
             name=report.test_suite.name,
             node_type=ActionNodeType.Suite,
-            children=[
-                _compute_action_node(a, indexer) for a in report.test_suite.actions
-            ],
+            children=children,
         )
     elif is_action_generator:
+        generator_type = action_generator_type_from_name(
+            report.action_generator.generator_type
+        )
         return ActionNode(
-            name=report.action_generator.generator_type,
+            name=generator_type.get_name(),
             node_type=ActionNodeType.ActionGenerator,
             children=[
                 _compute_action_node(a, indexer)
@@ -374,6 +529,8 @@ def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Act
 def _compute_overview_rows(node: ActionNode) -> Iterator[OverviewRow]:
     if node.node_type == ActionNodeType.Scenario:
         yield OverviewRow(suite_cells=[], scenario_node=node)
+    elif node.node_type == ActionNodeType.SkippedAction:
+        yield OverviewRow(suite_cells=[], skipped_action_node=node)
     else:
         first_row = True
         for child in node.children:
@@ -382,6 +539,7 @@ def _compute_overview_rows(node: ActionNode) -> Iterator[OverviewRow]:
                     suite_cells=[SuiteCell(node=node, first_row=first_row)]
                     + row.suite_cells,
                     scenario_node=row.scenario_node,
+                    skipped_action_node=row.skipped_action_node,
                 )
                 first_row = False
 
@@ -444,6 +602,9 @@ def _generate_scenario_pages(
     if node.node_type == ActionNodeType.Scenario:
         all_participants = list(node.scenario.participants)
         all_participants.sort()
+        if UNATTRIBUTED_PARTICIPANT in all_participants:
+            all_participants.remove(UNATTRIBUTED_PARTICIPANT)
+            all_participants.append(UNATTRIBUTED_PARTICIPANT)
         scenario_file = os.path.join(
             config.output_path, f"s{node.scenario.scenario_index}.html"
         )
@@ -455,6 +616,7 @@ def _generate_scenario_pages(
                     all_participants=all_participants,
                     EpochType=EpochType,
                     EventType=EventType,
+                    UNATTRIBUTED_PARTICIPANT=UNATTRIBUTED_PARTICIPANT,
                     len=len,
                     str=str,
                 )
@@ -477,15 +639,21 @@ def generate_sequence_view(
     max_suite_cols = max(len(r.suite_cells) for r in overview_rows)
     all_participants = _enumerate_all_participants(node)
     all_participants.sort()
+    if UNATTRIBUTED_PARTICIPANT in all_participants:
+        all_participants.remove(UNATTRIBUTED_PARTICIPANT)
+        all_participants.append(UNATTRIBUTED_PARTICIPANT)
     overview_file = os.path.join(config.output_path, "index.html")
     template = jinja_env.get_template("sequence_view/overview.html")
     with open(overview_file, "w") as f:
         f.write(
             template.render(
+                report=report,
+                test_run=compute_test_run_information(report),
                 overview_rows=overview_rows,
                 max_suite_cols=max_suite_cols,
                 all_participants=all_participants,
                 ActionNodeType=ActionNodeType,
+                UNATTRIBUTED_PARTICIPANT=UNATTRIBUTED_PARTICIPANT,
                 len=len,
             )
         )

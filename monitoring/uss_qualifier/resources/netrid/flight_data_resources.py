@@ -1,9 +1,11 @@
+import json
 from datetime import timedelta
 from typing import List, Optional
 import uuid
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
+from monitoring.uss_qualifier.resources.files import load_dict, load_content
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     TestFlightDetails,
     RIDAircraftState,
@@ -12,7 +14,6 @@ from uas_standards.interuss.automated_testing.rid.v1.injection import (
 from monitoring.monitorlib.rid_automated_testing.injection_api import (
     TestFlight,
 )
-from monitoring.uss_qualifier.fileio import load_dict_with_references, load_content
 from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.netrid.flight_data import (
     FlightDataSpecification,
@@ -33,7 +34,7 @@ class FlightDataResource(Resource[FlightDataSpecification]):
     def __init__(self, specification: FlightDataSpecification):
         if "record_source" in specification:
             self.flight_collection = ImplicitDict.parse(
-                load_dict_with_references(specification.record_source),
+                load_dict(specification.record_source),
                 FlightRecordCollection,
             )
         elif "adjacent_circular_flights_simulation_source" in specification:
@@ -41,7 +42,7 @@ class FlightDataResource(Resource[FlightDataSpecification]):
                 specification.adjacent_circular_flights_simulation_source
             )
         elif "kml_source" in specification:
-            kml_content = load_content(specification.kml_source.kml_location)
+            kml_content = load_content(specification.kml_source.kml_file)
             self.flight_collection = get_flight_records(
                 kml_content,
                 specification.kml_source.reference_time.datetime,
@@ -49,7 +50,8 @@ class FlightDataResource(Resource[FlightDataSpecification]):
             )
         else:
             raise ValueError(
-                "A source of flight data was not identified in the specification for a FlightDataSpecification"
+                "A source of flight data was not identified in the specification for a FlightDataSpecification:\n"
+                + json.dumps(specification, indent=2)
             )
         self._flight_start_delay = specification.flight_start_delay.timedelta
 
