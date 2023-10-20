@@ -218,6 +218,9 @@ class TestSuite(object):
                     TestSuiteAction(action=action_dec, resources=self.local_resources)
                 )
             except MissingResourceError as e:
+                logger.warning(
+                    f"Skipping action {a} ({action_dec.get_action_type()} {action_dec.get_child_type()}) because {str(e)}"
+                )
                 skipped_actions.append(
                     SkippedActionReport(
                         timestamp=StringBasedDateTime(arrow.utcnow().datetime),

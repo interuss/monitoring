@@ -40,12 +40,12 @@ v1:
             auth_adapter: utm_auth
           specification:
             flight_planners:
-            # uss1 is the mock_uss directly exposing scdsc functionality
-            - participant_id: uss1
-              injection_base_url: http://scdsc.uss1.localutm/scdsc
-            # uss2 is another mock_uss directly exposing scdsc functionality
-            - participant_id: uss2
-              injection_base_url: http://scdsc.uss2.localutm/scdsc
+              # uss1 is the mock_uss directly exposing scdsc functionality
+              - participant_id: uss1
+                injection_base_url: http://scdsc.uss1.localutm/scdsc
+              # uss2 is another mock_uss directly exposing scdsc functionality
+              - participant_id: uss2
+                injection_base_url: http://scdsc.uss2.localutm/scdsc
 
         # Details of conflicting flights (used in nominal planning scenario)
         conflicting_flights:
@@ -53,7 +53,7 @@ v1:
           specification:
             planning_time: '0:05:00'
             file:
-                path: file://./test_data/che/flight_intents/conflicting_flights.json
+              path: file://./test_data/che/flight_intents/conflicting_flights.json
 
         # Details of priority-preemption flights (used in nominal planning priority scenario)
         priority_preemption_flights:
@@ -61,7 +61,7 @@ v1:
           specification:
             planning_time: '0:05:00'
             file:
-                path: test_data.che.flight_intents.priority_preemption
+              path: test_data.che.flight_intents.conflicting_flights
 
         # Details of flights with invalid operational intents (used in flight intent validation scenario)
         invalid_flight_intents:
@@ -69,7 +69,7 @@ v1:
           specification:
             planning_time: '0:05:00'
             file:
-                path: test_data.che.flight_intents.invalid_flight_intents
+              path: test_data.che.flight_intents.invalid_flight_intents
 
         # Location of DSS instance that can be used to verify flight planning outcomes
         dss:
@@ -93,14 +93,23 @@ v1:
   # relative to where uss_qualifier is executed from, and are located inside the
   # Docker container executing uss_qualifier.
   artifacts:
+    # Write out full report content
     report:
       # Path to main report output
       report_path: output/report_f3548_self_contained.json
 
-    # Information about a report including a list of roles tested and which participants are attempting to fill them
-    tested_roles:
-      report_path: output/tested_roles_f3548_self_contained
+    # Write out a human-readable report of the requirements tested
+    tested_requirements:
+      output_path: output/tested_requirements_f3548_self_contained
+      requirement_collections:
+        scd:
+          requirement_collections:
+            - requirement_sets:
+                - astm.f3548.v21.scd
+      participant_requirements:
+        uss1: scd
+        uss2: scd
 
-    graph:
-      # Path to output GraphViz test file summarizing test run
-      gv_path: output/report_f3548_self_contained.gv
+    # Write out a human-readable report showing the sequence of events of the test
+    sequence_view:
+      output_path: output/sequence_f3548_self_contained

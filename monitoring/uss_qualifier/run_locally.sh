@@ -26,12 +26,12 @@ OTHER_ARGS=${@:2}
 if [ "$CONFIG_NAME" == "ALL" ]; then
   CONFIG_NAME="\
 configurations.dev.noop,\
-configurations.dev.dss_probing,\
 configurations.dev.geoawareness_cis,\
 configurations.dev.generate_rid_test_data,\
 configurations.dev.geospatial_comprehension,\
 configurations.dev.general_flight_auth,\
-configurations.dev.f3548,\
+configurations.dev.message_signing,\
+configurations.dev.dss_probing,\
 configurations.dev.f3548_self_contained,\
 configurations.dev.netrid_v22a,\
 configurations.dev.netrid_v19,\
