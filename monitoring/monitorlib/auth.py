@@ -53,25 +53,29 @@ class NoAuth(AuthAdapter):
 
     EXPIRATION = 3600  # seconds
 
-    def __init__(self, sub: str = "uss_noauth"):
+    def __init__(self, sub: str = "uss_noauth", aud_override: Optional[str] = None):
         super().__init__()
         self.sub = sub
+        self._aud_override = aud_override
 
     # Overrides method in AuthAdapter
     def issue_token(self, intended_audience: str, scopes: List[str]) -> str:
         timestamp = int((datetime.datetime.utcnow() - _UNIX_EPOCH).total_seconds())
+        claims = {
+            "sub": self.sub,
+            "client_id": self.sub,
+            "scope": " ".join(scopes),
+            "aud": intended_audience,
+            "nbf": timestamp - 1,
+            "exp": timestamp + NoAuth.EXPIRATION,
+            "iss": "NoAuth",
+            "jti": str(uuid.uuid4()),
+        }
+        if self._aud_override is not None:
+            claims["aud"] = self._aud_override
         jwt = jwcrypto.jwt.JWT(
             header={"typ": "JWT", "alg": "RS256"},
-            claims={
-                "sub": self.sub,
-                "client_id": self.sub,
-                "scope": " ".join(scopes),
-                "aud": intended_audience,
-                "nbf": timestamp - 1,
-                "exp": timestamp + NoAuth.EXPIRATION,
-                "iss": "NoAuth",
-                "jti": str(uuid.uuid4()),
-            },
+            claims=claims,
             algs=["RS256"],
         )
         jwt.make_signed_token(NoAuth.dummy_private_key)
