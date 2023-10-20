@@ -643,16 +643,21 @@ class RIDQuery(ImplicitDict):
     @property
     def participant_id(self) -> Optional[str]:
         if self.rid_version == RIDVersion.f3411_19:
-            return self.v19_query.participant_id
+            if "participant_id" in self.v19_query:
+                return self.v19_query.participant_id
+            else:
+                return None
         elif self.rid_version == RIDVersion.f3411_22a:
-            return self.v22a_query.participant_id
+            if "participant_id" in self.v22a_query:
+                return self.v22a_query.participant_id
+            else:
+                return None
         else:
             raise NotImplementedError(
                 f"Cannot retrieve participant_id using RID version {self.rid_version}"
             )
 
-    @participant_id.setter
-    def participant_id(self, participant_id: str) -> None:
+    def set_participant_id(self, participant_id: str) -> None:
         if self.v19_query is not None:
             self.v19_query.participant_id = participant_id
         elif self.v22a_query is not None:
