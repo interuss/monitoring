@@ -6,11 +6,12 @@ from loguru import logger
 import math
 import s2sphere
 from s2sphere import LatLng, LatLngRect
+
 from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
     RIDCommonDictionaryEvaluator,
 )
 
-from monitoring.monitorlib.fetch import Query, QueryType
+from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.fetch.rid import (
     all_flights,
     FetchedFlights,
@@ -18,7 +19,6 @@ from monitoring.monitorlib.fetch.rid import (
     Position,
 )
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
-from uas_standards.interuss.automated_testing.rid.v1.injection import RIDAircraftState
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     Flight,
     GetDisplayDataResponse,
@@ -36,14 +36,8 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection i
 from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
-from monitoring.uss_qualifier.scenarios.scenario import (
-    TestScenarioType,
-    TestScenario,
-)
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFlight
-
-DISTANCE_TOLERANCE_M = 0.01
-COORD_TOLERANCE_DEG = 360 / geo.EARTH_CIRCUMFERENCE_M * DISTANCE_TOLERANCE_M
 
 
 def _rect_str(rect) -> str:
@@ -53,41 +47,6 @@ def _rect_str(rect) -> str:
         rect.hi().lat().degrees,
         rect.hi().lng().degrees,
     )
-
-
-def _telemetry_match(t1: RIDAircraftState, t2: RIDAircraftState) -> bool:
-    """Determine whether two telemetry points may be mistaken for each other."""
-    return (
-        abs(t1.position.lat - t2.position.lat) < COORD_TOLERANCE_DEG
-        and abs(t1.position.lng == t2.position.lng) < COORD_TOLERANCE_DEG
-    )
-
-
-def injected_flights_errors(injected_flights: List[InjectedFlight]) -> List[str]:
-    """Determine whether each telemetry in each injected flight can be easily distinguished from each other.
-
-    Args:
-        injected_flights: Full set of flights injected into Service Providers.
-
-    Returns: List of error messages, or an empty list if no errors.
-    """
-    errors: List[str] = []
-    for f1, injected_flight in enumerate(injected_flights):
-        for t1, injected_telemetry in enumerate(injected_flight.flight.telemetry):
-            for t2, other_telmetry in enumerate(
-                injected_flight.flight.telemetry[t1 + 1 :]
-            ):
-                if _telemetry_match(injected_telemetry, other_telmetry):
-                    errors.append(
-                        f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at indices {t1} and {t1 + 1 + t2} which can be mistaken for each other"
-                    )
-            for f2, other_flight in enumerate(injected_flights[f1 + 1 :]):
-                for t2, other_telemetry in enumerate(other_flight.flight.telemetry):
-                    if _telemetry_match(injected_telemetry, other_telemetry):
-                        errors.append(
-                            f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at index {t1} that can be mistaken for telemetry index {t2} in {other_flight.uss_participant_id}'s flight with injection ID {other_flight.flight.injection_id} in test {other_flight.test_id}"
-                        )
-    return errors
 
 
 @dataclass
@@ -128,7 +87,7 @@ def map_observations_to_injected_flights(
         injected_flights: Flights injected into RID Service Providers under test.
         observed_flights: Flight observed from an RID Display Provider under test.
 
-    Returns: Mapping betweenInjectedFlight and observed Flight, indexed by injection_id.
+    Returns: Mapping between InjectedFlight and observed Flight, indexed by injection_id.
     """
     mapping: Dict[str, TelemetryMapping] = {}
     for injected_flight in injected_flights:
@@ -154,7 +113,7 @@ def map_observations_to_injected_flights(
             for t1, injected_telemetry in enumerate(injected_flight.flight.telemetry):
                 dlat = abs(p.lat - injected_telemetry.position.lat)
                 dlng = abs(p.lng - injected_telemetry.position.lng)
-                if dlat < COORD_TOLERANCE_DEG and dlng < COORD_TOLERANCE_DEG:
+                if dlat < geo.COORD_TOLERANCE_DEG and dlng < geo.COORD_TOLERANCE_DEG:
                     new_distance = math.sqrt(math.pow(dlat, 2) + math.pow(dlng, 2))
                     if new_distance < smallest_distance:
                         best_match = TelemetryMapping(
@@ -179,6 +138,37 @@ def map_observations_to_injected_flights(
             )
             mapping[best_match.injected_flight.flight.injection_id] = best_match
     return mapping
+
+
+def map_fetched_to_injected_flights(
+    injected_flights: List[InjectedFlight],
+    fetched_flights: List[FetchedUSSFlights],
+) -> Dict[str, TelemetryMapping]:
+    """Identify which of the fetched flights (if any) matches to each of the injected flights.
+
+    See `map_observations_to_injected_flights`.
+    If it is not already set, sets the observation flight's server ID to the one of the matching injected flight.
+
+    :param injected_flights: Flights injected into RID Service Providers under test.
+    :param fetched_flights: Flight observed from an RID Display Provider under test.
+    :return: Mapping between InjectedFlight and observed Flight, indexed by injection_id.
+    """
+    observed_flights = []
+    for uss_query in fetched_flights:
+        for f in range(len(uss_query.flights)):
+            observed_flights.append(DPObservedFlight(query=uss_query, flight=f))
+
+    tel_mapping = map_observations_to_injected_flights(
+        injected_flights, observed_flights
+    )
+
+    for mapping in tel_mapping.values():
+        if mapping.observed_flight.query.participant_id is None:
+            mapping.observed_flight.query.participant_id = (
+                mapping.injected_flight.uss_participant_id
+            )
+
+    return tel_mapping
 
 
 class RIDObservationEvaluator(object):
@@ -239,15 +229,18 @@ class RIDObservationEvaluator(object):
                 get_details=True,
                 rid_version=self._rid_version,
                 session=self._dss.client,
-                dss_server_id=self._dss.participant_id,
+                dss_participant_id=self._dss.participant_id,
+            )
+
+            # map observed flights to injected flight and attribute participant ID
+            mapping_by_injection_id = map_fetched_to_injected_flights(
+                self._injected_flights, list(sp_observation.uss_flight_queries.values())
             )
             for q in sp_observation.queries:
                 self._test_scenario.record_query(q)
 
             # Evaluate observations
-            # (Note this also takes care of setting the server_id to the relevant
-            # participant_id on queries where possible)
-            self._evaluate_sp_observation(sp_observation, rect)
+            self._evaluate_sp_observation(rect, sp_observation, mapping_by_injection_id)
 
             step_report = self._test_scenario.end_test_step()
             perform_observation = step_report.successful()
@@ -347,8 +340,6 @@ class RIDObservationEvaluator(object):
         mapping_by_injection_id = map_observations_to_injected_flights(
             self._injected_flights, observation.flights
         )
-        # TODO check if we need to set some server ids on observation
-        #  queries here (if we have unattributed queries this might be a source)
 
         self._evaluate_flight_presence(
             observer.participant_id,
@@ -384,7 +375,7 @@ class RIDObservationEvaluator(object):
                 ) as check:
                     if (
                         abs(observed_position.alt - injected_position.alt)
-                        > DISTANCE_TOLERANCE_M
+                        > geo.DISTANCE_TOLERANCE_M
                     ):
                         check.record_failed(
                             "Observed altitude does not match injected altitude",
@@ -785,7 +776,7 @@ class RIDObservationEvaluator(object):
                             * geo.EARTH_CIRCUMFERENCE_M
                             / 360
                         )
-                        if distance <= DISTANCE_TOLERANCE_M:
+                        if distance <= geo.DISTANCE_TOLERANCE_M:
                             # Flight was not obfuscated
                             check.record_failed(
                                 summary="Error while evaluating obfuscation of individual flights. Flight was not obfuscated: it is at the center of the cluster.",
@@ -818,8 +809,9 @@ class RIDObservationEvaluator(object):
 
     def _evaluate_sp_observation(
         self,
+        requested_area: s2sphere.LatLngRect,
         sp_observation: FetchedFlights,
-        rect: s2sphere.LatLngRect,
+        mappings: Dict[str, TelemetryMapping],
     ) -> None:
         # Note: This step currently uses the DSS endpoint to perform a one-time query for ISAs, but this
         # endpoint is not strictly required.  The PUT Subscription endpoint, followed immediately by the
@@ -840,31 +832,18 @@ class RIDObservationEvaluator(object):
                 )
                 return
 
-        observed_flights = []
-        for uss_query in sp_observation.uss_flight_queries.values():
-            for f in range(len(uss_query.flights)):
-                observed_flights.append(DPObservedFlight(query=uss_query, flight=f))
-        mapping_by_injection_id = map_observations_to_injected_flights(
-            self._injected_flights, observed_flights
-        )
-
-        for telemetry_mapping in mapping_by_injection_id.values():
-            # For flights that were mapped to an injection ID,
-            # update the observation queries with the participant id for future use in the aggregate checks
-            telemetry_mapping.observed_flight.query.set_server_id(
-                telemetry_mapping.injected_flight.uss_participant_id
-            )
-
         diagonal_km = (
-            rect.lo().get_distance(rect.hi()).degrees * geo.EARTH_CIRCUMFERENCE_KM / 360
+            requested_area.lo().get_distance(requested_area.hi()).degrees
+            * geo.EARTH_CIRCUMFERENCE_KM
+            / 360
         )
         if diagonal_km > self._rid_version.max_diagonal_km:
             self._evaluate_area_too_large_sp_observation(
-                mapping_by_injection_id, rect, diagonal_km
+                mappings, requested_area, diagonal_km
             )
         else:
             self._evaluate_normal_sp_observation(
-                rect, sp_observation, mapping_by_injection_id
+                requested_area, sp_observation, mappings
             )
 
     def _evaluate_normal_sp_observation(
@@ -933,7 +912,7 @@ class RIDObservationEvaluator(object):
                 ) as check:
                     if (
                         abs(observed_position.alt - injected_position.alt)
-                        > DISTANCE_TOLERANCE_M
+                        > geo.DISTANCE_TOLERANCE_M
                     ):
                         check.record_failed(
                             "Altitude reported by Service Provider does not match injected altitude",

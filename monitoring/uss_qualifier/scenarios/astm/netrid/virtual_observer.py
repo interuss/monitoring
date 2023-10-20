@@ -1,5 +1,7 @@
+import time
 from datetime import timedelta, datetime
-from typing import Optional
+from typing import Optional, Callable, List
+from loguru import logger
 
 import arrow
 from s2sphere import LatLngRect
@@ -69,3 +71,50 @@ class VirtualObserver(object):
             self._injected_flights.get_end_of_injected_data()
             + self._relevant_past_data_period
         )
+
+    def start_polling(
+        self,
+        interval: timedelta,
+        diagonals_m: List[float],
+        poll_fct: Callable[[LatLngRect], bool],
+    ) -> None:
+        """
+        Start polling of the RID system.
+
+        :param interval: polling interval.
+        :param diagonals_m: list of the query rectangle diagonals (in meters).
+        :param poll_fct: polling function to invoke. If it returns True, the polling will be immediately interrupted before the end.
+        """
+        t_end = self.get_last_time_of_interest()
+        t_now = arrow.utcnow()
+        if t_now > t_end:
+            raise ValueError(
+                f"Cannot poll RID system: instructed to poll until {t_end}, which is before now ({t_now})"
+            )
+
+        logger.info(f"Polling from {t_now} until {t_end} every {interval}")
+        t_next = arrow.utcnow()
+        while arrow.utcnow() < t_end:
+            interrupt_polling = False
+            for diagonal_m in diagonals_m:
+                rect = self.get_query_rect(diagonal_m)
+                interrupt_polling = poll_fct(rect)
+                if interrupt_polling:
+                    break
+
+            if interrupt_polling:
+                logger.info(f"Polling ended early at {arrow.utcnow()}.")
+                break
+
+            # Wait until minimum polling interval elapses
+            while t_next < arrow.utcnow():
+                t_next += interval
+            if t_next > t_end:
+                logger.info(f"Polling ended normally at {t_end}.")
+                break
+            delay = t_next - arrow.utcnow()
+            if delay.total_seconds() > 0:
+                logger.debug(
+                    f"Waiting {delay.total_seconds()} seconds before polling RID system again..."
+                )
+                time.sleep(delay.total_seconds())
