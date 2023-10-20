@@ -36,7 +36,7 @@ validate-uss-qualifier-docs:
 
 .PHONY: shell-lint
 shell-lint:
-	find . -name '*.sh' | grep -v '^./interfaces' | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck
+	find . -name '*.sh' ! -path "./interfaces/*" | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck
 
 .PHONY: json-schema
 json-schema:
@@ -50,9 +50,9 @@ json-schema-lint:
 .PHONY: hygiene-tests
 hygiene-tests: check-hygiene
 
-.PHONY: build-monitoring
-build-monitoring:
-	cd monitoring && make build
+.PHONY: image
+image:
+	cd monitoring && make image
 
 tag:
 	scripts/tag.sh $(UPSTREAM_OWNER)/monitoring/v$(VERSION)
