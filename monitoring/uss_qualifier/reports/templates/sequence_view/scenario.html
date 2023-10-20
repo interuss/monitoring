@@ -166,7 +166,7 @@
                   {% set collapsible.queries = collapsible.queries + [query_id] %}
                 </td>
                 {% for participant_id in all_participants %}
-                  {% if (participant_id != UNATTRIBUTED_PARTICIPANT and participant_id == event.query.get("server_id", None)) or (participant_id == UNATTRIBUTED_PARTICIPANT and not event.query.get("server_id", None)) %}
+                  {% if (participant_id != UNATTRIBUTED_PARTICIPANT and participant_id == event.query.get("participant_id", None)) or (participant_id == UNATTRIBUTED_PARTICIPANT and not event.query.get("participant_id", None)) %}
                     <td>&#x1F310;</td>
                   {% else %}
                     <td></td>
