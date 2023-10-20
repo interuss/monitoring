@@ -86,12 +86,12 @@ class AggregateChecks(ReportEvaluationScenario):
                     break
 
             # Only consider queries with the participant/server explicitly identified
-            if query.has_field_with_value("server_id"):
+            if query.has_field_with_value("participant_id"):
                 participant_queries = self._queries_by_participant.get(
-                    query.server_id, []
+                    query.participant_id, []
                 )
                 participant_queries.append(query)
-                self._queries_by_participant[query.server_id] = participant_queries
+                self._queries_by_participant[query.participant_id] = participant_queries
 
     def run(self):
         self.begin_test_scenario()
@@ -152,7 +152,7 @@ class AggregateChecks(ReportEvaluationScenario):
         unattr_queries = [
             query.request.url
             for query in self._queries
-            if query.get("server_id") is None
+            if query.get("participant_id") is None
         ]
         if len(unattr_queries) > 0:
             self.record_note(

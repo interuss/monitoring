@@ -76,7 +76,7 @@ class ISASimple(GenericTestScenario):
             self._isa_id,
             rid_version=self._dss.rid_version,
             session=self._dss.client,
-            server_id=self._dss.participant_id,
+            participant_id=self._dss.participant_id,
         )
         self.record_query(fetched.query)
         with self.check("Successful ISA query", [self._dss.participant_id]) as check:
@@ -94,7 +94,7 @@ class ISASimple(GenericTestScenario):
                 fetched.isa.version,
                 self._dss.rid_version,
                 self._dss.client,
-                server_id=self._dss.participant_id,
+                participant_id=self._dss.participant_id,
             )
             self.record_query(deleted.dss_query.query)
             for subscriber_id, notification in deleted.notifications.items():

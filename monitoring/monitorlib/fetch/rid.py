@@ -124,7 +124,7 @@ class ISA(ImplicitDict):
         session: UTMClientSession,
         area: s2sphere.LatLngRect,
         include_recent_positions: bool = True,
-        server_id: Optional[str] = None,
+        participant_id: Optional[str] = None,
     ) -> FetchedUSSFlights:
         return uss_flights(
             self.flights_url,
@@ -132,7 +132,7 @@ class ISA(ImplicitDict):
             include_recent_positions,
             self.rid_version,
             session,
-            server_id=server_id,
+            participant_id=participant_id,
         )
 
 
@@ -640,13 +640,25 @@ class RIDQuery(ImplicitDict):
     def errors(self) -> List[str]:
         raise NotImplementedError("RIDQuery.errors must be overriden")
 
-    def set_server_id(self, server_id: str):
-        if self.v19_query is not None:
-            self.v19_query.server_id = server_id
-        elif self.v22a_query is not None:
-            self.v22a_query.server_id = server_id
+    @property
+    def participant_id(self) -> Optional[str]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_query.participant_id
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_query.participant_id
         else:
-            raise NotImplementedError(f"Cannot set server_id")
+            raise NotImplementedError(
+                f"Cannot retrieve participant_id using RID version {self.rid_version}"
+            )
+
+    @participant_id.setter
+    def participant_id(self, participant_id: str) -> None:
+        if self.v19_query is not None:
+            self.v19_query.participant_id = participant_id
+        elif self.v22a_query is not None:
+            self.v22a_query.participant_id = participant_id
+        else:
+            raise NotImplementedError(f"Cannot set participant_id")
 
 
 class FetchedISA(RIDQuery):
@@ -722,7 +734,7 @@ def isa(
     rid_version: RIDVersion,
     session: UTMClientSession,
     dss_base_url: str = "",
-    server_id: Optional[str] = None,
+    participant_id: Optional[str] = None,
 ) -> FetchedISA:
     if rid_version == RIDVersion.f3411_19:
         op = v19.api.OPERATIONS[v19.api.OperationID.GetIdentificationServiceArea]
@@ -733,7 +745,7 @@ def isa(
                 op.verb,
                 url,
                 scope=v19.constants.Scope.Read,
-                server_id=server_id,
+                participant_id=participant_id,
             )
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -745,7 +757,7 @@ def isa(
                 op.verb,
                 url,
                 scope=v22a.constants.Scope.DisplayProvider,
-                server_id=server_id,
+                participant_id=participant_id,
             )
         )
     else:
@@ -857,7 +869,7 @@ def isas(
     rid_version: RIDVersion,
     session: UTMClientSession,
     dss_base_url: str = "",
-    server_id: Optional[str] = None,
+    participant_id: Optional[str] = None,
 ) -> FetchedISAs:
     url_time_params = ""
     if start_time is not None:
@@ -875,7 +887,7 @@ def isas(
                 op.verb,
                 url,
                 scope=v19.constants.Scope.Read,
-                server_id=server_id,
+                participant_id=participant_id,
             )
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -888,7 +900,7 @@ def isas(
                 op.verb,
                 url,
                 scope=v22a.constants.Scope.DisplayProvider,
-                server_id=server_id,
+                participant_id=participant_id,
             )
         )
     else:
@@ -965,7 +977,7 @@ def uss_flights(
     include_recent_positions: bool,
     rid_version: RIDVersion,
     session: UTMClientSession,
-    server_id: Optional[str] = None,
+    participant_id: Optional[str] = None,
 ) -> FetchedUSSFlights:
     if rid_version == RIDVersion.f3411_19:
         query = fetch.query_and_describe(
@@ -984,7 +996,7 @@ def uss_flights(
                 else "false",
             },
             scope=v19.constants.Scope.Read,
-            server_id=server_id,
+            participant_id=participant_id,
         )
         query.query_type = QueryType.F3411v19Flights
         return FetchedUSSFlights(v19_query=query)
@@ -1005,7 +1017,7 @@ def uss_flights(
             flights_url,
             params=params,
             scope=v22a.constants.Scope.DisplayProvider,
-            server_id=server_id,
+            participant_id=participant_id,
         )
         query.query_type = QueryType.F3411v22aFlights
         return FetchedUSSFlights(v22a_query=query)
@@ -1092,11 +1104,11 @@ def flight_details(
     enhanced_details: bool,
     rid_version: RIDVersion,
     session: UTMClientSession,
-    server_id: Optional[str] = None,
+    participant_id: Optional[str] = None,
 ) -> FetchedUSSFlightDetails:
     url = f"{flights_url}/{flight_id}/details"
     if rid_version == RIDVersion.f3411_19:
-        kwargs = {"server_id": server_id}
+        kwargs = {"participant_id": participant_id}
         if enhanced_details:
             kwargs["params"] = {"enhanced": "true"}
             kwargs["scope"] = (
@@ -1112,7 +1124,7 @@ def flight_details(
             "GET",
             url,
             scope=v22a.constants.Scope.DisplayProvider,
-            server_id=server_id,
+            participant_id=participant_id,
         )
         return FetchedUSSFlightDetails(v22a_query=query)
     else:
@@ -1164,7 +1176,7 @@ def all_flights(
     session: UTMClientSession,
     dss_base_url: str = "",
     enhanced_details: bool = False,
-    dss_server_id: Optional[str] = None,
+    dss_participant_id: Optional[str] = None,
 ) -> FetchedFlights:
     t = datetime.datetime.utcnow()
     isa_list = isas(
@@ -1174,7 +1186,7 @@ def all_flights(
         rid_version,
         session,
         dss_base_url,
-        server_id=dss_server_id,
+        participant_id=dss_participant_id,
     )
 
     uss_flight_queries: Dict[str, FetchedUSSFlights] = {}
@@ -1188,7 +1200,7 @@ def all_flights(
             session,
             # Note that we have no clue at this point which participant the flights_url is for,
             # this can only be determined later by comparing injected and observed flights.
-            server_id=None,
+            participant_id=None,
         )
         uss_flight_queries[flights_url] = flights_for_url
 
@@ -1200,7 +1212,7 @@ def all_flights(
                     enhanced_details,
                     rid_version,
                     session,
-                    server_id=None,
+                    participant_id=None,
                 )
                 uss_flight_details_queries[flight.id] = details
 
@@ -1278,7 +1290,7 @@ def subscription(
     rid_version: RIDVersion,
     session: UTMClientSession,
     dss_base_url: str = "",
-    server_id: Optional[str] = None,
+    participant_id: Optional[str] = None,
 ) -> FetchedSubscription:
     if rid_version == RIDVersion.f3411_19:
         op = v19.api.OPERATIONS[v19.api.OperationID.GetSubscription]
@@ -1289,7 +1301,7 @@ def subscription(
                 op.verb,
                 url,
                 scope=v19.constants.Scope.Read,
-                server_id=server_id,
+                participant_id=participant_id,
             )
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -1301,7 +1313,7 @@ def subscription(
                 op.verb,
                 url,
                 scope=v22a.constants.Scope.DisplayProvider,
-                server_id=server_id,
+                participant_id=participant_id,
             )
         )
     else:
@@ -1385,7 +1397,7 @@ def subscriptions(
     rid_version: RIDVersion,
     session: UTMClientSession,
     dss_base_url: str = "",
-    server_id: Optional[str] = None,
+    participant_id: Optional[str] = None,
 ) -> FetchedSubscriptions:
     if rid_version == RIDVersion.f3411_19:
         op = v19.api.OPERATIONS[v19.api.OperationID.SearchSubscriptions]
@@ -1396,7 +1408,7 @@ def subscriptions(
                 op.verb,
                 url,
                 scope=v19.constants.Scope.Read,
-                server_id=server_id,
+                participant_id=participant_id,
             )
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -1408,7 +1420,7 @@ def subscriptions(
                 op.verb,
                 url,
                 scope=v22a.constants.Scope.DisplayProvider,
-                server_id=server_id,
+                participant_id=participant_id,
             )
         )
     else:

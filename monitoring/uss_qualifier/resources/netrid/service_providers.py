@@ -66,7 +66,7 @@ class NetRIDServiceProvider(object):
             url=f"/tests/{test_id}",
             json=request,
             scope=SCOPE_RID_QUALIFIER_INJECT,
-            server_id=self.participant_id,
+            participant_id=self.participant_id,
         )
 
     def delete_test(self, test_id: str, version: str) -> fetch.Query:
@@ -75,7 +75,7 @@ class NetRIDServiceProvider(object):
             "DELETE",
             url=f"/tests/{test_id}/{version}",
             scope=SCOPE_RID_QUALIFIER_INJECT,
-            server_id=self.participant_id,
+            participant_id=self.participant_id,
         )
 
 

@@ -49,7 +49,7 @@ class RIDSystemObserver(object):
             # TODO replace with 'uas_standards.interuss.automated_testing.rid.v1.constants.Scope.Observe' once
             #  the standard is updated with https://github.com/interuss/uas_standards/pull/11/files
             scope="dss.read.identification_service_areas",
-            server_id=self.participant_id,
+            participant_id=self.participant_id,
         )
         try:
             result = (
@@ -74,10 +74,10 @@ class RIDSystemObserver(object):
             # TODO replace with 'uas_standards.interuss.automated_testing.rid.v1.constants.Scope.Observe' once
             #  the standard is updated with https://github.com/interuss/uas_standards/pull/11/files
             scope="dss.read.identification_service_areas",
-            server_id=self.participant_id,
+            participant_id=self.participant_id,
         )
         # Record query metadata for later use in the aggregate checks
-        query.server_id = self.participant_id
+        query.participant_id = self.participant_id
         query.query_type = QueryType.flight_details(rid_version)
         try:
             result = (

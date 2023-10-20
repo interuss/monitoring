@@ -255,11 +255,11 @@ def _compute_tested_scenario(
             if "queries" in step and step.queries:
                 for query in step.queries:
                     events.append(Event(query=query))
-                    if "server_id" in query and query.server_id:
+                    if "participant_id" in query and query.participant_id:
                         p = scenario_participants.get(
-                            query.server_id, TestedParticipant(has_failures=False)
+                            query.participant_id, TestedParticipant(has_failures=False)
                         )
-                        scenario_participants[query.server_id] = p
+                        scenario_participants[query.participant_id] = p
             if "notes" in report and report.notes:
                 for key, note in report.notes.items():
                     if step.start_time.datetime <= note.timestamp.datetime:
