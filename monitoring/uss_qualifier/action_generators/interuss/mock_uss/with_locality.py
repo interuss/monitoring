@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Iterator
 
 from implicitdict import ImplicitDict
 from monitoring.monitorlib.inspection import fullname
@@ -9,7 +9,6 @@ from monitoring.uss_qualifier.action_generators.documentation.definitions import
 from monitoring.uss_qualifier.action_generators.documentation.documentation import (
     list_potential_actions_for_action_declaration,
 )
-from monitoring.uss_qualifier.reports.report import TestSuiteActionReport
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSsResource
 from monitoring.uss_qualifier.resources.interuss.mock_uss.locality import (
@@ -50,7 +49,6 @@ class WithLocality(ActionGenerator[WithLocalitySpecification]):
 
     _actions: List[TestSuiteAction]
     _current_action: int
-    _failure_reaction: ReactionToFailure
 
     @classmethod
     def list_potential_actions(
@@ -137,16 +135,6 @@ class WithLocality(ActionGenerator[WithLocalitySpecification]):
         ]
         self._current_action = 0
 
-    def run_next_action(self) -> Optional[TestSuiteActionReport]:
-        from loguru import logger
-
-        logger.debug(f"run_next_action with current action {self._current_action}")
-        if self._current_action < len(self._actions):
-            report = self._actions[self._current_action].run()
-            if not report.successful() and self._current_action == 0:
-                self._current_action = len(self._actions)
-            else:
-                self._current_action += 1
-            return report
-        else:
-            return None
+    def actions(self) -> Iterator[TestSuiteAction]:
+        for a in self._actions:
+            yield a
