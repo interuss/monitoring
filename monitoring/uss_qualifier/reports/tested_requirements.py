@@ -517,22 +517,22 @@ def _populate_breakdown_with_action_declaration(
                 load_dict_with_references(action.test_suite.suite_type),
                 TestSuiteDefinition,
             )
-            for action in suite_def.actions:
-                _populate_breakdown_with_action_declaration(breakdown, action, req_set)
+            for a in suite_def.actions:
+                _populate_breakdown_with_action_declaration(breakdown, a, req_set)
         elif (
             "suite_definition" in action.test_suite
             and action.test_suite.suite_definition
         ):
-            for action in action.test_suite.suite_definition:
-                _populate_breakdown_with_action_declaration(breakdown, action, req_set)
+            for a in action.test_suite.suite_definition.actions:
+                _populate_breakdown_with_action_declaration(breakdown, a, req_set)
         else:
             raise ValueError(f"Test suite action missing suite type or definition")
     elif action_type == ActionType.ActionGenerator:
         potential_actions = list_potential_actions_for_action_generator_definition(
             action.action_generator
         )
-        for action in potential_actions:
-            _populate_breakdown_with_action_declaration(breakdown, action, req_set)
+        for a in potential_actions:
+            _populate_breakdown_with_action_declaration(breakdown, a, req_set)
     else:
         raise NotImplementedError(f"Unsupported test suite action type: {action_type}")
 

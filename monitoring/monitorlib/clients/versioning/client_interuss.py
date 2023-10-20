@@ -18,7 +18,7 @@ class InterUSSVersioningClient(VersioningClient):
     def __init__(self, session: UTMClientSession, participant_id: ParticipantID):
         super(InterUSSVersioningClient, self).__init__(participant_id)
         self._session = session
-        self._server_id = participant_id
+        self._participant_id = participant_id
 
     def get_version(self, version_type: Optional[str]) -> GetVersionResponse:
         op = api.OPERATIONS[api.OperationID.GetVersion]
@@ -29,8 +29,8 @@ class InterUSSVersioningClient(VersioningClient):
             "query_type": QueryType.InterUSSVersioningGetVersion,
             "scope": Scope.ReadSystemVersions,
         }
-        if self._server_id:
-            kwargs["server_id"] = self._server_id
+        if self._participant_id:
+            kwargs["participant_id"] = self._participant_id
         query = query_and_describe(**kwargs)
         if query.status_code != 200:
             raise VersionQueryError(

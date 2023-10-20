@@ -44,7 +44,7 @@ This particular test requires each flight to be uniquely identifiable by its 2D 
 In order to properly test whether the SP handles authentication correctly, this step will first attempt to do a request with the proper credentials
 to confirm that the requested data is indeed available to any authorized query.
 
-It then repeats the exact same request while omitting the credentials, and expects this to fail.
+It then repeats the exact same request with incorrect credentials, and expects this to fail.
 
 #### Missing credentials check
 
