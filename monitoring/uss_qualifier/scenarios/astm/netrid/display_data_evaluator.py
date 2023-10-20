@@ -162,6 +162,7 @@ def map_fetched_to_injected_flights(
         injected_flights, observed_flights
     )
 
+    # TODO: a better approach here would be to separately map flights URL to participant IDs based on all TelemetryMapping encountered, and set retroactively the participant ID on all queries
     for mapping in tel_mapping.values():
         if mapping.observed_flight.query.participant_id is None:
             mapping.observed_flight.query.set_participant_id(
