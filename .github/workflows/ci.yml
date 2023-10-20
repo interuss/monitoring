@@ -30,15 +30,6 @@ jobs:
     - name: Shell lint
       run: make shell-lint
 
-  monitorlib-test:
-    name: monitorlib tests
-    uses: ./.github/workflows/monitoring-test.yml
-    with:
-      name: monitorlib
-      script: |
-        cd monitoring/monitorlib
-        make test
-
   mock_uss-test:
     name: mock_uss tests
     uses: ./.github/workflows/monitoring-test.yml
@@ -71,7 +62,7 @@ jobs:
 
   publish-gh-pages:
     name: Publish GitHub Pages
-    needs: [hygiene-tests, monitorlib-test, mock_uss-test, uss_qualifier-test, prober-test]
+    needs: [hygiene-tests, mock_uss-test, uss_qualifier-test, prober-test]
     if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
     runs-on: ubuntu-latest
     permissions:
