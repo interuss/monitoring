@@ -31,26 +31,23 @@ v1:
           service_area: kentland_service_area
           problematically_big_area: au_problematically_big_area
   artifacts:
-    report:
-      report_path: output/report_netrid_v22a.json
-    tested_roles:
-      report_path: output/tested_roles_netrid_v22a
+    output_path: output/netrid_v22a
+    raw_report: {}
     tested_requirements:
-      output_path: output/tested_requirements_f3411v22a
-      requirement_collections:
-        sp_dp_dss:
-          requirement_sets:
-            - astm.f3411.v22a.service_provider#Mandatory requirements
-            - astm.f3411.v22a.display_provider#Mandatory requirements
-            - astm.f3411.v22a.dss_provider
-        sp_dss:
-          requirement_sets:
-            - astm.f3411.v22a.service_provider#Mandatory requirements
-            - astm.f3411.v22a.dss_provider
-      participant_requirements:
-        uss1: sp_dp_dss
-        uss2: sp_dss
-    sequence_view:
-      output_path: output/sequence_netrid_v22a
+      - report_name: requirements
+        requirement_collections:
+          sp_dp_dss:
+            requirement_sets:
+              - astm.f3411.v22a.service_provider#Mandatory requirements
+              - astm.f3411.v22a.display_provider#Mandatory requirements
+              - astm.f3411.v22a.dss_provider
+          sp_dss:
+            requirement_sets:
+              - astm.f3411.v22a.service_provider#Mandatory requirements
+              - astm.f3411.v22a.dss_provider
+        participant_requirements:
+          uss1: sp_dp_dss
+          uss2: sp_dss
+    sequence_view: {}
   validation:
     $ref: ./library/validation.yaml#/normal_test

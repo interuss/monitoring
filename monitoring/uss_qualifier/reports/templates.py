@@ -1,6 +1,7 @@
 import json
 import shutil
 import os
+from typing import List
 
 from loguru import logger
 
@@ -57,10 +58,12 @@ class TemplateRenderer:
             logger.debug(f"{url} extracted to {path}")
         return path
 
-    def render(self):
+    def render(self, base_path: str):
         # Copy template
         src = pathlib.Path(self._download_template(), "index.html")
-        dst = pathlib.Path(self._template.output_path)
+        dst = pathlib.Path(
+            os.path.join(base_path, self._template.report_name + ".html")
+        )
 
         # Configure application
         rendered_configuration = json.dumps(
@@ -82,7 +85,11 @@ class TemplateRenderer:
         logger.info(f"Templated report rendered to {dst}")
 
 
-def render_templates(config: ArtifactsConfiguration, report: TestRunReport):
+def render_templates(
+    base_path: str,
+    templated_reports: List[TemplatedReportConfiguration],
+    report: TestRunReport,
+):
     pathlib.Path(CACHE_TEMPLATE_PATH).mkdir(parents=True, exist_ok=True)
-    for template in config.templated_reports:
-        TemplateRenderer(template, report).render()
+    for template in templated_reports:
+        TemplateRenderer(template, report).render(base_path)

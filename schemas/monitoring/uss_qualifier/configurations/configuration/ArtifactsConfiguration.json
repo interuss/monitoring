@@ -7,34 +7,23 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
-    "graph": {
-      "description": "If specified, configuration describing a desired graph visualization summarizing the test run",
+    "output_path": {
+      "description": "Path to folder where artifacts should be written.",
+      "type": "string"
+    },
+    "raw_report": {
+      "description": "Configuration for raw report generation",
       "oneOf": [
         {
           "type": "null"
         },
         {
-          "$ref": "GraphConfiguration.json"
-        }
-      ]
-    },
-    "redact_access_tokens": {
-      "description": "When True, look for instances of \"Authorization\" keys in the report with values starting \"Bearer \" and redact the signature from those access tokens",
-      "type": "boolean"
-    },
-    "report": {
-      "description": "Configuration for report generation",
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "ReportConfiguration.json"
+          "$ref": "RawReportConfiguration.json"
         }
       ]
     },
     "report_html": {
-      "description": "If specified, configuration describing how an HTML version of the report should be generated",
+      "description": "If specified, configuration describing how an HTML version of the raw report should be generated",
       "oneOf": [
         {
           "type": "null"
@@ -60,30 +49,24 @@
       "items": {
         "$ref": "TemplatedReportConfiguration.json"
       },
-      "type": "array"
-    },
-    "tested_requirements": {
-      "description": "If specified, configuration describing a desired report summarizing all tested requirements for each participant",
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "TestedRequirementsConfiguration.json"
-        }
+      "type": [
+        "array",
+        "null"
       ]
     },
-    "tested_roles": {
-      "description": "If specified, configuration describing a desired report summarizing tested requirements for each specified participant and role",
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "TestedRolesConfiguration.json"
-        }
+    "tested_requirements": {
+      "description": "If specified, list of configurations describing desired reports summarizing tested requirements for each participant",
+      "items": {
+        "$ref": "TestedRequirementsConfiguration.json"
+      },
+      "type": [
+        "array",
+        "null"
       ]
     }
   },
+  "required": [
+    "output_path"
+  ],
   "type": "object"
 }

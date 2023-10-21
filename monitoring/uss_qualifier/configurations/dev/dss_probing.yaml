@@ -26,19 +26,19 @@ v1:
           service_area: kentland_service_area
           problematically_big_area: kentland_problematically_big_area
   artifacts:
-    report:
-      report_path: output/report_dss_probing.json
+    output_path: output/dss_probing
+    raw_report: {}
     tested_requirements:
-      output_path: output/tested_requirements_dss_probing
-      requirement_collections:
-        all_astm_dss_requirements:
-          requirement_collections:
-            - requirement_sets:
-                - astm.f3411.v22a.dss_provider
-                - astm.f3411.v19.dss_provider
-      participant_requirements:
-        uss1: all_astm_dss_requirements
-        uss2: all_astm_dss_requirements
+      - report_name: astm_dss_reqs
+        requirement_collections:
+          all_astm_dss_requirements:
+            requirement_collections:
+              - requirement_sets:
+                  - astm.f3411.v22a.dss_provider
+                  - astm.f3411.v19.dss_provider
+        participant_requirements:
+          uss1: all_astm_dss_requirements
+          uss2: all_astm_dss_requirements
   validation:
     criteria:
       - full_success: {}
