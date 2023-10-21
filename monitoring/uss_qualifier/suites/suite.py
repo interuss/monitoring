@@ -156,8 +156,7 @@ class TestSuite(object):
     definition: TestSuiteDefinition
     documentation_url: str
     local_resources: Dict[ResourceID, ResourceType]
-    actions: List[TestSuiteAction]
-    skipped_actions: List[SkippedActionReport]
+    actions: List[Union[TestSuiteAction, SkippedActionReport]]
 
     def __init__(
         self,
@@ -204,8 +203,7 @@ class TestSuite(object):
                 raise ValueError(
                     f'Test suite "{self.definition.name}" expected resource {resource_id} to be {resource_type}, but instead it was provided {fullname(self.local_resources[resource_id].__class__)}'
                 )
-        actions: List[TestSuiteAction] = []
-        skipped_actions: List[SkippedActionReport] = []
+        actions: List[Union[TestSuiteAction, SkippedActionReport]] = []
         for a, action_dec in enumerate(self.definition.actions):
             try:
                 actions.append(
@@ -215,7 +213,7 @@ class TestSuite(object):
                 logger.warning(
                     f"Skipping action {a} ({action_dec.get_action_type()} {action_dec.get_child_type()}) because {str(e)}"
                 )
-                skipped_actions.append(
+                actions.append(
                     SkippedActionReport(
                         timestamp=StringBasedDateTime(arrow.utcnow().datetime),
                         reason=str(e),
@@ -224,7 +222,6 @@ class TestSuite(object):
                     )
                 )
         self.actions = actions
-        self.skipped_actions = skipped_actions
 
     def _make_report_evaluation_action(
         self, report: TestSuiteReport
@@ -258,11 +255,10 @@ class TestSuite(object):
             documentation_url=self.documentation_url,
             start_time=StringBasedDateTime(datetime.utcnow()),
             actions=[],
-            skipped_actions=self.skipped_actions,
             capability_evaluations=[],
         )
 
-        def actions() -> Iterator[TestSuiteAction]:
+        def actions() -> Iterator[Union[TestSuiteAction, SkippedActionReport]]:
             for a in self.actions:
                 yield a
             # Execute report evaluation scenario as last action if specified, otherwise break loop
@@ -303,12 +299,15 @@ class TestSuite(object):
 
 
 def _run_actions(
-    actions: Iterator[TestSuiteAction],
+    actions: Iterator[Union[TestSuiteAction, SkippedActionReport]],
     report: Union[TestSuiteReport, ActionGeneratorReport],
 ) -> None:
     success = True
     for a, action in enumerate(actions):
-        action_report = action.run()
+        if isinstance(action, SkippedActionReport):
+            action_report = TestSuiteActionReport(skipped_action=action)
+        else:
+            action_report = action.run()
         report.actions.append(action_report)
         if action_report.has_critical_problem():
             success = False

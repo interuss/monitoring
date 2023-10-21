@@ -55,17 +55,7 @@ def _validate_action_no_skipped_actions(
     if test_scenario:
         success = True
     elif test_suite:
-        if (
-            "skipped_actions" not in report.test_suite
-            or not report.test_suite.skipped_actions
-        ):
-            success = True
-        else:
-            success = False
-            for sa in report.test_suite.skipped_actions:
-                logger.error(
-                    f"No skipped actions not achieved because {context}.test_suite had a skipped action for action index {sa.action_declaration_index}: {sa.reason}"
-                )
+        success = True
         for i, a in enumerate(report.test_suite.actions):
             success = success and _validate_action_no_skipped_actions(
                 a, JSONAddress(context + f".test_suite.actions[{i}]")
@@ -76,6 +66,11 @@ def _validate_action_no_skipped_actions(
             success = success and _validate_action_no_skipped_actions(
                 a, JSONAddress(context + f".action_generator.actions[{i}]")
             )
+    else:
+        logger.error(
+            f"No skipped actions not achieved because {context}.test_suite had a skipped action for action index {report.skipped_action.action_declaration_index}: {report.skipped_action.reason}"
+        )
+        success = False
     return success
 
 
