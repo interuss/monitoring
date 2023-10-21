@@ -42,6 +42,7 @@ def requires_scope_decorator(public_key: str, audience: str):
     def decorator(permitted_scopes):
         if isinstance(permitted_scopes, str):
             permitted_scopes = [permitted_scopes]
+
         def outer_wrapper(fn):
             @wraps(fn)
             def wrapper(*args, **kwargs):
