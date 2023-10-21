@@ -37,9 +37,21 @@ def _apply_overrides(base_object, overrides):
         return result_list
 
     elif isinstance(overrides, dict):
-        result = ImplicitDict.parse(base_object, type(base_object))
+        if isinstance(base_object, dict):
+            result = {k: v for k, v in base_object.items()}
+        elif base_object is None:
+            return base_object
+        else:
+            raise ValueError(
+                f"Attempted to override field with type {type(base_object)} with type {type(overrides)} ({json.dumps(base_object)} -> {json.dumps(overrides)})"
+            )
         for field in overrides:
-            if field in base_object and base_object[field] is not None:
+            if field.startswith("+"):
+                replace = True
+                field = field[1:]
+            else:
+                replace = False
+            if field in base_object and base_object[field] is not None and not replace:
                 result[field] = _apply_overrides(base_object[field], overrides[field])
             else:
                 result[field] = overrides[field]

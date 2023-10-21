@@ -1,24 +1,40 @@
+from __future__ import annotations
+
+import json
 from typing import Optional, Dict
 
-from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
+import arrow
 
-from monitoring.uss_qualifier.fileio import FileReference
+from implicitdict import ImplicitDict, StringBasedDateTime
+from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
+    FlightInfoTemplate,
+)
+
 from monitoring.uss_qualifier.resources.files import ExternalFile
+from monitoring.uss_qualifier.resources.overrides import apply_overrides
 from uas_standards.interuss.automated_testing.scd.v1.api import InjectFlightRequest
 
 
 class FlightIntent(ImplicitDict):
+    """DEPRECATED.  Use FlightInfoTemplate instead."""
+
     reference_time: StringBasedDateTime
     """The time that all other times in the FlightInjectionAttempt are relative to. If this FlightInjectionAttempt is initiated by uss_qualifier at t_test, then each t_volume_original timestamp within test_injection should be adjusted to t_volume_adjusted such that t_volume_adjusted = t_test + planning_time when t_volume_original = reference_time"""
 
     request: InjectFlightRequest
     """Definition of the flight the user wants to create."""
 
+    @staticmethod
+    def from_flight_info_template(info_template: FlightInfoTemplate) -> FlightIntent:
+        t = arrow.utcnow().datetime
+        request = info_template.scd_inject_request(t)
+        return FlightIntent(reference_time=StringBasedDateTime(t), request=request)
+
 
 FlightIntentID = str
-"""Identifier for a flight intent within a collection of flight intents.
+"""Identifier for a flight planning intent within a collection of flight planning intents.
 
-To be used only within uss_qualifier (not visible to participants under test) to select an appropriate flight intent from the collection."""
+To be used only within uss_qualifier (not visible to participants under test) to select an appropriate flight planning intent from the collection."""
 
 
 class DeltaFlightIntent(ImplicitDict):
@@ -28,29 +44,71 @@ class DeltaFlightIntent(ImplicitDict):
     """Base the flight intent for this element of a FlightIntentCollection on the element of the collection identified by this field."""
 
     mutation: Optional[dict]
-    """For each subfield specified in this object, override the value in the corresponding subfield of the flight intent for this element with the specified value."""
+    """For each leaf subfield specified in this object, override the value in the corresponding subfield of the flight intent for this element with the specified value.
+
+    Consider subfields prefixed with + as leaf subfields."""
 
 
 class FlightIntentCollectionElement(ImplicitDict):
     """Definition of a single flight intent within a FlightIntentCollection.  Exactly one field must be specified."""
 
-    full: Optional[FlightIntent]
-    """If specified, the full definition of the flight intent."""
+    full: Optional[FlightInfoTemplate]
+    """If specified, the full definition of the flight planning intent."""
 
     delta: Optional[DeltaFlightIntent]
-    """If specified, a flight intent based on another flight intent, but with some changes."""
+    """If specified, a flight planning intent based on another flight intent, but with some changes."""
 
 
 class FlightIntentCollection(ImplicitDict):
     """Specification for a collection of flight intents, each identified by a FlightIntentID."""
 
     intents: Dict[FlightIntentID, FlightIntentCollectionElement]
-    """Flights that users want to create."""
+    """Flight planning actions that users want to perform."""
+
+    def resolve(self) -> Dict[FlightIntentID, FlightInfoTemplate]:
+        """Resolve the underlying delta flight intents."""
+
+        # process intents in order of dependency to resolve deltas
+        processed_intents: Dict[FlightIntentID, FlightInfoTemplate] = {}
+        unprocessed_intent_ids = list(self.intents.keys())
+
+        while unprocessed_intent_ids:
+            nb_processed = 0
+            for intent_id in unprocessed_intent_ids:
+                unprocessed_intent = self.intents[intent_id]
+                processed_intent: FlightInfoTemplate
+
+                # copy intent and resolve delta
+                if unprocessed_intent.has_field_with_value("full"):
+                    processed_intent = ImplicitDict.parse(
+                        json.loads(json.dumps(unprocessed_intent.full)),
+                        FlightInfoTemplate,
+                    )
+                elif unprocessed_intent.has_field_with_value("delta"):
+                    if unprocessed_intent.delta.source not in processed_intents:
+                        # delta source has not been processed yet
+                        continue
+
+                    processed_intent = apply_overrides(
+                        processed_intents[unprocessed_intent.delta.source],
+                        unprocessed_intent.delta.mutation,
+                    )
+                else:
+                    raise ValueError(f"{intent_id} is invalid")
+
+                nb_processed += 1
+                processed_intents[intent_id] = processed_intent
+                unprocessed_intent_ids.remove(intent_id)
+
+            if nb_processed == 0 and unprocessed_intent_ids:
+                raise ValueError(
+                    "Unresolvable dependency detected between intents: "
+                    + ", ".join(i_id for i_id in unprocessed_intent_ids)
+                )
+
+        return processed_intents
 
 
 class FlightIntentsSpecification(ImplicitDict):
-    planning_time: StringBasedTimeDelta
-    """Time delta between the time uss_qualifier initiates this FlightInjectionAttempt and when a timestamp within the test_injection equal to reference_time occurs"""
-
     file: ExternalFile
-    """Location of file to load"""
+    """Location of file to load, containing a FlightIntentCollection"""
