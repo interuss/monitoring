@@ -6,8 +6,8 @@ lint:
 format:
 	cd uss_qualifier && make format
 
-.PHONY: build
-build:
+image: ../requirements.txt $(shell find . -type f ! -path "*/output/*" ! -name image) $(shell find ../interfaces -type f)
+	# Building image due to changes in the following files: $?
 	./build.sh
 
 .PHONY: test

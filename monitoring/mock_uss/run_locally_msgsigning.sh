@@ -1,10 +1,21 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-if [ -z "${DO_NOT_BUILD_MONITORING}" ]; then
-  "${SCRIPT_DIR}/../build.sh" || exit 1
-  export DO_NOT_BUILD_MONITORING=true
+set -eo pipefail
+
+# Find and change to repo root directory
+OS=$(uname)
+if [[ "$OS" == "Darwin" ]]; then
+	# OSX uses BSD readlink
+	BASEDIR="$(dirname "$0")"
+else
+	BASEDIR=$(readlink -e "$(dirname "$0")")
 fi
+cd "${BASEDIR}/../.." || exit 1
+
+(
+cd monitoring || exit 1
+make image
+)
 
 AUTH="DummyOAuth(http://host.docker.internal:8085/token,uss1)"
 DSS="http://host.docker.internal:8082"
@@ -32,7 +43,7 @@ docker run ${docker_args} --name ${container_name} \
   -e MOCK_USS_BASE_URL="${BASE_URL}" \
   -e MOCK_USS_SERVICES="scdsc,msgsigning" \
   -p ${PORT}:5000 \
-  -v "${SCRIPT_DIR}/../../build/test-certs:/var/test-certs:ro" \
+  -v "$(pwd)/build/test-certs:/var/test-certs:ro" \
   "$@" \
   interuss/monitoring \
   mock_uss/start.sh
