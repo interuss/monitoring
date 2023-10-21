@@ -1,0 +1,30 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/versioning/client/VersionProviderSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.versioning.client.VersionProviderSpecification, as defined in monitoring/uss_qualifier/resources/versioning/client.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "interuss": {
+      "description": "Populated when the version provider is using the InterUSS automated testing versioning API to provide versioning information.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "InterUSSVersionProvider.json"
+        }
+      ]
+    },
+    "participant_id": {
+      "description": "Test participant providing system versions.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "participant_id"
+  ],
+  "type": "object"
+}

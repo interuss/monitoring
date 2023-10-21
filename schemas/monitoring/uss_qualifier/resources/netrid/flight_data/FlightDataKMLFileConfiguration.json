@@ -1,0 +1,31 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/netrid/flight_data/FlightDataKMLFileConfiguration.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.netrid.flight_data.FlightDataKMLFileConfiguration, as defined in monitoring/uss_qualifier/resources/netrid/flight_data.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "kml_file": {
+      "$ref": "../../files/ExternalFile.json",
+      "description": "Location of KML describing a FlightRecordCollection."
+    },
+    "random_seed": {
+      "description": "Pseudorandom seed that should be used, or specify None to use default Random.",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "reference_time": {
+      "description": "The reference time relative to which flight data should be generated.\n\nThe time should be irrelevant in real-world use as times are adjusted to be\nrelative to a time close to the time of test.",
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kml_file"
+  ],
+  "type": "object"
+}

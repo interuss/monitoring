@@ -1,0 +1,30 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/netrid/evaluation/EvaluationConfiguration.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.netrid.evaluation.EvaluationConfiguration, as defined in monitoring/uss_qualifier/resources/netrid/evaluation.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "max_propagation_latency": {
+      "description": "Allow up to this much time for data to propagate through the system.",
+      "format": "duration",
+      "type": "string"
+    },
+    "min_polling_interval": {
+      "description": "Do not repeat system observations with intervals smaller than this.",
+      "format": "duration",
+      "type": "string"
+    },
+    "min_query_diagonal": {
+      "description": "Do not make queries with diagonals smaller than this many meters.",
+      "type": "number"
+    },
+    "repeat_query_rect_period": {
+      "description": "If set to a value above zero, reuse the most recent query rectangle/view every this many queries.",
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}

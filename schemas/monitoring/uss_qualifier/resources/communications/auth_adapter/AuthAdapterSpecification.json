@@ -1,0 +1,26 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/communications/auth_adapter/AuthAdapterSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Specification for an AuthAdapter resource.\n\nExactly one of the fields defined must be populated.\n\nmonitoring.uss_qualifier.resources.communications.auth_adapter.AuthAdapterSpecification, as defined in monitoring/uss_qualifier/resources/communications/auth_adapter.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "auth_spec": {
+      "description": "Literal representation of auth spec.  WARNING: Specifying this directly may cause sensitive information to be included in reports and unprotected configuration files.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "environment_variable_containing_auth_spec": {
+      "description": "Name of environment variable containing the auth spec.  This is the preferred method of providing the auth spec.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

@@ -1,34 +1,34 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/CheckedCapability.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "Existing/previous participant-verifiable capability upon which a CapabilityVerifiedCondition depends.\n\nmonitoring.uss_qualifier.reports.report.CheckedCapability, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
-    },
-    "capability_verified": {
-      "type": "boolean",
-      "description": "Whether this capability was successfully verified"
-    },
-    "capability_location": {
-      "type": "string",
-      "description": "The location of the ParticipantCapabilityConditionEvaluationReport for the capability, relative to the TestSuiteReport in which this checked requirement is located."
-    },
-    "report_location": {
-      "type": "string",
-      "description": "Location of the ParticipantCapabilityEvaluationReport for the existing/previous capability, relative to the TestSuiteReport in which the CapabilityVerifiedConditionEvaluationReport containing this CheckedCapability is located."
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "capability_id": {
-      "type": "string",
-      "description": "ID of the existing/previous participant-verifiable capability."
+      "description": "ID of the existing/previous participant-verifiable capability.",
+      "type": "string"
+    },
+    "capability_location": {
+      "description": "The location of the ParticipantCapabilityConditionEvaluationReport for the capability, relative to the TestSuiteReport in which this checked requirement is located.",
+      "type": "string"
+    },
+    "capability_verified": {
+      "description": "Whether this capability was successfully verified",
+      "type": "boolean"
+    },
+    "report_location": {
+      "description": "Location of the ParticipantCapabilityEvaluationReport for the existing/previous capability, relative to the TestSuiteReport in which the CapabilityVerifiedConditionEvaluationReport containing this CheckedCapability is located.",
+      "type": "string"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/CheckedCapability.json",
-  "description": "Existing/previous participant-verifiable capability upon which a CapabilityVerifiedCondition depends.\n\nmonitoring.uss_qualifier.reports.report.CheckedCapability, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "capability_id",
     "capability_location",
     "capability_verified",
     "report_location"
-  ]
+  ],
+  "type": "object"
 }
