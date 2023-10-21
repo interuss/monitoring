@@ -28,21 +28,21 @@ timeout = timedelta(seconds=webapp.config[KEY_QUERY_TIMEOUT])
 
 
 @webapp.route("/scd/v1/status", methods=["GET"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def scd_injection_status() -> Tuple[str, int]:
     """Implements status in SCD automated testing injection API."""
     return handling.fulfill_query(SCDInjectionStatusRequest(), timeout)
 
 
 @webapp.route("/scd/v1/capabilities", methods=["GET"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def scd_injection_capabilities() -> Tuple[str, int]:
     """Implements capabilities in SCD automated testing injection API."""
     return handling.fulfill_query(SCDInjectionCapabilitiesRequest(), timeout)
 
 
 @webapp.route("/scd/v1/flights/<flight_id>", methods=["PUT"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def scd_injection_put_flight(flight_id: str) -> Tuple[str, int]:
     """Implements PUT flight in SCD automated testing injection API."""
     try:
@@ -60,7 +60,7 @@ def scd_injection_put_flight(flight_id: str) -> Tuple[str, int]:
 
 
 @webapp.route("/scd/v1/flights/<flight_id>", methods=["DELETE"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def scd_injection_delete_flight(flight_id: str) -> Tuple[str, int]:
     """Implements flight deletion in SCD automated testing injection API."""
     return handling.fulfill_query(
@@ -69,7 +69,7 @@ def scd_injection_delete_flight(flight_id: str) -> Tuple[str, int]:
 
 
 @webapp.route("/scd/v1/clear_area_requests", methods=["POST"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def scd_injection_clear_area() -> Tuple[str, int]:
     """Implements area clearing in RID automated testing injection API."""
     try:

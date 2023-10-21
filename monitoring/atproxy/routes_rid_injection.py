@@ -15,7 +15,7 @@ timeout = timedelta(seconds=webapp.config[KEY_QUERY_TIMEOUT])
 
 
 @webapp.route("/ridsp/injection/tests/<test_id>", methods=["PUT"])
-@requires_scope([injection_api.SCOPE_RID_QUALIFIER_INJECT])
+@requires_scope(injection_api.SCOPE_RID_QUALIFIER_INJECT)
 def rid_injection_create_test(test_id: str) -> Tuple[str, int]:
     """Implements test creation in RID automated testing injection API."""
     try:
@@ -35,7 +35,7 @@ def rid_injection_create_test(test_id: str) -> Tuple[str, int]:
 
 
 @webapp.route("/ridsp/injection/tests/<test_id>/<version>", methods=["DELETE"])
-@requires_scope([injection_api.SCOPE_RID_QUALIFIER_INJECT])
+@requires_scope(injection_api.SCOPE_RID_QUALIFIER_INJECT)
 def rid_injection_delete_test(test_id: str, version: str) -> Tuple[str, int]:
     """Implements test deletion in RID automated testing injection API."""
     return handling.fulfill_query(

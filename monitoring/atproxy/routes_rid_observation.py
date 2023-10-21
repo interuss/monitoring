@@ -17,7 +17,7 @@ timeout = timedelta(seconds=webapp.config[KEY_QUERY_TIMEOUT])
 
 
 @webapp.route("/riddp/observation/display_data", methods=["GET"])
-@requires_scope([Scope.Read])
+@requires_scope(Scope.Read)
 def rid_observation_display_data() -> Tuple[str, int]:
     """Implements retrieval of current display data per automated testing API."""
     return handling.fulfill_query(
@@ -26,7 +26,7 @@ def rid_observation_display_data() -> Tuple[str, int]:
 
 
 @webapp.route("/riddp/observation/display_data/<flight_id>", methods=["GET"])
-@requires_scope([Scope.Read])
+@requires_scope(Scope.Read)
 def rid_observation_flight_details(flight_id: str) -> Tuple[str, int]:
     """Implements get flight details endpoint per automated testing API."""
     return handling.fulfill_query(
