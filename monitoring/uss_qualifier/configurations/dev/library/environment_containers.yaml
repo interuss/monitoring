@@ -119,7 +119,7 @@ all_flight_planners:
   specification:
     flight_planners:
       - participant_id: uss1
-        injection_base_url: http://scdsc.uss1.localutm/scdsc
+        scd_injection_base_url: http://scdsc.uss1.localutm/scdsc
         local_debug: true
 
       # The atproxy has been disabled since it is suspected to be responsible of issue #28. Replaced by another simple mock_uss
@@ -128,7 +128,7 @@ all_flight_planners:
       #     injection_base_url: http://host.docker.internal:8075/scd
 
       - participant_id: uss2
-        injection_base_url: http://scdsc.uss2.localutm/scdsc
+        scd_injection_base_url: http://scdsc.uss2.localutm/scdsc
         local_debug: true
 
 uss1_flight_planner:
@@ -139,7 +139,7 @@ uss1_flight_planner:
   specification:
     flight_planner:
       participant_id: uss1
-      injection_base_url: http://scdsc.uss1.localutm/scdsc
+      scd_injection_base_url: http://scdsc.uss1.localutm/scdsc
       local_debug: true
 
 uss2_flight_planner:
@@ -150,7 +150,7 @@ uss2_flight_planner:
   specification:
     flight_planner:
       participant_id: uss2
-      injection_base_url: http://scdsc.uss2.localutm/scdsc
+      scd_injection_base_url: http://scdsc.uss2.localutm/scdsc
       local_debug: true
 
 # ===== F3548 =====
