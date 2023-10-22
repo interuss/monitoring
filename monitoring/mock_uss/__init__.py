@@ -10,7 +10,6 @@ SERVICE_RIDSP = "ridsp"
 SERVICE_RIDDP = "riddp"
 SERVICE_SCDSC = "scdsc"
 SERVICE_MESSAGESIGNING = "msgsigning"
-SERVICE_ATPROXY_CLIENT = "atproxy_client"
 SERVICE_TRACER = "tracer"
 SERVICE_INTERACTION_LOGGING = "interaction_logging"
 SERVICE_VERSIONING = "versioning"
@@ -93,10 +92,6 @@ if SERVICE_INTERACTION_LOGGING in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_INTERACTION_LOGGING)
     from monitoring.mock_uss.interaction_logging import logger as interactions_logger
     from monitoring.mock_uss.interaction_logging import routes_interactions_log
-
-if SERVICE_ATPROXY_CLIENT in webapp.config[config.KEY_SERVICES]:
-    enabled_services.add(SERVICE_ATPROXY_CLIENT)
-    from monitoring.mock_uss import atproxy_client
 
 if SERVICE_TRACER in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_TRACER)
