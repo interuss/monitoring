@@ -83,41 +83,38 @@ v1:
                 service_area: service_area
                 problematically_big_area: problematically_big_area
   artifacts:
-    tested_roles:
-      report_path: output/tested_roles_uspace
-    report:
-      report_path: output/report_uspace.json
+    output_path: output/uspace
+    raw_report: {}
     templated_reports:
       - template_url: https://github.com/Orbitalize/reports/releases/download/v0.0.18/app-v0.0.18.zip
-        output_path: output/capabilities_uspace.html
+        report_name: capabilities
     tested_requirements:
-      output_path: output/tested_requirements_uspace
-      requirement_collections:
-        uspace:
-          requirement_collections:
-            - requirement_sets:
-                - astm.f3411.v22a.service_provider#Mandatory requirements
-                - astm.f3411.v22a.service_provider#Operator ID provider
-                - astm.f3411.v22a.service_provider#UAS ID Serial Number provider
-                - astm.f3411.v22a.service_provider#Height provider
-                - astm.f3411.v22a.service_provider#Operator Position provider
-                - astm.f3411.v22a.service_provider#Operational Status provider
-                - astm.f3411.v22a.display_provider#Mandatory requirements
-                - astm.f3411.v22a.display_provider#UAS ID Serial Number transmitter
-                - astm.f3411.v22a.display_provider#Timestamp transmitter
-                - astm.f3411.v22a.display_provider#Operational Status transmitter
-                - astm.f3411.v22a.display_provider#Operator ID transmitter
-                - astm.f3411.v22a.display_provider#Current Position transmitter
-                - astm.f3411.v22a.display_provider#Height transmitter
-                - astm.f3411.v22a.display_provider#Track Direction transmitter
-                - astm.f3411.v22a.display_provider#Speed transmitter
-                - astm.f3411.v22a.display_provider#Operator Position transmitter
-                - astm.f3411.v22a.dss_provider
-                - astm.f3548.v21.scd#Automated verification
-      participant_requirements:
-        uss1: uspace
-        uss2: uspace
-    sequence_view:
-      output_path: output/sequence_uspace
+      - report_name: requirements
+        requirement_collections:
+          uspace:
+            requirement_collections:
+              - requirement_sets:
+                  - astm.f3411.v22a.service_provider#Mandatory requirements
+                  - astm.f3411.v22a.service_provider#Operator ID provider
+                  - astm.f3411.v22a.service_provider#UAS ID Serial Number provider
+                  - astm.f3411.v22a.service_provider#Height provider
+                  - astm.f3411.v22a.service_provider#Operator Position provider
+                  - astm.f3411.v22a.service_provider#Operational Status provider
+                  - astm.f3411.v22a.display_provider#Mandatory requirements
+                  - astm.f3411.v22a.display_provider#UAS ID Serial Number transmitter
+                  - astm.f3411.v22a.display_provider#Timestamp transmitter
+                  - astm.f3411.v22a.display_provider#Operational Status transmitter
+                  - astm.f3411.v22a.display_provider#Operator ID transmitter
+                  - astm.f3411.v22a.display_provider#Current Position transmitter
+                  - astm.f3411.v22a.display_provider#Height transmitter
+                  - astm.f3411.v22a.display_provider#Track Direction transmitter
+                  - astm.f3411.v22a.display_provider#Speed transmitter
+                  - astm.f3411.v22a.display_provider#Operator Position transmitter
+                  - astm.f3411.v22a.dss_provider
+                  - astm.f3548.v21.scd#Automated verification
+        participant_requirements:
+          uss1: uspace
+          uss2: uspace
+    sequence_view: {}
   validation:
     $ref: ./library/validation.yaml#/normal_test
