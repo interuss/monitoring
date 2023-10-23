@@ -87,6 +87,10 @@ class V1FlightPlannerClient(FlightPlannerClient):
     def try_end_flight(
         self, flight_id: FlightID, execution_style: ExecutionStyle
     ) -> PlanningActivityResponse:
+        if execution_style != ExecutionStyle.IfAllowed:
+            raise NotImplementedError(
+                "Only IfAllowed execution style is currently allowed"
+            )
         op = api.OPERATIONS[api.OperationID.DeleteFlightPlan]
         url = op.path.format(flight_plan_id=flight_id)
         query = query_and_describe(self._session, op.verb, url, scope=Scope.Plan)
