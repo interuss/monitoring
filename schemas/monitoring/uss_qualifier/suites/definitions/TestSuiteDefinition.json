@@ -14,6 +14,22 @@
       },
       "type": "array"
     },
+    "local_resources": {
+      "additionalProperties": {
+        "$ref": "../../resources/definitions/ResourceDeclaration.json"
+      },
+      "description": "Declarations of resources originating in this test suite.",
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
     "name": {
       "description": "Name of the test suite",
       "type": "string"
