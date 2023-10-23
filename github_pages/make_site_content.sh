@@ -11,4 +11,4 @@ mkdir ./public
 cp -r ./monitoring/github_pages/static/* ./public
 
 mkdir -p ./public/artifacts/uss_qualifier/reports
-cp -r ./artifacts/uss_qualifier/output ./public/artifacts/uss_qualifier/reports
+cp -r ./artifacts/uss_qualifier/output/* ./public/artifacts/uss_qualifier/reports
