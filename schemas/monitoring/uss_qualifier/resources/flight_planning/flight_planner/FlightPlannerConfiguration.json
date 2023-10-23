@@ -1,0 +1,31 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/flight_planning/flight_planner/FlightPlannerConfiguration.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.flight_planning.flight_planner.FlightPlannerConfiguration, as defined in monitoring/uss_qualifier/resources/flight_planning/flight_planner.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "injection_base_url": {
+      "description": "Base URL for the flight planner's implementation of the interfaces/automated-testing/scd/scd.yaml API",
+      "type": "string"
+    },
+    "participant_id": {
+      "description": "ID of the flight planner into which test data can be injected",
+      "type": "string"
+    },
+    "timeout_seconds": {
+      "description": "Number of seconds to allow for requests to this flight planner.  If None, use default.",
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "injection_base_url",
+    "participant_id"
+  ],
+  "type": "object"
+}

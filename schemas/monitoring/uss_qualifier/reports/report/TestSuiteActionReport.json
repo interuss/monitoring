@@ -1,23 +1,14 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestSuiteActionReport.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.uss_qualifier.reports.report.TestSuiteActionReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
-    },
-    "test_scenario": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "TestScenarioReport.json"
-        }
-      ],
-      "description": "If this action was a test scenario, this field will hold its report"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "action_generator": {
+      "description": "If this action was an action generator, this field will hold its report",
       "oneOf": [
         {
           "type": "null"
@@ -25,10 +16,21 @@
         {
           "$ref": "ActionGeneratorReport.json"
         }
-      ],
-      "description": "If this action was an action generator, this field will hold its report"
+      ]
+    },
+    "test_scenario": {
+      "description": "If this action was a test scenario, this field will hold its report",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TestScenarioReport.json"
+        }
+      ]
     },
     "test_suite": {
+      "description": "If this action was a test suite, this field will hold its report",
       "oneOf": [
         {
           "type": "null"
@@ -36,10 +38,8 @@
         {
           "$ref": "TestSuiteReport.json"
         }
-      ],
-      "description": "If this action was a test suite, this field will hold its report"
+      ]
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestSuiteActionReport.json",
-  "description": "monitoring.uss_qualifier.reports.report.TestSuiteActionReport, as defined in monitoring/uss_qualifier/reports/report.py"
+  "type": "object"
 }

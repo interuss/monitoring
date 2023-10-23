@@ -1,76 +1,75 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/FailedCheck.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.uss_qualifier.reports.report.FailedCheck, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
-    "name": {
-      "type": "string",
-      "description": "Name of the check that failed"
-    },
-    "documentation_url": {
-      "type": "string",
-      "description": "URL at which the check which failed is described"
-    },
-    "summary": {
-      "type": "string",
-      "description": "Human-readable summary of the issue"
+    "additional_data": {
+      "description": "Additional data, structured according to the checks' needs, that may be relevant for understanding this failed check",
+      "type": [
+        "object",
+        "null"
+      ]
     },
     "details": {
-      "type": "string",
-      "description": "Human-readable description of the issue"
+      "description": "Human-readable description of the issue",
+      "type": "string"
     },
-    "query_report_timestamps": {
-      "type": [
-        "array",
-        "null"
-      ],
+    "documentation_url": {
+      "description": "URL at which the check which failed is described",
+      "type": "string"
+    },
+    "name": {
+      "description": "Name of the check that failed",
+      "type": "string"
+    },
+    "participants": {
+      "description": "Participants that may not meet the relevant requirements due to this failed check",
       "items": {
         "type": "string"
       },
-      "description": "List of the `report` timestamp field for queries relevant to this failed check"
+      "type": "array"
+    },
+    "query_report_timestamps": {
+      "description": "List of the `report` timestamp field for queries relevant to this failed check",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "requirements": {
+      "description": "Requirements that are not met due to this failed check",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
     },
     "severity": {
-      "type": "string",
+      "description": "How severe the issue is",
       "enum": [
         "Critical",
         "High",
         "Medium",
         "Low"
       ],
-      "description": "How severe the issue is"
+      "type": "string"
     },
-    "participants": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Participants that may not meet the relevant requirements due to this failed check"
-    },
-    "requirements": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Requirements that are not met due to this failed check"
+    "summary": {
+      "description": "Human-readable summary of the issue",
+      "type": "string"
     },
     "timestamp": {
-      "type": "string",
+      "description": "Time the issue was discovered",
       "format": "date-time",
-      "description": "Time the issue was discovered"
-    },
-    "additional_data": {
-      "type": [
-        "object",
-        "null"
-      ],
-      "description": "Additional data, structured according to the checks' needs, that may be relevant for understanding this failed check"
+      "type": "string"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/FailedCheck.json",
-  "description": "monitoring.uss_qualifier.reports.report.FailedCheck, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "details",
     "documentation_url",
@@ -80,5 +79,6 @@
     "severity",
     "summary",
     "timestamp"
-  ]
+  ],
+  "type": "object"
 }

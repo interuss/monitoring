@@ -1,0 +1,21 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/uas_standards/astm/f3411/v22a/api/Polygon.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "An enclosed area on the earth. The bounding edges of this polygon are defined to be the shortest paths between connected vertices.  This means, for instance, that the edge between two points both defined at a particular latitude is not generally contained at that latitude. The winding order must be interpreted as the order which produces the smaller area. The path between two vertices is defined to be the shortest possible path between those vertices. Edges may not cross. Vertices may not be duplicated.  In particular, the final polygon vertex must not be identical to the first vertex.\n\nuas_standards.astm.f3411.v22a.api.Polygon, as defined in uas_standards/astm/f3411/v22a/api.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "vertices": {
+      "items": {
+        "$ref": "LatLngPoint.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "vertices"
+  ],
+  "type": "object"
+}

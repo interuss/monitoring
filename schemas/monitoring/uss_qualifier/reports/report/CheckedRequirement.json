@@ -1,35 +1,35 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/CheckedRequirement.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "A single requirement being checked for participant-verifiable capability verification.\n\nmonitoring.uss_qualifier.reports.report.CheckedRequirement, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
-    },
-    "passed_checks": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "The location of each PassedCheck involving the requirement of interest, relative to the TestSuiteReport in which the RequirementsCheckedConditionEvaluationReport containing this checked requirement is located."
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "failed_checks": {
-      "type": "array",
+      "description": "The location of each PassedCheck involving the requirement of interest, relative to the TestSuiteReport in which the RequirementsCheckedConditionEvaluationReport containing this checked requirement is located.",
       "items": {
         "type": "string"
       },
-      "description": "The location of each PassedCheck involving the requirement of interest, relative to the TestSuiteReport in which the RequirementsCheckedConditionEvaluationReport containing this checked requirement is located."
+      "type": "array"
+    },
+    "passed_checks": {
+      "description": "The location of each PassedCheck involving the requirement of interest, relative to the TestSuiteReport in which the RequirementsCheckedConditionEvaluationReport containing this checked requirement is located.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
     },
     "requirement_id": {
-      "type": "string",
-      "description": "The requirement being checked."
+      "description": "The requirement being checked.",
+      "type": "string"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/CheckedRequirement.json",
-  "description": "A single requirement being checked for participant-verifiable capability verification.\n\nmonitoring.uss_qualifier.reports.report.CheckedRequirement, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "failed_checks",
     "passed_checks",
     "requirement_id"
-  ]
+  ],
+  "type": "object"
 }

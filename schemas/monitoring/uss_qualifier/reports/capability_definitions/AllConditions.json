@@ -1,21 +1,21 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/capability_definitions/AllConditions.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "Condition will only be satisfied when all specified conditions are satisfied.\n\nNote that an empty list of conditions will result in a successful evaluation.\n\nmonitoring.uss_qualifier.reports.capability_definitions.AllConditions, as defined in monitoring/uss_qualifier/reports/capability_definitions.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "conditions": {
-      "type": "array",
       "items": {
         "$ref": "CapabilityVerificationCondition.json"
-      }
+      },
+      "type": "array"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/capability_definitions/AllConditions.json",
-  "description": "Condition will only be satisfied when all specified conditions are satisfied.\n\nNote that an empty list of conditions will result in a successful evaluation.\n\nmonitoring.uss_qualifier.reports.capability_definitions.AllConditions, as defined in monitoring/uss_qualifier/reports/capability_definitions.py",
   "required": [
     "conditions"
-  ]
+  ],
+  "type": "object"
 }

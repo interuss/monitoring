@@ -1,0 +1,31 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/netrid/service_providers/ServiceProviderConfiguration.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.netrid.service_providers.ServiceProviderConfiguration, as defined in monitoring/uss_qualifier/resources/netrid/service_providers.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "injection_base_url": {
+      "description": "Base URL for the Service Provider's implementation of the interfaces/automated-testing/rid/injection.yaml API",
+      "type": "string"
+    },
+    "local_debug": {
+      "description": "Whether this Service Provider instance is running locally for debugging or development purposes. Mostly used for relaxing\nconstraints around encryption.",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "participant_id": {
+      "description": "ID of the NetRID Service Provider into which test data can be injected",
+      "type": "string"
+    }
+  },
+  "required": [
+    "injection_base_url",
+    "participant_id"
+  ],
+  "type": "object"
+}

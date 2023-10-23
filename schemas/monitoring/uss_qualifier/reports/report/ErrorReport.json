@@ -1,35 +1,35 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/ErrorReport.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.uss_qualifier.reports.report.ErrorReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "message": {
-      "type": "string",
-      "description": "Error message"
+      "description": "Error message",
+      "type": "string"
     },
     "stacktrace": {
-      "type": "string",
-      "description": "Full stack trace of error"
-    },
-    "type": {
-      "type": "string",
-      "description": "Type of error"
+      "description": "Full stack trace of error",
+      "type": "string"
     },
     "timestamp": {
-      "type": "string",
+      "description": "Time at which the error was logged",
       "format": "date-time",
-      "description": "Time at which the error was logged"
+      "type": "string"
+    },
+    "type": {
+      "description": "Type of error",
+      "type": "string"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/ErrorReport.json",
-  "description": "monitoring.uss_qualifier.reports.report.ErrorReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "message",
     "stacktrace",
     "timestamp",
     "type"
-  ]
+  ],
+  "type": "object"
 }
