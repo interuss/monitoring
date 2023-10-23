@@ -11,7 +11,7 @@ from ...monitorlib import versioning
 
 
 @webapp.route("/geoawareness/status")
-@requires_scope([SCOPE_GEOAWARENESS_TEST])
+@requires_scope(SCOPE_GEOAWARENESS_TEST)
 def geoawareness_status():
     return StatusResponse(
         status=StatusResponseStatus.Ready, version=versioning.get_code_version()
