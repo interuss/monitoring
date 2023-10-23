@@ -7,13 +7,16 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
-    "injection_base_url": {
-      "description": "Base URL for the flight planner's implementation of the interfaces/automated-testing/scd/scd.yaml API",
-      "type": "string"
-    },
     "participant_id": {
       "description": "ID of the flight planner into which test data can be injected",
       "type": "string"
+    },
+    "scd_injection_base_url": {
+      "description": "Base URL for the flight planner's implementation of the interfaces/automated_testing/scd/v1/scd.yaml API",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "timeout_seconds": {
       "description": "Number of seconds to allow for requests to this flight planner.  If None, use default.",
@@ -21,10 +24,16 @@
         "number",
         "null"
       ]
+    },
+    "v1_base_url": {
+      "description": "Base URL for the flight planner's implementation of the interfaces/automated_testing/flight_planning/v1/flight_planning.yaml API",
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "required": [
-    "injection_base_url",
     "participant_id"
   ],
   "type": "object"
