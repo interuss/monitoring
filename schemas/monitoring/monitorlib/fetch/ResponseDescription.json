@@ -1,16 +1,26 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/fetch/ResponseDescription.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.monitorlib.fetch.ResponseDescription, as defined in monitoring/monitorlib/fetch/__init__.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "body": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "code": {
       "type": [
         "integer",
         "null"
       ]
+    },
+    "elapsed_s": {
+      "type": "number"
     },
     "failure": {
       "type": [
@@ -30,24 +40,14 @@
         "null"
       ]
     },
-    "elapsed_s": {
-      "type": "number"
-    },
-    "body": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
     "reported": {
-      "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "type": "string"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/fetch/ResponseDescription.json",
-  "description": "monitoring.monitorlib.fetch.ResponseDescription, as defined in monitoring/monitorlib/fetch/__init__.py",
   "required": [
     "elapsed_s",
     "reported"
-  ]
+  ],
+  "type": "object"
 }

@@ -1,0 +1,26 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/files/ExternalFile.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.files.ExternalFile, as defined in monitoring/uss_qualifier/resources/files.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "hash_sha512": {
+      "description": "SHA-512 hash of the external file.\n\nIf specified, the external file's content will be verified to have this hash or else produce an error.\n\nIf not specified, will be populated with the hash of the external file at the time of execution.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "path": {
+      "description": "Location of the external file.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "path"
+  ],
+  "type": "object"
+}
