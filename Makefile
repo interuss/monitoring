@@ -79,7 +79,6 @@ stop-uss-mocks:
 collect-local-logs:
 	mkdir -p logs
 	-sh -c "build/dev/run_locally.sh logs --timestamps" > logs/local_infra.log 2>&1
-	-docker logs atproxy > logs/atproxy.log 2>&1
 	-docker logs mock_uss_scdsc_a > logs/mock_uss_scdsc_a.log 2>&1
 	-docker logs mock_uss_scdsc_b > logs/mock_uss_scdsc_b.log 2>&1
 	-docker logs mock_uss_ridsp > logs/mock_uss_ridsp.log 2>&1
@@ -89,7 +88,6 @@ collect-local-logs:
 	-docker logs mock_uss_geoawareness > logs/mock_uss_geoawareness.log 2>&1
 	-docker logs mock_uss_tracer > logs/mock_uss_tracer.log 2>&1
 	-docker logs mock_uss_tracer_v22a > logs/mock_uss_tracer_v22a.log 2>&1
-	-docker logs mock_uss_atproxy_client > logs/mock_uss_atproxy_client.log 2>&1
 
 .PHONY: stop-locally
 stop-locally:

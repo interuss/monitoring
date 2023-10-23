@@ -14,7 +14,6 @@ The same mock_uss binary can be configured to behave as one of many different
 types of USSs by enabling and configuring different sets of functionality.
 The available functionality sets are:
 
-* [`atproxy_client`](atproxy_client): [atproxy](../atproxy) client/backend
 * [`geoawareness`](geoawareness): Geo-awareness provider
 * [`msgsigning`](msgsigning): [IETF HTTP Message Signatures](https://datatracker.ietf.org/doc/draft-ietf-httpbis-message-signatures/)
 * [`riddp`](riddp): Remote ID Display Provider
