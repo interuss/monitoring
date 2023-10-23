@@ -1,34 +1,34 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/ParticipantCapabilityEvaluationReport.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.uss_qualifier.reports.report.ParticipantCapabilityEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "capability_id": {
+      "description": "ID of capability being evaluated.",
+      "type": "string"
     },
     "condition_evaluation": {
       "$ref": "ParticipantCapabilityConditionEvaluationReport.json",
       "description": "Report produced by evaluating the condition for verifying this capability."
     },
-    "verified": {
-      "type": "boolean",
-      "description": "Whether the capability was successfully verified."
-    },
     "participant_id": {
-      "type": "string",
-      "description": "ID of participant for which capability is being evaluated."
+      "description": "ID of participant for which capability is being evaluated.",
+      "type": "string"
     },
-    "capability_id": {
-      "type": "string",
-      "description": "ID of capability being evaluated."
+    "verified": {
+      "description": "Whether the capability was successfully verified.",
+      "type": "boolean"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/ParticipantCapabilityEvaluationReport.json",
-  "description": "monitoring.uss_qualifier.reports.report.ParticipantCapabilityEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "capability_id",
     "condition_evaluation",
     "participant_id",
     "verified"
-  ]
+  ],
+  "type": "object"
 }

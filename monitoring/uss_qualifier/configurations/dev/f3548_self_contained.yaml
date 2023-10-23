@@ -93,23 +93,23 @@ v1:
   # relative to where uss_qualifier is executed from, and are located inside the
   # Docker container executing uss_qualifier.
   artifacts:
-    # Write out full report content
-    report:
-      # Path to main report output
-      report_path: output/report_f3548_self_contained.json
+    # Write artifacts to this folder (relative to uss_qualifier)
+    output_path: output/f3548
 
-    # Write out a human-readable report of the requirements tested
+    # Write out full report content
+    raw_report: {}
+
+    # Write out a human-readable report of the F3548-21 requirements tested
     tested_requirements:
-      output_path: output/tested_requirements_f3548_self_contained
-      requirement_collections:
-        scd:
-          requirement_collections:
-            - requirement_sets:
-                - astm.f3548.v21.scd
-      participant_requirements:
-        uss1: scd
-        uss2: scd
+      - report_name: requirements
+        requirement_collections:
+          scd:
+            requirement_collections:
+              - requirement_sets:
+                  - astm.f3548.v21.scd
+        participant_requirements:
+          uss1: scd
+          uss2: scd
 
     # Write out a human-readable report showing the sequence of events of the test
-    sequence_view:
-      output_path: output/sequence_f3548_self_contained
+    sequence_view: {}

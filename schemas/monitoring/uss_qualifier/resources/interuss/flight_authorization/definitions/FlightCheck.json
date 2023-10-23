@@ -1,0 +1,63 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/interuss/flight_authorization/definitions/FlightCheck.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.interuss.flight_authorization.definitions.FlightCheck, as defined in monitoring/uss_qualifier/resources/interuss/flight_authorization/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "acceptance_expectation": {
+      "description": "Expected outcome when authorizing a flight as described.",
+      "enum": [
+        "MustBeRejected",
+        "MustBeAccepted",
+        "Irrelevant"
+      ],
+      "type": "string"
+    },
+    "additional_information": {
+      "description": "Any additional information that should be provided to a USS planning the flight.\n\nFormat is agreed upon between test designer and USSs.",
+      "type": "object"
+    },
+    "conditions_expectation": {
+      "description": "Expected conditions/advisories produced when authorizing a flight as described.",
+      "enum": [
+        "Irrelevant",
+        "MustBePresent",
+        "MustBeAbsent"
+      ],
+      "type": "string"
+    },
+    "description": {
+      "description": "Human-readable test step description to aid in the debugging and traceability.",
+      "type": "string"
+    },
+    "flight_check_id": {
+      "description": "Unique (within table) test step/row identifier.",
+      "type": "string"
+    },
+    "requirement_ids": {
+      "description": "Jurisdictional identifiers of the requirements this test step is evaluating.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "volumes": {
+      "description": "Spatial and temporal definition of the areas the virtual user intends to fly in.\n\nA service provider is expected to authorizing a flight covering the entire area specified and for any of the entire time specified.",
+      "items": {
+        "$ref": "../../../../../monitorlib/geotemporal/Volume4DTemplate.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "additional_information",
+    "description",
+    "flight_check_id",
+    "requirement_ids",
+    "volumes"
+  ],
+  "type": "object"
+}

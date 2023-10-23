@@ -244,54 +244,6 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
 
-
-  # atproxy is currently disabled to troubleshoot occasional connection issues
-#  atproxy:
-#    container_name: atproxy
-#    hostname: atproxy.uss5.localutm
-#    image: interuss/monitoring
-#    command: atproxy/start.sh
-#    environment:
-#      - ATPROXY_CLIENT_BASIC_AUTH=local_client:local_client
-#      - ATPROXY_PUBLIC_KEY=/var/test-certs/auth2.pem
-#      - ATPROXY_TOKEN_AUDIENCE=atproxy.uss5.localutm,localhost,host.docker.internal
-#      - ATPROXY_QUERY_TIMEOUT=5
-#      - ATPROXY_PORT=80
-#      - PYTHONUNBUFFERED=TRUE
-#    expose:
-#      - 80
-#    ports:
-#      - 8075:80
-#    volumes:
-#      - ../../build/test-certs:/var/test-certs:ro
-#    restart: always
-#    networks:
-#      - interop_ecosystem_network
-#    extra_hosts:
-#      - host.docker.internal:host-gateway
-#
-#  atproxy_client:
-#    container_name: atproxy_client
-#    image: interuss/monitoring
-#    command: mock_uss/start.sh
-#    environment:
-#      - MOCK_USS_AUTH_SPEC=DummyOAuth(http://oauth.authority.localutm:8085/token,uss5)
-#      - MOCK_USS_DSS_URL=http://dss.uss1.localutm
-#      - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
-#      - MOCK_USS_TOKEN_AUDIENCE=atproxy.uss5.localutm,localhost,host.docker.internal
-#      - MOCK_USS_BASE_URL=http://atproxy.uss5.localutm
-#      - MOCK_USS_ATPROXY_BASE_URL=http://atproxy.uss5.localutm
-#      - MOCK_USS_ATPROXY_BASIC_AUTH=local_client:local_client
-#      - MOCK_USS_SERVICES=atproxy_client,scdsc,ridsp,riddp
-#      - MOCK_USS_PORT=80
-#    volumes:
-#      - ../../build/test-certs:/var/test-certs:ro
-#    restart: always
-#    networks:
-#      - interop_ecosystem_network
-#    extra_hosts:
-#      - host.docker.internal:host-gateway
-
 networks:
   interop_ecosystem_network:
     external: true

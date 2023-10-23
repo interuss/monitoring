@@ -1,0 +1,31 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/netrid/observers/ObserverConfiguration.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.netrid.observers.ObserverConfiguration, as defined in monitoring/uss_qualifier/resources/netrid/observers.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "local_debug": {
+      "description": "Whether this Observer instance is running locally for debugging or development purposes. Mostly used for relaxing\nconstraints around encryption.\nAssumed to be true if left unspecified and has_private_address is true, otherwise defaults to false",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "observation_base_url": {
+      "description": "Base URL for the observer's implementation of the interfaces/automated-testing/rid/observation.yaml API",
+      "type": "string"
+    },
+    "participant_id": {
+      "description": "Participant ID of the observer providing a view of RID data in the system",
+      "type": "string"
+    }
+  },
+  "required": [
+    "observation_base_url",
+    "participant_id"
+  ],
+  "type": "object"
+}

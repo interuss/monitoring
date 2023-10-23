@@ -1,0 +1,24 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/interuss/mock_uss/client/MockUSSSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.interuss.mock_uss.client.MockUSSSpecification, as defined in monitoring/uss_qualifier/resources/interuss/mock_uss/client.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "mock_uss_base_url": {
+      "description": "The base URL for the mock USS.\n\nIf the mock USS had scdsc enabled, for instance, then these URLs would be\nvalid:\n  * <mock_uss_base_url>/mock/scd/uss/v1/reports\n  * <mock_uss_base_url>/scdsc/v1/status",
+      "type": "string"
+    },
+    "participant_id": {
+      "description": "Test participant responsible for this mock USS.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "mock_uss_base_url",
+    "participant_id"
+  ],
+  "type": "object"
+}
