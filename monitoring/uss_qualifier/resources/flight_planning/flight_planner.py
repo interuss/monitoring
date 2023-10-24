@@ -38,7 +38,6 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
 )
 
 
-
 class FlightPlannerConfiguration(ImplicitDict):
     participant_id: str
     """ID of the flight planner into which test data can be injected"""
@@ -158,9 +157,7 @@ class FlightPlanner:
             uspace_flight_authorisation=uspace_flight_authorisation,
         )
         additional_fields = (
-            None
-            if "additional_fields" not in request
-            else request.additional_fields
+            None if "additional_fields" not in request else request.additional_fields
         )
 
         if not flight_id:
