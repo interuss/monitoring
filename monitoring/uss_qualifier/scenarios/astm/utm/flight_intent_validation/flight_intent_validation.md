@@ -18,9 +18,8 @@ FlightIntentsResource that provides the following flight intents:
   - `valid_conflict_tiny_overlap`: volumes mutation: has a volume that overlaps with `valid_op_intent` just above IntersectionMinimumPrecision = 1cm in a way that must result as a conflict
 
 Because the scenario involves activation of intents, all activated intents must be active during the execution of the
-test scenario, i.e. they must start before the reference time plus planning time duration. Additionally, their end time
-must leave sufficient time for the execution of the test scenario. For the sake of simplicity, it is recommended to set
-the start and end times of all the intents to the same range.
+test scenario. Additionally, their end time must leave sufficient time for the execution of the test scenario. For the
+sake of simplicity, it is recommended to set the start and end times of all the intents to the same range.
 
 ### tested_uss
 FlightPlannerResource that will be tested for its validation of operational intents.

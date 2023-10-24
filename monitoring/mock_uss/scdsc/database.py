@@ -1,6 +1,7 @@
 import json
 from typing import Dict, Optional
 
+from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_injection_api
 from implicitdict import ImplicitDict
@@ -17,9 +18,8 @@ from monitoring.monitorlib.mock_uss_interface.mock_uss_scd_injection_api import 
 class FlightRecord(ImplicitDict):
     """Representation of a flight in a USS"""
 
-    op_intent_injection: scd_injection_api.OperationalIntentTestInjection
-    flight_authorisation: scd_injection_api.FlightAuthorisationData
-    op_intent_reference: OperationalIntentReference
+    flight_info: FlightInfo
+    op_intent: OperationalIntent
     mod_op_sharing_behavior: Optional[MockUssFlightBehavior]
     locked: bool = False
 

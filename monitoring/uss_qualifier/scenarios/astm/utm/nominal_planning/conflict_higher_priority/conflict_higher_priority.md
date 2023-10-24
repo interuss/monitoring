@@ -74,9 +74,8 @@ FlightIntentsResource that provides the following flight intents:
 </table>
 
 Because the scenario involves activation of intents, all activated intents must be active during the execution of the
-test scenario, i.e. they must start before the reference time plus planning time duration. Additionally, their end time
-must leave sufficient time for the execution of the test scenario. For the sake of simplicity, it is recommended to set
-the start and end times of all the intents to the same range.
+test scenario. Additionally, their end time  must leave sufficient time for the execution of the test scenario. For the
+sake of simplicity, it is recommended to set the start and end times of all the intents to the same range.
 
 ### tested_uss
 FlightPlannerResource that is under test and will manage flight 1.

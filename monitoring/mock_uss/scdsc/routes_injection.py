@@ -10,6 +10,7 @@ from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 import requests.exceptions
 
+from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 from uas_standards.astm.f3548.v21 import api
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntent,
@@ -18,6 +19,7 @@ from uas_standards.astm.f3548.v21.api import (
     PutOperationalIntentDetailsParameters,
     ImplicitSubscriptionParameters,
     PutOperationalIntentReferenceParameters,
+    OperationalIntentDetails,
 )
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
@@ -87,7 +89,7 @@ def query_operational_intents(
     )
     tx = db.value
     get_details_for = []
-    own_flights = {f.op_intent_reference.id: f for f in tx.flights.values() if f}
+    own_flights = {f.op_intent.reference.id: f for f in tx.flights.values() if f}
     result = []
     for op_intent_ref in op_intent_refs:
         if op_intent_ref.id in own_flights:
@@ -278,7 +280,7 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
     try:
         # Check the transition is valid
         state_transition_from = (
-            OperationalIntentState(existing_flight.op_intent_reference.state)
+            OperationalIntentState(existing_flight.op_intent.reference.state)
             if existing_flight
             else None
         )
@@ -344,13 +346,13 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
             new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url),
         )
         if existing_flight:
-            id = existing_flight.op_intent_reference.id
+            id = existing_flight.op_intent.reference.id
             step_name = f"updating existing operational intent {id} in DSS"
             log(step_name)
             result = scd_client.update_operational_intent_reference(
                 utm_client,
                 id,
-                existing_flight.op_intent_reference.ovn,
+                existing_flight.op_intent.reference.ovn,
                 req,
             )
         else:
@@ -383,10 +385,17 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         # Store flight in database
         step_name = "storing flight in database"
         log("Storing flight in database")
+        op_intent = OperationalIntent(
+            reference=result.operational_intent_reference,
+            details=OperationalIntentDetails(
+                volumes=req_body.operational_intent.volumes,
+                off_nominal_volumes=req_body.operational_intent.off_nominal_volumes,
+                priority=req_body.operational_intent.priority,
+            ),
+        )
         record = database.FlightRecord(
-            op_intent_reference=result.operational_intent_reference,
-            op_intent_injection=req_body.operational_intent,
-            flight_authorisation=req_body.flight_authorisation,
+            op_intent=op_intent,
+            flight_info=FlightInfo.from_scd_inject_flight_request(req_body),
             mod_op_sharing_behavior=mock_uss_flight_behavior_in_req(req_body),
         )
         with db as tx:
@@ -486,12 +495,12 @@ def delete_flight(flight_id) -> Tuple[dict, int]:
     # Delete operational intent from DSS
     step_name = "performing unknown operation"
     try:
-        step_name = f"deleting operational intent {flight.op_intent_reference.id} with OVN {flight.op_intent_reference.ovn} from DSS"
+        step_name = f"deleting operational intent {flight.op_intent.reference.id} with OVN {flight.op_intent.reference.ovn} from DSS"
         logger.debug(f"[delete_flight/{pid}:{flight_id}] {step_name}")
         result = scd_client.delete_operational_intent_reference(
             utm_client,
-            flight.op_intent_reference.id,
-            flight.op_intent_reference.ovn,
+            flight.op_intent.reference.id,
+            flight.op_intent.reference.ovn,
         )
 
         step_name = "notifying subscribers"
@@ -622,7 +631,7 @@ def clear_area(req: ClearAreaRequest) -> Tuple[dict, int]:
                     if record is None or record.locked:
                         pending_flights.add(flight_id)
                         continue
-                    if record.op_intent_reference.id in deleted:
+                    if record.op_intent.reference.id in deleted:
                         flights_to_delete.append(flight_id)
                 for flight_id in flights_to_delete:
                     del tx.flights[flight_id]
