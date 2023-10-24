@@ -1,0 +1,49 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/netrid/flight_data/FlightDataSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.netrid.flight_data.FlightDataSpecification, as defined in monitoring/uss_qualifier/resources/netrid/flight_data.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "adjacent_circular_flights_simulation_source": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AdjacentCircularFlightsSimulatorConfiguration.json"
+        }
+      ]
+    },
+    "flight_start_delay": {
+      "description": "Amount of time between starting the test and commencement of flights",
+      "format": "duration",
+      "type": "string"
+    },
+    "kml_source": {
+      "description": "When this field is populated, flight data will be generated from a KML file",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "FlightDataKMLFileConfiguration.json"
+        }
+      ]
+    },
+    "record_source": {
+      "description": "When this field is populated, flight record data will be loaded directly from this file",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../../files/ExternalFile.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

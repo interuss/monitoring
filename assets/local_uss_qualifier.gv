@@ -33,13 +33,6 @@ digraph G {
     label=<Local USS mocks<br/><font color="green" face="Courier" point-size="10">make start-uss-mocks</font><br/><font color="red" face="Courier" point-size="10">make stop-uss-mocks</font>>
     style="dashed"
 
-    atproxy [label=<Proxied testing interface<br/><font color="purple" face="Courier" point-size="10">atproxy</font><br/><font face="Courier" color="gray" point-size="10">host port 8075</font><br/><font color="red">Disabled</font>>]
-    subgraph force_same_level {
-      rank=same
-      mock_uss_atproxy_client [label=<Proxied testing backend<br/><font color="purple" face="Courier" point-size="10">mock_uss_atproxy_client</font>>]
-      InteropEcosystem [color=lightblue,label=<All of these services<br/>communicate with DSS +<br/>auth in local interoperability<br/>ecosystem, as well as each<br/>other, all according to ASTM<br/>standards>]
-    }
-
     mock_uss_geoawareness [label=<Geo-awareness mock<br/><font color="purple" face="Courier" point-size="10">mock_uss_geoawareness</font><br/><font face="Courier" color="gray" point-size="10">host port 8076</font>>]
 
     mock_uss_scdsc_a [label=<Strategic Coordination mock A<br/><font color="purple" face="Courier" point-size="10">mock_uss_scdsc_a</font><br/><font face="Courier" color="gray" point-size="10">host port 8074</font>>]
@@ -53,8 +46,6 @@ digraph G {
 
     mock_uss_tracer [label=<ASTM F3411-22a trace logger<br/><font color="purple" face="Courier" point-size="10">mock_uss_tracer</font><br/><font face="Courier" color="gray" point-size="10">host port 8078</font>>]
     mock_uss_tracer_v19 [label=<ASTM F3411-19 tracer logger<br/><font color="purple" face="Courier" point-size="10">mock_uss_tracer_v19</font><br/><font face="Courier" color="gray" point-size="10">host port 8088</font>>]
-
-    atproxy -> mock_uss_atproxy_client
   }
 
   subgraph cluster_uss_qualifier {
@@ -94,7 +85,6 @@ digraph G {
   mock_uss_scdsc_b -> InteropEcosystem
   mock_uss_tracer -> InteropEcosystem
   mock_uss_tracer_v19 -> InteropEcosystem
-  mock_uss_atproxy_client -> InteropEcosystem
 
   ResourceUSSAuth -> Auth
   ResourceTestDirectorAuth -> Auth

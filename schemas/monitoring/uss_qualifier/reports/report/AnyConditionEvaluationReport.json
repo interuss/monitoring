@@ -1,30 +1,30 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/AnyConditionEvaluationReport.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "Result of an evaluation of AnyCondition determined by whether any of the subconditions are satisfied.\n\nmonitoring.uss_qualifier.reports.report.AnyConditionEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "satisfied_options": {
-      "type": "array",
+      "description": "Which of the specified options were satisfied (if any were satisfied, then this condition should be satisfied).",
       "items": {
         "$ref": "ParticipantCapabilityConditionEvaluationReport.json"
       },
-      "description": "Which of the specified options were satisfied (if any were satisfied, then this condition should be satisfied)."
+      "type": "array"
     },
     "unsatisfied_options": {
-      "type": "array",
+      "description": "Which of the specified options were not satisfied (these are informational only and do not affect the evaluation).",
       "items": {
         "$ref": "ParticipantCapabilityConditionEvaluationReport.json"
       },
-      "description": "Which of the specified options were not satisfied (these are informational only and do not affect the evaluation)."
+      "type": "array"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/AnyConditionEvaluationReport.json",
-  "description": "Result of an evaluation of AnyCondition determined by whether any of the subconditions are satisfied.\n\nmonitoring.uss_qualifier.reports.report.AnyConditionEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "satisfied_options",
     "unsatisfied_options"
-  ]
+  ],
+  "type": "object"
 }

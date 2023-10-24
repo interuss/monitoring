@@ -1,0 +1,47 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/astm/f3411/dss/DSSInstanceSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.astm.f3411.dss.DSSInstanceSpecification, as defined in monitoring/uss_qualifier/resources/astm/f3411/dss.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "base_url": {
+      "description": "Base URL for the DSS instance according to the ASTM F3411 API appropriate to the specified rid_version",
+      "type": "string"
+    },
+    "has_private_address": {
+      "description": "Whether this DSS instance is expected to have a private address that is not publicly addressable.",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "local_debug": {
+      "description": "Whether this DSS instance is running locally for debugging or development purposes. Mostly used for relaxing\nconstraints around encryption.\nAssumed to be true if left unspecified and has_private_address is true, otherwise defaults to false",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "participant_id": {
+      "description": "ID of the USS responsible for this DSS instance",
+      "type": "string"
+    },
+    "rid_version": {
+      "description": "Version of ASTM F3411 implemented by this DSS instance",
+      "enum": [
+        "F3411-19",
+        "F3411-22a"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "base_url",
+    "participant_id",
+    "rid_version"
+  ],
+  "type": "object"
+}

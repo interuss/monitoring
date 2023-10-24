@@ -1,0 +1,38 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/flight_planning/flight_planners/FlightPlannerCombinationSelectorSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.flight_planning.flight_planners.FlightPlannerCombinationSelectorSpecification, as defined in monitoring/uss_qualifier/resources/flight_planning/flight_planners.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "maximum_roles": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "description": "Maximum number of roles a particular participant may fill in any given combination",
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "must_include": {
+      "description": "The set of flight planners which must be included in every combination",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

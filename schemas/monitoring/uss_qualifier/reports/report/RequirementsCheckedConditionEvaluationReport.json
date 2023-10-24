@@ -1,38 +1,38 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/RequirementsCheckedConditionEvaluationReport.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "Result of an evaluation of RequirementsCheckedCondition dependent on whether a set of requirements were successfully checked.\n\nmonitoring.uss_qualifier.reports.report.RequirementsCheckedConditionEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
-    },
-    "passed_requirements": {
-      "type": "array",
-      "items": {
-        "$ref": "CheckedRequirement.json"
-      },
-      "description": "Requirements with only PassedChecks."
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "failed_requirements": {
-      "type": "array",
+      "description": "Requirements with FailedChecks.",
       "items": {
         "$ref": "CheckedRequirement.json"
       },
-      "description": "Requirements with FailedChecks."
+      "type": "array"
+    },
+    "passed_requirements": {
+      "description": "Requirements with only PassedChecks.",
+      "items": {
+        "$ref": "CheckedRequirement.json"
+      },
+      "type": "array"
     },
     "untested_requirements": {
-      "type": "array",
+      "description": "Requirements that didn't have any PassedChecks or FailedChecks within the scope of the test suite in which this condition is located.",
       "items": {
         "type": "string"
       },
-      "description": "Requirements that didn't have any PassedChecks or FailedChecks within the scope of the test suite in which this condition is located."
+      "type": "array"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/RequirementsCheckedConditionEvaluationReport.json",
-  "description": "Result of an evaluation of RequirementsCheckedCondition dependent on whether a set of requirements were successfully checked.\n\nmonitoring.uss_qualifier.reports.report.RequirementsCheckedConditionEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "failed_requirements",
     "passed_requirements",
     "untested_requirements"
-  ]
+  ],
+  "type": "object"
 }

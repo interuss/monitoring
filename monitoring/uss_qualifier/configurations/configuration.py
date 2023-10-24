@@ -27,18 +27,13 @@ class TestConfiguration(ImplicitDict):
     """Declarations for resources used by the test suite"""
 
 
-class TestedRolesConfiguration(ImplicitDict):
-    report_path: str
-    """Path of folder to write HTML files containing a fulfilled-requirements-based view of the test report"""
-
-
 TestedRequirementsCollectionIdentifier = str
 """Identifier for a requirements collection, local to a TestedRequirementsConfiguration artifact configuration."""
 
 
 class TestedRequirementsConfiguration(ImplicitDict):
-    output_path: str
-    """Path of a folder into which report HTML files should be written"""
+    report_name: str
+    """Name of subfolder in output path to contain the rendered templated report"""
 
     requirement_collections: Optional[
         Dict[TestedRequirementsCollectionIdentifier, RequirementCollection]
@@ -52,13 +47,13 @@ class TestedRequirementsConfiguration(ImplicitDict):
 
 
 class SequenceViewConfiguration(ImplicitDict):
-    output_path: str
-    """Path of a folder into which report HTML files should be written"""
+    redact_access_tokens: bool = True
+    """When True, look for instances of "Authorization" keys in the report with values starting "Bearer " and redact the signature from those access tokens"""
 
 
 class ReportHTMLConfiguration(ImplicitDict):
-    html_path: str
-    """Path of HTML file to contain an HTML rendering of the raw test report object"""
+    redact_access_tokens: bool = True
+    """When True, look for instances of "Authorization" keys in the report with values starting "Bearer " and redact the signature from those access tokens"""
 
 
 class TemplatedReportInjectedConfiguration(ImplicitDict):
@@ -69,44 +64,36 @@ class TemplatedReportConfiguration(ImplicitDict):
     template_url: str
     """Url of the template to download from"""
 
-    output_path: str
-    """Path of HTML file to contain the rendered templated report"""
+    report_name: str
+    """Name of HTML file (without extension) to contain the rendered templated report"""
 
     configuration: Optional[TemplatedReportInjectedConfiguration] = None
     """Configuration to be injected in the templated report"""
 
 
-class GraphConfiguration(ImplicitDict):
-    gv_path: str
-    """Path of GraphViz (.gv) text file to contain a visualization of the test run"""
-
-
-class ReportConfiguration(ImplicitDict):
-    report_path: str
-    """File name of the report to write (if test_config provided) or read (if test_config not provided)"""
-
-
-class ArtifactsConfiguration(ImplicitDict):
+class RawReportConfiguration(ImplicitDict):
     redact_access_tokens: bool = True
     """When True, look for instances of "Authorization" keys in the report with values starting "Bearer " and redact the signature from those access tokens"""
 
-    report: Optional[ReportConfiguration] = None
-    """Configuration for report generation"""
+    indent: Optional[int] = None
+    """To pretty-print JSON content, specify an indent level (generally 2), or omit or set to None to write compactly."""
+
+
+class ArtifactsConfiguration(ImplicitDict):
+    output_path: str
+    """Path to folder where artifacts should be written."""
+
+    raw_report: Optional[RawReportConfiguration] = None
+    """Configuration for raw report generation"""
 
     report_html: Optional[ReportHTMLConfiguration] = None
-    """If specified, configuration describing how an HTML version of the report should be generated"""
+    """If specified, configuration describing how an HTML version of the raw report should be generated"""
 
-    templated_reports: List[TemplatedReportConfiguration] = []
+    templated_reports: Optional[List[TemplatedReportConfiguration]] = None
     """List of report templates to be rendered"""
 
-    graph: Optional[GraphConfiguration] = None
-    """If specified, configuration describing a desired graph visualization summarizing the test run"""
-
-    tested_roles: Optional[TestedRolesConfiguration] = None
-    """If specified, configuration describing a desired report summarizing tested requirements for each specified participant and role"""
-
-    tested_requirements: Optional[TestedRequirementsConfiguration] = None
-    """If specified, configuration describing a desired report summarizing all tested requirements for each participant"""
+    tested_requirements: Optional[List[TestedRequirementsConfiguration]] = None
+    """If specified, list of configurations describing desired reports summarizing tested requirements for each participant"""
 
     sequence_view: Optional[SequenceViewConfiguration] = None
     """If specified, configuration describing a desired report describing the sequence of events that occurred during the test"""

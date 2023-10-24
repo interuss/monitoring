@@ -14,7 +14,7 @@ from monitoring.monitorlib.versioning import get_code_version, get_commit_hash
 from monitoring.uss_qualifier.configurations.configuration import (
     USSQualifierConfiguration,
     ArtifactsConfiguration,
-    ReportConfiguration,
+    RawReportConfiguration,
     USSQualifierConfigurationV1,
 )
 from monitoring.uss_qualifier.fileio import load_dict_with_references
@@ -23,8 +23,6 @@ from monitoring.uss_qualifier.reports.sequence_view import generate_sequence_vie
 from monitoring.uss_qualifier.reports.tested_requirements import (
     generate_tested_requirements,
 )
-from monitoring.uss_qualifier.reports.tested_roles import generate_tested_roles
-from monitoring.uss_qualifier.reports.graphs import make_graph
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
 from monitoring.uss_qualifier.reports.templates import render_templates
 from monitoring.uss_qualifier.reports.validation.report_validation import (
@@ -159,10 +157,10 @@ def run_config(
     if report_path:
         if not config.artifacts:
             config.artifacts = ArtifactsConfiguration(
-                ReportConfiguration(report_path=report_path)
+                RawReportConfiguration(report_path=report_path)
             )
         elif not config.artifacts.report:
-            config.artifacts.report = ReportConfiguration(report_path=report_path)
+            config.artifacts.report = RawReportConfiguration(report_path=report_path)
         else:
             config.artifacts.report.report_path = report_path
 
@@ -180,46 +178,70 @@ def run_config(
         )
 
     if config.artifacts:
-        if config.artifacts.report and not do_not_save_report:
-            if config.artifacts.redact_access_tokens:
-                logger.info("Redacting access tokens in report")
-                redact_access_tokens(report)
-            logger.info("Writing report to {}", config.artifacts.report.report_path)
-            with open(config.artifacts.report.report_path, "w") as f:
-                json.dump(report, f, indent=2)
+        os.makedirs(config.artifacts.output_path, exist_ok=True)
+
+        def _should_redact(cfg) -> bool:
+            return "redact_access_tokens" in cfg and cfg.redact_access_tokens
+
+        logger.info(f"Redacting access tokens from report")
+        redacted_report = ImplicitDict.parse(
+            json.loads(json.dumps(report)), TestRunReport
+        )
+        redact_access_tokens(redacted_report)
+
+        if config.artifacts.raw_report and not do_not_save_report:
+            # Raw report
+            path = os.path.join(config.artifacts.output_path, "report.json")
+            logger.info(f"Writing raw report to {path}")
+            raw_report = config.artifacts.raw_report
+            report_to_write = redacted_report if _should_redact(raw_report) else report
+            with open(path, "w") as f:
+                if "indent" in raw_report and raw_report.indent is not None:
+                    json.dump(report_to_write, f, indent=raw_report.indent)
+                else:
+                    json.dump(report_to_write, f)
 
         if config.artifacts.report_html:
-            logger.info(
-                "Writing HTML report to {}", config.artifacts.report_html.html_path
+            # HTML rendering of raw report
+            path = os.path.join(config.artifacts.output_path, "report.html")
+            logger.info(f"Writing HTML report to {path}")
+            report_to_write = (
+                redacted_report
+                if _should_redact(config.artifacts.report_html)
+                else report
             )
-            with open(config.artifacts.report_html.html_path, "w") as f:
-                f.write(make_report_html(report))
+            with open(path, "w") as f:
+                f.write(make_report_html(report_to_write))
 
-        if len(config.artifacts.templated_reports) > 0:
-
-            render_templates(config.artifacts, report)
-
-        if config.artifacts.graph:
-            logger.info(
-                "Writing GraphViz dot source to {}", config.artifacts.graph.gv_path
+        if config.artifacts.templated_reports:
+            # Templated reports
+            render_templates(
+                config.artifacts.output_path,
+                config.artifacts.templated_reports,
+                redacted_report,
             )
-            with open(config.artifacts.graph.gv_path, "w") as f:
-                f.write(make_graph(report).source)
-
-        if config.artifacts.tested_roles:
-            path = config.artifacts.tested_roles.report_path
-            logger.info("Writing tested roles view to {}", path)
-            generate_tested_roles(report, path)
 
         if config.artifacts.tested_requirements:
-            path = config.artifacts.tested_requirements.output_path
-            logger.info(f"Writing tested requirements view to {path}")
-            generate_tested_requirements(report, config.artifacts.tested_requirements)
+            # Tested requirements view
+            for tested_reqs_config in config.artifacts.tested_requirements:
+                path = os.path.join(
+                    config.artifacts.output_path, tested_reqs_config.report_name
+                )
+                logger.info(f"Writing tested requirements view to {path}")
+                generate_tested_requirements(redacted_report, tested_reqs_config, path)
 
         if config.artifacts.sequence_view:
-            path = config.artifacts.sequence_view.output_path
+            # Sequence view
+            path = os.path.join(config.artifacts.output_path, "sequence")
             logger.info(f"Writing sequence view to {path}")
-            generate_sequence_view(report, config.artifacts.sequence_view)
+            report_to_write = (
+                redacted_report
+                if _should_redact(config.artifacts.sequence_view)
+                else report
+            )
+            generate_sequence_view(
+                report_to_write, config.artifacts.sequence_view, path
+            )
 
     if "validation" in config and config.validation:
         logger.info(f"Validating test run report for configuration '{config_name}'")

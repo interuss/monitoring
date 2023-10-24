@@ -1,38 +1,38 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/CapabilityVerifiedConditionEvaluationReport.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "Result of an evaluation of a CapabilityVerifiedCondition dependent on whether other capabilities were verified.\n\nmonitoring.uss_qualifier.reports.report.CapabilityVerifiedConditionEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "checked_capabilities": {
-      "type": "array",
+      "description": "All capability evaluations checked for this condition.",
       "items": {
         "$ref": "CheckedCapability.json"
       },
-      "description": "All capability evaluations checked for this condition."
-    },
-    "spurious_matches": {
-      "type": "array",
-      "items": {
-        "$ref": "SpuriousReportMatch.json"
-      },
-      "description": "Report elements matching the condition's `capability_location`, but not of the type TestSuiteReport."
+      "type": "array"
     },
     "missing_capabilities": {
-      "type": "array",
+      "description": "Capabilities specified for this condition but not found in the report.",
       "items": {
         "type": "string"
       },
-      "description": "Capabilities specified for this condition but not found in the report."
+      "type": "array"
+    },
+    "spurious_matches": {
+      "description": "Report elements matching the condition's `capability_location`, but not of the type TestSuiteReport.",
+      "items": {
+        "$ref": "SpuriousReportMatch.json"
+      },
+      "type": "array"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/CapabilityVerifiedConditionEvaluationReport.json",
-  "description": "Result of an evaluation of a CapabilityVerifiedCondition dependent on whether other capabilities were verified.\n\nmonitoring.uss_qualifier.reports.report.CapabilityVerifiedConditionEvaluationReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "checked_capabilities",
     "missing_capabilities",
     "spurious_matches"
-  ]
+  ],
+  "type": "object"
 }

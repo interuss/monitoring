@@ -11,6 +11,4 @@ mkdir ./public
 cp -r ./monitoring/github_pages/static/* ./public
 
 mkdir -p ./public/artifacts/uss_qualifier/reports
-cp -r ./artifacts/uss_qualifier/output/sequence_uspace ./public/artifacts/uss_qualifier/reports/sequence_uspace
-cp -r ./artifacts/uss_qualifier/output/tested_requirements_uspace ./public/artifacts/uss_qualifier/reports/tested_requirements_uspace
-cp -r ./artifacts/uss_qualifier/output/capabilities_uspace.html ./public/artifacts/uss_qualifier/reports/capabilities_uspace.html
+cp -r ./artifacts/uss_qualifier/output/* ./public/artifacts/uss_qualifier/reports
