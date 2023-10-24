@@ -22,6 +22,8 @@ from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
 
+from monitoring.mock_uss.interaction_logging.interactions import Interaction
+
 
 class FailedCheck(ImplicitDict):
     name: str
