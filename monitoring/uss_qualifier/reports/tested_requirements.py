@@ -1,6 +1,5 @@
 import os
 from dataclasses import dataclass
-import re
 from functools import cmp_to_key
 from typing import List, Union, Dict, Set, Optional
 
@@ -187,7 +186,7 @@ class TestRunInformation(object):
 
 
 def generate_tested_requirements(
-    report: TestRunReport, config: TestedRequirementsConfiguration
+    report: TestRunReport, config: TestedRequirementsConfiguration, output_path: str
 ) -> None:
     req_collections: Dict[
         TestedRequirementsCollectionIdentifier, Set[RequirementID]
@@ -211,8 +210,8 @@ def generate_tested_requirements(
     import_submodules(suites)
     import_submodules(action_generators)
 
-    os.makedirs(config.output_path, exist_ok=True)
-    index_file = os.path.join(config.output_path, "index.html")
+    os.makedirs(output_path, exist_ok=True)
+    index_file = os.path.join(output_path, "index.html")
 
     participant_ids = list(report.report.participant_ids())
     participant_ids.sort()
@@ -237,7 +236,7 @@ def generate_tested_requirements(
                 participant_breakdown, participant_req_collections[participant_id]
             )
         _sort_breakdown(participant_breakdown)
-        participant_file = os.path.join(config.output_path, f"{participant_id}.html")
+        participant_file = os.path.join(output_path, f"{participant_id}.html")
         other_participants = ", ".join(
             p for p in participant_ids if p != participant_id
         )
@@ -517,22 +516,22 @@ def _populate_breakdown_with_action_declaration(
                 load_dict_with_references(action.test_suite.suite_type),
                 TestSuiteDefinition,
             )
-            for action in suite_def.actions:
-                _populate_breakdown_with_action_declaration(breakdown, action, req_set)
+            for a in suite_def.actions:
+                _populate_breakdown_with_action_declaration(breakdown, a, req_set)
         elif (
             "suite_definition" in action.test_suite
             and action.test_suite.suite_definition
         ):
-            for action in action.test_suite.suite_definition:
-                _populate_breakdown_with_action_declaration(breakdown, action, req_set)
+            for a in action.test_suite.suite_definition.actions:
+                _populate_breakdown_with_action_declaration(breakdown, a, req_set)
         else:
             raise ValueError(f"Test suite action missing suite type or definition")
     elif action_type == ActionType.ActionGenerator:
         potential_actions = list_potential_actions_for_action_generator_definition(
             action.action_generator
         )
-        for action in potential_actions:
-            _populate_breakdown_with_action_declaration(breakdown, action, req_set)
+        for a in potential_actions:
+            _populate_breakdown_with_action_declaration(breakdown, a, req_set)
     else:
         raise NotImplementedError(f"Unsupported test suite action type: {action_type}")
 

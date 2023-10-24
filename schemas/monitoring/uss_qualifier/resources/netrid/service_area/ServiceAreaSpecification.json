@@ -1,0 +1,53 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/netrid/service_area/ServiceAreaSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.netrid.service_area.ServiceAreaSpecification, as defined in monitoring/uss_qualifier/resources/netrid/service_area.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "altitude_max": {
+      "description": "Upper altitude bound of service area, meters above WGS84 ellipsoid",
+      "type": "number"
+    },
+    "altitude_min": {
+      "description": "Lower altitude bound of service area, meters above WGS84 ellipsoid",
+      "type": "number"
+    },
+    "base_url": {
+      "description": "Base URL to use for the Identification Service Area.\n\nNote that this is the API base URL, not the flights URL (as specified in F3411-19).\n\nThis URL will probably not identify a real resource in tests.",
+      "type": "string"
+    },
+    "footprint": {
+      "description": "2D outline of service area",
+      "items": {
+        "$ref": "../../../../monitorlib/geo/LatLngPoint.json"
+      },
+      "type": "array"
+    },
+    "reference_time": {
+      "description": "Reference time used to adjust start and end times at runtime",
+      "format": "date-time",
+      "type": "string"
+    },
+    "time_end": {
+      "description": "End time of service area (relative to reference_time)",
+      "format": "date-time",
+      "type": "string"
+    },
+    "time_start": {
+      "description": "Start time of service area (relative to reference_time)",
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "required": [
+    "base_url",
+    "footprint",
+    "reference_time",
+    "time_end",
+    "time_start"
+  ],
+  "type": "object"
+}

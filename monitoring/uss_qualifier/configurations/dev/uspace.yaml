@@ -1,10 +1,37 @@
 $content_schema: monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json
 v1:
   test_run:
-    $ref: ./library/environment.yaml#/non_baseline_inputs
     resources:
       resource_declarations:
-        $ref: ./library/resources.yaml#/all
+        locality_che: {$ref: 'library/resources.yaml#/locality_che'}
+        che_conflicting_flights: {$ref: 'library/resources.yaml#/che_conflicting_flights'}
+        che_invalid_flight_intents: {$ref: 'library/resources.yaml#/che_invalid_flight_intents'}
+        che_invalid_flight_auth_flights: {$ref: 'library/resources.yaml#/che_invalid_flight_auth_flights'}
+        foca_flights_data: {$ref: 'library/resources.yaml#/foca_flights_data'}
+        netrid_observation_evaluation_configuration: {$ref: 'library/resources.yaml#/netrid_observation_evaluation_configuration'}
+        id_generator: {$ref: 'library/resources.yaml#/id_generator'}
+        kentland_service_area: {$ref: 'library/resources.yaml#/kentland_service_area'}
+        au_problematically_big_area: {$ref: 'library/resources.yaml#/au_problematically_big_area'}
+
+        utm_auth: {$ref: 'library/environment.yaml#/utm_auth'}
+        mock_uss_instances_scdsc: {$ref: 'library/environment.yaml#/mock_uss_instances_scdsc'}
+        scd_version_providers: {$ref: 'library/environment.yaml#/scd_version_providers'}
+        all_flight_planners: {$ref: 'library/environment.yaml#/all_flight_planners'}
+        scd_dss: {$ref: 'library/environment.yaml#/scd_dss'}
+        scd_dss_instances: {$ref: 'library/environment.yaml#/scd_dss_instances'}
+        netrid_service_providers_v22a: {$ref: 'library/environment.yaml#/netrid_service_providers_v22a'}
+        netrid_observers_v22a: {$ref: 'library/environment.yaml#/netrid_observers_v22a'}
+        netrid_dss_instances_v22a: {$ref: 'library/environment.yaml#/netrid_dss_instances_v22a'}
+    non_baseline_inputs:
+      - v1.test_run.resources.resource_declarations.utm_auth
+      - v1.test_run.resources.resource_declarations.mock_uss_instances_scdsc
+      - v1.test_run.resources.resource_declarations.scd_version_providers
+      - v1.test_run.resources.resource_declarations.all_flight_planners
+      - v1.test_run.resources.resource_declarations.scd_dss
+      - v1.test_run.resources.resource_declarations.scd_dss_instances
+      - v1.test_run.resources.resource_declarations.netrid_service_providers_v22a
+      - v1.test_run.resources.resource_declarations.netrid_observers_v22a
+      - v1.test_run.resources.resource_declarations.netrid_dss_instances_v22a
     action:
       action_generator:
         generator_type: action_generators.interuss.mock_uss.WithLocality
@@ -12,14 +39,13 @@ v1:
           mock_uss_instances: mock_uss_instances_scdsc
           locality: locality_che
 
-          version_providers: version_providers
-          system_identity: uspace_system_identity
+          version_providers: scd_version_providers
 
-          conflicting_flights: conflicting_flights
-          priority_preemption_flights: priority_preemption_flights
-          invalid_flight_intents: invalid_flight_intents
-          invalid_flight_auth_flights: invalid_flight_auth_flights
-          flight_planners: flight_planners
+          conflicting_flights: che_conflicting_flights
+          priority_preemption_flights: che_conflicting_flights
+          invalid_flight_intents: che_invalid_flight_intents
+          invalid_flight_auth_flights: che_invalid_flight_auth_flights
+          flight_planners: all_flight_planners
           scd_dss: scd_dss
           scd_dss_instances: scd_dss_instances
 
@@ -29,8 +55,8 @@ v1:
           evaluation_configuration: netrid_observation_evaluation_configuration
           netrid_dss_instances: netrid_dss_instances_v22a
           id_generator: id_generator
-          service_area: service_area
-          problematically_big_area: problematically_big_area
+          service_area: kentland_service_area
+          problematically_big_area: au_problematically_big_area
         specification:
           mock_uss_instances_source: mock_uss_instances
           locality_source: locality
@@ -39,7 +65,6 @@ v1:
               suite_type: suites.uspace.required_services
               resources:
                 version_providers: version_providers
-                system_identity: system_identity
 
                 conflicting_flights: conflicting_flights
                 priority_preemption_flights: priority_preemption_flights
@@ -57,43 +82,39 @@ v1:
                 id_generator: id_generator
                 service_area: service_area
                 problematically_big_area: problematically_big_area
-            on_failure: Continue
   artifacts:
-    tested_roles:
-      report_path: output/tested_roles_uspace
-    report:
-      report_path: output/report_uspace.json
+    output_path: output/uspace
+    raw_report: {}
     templated_reports:
       - template_url: https://github.com/Orbitalize/reports/releases/download/v0.0.18/app-v0.0.18.zip
-        output_path: output/capabilities_uspace.html
+        report_name: capabilities
     tested_requirements:
-      output_path: output/tested_requirements_uspace
-      requirement_collections:
-        uspace:
-          requirement_collections:
-            - requirement_sets:
-                - astm.f3411.v22a.service_provider#Mandatory requirements
-                - astm.f3411.v22a.service_provider#Operator ID provider
-                - astm.f3411.v22a.service_provider#UAS ID Serial Number provider
-                - astm.f3411.v22a.service_provider#Height provider
-                - astm.f3411.v22a.service_provider#Operator Position provider
-                - astm.f3411.v22a.service_provider#Operational Status provider
-                - astm.f3411.v22a.display_provider#Mandatory requirements
-                - astm.f3411.v22a.display_provider#UAS ID Serial Number transmitter
-                - astm.f3411.v22a.display_provider#Timestamp transmitter
-                - astm.f3411.v22a.display_provider#Operational Status transmitter
-                - astm.f3411.v22a.display_provider#Operator ID transmitter
-                - astm.f3411.v22a.display_provider#Current Position transmitter
-                - astm.f3411.v22a.display_provider#Height transmitter
-                - astm.f3411.v22a.display_provider#Track Direction transmitter
-                - astm.f3411.v22a.display_provider#Speed transmitter
-                - astm.f3411.v22a.display_provider#Operator Position transmitter
-                - astm.f3411.v22a.dss_provider
-                - astm.f3548.v21.scd#Automated verification
-      participant_requirements:
-        uss1: uspace
-        uss2: uspace
-    sequence_view:
-      output_path: output/sequence_uspace
+      - report_name: requirements
+        requirement_collections:
+          uspace:
+            requirement_collections:
+              - requirement_sets:
+                  - astm.f3411.v22a.service_provider#Mandatory requirements
+                  - astm.f3411.v22a.service_provider#Operator ID provider
+                  - astm.f3411.v22a.service_provider#UAS ID Serial Number provider
+                  - astm.f3411.v22a.service_provider#Height provider
+                  - astm.f3411.v22a.service_provider#Operator Position provider
+                  - astm.f3411.v22a.service_provider#Operational Status provider
+                  - astm.f3411.v22a.display_provider#Mandatory requirements
+                  - astm.f3411.v22a.display_provider#UAS ID Serial Number transmitter
+                  - astm.f3411.v22a.display_provider#Timestamp transmitter
+                  - astm.f3411.v22a.display_provider#Operational Status transmitter
+                  - astm.f3411.v22a.display_provider#Operator ID transmitter
+                  - astm.f3411.v22a.display_provider#Current Position transmitter
+                  - astm.f3411.v22a.display_provider#Height transmitter
+                  - astm.f3411.v22a.display_provider#Track Direction transmitter
+                  - astm.f3411.v22a.display_provider#Speed transmitter
+                  - astm.f3411.v22a.display_provider#Operator Position transmitter
+                  - astm.f3411.v22a.dss_provider
+                  - astm.f3548.v21.scd#Automated verification
+        participant_requirements:
+          uss1: uspace
+          uss2: uspace
+    sequence_view: {}
   validation:
     $ref: ./library/validation.yaml#/normal_test

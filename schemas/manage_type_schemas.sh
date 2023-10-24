@@ -13,10 +13,9 @@ else
 fi
 cd "${BASEDIR}/.." || exit 1
 
-if [ -z "${DO_NOT_BUILD_MONITORING}" ]; then
-  monitoring/build.sh || exit 1
-  export DO_NOT_BUILD_MONITORING=true
-fi
+cd monitoring
+make image
+cd ..
 
 action=${1:?The action must be specified as --check or --generate}
 

@@ -119,7 +119,7 @@ def query_operational_intents(
 
 
 @webapp.route("/scdsc/v1/status", methods=["GET"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def scdsc_injection_status() -> Tuple[str, int]:
     """Implements USS status in SCD automated testing injection API."""
     json, code = injection_status()
@@ -134,7 +134,7 @@ def injection_status() -> Tuple[dict, int]:
 
 
 @webapp.route("/scdsc/v1/capabilities", methods=["GET"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def scdsc_scd_capabilities() -> Tuple[str, int]:
     """Implements USS capabilities in SCD automated testing injection API."""
     json, code = scd_capabilities()
@@ -155,7 +155,7 @@ def scd_capabilities() -> Tuple[dict, int]:
 
 
 @webapp.route("/scdsc/v1/flights/<flight_id>", methods=["PUT"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 @idempotent_request()
 def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
     """Implements flight injection in SCD automated testing injection API."""
@@ -441,7 +441,7 @@ def inject_flight(
 
 
 @webapp.route("/scdsc/v1/flights/<flight_id>", methods=["DELETE"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def scdsc_delete_flight(flight_id: str) -> Tuple[str, int]:
     """Implements flight deletion in SCD automated testing injection API."""
     json, code = delete_flight(flight_id)
@@ -541,7 +541,7 @@ def delete_flight(flight_id) -> Tuple[dict, int]:
 
 
 @webapp.route("/scdsc/v1/clear_area_requests", methods=["POST"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 @idempotent_request()
 def scdsc_clear_area() -> Tuple[str, int]:
     try:

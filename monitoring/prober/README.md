@@ -36,7 +36,7 @@ First, build the monitoring image:
 
 (from the repo root)
 ```shell script
-monitoring/build.sh
+make image
 ```
 
 ...then run prober:

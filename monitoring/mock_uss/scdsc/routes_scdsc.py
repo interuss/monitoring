@@ -19,7 +19,7 @@ from uas_standards.astm.f3548.v21.api import (
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents/<entityid>", methods=["GET"])
-@requires_scope([scd.SCOPE_SC])
+@requires_scope(scd.SCOPE_SC)
 def scdsc_get_operational_intent_details(entityid: str):
     """Implements getOperationalIntentDetails in ASTM SCD API."""
 
@@ -84,7 +84,7 @@ def op_intent_from_flightrecord(flight: FlightRecord) -> OperationalIntent:
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents", methods=["POST"])
-@requires_scope([scd.SCOPE_SC])
+@requires_scope(scd.SCOPE_SC)
 def scdsc_notify_operational_intent_details_changed():
     """Implements notifyOperationalIntentDetailsChanged in ASTM SCD API."""
 

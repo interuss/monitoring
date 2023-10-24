@@ -7,13 +7,10 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
-    "output_path": {
-      "description": "Path of a folder into which report HTML files should be written",
-      "type": "string"
+    "redact_access_tokens": {
+      "description": "When True, look for instances of \"Authorization\" keys in the report with values starting \"Bearer \" and redact the signature from those access tokens",
+      "type": "boolean"
     }
   },
-  "required": [
-    "output_path"
-  ],
   "type": "object"
 }

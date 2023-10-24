@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 import inspect
-from typing import Generic, Dict, Optional, TypeVar, List, Type
+from typing import Generic, Dict, Optional, TypeVar, List, Type, Iterator, Any
 
 from implicitdict import ImplicitDict
 from monitoring import uss_qualifier as uss_qualifier_module
@@ -17,7 +17,6 @@ from monitoring.uss_qualifier.action_generators.definitions import (
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
     PotentialGeneratedAction,
 )
-from monitoring.uss_qualifier.reports.report import TestSuiteActionReport
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.resource import ResourceType
 
@@ -43,8 +42,12 @@ class ActionGenerator(ABC, Generic[ActionGeneratorSpecificationType]):
         )
 
     @abstractmethod
-    def run_next_action(self) -> Optional[TestSuiteActionReport]:
-        """Run the next action from the generator, or else return None if there are no more actions"""
+    def actions(self) -> Iterator[Any]:
+        """Generate the appropriate actions.
+
+        Note that the iterator must return instances of monitoring.uss_qualifier.suites.suite.TestSuiteAction; this is
+        not included in type hints to avoid a circular reference.
+        """
         raise NotImplementedError(
             "A concrete action generator must implement `actions` method"
         )

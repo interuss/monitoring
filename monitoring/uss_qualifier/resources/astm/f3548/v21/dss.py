@@ -66,7 +66,7 @@ class DSSInstance(object):
             url,
             scope=SCOPE_SC,
             json=req,
-            server_id=self.participant_id,
+            participant_id=self.participant_id,
         )
         if query.status_code != 200:
             result = None
@@ -81,7 +81,7 @@ class DSSInstance(object):
     ) -> Tuple[OperationalIntent, fetch.Query]:
         url = f"{op_intent_ref.uss_base_url}/uss/v1/operational_intents/{op_intent_ref.id}"
         query = fetch.query_and_describe(
-            self.client, "GET", url, scope=SCOPE_SC, server_id=self.participant_id
+            self.client, "GET", url, scope=SCOPE_SC, participant_id=self.participant_id
         )
         if query.status_code != 200:
             result = None

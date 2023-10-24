@@ -1,0 +1,29 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/action_generators/astm/f3411/for_each_dss/ForEachDSSSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.action_generators.astm.f3411.for_each_dss.ForEachDSSSpecification, as defined in monitoring/uss_qualifier/action_generators/astm/f3411/for_each_dss.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "action_to_repeat": {
+      "$ref": "../../../../suites/definitions/TestSuiteActionDeclaration.json",
+      "description": "Test suite action to run for each DSS instance"
+    },
+    "dss_instance_id": {
+      "description": "Resource IDs of DSS input to the action_to_repeat",
+      "type": "string"
+    },
+    "dss_instances_source": {
+      "description": "ID of the resource providing the single DSS instance",
+      "type": "string"
+    }
+  },
+  "required": [
+    "action_to_repeat",
+    "dss_instance_id",
+    "dss_instances_source"
+  ],
+  "type": "object"
+}

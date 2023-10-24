@@ -1,42 +1,53 @@
 $content_schema: monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json
 v1:
-    test_run:
+  test_run:
+    resources:
+      resource_declarations:
+        kentland_flights_data: {$ref: 'library/resources.yaml#/kentland_flights_data'}
+        netrid_observation_evaluation_configuration: {$ref: 'library/resources.yaml#/netrid_observation_evaluation_configuration'}
+        id_generator: {$ref: 'library/resources.yaml#/id_generator'}
+        kentland_service_area: {$ref: 'library/resources.yaml#/kentland_service_area'}
+        au_problematically_big_area: {$ref: 'library/resources.yaml#/au_problematically_big_area'}
+
+        utm_auth: {$ref: 'library/environment.yaml#/utm_auth'}
+        netrid_service_providers_v19: {$ref: 'library/environment.yaml#/netrid_service_providers_v19'}
+        netrid_observers_v19: {$ref: 'library/environment.yaml#/netrid_observers_v19'}
+        netrid_dss_instances_v19: {$ref: 'library/environment.yaml#/netrid_dss_instances_v19'}
+    non_baseline_inputs:
+      - v1.test_run.resources.resource_declarations.utm_auth
+      - v1.test_run.resources.resource_declarations.netrid_service_providers_v19
+      - v1.test_run.resources.resource_declarations.netrid_observers_v19
+      - v1.test_run.resources.resource_declarations.netrid_dss_instances_v19
+    action:
+      test_suite:
+        suite_type: suites.astm.netrid.f3411_19
         resources:
-            resource_declarations:
-                $ref: ./library/resources.yaml#/all
-        action:
-            test_suite:
-                suite_type: suites.astm.netrid.f3411_19
-                resources:
-                    flights_data: kentland_flights_data
-                    service_providers: netrid_service_providers_v19
-                    observers: netrid_observers_v19
-                    evaluation_configuration: netrid_observation_evaluation_configuration
-                    dss_instances: netrid_dss_instances_v19
-                    id_generator: id_generator
-                    service_area: service_area
-                    problematically_big_area: problematically_big_area
-    artifacts:
-        report:
-            report_path: output/report_netrid_v19.json
-        tested_roles:
-            report_path: output/tested_roles_netrid_v19
-        tested_requirements:
-          output_path: output/tested_requirements_f3411v19
-          requirement_collections:
-            sp_dp_dss:
-              requirement_sets:
-                - astm.f3411.v19.service_provider#Tested by automated tests
-                - astm.f3411.v19.display_provider#Automated verification
-                - astm.f3411.v19.dss_provider
-            sp_dss:
-              requirement_sets:
-                - astm.f3411.v19.service_provider#Tested by automated tests
-                - astm.f3411.v19.dss_provider
-          participant_requirements:
-            uss1: sp_dp_dss
-            uss2: sp_dss
-        sequence_view:
-          output_path: output/sequence_netrid_v19
-    validation:
-      $ref: ./library/validation.yaml#/normal_test
+          flights_data: kentland_flights_data
+          service_providers: netrid_service_providers_v19
+          observers: netrid_observers_v19
+          evaluation_configuration: netrid_observation_evaluation_configuration
+          dss_instances: netrid_dss_instances_v19
+          id_generator: id_generator
+          service_area: kentland_service_area
+          problematically_big_area: au_problematically_big_area
+  artifacts:
+    output_path: output/netrid_v19
+    raw_report: {}
+    tested_requirements:
+      - report_name: requirements
+        requirement_collections:
+          sp_dp_dss:
+            requirement_sets:
+              - astm.f3411.v19.service_provider#Tested by automated tests
+              - astm.f3411.v19.display_provider#Automated verification
+              - astm.f3411.v19.dss_provider
+          sp_dss:
+            requirement_sets:
+              - astm.f3411.v19.service_provider#Tested by automated tests
+              - astm.f3411.v19.dss_provider
+        participant_requirements:
+          uss1: sp_dp_dss
+          uss2: sp_dss
+    sequence_view: {}
+  validation:
+    $ref: ./library/validation.yaml#/normal_test

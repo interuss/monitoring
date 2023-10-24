@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Iterator, Optional
 
 from implicitdict import ImplicitDict
 
@@ -9,7 +9,6 @@ from monitoring.uss_qualifier.action_generators.documentation.definitions import
 from monitoring.uss_qualifier.action_generators.documentation.documentation import (
     list_potential_actions_for_action_declaration,
 )
-from monitoring.uss_qualifier.reports.report import TestSuiteActionReport
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.flight_planning import FlightPlannersResource
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
@@ -27,7 +26,6 @@ from monitoring.uss_qualifier.suites.definitions import (
 from monitoring.uss_qualifier.suites.suite import (
     ActionGenerator,
     TestSuiteAction,
-    ReactionToFailure,
 )
 
 
@@ -50,7 +48,6 @@ class FlightPlannerCombinations(
 ):
     _actions: List[TestSuiteAction]
     _current_action: int
-    _failure_reaction: ReactionToFailure
 
     @classmethod
     def list_potential_actions(
@@ -128,15 +125,7 @@ class FlightPlannerCombinations(
                 break
 
         self._current_action = 0
-        self._failure_reaction = specification.action_to_repeat.on_failure
 
-    def run_next_action(self) -> Optional[TestSuiteActionReport]:
-        if self._current_action < len(self._actions):
-            report = self._actions[self._current_action].run()
-            self._current_action += 1
-            if not report.successful():
-                if self._failure_reaction == ReactionToFailure.Abort:
-                    self._current_action = len(self._actions)
-            return report
-        else:
-            return None
+    def actions(self) -> Iterator[TestSuiteAction]:
+        for a in self._actions:
+            yield a

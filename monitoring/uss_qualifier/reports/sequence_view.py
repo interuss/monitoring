@@ -297,8 +297,8 @@ def _compute_tested_scenario(
                     events.append(Event(query=query))
                     all_events.append(events[-1])
                     participant_id = (
-                        query.server_id
-                        if "server_id" in query and query.server_id
+                        query.participant_id
+                        if "participant_id" in query and query.participant_id
                         else UNATTRIBUTED_PARTICIPANT
                     )
                     p = scenario_participants.get(participant_id, TestedParticipant())
@@ -597,7 +597,7 @@ def _enumerate_all_participants(node: ActionNode) -> List[ParticipantID]:
 
 
 def _generate_scenario_pages(
-    node: ActionNode, config: SequenceViewConfiguration
+    node: ActionNode, config: SequenceViewConfiguration, output_path: str
 ) -> None:
     if node.node_type == ActionNodeType.Scenario:
         all_participants = list(node.scenario.participants)
@@ -606,7 +606,7 @@ def _generate_scenario_pages(
             all_participants.remove(UNATTRIBUTED_PARTICIPANT)
             all_participants.append(UNATTRIBUTED_PARTICIPANT)
         scenario_file = os.path.join(
-            config.output_path, f"s{node.scenario.scenario_index}.html"
+            output_path, f"s{node.scenario.scenario_index}.html"
         )
         template = jinja_env.get_template("sequence_view/scenario.html")
         with open(scenario_file, "w") as f:
@@ -623,16 +623,16 @@ def _generate_scenario_pages(
             )
     else:
         for child in node.children:
-            _generate_scenario_pages(child, config)
+            _generate_scenario_pages(child, config, output_path)
 
 
 def generate_sequence_view(
-    report: TestRunReport, config: SequenceViewConfiguration
+    report: TestRunReport, config: SequenceViewConfiguration, output_path: str
 ) -> None:
     node = _compute_action_node(report.report, Indexer())
 
-    os.makedirs(config.output_path, exist_ok=True)
-    _generate_scenario_pages(node, config)
+    os.makedirs(output_path, exist_ok=True)
+    _generate_scenario_pages(node, config, output_path)
 
     overview_rows = list(_compute_overview_rows(node))
     _align_overview_rows(overview_rows)
@@ -642,7 +642,7 @@ def generate_sequence_view(
     if UNATTRIBUTED_PARTICIPANT in all_participants:
         all_participants.remove(UNATTRIBUTED_PARTICIPANT)
         all_participants.append(UNATTRIBUTED_PARTICIPANT)
-    overview_file = os.path.join(config.output_path, "index.html")
+    overview_file = os.path.join(output_path, "index.html")
     template = jinja_env.get_template("sequence_view/overview.html")
     with open(overview_file, "w") as f:
         f.write(

@@ -8,7 +8,7 @@ To execute a test run with uss_qualifier, a uss_qualifier configuration must be 
 
 When referring to a configuration, three methods may be used; see [`FileReference` documentation](../fileio.py) for more details.
 
-* **Package-based**: refer to a dictionary (*.json, *.yaml) file located in a subfolder of the `uss_qualifier` folder using the Python module style, omitting the extension of the file name.  For instance, `configurations.dev.f3548` would refer to [uss_qualifier/configurations/dev/f3548.yaml](dev/f3548.yaml).
+* **Package-based**: refer to a dictionary (*.json, *.yaml) file located in a subfolder of the `uss_qualifier` folder using the Python module style, omitting the extension of the file name.  For instance, `configurations.dev.uspace` would refer to [uss_qualifier/configurations/dev/uspace.yaml](dev/uspace.yaml).
 * **Local file**: when a configuration reference is prefixed with `file://`, it refers to a local file using the path syntax of the host operating system.
 * **Web file**: when a configuration reference is prefixed with `http://` or `https://`, it refers to a file accessible at the specified URL.
 

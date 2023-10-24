@@ -1,0 +1,24 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/action_generators/repetition/repeat/RepeatSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.action_generators.repetition.repeat.RepeatSpecification, as defined in monitoring/uss_qualifier/action_generators/repetition/repeat.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "action_to_repeat": {
+      "$ref": "../../../suites/definitions/TestSuiteActionDeclaration.json",
+      "description": "Test suite action to repeat"
+    },
+    "times_to_repeat": {
+      "description": "Number of times to repeat the test suite action declared above",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "action_to_repeat",
+    "times_to_repeat"
+  ],
+  "type": "object"
+}

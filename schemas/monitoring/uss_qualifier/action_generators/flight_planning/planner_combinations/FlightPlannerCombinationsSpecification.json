@@ -1,0 +1,39 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/action_generators/flight_planning/planner_combinations/FlightPlannerCombinationsSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.action_generators.flight_planning.planner_combinations.FlightPlannerCombinationsSpecification, as defined in monitoring/uss_qualifier/action_generators/flight_planning/planner_combinations.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "action_to_repeat": {
+      "$ref": "../../../suites/definitions/TestSuiteActionDeclaration.json",
+      "description": "Test suite action to run for each combination of flight planners"
+    },
+    "combination_selector_source": {
+      "description": "If specified and contained in the provided resources, the resource containing a FlightPlannerCombinationSelectorResource to select only a subset of combinations",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "flight_planners_source": {
+      "description": "ID of the resource providing all available flight planners",
+      "type": "string"
+    },
+    "roles": {
+      "description": "Resource IDs of FlightPlannerResource inputs to the action_to_repeat",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "action_to_repeat",
+    "flight_planners_source",
+    "roles"
+  ],
+  "type": "object"
+}

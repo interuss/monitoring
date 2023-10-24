@@ -8,6 +8,9 @@ from monitoring.monitorlib.clients.flight_planning.client import PlanningActivit
 from monitoring.monitorlib.clients.flight_planning.client_scd import (
     SCDFlightPlannerClient,
 )
+from monitoring.monitorlib.clients.flight_planning.client_v1 import (
+    V1FlightPlannerClient,
+)
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     ExecutionStyle,
     FlightInfo,
@@ -50,20 +53,33 @@ class FlightPlannerConfiguration(ImplicitDict):
     participant_id: str
     """ID of the flight planner into which test data can be injected"""
 
-    injection_base_url: str
-    """Base URL for the flight planner's implementation of the interfaces/automated-testing/scd/scd.yaml API"""
+    scd_injection_base_url: Optional[str]
+    """Base URL for the flight planner's implementation of the interfaces/automated_testing/scd/v1/scd.yaml API"""
+
+    v1_base_url: Optional[str]
+    """Base URL for the flight planner's implementation of the interfaces/automated_testing/flight_planning/v1/flight_planning.yaml API"""
 
     timeout_seconds: Optional[float] = None
     """Number of seconds to allow for requests to this flight planner.  If None, use default."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
-        try:
-            urlparse(self.injection_base_url)
-        except ValueError:
+        if "v1_base_url" not in self and "scd_injection_base_url" not in self:
             raise ValueError(
-                "FlightPlannerConfiguration.injection_base_url must be a URL"
+                "One of `scd_injection_base_url` or `v1_base_url` must be specified"
             )
+        if "scd_injection_base_url" in self and self.scd_injection_base_url:
+            try:
+                urlparse(self.scd_injection_base_url)
+            except ValueError:
+                raise ValueError(
+                    "FlightPlannerConfiguration.scd_injection_base_url must be a URL"
+                )
+        if "v1_base_url" in self and self.v1_base_url:
+            try:
+                urlparse(self.v1_base_url)
+            except ValueError:
+                raise ValueError("FlightPlannerConfiguration.v1_base_url must be a URL")
 
 
 class FlightPlanner:
@@ -77,17 +93,23 @@ class FlightPlanner:
         auth_adapter: infrastructure.AuthAdapter,
     ):
         self.config = config
-        session = infrastructure.UTMClientSession(
-            self.config.injection_base_url, auth_adapter, config.timeout_seconds
-        )
-        self.scd_client = SCDFlightPlannerClient(session)
+        if "scd_injection_base_url" in config and config.scd_injection_base_url:
+            session = infrastructure.UTMClientSession(
+                self.config.scd_injection_base_url, auth_adapter, config.timeout_seconds
+            )
+            self.client = SCDFlightPlannerClient(session)
+        elif "v1_base_url" in config and config.v1_base_url:
+            session = infrastructure.UTMClientSession(
+                self.config.v1_base_url, auth_adapter, config.timeout_seconds
+            )
+            self.client = V1FlightPlannerClient(session)
 
         # Flights injected by this target.
         self.created_flight_ids: Set[str] = set()
 
     def __repr__(self):
         return "FlightPlanner({}, {})".format(
-            self.config.participant_id, self.config.injection_base_url
+            self.config.participant_id, self.config.scd_injection_base_url
         )
 
     @property
@@ -161,7 +183,7 @@ class FlightPlanner:
             flight_id = resp.flight_id
         else:
             try:
-                resp = self.scd_client.try_update_flight(
+                resp = self.client.try_update_flight(
                     flight_id, flight_info, ExecutionStyle.IfAllowed
                 )
             except PlanningActivityError as e:
@@ -201,7 +223,7 @@ class FlightPlanner:
         self, flight_id: str
     ) -> Tuple[DeleteFlightResponse, fetch.Query]:
         try:
-            resp = self.scd_client.try_end_flight(flight_id, ExecutionStyle.IfAllowed)
+            resp = self.client.try_end_flight(flight_id, ExecutionStyle.IfAllowed)
         except PlanningActivityError as e:
             raise QueryError(str(e), e.queries)
 
@@ -222,14 +244,14 @@ class FlightPlanner:
 
     def get_readiness(self) -> Tuple[Optional[str], Query]:
         try:
-            resp = self.scd_client.report_readiness()
+            resp = self.client.report_readiness()
         except PlanningActivityError as e:
             return str(e), e.queries[0]
         return None, resp.queries[0]
 
     def clear_area(self, extent: Volume4D) -> Tuple[ClearAreaResponse, fetch.Query]:
         try:
-            resp = self.scd_client.clear_area(extent)
+            resp = self.client.clear_area(extent)
         except PlanningActivityError as e:
             raise QueryError(str(e), e.queries)
         success = False if resp.errors else True

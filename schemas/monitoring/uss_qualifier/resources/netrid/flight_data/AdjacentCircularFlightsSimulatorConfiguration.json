@@ -1,0 +1,51 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/netrid/flight_data/AdjacentCircularFlightsSimulatorConfiguration.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.netrid.flight_data.AdjacentCircularFlightsSimulatorConfiguration, as defined in monitoring/uss_qualifier/resources/netrid/flight_data.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "altitude_of_ground_level_wgs_84": {
+      "type": "integer"
+    },
+    "flight_start_shift": {
+      "description": "Delay generated flight starts from the reference time to spread flights over time. Expressed in seconds. Use 0 to disable.",
+      "type": "integer"
+    },
+    "maxx": {
+      "description": "Eastern edge of bounding box (degrees longitude)",
+      "type": "number"
+    },
+    "maxy": {
+      "description": "Northern edge of bounding box (degrees latitude)",
+      "type": "number"
+    },
+    "minx": {
+      "description": "Western edge of bounding box (degrees longitude)",
+      "type": "number"
+    },
+    "miny": {
+      "description": "Southern edge of bounding box (degrees latitude)",
+      "type": "number"
+    },
+    "random_seed": {
+      "description": "Pseudorandom seed that should be used, or specify None to use default Random.",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "reference_time": {
+      "description": "The reference time relative to which flight data should be generated.\n\nThe time should be irrelevant in real-world use as times are adjusted to be\nrelative to a time close to the time of test.",
+      "format": "date-time",
+      "type": "string"
+    },
+    "utm_zone": {
+      "description": "UTM Zone integer for the location, see https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system to identify the zone for the location.",
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}

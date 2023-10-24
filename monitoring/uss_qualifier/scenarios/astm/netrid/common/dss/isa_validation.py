@@ -111,7 +111,7 @@ class ISAValidation(GenericTestScenario):
             isa_id=self._isa_id,
             rid_version=self._dss.rid_version,
             session=self._dss.client,
-            server_id=self._dss_wrapper.participant_id,
+            participant_id=self._dss_wrapper.participant_id,
         )
 
     def _isa_huge_area_check(self) -> (str, Dict[str, Any]):

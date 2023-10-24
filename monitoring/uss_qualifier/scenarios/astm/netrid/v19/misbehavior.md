@@ -44,11 +44,11 @@ This particular test requires each flight to be uniquely identifiable by its 2D 
 In order to properly test whether the SP handles authentication correctly, this step will first attempt to do a request with the proper credentials
 to confirm that the requested data is indeed available to any authorized query.
 
-It then repeats the exact same request while omitting the credentials, and expects this to fail.
+It then repeats the exact same request with incorrect credentials, and expects this to fail.
 
 #### Missing credentials check
 
-This check ensures that all requests are properly authenticated, as required by **[astm.f3411.v19.NET0500](../../../../requirements/astm/f3411/v19.md)**,
+This check ensures that all requests are properly authenticated, as required by **[astm.f3411.v19.NET0210](../../../../requirements/astm/f3411/v19.md)**,
 and that requests for existing flights that are executed with missing or incorrect credentials fail.
 
 ## Cleanup
