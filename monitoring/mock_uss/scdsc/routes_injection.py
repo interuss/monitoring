@@ -2,7 +2,7 @@ import os
 import traceback
 from datetime import datetime, timedelta
 import time
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 import uuid
 
 import flask
@@ -20,7 +20,6 @@ from uas_standards.astm.f3548.v21.api import (
     OperationalIntentDetails,
 )
 from uas_standards.interuss.automated_testing.scd.v1.api import (
-    InjectFlightRequest,
     InjectFlightResponse,
     InjectFlightResponseResult,
     DeleteFlightResponse,
@@ -55,7 +54,10 @@ from monitoring.monitorlib.idempotency import idempotent_request
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
 )
-
+from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
+    MockUSSInjectFlightRequest,
+    MockUssFlightBehavior,
+)
 
 require_config_value(KEY_BASE_URL)
 
@@ -86,7 +88,9 @@ def query_operational_intents(
     for op_intent_ref in op_intent_refs:
         if op_intent_ref.id in own_flights:
             # This is our own flight
-            result.append(op_intent_from_flightrecord(own_flights[op_intent_ref.id]))
+            result.append(
+                op_intent_from_flightrecord(own_flights[op_intent_ref.id], "GET")
+            )
         elif (
             op_intent_ref.id in tx.cached_operations
             and tx.cached_operations[op_intent_ref.id].reference.version
@@ -159,7 +163,7 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
         json = flask.request.json
         if json is None:
             raise ValueError("Request did not contain a JSON payload")
-        req_body: InjectFlightRequest = ImplicitDict.parse(json, InjectFlightRequest)
+        req_body = ImplicitDict.parse(json, MockUSSInjectFlightRequest)
     except ValueError as e:
         msg = "Create flight {} unable to parse JSON: {}".format(flight_id, e)
         return msg, 400
@@ -167,7 +171,18 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
     return flask.jsonify(json), code
 
 
-def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, int]:
+def _mock_uss_flight_behavior_in_req(
+    req_body: MockUSSInjectFlightRequest,
+) -> Optional[MockUssFlightBehavior]:
+    if "behavior" in req_body:
+        return req_body.behavior
+    else:
+        return None
+
+
+def inject_flight(
+    flight_id: str, req_body: MockUSSInjectFlightRequest
+) -> Tuple[dict, int]:
     pid = os.getpid()
     locality = get_locality()
 
@@ -206,8 +221,11 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         # We found an existing flight but it was locked; wait for it to become
         # available
         time.sleep(0.5)
-
+        log(
+            f"Waiting for flight lock resolution; now: {datetime.utcnow()} deadline: {deadline}"
+        )
         if datetime.utcnow() > deadline:
+            log(f"Deadlock (now: {datetime.utcnow()}, deadline: {deadline})")
             raise RuntimeError(
                 f"Deadlock in inject_flight while attempting to gain access to flight {flight_id}"
             )
@@ -300,10 +318,20 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         # Notify subscribers
         subscriber_list = ", ".join(s.uss_base_url for s in result.subscribers)
         step_name = f"notifying subscribers {{{subscriber_list}}}"
-        operational_intent = OperationalIntent(
+        op_intent = OperationalIntent(
             reference=result.operational_intent_reference,
-            details=req_body.operational_intent,
+            details=OperationalIntentDetails(
+                volumes=req_body.operational_intent.volumes,
+                off_nominal_volumes=req_body.operational_intent.off_nominal_volumes,
+                priority=req_body.operational_intent.priority,
+            ),
         )
+        record = database.FlightRecord(
+            op_intent=op_intent,
+            flight_info=FlightInfo.from_scd_inject_flight_request(req_body),
+            mod_op_sharing_behavior=_mock_uss_flight_behavior_in_req(req_body),
+        )
+        operational_intent = op_intent_from_flightrecord(record, "POST")
         for subscriber in result.subscribers:
             if subscriber.uss_base_url == base_url:
                 # Do not notify ourselves
@@ -322,18 +350,6 @@ def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, 
         # Store flight in database
         step_name = "storing flight in database"
         log("Storing flight in database")
-        op_intent = OperationalIntent(
-            reference=result.operational_intent_reference,
-            details=OperationalIntentDetails(
-                volumes=req_body.operational_intent.volumes,
-                off_nominal_volumes=req_body.operational_intent.off_nominal_volumes,
-                priority=req_body.operational_intent.priority,
-            ),
-        )
-        record = database.FlightRecord(
-            op_intent=op_intent,
-            flight_info=FlightInfo.from_scd_inject_flight_request(req_body),
-        )
         with db as tx:
             tx.flights[flight_id] = record
 
@@ -412,9 +428,10 @@ def delete_flight(flight_id) -> Tuple[dict, int]:
                 break
         # There is a race condition with another handler to create or modify the requested flight; wait for that to resolve
         time.sleep(0.5)
-
         if datetime.utcnow() > deadline:
-            logger.debug(f"[delete_flight/{pid}:{flight_id}] Deadlock")
+            logger.error(
+                f"[delete_flight/{pid}:{flight_id}] Deadlock (now: {datetime.utcnow()}, deadline: {deadline})"
+            )
             raise RuntimeError(
                 f"Deadlock in delete_flight while attempting to gain access to flight {flight_id}"
             )
@@ -581,8 +598,10 @@ def clear_area(req: ClearAreaRequest) -> Tuple[dict, int]:
             if not pending_flights:
                 break
             time.sleep(0.5)
-
             if datetime.utcnow() > deadline:
+                logger.error(
+                    f"[clear_area] Deadlock (now: {datetime.utcnow()}, deadline: {deadline})"
+                )
                 raise RuntimeError(
                     f"Deadlock in clear_area while attempting to gain access to flight(s) {', '.join(pending_flights)}"
                 )
