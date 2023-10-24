@@ -6,11 +6,9 @@ from uas_standards.interuss.automated_testing.scd.v1.api import InjectFlightRequ
 class MockUssFlightBehavior(ImplicitDict):
     """
     Interface for modifying mock_uss flight sharing behavior with other USSes
-    modify_sharing_methods: list of intent sharing methods GET and POST that are to be modified
-    modify_fields: dict that specifies the values that need to be overriden
-     in the opertional_intent while sharing
-    Eg -
+    Specify the http method and the fields to modify for those requests
 
+    Eg -
         {"modify_sharing_methods"=["GET", "POST"],
          "modify_fields"={
             "operational_intent_reference": {"state": "Flying"},
@@ -20,7 +18,10 @@ class MockUssFlightBehavior(ImplicitDict):
     """
 
     modify_sharing_methods: List[str]
+    """ list of intent sharing http methods GET and POST to be modified"""
+
     modify_fields: dict
+    """dict that specifies the values for the fields  to be overriden in the operational_intent while sharing"""
 
 
 class AddlFieldsInjectFlightRequest(InjectFlightRequest):
