@@ -56,7 +56,7 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
 )
 from monitoring.monitorlib.mock_uss_interface.mock_uss_scd_injection_api import (
-    MockUssInjectFlightRequest,
+    AddlFieldsInjectFlightRequest, MockUssFlightBehavior
 )
 from monitoring.uss_qualifier.resources.overrides import (
     apply_overrides_without_parse_type,
@@ -165,8 +165,8 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
         logger.debug(f"Received flight for injection - {json}")
         if json is None:
             raise ValueError("Request did not contain a JSON payload")
-        req_body: MockUssInjectFlightRequest = ImplicitDict.parse(
-            json, MockUssInjectFlightRequest
+        req_body = ImplicitDict.parse(
+            json, AddlFieldsInjectFlightRequest
         )
     except ValueError as e:
         msg = "Create flight {} unable to parse JSON: {}".format(flight_id, e)
@@ -177,7 +177,7 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
 
 def op_to_share(
     operational_intent_reference: OperationalIntentReference,
-    req_body: MockUssInjectFlightRequest,
+    req_body: InjectFlightRequest,
     method: str,
 ) -> OperationalIntent:
     ref = operational_intent_reference
@@ -186,14 +186,16 @@ def op_to_share(
         off_nominal_volumes=req_body.operational_intent.off_nominal_volumes,
         priority=req_body.operational_intent.priority,
     )
-    if "mock_uss_flight_behavior" in req_body:
-        mock_uss_flight_behavior = req_body.mock_uss_flight_behavior
+    op_intent = OperationalIntent(reference=ref, details=details)
+
+    mock_uss_flight_behavior = mock_uss_flight_behavior_in_req(req_body)
+    if mock_uss_flight_behavior is not None:
         if (
-            "modify_sharing_methods" in mock_uss_flight_behavior
+            mock_uss_flight_behavior.modify_sharing_methods is not None
             and method not in mock_uss_flight_behavior.modify_sharing_methods
         ):
-            return OperationalIntent(reference=ref, details=details)
-        if "modify_fields" in mock_uss_flight_behavior:
+            return op_intent
+        if mock_uss_flight_behavior.modify_fields is not None:
             if "operational_intent_reference" in mock_uss_flight_behavior.modify_fields:
                 ref = apply_overrides_without_parse_type(
                     operational_intent_reference,
@@ -208,16 +210,24 @@ def op_to_share(
                         "operational_intent_details"
                     ],
                 )
-
-    op_intent = {"reference": ref, "details": details}
+            op_intent = {"reference": ref, "details": details}
     logger.debug(
         f"Sharing operation for {method} calls for {operational_intent_reference.id} - {op_intent}"
     )
     return op_intent
 
 
+def mock_uss_flight_behavior_in_req(req_body: InjectFlightRequest) -> MockUssFlightBehavior:
+    mock_uss_flight_behavior = None
+    if "additional_fields" in req_body:
+        addl_fields = req_body.additional_fields
+        if "mock_uss_flight_behavior" in addl_fields:
+            mock_uss_flight_behavior = ImplicitDict.parse(addl_fields["mock_uss_flight_behavior"],
+                                                          MockUssFlightBehavior)
+    return mock_uss_flight_behavior
+
 def inject_flight(
-    flight_id: str, req_body: MockUssInjectFlightRequest
+    flight_id: str, req_body: InjectFlightRequest
 ) -> Tuple[dict, int]:
     pid = os.getpid()
     locality = get_locality()
@@ -376,9 +386,7 @@ def inject_flight(
             op_intent_reference=result.operational_intent_reference,
             op_intent_injection=req_body.operational_intent,
             flight_authorisation=req_body.flight_authorisation,
-            mod_op_sharing_behavior=None
-            if "mock_uss_flight_behavior" not in req_body
-            else req_body.mock_uss_flight_behavior,
+            mod_op_sharing_behavior=mock_uss_flight_behavior_in_req(req_body)
         )
         with db as tx:
             tx.flights[flight_id] = record

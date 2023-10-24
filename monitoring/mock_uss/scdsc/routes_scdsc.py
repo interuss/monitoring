@@ -1,9 +1,13 @@
 import flask
+from implicitdict import ImplicitDict
 from monitoring.monitorlib import scd
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.scdsc.database import db
 from monitoring.mock_uss.scdsc.database import FlightRecord
+from monitoring.monitorlib.mock_uss_interface.mock_uss_scd_injection_api import (
+    MockUssFlightBehavior,
+)
 from monitoring.uss_qualifier.resources.overrides import (
     apply_overrides_without_parse_type,
 )
@@ -55,11 +59,11 @@ def op_intent_from_flightrecord(flight: FlightRecord) -> OperationalIntent:
     op_intent = OperationalIntent(reference=ref, details=details)
     method = "GET"
     if "mod_op_sharing_behavior" in flight:
-        mod_op_sharing_behavior = flight.mod_op_sharing_behavior
-        if "modify_sharing_methods" in mod_op_sharing_behavior:
+        mod_op_sharing_behavior = ImplicitDict.parse(flight.mod_op_sharing_behavior, MockUssFlightBehavior)
+        if mod_op_sharing_behavior.modify_sharing_methods is not None:
             if method not in mod_op_sharing_behavior.modify_sharing_methods:
                 return OperationalIntent(reference=ref, details=details)
-        if "modify_fields" in mod_op_sharing_behavior:
+        if mod_op_sharing_behavior.modify_fields is not None:
             if "operational_intent_reference" in mod_op_sharing_behavior.modify_fields:
                 ref = apply_overrides_without_parse_type(
                     ref,

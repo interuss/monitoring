@@ -333,10 +333,13 @@ def query_and_describe(
     if (
         "json" in req_kwargs
         and isinstance(req_kwargs["json"], dict)
-        and "request_id" not in req_kwargs["json"]
     ):
         json_body = json.loads(json.dumps(req_kwargs["json"]))
-        json_body["request_id"] = str(uuid.uuid4())
+        if "request_id" not in req_kwargs["json"]:
+            json_body["request_id"] = str(uuid.uuid4())
+        if "additional_fields" in req_kwargs:
+            json_body["additional_fields"] = req_kwargs["additional_fields"]
+            del req_kwargs["additional_fields"]
         req_kwargs["json"] = json_body
 
     failures = []

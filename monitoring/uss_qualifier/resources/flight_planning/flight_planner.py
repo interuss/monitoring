@@ -1,7 +1,6 @@
-import uuid
 from typing import Tuple, Optional, Set
 from urllib.parse import urlparse
-
+from loguru import logger
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
@@ -37,7 +36,6 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
 )
 
 from monitoring.monitorlib.mock_uss_interface.mock_uss_scd_injection_api import (
-    MockUssInjectFlightRequest,
     MockUssFlightBehavior,
 )
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
@@ -102,7 +100,7 @@ class FlightPlanner:
 
     def request_flight(
         self,
-        request: MockUssInjectFlightRequest,
+        request: InjectFlightRequest,
         flight_id: Optional[str] = None,
     ) -> Tuple[InjectFlightResponse, fetch.Query, str]:
         usage_states = {
@@ -147,16 +145,16 @@ class FlightPlanner:
             astm_f3548_21=astm_f3548v21,
             uspace_flight_authorisation=uspace_flight_authorisation,
         )
-        mod_flight_behavior = (
+        additional_fields = (
             None
-            if "mock_uss_flight_behavior" not in request
-            else request.mock_uss_flight_behavior
+            if "additional_fields" not in request
+            else request.additional_fields
         )
 
         if not flight_id:
             try:
                 resp = self.scd_client.try_plan_flight(
-                    flight_info, ExecutionStyle.IfAllowed, mod_flight_behavior
+                    flight_info, ExecutionStyle.IfAllowed, additional_fields
                 )
             except PlanningActivityError as e:
                 raise QueryError(str(e), e.queries)
