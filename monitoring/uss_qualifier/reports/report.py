@@ -90,9 +90,6 @@ class TestStepReport(ImplicitDict):
     passed_checks: List[PassedCheck]
     """The checks which successfully passed in this test step"""
 
-    interuss_interactions: Optional[List[Interaction]]
-    """Interactions between mock_uss and sut requested in a test step"""
-
     end_time: Optional[StringBasedDateTime]
     """Time at which the test step completed or encountered an error"""
 
