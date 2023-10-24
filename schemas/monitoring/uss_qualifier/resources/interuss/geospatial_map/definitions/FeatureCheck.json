@@ -1,0 +1,64 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/interuss/geospatial_map/definitions/FeatureCheck.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.interuss.geospatial_map.definitions.FeatureCheck, as defined in monitoring/uss_qualifier/resources/interuss/geospatial_map/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "description": {
+      "description": "Human-readable test step description to aid in the debugging and traceability.",
+      "type": "string"
+    },
+    "expected_result": {
+      "description": "Expected outcome when checking map for features as described.",
+      "enum": [
+        "Block",
+        "Advise",
+        "Neither"
+      ],
+      "type": "string"
+    },
+    "geospatial_check_id": {
+      "description": "Unique (within table) test step/row identifier.",
+      "type": "string"
+    },
+    "operation_rule_set": {
+      "description": "The set of operating rules (or rule set) under which the operation described in the feature check should be performed.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requirement_ids": {
+      "description": "Jurisdictional identifiers of the requirements this test step is evaluating.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "restriction_source": {
+      "description": "Which source for geospatial features describing restrictions should be considered when looking for the expected outcome.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "volumes": {
+      "description": "Spatial and temporal definition of the areas the virtual user intends to fly in.\n\nA service provider is expected to provide geospatial features relevant to any of the entire area specified and for any of the entire time specified.",
+      "items": {
+        "$ref": "../../../../../monitorlib/geotemporal/Volume4DTemplate.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "description",
+    "expected_result",
+    "geospatial_check_id",
+    "requirement_ids",
+    "volumes"
+  ],
+  "type": "object"
+}

@@ -21,7 +21,7 @@ def locality_get() -> Tuple[str, int]:
 
 
 @webapp.route("/configuration/locality", methods=["PUT"])
-@requires_scope([MOCK_USS_CONFIG_SCOPE])  # TODO: use separate public key for this
+@requires_scope(MOCK_USS_CONFIG_SCOPE)  # TODO: use separate public key for this
 def locality_set() -> Tuple[str, int]:
     """Set the locality of the mock_uss."""
     try:

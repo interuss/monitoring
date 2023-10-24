@@ -81,7 +81,7 @@ def _make_flight_observation(
 
 
 @webapp.route("/riddp/observation/display_data", methods=["GET"])
-@requires_scope([Scope.Read])
+@requires_scope(Scope.Read)
 def riddp_display_data() -> Tuple[str, int]:
     """Implements retrieval of current display data per automated testing API."""
 
@@ -176,7 +176,7 @@ def riddp_display_data() -> Tuple[str, int]:
 
 
 @webapp.route("/riddp/observation/display_data/<flight_id>", methods=["GET"])
-@requires_scope([Scope.Read])
+@requires_scope(Scope.Read)
 def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
     """Implements get flight details endpoint per automated testing API."""
     tx = db.value

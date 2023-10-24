@@ -11,10 +11,11 @@ endif
 
 .PHONY: format
 format: json-schema
+	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:22.10.0 black --exclude /interfaces .
 	cd monitoring && make format
 
 .PHONY: lint
-lint: shell-lint
+lint: shell-lint python-lint
 	cd monitoring && make lint
 	cd schemas && make lint
 
@@ -23,7 +24,7 @@ check-hygiene: python-lint hygiene validate-uss-qualifier-docs shell-lint
 
 .PHONY: python-lint
 python-lint:
-	cd monitoring && make python-lint
+	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:22.10.0 black --check --exclude /interfaces . || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
 
 .PHONY: hygiene
 hygiene:
@@ -35,7 +36,7 @@ validate-uss-qualifier-docs:
 
 .PHONY: shell-lint
 shell-lint:
-	find . -name '*.sh' | grep -v '^./interfaces' | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck
+	find . -name '*.sh' ! -path "./interfaces/*" | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck
 
 .PHONY: json-schema
 json-schema:
@@ -49,9 +50,9 @@ json-schema-lint:
 .PHONY: hygiene-tests
 hygiene-tests: check-hygiene
 
-.PHONY: build-monitoring
-build-monitoring:
-	cd monitoring && make build
+.PHONY: image
+image:
+	cd monitoring && make image
 
 tag:
 	scripts/tag.sh $(UPSTREAM_OWNER)/monitoring/v$(VERSION)
@@ -78,7 +79,6 @@ stop-uss-mocks:
 collect-local-logs:
 	mkdir -p logs
 	-sh -c "build/dev/run_locally.sh logs --timestamps" > logs/local_infra.log 2>&1
-	-docker logs atproxy > logs/atproxy.log 2>&1
 	-docker logs mock_uss_scdsc_a > logs/mock_uss_scdsc_a.log 2>&1
 	-docker logs mock_uss_scdsc_b > logs/mock_uss_scdsc_b.log 2>&1
 	-docker logs mock_uss_ridsp > logs/mock_uss_ridsp.log 2>&1
@@ -88,7 +88,6 @@ collect-local-logs:
 	-docker logs mock_uss_geoawareness > logs/mock_uss_geoawareness.log 2>&1
 	-docker logs mock_uss_tracer > logs/mock_uss_tracer.log 2>&1
 	-docker logs mock_uss_tracer_v22a > logs/mock_uss_tracer_v22a.log 2>&1
-	-docker logs mock_uss_atproxy_client > logs/mock_uss_atproxy_client.log 2>&1
 
 .PHONY: stop-locally
 stop-locally:

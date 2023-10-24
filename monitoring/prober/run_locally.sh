@@ -13,10 +13,10 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
-if [ -z "$DO_NOT_BUILD_MONITORING" ]; then
-  monitoring/build.sh || exit 1
-  export DO_NOT_BUILD_MONITORING=true
-fi
+(
+cd monitoring || exit 1
+make image
+)
 
 CORE_SERVICE_CONTAINER="local_infra-dss-1"
 OAUTH_CONTAINER="local_infra-oauth-1"
@@ -26,10 +26,6 @@ for container_name in "${localhost_containers[@]}"; do
 	if [ "$( docker container inspect -f '{{.State.Status}}' "$container_name" )" == "running" ]; then
 		echo "$container_name available!"
 	else
-    echo '#########################################################################'
-    echo '## Prerequisite to run this command is:                                ##'
-    echo '## Local DSS instance + Dummy OAuth server (/build/dev/run_locally.sh) ##'
-    echo '#########################################################################'
 		echo "Error: $container_name not running. Execute 'build/dev/run_locally.sh up' before running monitoring/prober/run_locally.sh";
 		exit 1;
 	fi

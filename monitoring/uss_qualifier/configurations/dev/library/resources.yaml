@@ -1,393 +1,367 @@
-all:
-    allOf:
-        -   $ref: '#/uspace'
-        -   $ref: '#/net_rid_sims'
-        -   $ref: '#/general_flight_authorization'
-        -   $ref: '#/geospatial_map'
-        -   $ref: '#/mock_uss_instances'
-        -   $ref: '#/uspace_versioning'
+# ===== NetRID =====
 
-uspace:
-    allOf:
-        -   $ref: '#/net_rid'
-        -   $ref: '#/flight_auth'
-        -   $ref: '#/uspace_versioning'
+netrid_observation_evaluation_configuration:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.netrid.EvaluationConfigurationResource
+  specification: { }
 
-net_rid:
-    allOf:
-        -   $ref: '#/common'
-        -   $ref: 'environment.yaml#/net_rid'
-    netrid_observation_evaluation_configuration:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.netrid.EvaluationConfigurationResource
-        specification: { }
-    id_generator:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.interuss.IDGeneratorResource
-        dependencies:
-            auth_adapter: utm_auth
-        specification:
-            whoami_audience: localhost
-            whoami_scope: rid.display_provider
-    service_area:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.netrid.ServiceAreaResource
-        specification:
-            base_url: https://uss_qualifier.test.utm/dummy_base_url
-            footprint:
-              - lat: 37.1853
-                lng: -80.6140
-              - lat: 37.2148
-                lng: -80.6140
-              - lat: 37.2148
-                lng: -80.5440
-              - lat: 37.1853
-                lng: -80.5440
-            altitude_min: 0
-            altitude_max: 3048
-            reference_time: '2023-01-10T00:00:00.123456+00:00'
-            time_start: '2023-01-10T00:00:01.123456+00:00'
-            time_end: '2023-01-10T01:00:01.123456+00:00'
-    problematically_big_area: # A huge (as in "too big") area for checks around area sizes
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.VerticesResource
-        specification:
-            vertices:
-              - lat: -23
-                lng: 130
-              - lat: -24
-                lng: 130
-              - lat: -24
-                lng: 132
-              - lat: -23
-                lng: 132
+id_generator:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.interuss.IDGeneratorResource
+  dependencies:
+    auth_adapter: utm_auth
+  specification:
+    whoami_audience: localhost
+    whoami_scope: rid.display_provider
 
-net_rid_sims:
-    adjacent_circular_flights_data:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.netrid.FlightDataResource
-        specification:
-            adjacent_circular_flights_simulation_source: { }
-    adjacent_circular_storage_config:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.netrid.FlightDataStorageResource
-        specification:
-            flight_record_collection_path: "./output/test_data.che.netrid.circular_flights.json"
-    kml_flights_data:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.netrid.FlightDataResource
-        specification:
-            kml_source:
-                kml_file:
-                    path: file://./test_data/usa/netrid/dcdemo.kml
-    kml_storage_config:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.netrid.FlightDataStorageResource
-        specification:
-            flight_record_collection_path: "./output/test_data.usa.netrid.dcdemo_flights.json"
-    kentland_flights_data:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.netrid.FlightDataResource
-        specification:
-            kml_source:
-                kml_file:
-                    path: file://./test_data/usa/kentland/rid.kml
-            flight_start_delay: 5s
-    foca_flights_data:
-      $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-      resource_type: resources.netrid.FlightDataResource
-      specification:
-        kml_source:
-          kml_file:
-            path: file://./test_data/che/rid/foca.kml
-        flight_start_delay: 5s
+kentland_service_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.netrid.ServiceAreaResource
+  specification:
+    base_url: https://uss_qualifier.test.utm/dummy_base_url
+    footprint:
+      - lat: 37.1853
+        lng: -80.6140
+      - lat: 37.2148
+        lng: -80.6140
+      - lat: 37.2148
+        lng: -80.5440
+      - lat: 37.1853
+        lng: -80.5440
+    altitude_min: 0
+    altitude_max: 3048
+    reference_time: '2023-01-10T00:00:00.123456+00:00'
+    time_start: '2023-01-10T00:00:01.123456+00:00'
+    time_end: '2023-01-10T01:00:01.123456+00:00'
 
-flight_auth:
-    $ref: '#/f3548_che'
-    invalid_flight_auth_flights:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.flight_planning.FlightIntentsResource
-        specification:
-            planning_time: '0:05:00'
-            file:
-                path: file://./test_data/che/flight_intents/invalid_flight_auths.json
+au_problematically_big_area: # A huge (as in "too big") area for checks around area sizes
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.VerticesResource
+  specification:
+    vertices:
+      - lat: -23
+        lng: 130
+      - lat: -24
+        lng: 130
+      - lat: -24
+        lng: 132
+      - lat: -23
+        lng: 132
 
-che_flight_intents:
-    conflicting_flights:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.flight_planning.FlightIntentsResource
-        specification:
-            planning_time: '0:05:00'
-            file:
-                path: file://./test_data/che/flight_intents/conflicting_flights.json
-    priority_preemption_flights:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.flight_planning.FlightIntentsResource
-        specification:
-            planning_time: '0:05:00'
-            file:
-                path: test_data.che.flight_intents.priority_preemption
-                # Note that this hash_sha512 field can be safely deleted if the content changes
-                hash_sha512: 432ea57009b6a41b3af43cb9431a0627a487eac0a04511fbccd85d9fcac193b11976ad2dbc07d9efa41ceaf7a9338b39064ede6eeb5755be3966d2e17e7d555a
-    invalid_flight_intents:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.flight_planning.FlightIntentsResource
-        specification:
-            planning_time: '0:05:00'
-            file:
-                path: test_data.che.flight_intents.invalid_flight_intents
+kentland_problematically_big_area:
+  resource_type: resources.VerticesResource
+  specification:
+    vertices:
+      - lat: 38
+        lng: -81
+      - lat: 37
+        lng: -81
+      - lat: 37
+        lng: -80
+      - lat: 38
+        lng: -80
 
-kentland_flight_intents:
-    conflicting_flights:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.flight_planning.FlightIntentsResource
-        specification:
-            planning_time: '0:05:00'
-            file:
-                path: file://./test_data/usa/kentland/flight_intents/conflicting_flights.yaml
-    priority_preemption_flights:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.flight_planning.FlightIntentsResource
-        specification:
-            planning_time: '0:05:00'
-            file:
-                path: test_data.usa.kentland.flight_intents.priority_preemption
-    invalid_flight_intents:
-      $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-      resource_type: resources.flight_planning.FlightIntentsResource
-      specification:
-        planning_time: '0:05:00'
-        file:
-            path: test_data.usa.kentland.flight_intents.invalid_flight_intents
+# ===== NetRID flights data =====
 
-f3548_che:
-    allOf:
-        -   $ref: '#/f3548'
-        -   $ref: '#/che_flight_intents'
+che_adjacent_circular_flights_data:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.netrid.FlightDataResource
+  specification:
+    adjacent_circular_flights_simulation_source: { }
 
-f3548_kentland:
-    allOf:
-        -   $ref: '#/f3548'
-        -   $ref: '#/kentland_flight_intents'
+dc_flights_data:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.netrid.FlightDataResource
+  specification:
+    kml_source:
+      kml_file:
+        path: file://./test_data/usa/netrid/dcdemo.kml
 
-f3548:
-    allOf:
-        -   $ref: '#/common'
-        -   $ref: 'environment.yaml#/f3548'
+kentland_flights_data:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.netrid.FlightDataResource
+  specification:
+    kml_source:
+      kml_file:
+        path: file://./test_data/usa/kentland/rid.kml
+    flight_start_delay: 5s
 
-f3548_single_scenario:
-    allOf:
-        -   $ref: '#/f3548_che'
-        -   $ref: 'environment.yaml#/f3548_single_scenario'
+foca_flights_data:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.netrid.FlightDataResource
+  specification:
+    kml_source:
+      kml_file:
+        path: file://./test_data/che/rid/foca.kml
+    flight_start_delay: 5s
 
-general_flight_authorization:
-  flight_check_table:
-    $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-    resource_type: resources.interuss.flight_authorization.FlightCheckTableResource
-    specification:
-      table:
-        rows:
-          - flight_check_id: TEST_001
-            requirement_ids:
-              - REQ_002
-              - REQ_007
-            description: The first test step defined by the test designer
-            additional_information:
-              new_jurisdiction_x:
-                operation_rule_set: Rules1
-            volumes:
-              - outline_circle:
-                  center:
-                    lng: 7.4774
-                    lat: 46.9749
-                  radius:
-                    value: 100
-                    units: M
-                altitude_lower:
-                  value: 0
-                  units: M
-                  reference: SFC
-                altitude_upper:
+# ===== NetRID data generation/simulation/storage =====
+
+adjacent_circular_storage_config:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.netrid.FlightDataStorageResource
+  specification:
+    flight_record_collection_path: "./output/generate_rid_test_data/flight_data/test_data.che.netrid.circular_flights.json"
+
+kml_storage_config:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.netrid.FlightDataStorageResource
+  specification:
+    flight_record_collection_path: "./output/generate_rid_test_data/flight_data/test_data.usa.netrid.dcdemo_flights.json"
+
+# ===== Flight planning intents =====
+
+che_invalid_flight_auth_flights:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.flight_planning.FlightIntentsResource
+  specification:
+    planning_time: '0:05:00'
+    file:
+      path: file://./test_data/che/flight_intents/invalid_flight_auths.json
+
+che_conflicting_flights:
+  # Includes flight intents for both equal-priority-not-permitted and higher-priority
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.flight_planning.FlightIntentsResource
+  specification:
+    planning_time: '0:05:00'
+    file:
+      path: file://./test_data/che/flight_intents/conflicting_flights.json
+      # Note that this hash_sha512 field can be safely deleted if the content changes
+      hash_sha512: 6467e88fb69702216dabe1f9723b68fe68a1a9d4b1a40e3af5c0b1ed233061a088c9c30be8a0ada447b18f2c6354db52d84aa12c1e7dfd13f99262d91ba173f4
+
+che_invalid_flight_intents:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.flight_planning.FlightIntentsResource
+  specification:
+    planning_time: '0:05:00'
+    file:
+      path: test_data.che.flight_intents.invalid_flight_intents
+
+kentland_conflicting_flights:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.flight_planning.FlightIntentsResource
+  specification:
+    planning_time: '0:05:00'
+    file:
+      path: file://./test_data/usa/kentland/flight_intents/conflicting_flights.yaml
+
+kentland_priority_preemption_flights:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.flight_planning.FlightIntentsResource
+  specification:
+    planning_time: '0:05:00'
+    file:
+      path: test_data.usa.kentland.flight_intents.priority_preemption
+
+kentland_invalid_flight_intents:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.flight_planning.FlightIntentsResource
+  specification:
+    planning_time: '0:05:00'
+    file:
+      path: test_data.usa.kentland.flight_intents.invalid_flight_intents
+
+# ===== General flight authorization =====
+
+example_flight_check_table:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.interuss.flight_authorization.FlightCheckTableResource
+  specification:
+    table:
+      rows:
+        - flight_check_id: TEST_001
+          requirement_ids:
+            - REQ_002
+            - REQ_007
+          description: The first test step defined by the test designer
+          additional_information:
+            new_jurisdiction_x:
+              operation_rule_set: Rules1
+          volumes:
+            - outline_circle:
+                center:
+                  lng: 7.4774
+                  lat: 46.9749
+                radius:
                   value: 100
                   units: M
-                  reference: SFC
-                start_time:
-                  start_of_test: {}
-                  use_timezone: Europe/Berlin
-                end_time:
-                  offset_from:
-                    starting_from:
-                      next_day:
-                        time_zone: Europe/Zurich
-                        starting_from:
-                          start_of_test: {}
-                        days_of_the_week: ["Tu", "Th"]
-                    offset: 12h
-            acceptance_expectation: MustBeAccepted
-          - flight_check_id: TEST_002
-            requirement_ids:
-              - REQ_001
-              - REQ_003
-              - REQ_004
-            description: The second test step defined by the test designer
-            additional_information:
-              new_jurisdiction_x:
-                operation_rule_set: Rules1
-            volumes:
-              - outline_circle:
-                  center:
-                    lng: 7.4774
-                    lat: 46.9749
-                  radius:
-                    value: 100
-                    units: M
-                altitude_lower:
-                  value: 50
-                  units: M
-                  reference: SFC
-                altitude_upper:
-                  value: 5000
-                  units: FT
-                  reference: W84
-                start_time:
-                  next_day:
-                    time_zone: +02:00
-                    starting_from:
-                      offset_from:
-                        starting_from:
-                          start_of_test: {}
-                        offset: 12h
-                duration: 5m
-            conditions_expectation: MustBePresent
-
-geospatial_map:
-  feature_check_table:
-    $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-    resource_type: resources.interuss.geospatial_map.FeatureCheckTableResource
-    specification:
-      table:
-        rows:
-          - geospatial_check_id: TEST_001
-            requirement_ids:
-              - REQ_002
-              - REQ_007
-            description: The first test step defined by the test designer
-            operation_rule_set: Rules1
-            restriction_source: ThisRegulator
-            volumes:
-              - outline_circle:
-                  center:
-                    lng: 7.4774
-                    lat: 46.9749
-                  radius:
-                    value: 100
-                    units: M
-                altitude_lower:
-                  value: 0
-                  units: M
-                  reference: SFC
-                altitude_upper:
+              altitude_lower:
+                value: 0
+                units: M
+                reference: SFC
+              altitude_upper:
+                value: 100
+                units: M
+                reference: SFC
+              start_time:
+                start_of_test: { }
+                use_timezone: Europe/Berlin
+              end_time:
+                offset_from:
+                  starting_from:
+                    next_day:
+                      time_zone: Europe/Zurich
+                      starting_from:
+                        start_of_test: { }
+                      days_of_the_week: [ "Tu", "Th" ]
+                  offset: 12h
+          acceptance_expectation: MustBeAccepted
+        - flight_check_id: TEST_002
+          requirement_ids:
+            - REQ_001
+            - REQ_003
+            - REQ_004
+          description: The second test step defined by the test designer
+          additional_information:
+            new_jurisdiction_x:
+              operation_rule_set: Rules1
+          volumes:
+            - outline_circle:
+                center:
+                  lng: 7.4774
+                  lat: 46.9749
+                radius:
                   value: 100
                   units: M
-                  reference: SFC
-                start_time:
-                  start_of_test: {}
-                end_time:
-                  offset_from:
-                    starting_from:
-                      next_day:
-                        time_zone: Europe/Zurich
-                        starting_from:
-                          start_of_test: {}
-                        days_of_the_week: ["Mo", "Fr"]
-                    offset: 12h
-            expected_result: Block
-          - geospatial_check_id: TEST_002
-            requirement_ids:
-              - REQ_001
-              - REQ_003
-              - REQ_004
-            description: The second test step defined by the test designer
-            operation_rule_set: Rules1
-            restriction_source: ThisRegulator
-            volumes:
-              - outline_circle:
-                  center:
-                    lng: 7.4774
-                    lat: 46.9749
-                  radius:
-                    value: 100
-                    units: M
-                altitude_lower:
-                  value: 50
+              altitude_lower:
+                value: 50
+                units: M
+                reference: SFC
+              altitude_upper:
+                value: 5000
+                units: FT
+                reference: W84
+              start_time:
+                next_day:
+                  time_zone: +02:00
+                  starting_from:
+                    offset_from:
+                      starting_from:
+                        start_of_test: { }
+                      offset: 12h
+              duration: 5m
+          conditions_expectation: MustBePresent
+
+# ===== Geospatial feature comprehension =====
+
+example_feature_check_table:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.interuss.geospatial_map.FeatureCheckTableResource
+  specification:
+    table:
+      rows:
+        - geospatial_check_id: TEST_001
+          requirement_ids:
+            - REQ_002
+            - REQ_007
+          description: The first test step defined by the test designer
+          operation_rule_set: Rules1
+          restriction_source: ThisRegulator
+          volumes:
+            - outline_circle:
+                center:
+                  lng: 7.4774
+                  lat: 46.9749
+                radius:
+                  value: 100
                   units: M
-                  reference: SFC
-                altitude_upper:
-                  value: 5000
-                  units: FT
-                  reference: W84
-                start_time:
-                  next_day:
-                    time_zone: Europe/Zurich
-                    starting_from:
-                      offset_from:
-                        starting_from:
-                          start_of_test: {}
-                        offset: 12h
-                  use_timezone: +01:00
-                duration: 5m
-            expected_result: Advise
-          - geospatial_check_id: TEST_002
-            requirement_ids:
-              - REQ_001
-              - REQ_003
-              - REQ_004
-            description: The second test step defined by the test designer
-            operation_rule_set: Rules1
-            restriction_source: ThisRegulator
-            volumes:
-              - outline_circle:
-                  center:
+              altitude_lower:
+                value: 0
+                units: M
+                reference: SFC
+              altitude_upper:
+                value: 100
+                units: M
+                reference: SFC
+              start_time:
+                start_of_test: { }
+              end_time:
+                offset_from:
+                  starting_from:
+                    next_day:
+                      time_zone: Europe/Zurich
+                      starting_from:
+                        start_of_test: { }
+                      days_of_the_week: [ "Mo", "Fr" ]
+                  offset: 12h
+          expected_result: Block
+        - geospatial_check_id: TEST_002
+          requirement_ids:
+            - REQ_001
+            - REQ_003
+            - REQ_004
+          description: The second test step defined by the test designer
+          operation_rule_set: Rules1
+          restriction_source: ThisRegulator
+          volumes:
+            - outline_circle:
+                center:
+                  lng: 7.4774
+                  lat: 46.9749
+                radius:
+                  value: 100
+                  units: M
+              altitude_lower:
+                value: 50
+                units: M
+                reference: SFC
+              altitude_upper:
+                value: 5000
+                units: FT
+                reference: W84
+              start_time:
+                next_day:
+                  time_zone: Europe/Zurich
+                  starting_from:
+                    offset_from:
+                      starting_from:
+                        start_of_test: { }
+                      offset: 12h
+                use_timezone: +01:00
+              duration: 5m
+          expected_result: Advise
+        - geospatial_check_id: TEST_002
+          requirement_ids:
+            - REQ_001
+            - REQ_003
+            - REQ_004
+          description: The second test step defined by the test designer
+          operation_rule_set: Rules1
+          restriction_source: ThisRegulator
+          volumes:
+            - outline_circle:
+                center:
+                  lng: 7.4774
+                  lat: 46.9749
+                radius:
+                  value: 100
+                  units: M
+              altitude_upper:
+                value: 400
+                units: FT
+                reference: SFC
+              end_time:
+                next_sun_position:
+                  elevation_deg: -0.833  # Sunset
+                  observed_from:
                     lng: 7.4774
                     lat: 46.9749
-                  radius:
-                    value: 100
-                    units: M
-                altitude_upper:
-                  value: 400
-                  units: FT
-                  reference: SFC
-                end_time:
-                  next_sun_position:
-                    elevation_deg: -0.833  # Sunset
-                    observed_from:
-                      lng: 7.4774
-                      lat: 46.9749
-                    starting_from:
-                      offset_from:
-                        starting_from:
-                          next_day:
-                            time_zone: Europe/Zurich
-                            starting_from:
-                              start_of_test: {}
-                        offset: 12h
-                duration: 5m
-            expected_result: Advise
-common:
-    $ref: 'environment.yaml#/common'
+                  starting_from:
+                    offset_from:
+                      starting_from:
+                        next_day:
+                          time_zone: Europe/Zurich
+                          starting_from:
+                            start_of_test: { }
+                      offset: 12h
+              duration: 5m
+          expected_result: Advise
 
-mock_uss_instances:
-    $ref: 'environment.yaml#/mock_uss_instances'
-    locality_che:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.interuss.mock_uss.locality.LocalityResource
-        specification:
-            locality_code: CHE
+# ===== mock_uss behavioral control =====
 
-uspace_versioning:
-    $ref: 'environment.yaml#/scd_version_providers'
-    uspace_system_identity:
-        $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-        resource_type: resources.versioning.SystemIdentityResource
-        specification:
-            system_identity: uspace.ussp
+locality_che:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.interuss.mock_uss.locality.LocalityResource
+  specification:
+    locality_code: CHE

@@ -1,23 +1,14 @@
-import time
 import traceback
-import uuid
-from typing import List
+from typing import List, Set
 
-import arrow
 import s2sphere
-from implicitdict import ImplicitDict
-from loguru import logger
 from requests.exceptions import RequestException
-from uas_standards.interuss.automated_testing.rid.v1.injection import ChangeTestResponse
+from s2sphere import LatLngRect
 
-from monitoring.monitorlib import fetch
+from monitoring.monitorlib import auth
 from monitoring.monitorlib.fetch import rid
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.monitorlib.rid_automated_testing.injection_api import (
-    CreateTestParameters,
-)
-from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
@@ -25,8 +16,10 @@ from monitoring.uss_qualifier.resources.netrid import (
     NetRIDServiceProviders,
     EvaluationConfigurationResource,
 )
-from monitoring.uss_qualifier.scenarios.astm.netrid import display_data_evaluator
-from monitoring.uss_qualifier.scenarios.astm.netrid.common import nominal_behavior
+from monitoring.uss_qualifier.scenarios.astm.netrid import (
+    injection,
+    display_data_evaluator,
+)
 from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection import (
     InjectedFlightCollection,
 )
@@ -48,6 +41,7 @@ class Misbehavior(GenericTestScenario):
     _flights_data: FlightDataResource
     _service_providers: NetRIDServiceProviders
     _evaluation_configuration: EvaluationConfigurationResource
+
     _injected_flights: List[InjectedFlight]
     _injected_tests: List[InjectedTest]
 
@@ -62,8 +56,6 @@ class Misbehavior(GenericTestScenario):
         self._flights_data = flights_data
         self._service_providers = service_providers
         self._evaluation_configuration = evaluation_configuration
-        self._injected_flights = []
-        self._injected_tests = []
         if len(dss_pool.dss_instances) == 0:
             raise ValueError(
                 "The Misbehavior Scenario requires at least one DSS instance"
@@ -94,140 +86,142 @@ class Misbehavior(GenericTestScenario):
         self.end_test_scenario()
 
     def _inject_flights(self):
-        (
-            self._injected_flights,
-            self._injected_tests,
-        ) = nominal_behavior.inject_flights(
-            test_scenario=self,
-            flights_data=self._flights_data,
-            service_providers=self._service_providers,
-            evaluation_configuration=self._evaluation_configuration,
-            realtime_period=self._rid_version.realtime_period,
+        (self._injected_flights, self._injected_tests) = injection.inject_flights(
+            self, self._flights_data, self._service_providers
         )
 
     def _poll_unauthenticated_during_flights(self):
         config = self._evaluation_configuration.configuration
+        virtual_observer = VirtualObserver(
+            injected_flights=InjectedFlightCollection(self._injected_flights),
+            repeat_query_rect_period=config.repeat_query_rect_period,
+            min_query_diagonal_m=config.min_query_diagonal,
+            relevant_past_data_period=self._rid_version.realtime_period
+            + config.max_propagation_latency.timedelta,
+        )
 
-        t_end = self._virtual_observer.get_last_time_of_interest()
-        t_now = arrow.utcnow()
+        remaining_injection_ids = set(
+            inj_flight.flight.injection_id for inj_flight in self._injected_flights
+        )
 
-        if t_now > t_end:
-            raise RuntimeError(
-                f"Cannot evaluate RID system: injected test flights ended at {t_end}, which is before now ({t_now})"
-            )
+        def poll_fct(rect: LatLngRect) -> bool:
+            nonlocal remaining_injection_ids
 
-        logger.debug(f"Polling from {t_now} until {t_end}")
-        for f in self._injected_flights:
-            span = f.flight.get_span()
-            logger.debug(
-                f"Flight {f.uss_participant_id}/{f.flight.injection_id} {span[0].isoformat()} to {span[1].isoformat()}",
-            )
+            tested_inj_ids = self._evaluate_and_test_authentication(rect)
+            remaining_injection_ids -= tested_inj_ids
 
-        t_next = arrow.utcnow()
-        dt = config.min_polling_interval.timedelta
-        while arrow.utcnow() < t_end:
-            # Evaluate the system at an instant in time for various areas
-            diagonals_m = [
+            # interrupt polling if there are no more injection IDs to cover
+            return len(remaining_injection_ids) == 0
+
+        virtual_observer.start_polling(
+            config.min_polling_interval.timedelta,
+            [
                 self._rid_version.max_diagonal_km * 1000 + 500,  # too large
                 self._rid_version.max_diagonal_km * 1000 - 100,  # clustered
                 self._rid_version.max_details_diagonal_km * 1000 - 100,  # details
-            ]
-            auth_tests = []
-            for diagonal_m in diagonals_m:
-                rect = self._virtual_observer.get_query_rect(diagonal_m)
-                auth_tests.append(self._evaluate_and_test_authentication(rect))
-
-            # If we checked for all diagonals that flights queries are properly authenticated,
-            # we can stop polling
-            if all(auth_tests):
-                logger.debug(
-                    "Authentication check is complete, ending polling now.",
-                )
-                break
-
-            # Wait until minimum polling interval elapses
-            while t_next < arrow.utcnow():
-                t_next += dt
-            if t_next > t_end:
-                break
-            delay = t_next - arrow.utcnow()
-            if delay.total_seconds() > 0:
-                logger.debug(
-                    f"Waiting {delay.total_seconds()} seconds before polling RID system again..."
-                )
-                time.sleep(delay.total_seconds())
+            ],
+            poll_fct,
+        )
 
     def _evaluate_and_test_authentication(
         self,
         rect: s2sphere.LatLngRect,
-    ) -> bool:
+    ) -> Set[str]:
         """Queries all flights in the expected way, then repeats the queries to SPs without credentials.
 
         returns true once queries to SPS have been made without credentials. False otherwise, such as when
         no flights were yet returned by the authenticated queries.
+
+        :returns: set of injection IDs that were encountered and tested
         """
 
-        with self.check("Missing credentials") as check:
-            # We grab all flights from the SP's. This is authenticated
-            # and is expected to succeed
-            sp_observation = rid.all_flights(
-                rect,
-                include_recent_positions=True,
-                get_details=True,
-                rid_version=self._rid_version,
-                session=self._dss.client,
-                server_id=self._dss.participant_id,
-            )
-            # We fish out the queries that were used to grab the flights from the SP,
-            # and attempt to re-query without credentials. This should fail.
+        # We grab all flights from the SP's (which we know how to reach by first querying the DSS).
+        # This is authenticated and is expected to succeed
+        sp_observation = rid.all_flights(
+            rect,
+            include_recent_positions=True,
+            get_details=True,
+            rid_version=self._rid_version,
+            session=self._dss.client,
+            dss_participant_id=self._dss.participant_id,
+        )
 
+        mapping_by_injection_id = (
+            display_data_evaluator.map_fetched_to_injected_flights(
+                self._injected_flights, list(sp_observation.uss_flight_queries.values())
+            )
+        )
+        for q in sp_observation.queries:
+            self.record_query(q)
+
+        for injection_id, mapping in mapping_by_injection_id.items():
+            participant_id = mapping.injected_flight.uss_participant_id
+            flights_url = mapping.observed_flight.query.flights_url
             unauthenticated_session = UTMClientSession(
-                prefix_url=self._dss.client.get_prefix_url(),
-                auth_adapter=None,
-                timeout_seconds=self._dss.client.timeout_seconds,
+                flights_url, auth.NoAuth(aud_override="")
             )
 
-            queries_to_repeat = list(sp_observation.uss_flight_queries.values()) + list(
-                sp_observation.uss_flight_details_queries.values()
+            self.record_note(
+                f"{participant_id}/{injection_id}/missing_credentials_queries",
+                f"Will attempt querying with missing credentials at flights URL {flights_url} for a flights list and {len(mapping.observed_flight.query.flights)} flight details.",
             )
 
-            if len(queries_to_repeat) == 0:
-                logger.debug("no flights queries to repeat at this point.")
-                return False
+            with self.check("Missing credentials", [participant_id]) as check:
 
-            logger.debug(
-                f"about to repeat {len(queries_to_repeat)} flights queries without credentials"
-            )
-
-            # Attempt to re-query the flights and flight details URLs:
-            for fq in queries_to_repeat:
-                failed_q = fetch.query_and_describe(
-                    client=unauthenticated_session,
-                    verb=fq.query.request.method,
-                    url=fq.query.request.url,
-                    json=fq.query.request.json,
-                    data=fq.query.request.body,
-                    server_id=self._dss.participant_id,
+                # check uss flights query
+                uss_flights_query = rid.uss_flights(
+                    flights_url,
+                    rect,
+                    True,
+                    self._rid_version,
+                    unauthenticated_session,
+                    participant_id,
                 )
-                logger.info(
-                    f"Repeating query to {fq.query.request.url} without credentials"
-                )
-                server_id = fq.query.get("server_id", "unknown")
-                if failed_q.response.code not in [401, 403]:
+                self.record_query(uss_flights_query.query)
+
+                if uss_flights_query.success:
                     check.record_failed(
-                        "unauthenticated request was fulfilled",
-                        participants=[server_id],
-                        severity=Severity.MEDIUM,
-                        details=f"queried flights on {fq.query.request.url} with no credentials, expected a failure but got a success reply",
+                        "Unauthenticated request for flights to USS was fulfilled",
+                        participants=[participant_id],
+                        severity=Severity.Medium,
+                        details=f"Queried flights on {flights_url} for USS {participant_id} with no credentials, expected a failure but got a success reply.",
                     )
-                else:
-                    logger.info(
-                        f"participant with id {server_id} properly authenticated the request"
+                elif uss_flights_query.status_code != 401:
+                    check.record_failed(
+                        "Unauthenticated request for flights failed with wrong HTTP code",
+                        participants=[participant_id],
+                        severity=Severity.Medium,
+                        details=f"Queried flights on {flights_url} for USS {participant_id} with no credentials, expected an HTTP 401 but got an HTTP {uss_flights_query.status_code}.",
                     )
-                # Keep track of the failed queries, too
-                self.record_query(failed_q)
 
-            return True
+                # check flight details query
+                for flight in mapping.observed_flight.query.flights:
+                    uss_flight_details_query = rid.flight_details(
+                        flights_url,
+                        flight.id,
+                        False,
+                        self._rid_version,
+                        unauthenticated_session,
+                        participant_id,
+                    )
+                    self.record_query(uss_flight_details_query.query)
+
+                    if uss_flight_details_query.success:
+                        check.record_failed(
+                            "Unauthenticated request for flight details to USS was fulfilled",
+                            participants=[participant_id],
+                            severity=Severity.Medium,
+                            details=f"Queried flight details on {flights_url} for USS {participant_id} for flight {flight.id} with no credentials, expected a failure but got a success reply.",
+                        )
+                    elif uss_flight_details_query.status_code != 401:
+                        check.record_failed(
+                            "Unauthenticated request for flight details failed with wrong HTTP code",
+                            participants=[participant_id],
+                            severity=Severity.Medium,
+                            details=f"Queried flight details on {flights_url} for USS {participant_id} for flight {flight.id} with no credentials, expected an HTTP 401 but got an HTTP {uss_flight_details_query.status_code}.",
+                        )
+
+        return set(mapping_by_injection_id.keys())
 
     def cleanup(self):
         self.begin_cleanup()

@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-if [ -z "${DO_NOT_BUILD_MONITORING}" ]; then
-  "${SCRIPT_DIR}/../build.sh" || exit 1
-  export DO_NOT_BUILD_MONITORING=true
+# Find and change to repo root directory
+OS=$(uname)
+if [[ "$OS" == "Darwin" ]]; then
+	# OSX uses BSD readlink
+	BASEDIR="$(dirname "$0")"
+else
+	BASEDIR=$(readlink -e "$(dirname "$0")")
 fi
+cd "${BASEDIR}/../.." || exit 1
+
+(
+cd monitoring || exit 1
+make image
+)
 
 PUBLIC_KEY="/var/test-certs/auth2.pem"
 container_name="mock_uss_geoawareness_test"
@@ -27,7 +36,7 @@ docker run ${docker_args} --rm --name ${container_name} \
   -e MOCK_USS_TOKEN_AUDIENCE="${AUD}" \
   -e MOCK_USS_SERVICES="geoawareness" \
   -p ${PORT}:5000 \
-  -v "${SCRIPT_DIR}/../../build/test-certs:/var/test-certs:ro" \
+  -v "$(pwd)/build/test-certs:/var/test-certs:ro" \
   "$@" \
   interuss/monitoring \
   ${docker_command}

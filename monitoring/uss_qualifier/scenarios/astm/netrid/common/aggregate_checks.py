@@ -51,8 +51,9 @@ class AggregateChecks(ReportEvaluationScenario):
 
         # identify SPs and observers by their base URL
         self._participants_by_base_url.update(
-            {sp.base_url: sp.participant_id for sp in self._service_providers}
+            {sp.injection_base_url: sp.participant_id for sp in self._service_providers}
         )
+
         self._participants_by_base_url.update(
             {dp.base_url: dp.participant_id for dp in self._observers}
         )
@@ -85,12 +86,12 @@ class AggregateChecks(ReportEvaluationScenario):
                     break
 
             # Only consider queries with the participant/server explicitly identified
-            if query.has_field_with_value("server_id"):
+            if query.has_field_with_value("participant_id"):
                 participant_queries = self._queries_by_participant.get(
-                    query.server_id, []
+                    query.participant_id, []
                 )
                 participant_queries.append(query)
-                self._queries_by_participant[query.server_id] = participant_queries
+                self._queries_by_participant[query.participant_id] = participant_queries
 
     def run(self):
         self.begin_test_scenario()
@@ -101,7 +102,7 @@ class AggregateChecks(ReportEvaluationScenario):
         for sp in self._service_providers:
             self.record_note(
                 "service_providers",
-                f"configured service providers: {sp.participant_id} - {sp.base_url}",
+                f"configured service providers: {sp.participant_id} - {sp.injection_base_url}",
             )
 
         for o in self._observers:
@@ -151,7 +152,7 @@ class AggregateChecks(ReportEvaluationScenario):
         unattr_queries = [
             query.request.url
             for query in self._queries
-            if query.get("server_id") is None
+            if query.get("participant_id") is None
         ]
         if len(unattr_queries) > 0:
             self.record_note(

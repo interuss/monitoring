@@ -3,15 +3,14 @@ v1:
   test_run:
     resources:
       resource_declarations:
-        $ref: ./library/resources.yaml#/general_flight_authorization
+        example_flight_check_table: {$ref: 'library/resources.yaml#/example_flight_check_table'}
     action:
       test_scenario:
         scenario_type: scenarios.interuss.flight_authorization.GeneralFlightAuthorization
         resources:
-          table: flight_check_table
-        on_failure: Abort
+          table: example_flight_check_table
   artifacts:
-    report:
-      report_path: output/report_general_flight_auth.json
+    output_path: output/general_flight_auth
+    raw_report: {}
   validation:
     $ref: ./library/validation.yaml#/normal_test

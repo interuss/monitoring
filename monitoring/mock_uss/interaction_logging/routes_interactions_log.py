@@ -19,7 +19,7 @@ from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_
 
 
 @webapp.route("/mock_uss/interuss_logging/logs", methods=["GET"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def interaction_logs() -> Tuple[str, int]:
     """
     Returns all the interaction logs with requests that were
@@ -64,7 +64,7 @@ def interaction_logs() -> Tuple[str, int]:
 
 
 @webapp.route("/mock_uss/interuss_logging/logs", methods=["DELETE"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def delete_interaction_logs() -> Tuple[str, int]:
     """Deletes all the files under the logging directory"""
     log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]

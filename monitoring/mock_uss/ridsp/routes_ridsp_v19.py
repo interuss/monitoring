@@ -94,7 +94,7 @@ def rid_v19_operation(op_id: OperationID):
 
 
 @rid_v19_operation(OperationID.PostIdentificationServiceArea)
-@requires_scope([Scope.Write])
+@requires_scope(Scope.Write)
 def ridsp_notify_isa_v19(id: str):
     return (
         flask.jsonify(
@@ -105,7 +105,7 @@ def ridsp_notify_isa_v19(id: str):
 
 
 @rid_v19_operation(OperationID.SearchFlights)
-@requires_scope([Scope.Read])
+@requires_scope(Scope.Read)
 def ridsp_flights_v19():
     if "view" not in flask.request.args:
         return (
@@ -151,7 +151,7 @@ def ridsp_flights_v19():
 
 
 @rid_v19_operation(OperationID.GetFlightDetails)
-@requires_scope([Scope.Read])
+@requires_scope(Scope.Read)
 def ridsp_flight_details_v19(id: str):
     now = arrow.utcnow().datetime
     tx = db.value

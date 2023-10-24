@@ -47,7 +47,7 @@ class MockUSSClient(object):
             "GET",
             "/scdsc/v1/status",
             scope=SCOPE_SCD_QUALIFIER_INJECT,
-            server_id=self.participant_id,
+            participant_id=self.participant_id,
         )
 
     def get_locality(self) -> Tuple[Optional[LocalityCode], fetch.Query]:
@@ -55,7 +55,7 @@ class MockUSSClient(object):
             self.session,
             "GET",
             "/configuration/locality",
-            server_id=self.participant_id,
+            participant_id=self.participant_id,
         )
         if query.status_code != 200:
             return None, query
@@ -71,7 +71,7 @@ class MockUSSClient(object):
             "PUT",
             "/configuration/locality",
             scope=MOCK_USS_CONFIG_SCOPE,
-            server_id=self.participant_id,
+            participant_id=self.participant_id,
             json=PutLocalityRequest(locality_code=locality_code),
         )
 

@@ -21,3 +21,4 @@ docker image build \
     --build-arg commit_hash="$(git rev-parse HEAD)" \
     . \
   || exit 1
+echo "File created by monitoring/build.sh to keep track of the latest build run date time." > monitoring/image

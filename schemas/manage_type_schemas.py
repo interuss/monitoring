@@ -4,14 +4,24 @@ import inspect
 import json
 import os
 import sys
-from typing import Optional, Set, Dict, Type
+from typing import Optional, Set, Dict, Type, get_type_hints, get_args, get_origin
 
+import implicitdict
 from implicitdict import ImplicitDict
 import implicitdict.jsonschema
 from implicitdict.jsonschema import SchemaVars, SchemaVarsResolver
 from loguru import logger
 
 import monitoring
+import monitoring.uss_qualifier.action_generators
+import monitoring.uss_qualifier.resources
+from monitoring.monitorlib.inspection import fullname, import_submodules
+from monitoring.uss_qualifier.action_generators.action_generator import ActionGenerator
+from monitoring.uss_qualifier.configurations.configuration import (
+    USSQualifierConfiguration,
+)
+from monitoring.uss_qualifier.reports.report import TestRunReport
+from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class Action(str, enum.Enum):
@@ -41,18 +51,49 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _find_type_schemas(
-    module,
+def _make_type_schemas(
+    parent: Type[ImplicitDict],
     reference_resolver: SchemaVarsResolver,
-    repo: Optional[Dict[str, dict]] = None,
+    repo: Dict[str, dict],
     already_checked: Optional[Set[str]] = None,
-) -> Dict[str, dict]:
+) -> None:
+    implicitdict.jsonschema.make_json_schema(parent, reference_resolver, repo)
+    if already_checked is None:
+        already_checked = set()
+    already_checked.add(fullname(parent))
+
+    # TODO: Expose get_fields formally in implicitdict
+    all_fields, _ = implicitdict._get_fields(parent)
+    hints = get_type_hints(parent)
+    for field in all_fields:
+        if field not in hints:
+            continue
+        field_type = hints[field]
+
+        pending_types = [field_type]
+        while pending_types:
+            pending_type = pending_types.pop(0)
+            generic_type = get_origin(pending_type)
+            if generic_type:
+                pending_types.extend(get_args(pending_type))
+            else:
+                if (
+                    issubclass(pending_type, ImplicitDict)
+                    and fullname(pending_type) not in already_checked
+                ):
+                    _make_type_schemas(
+                        pending_type, reference_resolver, repo, already_checked
+                    )
+
+
+def _find_specifications(
+    module,
+    repo: Dict[str, Type[ImplicitDict]],
+    already_checked: Optional[Set[str]] = None,
+) -> None:
     if already_checked is None:
         already_checked = set()
     already_checked.add(module.__name__)
-
-    if repo is None:
-        repo = {}
 
     for name, member in inspect.getmembers(module):
         if (
@@ -60,15 +101,14 @@ def _find_type_schemas(
             and member.__name__ not in already_checked
             and member.__name__.startswith("monitoring")
         ):
-            _find_type_schemas(member, reference_resolver, repo, already_checked)
-        elif (
-            inspect.isclass(member)
-            and issubclass(member, ImplicitDict)
-            and member != ImplicitDict
-        ):
-            implicitdict.jsonschema.make_json_schema(member, reference_resolver, repo)
-
-    return repo
+            _find_specifications(member, repo, already_checked)
+        elif inspect.isclass(member):
+            if issubclass(member, Resource) and member != Resource:
+                spec_type = get_args(member.__orig_bases__[0])[0]
+                repo[fullname(spec_type)] = spec_type
+            elif issubclass(member, ActionGenerator) and member != ActionGenerator:
+                spec_type = get_args(member.__orig_bases__[0])[0]
+                repo[fullname(spec_type)] = spec_type
 
 
 def main() -> int:
@@ -114,12 +154,19 @@ def main() -> int:
             description=f"{full_name(schema_type)}, as defined in {path_of_py_file(schema_type)}",
         )
 
-    from monitoring.uss_qualifier.reports.report import TestRunReport
-    from monitoring.uss_qualifier.configurations.configuration import (
-        USSQualifierConfiguration,
-    )
+    schemas = {}
+    _make_type_schemas(TestRunReport, schema_vars_resolver, schemas)
+    _make_type_schemas(USSQualifierConfiguration, schema_vars_resolver, schemas)
 
-    schemas = _find_type_schemas(monitoring, schema_vars_resolver)
+    repo = {}
+    import_submodules(monitoring.uss_qualifier.resources)
+    _find_specifications(monitoring.uss_qualifier.resources, repo)
+    import_submodules(monitoring.uss_qualifier.action_generators)
+    _find_specifications(monitoring.uss_qualifier.action_generators, repo)
+    for spec_type in repo.values():
+        implicitdict.jsonschema.make_json_schema(
+            spec_type, schema_vars_resolver, schemas
+        )
 
     repo_root = os.path.abspath(
         os.path.join(os.path.dirname(monitoring.__file__), "..")

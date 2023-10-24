@@ -7,11 +7,19 @@ from implicitdict import ImplicitDict
 import s2sphere
 import shapely.geometry
 from uas_standards.astm.f3548.v21 import api as f3548v21
+from uas_standards.astm.f3411.v19 import api as f3411v19
+from uas_standards.astm.f3411.v22a import api as f3411v22a
+from uas_standards.interuss.automated_testing.rid.v1 import (
+    injection as f3411testing_injection,
+)
 
 EARTH_CIRCUMFERENCE_KM = 40075
 EARTH_CIRCUMFERENCE_M = EARTH_CIRCUMFERENCE_KM * 1000
 EARTH_RADIUS_M = 40075 * 1000 / (2 * math.pi)
 EARTH_AREA_M2 = 4 * math.pi * math.pow(EARTH_RADIUS_M, 2)
+
+DISTANCE_TOLERANCE_M = 0.01
+COORD_TOLERANCE_DEG = 360 / EARTH_CIRCUMFERENCE_M * DISTANCE_TOLERANCE_M
 
 
 class DistanceUnits(str, Enum):
@@ -31,8 +39,28 @@ class LatLngPoint(ImplicitDict):
     lng: float
     """Longitude (degrees)"""
 
+    @staticmethod
+    def from_f3411(
+        position: Union[
+            f3411v19.RIDAircraftPosition,
+            f3411v22a.RIDAircraftPosition,
+            f3411testing_injection.RIDAircraftPosition,
+        ]
+    ):
+        return LatLngPoint(
+            lat=position.lat,
+            lng=position.lng,
+        )
+
     def as_s2sphere(self) -> s2sphere.LatLng:
         return s2sphere.LatLng.from_degrees(self.lat, self.lng)
+
+    def match(self, other: LatLngPoint) -> bool:
+        """Determine whether two points may be mistaken for each other."""
+        return (
+            abs(self.lat - other.lat) < COORD_TOLERANCE_DEG
+            and abs(self.lng - other.lng) < COORD_TOLERANCE_DEG
+        )
 
 
 class Radius(ImplicitDict):

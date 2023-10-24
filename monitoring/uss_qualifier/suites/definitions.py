@@ -11,7 +11,12 @@ from monitoring.uss_qualifier.fileio import load_dict_with_references, FileRefer
 from monitoring.uss_qualifier.reports.capability_definitions import (
     ParticipantCapabilityDefinition,
 )
-from monitoring.uss_qualifier.resources.definitions import ResourceID, ResourceTypeName
+from monitoring.uss_qualifier.resources.definitions import (
+    ResourceID,
+    ResourceTypeName,
+    ResourceCollection,
+    ResourceDeclaration,
+)
 from monitoring.uss_qualifier.scenarios.definitions import (
     TestScenarioDeclaration,
 )
@@ -24,7 +29,7 @@ class TestSuiteDeclaration(ImplicitDict):
     suite_definition: Optional[TestSuiteDefinition]
     """Definition of test suite internal to the configuration -- specified instead of `suite_type`."""
 
-    resources: Dict[ResourceID, ResourceID]
+    resources: Optional[Dict[ResourceID, ResourceID]]
     """Mapping of the ID a resource will be known by in the child test suite -> the ID a resource is known by in the parent test suite.
 
     The child suite resource <key> is supplied by the parent suite resource <value>.
@@ -136,6 +141,9 @@ class TestSuiteDefinition(ImplicitDict):
     resources: Dict[ResourceID, ResourceTypeNameSpecifyingOptional]
     """Enumeration of the resources used by this test suite"""
 
+    local_resources: Optional[Dict[ResourceID, ResourceDeclaration]]
+    """Declarations of resources originating in this test suite."""
+
     actions: List[TestSuiteActionDeclaration]
     """The actions to take when running the test suite.  Components will be executed in order."""
 
@@ -144,6 +152,17 @@ class TestSuiteDefinition(ImplicitDict):
 
     participant_verifiable_capabilities: Optional[List[ParticipantCapabilityDefinition]]
     """Definitions of capabilities verified by this test suite for individual participants."""
+
+    def __init__(self, *args, **kwargs):
+        super(TestSuiteDefinition, self).__init__(*args, **kwargs)
+        inherits_resources = "resources" in self and self.resources
+        local_resources = "local_resources" in self and self.local_resources
+        if inherits_resources and local_resources:
+            for k in self.resources:
+                if k in self.local_resources:
+                    raise ValueError(
+                        f"Resource '{k}' found in both `resources` and `local_resources`; resource IDs must be unique"
+                    )
 
     @staticmethod
     def load_from_declaration(

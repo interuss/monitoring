@@ -7,10 +7,6 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
-    "output_path": {
-      "description": "Path of a folder into which report HTML files should be written",
-      "type": "string"
-    },
     "participant_requirements": {
       "additionalProperties": {
         "type": "string"
@@ -25,6 +21,10 @@
         "object",
         "null"
       ]
+    },
+    "report_name": {
+      "description": "Name of subfolder in output path to contain the rendered templated report",
+      "type": "string"
     },
     "requirement_collections": {
       "additionalProperties": {
@@ -43,7 +43,7 @@
     }
   },
   "required": [
-    "output_path"
+    "report_name"
   ],
   "type": "object"
 }

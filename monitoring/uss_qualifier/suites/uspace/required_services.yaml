@@ -1,7 +1,6 @@
 name: U-space required services
 resources:
   version_providers: resources.versioning.VersionProvidersResource
-  system_identity: resources.versioning.SystemIdentityResource
 
   conflicting_flights: resources.flight_planning.FlightIntentsResource
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
@@ -19,6 +18,11 @@ resources:
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
   problematically_big_area: resources.VerticesResource
+local_resources:
+  system_identity:
+    resource_type: resources.versioning.SystemIdentityResource
+    specification:
+      system_identity: uspace.ussp
 actions:
 - test_scenario:
     scenario_type: scenarios.versioning.GetSystemVersions
