@@ -6,29 +6,23 @@ from implicitdict import ImplicitDict
 ImplicitDictType = TypeVar("ImplicitDictType", bound=ImplicitDict)
 
 
-def apply_overrides(base_object: ImplicitDictType, overrides: dict) -> ImplicitDictType:
+def apply_overrides(
+    base_object: ImplicitDictType, overrides: dict, parse_result: bool = True
+) -> ImplicitDictType:
     """Returns a copy of base_object onto which overrides were applied."""
 
     cpy = ImplicitDict.parse(
         json.loads(json.dumps(base_object)),
         type(base_object),
     )
-    return ImplicitDict.parse(
-        _apply_overrides(cpy, overrides),
-        type(base_object),
-    )
-
-
-def apply_overrides_without_parse_type(
-    base_object: ImplicitDictType, overrides: dict
-) -> ImplicitDictType:
-    """Returns a Dict with overrides applied, and no parsing into base object."""
-
-    cpy = ImplicitDict.parse(
-        json.loads(json.dumps(base_object)),
-        type(base_object),
-    )
-    return (_apply_overrides(cpy, overrides),)
+    overridden = _apply_overrides(cpy, overrides)
+    if parse_result:
+        return ImplicitDict.parse(
+            overridden,
+            type(base_object),
+        )
+    else:
+        return overridden
 
 
 def _apply_overrides(base_object, overrides):
@@ -49,9 +43,19 @@ def _apply_overrides(base_object, overrides):
         return result_list
 
     elif isinstance(overrides, dict):
-        result = ImplicitDict.parse(base_object, type(base_object))
+        if isinstance(base_object, dict):
+            result = {k: v for k, v in base_object.items()}
+        else:
+            raise ValueError(
+                f"Attempted to override field with type {type(base_object)} with type {type(overrides)} ({json.dumps(base_object)} -> {json.dumps(overrides)})"
+            )
         for field in overrides:
-            if field in base_object and base_object[field] is not None:
+            if field.startswith("+"):
+                replace = True
+                field = field[1:]
+            else:
+                replace = False
+            if field in base_object and base_object[field] is not None and not replace:
                 result[field] = _apply_overrides(base_object[field], overrides[field])
             else:
                 result[field] = overrides[field]

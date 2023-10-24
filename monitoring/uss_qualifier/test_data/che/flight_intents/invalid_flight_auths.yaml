@@ -1,0 +1,62 @@
+intents:
+  invalid_flight_auth:
+    full:
+      basic_information:
+        usage_state: Planned
+        uas_state: Nominal
+        area:
+          - outline_polygon:
+              vertices:
+                - lng: 7.477504823470508
+                  lat: 46.97472299984816
+                - lng: 7.477504820370851
+                  lat: 46.97556599981216
+                - lng: 7.477505769789705
+                  lat: 46.97557922815897
+            altitude_lower:
+              value: 605
+              reference: W84
+              units: M
+            altitude_upper:
+              value: 635
+              reference: W84
+              units: M
+            start_time:
+              offset_from:
+                starting_from:
+                  start_of_test: {}
+                offset: -1s
+            duration: 5m
+
+      astm_f3548_21:
+        priority: 0
+
+      uspace_flight_authorisation:
+        uas_serial_number: My serial number
+        operation_category: Open
+        operation_mode: Vlos
+        uas_class: C0
+        identification_technologies:
+          - ASTMNetRID
+        connectivity_methods:
+          - cellular
+        endurance_minutes: 30
+        emergency_procedure_url: https://uav.example.com/emergency
+        operator_id: CHEo5kut30e0mt01-qwe
+
+  valid_flight_auth:
+    delta:
+      source: invalid_flight_auth
+      mutation:
+        uspace_flight_authorisation:
+          uas_serial_number: 1AF49UL5CC5J6K
+          operation_category: Open
+          operation_mode: Vlos
+          uas_class: C0
+          identification_technologies:
+            - ASTMNetRID
+          connectivity_methods:
+            - cellular
+          endurance_minutes: 30
+          emergency_procedure_url: https://uav.example.com/emergency
+          operator_id: CHEo5kut30e0mt01-qwe

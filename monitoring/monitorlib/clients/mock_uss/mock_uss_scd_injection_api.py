@@ -21,10 +21,10 @@ class MockUssFlightBehavior(ImplicitDict):
     """ list of intent sharing http methods GET and POST to be modified"""
 
     modify_fields: dict
-    """dict that specifies the values for the fields  to be overriden in the operational_intent while sharing"""
+    """dict that specifies the values for the fields to be overriden in the operational_intent while sharing"""
 
 
-class AddlFieldsInjectFlightRequest(InjectFlightRequest):
-    """InjectFlightRequest with additional_fields"""
+class MockUSSInjectFlightRequest(InjectFlightRequest):
+    """InjectFlightRequest sent to mock_uss, which looks for the optional additional fields below."""
 
-    additional_fields: Optional[dict]
+    behavior: Optional[MockUssFlightBehavior]

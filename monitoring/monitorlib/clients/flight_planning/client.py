@@ -28,7 +28,10 @@ class FlightPlannerClient(ABC):
 
     @abstractmethod
     def try_plan_flight(
-        self, flight_info: FlightInfo, execution_style: ExecutionStyle
+        self,
+        flight_info: FlightInfo,
+        execution_style: ExecutionStyle,
+        additional_fields: Optional[dict] = None,
     ) -> PlanningActivityResponse:
         """Instruct the USS to emulate a normal user trying to plan the described flight.
 
@@ -43,6 +46,7 @@ class FlightPlannerClient(ABC):
         flight_id: FlightID,
         updated_flight_info: FlightInfo,
         execution_style: ExecutionStyle,
+        additional_fields: Optional[dict] = None,
     ) -> PlanningActivityResponse:
         """Instruct the USS to emulate a normal user trying to update the specified flight as described.
 

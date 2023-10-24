@@ -330,13 +330,13 @@ def query_and_describe(
         req_kwargs["timeout"] = TIMEOUTS
 
     # Attach a request_id field to the JSON body of any outgoing request with a JSON body that doesn't already have one
-    if "json" in req_kwargs and isinstance(req_kwargs["json"], dict):
+    if (
+        "json" in req_kwargs
+        and isinstance(req_kwargs["json"], dict)
+        and "request_id" not in req_kwargs["json"]
+    ):
         json_body = json.loads(json.dumps(req_kwargs["json"]))
-        if "request_id" not in req_kwargs["json"]:
-            json_body["request_id"] = str(uuid.uuid4())
-        if "additional_fields" in req_kwargs:
-            json_body["additional_fields"] = req_kwargs["additional_fields"]
-            del req_kwargs["additional_fields"]
+        json_body["request_id"] = str(uuid.uuid4())
         req_kwargs["json"] = json_body
 
     failures = []

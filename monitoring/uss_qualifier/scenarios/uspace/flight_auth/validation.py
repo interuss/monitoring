@@ -46,7 +46,8 @@ class Validation(TestScenario):
             )
 
         self.invalid_flight_intents = []
-        for fID, flight_intent in intents.items():
+        for fID, info_template in intents.items():
+            flight_intent = FlightIntent.from_flight_info_template(info_template)
             problems = problems_with_flight_authorisation(
                 flight_intent.request.flight_authorisation
             )

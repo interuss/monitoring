@@ -1,6 +1,5 @@
 import uuid
 from typing import Dict, Optional
-from loguru import logger
 from implicitdict import ImplicitDict
 from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
@@ -25,9 +24,6 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
     PlanningActivityResult,
     FlightPlanStatus,
-)
-from monitoring.monitorlib.mock_uss_interface.mock_uss_scd_injection_api import (
-    MockUssFlightBehavior,
 )
 from monitoring.monitorlib.fetch import query_and_describe
 from monitoring.monitorlib.geotemporal import Volume4D
@@ -111,16 +107,14 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 flight_info.uspace_flight_authorisation, scd_api.FlightAuthorisationData
             )
         req = scd_api.InjectFlightRequest(**kwargs)
+        if additional_fields:
+            for k, v in additional_fields.items():
+                req[k] = v
 
         op = scd_api.OPERATIONS[scd_api.OperationID.InjectFlight]
         url = op.path.format(flight_id=flight_id)
         query = query_and_describe(
-            self._session,
-            op.verb,
-            url,
-            json=req,
-            scope=self.SCD_SCOPE,
-            additional_fields=additional_fields,
+            self._session, op.verb, url, json=req, scope=self.SCD_SCOPE
         )
         if query.status_code != 200 and query.status_code != 201:
             raise PlanningActivityError(
@@ -168,7 +162,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         self,
         flight_info: FlightInfo,
         execution_style: ExecutionStyle,
-        additional_fields: Optional[dict],
+        additional_fields: Optional[dict] = None,
     ) -> PlanningActivityResponse:
         return self._inject(
             str(uuid.uuid4()), flight_info, execution_style, additional_fields
@@ -179,8 +173,11 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         flight_id: FlightID,
         updated_flight_info: FlightInfo,
         execution_style: ExecutionStyle,
+        additional_fields: Optional[dict] = None,
     ) -> PlanningActivityResponse:
-        return self._inject(flight_id, updated_flight_info, execution_style)
+        return self._inject(
+            flight_id, updated_flight_info, execution_style, additional_fields
+        )
 
     def try_end_flight(
         self, flight_id: FlightID, execution_style: ExecutionStyle
