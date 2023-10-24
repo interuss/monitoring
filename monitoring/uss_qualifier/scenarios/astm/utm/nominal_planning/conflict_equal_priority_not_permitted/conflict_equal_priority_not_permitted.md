@@ -21,7 +21,7 @@ Otherwise, the FlightIntentsResource must provide the following flight intents:
 
 <table>
   <tr>
-    <th>Flight intent ID</th><
+    <th>Flight intent ID</th>
     <th>Flight name</th>
     <th>Priority</th>
     <th>State</th><!-- TODO: Update with usage_state and uas_state when new flight planning API is adopted -->
@@ -76,9 +76,8 @@ Otherwise, the FlightIntentsResource must provide the following flight intents:
 </table>
 
 Because the scenario involves activation of intents, all activated intents must be active during the execution of the
-test scenario, i.e. they must start before the reference time plus planning time duration. Additionally, their end time
-must leave sufficient time for the execution of the test scenario. For the sake of simplicity, it is recommended to set
-the start and end times of all the intents to the same range.
+test scenario. Additionally, their end time must leave sufficient time for the execution of the test scenario. For the
+sake of simplicity, it is recommended to set the start and end times of all the intents to the same range.
 
 ### tested_uss
 FlightPlannerResource that is under test and will manage flight 1.
