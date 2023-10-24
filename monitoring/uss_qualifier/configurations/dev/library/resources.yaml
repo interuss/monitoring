@@ -101,13 +101,13 @@ adjacent_circular_storage_config:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
   resource_type: resources.netrid.FlightDataStorageResource
   specification:
-    flight_record_collection_path: "./output/test_data.che.netrid.circular_flights.json"
+    flight_record_collection_path: "./output/generate_rid_test_data/flight_data/test_data.che.netrid.circular_flights.json"
 
 kml_storage_config:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
   resource_type: resources.netrid.FlightDataStorageResource
   specification:
-    flight_record_collection_path: "./output/test_data.usa.netrid.dcdemo_flights.json"
+    flight_record_collection_path: "./output/generate_rid_test_data/flight_data/test_data.usa.netrid.dcdemo_flights.json"
 
 # ===== Flight planning intents =====
 
@@ -117,7 +117,7 @@ che_invalid_flight_auth_flights:
   specification:
     planning_time: '0:05:00'
     file:
-      path: file://./test_data/che/flight_intents/invalid_flight_auths.json
+      path: file://./test_data/che/flight_intents/invalid_flight_auths.yaml
 
 che_conflicting_flights:
   # Includes flight intents for both equal-priority-not-permitted and higher-priority
@@ -126,9 +126,9 @@ che_conflicting_flights:
   specification:
     planning_time: '0:05:00'
     file:
-      path: file://./test_data/che/flight_intents/conflicting_flights.json
+      path: file://./test_data/che/flight_intents/conflicting_flights.yaml
       # Note that this hash_sha512 field can be safely deleted if the content changes
-      hash_sha512: 6467e88fb69702216dabe1f9723b68fe68a1a9d4b1a40e3af5c0b1ed233061a088c9c30be8a0ada447b18f2c6354db52d84aa12c1e7dfd13f99262d91ba173f4
+      hash_sha512: 86b7172de3a6029efdb5c39dff00f96578f81d25b65b4a0a9d731a42a1e260ef632a0891b744b6d1f62fd7bec61cdad3cb8e6b6811a16cbc17ec2dbd081cbbf6
 
 che_invalid_flight_intents:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -137,30 +137,6 @@ che_invalid_flight_intents:
     planning_time: '0:05:00'
     file:
       path: test_data.che.flight_intents.invalid_flight_intents
-
-kentland_conflicting_flights:
-  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.flight_planning.FlightIntentsResource
-  specification:
-    planning_time: '0:05:00'
-    file:
-      path: file://./test_data/usa/kentland/flight_intents/conflicting_flights.yaml
-
-kentland_priority_preemption_flights:
-  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.flight_planning.FlightIntentsResource
-  specification:
-    planning_time: '0:05:00'
-    file:
-      path: test_data.usa.kentland.flight_intents.priority_preemption
-
-kentland_invalid_flight_intents:
-  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.flight_planning.FlightIntentsResource
-  specification:
-    planning_time: '0:05:00'
-    file:
-      path: test_data.usa.kentland.flight_intents.invalid_flight_intents
 
 # ===== General flight authorization =====
 
@@ -365,11 +341,3 @@ locality_che:
   resource_type: resources.interuss.mock_uss.locality.LocalityResource
   specification:
     locality_code: CHE
-
-# ===== System versioning =====
-
-uspace_system_identity:
-  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.versioning.SystemIdentityResource
-  specification:
-    system_identity: uspace.ussp

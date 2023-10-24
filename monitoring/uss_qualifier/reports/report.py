@@ -22,6 +22,8 @@ from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
 
+from monitoring.mock_uss.interaction_logging.interactions import Interaction
+
 
 class FailedCheck(ImplicitDict):
     name: str
@@ -245,9 +247,13 @@ class TestScenarioReport(ImplicitDict):
     """If there was an error while executing this test scenario, this field describes the error"""
 
     def has_critical_problem(self) -> bool:
-        return any(c.has_critical_problem() for c in self.cases) or (
-            "cleanup" in self and self.cleanup and self.cleanup.has_critical_problem()
-        )
+        if any(c.has_critical_problem() for c in self.cases):
+            return True
+        if "cleanup" in self and self.cleanup and self.cleanup.has_critical_problem():
+            return True
+        if "execution_error" in self and self.execution_error:
+            return True
+        return False
 
     def all_participants(self) -> Set[ParticipantID]:
         participants = set()

@@ -1,18 +1,19 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/capability_definitions/CapabilityVerificationCondition.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "Specification of a single condition used to determine whether a capability should be verified.\n\nExactly one field must be specified.\n\nmonitoring.uss_qualifier.reports.capability_definitions.CapabilityVerificationCondition, as defined in monitoring/uss_qualifier/reports/capability_definitions.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
-    "no_failed_checks": {
+    "all_conditions": {
       "oneOf": [
         {
           "type": "null"
         },
         {
-          "$ref": "NoFailedChecksCondition.json"
+          "$ref": "AllConditions.json"
         }
       ]
     },
@@ -26,26 +27,6 @@
         }
       ]
     },
-    "requirements_checked": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "RequirementsCheckedCondition.json"
-        }
-      ]
-    },
-    "all_conditions": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "AllConditions.json"
-        }
-      ]
-    },
     "capability_verified": {
       "oneOf": [
         {
@@ -55,8 +36,27 @@
           "$ref": "CapabilityVerifiedCondition.json"
         }
       ]
+    },
+    "no_failed_checks": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "NoFailedChecksCondition.json"
+        }
+      ]
+    },
+    "requirements_checked": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "RequirementsCheckedCondition.json"
+        }
+      ]
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/capability_definitions/CapabilityVerificationCondition.json",
-  "description": "Specification of a single condition used to determine whether a capability should be verified.\n\nExactly one field must be specified.\n\nmonitoring.uss_qualifier.reports.capability_definitions.CapabilityVerificationCondition, as defined in monitoring/uss_qualifier/reports/capability_definitions.py"
+  "type": "object"
 }

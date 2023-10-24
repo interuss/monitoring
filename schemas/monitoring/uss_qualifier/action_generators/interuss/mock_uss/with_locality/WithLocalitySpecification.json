@@ -1,0 +1,29 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/action_generators/interuss/mock_uss/with_locality/WithLocalitySpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.action_generators.interuss.mock_uss.with_locality.WithLocalitySpecification, as defined in monitoring/uss_qualifier/action_generators/interuss/mock_uss/with_locality.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "action_to_wrap": {
+      "$ref": "../../../../suites/definitions/TestSuiteActionDeclaration.json",
+      "description": "Test suite action to perform after setting mock_uss localities"
+    },
+    "locality_source": {
+      "description": "ID of the resource providing the locality to use temporarily for the provided mock_uss instances",
+      "type": "string"
+    },
+    "mock_uss_instances_source": {
+      "description": "ID of the resource providing all mock_uss instances to change the locality of",
+      "type": "string"
+    }
+  },
+  "required": [
+    "action_to_wrap",
+    "locality_source",
+    "mock_uss_instances_source"
+  ],
+  "type": "object"
+}

@@ -19,7 +19,7 @@ from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_
 
 
 @webapp.route("/mock_uss/interuss_logging/logs", methods=["GET"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def interaction_logs() -> Tuple[str, int]:
     """
     Returns all the interaction logs with requests that were
@@ -39,18 +39,18 @@ def interaction_logs() -> Tuple[str, int]:
             try:
                 obj = json.load(f)
                 interaction = ImplicitDict.parse(obj, Interaction)
-                if (
-                    ("received_at" in interaction.query.request)
-                    and interaction.query.request.received_at.datetime
-                    >= from_time.datetime
-                ):
-                    interactions.append(interaction)
-                elif (
-                    "initiated_at" in interaction.query.request
-                    and interaction.query.request.initiated_at.datetime
-                    >= from_time.datetime
-                ):
-                    interactions.append(interaction)
+                if "received_at" in interaction.query.request:
+                    if (
+                        interaction.query.request.received_at.datetime
+                        >= from_time.datetime
+                    ):
+                        interactions.append(interaction)
+                elif "initiated_at" in interaction.query.request:
+                    if (
+                        interaction.query.request.initiated_at.datetime
+                        >= from_time.datetime
+                    ):
+                        interactions.append(interaction)
                 else:
                     raise ValueError(
                         f"There is no received_at or initiated_at field in the request in {fname}"
@@ -64,7 +64,7 @@ def interaction_logs() -> Tuple[str, int]:
 
 
 @webapp.route("/mock_uss/interuss_logging/logs", methods=["DELETE"])
-@requires_scope([SCOPE_SCD_QUALIFIER_INJECT])
+@requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def delete_interaction_logs() -> Tuple[str, int]:
     """Deletes all the files under the logging directory"""
     log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]

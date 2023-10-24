@@ -4,7 +4,6 @@ from datetime import datetime
 from enum import Enum
 import inspect
 from typing import Callable, Dict, List, Optional, TypeVar, Union, Set, Type
-
 import arrow
 from implicitdict import StringBasedDateTime
 from loguru import logger

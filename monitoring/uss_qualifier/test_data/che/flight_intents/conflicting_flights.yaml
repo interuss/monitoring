@@ -1,0 +1,210 @@
+intents:
+  flight_1_planned_vol_A:
+    full:
+      basic_information:
+        usage_state: Planned
+        uas_state: Nominal
+        area:
+          - outline_polygon:
+              vertices:
+                - lng: 7.477419
+                  lat: 46.974785
+                - lng: 7.478261
+                  lat: 46.974776
+                - lng: 7.478263
+                  lat: 46.975519
+                - lng: 7.477415
+                  lat: 46.975528
+            altitude_lower:
+              value: 605.01
+              reference: W84
+              units: M
+            altitude_upper:
+              value: 635
+              reference: W84
+              units: M
+            start_time:
+              offset_from:
+                starting_from:
+                  start_of_test: {}
+                offset: -1s
+            end_time:
+              offset_from:
+                starting_from:
+                  start_of_test: {}
+                offset: 8m
+
+      astm_f3548_21:
+        priority: 0
+
+      uspace_flight_authorisation:
+        uas_serial_number: 1AF49UL5CC5J6K
+        operation_category: Open
+        operation_mode: Vlos
+        uas_class: C0
+        identification_technologies:
+          - ASTMNetRID
+        connectivity_methods:
+          - cellular
+        endurance_minutes: 30
+        emergency_procedure_url: https://example.interussplatform.org/emergency
+        operator_id: CHEo5kut30e0mt01-qwe
+        uas_id: ''
+        uas_type_certificate: ''
+
+  flight_1_activated_vol_A:
+    delta:
+      source: flight_1_planned_vol_A
+      mutation:
+        basic_information:
+          usage_state: InUse
+          area:
+            - altitude_lower:
+                value: 605.02
+
+  flight_1_planned_vol_A_extended:
+    delta:
+      source: flight_1_planned_vol_A
+      mutation:
+        basic_information:
+          area:
+            - outline_polygon:
+                altitude_lower:
+                  value: 575.03
+
+  flight_1_planned_vol_B:
+    delta:
+      source: flight_1_planned_vol_A
+      mutation:
+        basic_information:
+          area:
+            - altitude_lower:
+                value: 650.04
+              altitude_upper:
+                value: 705
+
+  flight_1_activated_vol_A_extended:
+    delta:
+      source: flight_1_planned_vol_A_extended
+      mutation:
+        basic_information:
+          usage_state: InUse
+          area:
+            - altitude_lower:
+                value: 575.05
+
+  flight_1_activated_vol_B:
+    delta:
+      source: flight_1_planned_vol_B
+      mutation:
+        basic_information:
+          usage_state: InUse
+          area:
+            - altitude_lower:
+                value: 650.06
+
+  flight_2_planned_vol_A:
+    full:
+      basic_information:
+        usage_state: Planned
+        uas_state: Nominal
+        area:
+          - outline_polygon:
+              vertices:
+                - lng: 7.477918
+                  lat: 46.974515
+                - lng: 7.478182
+                  lat: 46.974719
+                - lng: 7.474489
+                  lat: 46.977435
+                - lng: 7.474139
+                  lat: 46.977289
+            altitude_lower:
+              value: 605.07
+              reference: W84
+              units: M
+            altitude_upper:
+              value: 635
+              reference: W84
+              units: M
+            start_time:
+              offset_from:
+                starting_from:
+                  start_of_test: {}
+                offset: -1s
+            end_time:
+              offset_from:
+                starting_from:
+                  start_of_test: {}
+                offset: 8m
+
+      astm_f3548_21:
+        priority: 100
+
+      uspace_flight_authorisation:
+        uas_serial_number: 1AF49UL5CC5J6K
+        operation_category: Open
+        operation_mode: Vlos
+        uas_class: C0
+        identification_technologies:
+          - ASTMNetRID
+        connectivity_methods:
+          - cellular
+        endurance_minutes: 30
+        emergency_procedure_url: https://example.interussplatform.org/emergency
+        operator_id: CHEo5kut30e0mt01-qwe
+        uas_id: ''
+        uas_type_certificate: ''
+
+  flight_2_activated_vol_A:
+    delta:
+      source: flight_2_planned_vol_A
+      mutation:
+        basic_information:
+          usage_state: InUse
+          area:
+            - altitude_lower:
+                value: 605.08
+
+  flight_2_activated_vol_B:
+    delta:
+      source: flight_2_activated_vol_A
+      mutation:
+        basic_information:
+          area:
+            - altitude_lower:
+                value: 650.09
+              altitude_upper:
+                value: 705
+
+  flight_2_equal_prio_planned_vol_B:
+    delta:
+      source: flight_2_activated_vol_B
+      mutation:
+        basic_information:
+          usage_state: Planned
+          area:
+            - altitude_lower:
+                value: 650.10
+        astm_f3548_21:
+          priority: 0
+
+  flight_2_equal_prio_activated_vol_B:
+    delta:
+      source: flight_2_equal_prio_planned_vol_B
+      mutation:
+        basic_information:
+          usage_state: InUse
+          area:
+            - altitude_lower:
+                value: 650.11
+
+  flight_2_equal_prio_nonconforming_vol_A:
+    delta:
+      source: flight_2_equal_prio_activated_vol_B
+      mutation:
+        basic_information:
+          uas_state: OffNominal
+          area:
+            - altitude_lower:
+                value: 605.12

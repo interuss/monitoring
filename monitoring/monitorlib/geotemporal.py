@@ -10,12 +10,11 @@ import arrow
 from implicitdict import ImplicitDict, StringBasedTimeDelta, StringBasedDateTime
 from pvlib.solarposition import get_solarposition
 import s2sphere as s2sphere
-from uas_standards.astm.f3411.v22a.api import Polygon
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.interuss.automated_testing.scd.v1 import api as interuss_scd_api
 
 from monitoring.monitorlib import geo
-from monitoring.monitorlib.geo import LatLngPoint, Circle, Altitude, Volume3D
+from monitoring.monitorlib.geo import LatLngPoint, Circle, Altitude, Volume3D, Polygon
 
 
 class OffsetTime(ImplicitDict):

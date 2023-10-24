@@ -1,24 +1,24 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/SpuriousReportMatch.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "Participant-verifiable capability evaluations are only present in TestSuiteReports.  If a CapabilityVerifiedCondition points to a report element that is not a TestSuiteReport, an instance of this class will be generated.\n\nmonitoring.uss_qualifier.reports.report.SpuriousReportMatch, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
-    },
-    "type": {
-      "type": "string",
-      "description": "Data type of the report element (not TestSuiteReport)."
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "location": {
-      "type": "string",
-      "description": "Location of the non-TestSuiteReport report element matching the CapabilityVerifiedCondition's `capability_location`, relative to the TestSuiteReport in which this condition is located."
+      "description": "Location of the non-TestSuiteReport report element matching the CapabilityVerifiedCondition's `capability_location`, relative to the TestSuiteReport in which this condition is located.",
+      "type": "string"
+    },
+    "type": {
+      "description": "Data type of the report element (not TestSuiteReport).",
+      "type": "string"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/SpuriousReportMatch.json",
-  "description": "Participant-verifiable capability evaluations are only present in TestSuiteReports.  If a CapabilityVerifiedCondition points to a report element that is not a TestSuiteReport, an instance of this class will be generated.\n\nmonitoring.uss_qualifier.reports.report.SpuriousReportMatch, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "location",
     "type"
-  ]
+  ],
+  "type": "object"
 }

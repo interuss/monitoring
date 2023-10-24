@@ -16,14 +16,6 @@ observed.  It is intended to be run in a production-like shared test environment
 to verify the interoperability of all participants' systems before promoting
 any system changes to production.
 
-### atproxy
-
-[atproxy](atproxy) exposes automated testing endpoints that can be implemented
-by calling other exposed handler endpoints.  This means that the automated
-testing implementation of a USS can make only outgoing calls to atproxy, which
-can be hosted in an entirely differently location than the automated testing
-implementation.
-
 ### load_test
 
 The [DSS load test](loadtest) sends a large number of concurrent requests to a

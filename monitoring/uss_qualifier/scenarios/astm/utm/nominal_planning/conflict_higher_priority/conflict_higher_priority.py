@@ -75,7 +75,10 @@ class ConflictHigherPriority(TestScenario):
         self.control_uss = control_uss.flight_planner
         self.dss = dss.dss
 
-        _flight_intents = flight_intents.get_flight_intents()
+        _flight_intents = {
+            k: FlightIntent.from_flight_info_template(v)
+            for k, v in flight_intents.get_flight_intents().items()
+        }
 
         extents = []
         for intent in _flight_intents.values():

@@ -38,6 +38,7 @@ from monitoring.uss_qualifier.resources.resource import (
     ResourceType,
     make_child_resources,
     MissingResourceError,
+    create_resources,
 )
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenario,
@@ -184,10 +185,18 @@ class TestSuite(object):
 
         self.declaration = declaration
         self.definition = TestSuiteDefinition.load_from_declaration(declaration)
-        self.local_resources = {
-            local_resource_id: resources[parent_resource_id]
-            for local_resource_id, parent_resource_id in declaration.resources.items()
-        }
+        if "resources" in declaration and declaration.resources:
+            self.local_resources = {
+                local_resource_id: resources[parent_resource_id]
+                for local_resource_id, parent_resource_id in declaration.resources.items()
+            }
+        else:
+            self.local_resources = {}
+        if "local_resources" in self.definition and self.definition.local_resources:
+            local_resources = create_resources(self.definition.local_resources)
+            for local_resource_id, resource in local_resources.items():
+                self.local_resources[local_resource_id] = resource
+
         for resource_id, resource_type in self.definition.resources.items():
             is_optional = resource_type.endswith("?")
             if is_optional:

@@ -1,28 +1,28 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/definitions/ResourceCollection.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.uss_qualifier.resources.definitions.ResourceCollection, as defined in monitoring/uss_qualifier/resources/definitions.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "resource_declarations": {
-      "type": "object",
-      "properties": {
-        "$ref": {
-          "type": "string",
-          "description": "Path to content that replaces the $ref"
-        }
-      },
       "additionalProperties": {
         "$ref": "ResourceDeclaration.json"
       },
-      "description": "Mapping of globally (within resource collection) unique name identifying a resource to the declaration of that resource"
+      "description": "Mapping of globally (within resource collection) unique name identifying a resource to the declaration of that resource",
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
+      },
+      "type": "object"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/definitions/ResourceCollection.json",
-  "description": "monitoring.uss_qualifier.resources.definitions.ResourceCollection, as defined in monitoring/uss_qualifier/resources/definitions.py",
   "required": [
     "resource_declarations"
-  ]
+  ],
+  "type": "object"
 }
