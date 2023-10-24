@@ -1,7 +1,5 @@
-import uuid
 from typing import Tuple, Optional, Set
 from urllib.parse import urlparse
-
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
@@ -37,12 +35,6 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     ClearAreaRequest,
     OperationalIntentState,
     ClearAreaOutcome,
-)
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    SCOPE_SCD_QUALIFIER_INJECT,
-)
-from uas_standards.interuss.automated_testing.scd.v1.api import (
-    StatusResponse,
 )
 
 
@@ -121,6 +113,7 @@ class FlightPlanner:
         self,
         request: InjectFlightRequest,
         flight_id: Optional[str] = None,
+        additional_fields: Optional[dict] = None,
     ) -> Tuple[InjectFlightResponse, fetch.Query, str]:
         usage_states = {
             OperationalIntentState.Accepted: AirspaceUsageState.Planned,
@@ -168,7 +161,7 @@ class FlightPlanner:
         if not flight_id:
             try:
                 resp = self.client.try_plan_flight(
-                    flight_info, ExecutionStyle.IfAllowed
+                    flight_info, ExecutionStyle.IfAllowed, additional_fields
                 )
             except PlanningActivityError as e:
                 raise QueryError(str(e), e.queries)

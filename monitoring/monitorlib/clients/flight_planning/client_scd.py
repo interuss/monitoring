@@ -1,6 +1,5 @@
 import uuid
-from typing import Dict
-
+from typing import Dict, Optional
 from implicitdict import ImplicitDict
 from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
@@ -45,6 +44,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         flight_id: FlightID,
         flight_info: FlightInfo,
         execution_style: ExecutionStyle,
+        additional_fields: Optional[dict] = None,
     ) -> PlanningActivityResponse:
         if execution_style != ExecutionStyle.IfAllowed:
             raise PlanningActivityError(
@@ -107,6 +107,9 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 flight_info.uspace_flight_authorisation, scd_api.FlightAuthorisationData
             )
         req = scd_api.InjectFlightRequest(**kwargs)
+        if additional_fields:
+            for k, v in additional_fields.items():
+                req[k] = v
 
         op = scd_api.OPERATIONS[scd_api.OperationID.InjectFlight]
         url = op.path.format(flight_id=flight_id)
@@ -156,17 +159,25 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         return response
 
     def try_plan_flight(
-        self, flight_info: FlightInfo, execution_style: ExecutionStyle
+        self,
+        flight_info: FlightInfo,
+        execution_style: ExecutionStyle,
+        additional_fields: Optional[dict] = None,
     ) -> PlanningActivityResponse:
-        return self._inject(str(uuid.uuid4()), flight_info, execution_style)
+        return self._inject(
+            str(uuid.uuid4()), flight_info, execution_style, additional_fields
+        )
 
     def try_update_flight(
         self,
         flight_id: FlightID,
         updated_flight_info: FlightInfo,
         execution_style: ExecutionStyle,
+        additional_fields: Optional[dict] = None,
     ) -> PlanningActivityResponse:
-        return self._inject(flight_id, updated_flight_info, execution_style)
+        return self._inject(
+            flight_id, updated_flight_info, execution_style, additional_fields
+        )
 
     def try_end_flight(
         self, flight_id: FlightID, execution_style: ExecutionStyle
