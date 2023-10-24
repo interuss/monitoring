@@ -22,8 +22,6 @@ from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
 
-from monitoring.mock_uss.interaction_logging.interactions import Interaction
-
 
 class FailedCheck(ImplicitDict):
     name: str
@@ -368,8 +366,13 @@ class TestSuiteActionReport(ImplicitDict):
     action_generator: Optional[ActionGeneratorReport]
     """If this action was an action generator, this field will hold its report"""
 
+    skipped_action: Optional[SkippedActionReport]
+    """If this action was skipped, this field will hold its report"""
+
     def get_applicable_report(self) -> Tuple[bool, bool, bool]:
         """Determine which type of report is applicable for this action.
+
+        Note that skipped_action is applicable if none of the other return values are true.
 
         Returns:
             * Whether test_suite is applicable
@@ -381,15 +384,21 @@ class TestSuiteActionReport(ImplicitDict):
         action_generator = (
             "action_generator" in self and self.action_generator is not None
         )
+        skipped_action = "skipped_action" in self and self.skipped_action is not None
         if (
             sum(
                 1 if case else 0
-                for case in [test_suite, test_scenario, action_generator]
+                for case in [
+                    test_suite,
+                    test_scenario,
+                    action_generator,
+                    skipped_action,
+                ]
             )
             != 1
         ):
             raise ValueError(
-                "Exactly one of `test_suite`, `test_scenario`, or `action_generator` must be populated"
+                "Exactly one of `test_suite`, `test_scenario`, `action_generator`, or `skipped_action` must be populated"
             )
         return test_suite, test_scenario, action_generator
 
@@ -398,6 +407,7 @@ class TestSuiteActionReport(ImplicitDict):
         test_suite_func: Union[Callable[[TestSuiteReport], Any], Callable[[Any], Any]],
         test_scenario_func: Optional[Callable[[TestScenarioReport], Any]] = None,
         action_generator_func: Optional[Callable[[ActionGeneratorReport], Any]] = None,
+        skipped_action_func: Optional[Callable[[SkippedActionReport], Any]] = None,
     ) -> Any:
         test_suite, test_scenario, action_generator = self.get_applicable_report()
         if test_suite:
@@ -412,11 +422,10 @@ class TestSuiteActionReport(ImplicitDict):
                 return action_generator_func(self.action_generator)
             else:
                 return test_suite_func(self.action_generator)
-
-        # This line should not be possible to reach
-        raise RuntimeError(
-            "Case selection logic failed for TestSuiteActionReport; none of test_suite, test_scenario, nor action_generator were populated"
-        )
+        if skipped_action_func is not None:
+            return skipped_action_func(self.skipped_action)
+        else:
+            return test_suite_func(self.skipped_action)
 
     def successful(self) -> bool:
         return self._conditional(lambda report: report.successful)
@@ -441,9 +450,7 @@ class TestSuiteActionReport(ImplicitDict):
             report = self.action_generator
             prefix = "action_generator"
         else:
-            raise RuntimeError(
-                "Case selection logic failed for TestSuiteActionReport; none of test_suite, test_scenario, nor action_generator were populated"
-            )
+            return
 
         for path, pc in report.query_passed_checks(participant_id):
             yield f"{prefix}.{path}", pc
@@ -462,9 +469,7 @@ class TestSuiteActionReport(ImplicitDict):
             report = self.action_generator
             prefix = "action_generator"
         else:
-            raise RuntimeError(
-                "Case selection logic failed for TestSuiteActionReport; none of test_suite, test_scenario, nor action_generator were populated"
-            )
+            return
 
         for path, fc in report.query_failed_checks(participant_id):
             yield f"{prefix}.{path}", fc
@@ -627,6 +632,30 @@ class SkippedActionReport(ImplicitDict):
     declaration: TestSuiteActionDeclaration
     """Full declaration of the action that was skipped."""
 
+    @property
+    def successful(self) -> bool:
+        return True
+
+    def has_critical_problem(self) -> bool:
+        return False
+
+    def all_participants(self) -> Set[ParticipantID]:
+        return set()
+
+    def queries(self) -> List[fetch.Query]:
+        return []
+
+    def participant_ids(self) -> Set[ParticipantID]:
+        return set()
+
+    @property
+    def start_time(self) -> Optional[StringBasedDateTime]:
+        return self.timestamp
+
+    @property
+    def end_time(self) -> Optional[StringBasedDateTime]:
+        return self.timestamp
+
 
 class TestSuiteReport(ImplicitDict):
     name: str
@@ -643,9 +672,6 @@ class TestSuiteReport(ImplicitDict):
 
     actions: List[TestSuiteActionReport]
     """Reports from test scenarios and test suites comprising the test suite for this report, in order of execution."""
-
-    skipped_actions: List[SkippedActionReport]
-    """Reports for actions configured but not executed."""
 
     end_time: Optional[StringBasedDateTime]
     """Time at which the test suite completed"""

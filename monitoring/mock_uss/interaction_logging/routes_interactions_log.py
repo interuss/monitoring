@@ -10,7 +10,7 @@ from monitoring.mock_uss.auth import requires_scope
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
 )
-from monitoring.mock_uss.interaction_logging.interactions import (
+from monitoring.monitorlib.clients.mock_uss.interactions import (
     Interaction,
     ListLogsResponse,
 )

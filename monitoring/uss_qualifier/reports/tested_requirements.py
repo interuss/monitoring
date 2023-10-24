@@ -405,7 +405,7 @@ def _populate_breakdown_with_action_report(
                 breakdown, subaction, participant_id, req_set
             )
     else:
-        raise ValueError(f"Unsupported test suite report type")
+        pass  # Skipped action
 
 
 def _populate_breakdown_with_scenario_report(

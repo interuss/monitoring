@@ -497,12 +497,6 @@ def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Act
         )
     elif is_test_suite:
         children = [_compute_action_node(a, indexer) for a in report.test_suite.actions]
-        for skipped_action in report.test_suite.skipped_actions:
-            i = 0
-            for i, a in enumerate(report.test_suite.actions):
-                if a.start_time.datetime > skipped_action.timestamp.datetime:
-                    break
-            children.insert(i, _skipped_action_of(skipped_action))
         return ActionNode(
             name=report.test_suite.name,
             node_type=ActionNodeType.Suite,
@@ -521,9 +515,7 @@ def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Act
             ],
         )
     else:
-        raise ValueError(
-            "Invalid TestSuiteActionReport; doesn't specify scenario, suite, or action generator"
-        )
+        return _skipped_action_of(report.skipped_action)
 
 
 def _compute_overview_rows(node: ActionNode) -> Iterator[OverviewRow]:
