@@ -115,7 +115,12 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         op = scd_api.OPERATIONS[scd_api.OperationID.InjectFlight]
         url = op.path.format(flight_id=flight_id)
         query = query_and_describe(
-            self._session, op.verb, url, json=req, scope=self.SCD_SCOPE, additional_fields=additional_fields
+            self._session,
+            op.verb,
+            url,
+            json=req,
+            scope=self.SCD_SCOPE,
+            additional_fields=additional_fields,
         )
         if query.status_code != 200 and query.status_code != 201:
             raise PlanningActivityError(

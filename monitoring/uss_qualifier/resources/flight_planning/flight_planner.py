@@ -1,6 +1,5 @@
 from typing import Tuple, Optional, Set
 from urllib.parse import urlparse
-from loguru import logger
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
@@ -38,15 +37,6 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     ClearAreaOutcome,
 )
 
-from monitoring.monitorlib.mock_uss_interface.mock_uss_scd_injection_api import (
-    MockUssFlightBehavior,
-)
-from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
-    SCOPE_SCD_QUALIFIER_INJECT,
-)
-from uas_standards.interuss.automated_testing.scd.v1.api import (
-    StatusResponse,
-)
 
 
 class FlightPlannerConfiguration(ImplicitDict):
@@ -175,7 +165,7 @@ class FlightPlanner:
 
         if not flight_id:
             try:
-                resp = self.scd_client.try_plan_flight(
+                resp = self.client.try_plan_flight(
                     flight_info, ExecutionStyle.IfAllowed, additional_fields
                 )
             except PlanningActivityError as e:

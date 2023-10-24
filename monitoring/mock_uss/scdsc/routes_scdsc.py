@@ -59,7 +59,9 @@ def op_intent_from_flightrecord(flight: FlightRecord) -> OperationalIntent:
     op_intent = OperationalIntent(reference=ref, details=details)
     method = "GET"
     if "mod_op_sharing_behavior" in flight:
-        mod_op_sharing_behavior = ImplicitDict.parse(flight.mod_op_sharing_behavior, MockUssFlightBehavior)
+        mod_op_sharing_behavior = ImplicitDict.parse(
+            flight.mod_op_sharing_behavior, MockUssFlightBehavior
+        )
         if mod_op_sharing_behavior.modify_sharing_methods is not None:
             if method not in mod_op_sharing_behavior.modify_sharing_methods:
                 return OperationalIntent(reference=ref, details=details)

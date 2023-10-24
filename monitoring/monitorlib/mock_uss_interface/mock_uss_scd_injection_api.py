@@ -18,10 +18,12 @@ class MockUssFlightBehavior(ImplicitDict):
             }
         }
     """
+
     modify_sharing_methods: List[str]
     modify_fields: dict
 
 
 class AddlFieldsInjectFlightRequest(InjectFlightRequest):
     """InjectFlightRequest with additional_fields"""
+
     additional_fields: Optional[dict]

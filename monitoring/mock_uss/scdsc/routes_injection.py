@@ -56,7 +56,8 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
 )
 from monitoring.monitorlib.mock_uss_interface.mock_uss_scd_injection_api import (
-    AddlFieldsInjectFlightRequest, MockUssFlightBehavior
+    AddlFieldsInjectFlightRequest,
+    MockUssFlightBehavior,
 )
 from monitoring.uss_qualifier.resources.overrides import (
     apply_overrides_without_parse_type,
@@ -165,9 +166,7 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
         logger.debug(f"Received flight for injection - {json}")
         if json is None:
             raise ValueError("Request did not contain a JSON payload")
-        req_body = ImplicitDict.parse(
-            json, AddlFieldsInjectFlightRequest
-        )
+        req_body = ImplicitDict.parse(json, AddlFieldsInjectFlightRequest)
     except ValueError as e:
         msg = "Create flight {} unable to parse JSON: {}".format(flight_id, e)
         return msg, 400
@@ -217,18 +216,20 @@ def op_to_share(
     return op_intent
 
 
-def mock_uss_flight_behavior_in_req(req_body: InjectFlightRequest) -> MockUssFlightBehavior:
+def mock_uss_flight_behavior_in_req(
+    req_body: InjectFlightRequest,
+) -> MockUssFlightBehavior:
     mock_uss_flight_behavior = None
     if "additional_fields" in req_body:
         addl_fields = req_body.additional_fields
         if "mock_uss_flight_behavior" in addl_fields:
-            mock_uss_flight_behavior = ImplicitDict.parse(addl_fields["mock_uss_flight_behavior"],
-                                                          MockUssFlightBehavior)
+            mock_uss_flight_behavior = ImplicitDict.parse(
+                addl_fields["mock_uss_flight_behavior"], MockUssFlightBehavior
+            )
     return mock_uss_flight_behavior
 
-def inject_flight(
-    flight_id: str, req_body: InjectFlightRequest
-) -> Tuple[dict, int]:
+
+def inject_flight(flight_id: str, req_body: InjectFlightRequest) -> Tuple[dict, int]:
     pid = os.getpid()
     locality = get_locality()
 
@@ -386,7 +387,7 @@ def inject_flight(
             op_intent_reference=result.operational_intent_reference,
             op_intent_injection=req_body.operational_intent,
             flight_authorisation=req_body.flight_authorisation,
-            mod_op_sharing_behavior=mock_uss_flight_behavior_in_req(req_body)
+            mod_op_sharing_behavior=mock_uss_flight_behavior_in_req(req_body),
         )
         with db as tx:
             tx.flights[flight_id] = record
