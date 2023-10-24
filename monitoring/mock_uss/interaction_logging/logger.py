@@ -3,11 +3,10 @@ import datetime
 
 import flask
 import json
-from loguru import logger
 
 from monitoring.mock_uss import webapp, require_config_value
 from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_DIR
-from monitoring.mock_uss.interaction_logging.interactions import (
+from monitoring.monitorlib.clients.mock_uss.interactions import (
     Interaction,
     QueryDirection,
 )

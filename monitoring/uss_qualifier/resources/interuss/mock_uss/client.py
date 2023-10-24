@@ -1,4 +1,4 @@
-from typing import Tuple, Optional, List
+from typing import Optional
 
 from loguru import logger
 from implicitdict import ImplicitDict
@@ -8,7 +8,7 @@ from monitoring.monitorlib.clients.mock_uss.locality import (
     GetLocalityResponse,
     PutLocalityRequest,
 )
-from monitoring.monitorlib.fetch import QueryError, Query
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession
 from monitoring.monitorlib.locality import LocalityCode
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
@@ -17,7 +17,7 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
 from monitoring.uss_qualifier.reports.report import ParticipantID
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.resource import Resource
-from monitoring.mock_uss.interaction_logging.interactions import (
+from monitoring.monitorlib.clients.mock_uss.interactions import (
     Interaction,
     ListLogsResponse,
 )
