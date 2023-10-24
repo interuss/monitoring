@@ -1,0 +1,67 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/geotemporal/TestTime.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Exactly one of the time option fields of this object must be specified.\n\nmonitoring.monitorlib.geotemporal.TestTime, as defined in monitoring/monitorlib/geotemporal.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "absolute_time": {
+      "description": "Time option field to use a precise timestamp which does not change with test conditions.\n\nThe value of absolute_time is limited given that the specific time a test will be started is unknown, and the jurisdictions usually impose a limit on how far in the future an operation can be planned.",
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "next_day": {
+      "description": "Time option field to use a timestamp equal to midnight beginning the next occurrence of any matching day following the specified reference timestamp.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "NextDay.json"
+        }
+      ]
+    },
+    "next_sun_position": {
+      "description": "Time option field to use a timestamp equal to the next time after the specified reference timestamp at which the sun will be at the specified angle above the horizon.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "NextSunPosition.json"
+        }
+      ]
+    },
+    "offset_from": {
+      "description": "Time option field to use a timestamp that is offset by the specified amount from the specified time.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "OffsetTime.json"
+        }
+      ]
+    },
+    "start_of_test": {
+      "description": "Time option field to, if specified, use the timestamp at which the current test run started.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "use_timezone": {
+      "description": "If specified, report the timestamp in the specified time zone.  Examples:\n  * \"local\" (local time of machine running this code)\n  * \"Z\" (Zulu time)\n  * \"-08:00\" (ISO time zone)\n  * \"US/Pacific\" (IANA time zone)",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

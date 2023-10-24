@@ -33,7 +33,7 @@ class ErrorResponse(ImplicitDict):
 
 
 @webapp.route("/ridsp/injection/tests/<test_id>", methods=["PUT"])
-@requires_scope([injection_api.SCOPE_RID_QUALIFIER_INJECT])
+@requires_scope(injection_api.SCOPE_RID_QUALIFIER_INJECT)
 @idempotent_request()
 def ridsp_create_test(test_id: str) -> Tuple[str, int]:
     """Implements test creation in RID automated testing injection API."""
@@ -111,7 +111,7 @@ def ridsp_create_test(test_id: str) -> Tuple[str, int]:
 
 
 @webapp.route("/ridsp/injection/tests/<test_id>/<version>", methods=["DELETE"])
-@requires_scope([injection_api.SCOPE_RID_QUALIFIER_INJECT])
+@requires_scope(injection_api.SCOPE_RID_QUALIFIER_INJECT)
 def ridsp_delete_test(test_id: str, version: str) -> Tuple[str, int]:
     """Implements test deletion in RID automated testing injection API."""
     logger.info(f"Delete test {test_id}")

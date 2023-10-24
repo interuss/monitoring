@@ -1,28 +1,28 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/fetch/RequestDescription.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.monitorlib.fetch.RequestDescription, as defined in monitoring/monitorlib/fetch/__init__.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
-    "initiated_at": {
+    "body": {
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time"
-    },
-    "received_at": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "date-time"
+      ]
     },
     "headers": {
       "type": [
         "object",
+        "null"
+      ]
+    },
+    "initiated_at": {
+      "format": "date-time",
+      "type": [
+        "string",
         "null"
       ]
     },
@@ -35,20 +35,20 @@
     "method": {
       "type": "string"
     },
-    "url": {
-      "type": "string"
-    },
-    "body": {
+    "received_at": {
+      "format": "date-time",
       "type": [
         "string",
         "null"
       ]
+    },
+    "url": {
+      "type": "string"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/fetch/RequestDescription.json",
-  "description": "monitoring.monitorlib.fetch.RequestDescription, as defined in monitoring/monitorlib/fetch/__init__.py",
   "required": [
     "method",
     "url"
-  ]
+  ],
+  "type": "object"
 }

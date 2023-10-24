@@ -101,13 +101,13 @@ adjacent_circular_storage_config:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
   resource_type: resources.netrid.FlightDataStorageResource
   specification:
-    flight_record_collection_path: "./output/test_data.che.netrid.circular_flights.json"
+    flight_record_collection_path: "./output/generate_rid_test_data/flight_data/test_data.che.netrid.circular_flights.json"
 
 kml_storage_config:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
   resource_type: resources.netrid.FlightDataStorageResource
   specification:
-    flight_record_collection_path: "./output/test_data.usa.netrid.dcdemo_flights.json"
+    flight_record_collection_path: "./output/generate_rid_test_data/flight_data/test_data.usa.netrid.dcdemo_flights.json"
 
 # ===== Flight planning intents =====
 
@@ -341,11 +341,3 @@ locality_che:
   resource_type: resources.interuss.mock_uss.locality.LocalityResource
   specification:
     locality_code: CHE
-
-# ===== System versioning =====
-
-uspace_system_identity:
-  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.versioning.SystemIdentityResource
-  specification:
-    system_identity: uspace.ussp

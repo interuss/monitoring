@@ -1,0 +1,23 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/RawReportConfiguration.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.configurations.configuration.RawReportConfiguration, as defined in monitoring/uss_qualifier/configurations/configuration.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "indent": {
+      "description": "To pretty-print JSON content, specify an indent level (generally 2), or omit or set to None to write compactly.",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "redact_access_tokens": {
+      "description": "When True, look for instances of \"Authorization\" keys in the report with values starting \"Bearer \" and redact the signature from those access tokens",
+      "type": "boolean"
+    }
+  },
+  "type": "object"
+}

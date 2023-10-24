@@ -1,64 +1,64 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestStepReport.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "monitoring.uss_qualifier.reports.report.TestStepReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
-    },
-    "failed_checks": {
-      "type": "array",
-      "items": {
-        "$ref": "FailedCheck.json"
-      },
-      "description": "The checks which failed in this test step"
-    },
-    "name": {
-      "type": "string",
-      "description": "Name of this test step"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
     },
     "documentation_url": {
-      "type": "string",
-      "description": "URL at which this test step is described"
+      "description": "URL at which this test step is described",
+      "type": "string"
     },
     "end_time": {
+      "description": "Time at which the test step completed or encountered an error",
+      "format": "date-time",
       "type": [
         "string",
         "null"
-      ],
-      "format": "date-time",
-      "description": "Time at which the test step completed or encountered an error"
+      ]
     },
-    "queries": {
-      "type": [
-        "array",
-        "null"
-      ],
+    "failed_checks": {
+      "description": "The checks which failed in this test step",
       "items": {
-        "$ref": "../../../monitorlib/fetch/Query.json"
+        "$ref": "FailedCheck.json"
       },
-      "description": "Description of HTTP requests relevant to this issue"
+      "type": "array"
     },
-    "start_time": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Time at which the test step started"
+    "name": {
+      "description": "Name of this test step",
+      "type": "string"
     },
     "passed_checks": {
-      "type": "array",
+      "description": "The checks which successfully passed in this test step",
       "items": {
         "$ref": "PassedCheck.json"
       },
-      "description": "The checks which successfully passed in this test step"
+      "type": "array"
+    },
+    "queries": {
+      "description": "Description of HTTP requests relevant to this issue",
+      "items": {
+        "$ref": "../../../monitorlib/fetch/Query.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "start_time": {
+      "description": "Time at which the test step started",
+      "format": "date-time",
+      "type": "string"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/TestStepReport.json",
-  "description": "monitoring.uss_qualifier.reports.report.TestStepReport, as defined in monitoring/uss_qualifier/reports/report.py",
   "required": [
     "documentation_url",
     "failed_checks",
     "name",
     "passed_checks",
     "start_time"
-  ]
+  ],
+  "type": "object"
 }

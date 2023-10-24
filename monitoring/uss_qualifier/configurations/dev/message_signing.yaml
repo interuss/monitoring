@@ -21,11 +21,11 @@ v1:
           specification:
             flight_planners:
               - participant_id: uss1
-                injection_base_url: http://host.docker.internal:8074/scdsc
+                scd_injection_base_url: http://host.docker.internal:8074/scdsc
               - participant_id: uss2
-                injection_base_url: http://host.docker.internal:8074/scdsc
+                scd_injection_base_url: http://host.docker.internal:8074/scdsc
               - participant_id: mock_uss
-                injection_base_url: http://host.docker.internal:8074/scdsc
+                scd_injection_base_url: http://host.docker.internal:8074/scdsc
         mock_uss:
           resource_type: resources.interuss.mock_uss.client.MockUSSResource
           dependencies:
@@ -50,5 +50,5 @@ v1:
           dss: scd_dss
 
   artifacts:
-    report:
-      report_path: output/report_message_signing.json
+    output_path: output/message_signing
+    raw_report: {}

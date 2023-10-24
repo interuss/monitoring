@@ -1,16 +1,51 @@
 {
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/suites/definitions/TestSuiteDefinition.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
+  "description": "Schema for the definition of a test suite, analogous to the Python TestScenario subclass for scenarios\n\nmonitoring.uss_qualifier.suites.definitions.TestSuiteDefinition, as defined in monitoring/uss_qualifier/suites/definitions.py",
   "properties": {
     "$ref": {
-      "type": "string",
-      "description": "Path to content that replaces the $ref"
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "actions": {
+      "description": "The actions to take when running the test suite.  Components will be executed in order.",
+      "items": {
+        "$ref": "TestSuiteActionDeclaration.json"
+      },
+      "type": "array"
+    },
+    "local_resources": {
+      "additionalProperties": {
+        "$ref": "../../resources/definitions/ResourceDeclaration.json"
+      },
+      "description": "Declarations of resources originating in this test suite.",
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
     },
     "name": {
-      "type": "string",
-      "description": "Name of the test suite"
+      "description": "Name of the test suite",
+      "type": "string"
+    },
+    "participant_verifiable_capabilities": {
+      "description": "Definitions of capabilities verified by this test suite for individual participants.",
+      "items": {
+        "$ref": "../../reports/capability_definitions/ParticipantCapabilityDefinition.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
     },
     "report_evaluation_scenario": {
+      "description": "The scenario executed after all the actions that evaluates the test suite report. Must be a ReportEvaluationScenario.",
       "oneOf": [
         {
           "type": "null"
@@ -18,45 +53,26 @@
         {
           "$ref": "../../scenarios/definitions/TestScenarioDeclaration.json"
         }
-      ],
-      "description": "The scenario executed after all the actions that evaluates the test suite report. Must be a ReportEvaluationScenario."
-    },
-    "participant_verifiable_capabilities": {
-      "type": [
-        "array",
-        "null"
-      ],
-      "items": {
-        "$ref": "../../reports/capability_definitions/ParticipantCapabilityDefinition.json"
-      },
-      "description": "Definitions of capabilities verified by this test suite for individual participants."
+      ]
     },
     "resources": {
-      "type": "object",
-      "properties": {
-        "$ref": {
-          "type": "string",
-          "description": "Path to content that replaces the $ref"
-        }
-      },
       "additionalProperties": {
         "type": "string"
       },
-      "description": "Enumeration of the resources used by this test suite"
-    },
-    "actions": {
-      "type": "array",
-      "items": {
-        "$ref": "TestSuiteActionDeclaration.json"
+      "description": "Enumeration of the resources used by this test suite",
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
       },
-      "description": "The actions to take when running the test suite.  Components will be executed in order."
+      "type": "object"
     }
   },
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/suites/definitions/TestSuiteDefinition.json",
-  "description": "Schema for the definition of a test suite, analogous to the Python TestScenario subclass for scenarios\n\nmonitoring.uss_qualifier.suites.definitions.TestSuiteDefinition, as defined in monitoring/uss_qualifier/suites/definitions.py",
   "required": [
     "actions",
     "name",
     "resources"
-  ]
+  ],
+  "type": "object"
 }

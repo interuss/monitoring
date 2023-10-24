@@ -1,0 +1,25 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/flight_planning/flight_intent/FlightIntentsSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.flight_planning.flight_intent.FlightIntentsSpecification, as defined in monitoring/uss_qualifier/resources/flight_planning/flight_intent.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "file": {
+      "$ref": "../../files/ExternalFile.json",
+      "description": "Location of file to load"
+    },
+    "planning_time": {
+      "description": "Time delta between the time uss_qualifier initiates this FlightInjectionAttempt and when a timestamp within the test_injection equal to reference_time occurs",
+      "format": "duration",
+      "type": "string"
+    }
+  },
+  "required": [
+    "file",
+    "planning_time"
+  ],
+  "type": "object"
+}
