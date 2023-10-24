@@ -16,8 +16,6 @@ from uas_standards.interuss.automated_testing.scd.v1 import (
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     FlightInfo,
     FlightID,
-    AirspaceUsageState,
-    UasState,
     ExecutionStyle,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
@@ -50,41 +48,8 @@ class SCDFlightPlannerClient(FlightPlannerClient):
             raise PlanningActivityError(
                 f"Legacy scd automated testing API only supports {ExecutionStyle.IfAllowed} actions; '{execution_style}' is not supported"
             )
-        usage_state = flight_info.basic_information.usage_state
-        uas_state = flight_info.basic_information.uas_state
-        if uas_state == UasState.Nominal:
-            if usage_state == AirspaceUsageState.Planned:
-                state = scd_api.OperationalIntentState.Accepted
-            elif usage_state == AirspaceUsageState.InUse:
-                state = scd_api.OperationalIntentState.Activated
-            else:
-                raise NotImplementedError(
-                    f"Unsupported operator AirspaceUsageState '{usage_state}' with UasState '{uas_state}'"
-                )
-        elif usage_state == AirspaceUsageState.InUse:
-            if uas_state == UasState.OffNominal:
-                state = scd_api.OperationalIntentState.Nonconforming
-            elif uas_state == UasState.Contingent:
-                state = scd_api.OperationalIntentState.Contingent
-            else:
-                raise NotImplementedError(
-                    f"Unsupported operator UasState '{uas_state}' with AirspaceUsageState '{usage_state}'"
-                )
-        else:
-            raise NotImplementedError(
-                f"Unsupported combination of operator AirspaceUsageState '{usage_state}' and UasState '{uas_state}'"
-            )
 
-        if uas_state == UasState.Nominal:
-            volumes = [
-                v.to_interuss_scd_api() for v in flight_info.basic_information.area
-            ]
-            off_nominal_volumes = []
-        else:
-            volumes = []
-            off_nominal_volumes = [
-                v.to_interuss_scd_api() for v in flight_info.basic_information.area
-            ]
+        req = flight_info.to_scd_inject_flight_request()
 
         if "astm_f3548_21" in flight_info and flight_info.astm_f3548_21:
             priority = flight_info.astm_f3548_21.priority
@@ -92,10 +57,10 @@ class SCDFlightPlannerClient(FlightPlannerClient):
             priority = 0
 
         operational_intent = scd_api.OperationalIntentTestInjection(
-            state=state,
+            state=req.operational_intent.state,
             priority=priority,
-            volumes=volumes,
-            off_nominal_volumes=off_nominal_volumes,
+            volumes=req.operational_intent.volumes,
+            off_nominal_volumes=req.operational_intent.off_nominal_volumes,
         )
 
         kwargs = {"operational_intent": operational_intent}

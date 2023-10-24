@@ -27,7 +27,7 @@ def scdsc_get_operational_intent_details(entityid: str):
     tx = db.value
     flight = None
     for f in tx.flights.values():
-        if f.op_intent.reference.id == entityid:
+        if f and f.op_intent.reference.id == entityid:
             flight = f
             break
 

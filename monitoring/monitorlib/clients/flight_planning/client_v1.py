@@ -1,3 +1,4 @@
+import json
 import uuid
 from typing import Optional
 
@@ -39,7 +40,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
         execution_style: ExecutionStyle,
         additional_fields: Optional[dict] = None,
     ) -> PlanningActivityResponse:
-        flight_plan = ImplicitDict.parse(flight_info, api.FlightPlan)
+        flight_plan = flight_info.to_flight_plan()
         req = api.UpsertFlightPlanRequest(
             flight_plan=flight_plan,
             execution_style=execution_style,

@@ -12,6 +12,7 @@ from pvlib.solarposition import get_solarposition
 import s2sphere as s2sphere
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.interuss.automated_testing.scd.v1 import api as interuss_scd_api
+from uas_standards.interuss.automated_testing.flight_planning.v1 import api as fp_api
 
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.geo import LatLngPoint, Circle, Altitude, Volume3D, Polygon
@@ -343,6 +344,30 @@ class Volume4D(ImplicitDict):
     def to_interuss_scd_api(self) -> interuss_scd_api.Volume4D:
         # InterUSS SCD API is field-compatible with ASTM F3548-21
         return ImplicitDict.parse(self.to_f3548v21(), interuss_scd_api.Volume4D)
+
+    @staticmethod
+    def from_flight_planning_api(vol: fp_api.Volume4D):
+        if "time_start" in vol and vol.time_start:
+            t_start = Time(vol.time_start.value)
+        else:
+            t_start = None
+        if "time_end" in vol and vol.time_end:
+            t_end = Time(vol.time_end.value)
+        else:
+            t_end = None
+        return Volume4D(
+            volume=Volume3D.from_flight_planning_api(vol.volume),
+            time_start=t_start,
+            time_end=t_end,
+        )
+
+    def to_flight_planning_api(self) -> fp_api.Volume4D:
+        kwargs = {"volume": self.volume.to_flight_planning_api()}
+        if self.time_start:
+            kwargs["time_start"] = fp_api.Time(value=self.time_start)
+        if self.time_end:
+            kwargs["time_end"] = fp_api.Time(value=self.time_end)
+        return fp_api.Volume4D(**kwargs)
 
 
 def resolve_volume4d(template: Volume4DTemplate, start_of_test: datetime) -> Volume4D:

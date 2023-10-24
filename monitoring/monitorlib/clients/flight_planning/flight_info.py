@@ -6,6 +6,7 @@ from implicitdict import ImplicitDict
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.en4709_02 import OperatorRegistrationNumber
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
+from uas_standards.interuss.automated_testing.flight_planning.v1 import api as fp_api
 
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 
@@ -210,6 +211,23 @@ class BasicFlightPlanInformation(ImplicitDict):
     area: List[Volume4D]
     """User intends to or may fly anywhere in this entire area."""
 
+    @staticmethod
+    def from_flight_planning_api(
+        info: fp_api.BasicFlightPlanInformation,
+    ) -> BasicFlightPlanInformation:
+        return BasicFlightPlanInformation(
+            usage_state=AirspaceUsageState(info.usage_state),
+            uas_state=UasState(info.uas_state),
+            area=[Volume4D.from_flight_planning_api(v) for v in info.area],
+        )
+
+    def to_flight_planning_api(self) -> fp_api.BasicFlightPlanInformation:
+        return fp_api.BasicFlightPlanInformation(
+            usage_state=fp_api.BasicFlightPlanInformationUsageState(self.usage_state),
+            uas_state=fp_api.BasicFlightPlanInformationUasState(self.uas_state),
+            area=[v.to_flight_planning_api() for v in self.area],
+        )
+
 
 class FlightInfo(ImplicitDict):
     """Details of user's intent to create or modify a flight plan."""
@@ -224,6 +242,47 @@ class FlightInfo(ImplicitDict):
 
     additional_information: Optional[dict]
     """Any information relevant to a particular jurisdiction or use case not described in the standard schema. The keys and values must be agreed upon between the test designers and USSs under test."""
+
+    @staticmethod
+    def from_flight_plan(plan: fp_api.FlightPlan) -> FlightInfo:
+        kwargs = {
+            "basic_information": BasicFlightPlanInformation.from_flight_planning_api(
+                plan.basic_information
+            )
+        }
+        if "astm_f3548_21" in plan and plan.astm_f3548_21:
+            kwargs["astm_f3548_21"] = ImplicitDict.parse(
+                plan.astm_f3548_21, ASTMF354821OpIntentInformation
+            )
+        if "uspace_flight_authorisation" in plan and plan.uspace_flight_authorisation:
+            kwargs["uspace_flight_authorisation"] = ImplicitDict.parse(
+                plan.uspace_flight_authorisation, FlightAuthorisationData
+            )
+        if "rpas_operating_rules_2_6" in plan and plan.rpas_operating_rules_2_6:
+            kwargs["rpas_operating_rules_2_6"] = ImplicitDict.parse(
+                plan.rpas_operating_rules_2_6, RPAS26FlightDetails
+            )
+        if "additional_information" in plan and plan.additional_information:
+            kwargs["additional_information"] = plan.additional_information
+        return FlightInfo(**kwargs)
+
+    def to_flight_plan(self) -> fp_api.FlightPlan:
+        kwargs = {"basic_information": self.basic_information.to_flight_planning_api()}
+        if "astm_f3548_21" in self and self.astm_f3548_21:
+            kwargs["astm_f3548_21"] = ImplicitDict.parse(
+                self.astm_f3548_21, fp_api.ASTMF354821OpIntentInformation
+            )
+        if "uspace_flight_authorisation" in self and self.uspace_flight_authorisation:
+            kwargs["uspace_flight_authorisation"] = ImplicitDict.parse(
+                self.uspace_flight_authorisation, fp_api.FlightAuthorisationData
+            )
+        if "rpas_operating_rules_2_6" in self and self.rpas_operating_rules_2_6:
+            kwargs["rpas_operating_rules_2_6"] = ImplicitDict.parse(
+                self.rpas_operating_rules_2_6, fp_api.RPAS26FlightDetails
+            )
+        if "additional_information" in self and self.additional_information:
+            kwargs["additional_information"] = self.additional_information
+        return fp_api.FlightPlan(**kwargs)
 
     @staticmethod
     def from_scd_inject_flight_request(
@@ -275,6 +334,60 @@ class FlightInfo(ImplicitDict):
             uspace_flight_authorisation=uspace_flight_authorisation,
         )
         return flight_info
+
+    def to_scd_inject_flight_request(self) -> scd_api.InjectFlightRequest:
+        usage_state = self.basic_information.usage_state
+        uas_state = self.basic_information.uas_state
+        if uas_state == UasState.Nominal:
+            if usage_state == AirspaceUsageState.Planned:
+                state = scd_api.OperationalIntentState.Accepted
+            elif usage_state == AirspaceUsageState.InUse:
+                state = scd_api.OperationalIntentState.Activated
+            else:
+                raise NotImplementedError(
+                    f"Unsupported operator AirspaceUsageState '{usage_state}' with UasState '{uas_state}'"
+                )
+        elif usage_state == AirspaceUsageState.InUse:
+            if uas_state == UasState.OffNominal:
+                state = scd_api.OperationalIntentState.Nonconforming
+            elif uas_state == UasState.Contingent:
+                state = scd_api.OperationalIntentState.Contingent
+            else:
+                raise NotImplementedError(
+                    f"Unsupported operator UasState '{uas_state}' with AirspaceUsageState '{usage_state}'"
+                )
+        else:
+            raise NotImplementedError(
+                f"Unsupported combination of operator AirspaceUsageState '{usage_state}' and UasState '{uas_state}'"
+            )
+
+        if uas_state == UasState.Nominal:
+            volumes = [v.to_interuss_scd_api() for v in self.basic_information.area]
+            off_nominal_volumes = []
+        else:
+            volumes = []
+            off_nominal_volumes = [
+                v.to_interuss_scd_api() for v in self.basic_information.area
+            ]
+
+        if "astm_f3548_21" in self and self.astm_f3548_21:
+            priority = self.astm_f3548_21.priority
+        else:
+            priority = 0
+
+        operational_intent = scd_api.OperationalIntentTestInjection(
+            state=state,
+            priority=priority,
+            volumes=volumes,
+            off_nominal_volumes=off_nominal_volumes,
+        )
+
+        kwargs = {"operational_intent": operational_intent}
+        if "uspace_flight_authorisation" in self and self.uspace_flight_authorisation:
+            kwargs["flight_authorisation"] = ImplicitDict.parse(
+                self.uspace_flight_authorisation, scd_api.FlightAuthorisationData
+            )
+        return scd_api.InjectFlightRequest(**kwargs)
 
 
 class ExecutionStyle(str, Enum):
