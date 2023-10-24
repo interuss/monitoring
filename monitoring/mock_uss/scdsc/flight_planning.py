@@ -115,7 +115,7 @@ def check_for_disallowed_conflicts(
     for op_intent in op_intents:
         if (
             existing_flight
-            and existing_flight.op_intent_reference.id == op_intent.reference.id
+            and existing_flight.op_intent.reference.id == op_intent.reference.id
         ):
             log(
                 f"intersection with {op_intent.reference.id} not considered: intersection with a past version of this flight"
@@ -143,14 +143,14 @@ def check_for_disallowed_conflicts(
 
         modifying_activated = (
             existing_flight
-            and existing_flight.op_intent_reference.state
+            and existing_flight.op_intent.reference.state
             == scd_api.OperationalIntentState.Activated
             and req_body.operational_intent.state
             == scd_api.OperationalIntentState.Activated
         )
         if modifying_activated:
             preexisting_conflict = Volume4DCollection.from_interuss_scd_api(
-                existing_flight.op_intent_injection.volumes
+                existing_flight.op_intent.details.volumes
             ).intersects_vol4s(v2)
             if preexisting_conflict:
                 log(
