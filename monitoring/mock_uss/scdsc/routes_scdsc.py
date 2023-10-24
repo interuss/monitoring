@@ -21,7 +21,7 @@ def scdsc_get_operational_intent_details(entityid: str):
     tx = db.value
     flight = None
     for f in tx.flights.values():
-        if f.op_intent_reference.id == entityid:
+        if f.op_intent.reference.id == entityid:
             flight = f
             break
 
@@ -47,11 +47,11 @@ def scdsc_get_operational_intent_details(entityid: str):
 
 def op_intent_from_flightrecord(flight: FlightRecord) -> OperationalIntent:
     return OperationalIntent(
-        reference=flight.op_intent_reference,
+        reference=flight.op_intent.reference,
         details=OperationalIntentDetails(
-            volumes=flight.op_intent_injection.volumes,
-            off_nominal_volumes=flight.op_intent_injection.off_nominal_volumes,
-            priority=flight.op_intent_injection.priority,
+            volumes=flight.op_intent.details.volumes,
+            off_nominal_volumes=flight.op_intent.details.off_nominal_volumes,
+            priority=flight.op_intent.details.priority,
         ),
     )
 

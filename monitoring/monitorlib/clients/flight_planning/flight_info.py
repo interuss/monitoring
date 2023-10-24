@@ -1,12 +1,13 @@
+from __future__ import annotations
 from enum import Enum
 from typing import Optional, List
 
 from implicitdict import ImplicitDict
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.en4709_02 import OperatorRegistrationNumber
+from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
-from monitoring.monitorlib.geotemporal import Volume4D
-
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 
 # ===== ASTM F3548-21 =====
 
@@ -223,6 +224,57 @@ class FlightInfo(ImplicitDict):
 
     additional_information: Optional[dict]
     """Any information relevant to a particular jurisdiction or use case not described in the standard schema. The keys and values must be agreed upon between the test designers and USSs under test."""
+
+    @staticmethod
+    def from_scd_inject_flight_request(
+        request: scd_api.InjectFlightRequest,
+    ) -> FlightInfo:
+        usage_states = {
+            scd_api.OperationalIntentState.Accepted: AirspaceUsageState.Planned,
+            scd_api.OperationalIntentState.Activated: AirspaceUsageState.InUse,
+            scd_api.OperationalIntentState.Nonconforming: AirspaceUsageState.InUse,
+            scd_api.OperationalIntentState.Contingent: AirspaceUsageState.InUse,
+        }
+        uas_states = {
+            scd_api.OperationalIntentState.Accepted: UasState.Nominal,
+            scd_api.OperationalIntentState.Activated: UasState.Nominal,
+            scd_api.OperationalIntentState.Nonconforming: UasState.OffNominal,
+            scd_api.OperationalIntentState.Contingent: UasState.Contingent,
+        }
+        if (
+            request.operational_intent.state
+            in (
+                scd_api.OperationalIntentState.Accepted,
+                scd_api.OperationalIntentState.Activated,
+            )
+            and request.operational_intent.off_nominal_volumes
+        ):
+            # This invalid request can no longer be represented with a standard flight planning request
+            raise ValueError(
+                f"Request for nominal {request.operational_intent.state} operational intent is invalid because it contains off-nominal volumes"
+            )
+        v4c = Volume4DCollection.from_interuss_scd_api(
+            request.operational_intent.volumes
+        ) + Volume4DCollection.from_interuss_scd_api(
+            request.operational_intent.off_nominal_volumes
+        )
+        basic_information = BasicFlightPlanInformation(
+            usage_state=usage_states[request.operational_intent.state],
+            uas_state=uas_states[request.operational_intent.state],
+            area=v4c.volumes,
+        )
+        astm_f3548v21 = ASTMF354821OpIntentInformation(
+            priority=request.operational_intent.priority
+        )
+        uspace_flight_authorisation = ImplicitDict.parse(
+            request.flight_authorisation, FlightAuthorisationData
+        )
+        flight_info = FlightInfo(
+            basic_information=basic_information,
+            astm_f3548_21=astm_f3548v21,
+            uspace_flight_authorisation=uspace_flight_authorisation,
+        )
+        return flight_info
 
 
 class ExecutionStyle(str, Enum):
