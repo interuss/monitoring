@@ -1,8 +1,6 @@
 import inspect
 from typing import List, Optional, Tuple, Iterable, Set, Dict, Union
 
-from loguru import logger
-
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
@@ -14,7 +12,6 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     DeleteFlightResponseResult,
     DeleteFlightResponse,
 )
-
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntent,
@@ -109,6 +106,7 @@ def plan_flight_intent(
     expect_flight_intent_state(
         flight_intent, OperationalIntentState.Accepted, scenario, test_step
     )
+
     return submit_flight_intent(
         scenario,
         test_step,

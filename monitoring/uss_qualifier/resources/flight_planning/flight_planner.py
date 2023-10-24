@@ -113,6 +113,7 @@ class FlightPlanner:
         self,
         request: InjectFlightRequest,
         flight_id: Optional[str] = None,
+        additional_fields: Optional[dict] = None,
     ) -> Tuple[InjectFlightResponse, fetch.Query, str]:
         usage_states = {
             OperationalIntentState.Accepted: AirspaceUsageState.Planned,
@@ -155,9 +156,6 @@ class FlightPlanner:
             basic_information=basic_information,
             astm_f3548_21=astm_f3548v21,
             uspace_flight_authorisation=uspace_flight_authorisation,
-        )
-        additional_fields = (
-            None if "additional_fields" not in request else request.additional_fields
         )
 
         if not flight_id:

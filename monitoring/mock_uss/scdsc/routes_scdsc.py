@@ -1,3 +1,5 @@
+import json
+
 import flask
 from implicitdict import ImplicitDict
 from monitoring.monitorlib import scd
@@ -5,16 +7,14 @@ from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.scdsc.database import db
 from monitoring.mock_uss.scdsc.database import FlightRecord
-from monitoring.monitorlib.mock_uss_interface.mock_uss_scd_injection_api import (
-    MockUssFlightBehavior,
-)
 from monitoring.uss_qualifier.resources.overrides import (
-    apply_overrides_without_parse_type,
+    apply_overrides,
 )
 from uas_standards.astm.f3548.v21.api import (
     ErrorResponse,
     OperationalIntent,
     OperationalIntentDetails,
+    GetOperationalIntentDetailsResponse,
 )
 
 
@@ -45,11 +45,13 @@ def scdsc_get_operational_intent_details(entityid: str):
         )
 
     # Return nominal response with details
-    response = {"operational_intent": op_intent_from_flightrecord(flight)}
+    response = GetOperationalIntentDetailsResponse(
+        operational_intent=op_intent_from_flightrecord(flight, "GET")
+    )
     return flask.jsonify(response), 200
 
 
-def op_intent_from_flightrecord(flight: FlightRecord) -> OperationalIntent:
+def op_intent_from_flightrecord(flight: FlightRecord, method: str) -> OperationalIntent:
     ref = flight.op_intent.reference
     details = OperationalIntentDetails(
         volumes=flight.op_intent.details.volumes,
@@ -57,30 +59,14 @@ def op_intent_from_flightrecord(flight: FlightRecord) -> OperationalIntent:
         priority=flight.op_intent.details.priority,
     )
     op_intent = OperationalIntent(reference=ref, details=details)
-    method = "GET"
-    if "mod_op_sharing_behavior" in flight:
-        mod_op_sharing_behavior = ImplicitDict.parse(
-            flight.mod_op_sharing_behavior, MockUssFlightBehavior
-        )
+    if flight.mod_op_sharing_behavior:
+        mod_op_sharing_behavior = flight.mod_op_sharing_behavior
         if mod_op_sharing_behavior.modify_sharing_methods is not None:
             if method not in mod_op_sharing_behavior.modify_sharing_methods:
-                return OperationalIntent(reference=ref, details=details)
-        if mod_op_sharing_behavior.modify_fields is not None:
-            if "operational_intent_reference" in mod_op_sharing_behavior.modify_fields:
-                ref = apply_overrides_without_parse_type(
-                    ref,
-                    mod_op_sharing_behavior.modify_fields[
-                        "operational_intent_reference"
-                    ],
-                )
-                ref = ref[0]
-            if "operational_intent_details" in mod_op_sharing_behavior.modify_fields:
-                details = apply_overrides_without_parse_type(
-                    details,
-                    mod_op_sharing_behavior.modify_fields["operational_intent_details"],
-                )
-                details = details[0]
-            op_intent = {"reference": ref, "details": details}
+                return op_intent
+        op_intent = apply_overrides(
+            op_intent, mod_op_sharing_behavior.modify_fields, parse_result=False
+        )
 
     return op_intent
 

@@ -6,29 +6,23 @@ from implicitdict import ImplicitDict
 ImplicitDictType = TypeVar("ImplicitDictType", bound=ImplicitDict)
 
 
-def apply_overrides(base_object: ImplicitDictType, overrides: dict) -> ImplicitDictType:
+def apply_overrides(
+    base_object: ImplicitDictType, overrides: dict, parse_result: bool = True
+) -> ImplicitDictType:
     """Returns a copy of base_object onto which overrides were applied."""
 
     cpy = ImplicitDict.parse(
         json.loads(json.dumps(base_object)),
         type(base_object),
     )
-    return ImplicitDict.parse(
-        _apply_overrides(cpy, overrides),
-        type(base_object),
-    )
-
-
-def apply_overrides_without_parse_type(
-    base_object: ImplicitDictType, overrides: dict
-) -> ImplicitDictType:
-    """Returns a Dict with overrides applied, and no parsing into base object."""
-
-    cpy = ImplicitDict.parse(
-        json.loads(json.dumps(base_object)),
-        type(base_object),
-    )
-    return (_apply_overrides(cpy, overrides),)
+    overridden = _apply_overrides(cpy, overrides)
+    if parse_result:
+        return ImplicitDict.parse(
+            overridden,
+            type(base_object),
+        )
+    else:
+        return overridden
 
 
 def _apply_overrides(base_object, overrides):
