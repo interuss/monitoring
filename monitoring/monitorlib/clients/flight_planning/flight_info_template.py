@@ -88,7 +88,7 @@ class FlightInfoTemplate(ImplicitDict):
                 volumes = []
             else:
                 raise ValueError(
-                    f"Unrecongized uas_state '{info.basic_information.uas_state}'"
+                    f"Unrecognized uas_state '{info.basic_information.uas_state}'"
                 )
         else:
             raise ValueError(

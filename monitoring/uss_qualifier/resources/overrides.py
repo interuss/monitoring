@@ -39,8 +39,6 @@ def _apply_overrides(base_object, overrides):
     elif isinstance(overrides, dict):
         if isinstance(base_object, dict):
             result = {k: v for k, v in base_object.items()}
-        elif base_object is None:
-            return base_object
         else:
             raise ValueError(
                 f"Attempted to override field with type {type(base_object)} with type {type(overrides)} ({json.dumps(base_object)} -> {json.dumps(overrides)})"
