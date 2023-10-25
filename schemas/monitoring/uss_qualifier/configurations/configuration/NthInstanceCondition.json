@@ -1,0 +1,27 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/NthInstanceCondition.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Select an action once a certain number of matching instances have happened.\n\nmonitoring.uss_qualifier.configurations.configuration.NthInstanceCondition, as defined in monitoring/uss_qualifier/configurations/configuration.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "n": {
+      "description": "Only select an action if it is one of these nth instances.",
+      "items": {
+        "$ref": "InstanceIndexRange.json"
+      },
+      "type": "array"
+    },
+    "where_action": {
+      "$ref": "TestSuiteActionSelectionCondition.json",
+      "description": "Condition that an action must meet to be selected as an instance in this condition."
+    }
+  },
+  "required": [
+    "n",
+    "where_action"
+  ],
+  "type": "object"
+}

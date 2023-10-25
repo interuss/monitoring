@@ -33,7 +33,7 @@ from monitoring.uss_qualifier.signatures import (
     compute_signature,
     compute_baseline_signature,
 )
-from monitoring.uss_qualifier.suites.suite import TestSuiteAction
+from monitoring.uss_qualifier.suites.suite import TestSuiteAction, ExecutionContext
 from monitoring.uss_qualifier.validation import validate_config
 
 
@@ -97,9 +97,10 @@ def execute_test_run(whole_config: USSQualifierConfiguration):
     environment_signature = compute_signature(environment)
 
     logger.info("Instantiating top-level test suite action")
+    context = ExecutionContext(config.execution)
     action = TestSuiteAction(config.action, resources)
     logger.info("Running top-level test suite action")
-    report = action.run()
+    report = action.run(context)
     if report.successful():
         logger.info("Final result: SUCCESS")
     else:

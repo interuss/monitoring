@@ -2,7 +2,7 @@
 
 ## Usage
 
-To execute a test run with uss_qualifier, a uss_qualifier configuration must be provided.  This configuration consists of the test suite to run, along with definitions for all resources needed by that test suite, plus information about artifacts that should be generated.  See [`USSQualifierConfiguration`](configuration.py) for the exact schema.
+To execute a test run with uss_qualifier, a uss_qualifier configuration must be provided.  This configuration consists of the test suite to run, along with definitions for all resources needed by that test suite, plus information about artifacts that should be generated.  See [`USSQualifierConfiguration`](configuration.py) for the exact schema and [the dev configurations](./dev) for examples.
 
 ### Specifying
 
@@ -67,10 +67,141 @@ Loading _q.json_ results in the object:
 
 More details may be found in [`fileio.py`](../fileio.py).
 
+## Execution control
+
+To skip or selectively execute portions of a test run defined by a configuration, populate [the `execution` field of the `TestConfiguration`](configuration.py).  This field controls execution of portions of the test run by skipping actions according to specified criteria.  When debugging, this feature can be used to selectively execute only a scenario (or set of scenarios) of interest, or exclude a problematic scenario (or set of scenarios) from execution.  Some examples are shown below:
+
+### Skip all test scenarios:
+
+_Shows test suite / action generator structure_
+
+```yaml
+execution:
+  skip_action_when:
+    - is_test_scenario: {}
+```
+
+### Skip a particular test suite
+
+```yaml
+execution:
+  skip_action_when:
+    - is_test_suite:
+        types: [suites.astm.netrid.f3411_22a]
+```
+
+### Only run two kinds of scenarios
+
+```yaml
+execution:
+  include_action_when:
+    - is_action_generator: {}
+    - is_test_suite: {}
+    - is_test_scenario:
+        types: [scenarios.interuss.mock_uss.configure_locality.ConfigureLocality, scenarios.astm.utm.FlightIntentValidation]
+```
+
+### Only run the first, ninth, and tenth test scenarios in the test run
+
+```yaml
+execution:
+  include_action_when:
+    - is_action_generator: {}
+    - is_test_suite: {}
+    - nth_instance:
+        n: [{i: 1}, {lo: 9, hi: 10}]
+        where_action:
+            is_test_scenario: {}
+```
+
+### Only run test scenarios with a matching name
+
+```yaml
+execution:
+  include_action_when:
+    - is_action_generator: {}
+    - is_test_suite: {}
+    - is_test_scenario: {}
+      regex_matches_name: 'ASTM NetRID DSS: Simple ISA'
+```
+
+### Run everything except two kinds of test suites
+
+```yaml
+execution:
+  include_action_when:
+    - is_action_generator: {}
+    - is_test_suite: {}
+      except_when:
+        - regex_matches_name: 'ASTM F3411-22a'
+        - is_test_suite:
+            types: [suites.astm.utm.f3548_21]
+    - is_test_scenario: {}
+```
+
+### Only run the immediate test scenario children of a particular test suite
+
+```yaml
+execution:
+  include_action_when:
+    - is_action_generator: {}
+    - is_test_suite: {}
+    - is_test_scenario:
+      has_ancestor:
+        of_generation: 1
+        which:
+          - is_test_suite: {}
+            regex_matches_name: 'DSS testing for ASTM NetRID F3548-21'
+```
+
+### Only run test scenarios that are descendants of a particular test suite
+
+```yaml
+execution:
+  include_action_when:
+    - is_action_generator: {}
+    - is_test_suite: {}
+    - is_test_scenario:
+      has_ancestor:
+        which:
+          - is_test_suite:
+              types: [suites.astm.utm.f3548_21]
+```
+
+### Only run the third instance of a particular test scenario name
+
+```yaml
+execution:
+  include_action_when:
+    - is_action_generator: {}
+    - is_test_suite: {}
+    - nth_instance:
+        n: [{i: 3}]
+        where_action:
+          regex_matches_name: 'Nominal planning: conflict with higher priority'
+```
+
+### Only run the test scenarios for the second instance of a particular named action generator
+
+```yaml
+execution:
+  include_action_when:
+    - is_action_generator: {}
+    - is_test_suite: {}
+    - is_test_scenario: {}
+      has_ancestor:
+        which:
+          - nth_instance:
+              n: [{i: 2}]
+              where_action:
+                is_action_generator: {}
+                regex_matches_name: 'For each appropriate combination of flight planner\(s\)'
+```
+
 ## Design notes
 
 1. Even though all the scenarios, cases, steps and checks are fully defined for a particular test suite, the scenarios require data customized for a particular ecosystem – this data is provided as "test resources" which are created from the specifications in a "test configuration".
-2. A test configuration is associated with exactly one test suite, and contains descriptions for how to create each of the set of required test resources.
+2. A test configuration is associated with exactly one test action (test scenario, test suite, action generator), and contains descriptions for how to create each of the set of required test resources.
     * The resources required for a particular test definition depend on which test scenarios are included in the test suite.
 3. One resource can be used by many different test scenarios.
 4. One test scenario may use multiple resources.
