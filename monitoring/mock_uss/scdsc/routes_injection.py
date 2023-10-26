@@ -222,11 +222,11 @@ def release_flight_lock(flight_id: str, log: Callable[[str], None]) -> None:
         if flight_id in tx.flights:
             if tx.flights[flight_id]:
                 # FlightRecord was a true existing flight
-                log(f"Releasing placeholder for flight_id {flight_id}")
+                log(f"Releasing lock on existing flight_id {flight_id}")
                 tx.flights[flight_id].locked = False
             else:
                 # FlightRecord was just a placeholder for a new flight
-                log(f"Releasing lock on existing flight_id {flight_id}")
+                log(f"Releasing placeholder for existing flight_id {flight_id}")
                 del tx.flights[flight_id]
 
 
