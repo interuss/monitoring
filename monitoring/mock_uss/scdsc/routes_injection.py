@@ -2,7 +2,7 @@ import os
 import traceback
 from datetime import datetime, timedelta
 import time
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Callable, Optional
 import uuid
 
 import flask
@@ -37,7 +37,7 @@ from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
 from monitoring.mock_uss.scdsc import database, utm_client
-from monitoring.mock_uss.scdsc.database import db
+from monitoring.mock_uss.scdsc.database import db, FlightRecord
 from monitoring.mock_uss.scdsc.flight_planning import (
     validate_request,
     check_for_disallowed_conflicts,
@@ -158,7 +158,11 @@ def scd_capabilities() -> Tuple[dict, int]:
 @idempotent_request()
 def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
     """Implements flight injection in SCD automated testing injection API."""
-    logger.debug(f"[inject_flight/{os.getpid()}:{flight_id}] Starting handler")
+
+    def log(msg):
+        logger.debug(f"[inject_flight/{os.getpid()}:{flight_id}] {msg}")
+
+    log("Starting handler")
     try:
         json = flask.request.json
         if json is None:
@@ -167,7 +171,11 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
     except ValueError as e:
         msg = "Create flight {} unable to parse JSON: {}".format(flight_id, e)
         return msg, 400
-    json, code = inject_flight(flight_id, req_body)
+    existing_flight = lock_flight(flight_id, log)
+    try:
+        json, code = inject_flight(flight_id, req_body, existing_flight)
+    finally:
+        release_flight_lock(flight_id, log)
     return flask.jsonify(json), code
 
 
@@ -180,29 +188,9 @@ def _mock_uss_flight_behavior_in_req(
         return None
 
 
-def inject_flight(
-    flight_id: str, req_body: MockUSSInjectFlightRequest
-) -> Tuple[dict, int]:
-    pid = os.getpid()
-    locality = get_locality()
-
-    def log(msg: str):
-        logger.debug(f"[inject_flight/{pid}:{flight_id}] {msg}")
-
-    # Validate request
-    log("Validating request")
-    try:
-        validate_request(req_body, locality)
-    except PlanningError as e:
-        return (
-            InjectFlightResponse(
-                result=InjectFlightResponseResult.Rejected, notes=str(e)
-            ),
-            200,
-        )
-
+def lock_flight(flight_id: str, log: Callable[[str], None]) -> FlightRecord:
     # If this is a change to an existing flight, acquire lock to that flight
-    log("Acquiring lock for flight")
+    log(f"Acquiring lock for flight {flight_id}")
     deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
     while True:
         with db as tx:
@@ -221,14 +209,49 @@ def inject_flight(
         # We found an existing flight but it was locked; wait for it to become
         # available
         time.sleep(0.5)
-        log(
-            f"Waiting for flight lock resolution; now: {datetime.utcnow()} deadline: {deadline}"
-        )
+
         if datetime.utcnow() > deadline:
-            log(f"Deadlock (now: {datetime.utcnow()}, deadline: {deadline})")
             raise RuntimeError(
                 f"Deadlock in inject_flight while attempting to gain access to flight {flight_id}"
             )
+    return existing_flight
+
+
+def release_flight_lock(flight_id: str, log: Callable[[str], None]) -> None:
+    with db as tx:
+        if flight_id in tx.flights:
+            if tx.flights[flight_id]:
+                # FlightRecord was a true existing flight
+                log(f"Releasing lock on existing flight_id {flight_id}")
+                tx.flights[flight_id].locked = False
+            else:
+                # FlightRecord was just a placeholder for a new flight
+                log(f"Releasing placeholder for existing flight_id {flight_id}")
+                del tx.flights[flight_id]
+
+
+def inject_flight(
+    flight_id: str,
+    req_body: MockUSSInjectFlightRequest,
+    existing_flight: Optional[FlightRecord],
+) -> Tuple[InjectFlightResponse, int]:
+    pid = os.getpid()
+    locality = get_locality()
+
+    def log(msg: str):
+        logger.debug(f"[inject_flight/{pid}:{flight_id}] {msg}")
+
+    # Validate request
+    log("Validating request")
+    try:
+        validate_request(req_body, locality)
+    except PlanningError as e:
+        return (
+            InjectFlightResponse(
+                result=InjectFlightResponseResult.Rejected, notes=str(e)
+            ),
+            200,
+        )
 
     step_name = "performing unknown operation"
     try:
@@ -390,16 +413,6 @@ def inject_flight(
         response["queries"] = e.queries
         response["stacktrace"] = e.stacktrace
         return response, 200
-    finally:
-        with db as tx:
-            if tx.flights[flight_id]:
-                # FlightRecord was a true existing flight
-                log(f"Releasing placeholder for flight_id {flight_id}")
-                tx.flights[flight_id].locked = False
-            else:
-                # FlightRecord was just a placeholder for a new flight
-                log("Releasing lock on existing flight_id {flight_id}")
-                del tx.flights[flight_id]
 
 
 @webapp.route("/scdsc/v1/flights/<flight_id>", methods=["DELETE"])
@@ -410,7 +423,7 @@ def scdsc_delete_flight(flight_id: str) -> Tuple[str, int]:
     return flask.jsonify(json), code
 
 
-def delete_flight(flight_id) -> Tuple[dict, int]:
+def delete_flight(flight_id) -> Tuple[DeleteFlightResponse, int]:
     pid = os.getpid()
     logger.debug(f"[delete_flight/{pid}:{flight_id}] Acquiring flight")
     deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
@@ -519,7 +532,7 @@ def scdsc_clear_area() -> Tuple[str, int]:
     return flask.jsonify(json), code
 
 
-def clear_area(req: ClearAreaRequest) -> Tuple[dict, int]:
+def clear_area(req: ClearAreaRequest) -> Tuple[ClearAreaResponse, int]:
     def make_result(success: bool, msg: str) -> ClearAreaResponse:
         return ClearAreaResponse(
             outcome=ClearAreaOutcome(

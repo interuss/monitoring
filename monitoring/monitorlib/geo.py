@@ -12,11 +12,13 @@ from uas_standards.astm.f3411.v22a import api as f3411v22a
 from uas_standards.interuss.automated_testing.rid.v1 import (
     injection as f3411testing_injection,
 )
+from uas_standards.interuss.automated_testing.flight_planning.v1 import api as fp_api
 
 EARTH_CIRCUMFERENCE_KM = 40075
 EARTH_CIRCUMFERENCE_M = EARTH_CIRCUMFERENCE_KM * 1000
 EARTH_RADIUS_M = 40075 * 1000 / (2 * math.pi)
 EARTH_AREA_M2 = 4 * math.pi * math.pow(EARTH_RADIUS_M, 2)
+METERS_PER_FOOT = 0.3048
 
 DISTANCE_TOLERANCE_M = 0.01
 COORD_TOLERANCE_DEG = 360 / EARTH_CIRCUMFERENCE_M * DISTANCE_TOLERANCE_M
@@ -28,6 +30,14 @@ class DistanceUnits(str, Enum):
 
     FT = "FT"
     """Feet"""
+
+    def in_meters(self, value: float) -> float:
+        if self == DistanceUnits.M:
+            return value
+        elif self == DistanceUnits.FT:
+            return value * METERS_PER_FOOT
+        else:
+            raise NotImplementedError(f"Cannot convert from '{self}' to meters")
 
 
 class LatLngPoint(ImplicitDict):
@@ -52,6 +62,9 @@ class LatLngPoint(ImplicitDict):
             lng=position.lng,
         )
 
+    def to_flight_planning_api(self) -> fp_api.LatLngPoint:
+        return fp_api.LatLngPoint(lat=self.lat, lng=self.lng)
+
     def as_s2sphere(self) -> s2sphere.LatLng:
         return s2sphere.LatLng.from_degrees(self.lat, self.lng)
 
@@ -66,6 +79,9 @@ class LatLngPoint(ImplicitDict):
 class Radius(ImplicitDict):
     value: float
     units: DistanceUnits
+
+    def in_meters(self) -> float:
+        return self.units.in_meters(self.value)
 
 
 class Polygon(ImplicitDict):
@@ -146,6 +162,13 @@ class Altitude(ImplicitDict):
         if value is None:
             return None
         return Altitude(value=value, reference=AltitudeDatum.W84, units=DistanceUnits.M)
+
+    def to_flight_planning_api(self) -> fp_api.Altitude:
+        return fp_api.Altitude(
+            value=self.units.in_meters(self.value),
+            reference=fp_api.AltitudeReference(self.reference),
+            units=fp_api.AltitudeUnits.M,
+        )
 
     @staticmethod
     def from_f3548v21(vol: Union[f3548v21.Altitude, dict]) -> Altitude:
@@ -236,6 +259,32 @@ class Volume3D(ImplicitDict):
             raise ValueError("Neither outline_circle nor outline_polygon specified")
 
         return footprint1.intersects(footprint2)
+
+    @staticmethod
+    def from_flight_planning_api(vol: fp_api.Volume3D) -> Volume3D:
+        return ImplicitDict.parse(vol, Volume3D)
+
+    def to_flight_planning_api(self) -> fp_api.Volume3D:
+        kwargs = {}
+        if self.outline_circle:
+            kwargs["outline_circle"] = fp_api.Circle(
+                center=self.outline_circle.center.to_flight_planning_api(),
+                radius=fp_api.Radius(
+                    value=self.outline_circle.radius.in_meters(),
+                    units=fp_api.RadiusUnits.M,
+                ),
+            )
+        if self.outline_polygon:
+            kwargs["outline_polygon"] = fp_api.Polygon(
+                vertices=[
+                    v.to_flight_planning_api() for v in self.outline_polygon.vertices
+                ]
+            )
+        if self.altitude_lower:
+            kwargs["altitude_lower"] = self.altitude_lower.to_flight_planning_api()
+        if self.altitude_upper:
+            kwargs["altitude_upper"] = self.altitude_upper.to_flight_planning_api()
+        return fp_api.Volume3D(**kwargs)
 
     @staticmethod
     def from_f3548v21(vol: Union[f3548v21.Volume3D, dict]) -> Volume3D:

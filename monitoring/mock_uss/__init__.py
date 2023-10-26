@@ -13,6 +13,7 @@ SERVICE_MESSAGESIGNING = "msgsigning"
 SERVICE_TRACER = "tracer"
 SERVICE_INTERACTION_LOGGING = "interaction_logging"
 SERVICE_VERSIONING = "versioning"
+SERVICE_FLIGHT_PLANNING = "flight_planning"
 
 webapp = MockUSS(__name__)
 enabled_services = set()
@@ -101,6 +102,10 @@ if SERVICE_TRACER in webapp.config[config.KEY_SERVICES]:
 if SERVICE_VERSIONING in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_VERSIONING)
     from monitoring.mock_uss.versioning import routes as versioning_routes
+
+if SERVICE_FLIGHT_PLANNING in webapp.config[config.KEY_SERVICES]:
+    enabled_services.add(SERVICE_FLIGHT_PLANNING)
+    from monitoring.mock_uss.flight_planning import routes as flight_planning_routes
 
 msg = (
     "################################################################################\n"
