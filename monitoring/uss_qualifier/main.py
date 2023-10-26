@@ -97,7 +97,7 @@ def execute_test_run(whole_config: USSQualifierConfiguration):
     environment_signature = compute_signature(environment)
 
     logger.info("Instantiating top-level test suite action")
-    context = ExecutionContext(config.execution)
+    context = ExecutionContext(config.execution if "execution" in config else None)
     action = TestSuiteAction(config.action, resources)
     logger.info("Running top-level test suite action")
     report = action.run(context)
