@@ -150,7 +150,7 @@ class AggregateChecks(ReportEvaluationScenario):
 
         # Check that all queries have been attributed to a participant
         unattr_queries = [
-            query.request.url
+            f"{query.request.method} {query.request.url}"
             for query in self._queries
             if query.get("participant_id") is None
         ]
