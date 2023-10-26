@@ -252,6 +252,8 @@ class ISAValidation(GenericTestScenario):
             else:
                 raise ValueError(f"Unknown RID version: {self._dss.rid_version}")
 
+            rid_query.set_participant_id(self._dss_wrapper.participant_id)
+
             self._dss_wrapper._handle_query_result(
                 check=check,
                 q=rid_query,
@@ -283,6 +285,8 @@ class ISAValidation(GenericTestScenario):
                 rid_query = ChangedISA(v22a_query=q)
             else:
                 raise ValueError(f"Unknown RID version: {self._dss.rid_version}")
+
+            rid_query.set_participant_id(self._dss_wrapper.participant_id)
 
             self._dss_wrapper._handle_query_result(
                 check=check,
