@@ -198,9 +198,9 @@ class InvalidOpIntentSharingValidator(OpIntentValidator):
                         if "outline_polygon" in v4.volume:
                             return len(v4.volume.outline_polygon.vertices)
 
-                    all_volumes = oi_full.details.get("volumes", []) + oi_full.details.get(
-                        "off_nominal_volumes", []
-                    )
+                    all_volumes = oi_full.details.get(
+                        "volumes", []
+                    ) + oi_full.details.get("off_nominal_volumes", [])
                     n_vertices = sum(volume_vertices(v) for v in all_volumes)
 
                     if n_vertices > 10000:
@@ -209,7 +209,9 @@ class InvalidOpIntentSharingValidator(OpIntentValidator):
                         )
                         validation_errors.append(details)
                 except (KeyError, ValueError) as e:
-                    logger.debug(f"Validation error in GetOperationalIntentDetailsResponse. {e}")
+                    logger.debug(
+                        f"Validation error in GetOperationalIntentDetailsResponse. {e}"
+                    )
                     validation_errors.append(e)
 
             if not validation_errors:
@@ -222,4 +224,3 @@ class InvalidOpIntentSharingValidator(OpIntentValidator):
 
         self._scenario.end_test_step()
         return oi_ref
-
