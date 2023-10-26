@@ -59,9 +59,9 @@ class ISASubscriptionInteractions(GenericTestScenario):
     def _check_subscription_behaviors(self):
         """
         - Create an ISA.
-        - Create a subscription, response should include the pre-existing ISA.
-        - Modify the ISA, response should include the subscription.
-        - Delete the ISA, response should include the subscription.
+        - Create a subscription, response should include the pre-existing ISA and have a notification_index of 0.
+        - Modify the ISA, response should include the subscription with an incremented notification_index.
+        - Delete the ISA, response should include the subscription with an incremented notification_index.
         - Delete the subscription.
         """
 
@@ -115,9 +115,22 @@ class ISASubscriptionInteractions(GenericTestScenario):
                     ],
                 )
 
+        with self.check(
+            "Newly created subscription has a notification_index of 0",
+            [self._dss.participant_id],
+        ) as check:
+            if created_subscription.subscription.notification_index != 0:
+                check.record_failed(
+                    summary="Subscription notification_index is not 0",
+                    severity=Severity.High,
+                    participants=[self._dss.participant_id],
+                    details=f"The subscription created for the area {self._isa_area} is expected to have a notification_index of 0. The returned subscription has a notification_index of {created_subscription.subscription.notification_index}.",
+                    query_timestamps=[created_subscription.query.request.timestamp],
+                )
+
         # Modify the ISA
         with self.check(
-            "Response to the mutation of the ISA contains subscription ID",
+            "Mutate the ISA",
             [self._dss.participant_id],
         ) as check:
             mutated_isa = self._dss_wrapper.put_isa_expect_response_code(
@@ -133,12 +146,20 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 isa_version=created_isa.dss_query.isa.version,
             )
 
-            subscriptions_to_isa = []
+        # Check that the subscription ID is returned in the response
+        with self.check(
+            "Response to the mutation of the ISA contains subscription ID",
+            [self._dss.participant_id],
+        ) as check:
+
+            subs_to_mutated_isa = {}
             for returned_subscriber in mutated_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:
-                    subscriptions_to_isa.append(sub_in_subscriber.subscription_id)
+                    subs_to_mutated_isa[
+                        sub_in_subscriber.subscription_id
+                    ] = sub_in_subscriber
 
-            if created_subscription.subscription.id not in subscriptions_to_isa:
+            if created_subscription.subscription.id not in subs_to_mutated_isa.keys():
                 check.record_failed(
                     summary="ISA mutation response does not contain expected subscription ID",
                     severity=Severity.High,
@@ -151,9 +172,27 @@ class ISASubscriptionInteractions(GenericTestScenario):
                     ],
                 )
 
+        # Check that the subscription index has been incremented by least by 1
+        sub_to_mutated_isa = subs_to_mutated_isa.get(
+            created_subscription.subscription.id
+        )
+        if sub_to_mutated_isa is not None:
+            with self.check(
+                "Subscription to an ISA has its notification index incremented after mutation",
+                [self._dss.participant_id],
+            ) as check:
+                if sub_to_mutated_isa.notification_index <= 0:
+                    check.record_failed(
+                        summary="Subscription notification_index has not been increased",
+                        severity=Severity.High,
+                        participants=[self._dss.participant_id],
+                        details=f"The subscription created for the area {self._isa_area} is expected to have a notification_index of 1 or more. The returned subscription has a notification_index of {subs_to_mutated_isa[created_subscription.subscription.id].notification_index}.",
+                        query_timestamps=[created_subscription.query.request.timestamp],
+                    )
+
         # Delete the ISA
         with self.check(
-            "Response to the deletion of the ISA contains subscription ID",
+            "Delete the ISA",
             [self._dss.participant_id],
         ) as check:
             deleted_isa = self._dss_wrapper.del_isa_expect_response_code(
@@ -163,14 +202,20 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 isa_version=mutated_isa.dss_query.isa.version,
             )
 
-            subscriptions_to_deleted_isa = []
+        # Check response to deletion of ISA
+        with self.check(
+            "Response to the deletion of the ISA contains subscription ID",
+            [self._dss.participant_id],
+        ) as check:
+
+            subs_to_deleted_isa = {}
             for returned_subscriber in deleted_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:
-                    subscriptions_to_deleted_isa.append(
+                    subs_to_deleted_isa[
                         sub_in_subscriber.subscription_id
-                    )
+                    ] = sub_in_subscriber
 
-            if created_subscription.subscription.id not in subscriptions_to_deleted_isa:
+            if created_subscription.subscription.id not in subs_to_deleted_isa:
                 check.record_failed(
                     summary="ISA deletion response does not contain expected subscription ID",
                     severity=Severity.High,
@@ -196,6 +241,27 @@ class ISASubscriptionInteractions(GenericTestScenario):
                             f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
                             query_timestamps=[notification.query.request.timestamp],
                         )
+
+        subs_after_deletion = subs_to_deleted_isa.get(
+            created_subscription.subscription.id
+        )
+        if subs_after_deletion is not None:
+            with self.check(
+                "Subscription to an ISA has its notification index incremented after deletion",
+                [self._dss.participant_id],
+            ) as check:
+                if (
+                    subs_after_deletion.notification_index
+                    <= sub_to_mutated_isa.notification_index
+                ):
+                    check.record_failed(
+                        summary="Subscription notification_index has not been incremented",
+                        severity=Severity.High,
+                        participants=[self._dss.participant_id],
+                        details=f"The subscription created for the area {self._isa_area} is expected to have its notification increased after the subscription was deleted."
+                        f"The returned subscription has a notification_index of {subs_after_deletion.notification_index}, whilte the previous notification_index for that subscription was {sub_to_mutated_isa.notification_index}",
+                        query_timestamps=[created_subscription.query.request.timestamp],
+                    )
 
         # Delete the subscription
         with self.check(
