@@ -1,7 +1,9 @@
 # SCD Data Validation of GET operational intents by SUT test scenario
 
 ## Description
-This test checks that the USS validates correctly the operational intents it creates.
+This test checks that the SUT validates the operational intents received as response to its GET request from another USS.
+Control uss which is a mock uss plans a nearby V-shaped operation, and provides the data that SUT GETs.
+SUT validates the GET response to successfully plan its operation
 Notably the following requirements:
 - **[astm.f3548.v21.OPIN0015](../../../../../requirements/astm/f3548/v21.md)**
 - **[astm.f3548.v21.OPIN0020](../../../../../requirements/astm/f3548/v21.md)**
@@ -12,8 +14,8 @@ Notably the following requirements:
 
 ## Resources
 ### flight_intents
-FlightIntentsResource that provides the following flight intents:
-- `non-conflicting` :
+FlightIntentsResource that provides the following V-shaped flight intents:
+- `non-conflicting` : flight1 and flight2
 
 ### control_uss
 FlightPlannerResource that will control the data shared for validation testing of sut.
