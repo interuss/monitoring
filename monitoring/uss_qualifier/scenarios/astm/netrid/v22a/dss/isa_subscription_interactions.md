@@ -80,7 +80,7 @@ the previously created ISA. If not, the serving DSS is in violation of **[astm.f
 #### Newly created subscription has a notification_index of 0 check
 
 A newly created subscription is expected to have a notification index of 0, otherwise the DSS implementation under
-test does not comply with **[interuss.f3411.dss_endpoints.CreateSubscription](../../../../../requirements/interuss/f3411/dss_endpoints.md)**
+test does not comply with **[interuss.f3411.dss_endpoints.PutSubscription](../../../../../requirements/interuss/f3411/dss_endpoints.md)**
 
 #### Mutate the ISA check
 
