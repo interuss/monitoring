@@ -94,6 +94,7 @@ Delete control USS flight 2
 
 ### [Delete SUT flight test step](../../../../flight_planning/delete_flight_intent.md)
 Delete control USS flight 2
+
 ## Cleanup
 ### Successful flight deletion check
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../../requirements/interuss/automated_testing/flight_planning.md)**

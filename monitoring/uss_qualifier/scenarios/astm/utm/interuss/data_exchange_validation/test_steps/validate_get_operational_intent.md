@@ -6,4 +6,4 @@ This step verifies that a USS makes a GET request to get the intent_details of a
 **[interuss.mock_uss.interactions.Interactions](../../../../../../requirements/interuss/mock_uss/interactions.md)**.
 
 ## Expect GET request check
-**[astm.f3548.v21.SCD0085](../../../../../../requirements/astm/f3548/v21.md)**
+**[astm.f3548.v21.SCD0075](../../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.SCD0035](../../../../../../requirements/astm/f3548/v21.md)**
