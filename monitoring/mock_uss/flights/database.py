@@ -1,4 +1,5 @@
 import json
+from datetime import timedelta
 from typing import Dict, Optional
 
 from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
@@ -10,6 +11,8 @@ from uas_standards.astm.f3548.v21.api import (
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUssFlightBehavior,
 )
+
+DEADLOCK_TIMEOUT = timedelta(seconds=5)
 
 
 class FlightRecord(ImplicitDict):
