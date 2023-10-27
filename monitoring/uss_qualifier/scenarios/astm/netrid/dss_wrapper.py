@@ -1,8 +1,7 @@
 import datetime
-import s2sphere
-
 from typing import Optional, List, Set, Dict, Any
 
+import s2sphere
 from implicitdict import StringBasedDateTime
 
 from monitoring.monitorlib import schema_validation
@@ -12,6 +11,7 @@ from monitoring.monitorlib.fetch import (
     RequestDescription,
     ResponseDescription,
 )
+from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.fetch.rid import (
     FetchedSubscription,
     FetchedSubscriptions,
@@ -20,7 +20,6 @@ from monitoring.monitorlib.fetch.rid import (
     FetchedISAs,
 )
 from monitoring.monitorlib.mutate import rid as mutate
-from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.mutate.rid import ISAChange, ChangedSubscription
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
@@ -604,6 +603,38 @@ class DSSWrapper(object):
             "DSS query was not successful, but a High Severity issue didn't interrupt execution"
         )
 
+    def search_subs_expect_response_code(
+        self,
+        check: PendingCheck,
+        expected_codes: Set[int],
+        area: List[s2sphere.LatLng],
+    ) -> FetchedSubscriptions:
+        """Search for subscriptions at the DSS, expecting one of the passed HTTP response codes.
+
+        :return: anything the DSS responded with if the response code was as expected
+        """
+        try:
+            subs = fetch.subscriptions(
+                area=area,
+                rid_version=self._dss.rid_version,
+                session=self._dss.client,
+                participant_id=self._dss.participant_id,
+            )
+
+            self._handle_query_result(
+                check=check,
+                q=subs,
+                fail_msg=f"Search for subscriptions in area {area} failed to yield a result code in {expected_codes}",
+                required_status_code=expected_codes,
+            )
+            return subs
+
+        except QueryError as e:
+            self._handle_query_error(check, e)
+        raise RuntimeError(
+            "DSS query was not successful, but a High Severity issue didn't interrupt execution"
+        )
+
     def search_subs(
         self,
         check: PendingCheck,
@@ -627,6 +658,39 @@ class DSSWrapper(object):
                 check, subs, f"Failed to search subscriptions in {area}"
             )
             return subs
+
+        except QueryError as e:
+            self._handle_query_error(check, e)
+        raise RuntimeError(
+            "DSS query was not successful, but a High Severity issue didn't interrupt execution"
+        )
+
+    def get_sub_expect_response_code(
+        self,
+        check: PendingCheck,
+        expected_response_codes: Set[int],
+        sub_id: str,
+    ) -> FetchedSubscription:
+        """Get a subscription at the DSS, expecting one the passed HTTP response codes.
+
+        :return: anything the DSS responded with if the response code was as expected
+        """
+        try:
+            sub = fetch.subscription(
+                subscription_id=sub_id,
+                rid_version=self._dss.rid_version,
+                session=self._dss.client,
+                participant_id=self._dss.participant_id,
+            )
+
+            self._handle_query_result(
+                check=check,
+                q=sub,
+                fail_msg=f"The request to get subscription with ID {sub_id} yielded a response code that wasn't in {expected_response_codes}",
+                required_status_code=expected_response_codes,
+            )
+
+            return sub
 
         except QueryError as e:
             self._handle_query_error(check, e)
@@ -720,7 +784,7 @@ class DSSWrapper(object):
     ) -> ChangedSubscription:
         """Attempt to create or update a subscription at the DSS, and expect the specified HTTP response code.
 
-        :return: the DSS response
+        :return: anything the DSS responded with if the response code was as expected
         """
         try:
             created_sub = mutate.upsert_subscription(
@@ -791,6 +855,42 @@ class DSSWrapper(object):
             )
             return created_sub
 
+        except QueryError as e:
+            self._handle_query_error(check, e)
+        raise RuntimeError(
+            "DSS query was not successful, but a High Severity issue didn't interrupt execution"
+        )
+
+    def del_sub_expect_response_code(
+        self,
+        check: PendingCheck,
+        expected_response_codes: Set[int],
+        sub_id: str,
+        sub_version: str,
+    ) -> ChangedSubscription:
+        """Attempts to delete a subscription at the DSS,
+        and verifies that the response code is part of the expected ones.
+
+        :return: anything the DSS responded with if the response code was as expected
+        """
+
+        try:
+            del_sub = mutate.delete_subscription(
+                subscription_id=sub_id,
+                subscription_version=sub_version,
+                rid_version=self._dss.rid_version,
+                utm_client=self._dss.client,
+                participant_id=self._dss.participant_id,
+            )
+
+            self._handle_query_result(
+                check=check,
+                q=del_sub,
+                fail_msg=f"Query to delete subscription with ID {sub_id} wit not yield a response code in {expected_response_codes}",
+                required_status_code=expected_response_codes,
+            )
+
+            return del_sub
         except QueryError as e:
             self._handle_query_error(check, e)
         raise RuntimeError(
