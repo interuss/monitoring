@@ -40,7 +40,7 @@ When a pre-existing ISA needs to be deleted to ensure a clean workspace, any sub
 
 #### Successful subscription query check
 
-**[interuss.f3411.dss_endpoints.SearchSubscriptions](../../../../../requirements/interuss/f3411/dss_endpoints.md)** requires the implementation of the DSS endpoint to allow callers to retrieve the subscriptions they created.
+**[astm.f3411.v22a.DSS0030,f](../../../../../requirements/astm/f3411/v22a.md)** requires the implementation of the DSS endpoint to allow callers to retrieve the subscriptions they created.
 
 #### Successful subscription deletion check
 
@@ -80,11 +80,11 @@ the previously created ISA. If not, the serving DSS is in violation of **[astm.f
 #### Newly created subscription has a notification_index of 0 check
 
 A newly created subscription is expected to have a notification index of 0, otherwise the DSS implementation under
-test does not comply with **[interuss.f3411.dss_endpoints.PutSubscription](../../../../../requirements/interuss/f3411/dss_endpoints.md)**
+test does not comply with **[astm.f3411.v22a.DSS0030,c](../../../../../requirements/astm/f3411/v22a.md)**
 
 #### Mutate the ISA check
 
-If the ISA cannot be mutated, **[interuss.f3411.dss_endpoints.PutISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** is likely not implemented correctly.
+If the ISA cannot be mutated, **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)** is likely not implemented correctly.
 
 #### Response to the mutation of the ISA contains subscription ID check
 
@@ -96,7 +96,7 @@ or be in violation of **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/
 When an ISA is mutated, the DSS must increment the notification index of any subscription to that ISA,
 and return the up-to-date subscription in the response to the query mutating the ISA.
 
-Failure to do so means that the DSS is not properly implementing **[interuss.f3411.dss_endpoints.PutISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+Failure to do so means that the DSS is not properly implementing **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
 #### Delete the ISA check
 
@@ -112,7 +112,7 @@ or be in violation of **[astm.f3411.v22a.DSS0030,b](../../../../../requirements/
 When an ISA is deleted, the DSS must increment the notification index of any subscription to that ISA,
 and return the up-to-date subscription in the response to the query deleting the ISA.
 
-Failure to do so means that the DSS is not properly implementing **[interuss.f3411.dss_endpoints.PutISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+Failure to do so means that the DSS is not properly implementing **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
 #### Successful subscription deletion check
 
@@ -141,7 +141,7 @@ When a pre-existing ISA needs to be deleted to ensure a clean workspace, any sub
 
 #### Successful subscription query check
 
-**[interuss.f3411.dss_endpoints.SearchSubscriptions](../../../../../requirements/interuss/f3411/dss_endpoints.md)** requires the implementation of the DSS endpoint to allow callers to retrieve the subscriptions they created.
+**[astm.f3411.v22a.DSS0030,f](../../../../../requirements/astm/f3411/v22a.md)** requires the implementation of the DSS endpoint to allow callers to retrieve the subscriptions they created.
 
 #### Successful subscription deletion check
 

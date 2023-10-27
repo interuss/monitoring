@@ -231,9 +231,8 @@ class ISASubscriptionInteractions(GenericTestScenario):
         for subscriber_url, notification in deleted_isa.notifications.items():
             # For checking the notifications, we ignore the request we made for the subscription that we created.
             if self._isa.base_url not in subscriber_url:
-                with self.check("Notified subscriber", [subscriber_url]) as check:
-                    # TODO: Find a better way to identify a subscriber who couldn't be notified:
-                    #  as-is the subscriber url causes the test-suite to crash when it writes its report
+                pid = notification.query.participant_id
+                with self.check("Notified subscriber", [pid] if pid else []) as check:
                     if not notification.success:
                         check.record_failed(
                             "Could not notify ISA subscriber",
