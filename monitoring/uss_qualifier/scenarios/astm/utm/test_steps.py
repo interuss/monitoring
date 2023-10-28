@@ -218,7 +218,9 @@ class OpIntentValidator(object):
                     )
                 oi_ref = self._new_oi_ref
 
-        oi_full, oi_full_query = self._dss.get_full_op_intent(oi_ref)
+        oi_full, oi_full_query = self._dss.get_full_op_intent(
+            oi_ref, self._flight_planner.participant_id
+        )
         self._scenario.record_query(oi_full_query)
         with self._scenario.check(
             "Operational intent details retrievable",
