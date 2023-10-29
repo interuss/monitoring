@@ -3,7 +3,10 @@ from urllib.parse import urlparse
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
-from monitoring.monitorlib.clients.flight_planning.client import PlanningActivityError
+from monitoring.monitorlib.clients.flight_planning.client import (
+    PlanningActivityError,
+    FlightPlannerClient,
+)
 from monitoring.monitorlib.clients.flight_planning.client_scd import (
     SCDFlightPlannerClient,
 )
@@ -32,7 +35,6 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     DeleteFlightResponse,
     InjectFlightRequest,
     ClearAreaResponse,
-    ClearAreaRequest,
     OperationalIntentState,
     ClearAreaOutcome,
 )
@@ -70,6 +72,23 @@ class FlightPlannerConfiguration(ImplicitDict):
             except ValueError:
                 raise ValueError("FlightPlannerConfiguration.v1_base_url must be a URL")
 
+    def to_client(
+        self, auth_adapter: infrastructure.AuthAdapter
+    ) -> FlightPlannerClient:
+        if "scd_injection_base_url" in self and self.scd_injection_base_url:
+            session = infrastructure.UTMClientSession(
+                self.scd_injection_base_url, auth_adapter, self.timeout_seconds
+            )
+            return SCDFlightPlannerClient(session)
+        elif "v1_base_url" in self and self.v1_base_url:
+            session = infrastructure.UTMClientSession(
+                self.v1_base_url, auth_adapter, self.timeout_seconds
+            )
+            return V1FlightPlannerClient(session, self.participant_id)
+        raise ValueError(
+            "Could not construct FlightPlannerClient from provided configuration"
+        )
+
 
 class FlightPlanner:
     """Manages the state and the interactions with flight planner USS.
@@ -82,16 +101,7 @@ class FlightPlanner:
         auth_adapter: infrastructure.AuthAdapter,
     ):
         self.config = config
-        if "scd_injection_base_url" in config and config.scd_injection_base_url:
-            session = infrastructure.UTMClientSession(
-                self.config.scd_injection_base_url, auth_adapter, config.timeout_seconds
-            )
-            self.client = SCDFlightPlannerClient(session)
-        elif "v1_base_url" in config and config.v1_base_url:
-            session = infrastructure.UTMClientSession(
-                self.config.v1_base_url, auth_adapter, config.timeout_seconds
-            )
-            self.client = V1FlightPlannerClient(session)
+        self.client = config.to_client(auth_adapter)
 
         # Flights injected by this target.
         self.created_flight_ids: Set[str] = set()

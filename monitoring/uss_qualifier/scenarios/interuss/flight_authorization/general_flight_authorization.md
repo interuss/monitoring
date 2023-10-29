@@ -10,11 +10,19 @@ This test acts as a user using a USS's flight planning/authorization interface a
 
 [Flight Check Table](../../../resources/interuss/flight_authorization/flight_check_table.py) consisting of a list of Flight Check rows.  Each Flight Check row will cause this test to attempt to plan/authorize a flight using the planning/authorization interfaces of each USS under test according to the information in that Flight Check row.  This test will then perform checks according to the expected outcomes from those planning/authorization attempts, according to the Flight Check row.
 
+### planner
+
+[Flight planner](../../../resources/flight_planning/flight_planners.py) providing access to the flight-planning USS under test in this scenario.
+
 ## Flight planning test case
 
 ### Dynamic test step
 
 The test steps for this test scenario are generated dynamically according to the definitions in the Flight Check Table.  The checks for each step are the same and are documented below.
+
+#### Valid planning response check
+
+The USS under test is expected to implement the InterUSS flight_planning automated testing API and respond to requests accordingly.  If the USS does not respond to a flight planning request to this API properly, it will have failed to meet **[interuss.automated_testing.flight_planning.ImplementAPI](../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
 #### Disallowed flight check
 
@@ -31,3 +39,7 @@ When the test designer specifies that a particular Flight Check's conditions "Mu
 #### Disallowed conditions check
 
 When the test designer specifies that a particular Flight Check's conditions "MustBeAbsent", that means if a flight is successfully planned/authorized, it must NOT be accompanied by any conditions/advisories.  If a successfully-planned/authorized flight IS indicated to contain any conditions/advisories, this check will fail.
+
+#### Successful closure check
+
+If a flight was successfully planned, then uss_qualifier will emulate a user attempting to close that flight.  The flight plan is expected to be Closed following that action.  If it is any other value, this check will fail per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../requirements/interuss/automated_testing/flight_planning.md)**.  A value of NotPlanned is not acceptable because the flight had previously been planned.

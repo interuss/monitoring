@@ -1,0 +1,41 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/clients/flight_planning/flight_info_template/BasicFlightPlanInformationTemplate.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Template to provide (at runtime) basic information about a flight plan that an operator and/or UAS can be expected to provide in most flight planning scenarios.\n\nmonitoring.monitorlib.clients.flight_planning.flight_info_template.BasicFlightPlanInformationTemplate, as defined in monitoring/monitorlib/clients/flight_planning/flight_info_template.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "area": {
+      "description": "User intends to or may fly anywhere in this entire area.",
+      "items": {
+        "$ref": "../../../geotemporal/Volume4DTemplate.json"
+      },
+      "type": "array"
+    },
+    "uas_state": {
+      "description": "State of the user's UAS associated with this flight plan.",
+      "enum": [
+        "Nominal",
+        "OffNominal",
+        "Contingent"
+      ],
+      "type": "string"
+    },
+    "usage_state": {
+      "description": "User's current usage of the airspace specified in the flight plan.",
+      "enum": [
+        "Planned",
+        "InUse"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "area",
+    "uas_state",
+    "usage_state"
+  ],
+  "type": "object"
+}

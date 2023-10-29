@@ -1,0 +1,98 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/clients/flight_planning/flight_info/FlightAuthorisationData.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "The details of a UAS flight authorization request, as received from the user.\n\nNote that a full description of a flight authorisation must include mandatory information required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664 for an UAS flight authorisation request. Reference: https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32021R0664&from=EN#d1e32-178-1\n\nmonitoring.monitorlib.clients.flight_planning.flight_info.FlightAuthorisationData, as defined in monitoring/monitorlib/clients/flight_planning/flight_info.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "connectivity_methods": {
+      "description": "Connectivity methods. Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 7.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "emergency_procedure_url": {
+      "description": "The URL at which the applicable emergency procedure in case of a loss of command and control link may be retrieved. Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 9.",
+      "type": "string"
+    },
+    "endurance_minutes": {
+      "description": "Endurance of the UAS. This is expressed in minutes. Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 8.",
+      "type": "integer"
+    },
+    "identification_technologies": {
+      "description": "Technology used to identify the UAS. Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 6.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "operation_category": {
+      "description": "Category of UAS operation (\u2018open\u2019, \u2018specific\u2019, \u2018certified\u2019) as defined in COMMISSION DELEGATED REGULATION (EU) 2019/945. Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 4.",
+      "enum": [
+        "Unknown",
+        "Open",
+        "Specific",
+        "Certified"
+      ],
+      "type": "string"
+    },
+    "operation_mode": {
+      "enum": [
+        "Undeclared",
+        "Vlos",
+        "Bvlos"
+      ],
+      "type": "string"
+    },
+    "operator_id": {
+      "description": "Registration number of the UAS operator.\nThe format is defined in EASA Easy Access Rules for Unmanned Aircraft Systems GM1 to AMC1\nArticle 14(6) Registration of UAS operators and \u2018certified\u2019 UAS.\nRequired by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 10.",
+      "type": "string"
+    },
+    "uas_class": {
+      "enum": [
+        "Other",
+        "C0",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6"
+      ],
+      "type": "string"
+    },
+    "uas_id": {
+      "description": "When applicable, the registration number of the unmanned aircraft.\nThis is expressed using the nationality and registration mark of the unmanned aircraft in\nline with ICAO Annex 7.\nSpecified by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 10.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uas_serial_number": {
+      "description": "Unique serial number of the unmanned aircraft or, if the unmanned aircraft is privately built, the unique serial number of the add-on. This is expressed in the ANSI/CTA-2063 Physical Serial Number format. Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 1.",
+      "type": "string"
+    },
+    "uas_type_certificate": {
+      "description": "Provisional field. Not applicable as of September 2021. Required only if `uas_class` is set to `other` by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 4.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "connectivity_methods",
+    "emergency_procedure_url",
+    "endurance_minutes",
+    "identification_technologies",
+    "operation_category",
+    "operation_mode",
+    "operator_id",
+    "uas_class",
+    "uas_serial_number"
+  ],
+  "type": "object"
+}

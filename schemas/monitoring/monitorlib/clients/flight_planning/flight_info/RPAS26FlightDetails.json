@@ -1,0 +1,102 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/clients/flight_planning/flight_info/RPAS26FlightDetails.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Information about a flight necessary to plan successfully using the RPAS Platform Operating Rules version 2.6.\n\nmonitoring.monitorlib.clients.flight_planning.flight_info.RPAS26FlightDetails, as defined in monitoring/monitorlib/clients/flight_planning/flight_info.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "aircraft_type": {
+      "description": "Type of vehicle being used as per ASTM F3411-22a.",
+      "enum": [
+        "NotDeclared",
+        "Aeroplane",
+        "Helicopter",
+        "Gyroplane",
+        "HybridLift",
+        "Ornithopter",
+        "Glider",
+        "Kite",
+        "FreeBalloon",
+        "CaptiveBalloon",
+        "Airship",
+        "FreeFallOrParachute",
+        "Rocket",
+        "TetheredPoweredAircraft",
+        "GroundObstacle",
+        "Other"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "flight_profile": {
+      "description": "Type of flight profile.",
+      "enum": [
+        "AutomatedGrid",
+        "AutomatedWaypoint",
+        "Manual"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "operator_number": {
+      "description": "Operator number.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "operator_type": {
+      "description": "The type of operator.",
+      "enum": [
+        "Recreational",
+        "CommercialExcluded",
+        "ReOC"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pilot_license_number": {
+      "description": "License number for the pilot.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pilot_phone_number": {
+      "description": "Contact phone number for the pilot.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uas_registration_numbers": {
+      "description": "The list of UAS/drone registration numbers that will be operated during the operation.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "uas_serial_numbers": {
+      "description": "The list of UAS/drone serial numbers that will be operated during the operation.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

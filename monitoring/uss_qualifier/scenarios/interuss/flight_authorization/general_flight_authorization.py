@@ -1,6 +1,18 @@
 import arrow
 
-from monitoring.monitorlib.geotemporal import resolve_volume4d
+from monitoring.monitorlib.clients.flight_planning.client import (
+    FlightPlannerClient,
+    PlanningActivityError,
+)
+from monitoring.monitorlib.clients.flight_planning.flight_info import ExecutionStyle
+from monitoring.monitorlib.clients.flight_planning.planning import (
+    PlanningActivityResult,
+    FlightPlanStatus,
+    AdvisoryInclusion,
+)
+from monitoring.uss_qualifier.common_data_definitions import Severity
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
+from monitoring.uss_qualifier.resources.flight_planning import FlightPlannerResource
 from monitoring.uss_qualifier.resources.interuss.flight_authorization.definitions import (
     FlightCheckTable,
     AcceptanceExpectation,
@@ -16,10 +28,13 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
 
+# Check names from documentation
+_VALID_API_RESPONSE_NAME = "Valid planning response"
 _ACCEPT_CHECK_NAME = "Allowed flight"
 _REJECT_CHECK_NAME = "Disallowed flight"
 _CONDITIONAL_CHECK_NAME = "Required conditions"
 _UNCONDITIONAL_CHECK_NAME = "Disallowed conditions"
+_SUCCESSFUL_CLOSURE_NAME = "Successful closure"
 
 
 def _get_check_by_name(
@@ -30,13 +45,18 @@ def _get_check_by_name(
 
 class GeneralFlightAuthorization(TestScenario):
     table: FlightCheckTable
+    flight_planner: FlightPlannerClient
+    participant_id: ParticipantID
 
     def __init__(
         self,
-        table: FlightCheckTableResource,  # TODO: Add new flight planner resource
+        table: FlightCheckTableResource,
+        planner: FlightPlannerResource,
     ):
         super().__init__()
         self.table = table.table
+        self.flight_planner = planner.client
+        self.participant_id = planner.participant_id
 
     def run(self):
         self.begin_test_scenario()
@@ -50,7 +70,10 @@ class GeneralFlightAuthorization(TestScenario):
     def _plan_flights(self):
         start_time = arrow.utcnow().datetime
         for row in self.table.rows:
-            checks = []
+            checks = [
+                _get_check_by_name(self._current_case.steps[0], name)
+                for name in (_VALID_API_RESPONSE_NAME, _SUCCESSFUL_CLOSURE_NAME)
+            ]
             if row.acceptance_expectation == AcceptanceExpectation.MustBeAccepted:
                 acceptance_check = _get_check_by_name(
                     self._current_case.steps[0], _ACCEPT_CHECK_NAME
@@ -103,37 +126,160 @@ class GeneralFlightAuthorization(TestScenario):
             )
             self.begin_dynamic_test_step(doc)
 
-            concrete_volumes = [resolve_volume4d(v, start_time) for v in row.volumes]
+            # Attempt planning action
+            info = row.flight_info.resolve(start_time)
+            with self.check(_VALID_API_RESPONSE_NAME, [self.participant_id]) as check:
+                try:
+                    resp = self.flight_planner.try_plan_flight(
+                        info, ExecutionStyle.IfAllowed
+                    )
+                except PlanningActivityError as e:
+                    for q in e.queries:
+                        self.record_query(q)
+                    check.record_failed(
+                        summary="Flight planning API request failed",
+                        severity=Severity.High,
+                        details=str(e),
+                        query_timestamps=[
+                            q.request.initiated_at.datetime for q in e.queries
+                        ],
+                    )
+            from loguru import logger
 
-            # TODO: Attempt to plan flight in USSs under test
-            self.record_note(
-                "flight_planning",
-                f"TODO: Attempt to plan flight in USSs where flight plan {row.acceptance_expectation} and conditions {row.conditions_expectation}, from {concrete_volumes[0].time_start} to {concrete_volumes[0].time_end}",
-            )
+            logger.info(f"Recording {len(resp.queries)} queries")
+            for q in resp.queries:
+                self.record_query(q)
 
+            # Evaluate acceptance result
             if row.acceptance_expectation == AcceptanceExpectation.MustBeAccepted:
-                with self.check(
-                    _ACCEPT_CHECK_NAME, []
-                ) as check:  # TODO: Add participant_id
-                    pass  # TODO: check USS planning results
+                logger.info("Must be accepted; checking...")
+                with self.check(_ACCEPT_CHECK_NAME, [self.participant_id]) as check:
+                    if resp.activity_result != PlanningActivityResult.Completed:
+                        check.record_failed(
+                            summary=f"Expected-accepted flight request was {resp.activity_result}",
+                            severity=Severity.Medium,
+                            details=f"The flight was expected to be accepted, but the activity result was indicated as {resp.activity_result}",
+                            query_timestamps=[
+                                q.request.initiated_at.datetime for q in resp.queries
+                            ],
+                        )
+                    if resp.flight_plan_status not in (
+                        FlightPlanStatus.Planned,
+                        FlightPlanStatus.OkToFly,
+                    ):
+                        check.record_failed(
+                            summary=f"Expected-accepted flight had {resp.flight_plan_status} flight plan",
+                            severity=Severity.Medium,
+                            details=f"The flight was expected to be accepted, but the flight plan status following the planning action was indicated as {resp.flight_plan_status}",
+                            query_timestamps=[
+                                q.request.initiated_at.datetime for q in resp.queries
+                            ],
+                        )
 
             if row.acceptance_expectation == AcceptanceExpectation.MustBeRejected:
-                with self.check(
-                    _REJECT_CHECK_NAME, []
-                ) as check:  # TODO: Add participant_id
-                    pass  # TODO: check USS planning results
+                logger.info("Must be rejected; checking...")
+                with self.check(_REJECT_CHECK_NAME, [self.participant_id]) as check:
+                    if resp.activity_result != PlanningActivityResult.Rejected:
+                        check.record_failed(
+                            summary=f"Expected-rejected flight request was {resp.activity_result}",
+                            severity=Severity.Medium,
+                            details=f"The flight was expected to be rejected, but the activity result was indicated as {resp.activity_result}",
+                            query_timestamps=[
+                                q.request.initiated_at.datetime for q in resp.queries
+                            ],
+                        )
+                    if resp.flight_plan_status != FlightPlanStatus.NotPlanned:
+                        check.record_failed(
+                            summary=f"Expected-accepted flight had {resp.flight_plan_status} flight plan",
+                            severity=Severity.Medium,
+                            details=f"The flight was expected to be rejected, but the flight plan status following the planning action was indicated as {resp.flight_plan_status}",
+                            query_timestamps=[
+                                q.request.initiated_at.datetime for q in resp.queries
+                            ],
+                        )
 
-            # TODO: Only check conditions expectations if flight planning succeeded
-            if row.conditions_expectation == ConditionsExpectation.MustBePresent:
-                with self.check(
-                    _CONDITIONAL_CHECK_NAME, []
-                ) as check:  # TODO: Add participant_id
-                    pass  # TODO: check USS planning results
+            # Perform checks only applicable when the planning activity succeeded
+            if (
+                resp.activity_result == PlanningActivityResult.Completed
+                and resp.flight_plan_status
+                in (FlightPlanStatus.Planned, FlightPlanStatus.OkToFly)
+            ):
+                if row.conditions_expectation == ConditionsExpectation.MustBePresent:
+                    logger.info("Checking conditions must be present...")
+                    with self.check(
+                        _CONDITIONAL_CHECK_NAME, [self.participant_id]
+                    ) as check:
+                        if (
+                            resp.includes_advisories
+                            != AdvisoryInclusion.AtLeastOneAdvisoryOrCondition
+                        ):
+                            check.record_failed(
+                                summary=f"Missing expected conditions",
+                                severity=Severity.Medium,
+                                details=f"The flight planning activity result was expected to be accompanied by conditions/advisories, but advisory inclusion was {resp.includes_advisories}",
+                                query_timestamps=[
+                                    q.request.initiated_at.datetime
+                                    for q in resp.queries
+                                ],
+                            )
 
-            if row.conditions_expectation == ConditionsExpectation.MustBeAbsent:
+                if row.conditions_expectation == ConditionsExpectation.MustBeAbsent:
+                    logger.info("Checking conditions must be absent...")
+                    with self.check(
+                        _UNCONDITIONAL_CHECK_NAME, [self.participant_id]
+                    ) as check:
+                        if (
+                            resp.includes_advisories
+                            != AdvisoryInclusion.NoAdvisoriesOrConditions
+                        ):
+                            check.record_failed(
+                                summary=f"Expected-unqualified planning success was qualified by conditions",
+                                severity=Severity.Medium,
+                                details=f"The flight planning activity result was expected to be unqualified (accompanied by no conditions/advisories), but advisory inclusion was {resp.includes_advisories}",
+                                query_timestamps=[
+                                    q.request.initiated_at.datetime
+                                    for q in resp.queries
+                                ],
+                            )
+
+            # Remove flight plan if the activity resulted in a flight plan
+            if resp.flight_plan_status in (
+                FlightPlanStatus.Planned,
+                FlightPlanStatus.OkToFly,
+            ):
+                logger.info("Removing flight...")
                 with self.check(
-                    _UNCONDITIONAL_CHECK_NAME, []
-                ) as check:  # TODO: Add participant_id
-                    pass  # TODO: check USS planning results
+                    _VALID_API_RESPONSE_NAME, [self.participant_id]
+                ) as check:
+                    try:
+                        del_resp = self.flight_planner.try_end_flight(
+                            resp.flight_id, ExecutionStyle.IfAllowed
+                        )
+                    except PlanningActivityError as e:
+                        for q in e.queries:
+                            self.record_query(q)
+                        check.record_failed(
+                            summary="Flight planning API delete request failed",
+                            severity=Severity.High,
+                            details=str(e),
+                            query_timestamps=[
+                                q.request.initiated_at.datetime for q in e.queries
+                            ],
+                        )
+                for q in del_resp.queries:
+                    self.record_query(q)
+                with self.check(
+                    _SUCCESSFUL_CLOSURE_NAME, [self.participant_id]
+                ) as check:
+                    if del_resp.flight_plan_status != FlightPlanStatus.Closed:
+                        check.record_failed(
+                            summary="Could not close flight plan successfully",
+                            severity=Severity.High,
+                            details=f"Expected flight plan status to be Closed after request to end flight, but status was instead {del_resp.flight_plan_status}",
+                            query_timestamps=[
+                                q.request.initiated_at.datetime
+                                for q in del_resp.queries
+                            ],
+                        )
 
             self.end_test_step()
