@@ -1,0 +1,23 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/validation/definitions/ElementGroupCondition.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A group of applicable elements must meet this condition.  Exactly one field must be specified.\n\nmonitoring.uss_qualifier.reports.validation.definitions.ElementGroupCondition, as defined in monitoring/uss_qualifier/reports/validation/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "count": {
+      "description": "The number of applicable elements must have this specified kind of count.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "NumericComparison.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}
