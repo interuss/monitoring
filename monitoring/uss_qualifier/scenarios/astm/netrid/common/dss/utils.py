@@ -63,29 +63,3 @@ def delete_isa_if_exists(
                         f"Attempting to notify subscriber for ISA {isa_id} at {subscriber_url} resulted in {notification.status_code}",
                         query_timestamps=[notification.query.request.timestamp],
                     )
-
-
-def delete_any_subscription(
-    scenario: GenericTestScenario,
-    dss_wrapper: DSSWrapper,
-    area: List[LatLngPoint],
-):
-    """
-    Deletes any subscription that is returned for the passed area.
-
-    Args:
-        scenario: the scenario instance that will provide the checks
-        dss_wrapper: the dss on which to delete subscriptions
-        area: the area for which subscriptions are to be deleted
-    """
-    with scenario.check(
-        "Successful subscription query", [dss_wrapper.participant_id]
-    ) as check:
-        fetched = dss_wrapper.search_subs(
-            check, [vertex.as_s2sphere() for vertex in area]
-        )
-    for sub_id in fetched.subscriptions.keys():
-        with scenario.check(
-            "Successful subscription deletion", [dss_wrapper.participant_id]
-        ) as check:
-            dss_wrapper.cleanup_sub(check, sub_id=sub_id)

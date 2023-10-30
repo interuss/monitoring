@@ -32,14 +32,13 @@ This step ensures that no subscription with the known test ID exists in the DSS.
 
 If the DSS fails to let us search in the area for which test subscriptions will be created, it is failing to properly implement **[astm.f3411.v22a.DSS0030,f](../../../../../requirements/astm/f3411/v22a.md)**.
 
+#### Subscription can be queried by ID check
+
+If the DSS cannot be queried for the existing test ID, the DSS is likely not implementing **[astm.f3411.v19.DSS0030,e](../../../../../requirements/astm/f3411/v19.md)** correctly.
+
 #### Subscription can be deleted check
 
 An attempt to delete a subscription when the correct version is provided should succeed, otherwise the DSS is in violation of **[astm.f3411.v22a.DSS0030,d](../../../../../requirements/astm/f3411/v22a.md)**.
-
-#### Ensure subscription with test ID does not exist check
-
-If the DSS cannot be queried for the existing test ID, or if a subscription with that ID exists and it cannot be removed,
-the DSS is likely not implementing **[astm.f3411.v22a.DSS0030,e](../../../../../requirements/astm/f3411/v22a.md)** or **[astm.f3411.v22a.DSS0030,d](../../../../../requirements/astm/f3411/v22a.md)** properly.
 
 ## Subscription Simple test case
 
@@ -389,7 +388,10 @@ If the DSS returns the deleted subscription in a search that covers the area it 
 
 The cleanup phase of this test scenario removes the subscription with the known test ID if it has not been removed before.
 
-#### Ensure subscription with test ID does not exist check
+#### Subscription can be queried by ID check
 
-If the DSS cannot be queried for the existing test ID, or if a subscription with that ID exists and it cannot be removed,
-the DSS is likely not implementing **[astm.f3411.v22a.DSS0030,e](../../../../../requirements/astm/f3411/v22a.md)** or **[astm.f3411.v22a.DSS0030,d](../../../../../requirements/astm/f3411/v22a.md)** properly.
+If the DSS cannot be queried for the existing test ID, the DSS is likely not implementing **[astm.f3411.v19.DSS0030,e](../../../../../requirements/astm/f3411/v19.md)** correctly.
+
+#### Subscription can be deleted check
+
+An attempt to delete a subscription when the correct version is provided should succeed, otherwise the DSS is in violation of **[astm.f3411.v22a.DSS0030,d](../../../../../requirements/astm/f3411/v22a.md)**.

@@ -299,7 +299,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
         )
 
     def _clean_any_sub(self):
-        utils.delete_any_subscription(self, self._dss_wrapper, self._isa.footprint)
+        self._dss_wrapper.cleanup_subs_in_area(self._isa_area)
 
     def cleanup(self):
         self.begin_cleanup()

@@ -1,27 +1,17 @@
-from datetime import timedelta
-
-import arrow
 import datetime
+from typing import Dict
 
-from monitoring.monitorlib import schema_validation
-from monitoring.monitorlib.fetch import rid as fetch
-from monitoring.monitorlib.mutate import rid as mutate
-from monitoring.monitorlib.rid import RIDVersion
+from monitoring.monitorlib.mutate.rid import ChangedSubscription
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
-from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss import utils
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import (
     GenericTestScenario,
     PendingCheck,
 )
-from monitoring.monitorlib.mutate.rid import ChangedSubscription
-
-from typing import Dict
-
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 _24H_MIN_TOLERANCE_S = 23 * 3600 + 59 * 60  # 23 hours and 59 minutes
@@ -55,6 +45,7 @@ class SubscriptionValidation(GenericTestScenario):
         #  for creating different subscriptions this probably won't do.
         self._sub_id = id_generator.id_factory.make_id(self.SUB_TYPE)
         self._isa = isa.specification
+        self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario()
@@ -79,7 +70,7 @@ class SubscriptionValidation(GenericTestScenario):
         self.end_test_case()
 
     def _clean_any_sub(self):
-        utils.delete_any_subscription(self, self._dss_wrapper, self._isa.footprint)
+        self._dss_wrapper.cleanup_subs_in_area(self._isa_area)
 
     def _ensure_clean_workspace_step(self):
         self.begin_test_step("Ensure clean workspace")
@@ -219,7 +210,7 @@ class SubscriptionValidation(GenericTestScenario):
                 query_timestamps=[changed.query.request.timestamp],
             )
             # If a subscription was created, we want to delete it before continuing:
-            self._dss_wrapper.cleanup_sub(check, sub_id=self._sub_id)
+            self._dss_wrapper.cleanup_sub(sub_id=self._sub_id)
 
     def _default_subscription_params(self, duration: datetime.timedelta) -> Dict:
         now = datetime.datetime.utcnow()
