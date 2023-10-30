@@ -6,9 +6,6 @@ performances of the queries made during their execution.
 
 ## Resources
 
-### report_resource
-The report to evaluate. This resource is automatically injected by the test framework.
-
 ### flight_planners
 The flight planners subject to evaluation.
 
