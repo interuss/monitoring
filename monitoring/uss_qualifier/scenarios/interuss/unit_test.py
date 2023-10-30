@@ -1,6 +1,7 @@
 from typing import Callable
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioDeclaration
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class UnitTestScenario(GenericTestScenario):
@@ -12,7 +13,7 @@ class UnitTestScenario(GenericTestScenario):
         )
         super().__init__()
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
         self.begin_test_case("Case under test")
         self.begin_test_step("Step under test")

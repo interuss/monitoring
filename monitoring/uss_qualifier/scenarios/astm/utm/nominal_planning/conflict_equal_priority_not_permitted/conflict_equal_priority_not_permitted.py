@@ -1,6 +1,8 @@
 from typing import Optional
 
 import arrow
+
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
 )
@@ -213,7 +215,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self.record_note(

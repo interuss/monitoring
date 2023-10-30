@@ -6,6 +6,7 @@ from monitoring.uss_qualifier.resources.eurocae.ed269.source_document import (
     SourceDocument,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.eurocae_ed269 import UASZoneVersion
 
 
@@ -23,7 +24,7 @@ class SourceDataModelValidation(TestScenario):
         super().__init__()
         self.source_document = source_document
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self.record_note(

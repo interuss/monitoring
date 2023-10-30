@@ -4,6 +4,7 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class StartMessageSigningReport(TestScenario):
@@ -13,7 +14,7 @@ class StartMessageSigningReport(TestScenario):
         super().__init__()
         self._mock_uss = mock_uss.mock_uss
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self.begin_test_case("Start message signing")

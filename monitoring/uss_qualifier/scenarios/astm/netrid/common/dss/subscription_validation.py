@@ -21,6 +21,7 @@ from monitoring.monitorlib.mutate.rid import ChangedSubscription
 
 from typing import Dict
 
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 _24H_MIN_TOLERANCE_S = 23 * 3600 + 59 * 60  # 23 hours and 59 minutes
 _24H_MAX_TOLERANCE_S = 24 * 3600 + 1  # 24 hours sharp, plus a second
@@ -54,7 +55,7 @@ class SubscriptionValidation(GenericTestScenario):
         self._sub_id = id_generator.id_factory.make_id(self.SUB_TYPE)
         self._isa = isa.specification
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self._setup_case()

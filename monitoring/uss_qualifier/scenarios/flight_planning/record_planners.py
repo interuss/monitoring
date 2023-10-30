@@ -1,5 +1,6 @@
 from monitoring.uss_qualifier.resources.flight_planning import FlightPlannersResource
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class RecordPlanners(TestScenario):
@@ -9,7 +10,7 @@ class RecordPlanners(TestScenario):
         super().__init__()
         self._flight_planners = flight_planners
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self.record_note(

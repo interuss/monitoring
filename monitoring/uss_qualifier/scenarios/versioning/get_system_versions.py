@@ -5,6 +5,7 @@ from monitoring.uss_qualifier.resources.versioning.client import (
     VersionProvidersResource,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class GetSystemVersions(TestScenario):
@@ -17,7 +18,7 @@ class GetSystemVersions(TestScenario):
         self._version_providers = version_providers.version_providers
         self._system_identity = system_identity.system_identity
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
         self.begin_test_case("Get versions")
         self.begin_test_step("Get versions")

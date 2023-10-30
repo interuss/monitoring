@@ -4,6 +4,8 @@ from typing import Optional, List, Dict, Any
 
 import arrow
 import s2sphere
+
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3411 import v19, v22a
 
 from monitoring.monitorlib.fetch import query_and_describe
@@ -69,7 +71,7 @@ class ISAValidation(GenericTestScenario):
         else:
             ValueError(f"Unsupported RID version '{self._dss.rid_version}'")
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self._setup_case()

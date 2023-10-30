@@ -5,31 +5,27 @@ from monitoring.monitorlib.fetch import evaluation, QueryType
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.flight_planning import FlightPlannersResource
-from monitoring.uss_qualifier.scenarios.interuss.evaluation_scenario import (
-    ReportEvaluationScenario,
-)
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 from uas_standards.astm.f3548.v21 import constants
-
-from monitoring.uss_qualifier.resources.interuss.report import TestSuiteReportResource
-
 
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
 
-class AggregateChecks(TestScenario, ReportEvaluationScenario):
+class AggregateChecks(TestScenario):
 
     _queries: List[fetch.Query]
     _attributed_queries: Dict[ParticipantID, Dict[QueryType, List[fetch.Query]]] = {}
 
     def __init__(
         self,
-        report_resource: TestSuiteReportResource,
         flight_planners: FlightPlannersResource,
     ):
-        super().__init__(report_resource)
+        super().__init__()
         self.flight_planners = flight_planners
-        self._queries = self.report.queries()
+
+    def _init_queries(self, context: ExecutionContext):
+        self._queries = list(context.sibling_queries())
 
         # collect and classify queries by participant, only participants part of flight_planners are considered
         self._attributed_queries = {
@@ -54,7 +50,8 @@ class AggregateChecks(TestScenario, ReportEvaluationScenario):
                     query
                 )
 
-    def run(self):
+    def run(self, context: ExecutionContext):
+        self._init_queries(context)
         self.begin_test_scenario()
 
         self.record_note("all_queries", f"{len(self._queries)}")
