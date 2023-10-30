@@ -11,6 +11,17 @@
       "$ref": "../../suites/definitions/TestSuiteActionDeclaration.json",
       "description": "The action this test configuration wants to run (usually a test suite)"
     },
+    "execution": {
+      "description": "Specification for how to execute the test run.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ExecutionConfiguration.json"
+        }
+      ]
+    },
     "non_baseline_inputs": {
       "description": "List of portions of the configuration that should not be considered when computing the test baseline signature (e.g., environmental definitions).",
       "items": {

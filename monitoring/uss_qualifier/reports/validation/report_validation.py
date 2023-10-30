@@ -41,6 +41,8 @@ def _validate_action_full_success(
             success = success and _validate_action_full_success(
                 a, JSONAddress(context + f".action_generator.actions[{i}]")
             )
+    else:
+        success = True
     return success
 
 
@@ -68,7 +70,7 @@ def _validate_action_no_skipped_actions(
             )
     else:
         logger.error(
-            f"No skipped actions not achieved because {context}.test_suite had a skipped action for action index {report.skipped_action.action_declaration_index}: {report.skipped_action.reason}"
+            f"No skipped actions not achieved because {context} was a skipped action: {report.skipped_action.reason}"
         )
         success = False
     return success

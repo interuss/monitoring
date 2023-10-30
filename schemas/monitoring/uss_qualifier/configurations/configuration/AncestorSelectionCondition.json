@@ -1,0 +1,29 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/AncestorSelectionCondition.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Select ancestor actions meeting all the specified conditions.\n\nmonitoring.uss_qualifier.configurations.configuration.AncestorSelectionCondition, as defined in monitoring/uss_qualifier/configurations/configuration.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "of_generation": {
+      "description": "The ancestor is exactly this many generations removed (1 = parent, 2 = grandparent, etc).\n\nIf not specified, an ancestor of any generation meeting the `which` conditions will be selected.",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "which": {
+      "description": "Only select an ancestor meeting ALL of these conditions.",
+      "items": {
+        "$ref": "TestSuiteActionSelectionCondition.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "which"
+  ],
+  "type": "object"
+}
