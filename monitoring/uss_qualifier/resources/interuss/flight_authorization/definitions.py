@@ -1,8 +1,10 @@
 from enum import Enum
-from typing import List, Optional
+from typing import List
 
 from implicitdict import ImplicitDict
-from monitoring.monitorlib.geotemporal import Volume4DTemplate
+from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
+    FlightInfoTemplate,
+)
 
 
 class AcceptanceExpectation(str, Enum):
@@ -37,16 +39,8 @@ class FlightCheck(ImplicitDict):
     description: str
     """Human-readable test step description to aid in the debugging and traceability."""
 
-    volumes: List[Volume4DTemplate]
-    """Spatial and temporal definition of the areas the virtual user intends to fly in.
-
-    A service provider is expected to authorizing a flight covering the entire area specified and for any of the entire time specified.
-    """
-
-    additional_information: dict
-    """Any additional information that should be provided to a USS planning the flight.
-
-    Format is agreed upon between test designer and USSs."""
+    flight_info: FlightInfoTemplate
+    """Information about the flight, as a user would provide it to the USS."""
 
     acceptance_expectation: AcceptanceExpectation = AcceptanceExpectation.Irrelevant
     """Expected outcome when authorizing a flight as described."""

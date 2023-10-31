@@ -1,6 +1,7 @@
 from typing import List, Iterable, Dict, Optional
 
 from implicitdict import ImplicitDict
+from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.uss_qualifier.reports.report import ParticipantID
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 
@@ -18,6 +19,8 @@ class FlightPlannerSpecification(ImplicitDict):
 
 class FlightPlannerResource(Resource[FlightPlannerSpecification]):
     flight_planner: FlightPlanner
+    client: FlightPlannerClient
+    participant_id: ParticipantID
 
     def __init__(
         self,
@@ -27,6 +30,8 @@ class FlightPlannerResource(Resource[FlightPlannerSpecification]):
         self.flight_planner = FlightPlanner(
             specification.flight_planner, auth_adapter.adapter
         )
+        self.client = specification.flight_planner.to_client(auth_adapter.adapter)
+        self.participant_id = specification.flight_planner.participant_id
 
 
 class FlightPlannersSpecification(ImplicitDict):
