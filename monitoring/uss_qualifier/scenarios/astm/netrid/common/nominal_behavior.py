@@ -53,6 +53,7 @@ class NominalBehavior(GenericTestScenario):
         self._observers = observers
         self._evaluation_configuration = evaluation_configuration
         self._dss_pool = dss_pool
+        self._injected_tests = []
 
     @property
     def _rid_version(self) -> RIDVersion:

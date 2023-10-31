@@ -2,7 +2,7 @@ import os
 import traceback
 from datetime import datetime, timedelta
 import time
-from typing import List, Tuple, Callable, Optional
+from typing import List, Tuple, Optional
 import uuid
 
 import flask
@@ -10,6 +10,8 @@ from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 import requests.exceptions
 
+from monitoring.mock_uss.flights.planning import lock_flight, release_flight_lock
+from monitoring.mock_uss.f3548v21 import utm_client
 from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 from uas_standards.astm.f3548.v21 import api
 from uas_standards.astm.f3548.v21.api import (
@@ -32,19 +34,20 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     OperationalIntentState,
 )
 
-from monitoring.mock_uss import webapp, require_config_value
+from monitoring.mock_uss import webapp, require_config_value, uspace
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
-from monitoring.mock_uss.scdsc import database, utm_client
-from monitoring.mock_uss.scdsc.database import db, FlightRecord
-from monitoring.mock_uss.scdsc.flight_planning import (
+from monitoring.mock_uss.flights import database
+from monitoring.mock_uss.flights.database import db, FlightRecord
+from monitoring.mock_uss.f3548v21.flight_planning import (
     validate_request,
     check_for_disallowed_conflicts,
     PlanningError,
+    op_intent_from_flightrecord,
     op_intent_transition_valid,
 )
-from monitoring.mock_uss.scdsc.routes_scdsc import op_intent_from_flightrecord
+import monitoring.mock_uss.uspace.flight_auth
 from monitoring.monitorlib import versioning
 from monitoring.monitorlib.clients import scd as scd_client
 from monitoring.monitorlib.fetch import QueryError
@@ -188,48 +191,6 @@ def _mock_uss_flight_behavior_in_req(
         return None
 
 
-def lock_flight(flight_id: str, log: Callable[[str], None]) -> FlightRecord:
-    # If this is a change to an existing flight, acquire lock to that flight
-    log(f"Acquiring lock for flight {flight_id}")
-    deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
-    while True:
-        with db as tx:
-            if flight_id in tx.flights:
-                # This is an existing flight being modified
-                existing_flight = tx.flights[flight_id]
-                if existing_flight and not existing_flight.locked:
-                    log("Existing flight locked for update")
-                    existing_flight.locked = True
-                    break
-            else:
-                log("Request is for a new flight (lock established)")
-                tx.flights[flight_id] = None
-                existing_flight = None
-                break
-        # We found an existing flight but it was locked; wait for it to become
-        # available
-        time.sleep(0.5)
-
-        if datetime.utcnow() > deadline:
-            raise RuntimeError(
-                f"Deadlock in inject_flight while attempting to gain access to flight {flight_id}"
-            )
-    return existing_flight
-
-
-def release_flight_lock(flight_id: str, log: Callable[[str], None]) -> None:
-    with db as tx:
-        if flight_id in tx.flights:
-            if tx.flights[flight_id]:
-                # FlightRecord was a true existing flight
-                log(f"Releasing lock on existing flight_id {flight_id}")
-                tx.flights[flight_id].locked = False
-            else:
-                # FlightRecord was just a placeholder for a new flight
-                log(f"Releasing placeholder for existing flight_id {flight_id}")
-                del tx.flights[flight_id]
-
-
 def inject_flight(
     flight_id: str,
     req_body: MockUSSInjectFlightRequest,
@@ -244,7 +205,9 @@ def inject_flight(
     # Validate request
     log("Validating request")
     try:
-        validate_request(req_body, locality)
+        if locality.is_uspace_applicable():
+            uspace.flight_auth.validate_request(req_body)
+        validate_request(req_body)
     except PlanningError as e:
         return (
             InjectFlightResponse(

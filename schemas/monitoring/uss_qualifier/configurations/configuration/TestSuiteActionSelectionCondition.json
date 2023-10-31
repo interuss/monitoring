@@ -1,0 +1,94 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/TestSuiteActionSelectionCondition.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Condition for selecting TestSuiteActions.\n\nIf more than one subcondition is specified, satisfaction of ALL subconditions are necessary to select the action.\n\nmonitoring.uss_qualifier.configurations.configuration.TestSuiteActionSelectionCondition, as defined in monitoring/uss_qualifier/configurations/configuration.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "defined_at": {
+      "description": "Select actions defined at one of the specified addresses.\n\nThe top-level action in a test run is 'test_scenario', 'test_suite', or 'action_generator'.  Children use the\n'actions' property, but then must specify the type of the action.  So, e.g., the test scenario that is the third\naction of a test suite which is the second action in an action generator would be\n'action_generator.actions[1].test_suite.actions[2].test_scenario'.  An address that starts or ends with 'actions[i]'\nis invalid and will never match.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "except_when": {
+      "description": "Do not select actions selected by any of these conditions, even when they are selected by one or more conditions above.",
+      "items": {
+        "$ref": "TestSuiteActionSelectionCondition.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "has_ancestor": {
+      "description": "Select only actions with a matching ancestor.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AncestorSelectionCondition.json"
+        }
+      ]
+    },
+    "is_action_generator": {
+      "description": "Select these action generator actions.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ActionGeneratorSelectionCondition.json"
+        }
+      ]
+    },
+    "is_test_scenario": {
+      "description": "Select these test scenario actions.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TestScenarioSelectionCondition.json"
+        }
+      ]
+    },
+    "is_test_suite": {
+      "description": "Select these test suite actions.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "TestSuiteSelectionCondition.json"
+        }
+      ]
+    },
+    "nth_instance": {
+      "description": "Select only certain instances of matching actions.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "NthInstanceCondition.json"
+        }
+      ]
+    },
+    "regex_matches_name": {
+      "description": "Select actions where this regular expression has a match in the action's name.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

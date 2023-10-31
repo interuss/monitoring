@@ -1,19 +1,130 @@
+from __future__ import annotations
 from typing import Optional, List, Dict
 
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.dicts import JSONAddress
+from monitoring.uss_qualifier.action_generators.definitions import GeneratorTypeName
 from monitoring.uss_qualifier.reports.validation.definitions import (
     ValidationConfiguration,
 )
 from monitoring.uss_qualifier.requirements.definitions import RequirementCollection
 from monitoring.uss_qualifier.resources.definitions import ResourceCollection
+from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.suites.definitions import (
     TestSuiteActionDeclaration,
+    TestSuiteTypeName,
 )
 
 ParticipantID = str
 """String that refers to a participant being qualified by uss_qualifier"""
+
+
+class InstanceIndexRange(ImplicitDict):
+    lo: Optional[int]
+    """If specified, no indices lower than this value will be included in the range."""
+
+    i: Optional[int]
+    """If specified, no index other than this one will be included in the range."""
+
+    hi: Optional[int]
+    """If specified, no indices higher than this value will be included in the range."""
+
+    def includes(self, i: int) -> bool:
+        if "i" in self and self.i is not None and i != self.i:
+            return False
+        if "lo" in self and self.lo is not None and i < self.lo:
+            return False
+        if "hi" in self and self.hi is not None and i > self.hi:
+            return False
+        return True
+
+
+class ActionGeneratorSelectionCondition(ImplicitDict):
+    """By default, select all action generators.  When specified, limit selection to specified conditions."""
+
+    types: Optional[List[GeneratorTypeName]]
+    """Only select action generators of the specified types."""
+
+
+class TestSuiteSelectionCondition(ImplicitDict):
+    """By default, select all test suites.  When specified, limit selection to specified conditions."""
+
+    types: Optional[List[TestSuiteTypeName]]
+    """Only select test suites of the specified types."""
+
+
+class TestScenarioSelectionCondition(ImplicitDict):
+    """By default, select all test scenarios.  When specified, limit selection to specified conditions."""
+
+    types: Optional[List[TestScenarioTypeName]]
+    """Only select test scenarios of the specified types."""
+
+
+class NthInstanceCondition(ImplicitDict):
+    """Select an action once a certain number of matching instances have happened."""
+
+    n: List[InstanceIndexRange]
+    """Only select an action if it is one of these nth instances."""
+
+    where_action: TestSuiteActionSelectionCondition
+    """Condition that an action must meet to be selected as an instance in this condition."""
+
+
+class AncestorSelectionCondition(ImplicitDict):
+    """Select ancestor actions meeting all the specified conditions."""
+
+    of_generation: Optional[int]
+    """The ancestor is exactly this many generations removed (1 = parent, 2 = grandparent, etc).
+
+    If not specified, an ancestor of any generation meeting the `which` conditions will be selected."""
+
+    which: List[TestSuiteActionSelectionCondition]
+    """Only select an ancestor meeting ALL of these conditions."""
+
+
+class TestSuiteActionSelectionCondition(ImplicitDict):
+    """Condition for selecting TestSuiteActions.
+
+    If more than one subcondition is specified, satisfaction of ALL subconditions are necessary to select the action."""
+
+    is_action_generator: Optional[ActionGeneratorSelectionCondition]
+    """Select these action generator actions."""
+
+    is_test_suite: Optional[TestSuiteSelectionCondition]
+    """Select these test suite actions."""
+
+    is_test_scenario: Optional[TestScenarioSelectionCondition]
+    """Select these test scenario actions."""
+
+    regex_matches_name: Optional[str]
+    """Select actions where this regular expression has a match in the action's name."""
+
+    defined_at: Optional[List[JSONAddress]]
+    """Select actions defined at one of the specified addresses.
+
+    The top-level action in a test run is 'test_scenario', 'test_suite', or 'action_generator'.  Children use the
+    'actions' property, but then must specify the type of the action.  So, e.g., the test scenario that is the third
+    action of a test suite which is the second action in an action generator would be
+    'action_generator.actions[1].test_suite.actions[2].test_scenario'.  An address that starts or ends with 'actions[i]'
+    is invalid and will never match."""
+
+    nth_instance: Optional[NthInstanceCondition]
+    """Select only certain instances of matching actions."""
+
+    has_ancestor: Optional[AncestorSelectionCondition]
+    """Select only actions with a matching ancestor."""
+
+    except_when: Optional[List[TestSuiteActionSelectionCondition]]
+    """Do not select actions selected by any of these conditions, even when they are selected by one or more conditions above."""
+
+
+class ExecutionConfiguration(ImplicitDict):
+    include_action_when: Optional[List[TestSuiteActionSelectionCondition]] = None
+    """If specified, only execute test actions if they are selected by ANY of these conditions (and not selected by any of the `skip_when` conditions)."""
+
+    skip_action_when: Optional[List[TestSuiteActionSelectionCondition]] = None
+    """If specified, do not execute test actions if they are selected by ANY of these conditions."""
 
 
 class TestConfiguration(ImplicitDict):
@@ -25,6 +136,9 @@ class TestConfiguration(ImplicitDict):
 
     resources: ResourceCollection
     """Declarations for resources used by the test suite"""
+
+    execution: Optional[ExecutionConfiguration]
+    """Specification for how to execute the test run."""
 
 
 TestedRequirementsCollectionIdentifier = str
