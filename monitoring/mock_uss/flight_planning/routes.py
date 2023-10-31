@@ -6,7 +6,7 @@ import flask
 from implicitdict import ImplicitDict
 from loguru import logger
 
-from monitoring.mock_uss.scdsc.routes_injection import (
+from monitoring.mock_uss.scd_injection.routes_injection import (
     inject_flight,
     lock_flight,
     release_flight_lock,

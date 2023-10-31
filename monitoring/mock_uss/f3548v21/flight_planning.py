@@ -2,14 +2,16 @@ from datetime import datetime
 from typing import Optional, List, Callable
 
 import arrow
+
+from monitoring.uss_qualifier.resources.overrides import apply_overrides
 from uas_standards.astm.f3548.v21 import api as f3548_v21
+from uas_standards.astm.f3548.v21.api import OperationalIntentDetails, OperationalIntent
 from uas_standards.astm.f3548.v21.constants import OiMaxVertices, OiMaxPlanHorizonDays
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
-from monitoring.mock_uss.scdsc.database import FlightRecord
+from monitoring.mock_uss.flights.database import FlightRecord
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.monitorlib.locality import Locality
-from monitoring.monitorlib.uspace import problems_with_flight_authorisation
 from uas_standards.interuss.automated_testing.scd.v1.api import OperationalIntentState
 
 
@@ -17,19 +19,13 @@ class PlanningError(Exception):
     pass
 
 
-def validate_request(req_body: scd_api.InjectFlightRequest, locality: Locality) -> None:
+def validate_request(req_body: scd_api.InjectFlightRequest) -> None:
     """Raise a PlannerError if the request is not valid.
 
     Args:
         req_body: Information about the requested flight.
         locality: Jurisdictional requirements which the mock_uss should follow.
     """
-    if locality.is_uspace_applicable():
-        # Validate flight authorisation
-        problems = problems_with_flight_authorisation(req_body.flight_authorisation)
-        if problems:
-            raise PlanningError(", ".join(problems))
-
     # Validate max number of vertices
     nb_vertices = 0
     for volume in (
@@ -219,3 +215,23 @@ def op_intent_transition_valid(
 
     else:
         return False
+
+
+def op_intent_from_flightrecord(flight: FlightRecord, method: str) -> OperationalIntent:
+    ref = flight.op_intent.reference
+    details = OperationalIntentDetails(
+        volumes=flight.op_intent.details.volumes,
+        off_nominal_volumes=flight.op_intent.details.off_nominal_volumes,
+        priority=flight.op_intent.details.priority,
+    )
+    op_intent = OperationalIntent(reference=ref, details=details)
+    if flight.mod_op_sharing_behavior:
+        mod_op_sharing_behavior = flight.mod_op_sharing_behavior
+        if mod_op_sharing_behavior.modify_sharing_methods is not None:
+            if method not in mod_op_sharing_behavior.modify_sharing_methods:
+                return op_intent
+        op_intent = apply_overrides(
+            op_intent, mod_op_sharing_behavior.modify_fields, parse_result=False
+        )
+
+    return op_intent

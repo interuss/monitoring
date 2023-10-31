@@ -1,19 +1,12 @@
-import json
-
 import flask
-from implicitdict import ImplicitDict
+
+from monitoring.mock_uss.f3548v21.flight_planning import op_intent_from_flightrecord
 from monitoring.monitorlib import scd
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
-from monitoring.mock_uss.scdsc.database import db
-from monitoring.mock_uss.scdsc.database import FlightRecord
-from monitoring.uss_qualifier.resources.overrides import (
-    apply_overrides,
-)
+from monitoring.mock_uss.flights.database import db
 from uas_standards.astm.f3548.v21.api import (
     ErrorResponse,
-    OperationalIntent,
-    OperationalIntentDetails,
     GetOperationalIntentDetailsResponse,
 )
 
@@ -49,26 +42,6 @@ def scdsc_get_operational_intent_details(entityid: str):
         operational_intent=op_intent_from_flightrecord(flight, "GET")
     )
     return flask.jsonify(response), 200
-
-
-def op_intent_from_flightrecord(flight: FlightRecord, method: str) -> OperationalIntent:
-    ref = flight.op_intent.reference
-    details = OperationalIntentDetails(
-        volumes=flight.op_intent.details.volumes,
-        off_nominal_volumes=flight.op_intent.details.off_nominal_volumes,
-        priority=flight.op_intent.details.priority,
-    )
-    op_intent = OperationalIntent(reference=ref, details=details)
-    if flight.mod_op_sharing_behavior:
-        mod_op_sharing_behavior = flight.mod_op_sharing_behavior
-        if mod_op_sharing_behavior.modify_sharing_methods is not None:
-            if method not in mod_op_sharing_behavior.modify_sharing_methods:
-                return op_intent
-        op_intent = apply_overrides(
-            op_intent, mod_op_sharing_behavior.modify_fields, parse_result=False
-        )
-
-    return op_intent
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents", methods=["POST"])
