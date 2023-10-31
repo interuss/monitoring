@@ -76,7 +76,7 @@ Teardown
 Flight 2 on time range A should be successfully planned by the control USS.
 
 ### [Validate flight 2 shared intent with invalid interuss data test step](test_steps/validate_sharing_operational_intent_but_with_invalid_interuss_data.md)
-Validate that flight 2 is planned
+Validate that flight 2 is shared with invalid data as a modified behavior is injected by uss_qualifier for a negative test.
 
 ### [Validate no notification pushed for flight 2](../validate_not_shared_operational_intent.md)
 There should be no subscription by tested_uss to trigger notification of flight 2.
@@ -98,11 +98,9 @@ In a previous step, we checked there was no notification of flight 2 to tested_u
 ### [Validate flight 1 Notification not sent to Control_uss test step](test_steps/validate_no_notification_operational_intent.md)
 
 ### [Delete Control_uss flight test step](../../../flight_planning/delete_flight_intent.md)
-Teardown
 
-### [Delete tested_uss flight test step](../../../flight_planning/delete_flight_intent.md)
-Teardown if created.
 
 ## Cleanup
 ### Successful flight deletion check
+This cleanup is for both - after testcase ends and after test scenario ends
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../requirements/interuss/automated_testing/flight_planning.md)**
