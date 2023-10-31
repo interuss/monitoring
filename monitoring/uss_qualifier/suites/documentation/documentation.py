@@ -42,6 +42,7 @@ from monitoring.uss_qualifier.suites.definitions import (
     TestSuiteDefinition,
     ActionType,
     TestSuiteActionDeclaration,
+    TestSuiteTypeName,
 )
 
 
@@ -228,7 +229,7 @@ def _render_scenario(
 
 
 def _render_suite_by_type(
-    suite_type: FileReference, context: TestSuiteRenderContext
+    suite_type: TestSuiteTypeName, context: TestSuiteRenderContext
 ) -> List[str]:
     lines = []
     suite_def = ImplicitDict.parse(

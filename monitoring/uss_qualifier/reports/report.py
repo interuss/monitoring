@@ -628,9 +628,6 @@ class SkippedActionReport(ImplicitDict):
     reason: str
     """The reason the action was skipped."""
 
-    action_declaration_index: int
-    """Index of the skipped action in the configured declaration."""
-
     declaration: TestSuiteActionDeclaration
     """Full declaration of the action that was skipped."""
 

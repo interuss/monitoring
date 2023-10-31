@@ -22,8 +22,11 @@ from monitoring.uss_qualifier.scenarios.definitions import (
 )
 
 
+TestSuiteTypeName = FileReference
+
+
 class TestSuiteDeclaration(ImplicitDict):
-    suite_type: Optional[FileReference]
+    suite_type: Optional[TestSuiteTypeName]
     """Type/location of test suite.  Usually expressed as the file name of the suite definition (without extension) qualified relative to the `uss_qualifier` folder"""
 
     suite_definition: Optional[TestSuiteDefinition]

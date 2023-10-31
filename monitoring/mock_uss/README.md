@@ -18,9 +18,10 @@ The available functionality sets are:
 * [`msgsigning`](msgsigning): [IETF HTTP Message Signatures](https://datatracker.ietf.org/doc/draft-ietf-httpbis-message-signatures/)
 * [`riddp`](riddp): Remote ID Display Provider
 * [`ridsp`](ridsp): Remote ID Service Provider
-* [`scdsc`](scdsc): ASTM F3548 strategic coordinator
+* `scdsc`: Combination of [ASTM F3548-21](f3548v21) strategic conflict detection and [scd flight injection](scd_injection)
+* [`flight_planning`](flight_planning): Exposes [InterUSS flight_planning automated testing API](https://github.com/interuss/automated_testing_interfaces/tree/main/flight_planning)
 * [`tracer`](tracer): Interoperability ecosystem tracer logger
-* [`interaction_logging`](interaction_logging): Enables logging of the [interuss](https://github.com/astm-utm/Protocol/blob/master/utm.yaml) interactions between mock_uss and other uss participants
+* [`interaction_logging`](interaction_logging): Enables logging of interactions between mock_uss and other uss participants
 
 
 ## Local deployment

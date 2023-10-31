@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from datetime import datetime
 import json
-from typing import Dict, List, Optional, Union, Callable, Iterator
+import re
+from typing import Dict, List, Optional, Union, Iterator
 
 import arrow
 
@@ -11,11 +13,19 @@ from implicitdict import StringBasedDateTime, ImplicitDict
 from loguru import logger
 import yaml
 
+from monitoring.monitorlib.dicts import JSONAddress
 from monitoring.monitorlib.inspection import fullname
 from monitoring.monitorlib.versioning import repo_url_of
 from monitoring.uss_qualifier.action_generators.action_generator import (
     ActionGeneratorType,
     ActionGenerator,
+    action_generator_type_from_name,
+)
+from monitoring.uss_qualifier.configurations.configuration import (
+    ExecutionConfiguration,
+    TestSuiteActionSelectionCondition,
+    AncestorSelectionCondition,
+    NthInstanceCondition,
 )
 from monitoring.uss_qualifier.fileio import resolve_filename
 from monitoring.uss_qualifier.reports.capabilities import (
@@ -96,16 +106,45 @@ class TestSuiteAction(object):
         else:
             ActionType.raise_invalid_action_declaration()
 
-    def run(self) -> TestSuiteActionReport:
-        if self.test_scenario:
-            return TestSuiteActionReport(test_scenario=self._run_test_scenario())
-        elif self.test_suite:
-            return TestSuiteActionReport(test_suite=self._run_test_suite())
+    def get_name(self) -> str:
+        if self.test_suite:
+            return self.test_suite.definition.name
         elif self.action_generator:
-            return TestSuiteActionReport(action_generator=self._run_action_generator())
+            return self.action_generator.get_name()
+        elif self.test_scenario:
+            return self.test_scenario.documentation.name
+        else:
+            raise ValueError(
+                "TestSuiteAction as not a suite, action generator, nor scenario"
+            )
+
+    def run(self, context: ExecutionContext) -> TestSuiteActionReport:
+        context.begin_action(self)
+        skip_report = context.evaluate_skip()
+        if skip_report:
+            logger.warning(
+                f"Skipping {self.declaration.get_action_type()} '{self.get_name()}' because: {skip_report.reason}"
+            )
+            report = TestSuiteActionReport(skipped_action=skip_report)
+        else:
+            if self.test_scenario:
+                report = TestSuiteActionReport(test_scenario=self._run_test_scenario())
+            elif self.test_suite:
+                report = TestSuiteActionReport(test_suite=self._run_test_suite(context))
+            elif self.action_generator:
+                report = TestSuiteActionReport(
+                    action_generator=self._run_action_generator(context)
+                )
+            else:
+                raise ValueError(
+                    "TestSuiteAction was not a test scenario, test suite, nor action generator"
+                )
+        context.end_action(self, report)
+        return report
 
     def _run_test_scenario(self) -> TestScenarioReport:
         scenario = self.test_scenario
+
         logger.info(f'Running "{scenario.documentation.name}" scenario...')
         scenario.on_failed_check = _print_failed_check
         try:
@@ -134,20 +173,20 @@ class TestSuiteAction(object):
             logger.warning(f'FAILURE for "{scenario.documentation.name}" scenario')
         return report
 
-    def _run_test_suite(self) -> TestSuiteReport:
+    def _run_test_suite(self, context: ExecutionContext) -> TestSuiteReport:
         logger.info(f"Beginning test suite {self.test_suite.definition.name}...")
-        report = self.test_suite.run()
+        report = self.test_suite.run(context)
         logger.info(f"Completed test suite {self.test_suite.definition.name}")
         return report
 
-    def _run_action_generator(self) -> ActionGeneratorReport:
+    def _run_action_generator(self, context: ExecutionContext) -> ActionGeneratorReport:
         report = ActionGeneratorReport(
             actions=[],
             generator_type=self.action_generator.definition.generator_type,
             start_time=StringBasedDateTime(arrow.utcnow()),
         )
 
-        _run_actions(self.action_generator.actions(), report)
+        _run_actions(self.action_generator.actions(), context, report)
 
         return report
 
@@ -226,7 +265,6 @@ class TestSuite(object):
                     SkippedActionReport(
                         timestamp=StringBasedDateTime(arrow.utcnow().datetime),
                         reason=str(e),
-                        action_declaration_index=a,
                         declaration=action_dec,
                     )
                 )
@@ -257,7 +295,7 @@ class TestSuite(object):
             )
         return action
 
-    def run(self) -> TestSuiteReport:
+    def run(self, context: ExecutionContext) -> TestSuiteReport:
         report = TestSuiteReport(
             name=self.definition.name,
             suite_type=self.declaration.type_name,
@@ -274,7 +312,7 @@ class TestSuite(object):
             if self.definition.has_field_with_value("report_evaluation_scenario"):
                 yield self._make_report_evaluation_action(report)
 
-        _run_actions(actions(), report)
+        _run_actions(actions(), context, report)
 
         # Evaluate participants' capabilities
         if (
@@ -309,6 +347,7 @@ class TestSuite(object):
 
 def _run_actions(
     actions: Iterator[Union[TestSuiteAction, SkippedActionReport]],
+    context: ExecutionContext,
     report: Union[TestSuiteReport, ActionGeneratorReport],
 ) -> None:
     success = True
@@ -316,7 +355,7 @@ def _run_actions(
         if isinstance(action, SkippedActionReport):
             action_report = TestSuiteActionReport(skipped_action=action)
         else:
-            action_report = action.run()
+            action_report = action.run(context)
         report.actions.append(action_report)
         if action_report.has_critical_problem():
             success = False
@@ -333,3 +372,227 @@ def _run_actions(
                 )
     report.successful = success
     report.end_time = StringBasedDateTime(datetime.utcnow())
+
+
+@dataclass
+class ActionStackFrame(object):
+    action: TestSuiteAction
+    parent: Optional[ActionStackFrame]
+    children: List[ActionStackFrame]
+
+    def address(self) -> JSONAddress:
+        if self.action.test_scenario is not None:
+            addr = "test_scenario"
+        elif self.action.test_suite is not None:
+            addr = "test_suite"
+        elif self.action.action_generator is not None:
+            addr = "action_generator"
+        else:
+            raise ValueError(
+                "TestSuiteAction was not a scenario, suite, or action generator"
+            )
+
+        if self.parent is None:
+            return addr
+
+        index = -1
+        for a, child in enumerate(self.parent.children):
+            if child is self:
+                index = a
+                break
+        if index == -1:
+            raise RuntimeError(
+                "ActionStackFrame was not listed as a child of its parent"
+            )
+        return f"{self.parent.address()}.actions[{index}].{addr}"
+
+
+class ExecutionContext(object):
+    config: Optional[ExecutionConfiguration]
+    top_frame: Optional[ActionStackFrame]
+    current_frame: Optional[ActionStackFrame]
+
+    def __init__(self, config: Optional[ExecutionConfiguration]):
+        self.config = config
+        self.top_frame = None
+        self.current_frame = None
+
+    def _compute_n_of(
+        self, target: TestSuiteAction, condition: TestSuiteActionSelectionCondition
+    ) -> int:
+        n = 0
+        queue = [self.top_frame]
+        while queue:
+            frame = queue.pop(0)
+            if self._is_selected_by(frame, condition):
+                n += 1
+            if frame.action is target:
+                return n
+            for c, child in enumerate(frame.children):
+                queue.insert(c, child)
+        raise RuntimeError(
+            f"Could not find target action '{target.get_name()}' anywhere in ExecutionContext"
+        )
+
+    def _ancestor_selected_by(
+        self,
+        frame: Optional[ActionStackFrame],
+        of_generation: Optional[int],
+        which: List[TestSuiteActionSelectionCondition],
+    ) -> bool:
+        if frame is None:
+            return False
+
+        if of_generation is not None:
+            check_self = of_generation == 0
+            of_generation -= 1
+        else:
+            check_self = True
+
+        if check_self:
+            if all(self._is_selected_by(frame, c) for c in which):
+                return True
+
+        return self._ancestor_selected_by(frame.parent, of_generation, which)
+
+    def _is_selected_by(
+        self, frame: ActionStackFrame, f: TestSuiteActionSelectionCondition
+    ) -> bool:
+        action = frame.action
+        result = False
+
+        if "is_action_generator" in f and f.is_action_generator is not None:
+            if action.action_generator:
+                if (
+                    "types" in f.is_action_generator
+                    and f.is_action_generator.types is not None
+                ):
+                    if not any(
+                        type(action.action_generator)
+                        is action_generator_type_from_name(t)
+                        for t in f.is_action_generator.types
+                    ):
+                        return False
+                result = True
+            else:
+                return False
+
+        if "is_test_suite" in f and f.is_test_suite is not None:
+            if action.test_suite:
+                if "types" in f.is_test_suite and f.is_test_suite.types is not None:
+                    if (
+                        action.test_suite.declaration.suite_type
+                        not in f.is_test_suite.types
+                    ):
+                        return False
+                result = True
+            else:
+                return False
+
+        if "is_test_scenario" in f and f.is_test_scenario is not None:
+            if action.test_scenario:
+                if (
+                    "types" in f.is_test_scenario
+                    and f.is_test_scenario.types is not None
+                ):
+                    if (
+                        action.test_scenario.declaration.scenario_type
+                        not in f.is_test_scenario.types
+                    ):
+                        return False
+                result = True
+            else:
+                return False
+
+        if "regex_matches_name" in f and f.regex_matches_name is not None:
+            if re.search(f.regex_matches_name, action.get_name()) is None:
+                return False
+            result = True
+
+        if "defined_at" in f and f.defined_at is not None:
+            if frame.address() not in f.defined_at:
+                return False
+            result = True
+
+        if "nth_instance" in f and f.nth_instance is not None:
+            if self._is_selected_by(frame, f.nth_instance.where_action):
+                n = self._compute_n_of(frame.action, f.nth_instance.where_action)
+                if not any(r.includes(n) for r in f.nth_instance.n):
+                    return False
+                result = True
+            else:
+                return False
+
+        if "has_ancestor" in f and f.has_ancestor is not None:
+            if (
+                "of_generation" in f.has_ancestor
+                and f.has_ancestor.of_generation is not None
+            ):
+                of_generation = f.has_ancestor.of_generation - 1
+            else:
+                of_generation = None
+            if not self._ancestor_selected_by(
+                frame.parent, of_generation, f.has_ancestor.which
+            ):
+                return False
+            result = True
+
+        if result and "except_when" in f and f.except_when is not None:
+            if any(self._is_selected_by(frame, c) for c in f.except_when):
+                return False
+
+        return result
+
+    def evaluate_skip(self) -> Optional[SkippedActionReport]:
+        """Decide whether to skip the action in the current_frame or not.
+
+        Should be called in between self.begin_action and self.end_action, and before executing the action.
+
+        Returns: Report regarding skipped action if it should be skipped, otherwise None.
+        """
+
+        if not self.config:
+            return None
+
+        if "include_action_when" in self.config and self.config.include_action_when:
+            include = False
+            for condition in self.config.include_action_when:
+                if self._is_selected_by(self.current_frame, condition):
+                    include = True
+                    break
+            if not include:
+                return SkippedActionReport(
+                    timestamp=StringBasedDateTime(arrow.utcnow()),
+                    reason="None of the include_action_when conditions selected the action",
+                    declaration=self.current_frame.action.declaration,
+                )
+
+        if "skip_action_when" in self.config and self.config.skip_action_when:
+            for f, condition in enumerate(self.config.skip_action_when):
+                if self._is_selected_by(self.current_frame, condition):
+                    return SkippedActionReport(
+                        timestamp=StringBasedDateTime(arrow.utcnow()),
+                        reason=f"Action selected to be skipped by skip_action_when condition {f}",
+                        declaration=self.current_frame.action.declaration,
+                    )
+
+        return None
+
+    def begin_action(self, action: TestSuiteAction) -> None:
+        if self.top_frame is None:
+            self.top_frame = ActionStackFrame(action=action, parent=None, children=[])
+            self.current_frame = self.top_frame
+        else:
+            self.current_frame = ActionStackFrame(
+                action=action, parent=self.current_frame, children=[]
+            )
+            self.current_frame.parent.children.append(self.current_frame)
+
+    def end_action(
+        self, action: TestSuiteAction, report: TestSuiteActionReport
+    ) -> None:
+        if self.current_frame.action is not action:
+            raise RuntimeError(
+                f"Action {self.current_frame.action.declaration.get_action_type()} {self.current_frame.action.declaration.get_child_type()} was started, but a different action {action.declaration.get_action_type()} {action.declaration.get_child_type()} was ended"
+            )
+        self.current_frame = self.current_frame.parent
