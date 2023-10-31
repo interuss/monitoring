@@ -24,6 +24,7 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSResource,
 )
 
+
 class GetOpResponseDataValidationByUSS(TestScenario):
     flight_1_planned_time_range_A: FlightIntent
 
@@ -45,11 +46,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.control_uss = control_uss.mock_uss
         self.dss = dss.dss
 
-
-
     def run(self):
         self.begin_test_scenario()
         pass
         self.end_test_scenario()
-
-
