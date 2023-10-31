@@ -1,5 +1,7 @@
+import json
 import os
 from dataclasses import dataclass
+from enum import Enum
 from functools import cmp_to_key
 from typing import List, Union, Dict, Set, Optional
 
@@ -42,6 +44,11 @@ from monitoring.uss_qualifier.suites.definitions import (
     TestSuiteDefinition,
 )
 
+PASS_CLASS = "pass_result"
+NOT_TESTED_CLASS = "not_tested"
+FAIL_CLASS = "fail_result"
+HAS_TODO_CLASS = "has_todo"
+
 
 class TestedCheck(ImplicitDict):
     name: str
@@ -62,23 +69,23 @@ class TestedCheck(ImplicitDict):
     @property
     def check_classname(self) -> str:
         if self.failures > 0:
-            return "fail_result"
+            return FAIL_CLASS
         if self.successes + self.failures == 0:
             if self.has_todo:
-                return "has_todo"
+                return HAS_TODO_CLASS
             else:
-                return "not_tested"
+                return NOT_TESTED_CLASS
         else:
-            return "pass_result"
+            return PASS_CLASS
 
     @property
     def result_classname(self) -> str:
         if self.failures > 0:
-            return "fail_result"
+            return FAIL_CLASS
         if self.successes + self.failures == 0:
-            return "not_tested"
+            return NOT_TESTED_CLASS
         else:
-            return "pass_result"
+            return PASS_CLASS
 
     @property
     def not_tested(self) -> bool:
@@ -154,11 +161,11 @@ class TestedRequirement(ImplicitDict):
     @property
     def classname(self) -> str:
         if not all(s.no_failures for s in self.scenarios):
-            return "fail_result"
+            return FAIL_CLASS
         elif all(s.not_tested for s in self.scenarios):
-            return "not_tested"
+            return NOT_TESTED_CLASS
         else:
-            return "pass_result"
+            return PASS_CLASS
 
 
 class TestedPackage(ImplicitDict):
@@ -176,13 +183,41 @@ class TestedBreakdown(ImplicitDict):
     packages: List[TestedPackage]
 
 
-@dataclass
-class TestRunInformation(object):
+class TestRunInformation(ImplicitDict):
     test_run_id: str
     start_time: Optional[str]
     end_time: Optional[str]
     baseline: str
     environment: str
+
+
+class ParticipantVerificationStatus(str, Enum):
+    Unknown = "Unknown"
+    """Participant verification status is not known."""
+
+    Pass = "Pass"
+    """Participant has verified all tested requirements."""
+
+    Fail = "Fail"
+    """Participant has failed to comply with one or more requirements."""
+
+    Incomplete = "Incomplete"
+    """Participant has not failed to comply with any requirements, but some identified requirements were not verified."""
+
+    def get_class(self) -> str:
+        if self == ParticipantVerificationStatus.Pass:
+            return PASS_CLASS
+        elif self == ParticipantVerificationStatus.Fail:
+            return FAIL_CLASS
+        elif self == ParticipantVerificationStatus.Incomplete:
+            return NOT_TESTED_CLASS
+        else:
+            return ""
+
+
+class RequirementsVerificationReport(ImplicitDict):
+    test_run_information: TestRunInformation
+    participant_verifications: Dict[ParticipantID, ParticipantVerificationStatus]
 
 
 def generate_tested_requirements(
@@ -210,6 +245,8 @@ def generate_tested_requirements(
     import_submodules(suites)
     import_submodules(action_generators)
 
+    test_run = compute_test_run_information(report)
+
     os.makedirs(output_path, exist_ok=True)
     index_file = os.path.join(output_path, "index.html")
 
@@ -219,6 +256,9 @@ def generate_tested_requirements(
     with open(index_file, "w") as f:
         f.write(template.render(participant_ids=participant_ids))
 
+    verification_report = RequirementsVerificationReport(
+        test_run_information=test_run, participant_verifications={}
+    )
     template = jinja_env.get_template(
         "tested_requirements/participant_tested_requirements.html"
     )
@@ -236,6 +276,9 @@ def generate_tested_requirements(
                 participant_breakdown, participant_req_collections[participant_id]
             )
         _sort_breakdown(participant_breakdown)
+        overall_status = _compute_overall_status(participant_breakdown)
+        verification_report.participant_verifications[participant_id] = overall_status
+        system_version = _find_participant_system_version(report.report, participant_id)
         participant_file = os.path.join(output_path, f"{participant_id}.html")
         other_participants = ", ".join(
             p for p in participant_ids if p != participant_id
@@ -246,9 +289,16 @@ def generate_tested_requirements(
                     participant_id=participant_id,
                     other_participants=other_participants,
                     breakdown=participant_breakdown,
-                    test_run=compute_test_run_information(report),
+                    test_run=test_run,
+                    overall_status=overall_status,
+                    system_version=system_version,
+                    ParticipantVerificationStatus=ParticipantVerificationStatus,
                 )
             )
+
+    status_file = os.path.join(output_path, "status.json")
+    with open(status_file, "w") as f:
+        json.dump(verification_report, f, indent=2)
 
 
 def compute_test_run_information(report: TestRunReport) -> TestRunInformation:
@@ -264,6 +314,50 @@ def compute_test_run_information(report: TestRunReport) -> TestRunInformation:
         baseline=report.baseline_signature,
         environment=report.environment_signature,
     )
+
+
+def _compute_overall_status(
+    participant_breakdown: TestedBreakdown,
+) -> ParticipantVerificationStatus:
+    overall_status = ParticipantVerificationStatus.Pass
+    for package in participant_breakdown.packages:
+        for req in package.requirements:
+            if req.classname == FAIL_CLASS:
+                return ParticipantVerificationStatus.Fail
+            elif req.classname == NOT_TESTED_CLASS:
+                overall_status = ParticipantVerificationStatus.Incomplete
+            elif req.classname == PASS_CLASS:
+                pass
+            else:
+                return ParticipantVerificationStatus.Unknown
+    return overall_status
+
+
+def _find_participant_system_version(
+    report: TestSuiteActionReport, participant_id: ParticipantID
+) -> Optional[str]:
+    test_suite, test_scenario, action_generator = report.get_applicable_report()
+    if test_suite:
+        for action in report.test_suite.actions:
+            version = _find_participant_system_version(action, participant_id)
+            if version is not None:
+                return version
+    elif action_generator:
+        for action in report.action_generator.actions:
+            version = _find_participant_system_version(action, participant_id)
+            if version is not None:
+                return version
+    elif test_scenario:
+        if report.test_scenario.scenario_type in (
+            "scenarios.versioning.get_system_versions.GetSystemVersions",
+            "scenarios.versioning.GetSystemVersions",
+        ):
+            if participant_id in report.test_scenario.notes:
+                system_identity, version = report.test_scenario.notes[
+                    participant_id
+                ].message.split("=")
+                return version
+    return None
 
 
 def _split_strings_numbers(s: str) -> List[Union[int, str]]:

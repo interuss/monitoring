@@ -33,3 +33,8 @@ These reports were generated during continuous integration for the most recent P
 
 * [Sequence view](./artifacts/uss_qualifier/reports/dss_probing/sequence)
 * [Tested requirements](./artifacts/uss_qualifier/reports/dss_probing/requirements)
+
+### [General flight authorization configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/general_flight_auth.yaml)
+
+* [Sequence view](./artifacts/uss_qualifier/reports/general_flight_auth/sequence)
+* [Tested requirements](./artifacts/uss_qualifier/reports/general_flight_auth/requirements)

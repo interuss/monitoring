@@ -151,73 +151,113 @@ example_flight_check_table:
             - REQ_002
             - REQ_007
           description: The first test step defined by the test designer
-          additional_information:
-            new_jurisdiction_x:
-              operation_rule_set: Rules1
-          volumes:
-            - outline_circle:
-                center:
-                  lng: 7.4774
-                  lat: 46.9749
-                radius:
-                  value: 100
-                  units: M
-              altitude_lower:
-                value: 0
-                units: M
-                reference: SFC
-              altitude_upper:
-                value: 100
-                units: M
-                reference: SFC
-              start_time:
-                start_of_test: { }
-                use_timezone: Europe/Berlin
-              end_time:
-                offset_from:
-                  starting_from:
-                    next_day:
-                      time_zone: Europe/Zurich
-                      starting_from:
-                        start_of_test: { }
-                      days_of_the_week: [ "Tu", "Th" ]
-                  offset: 12h
           acceptance_expectation: MustBeAccepted
+          flight_info:
+            basic_information:
+              usage_state: Planned
+              uas_state: Nominal
+              area:
+                - outline_circle:
+                    center:
+                      lng: 7.4774
+                      lat: 46.9749
+                    radius:
+                      value: 100
+                      units: M
+                  altitude_lower:
+                    value: 550
+                    units: M
+                    # TODO: Change to SFC once mock_uss can process that datum
+                    reference: W84
+                  altitude_upper:
+                    value: 650
+                    units: M
+                    # TODO: Change to SFC once mock_uss can process that datum
+                    reference: W84
+                  start_time:
+                    start_of_test: { }
+                    use_timezone: Europe/Berlin
+                  end_time:
+                    offset_from:
+                      starting_from:
+                        next_day:
+                          time_zone: Europe/Zurich
+                          starting_from:
+                            start_of_test: { }
+                          days_of_the_week: [ "Tu", "Th" ]
+                      offset: 12h
+            additional_information:
+              new_jurisdiction_x:
+                operation_rule_set: Rules1
+            # TODO: Remove once mock_uss is fixed to not require U-space flight auth
+            uspace_flight_authorisation:
+              uas_serial_number: 1AF49UL5CC5J6K
+              operation_category: Open
+              operation_mode: Vlos
+              uas_class: C0
+              identification_technologies:
+                - ASTMNetRID
+              connectivity_methods:
+                - cellular
+              endurance_minutes: 30
+              emergency_procedure_url: https://example.interussplatform.org/emergency
+              operator_id: CHEo5kut30e0mt01-qwe
+              uas_id: ''
+              uas_type_certificate: ''
         - flight_check_id: TEST_002
           requirement_ids:
             - REQ_001
             - REQ_003
             - REQ_004
           description: The second test step defined by the test designer
-          additional_information:
-            new_jurisdiction_x:
-              operation_rule_set: Rules1
-          volumes:
-            - outline_circle:
-                center:
-                  lng: 7.4774
-                  lat: 46.9749
-                radius:
-                  value: 100
-                  units: M
-              altitude_lower:
-                value: 50
-                units: M
-                reference: SFC
-              altitude_upper:
-                value: 5000
-                units: FT
-                reference: W84
-              start_time:
-                next_day:
-                  time_zone: +02:00
-                  starting_from:
-                    offset_from:
+          acceptance_expectation: MustBeAccepted
+          flight_info:
+            basic_information:
+              usage_state: Planned
+              uas_state: Nominal
+              area:
+                - outline_circle:
+                    center:
+                      lng: 7.4774
+                      lat: 46.9749
+                    radius:
+                      value: 100
+                      units: M
+                  altitude_lower:
+                    value: 1424
+                    units: M
+                    reference: W84
+                  altitude_upper:
+                    value: 5000
+                    units: FT
+                    reference: W84
+                  start_time:
+                    next_day:
+                      time_zone: +02:00
                       starting_from:
-                        start_of_test: { }
-                      offset: 12h
-              duration: 5m
-          conditions_expectation: MustBePresent
+                        offset_from:
+                          starting_from:
+                            start_of_test: { }
+                          offset: 12h
+                  duration: 5m
+            additional_information:
+              new_jurisdiction_x:
+                operation_rule_set: Rules1
+            # TODO: Remove once mock_uss is fixed to not require U-space flight auth
+            uspace_flight_authorisation:
+              uas_serial_number: 1AF49UL5CC5J6K
+              operation_category: Open
+              operation_mode: Vlos
+              uas_class: C0
+              identification_technologies:
+                - ASTMNetRID
+              connectivity_methods:
+                - cellular
+              endurance_minutes: 30
+              emergency_procedure_url: https://example.interussplatform.org/emergency
+              operator_id: CHEo5kut30e0mt01-qwe
+              uas_id: ''
+              uas_type_certificate: ''
 
 # ===== Geospatial feature comprehension =====
 

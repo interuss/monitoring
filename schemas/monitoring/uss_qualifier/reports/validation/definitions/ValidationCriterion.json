@@ -7,26 +7,18 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
-    "full_success": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "FullSuccessCriterion.json"
-        }
-      ]
+    "applicability": {
+      "$ref": "ValidationCriterionApplicability.json",
+      "description": "Definition of the test report elements to which the `pass_condition` is applicable."
     },
-    "no_skipped_actions": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "NoSkippedActionsCriterion.json"
-        }
-      ]
+    "pass_condition": {
+      "$ref": "PassCondition.json",
+      "description": "Condition that must be met by the applicable test report element(s) in order to pass validation."
     }
   },
+  "required": [
+    "applicability",
+    "pass_condition"
+  ],
   "type": "object"
 }

@@ -19,9 +19,10 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
 )
-from monitoring.monitorlib.fetch import query_and_describe
+from monitoring.monitorlib.fetch import query_and_describe, QueryType
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api
 from uas_standards.interuss.automated_testing.flight_planning.v1.constants import Scope
@@ -29,9 +30,11 @@ from uas_standards.interuss.automated_testing.flight_planning.v1.constants impor
 
 class V1FlightPlannerClient(FlightPlannerClient):
     _session: UTMClientSession
+    _participant_id: ParticipantID
 
-    def __init__(self, session: UTMClientSession):
+    def __init__(self, session: UTMClientSession, participant_id: ParticipantID):
         self._session = session
+        self._participant_id = participant_id
 
     def _inject(
         self,
@@ -53,7 +56,13 @@ class V1FlightPlannerClient(FlightPlannerClient):
         op = api.OPERATIONS[api.OperationID.UpsertFlightPlan]
         url = op.path.format(flight_plan_id=flight_plan_id)
         query = query_and_describe(
-            self._session, op.verb, url, json=req, scope=Scope.Plan
+            self._session,
+            op.verb,
+            url,
+            json=req,
+            scope=Scope.Plan,
+            participant_id=self._participant_id,
+            query_type=QueryType.InterUSSFlightPlanningV1UpsertFlightPlan,
         )
         if query.status_code != 200 and query.status_code != 201:
             raise PlanningActivityError(
@@ -108,7 +117,14 @@ class V1FlightPlannerClient(FlightPlannerClient):
             )
         op = api.OPERATIONS[api.OperationID.DeleteFlightPlan]
         url = op.path.format(flight_plan_id=flight_id)
-        query = query_and_describe(self._session, op.verb, url, scope=Scope.Plan)
+        query = query_and_describe(
+            self._session,
+            op.verb,
+            url,
+            scope=Scope.Plan,
+            participant_id=self._participant_id,
+            query_type=QueryType.InterUSSFlightPlanningV1DeleteFlightPlan,
+        )
         if query.status_code != 200:
             raise PlanningActivityError(
                 f"Attempt to delete flight plan returned status {query.status_code} rather than 200 as expected",
@@ -134,7 +150,12 @@ class V1FlightPlannerClient(FlightPlannerClient):
     def report_readiness(self) -> TestPreparationActivityResponse:
         op = api.OPERATIONS[api.OperationID.GetStatus]
         query = query_and_describe(
-            self._session, op.verb, op.path, scope=Scope.DirectAutomatedTest
+            self._session,
+            op.verb,
+            op.path,
+            scope=Scope.DirectAutomatedTest,
+            participant_id=self._participant_id,
+            query_type=QueryType.InterUSSFlightPlanningV1GetStatus,
         )
         if query.status_code != 200:
             raise PlanningActivityError(
@@ -166,7 +187,13 @@ class V1FlightPlannerClient(FlightPlannerClient):
 
         op = api.OPERATIONS[api.OperationID.ClearArea]
         query = query_and_describe(
-            self._session, op.verb, op.path, json=req, scope=Scope.DirectAutomatedTest
+            self._session,
+            op.verb,
+            op.path,
+            json=req,
+            scope=Scope.DirectAutomatedTest,
+            participant_id=self._participant_id,
+            query_type=QueryType.InterUSSFlightPlanningV1ClearArea,
         )
         if query.status_code != 200:
             raise PlanningActivityError(

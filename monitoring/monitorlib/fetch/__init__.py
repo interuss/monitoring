@@ -221,6 +221,20 @@ class QueryType(str, Enum):
     # InterUSS automated testing versioning interface
     InterUSSVersioningGetVersion = "interuss.automated_testing.versioning.GetVersion"
 
+    # InterUSS automated testing flight_planning interface
+    InterUSSFlightPlanningV1GetStatus = (
+        "interuss.automated_testing.flight_planning.v1.GetStatus"
+    )
+    InterUSSFlightPlanningV1ClearArea = (
+        "interuss.automated_testing.flight_planning.v1.ClearArea"
+    )
+    InterUSSFlightPlanningV1UpsertFlightPlan = (
+        "interuss.automated_testing.flight_planning.v1.UpsertFlightPlan"
+    )
+    InterUSSFlightPlanningV1DeleteFlightPlan = (
+        "interuss.automated_testing.flight_planning.v1.DeleteFlightPlan"
+    )
+
     @staticmethod
     def flight_details(rid_version: RIDVersion):
         if rid_version == RIDVersion.f3411_19:

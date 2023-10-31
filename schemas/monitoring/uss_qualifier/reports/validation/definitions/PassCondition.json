@@ -1,0 +1,67 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/validation/definitions/PassCondition.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Condition for passing validation.  Exactly one field must be specified.\n\nmonitoring.uss_qualifier.reports.validation.definitions.PassCondition, as defined in monitoring/uss_qualifier/reports/validation/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "all_of": {
+      "description": "Overall condition is met only if all of these specified conditions are met.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AllPassConditions.json"
+        }
+      ]
+    },
+    "any_of": {
+      "description": "Overall condition is met if any of these specified conditions are met.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AnyPassCondition.json"
+        }
+      ]
+    },
+    "does_not_pass": {
+      "description": "Overall condition is met only if this specified condition is not met.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "PassCondition.json"
+        }
+      ]
+    },
+    "each_element": {
+      "description": "Condition applies to each applicable element.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "EachElementCondition.json"
+        }
+      ]
+    },
+    "elements": {
+      "description": "Condition applies to the group of applicable elements.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ElementGroupCondition.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

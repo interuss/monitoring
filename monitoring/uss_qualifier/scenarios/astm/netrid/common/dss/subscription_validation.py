@@ -12,6 +12,7 @@ from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
+from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss import utils
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import (
     GenericTestScenario,
@@ -78,17 +79,7 @@ class SubscriptionValidation(GenericTestScenario):
         self.end_test_case()
 
     def _clean_any_sub(self):
-        with self.check(
-            "Successful subscription query", [self._dss.participant_id]
-        ) as check:
-            fetched = self._dss_wrapper.search_subs(
-                check, [vertex.as_s2sphere() for vertex in self._isa.footprint]
-            )
-        for sub_id in fetched.subscriptions.keys():
-            with self.check(
-                "Successful subscription deletion", [self._dss.participant_id]
-            ) as check:
-                self._dss_wrapper.cleanup_sub(check, sub_id=sub_id)
+        utils.delete_any_subscription(self, self._dss_wrapper, self._isa.footprint)
 
     def _ensure_clean_workspace_step(self):
         self.begin_test_step("Ensure clean workspace")

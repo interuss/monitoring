@@ -2,7 +2,7 @@
 <head>
   <style>
     body {
-      margin: 0;
+      margin: 1em;
       color: #24292f;
       background-color: #ffffff;
       font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
@@ -80,6 +80,12 @@
       <td>Participant</td>
       <td>{{ participant_id }}</td>
     </tr>
+    {% if system_version != None %}
+      <tr>
+        <td>System version</td>
+        <td>{{ system_version }}</td>
+      </tr>
+    {% endif %}
     <tr>
       <td>Other participants</td>
       <td>{{ other_participants }}</td>
@@ -107,6 +113,20 @@
     <tr>
       <td>Environment identifier</td>
       <td>TE-{{ test_run.environment[0:7] }}</td>
+    </tr>
+    <tr>
+      <td>Requirement verification status</td>
+      <td class="{{ overall_status.get_class() }}">
+        {% if overall_status == ParticipantVerificationStatus.Pass %}
+          Pass
+        {% elif overall_status == ParticipantVerificationStatus.Fail %}
+          Fail
+        {% elif overall_status == ParticipantVerificationStatus.Incomplete %}
+          Not fully verified
+        {% else %}
+          ???
+        {% endif %}
+      </td>
     </tr>
   </table>
 </div>
