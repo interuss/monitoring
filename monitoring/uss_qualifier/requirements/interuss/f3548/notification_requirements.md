@@ -5,5 +5,5 @@ SCD0085 requirement states only a positive requirement (preconditions satisified
 It doesn't establish a negative requirement (preconditions not satisfied => no notifications may be sent).
 As these negative requirements are reasonable  and related to SCD0085, interUSS has added it as a requirement for testing.
 This can happen in following situations -
- - If a USS was unable to write an entity reference to the DSS, it should not erroneously notify that operational intent, to another USS subscribed in the area.
- - A USS wrote an entity reference to the DSS, and was not notified of any other USS subscription, so it should not send a notification to any USS. So the USS  shall (OnlyPrescribedNotifications) only send operational intent notifications when prescribed by SCD0085.
+* <tt>NoDssEntityNoNotification</tt> If a USS was unable to write an entity reference to the DSS, it should not erroneously notify that operational intent, to another USS subscribed in the area.
+* <tt>NoSubscriptionNoNotification</tt> If a USS wrote an entity reference to the DSS, and was notified of no other USS subscription, then it should not send a notification to any USS. So the USS  shall (OnlyPrescribedNotifications) only send operational intent notifications when prescribed by SCD0085.
