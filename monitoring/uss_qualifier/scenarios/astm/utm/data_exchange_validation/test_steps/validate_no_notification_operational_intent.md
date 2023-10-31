@@ -7,4 +7,4 @@ This step verifies when a flight is not created, it is also not notified by chec
 
 ## Expect Notification not sent check
 
-**[astm.f3548.v21.SCD0085](../../../../../requirements/astm/f3548/v21.md)**
+**[interuss.f3548.notification_requirements](../../../../../requirements/interuss/f3548/notification_requirements.md)**
