@@ -23,8 +23,8 @@ def make_volume_4d(
     vertices: List[s2sphere.LatLng],
     alt_lo: float,
     alt_hi: float,
-    start_time: datetime.datetime,
-    end_time: datetime.datetime,
+    start_time: Optional[datetime.datetime],
+    end_time: Optional[datetime.datetime],
 ) -> Volume4D:
     return ImplicitDict.parse(
         {
@@ -38,8 +38,16 @@ def make_volume_4d(
                 "altitude_lo": alt_lo,
                 "altitude_hi": alt_hi,
             },
-            "time_start": StringBasedDateTime(start_time),
-            "time_end": StringBasedDateTime(end_time),
+            **(
+                {"time_start": StringBasedDateTime(start_time)}
+                if start_time is not None
+                else {}
+            ),
+            **(
+                {"time_end": StringBasedDateTime(end_time)}
+                if end_time is not None
+                else {}
+            ),
         },
         Volume4D,
     )
