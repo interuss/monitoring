@@ -1,0 +1,22 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/validation/definitions/AllCriteriaApplicability.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "All criteria must be met for an element to be applicable.\n\nmonitoring.uss_qualifier.reports.validation.definitions.AllCriteriaApplicability, as defined in monitoring/uss_qualifier/reports/validation/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "criteria": {
+      "description": "Criteria that must all be met.",
+      "items": {
+        "$ref": "ValidationCriterionApplicability.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "criteria"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,22 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/validation/definitions/AllPassConditions.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "All specific conditions must be met.\n\nmonitoring.uss_qualifier.reports.validation.definitions.AllPassConditions, as defined in monitoring/uss_qualifier/reports/validation/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "conditions": {
+      "description": "Conditions that all must be met.",
+      "items": {
+        "$ref": "PassCondition.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "conditions"
+  ],
+  "type": "object"
+}

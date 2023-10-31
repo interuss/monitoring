@@ -273,7 +273,7 @@ class TestScenarioReport(ImplicitDict):
 
     def query_failed_checks(
         self, participant_id: Optional[str] = None
-    ) -> Iterator[Tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[Tuple[JSONPathExpression, FailedCheck]]:
         for i, case in enumerate(self.cases):
             for path, fc in case.query_failed_checks(participant_id):
                 yield f"cases[{i}].{path}", fc

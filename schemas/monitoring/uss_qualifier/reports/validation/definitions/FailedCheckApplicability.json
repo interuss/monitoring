@@ -1,0 +1,23 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/validation/definitions/FailedCheckApplicability.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "FailedCheck test report elements are applicable according to this specification.\n\nmonitoring.uss_qualifier.reports.validation.definitions.FailedCheckApplicability, as defined in monitoring/uss_qualifier/reports/validation/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "has_severity": {
+      "description": "If specified, only FailedChecks with specified severity are applicable.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "SeverityComparison.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

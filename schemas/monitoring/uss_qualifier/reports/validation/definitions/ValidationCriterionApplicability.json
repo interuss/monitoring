@@ -1,0 +1,74 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/validation/definitions/ValidationCriterionApplicability.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A single criterion for determining whether a test report element is applicable.\n\nExactly one field must be specified.\n\nmonitoring.uss_qualifier.reports.validation.definitions.ValidationCriterionApplicability, as defined in monitoring/uss_qualifier/reports/validation/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "address_is": {
+      "description": "Only the element at this JSONAddress in the test report is applicable.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "does_not_satisfy": {
+      "description": "Only elements that do not satisfy this criterion are applicable.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ValidationCriterionApplicability.json"
+        }
+      ]
+    },
+    "failed_checks": {
+      "description": "Only this kind of FailedCheck elements are applicable.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "FailedCheckApplicability.json"
+        }
+      ]
+    },
+    "satisfies_all": {
+      "description": "Only elements which satisfy all these criteria are applicable.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AllCriteriaApplicability.json"
+        }
+      ]
+    },
+    "satisfies_any": {
+      "description": "Elements which satisfy any of these criteria are applicable.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AnyCriteriaApplicability.json"
+        }
+      ]
+    },
+    "skipped_actions": {
+      "description": "Only this kind of SkippedCheckReport elements are applicable.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "SkippedCheckApplicability.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}
