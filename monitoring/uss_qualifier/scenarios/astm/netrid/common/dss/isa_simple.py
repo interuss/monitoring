@@ -110,15 +110,19 @@ class ISASimple(GenericTestScenario):
                         query_timestamps=[deleted.dss_query.query.request.timestamp],
                     )
             for subscriber_url, notification in deleted.notifications.items():
-                with self.check("Notified subscriber", [subscriber_url]) as check:
-                    # TODO: Find a better way to identify a subscriber who couldn't be notified
-                    if not notification.success:
-                        check.record_failed(
-                            "Could not notify ISA subscriber",
-                            Severity.Medium,
-                            f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
-                            query_timestamps=[notification.query.request.timestamp],
-                        )
+                # For checking the notifications, we ignore the request we made for the subscription that we created.
+                if self._isa.base_url not in subscriber_url:
+                    pid = notification.query.participant_id
+                    with self.check(
+                        "Notified subscriber", [pid] if pid else []
+                    ) as check:
+                        if not notification.success:
+                            check.record_failed(
+                                "Could not notify ISA subscriber",
+                                Severity.Medium,
+                                f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
+                                query_timestamps=[notification.query.request.timestamp],
+                            )
 
     def _get_isa_by_id_step(self):
         self.begin_test_step("Get ISA by ID")
