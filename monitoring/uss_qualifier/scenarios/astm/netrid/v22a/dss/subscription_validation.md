@@ -28,7 +28,7 @@ This step ensures that we remove any subscription that may already exist for the
 
 If the query for subscriptions fails, **[astm.f3411.v22a.DSS0030,f](../../../../../requirements/astm/f3411/v22a.md)** was not met.
 
-#### Successful subscription deletion
+#### Successful subscription deletion check
 
 If the deletion attempt fails, **[astm.f3411.v22a.DSS0030,d](../../../../../requirements/astm/f3411/v22a.md)** was not met.
 
@@ -105,6 +105,6 @@ The cleanup phase of this test scenario will remove any subscription that may ha
 
 If the query for subscriptions fails, the "GET Subscriptions" portion of **[astm.f3411.v22a.DSS0030,f](../../../../../requirements/astm/f3411/v22a.md)** was not met.
 
-### Successful subscription deletion
+### Successful subscription deletion check
 
 If the deletion attempt fails, the "DELETE Subscription" portion of **[astm.f3411.v22a.DSS0030,d](../../../../../requirements/astm/f3411/v22a.md)** was not met.
