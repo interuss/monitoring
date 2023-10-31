@@ -55,13 +55,13 @@ class Severity(str, Enum):
             raise ValueError(f"Cannot compare Severity to {type(other)}")
 
         if self == Severity.Critical:
-            return False
+            return other != Severity.Critical
         elif self == Severity.High:
-            return other == Severity.Critical
+            return other == Severity.Medium or other == Severity.Low
         elif self == Severity.Medium:
             return other == Severity.Low
         elif self == Severity.Low:
-            return True
+            return False
         else:
             raise ValueError(f"Unknown Severity type: '{self}'")
 
