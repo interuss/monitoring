@@ -1,4 +1,5 @@
 import arrow
+from loguru import logger
 
 from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
@@ -144,7 +145,6 @@ class GeneralFlightAuthorization(TestScenario):
                             q.request.initiated_at.datetime for q in e.queries
                         ],
                     )
-            from loguru import logger
 
             logger.info(f"Recording {len(resp.queries)} queries")
             for q in resp.queries:
