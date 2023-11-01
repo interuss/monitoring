@@ -4,7 +4,11 @@ from implicitdict import ImplicitDict
 from monitoring.uss_qualifier.action_generators.definitions import GeneratorTypeName
 from monitoring.uss_qualifier.fileio import FileReference
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
-from monitoring.uss_qualifier.suites.definitions import ActionType, TestSuiteDefinition
+from monitoring.uss_qualifier.suites.definitions import (
+    ActionType,
+    TestSuiteDefinition,
+    TestSuiteTypeName,
+)
 
 
 class PotentialTestScenarioAction(ImplicitDict):
@@ -13,7 +17,7 @@ class PotentialTestScenarioAction(ImplicitDict):
 
 
 class PotentialTestSuiteAction(ImplicitDict):
-    suite_type: Optional[FileReference]
+    suite_type: Optional[TestSuiteTypeName]
     """Type/location of test suite.  Usually expressed as the file name of the suite definition (without extension) qualified relative to the `uss_qualifier` folder"""
 
     suite_definition: Optional[TestSuiteDefinition]

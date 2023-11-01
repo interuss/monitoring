@@ -273,7 +273,7 @@ class TestScenarioReport(ImplicitDict):
 
     def query_failed_checks(
         self, participant_id: Optional[str] = None
-    ) -> Iterator[Tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[Tuple[JSONPathExpression, FailedCheck]]:
         for i, case in enumerate(self.cases):
             for path, fc in case.query_failed_checks(participant_id):
                 yield f"cases[{i}].{path}", fc
@@ -457,7 +457,7 @@ class TestSuiteActionReport(ImplicitDict):
 
     def query_failed_checks(
         self, participant_id: Optional[str] = None
-    ) -> Iterator[Tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[Tuple[JSONPathExpression, FailedCheck]]:
         test_suite, test_scenario, action_generator = self.get_applicable_report()
         if test_suite:
             report = self.test_suite
@@ -486,7 +486,9 @@ class TestSuiteActionReport(ImplicitDict):
 
     @property
     def end_time(self) -> Optional[StringBasedDateTime]:
-        return self._conditional(lambda report: report.end_time)
+        return self._conditional(
+            lambda report: report.end_time if "end_time" in report else None
+        )
 
 
 class AllConditionsEvaluationReport(ImplicitDict):
@@ -625,9 +627,6 @@ class SkippedActionReport(ImplicitDict):
 
     reason: str
     """The reason the action was skipped."""
-
-    action_declaration_index: int
-    """Index of the skipped action in the configured declaration."""
 
     declaration: TestSuiteActionDeclaration
     """Full declaration of the action that was skipped."""

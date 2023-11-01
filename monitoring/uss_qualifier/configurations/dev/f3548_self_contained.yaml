@@ -113,3 +113,21 @@ v1:
 
     # Write out a human-readable report showing the sequence of events of the test
     sequence_view: {}
+
+  # This block defines whether to return an error code from the execution of uss_qualifier, based on the content of the
+  # test run report.  All of the criteria must be met to return a successful code.
+  validation:
+    criteria:
+        # applicability indicates which test report elements the pass_condition applies to
+      - applicability:
+          # We want to make sure there are no failed checks...
+          failed_checks:
+            # ...at least, no failed checks with severity higher than "Low".
+            has_severity:
+              higher_than: Low
+        pass_condition:
+          # When considering all of the applicable elements...
+          elements:
+            # ...the number of applicable elements should be zero.
+            count:
+              equal_to: 0

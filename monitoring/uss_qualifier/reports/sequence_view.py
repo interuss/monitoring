@@ -404,7 +404,10 @@ def _compute_tested_scenario(
     if "end_time" in report and report.end_time:
         latest_step_time = report.end_time.datetime
 
-    dt_s = round((latest_step_time - report.start_time.datetime).total_seconds())
+    if latest_step_time is not None:
+        dt_s = round((latest_step_time - report.start_time.datetime).total_seconds())
+    else:
+        dt_s = 0
     dt_m = math.floor(dt_s / 60)
     dt_s -= dt_m * 60
     padding = "0" if dt_s < 10 else ""
@@ -448,7 +451,7 @@ def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
             raise ValueError(
                 f"Cannot process skipped action for test suite that does not define suite_type nor suite_definition"
             )
-        name = "All scenarios in test suite"
+        name = "All actions in test suite"
     elif report.declaration.get_action_type() == ActionType.TestScenario:
         docs = get_documentation_by_name(report.declaration.test_scenario.scenario_type)
         return ActionNode(
@@ -466,7 +469,7 @@ def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
             node_type=ActionNodeType.ActionGenerator,
             children=[],
         )
-        name = f"All scenarios from action generator"
+        name = f"All actions from action generator"
     else:
         raise ValueError(
             f"Cannot process skipped action of type '{report.declaration.get_action_type()}'"

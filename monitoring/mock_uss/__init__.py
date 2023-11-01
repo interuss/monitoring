@@ -81,8 +81,8 @@ if SERVICE_RIDDP in webapp.config[config.KEY_SERVICES]:
 
 if SERVICE_SCDSC in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_SCDSC)
-    from monitoring.mock_uss import scdsc
-    from monitoring.mock_uss.scdsc import routes as scdsc_routes
+    from monitoring.mock_uss.f3548v21 import routes_scd
+    from monitoring.mock_uss.scd_injection import routes as scd_injection_routes
 
 if SERVICE_MESSAGESIGNING in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_MESSAGESIGNING)

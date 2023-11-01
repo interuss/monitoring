@@ -1,0 +1,23 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/validation/definitions/EachElementCondition.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A single applicable element must meet this condition.  Exactly one field must be specified.\n\nmonitoring.uss_qualifier.reports.validation.definitions.EachElementCondition, as defined in monitoring/uss_qualifier/reports/validation/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "has_severity": {
+      "description": "The element must be a FailedCheck that has this specified kind of severity.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "SeverityComparison.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

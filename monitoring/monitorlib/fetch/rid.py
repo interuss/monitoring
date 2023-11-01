@@ -603,6 +603,28 @@ class Subscription(ImplicitDict):
                 f"Cannot retrieve isa_url using RID version {self.rid_version}"
             )
 
+    @property
+    def notification_index(self) -> int:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value.notification_index
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_value.notification_index
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve notification_index using RID version {self.rid_version}"
+            )
+
+    @property
+    def owner(self) -> str:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value.owner
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return self.v22a_value.owner
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve owner using RID version {self.rid_version}"
+            )
+
 
 class RIDQuery(ImplicitDict):
     v19_query: Optional[Query] = None

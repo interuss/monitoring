@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
+from monitoring.monitorlib.fetch import QueryType
 from monitoring.monitorlib.scd import SCOPE_SC
 from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
@@ -64,9 +65,10 @@ class DSSInstance(object):
             self.client,
             "POST",
             url,
+            QueryType.F3548v21DSSQueryOperationalIntentReferences,
+            self.participant_id,
             scope=SCOPE_SC,
             json=req,
-            participant_id=self.participant_id,
         )
         if query.status_code != 200:
             result = None
@@ -77,11 +79,18 @@ class DSSInstance(object):
         return result, query
 
     def get_full_op_intent(
-        self, op_intent_ref: OperationalIntentReference
+        self,
+        op_intent_ref: OperationalIntentReference,
+        uss_participant_id: Optional[str] = None,
     ) -> Tuple[OperationalIntent, fetch.Query]:
         url = f"{op_intent_ref.uss_base_url}/uss/v1/operational_intents/{op_intent_ref.id}"
         query = fetch.query_and_describe(
-            self.client, "GET", url, scope=SCOPE_SC, participant_id=self.participant_id
+            self.client,
+            "GET",
+            url,
+            QueryType.F3548v21USSGetOperationalIntentDetails,
+            uss_participant_id,
+            scope=SCOPE_SC,
         )
         if query.status_code != 200:
             result = None

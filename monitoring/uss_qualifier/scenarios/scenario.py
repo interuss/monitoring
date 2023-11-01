@@ -342,8 +342,18 @@ class GenericTestScenario(ABC):
         if "queries" not in self._step_report:
             self._step_report.queries = []
         self._step_report.queries.append(query)
+        participant = (
+            "UNKNOWN"
+            if not query.has_field_with_value("participant_id")
+            else query.participant_id
+        )
+        query_type = (
+            "UNKNOWN"
+            if not query.has_field_with_value("query_type")
+            else query.query_type
+        )
         logger.debug(
-            f"Queried {query.request['method']} {query.request['url']} -> {query.response.status_code} ({query.response.elapsed_s:.1f}s)"
+            f"Queried {query.request['method']} {query.request['url']} -> {query.response.status_code} ({query.response.elapsed_s:.1f}s); attributed participant {participant} and type {query_type}"
         )
 
     def _get_check(self, name: str) -> TestCheckDocumentation:

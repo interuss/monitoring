@@ -61,6 +61,7 @@ class Misbehavior(GenericTestScenario):
                 "The Misbehavior Scenario requires at least one DSS instance"
             )
         self._dss = dss_pool.dss_instances[0]
+        self._injected_tests = []
 
     @property
     def _rid_version(self) -> RIDVersion:
