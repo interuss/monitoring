@@ -63,6 +63,7 @@ In a previous step, we checked there was no notification of flight 2 to tested_u
 
 ### [Validate flight1 Notification sent to Control_uss test step](test_steps/validate_notification_operational_intent.md)
 Tested_uss notifies flight 1 to Control_uss, due to its subscription through flight 2.
+
 ### [Delete tested_uss flight test step](../../../flight_planning/delete_flight_intent.md)
 Teardown
 
@@ -79,23 +80,24 @@ Validate that flight 2 is shared with invalid data as a modified behavior is inj
 ### [Validate no notification pushed for flight 2](../validate_not_shared_operational_intent.md)
 There should be no subscription by tested_uss to trigger notification of flight 2.
 This will ensure that while planning a nearby flight tested_uss will need to make a GET request to control_uss for flight 2 details.
-If this notification was pushed, the GET operational intent data validation test cannot be done.
+If this notification was pushed, the GET operational intent data validation test cannot be carried out.
 
 ### [Test_uss attempts to plan flight 1, expect failure test step](test_steps/plan_flight_intent_expect_failed.md)
 The test driver attempts to plan the flight 1 on time range A via the tested_uss. It checks if any conflicts with flight 2
 which is of equal priority and came first.
 
 ### [Validate flight 1 not shared by tested_uss test step](../validate_not_shared_operational_intent.md)
-Validate flight 1 is not shared.
+Validate flight 1 is not shared with DSS, as plan failed.
 
 ### [Validate flight 2 GET interaction test step](test_steps/validate_get_operational_intent.md)
 Tested_uss needs to make GET request for obtaining details of flight 2 from control_uss.
 In a previous step, we checked there was no notification of flight 2 to tested_uss.
+Hence USS will have to obtain details using GET request.
 
 ### [Validate flight 1 Notification not sent to Control_uss test step](test_steps/validate_no_notification_operational_intent.md)
 
 ### [Delete Control_uss flight test step](../../../flight_planning/delete_flight_intent.md)
-
+Teardown
 
 ## Cleanup
 ### Successful flight deletion check
