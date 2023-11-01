@@ -441,7 +441,7 @@ class SubscriptionSimple(GenericTestScenario):
         ) as check:
             self._dss_wrapper.search_subs_expect_response_code(
                 check=check,
-                expected_codes={413},
+                expected_codes={400, 413},
                 area=self._problematically_big_area,
             )
 

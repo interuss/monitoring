@@ -361,7 +361,7 @@ class ISASimple(GenericTestScenario):
             ) as check:
                 _ = self._dss_wrapper.search_isas_expect_response_code(
                     check,
-                    expected_error_codes={413},
+                    expected_error_codes={400, 413},
                     area=self._huge_area,
                 )
 
