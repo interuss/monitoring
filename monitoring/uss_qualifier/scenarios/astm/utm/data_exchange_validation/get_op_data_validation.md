@@ -13,8 +13,8 @@ Notably the following requirements:
 FlightIntentsResource provides the two V-shaped flight intents.
 The convex hulls of the 2D footprints of the two flights intersect, but the polygons do not intersect.
 There is an overlap in time and altitude of the two flights.
-- flight_1_planned_time_range_A
-- flight_2_planned_time_range_A
+- flight_1
+- flight_2
 
 ### control_uss
 MockUSSResource that will be used for planning flights, controlling data shared for validation testing, and gathering interuss interactions from mock_uss.
