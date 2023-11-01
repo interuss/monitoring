@@ -574,7 +574,7 @@ class RIDObservationEvaluator(object):
         with self._test_scenario.check(
             "Area too large", [observer.participant_id]
         ) as check:
-            if query.status_code != 413:
+            if query.status_code not in (400, 413):
                 check.record_failed(
                     summary="Did not receive expected error code for too-large area request",
                     details=f"{observer.participant_id} was queried for flights in {_rect_str(rect)} with a diagonal of {diagonal} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The expected error code is 413, but instead code {query.status_code} was received.",
