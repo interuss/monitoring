@@ -53,7 +53,6 @@ If this notification was pushed, the GET operational intent data validation test
 ### [Tested_uss plans flight 1 test step](../../../flight_planning/plan_flight_intent.md)
 The test driver attempts to plan flight 1 on time range A via the tested USS. It checks if any conflicts with flight 2
 which is of equal priority and came first.
-per **[astm.f3548.v21.SCD0035](../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Validate flight 1 sharing test step](../validate_shared_operational_intent.md)
 Validate flight 1 is planned.
@@ -63,8 +62,7 @@ Tested_uss needs to make GET request for obtaining details of flight 2.
 In a previous step, we checked there was no notification of flight 2 to tested_uss.
 
 ### [Validate flight1 Notification sent to Control_uss test step](test_steps/validate_notification_operational_intent.md)
-Tested_uss notifies flight 1 to Control_uss, due to its subscription through flight 2. As per **[astm.f3548.v21.USS0105](../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.SCD0085](../../../../requirements/astm/f3548/v21.md)**
-
+Tested_uss notifies flight 1 to Control_uss, due to its subscription through flight 2.
 ### [Delete tested_uss flight test step](../../../flight_planning/delete_flight_intent.md)
 Teardown
 
@@ -86,7 +84,6 @@ If this notification was pushed, the GET operational intent data validation test
 ### [Test_uss attempts to plan flight 1, expect failure test step](test_steps/plan_flight_intent_expect_failed.md)
 The test driver attempts to plan the flight 1 on time range A via the tested_uss. It checks if any conflicts with flight 2
 which is of equal priority and came first.
-per **[astm.f3548.v21.SCD0035](../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Validate flight 1 not shared by tested_uss test step](../validate_not_shared_operational_intent.md)
 Validate flight 1 is not shared.
