@@ -12,14 +12,3 @@ Therefore, the USS should fail an attempt to plan. If the plan succeeds, we know
 
 **[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**
 
-## Failure if Planned check
-
-Flight intent data of a nearby flight shared was invalid, but the result was planned. It should have been been failed.
-If the USS indicates that the injection did not fail, this check will fail per
-**[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**
-
-## Failure if Rejected check
-
-Flight intent data of a nearby flight shared was invalid, but the result rejected. It should have been been failed.
-If the USS indicates that the injection did not fail, this check will fail per
-**[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.

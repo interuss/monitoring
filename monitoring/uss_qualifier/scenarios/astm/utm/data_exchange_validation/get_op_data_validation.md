@@ -71,10 +71,11 @@ Teardown
 Teardown
 
 ## Flight planning prevented due to invalid data sharing test case
-### [Control_uss plans flight 2, sharing invalid interuss data test step](../../../flight_planning/plan_flight_intent.md)
-Flight 2 on time range A should be successfully planned by the control USS.
+### [Control_uss plans flight 2, sharing invalid operational intent data test step](../../../flight_planning/plan_flight_intent.md)
+Flight 2 on time range A should be successfully planned by the control_uss.
+The control_uss, which is mock_uss is instructed to share invalid data with other USS, for negative test.
 
-### [Validate flight 2 shared intent with invalid interuss data test step](test_steps/validate_sharing_operational_intent_but_with_invalid_interuss_data.md)
+### [Validate flight 2 shared operational intent with invalid data test step](test_steps/validate_sharing_operational_intent_but_with_invalid_interuss_data.md)
 Validate that flight 2 is shared with invalid data as a modified behavior is injected by uss_qualifier for a negative test.
 
 ### [Validate no notification pushed for flight 2](../validate_not_shared_operational_intent.md)
