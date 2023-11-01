@@ -1,4 +1,4 @@
-# SCD Data Validation of GET operational intents by USS test scenario
+# Data Validation of GET operational intents by USS test scenario
 
 ## Description
 This test checks that the USS being tested validates the operational intents received as response to its GET request from another USS.
