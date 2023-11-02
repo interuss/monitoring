@@ -26,9 +26,9 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
 
 
 class GetOpResponseDataValidationByUSS(TestScenario):
-    flight_1_planned_time_range_A: FlightIntent
+    flight_1: FlightIntent
 
-    flight_2_planned_time_range_A: FlightIntent
+    flight_2: FlightIntent
 
     tested_uss: FlightPlanner
     control_uss: MockUSSClient
