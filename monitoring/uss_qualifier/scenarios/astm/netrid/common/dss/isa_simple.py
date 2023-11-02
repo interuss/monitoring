@@ -113,7 +113,11 @@ class ISASimple(GenericTestScenario):
             for subscriber_url, notification in deleted.notifications.items():
                 # For checking the notifications, we ignore the request we made for the subscription that we created.
                 if self._isa.base_url not in subscriber_url:
-                    pid = notification.query.participant_id
+                    pid = (
+                        notification.query.participant_id
+                        if "participant_id" in notification.query
+                        else None
+                    )
                     with self.check(
                         "Notified subscriber", [pid] if pid else []
                     ) as check:

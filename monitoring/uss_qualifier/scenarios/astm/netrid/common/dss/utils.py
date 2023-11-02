@@ -54,7 +54,11 @@ def delete_isa_if_exists(
                 )
 
         for subscriber_url, notification in deleted.notifications.items():
-            pid = notification.query.participant_id
+            pid = (
+                notification.query.participant_id
+                if "participant_id" in notification.query
+                else None
+            )
             with scenario.check("Notified subscriber", [pid] if pid else []) as check:
                 if not notification.success:
                     check.record_failed(
