@@ -46,9 +46,18 @@ Flight 2 should be successfully planned by the control USS.
 Validate that flight 2 is planned
 
 ### [Validate no notification pushed for flight 2](test_steps/validate_no_notification_operational_intent.md)
-There should be no subscription by tested_uss to trigger notification of flight 2.
-This will ensure that while planning a nearby flight tested_uss will need to make a GET request to control_uss for flight 2 details.
+Check there is no subscription by tested_uss to trigger notification of flight 2.
+If no notification is pushed by control_uss to tested_uss, we know tested_uss has no subscription.
+This will ensure that while planning a nearby flight, tested_uss will need to make a GET request to control_uss for flight 2 details.
 If this notification was pushed, the GET operational intent data validation test cannot be done.
+
+#### MockUSS interactions request check
+**[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+
+#### Expect Notification not sent check
+As there is no subscription expected, no notification of operational_intent should be sent.
+**[interuss.f3548.notification_requirements.NoSubscriptionNoNotification](../../../../requirements/interuss/f3548/notification_requirements.md)**
+
 
 ### [Tested_uss plans flight 1 test step](../../../flight_planning/plan_flight_intent.md)
 The test driver attempts to plan flight 1 via the tested USS. It checks if any conflicts with flight 2
@@ -79,9 +88,18 @@ The control_uss, which is mock_uss is instructed to share invalid data with othe
 Validate that flight 2 is shared with invalid data as a modified behavior is injected by uss_qualifier for a negative test.
 
 ### [Validate no notification pushed for flight 2](test_steps/validate_no_notification_operational_intent.md)
-There should be no subscription by tested_uss to trigger notification of flight 2.
-This will ensure that while planning a nearby flight tested_uss will need to make a GET request to control_uss for flight 2 details.
-If this notification was pushed, the GET operational intent data validation test cannot be carried out.
+Check there is no subscription by tested_uss to trigger notification of flight 2.
+If no notification is pushed by control_uss to tested_uss, we know tested_uss has no subscription.
+This will ensure that while planning a nearby flight, tested_uss will need to make a GET request to control_uss for flight 2 details.
+If this notification was pushed, the GET operational intent data validation test cannot be done.
+
+#### MockUSS interactions request check
+**[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+
+#### Expect Notification not sent check
+As there is no subscription expected, no notification of operational_intent should be sent.
+**[interuss.f3548.notification_requirements.NoSubscriptionNoNotification](../../../../requirements/interuss/f3548/notification_requirements.md)**
+
 
 ### [Test_uss attempts to plan flight 1, expect failure test step](test_steps/plan_flight_intent_expect_failed.md)
 The test driver attempts to plan the flight 1 via the tested_uss. It checks if any conflicts with flight 2
