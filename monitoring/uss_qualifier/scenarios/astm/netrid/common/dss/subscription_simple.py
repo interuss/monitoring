@@ -17,6 +17,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrappe
 from monitoring.uss_qualifier.scenarios.scenario import (
     GenericTestScenario,
 )
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 TIME_TOLERANCE_SEC = 1
 
@@ -91,7 +92,7 @@ class SubscriptionSimple(GenericTestScenario):
             for vertex in problematically_big_area.specification.vertices
         ]
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         loguru.logger.info("setup")

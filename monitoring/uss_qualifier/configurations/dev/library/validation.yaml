@@ -2,6 +2,11 @@ normal_test:
   $content_schema: monitoring/uss_qualifier/reports/validation/report_validation/ValidationConfiguration.json
   criteria:
     - applicability:
+        test_scenarios: {}
+      pass_condition:
+        each_element:
+          has_execution_error: false
+    - applicability:
         failed_checks:
           has_severity:
             higher_than: Low

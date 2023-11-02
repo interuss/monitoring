@@ -9,6 +9,7 @@ from monitoring.uss_qualifier.resources.netrid import (
     FlightDataStorageResource,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class StoreFlightData(TestScenario):
@@ -24,7 +25,7 @@ class StoreFlightData(TestScenario):
         self._flights_data = flights_data
         self._storage_config = storage_configuration
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
         self.record_note(
             "Flight count",
@@ -49,6 +50,10 @@ class StoreFlightData(TestScenario):
             in self._storage_config.storage_configuration
             and self._storage_config.storage_configuration.flight_record_collection_path
         ):
+            dirname = os.path.dirname(
+                self._storage_config.storage_configuration.flight_record_collection_path
+            )
+            os.makedirs(dirname, exist_ok=True)
             with open(
                 self._storage_config.storage_configuration.flight_record_collection_path,
                 "w",

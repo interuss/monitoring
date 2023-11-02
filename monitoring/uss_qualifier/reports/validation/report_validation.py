@@ -34,7 +34,7 @@ from monitoring.uss_qualifier.reports.validation.definitions import (
 
 @dataclass
 class TestReportElement(object):
-    element: Union[FailedCheck, SkippedActionReport]
+    element: Union[FailedCheck, SkippedActionReport, TestScenarioReport]
     location: JSONAddress
 
 
@@ -78,7 +78,12 @@ def _compare_severity(severity: Severity, comparison: SeverityComparison) -> boo
 def _is_applicable(
     element: TestReportElement, applicability: ValidationCriterionApplicability
 ) -> bool:
-    if "failed_checks" in applicability and applicability.failed_checks is not None:
+    if "test_scenarios" in applicability and applicability.test_scenarios is not None:
+        if not isinstance(element.element, TestScenarioReport):
+            return False
+        return True
+
+    elif "failed_checks" in applicability and applicability.failed_checks is not None:
         if not isinstance(element.element, FailedCheck):
             return False
         if (
@@ -124,6 +129,9 @@ def _get_applicable_elements_from_test_scenario(
     report: TestScenarioReport,
     location: JSONAddress,
 ) -> Iterator[TestReportElement]:
+    element = TestReportElement(element=report, location=location)
+    if _is_applicable(element, applicability):
+        yield element
     for i, (fc_location, fc) in enumerate(report.query_failed_checks()):
         element = TestReportElement(
             element=fc, location=JSONAddress(location + "." + fc_location)
@@ -210,6 +218,18 @@ def _evaluate_element_condition(
                 f"has_severity condition applied to non-FailedCheck element type {fullname(type(element.element))}"
             )
             return False
+
+    elif (
+        "has_execution_error" in condition and condition.has_execution_error is not None
+    ):
+        if isinstance(element.element, TestScenarioReport):
+            has_error = (
+                "execution_error" in element.element
+                and element.element.execution_error is not None
+            )
+            return condition.has_execution_error == has_error
+        else:
+            return not condition.has_execution_error
 
     else:
         raise ValueError(
