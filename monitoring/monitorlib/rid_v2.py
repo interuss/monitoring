@@ -48,16 +48,8 @@ def make_volume_4d(
                 "altitude_lower": make_altitude(alt_lo),
                 "altitude_upper": make_altitude(alt_hi),
             },
-            **(
-                {"time_start": StringBasedDateTime(start_time)}
-                if start_time is not None
-                else {}
-            ),
-            **(
-                {"time_end": StringBasedDateTime(end_time)}
-                if end_time is not None
-                else {}
-            ),
+            **({"time_start": make_time(start_time)} if start_time is not None else {}),
+            **({"time_end": make_time(end_time)} if end_time is not None else {}),
         },
         Volume4D,
     )
