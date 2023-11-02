@@ -52,12 +52,11 @@ This will ensure that while planning a nearby flight, tested_uss will need to ma
 If this notification was pushed, the GET operational intent data validation test cannot be done.
 
 #### MockUSS interactions request check
-**[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+**[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
 
 #### Expect Notification not sent check
 As there is no subscription expected, no notification of operational_intent should be sent.
 **[interuss.f3548.notification_requirements.NoSubscriptionNoNotification](../../../../requirements/interuss/f3548/notification_requirements.md)**
-
 
 ### [Tested_uss plans flight 1 test step](../../../flight_planning/plan_flight_intent.md)
 The test driver attempts to plan flight 1 via the tested USS. It checks if any conflicts with flight 2
@@ -94,12 +93,11 @@ This will ensure that while planning a nearby flight, tested_uss will need to ma
 If this notification was pushed, the GET operational intent data validation test cannot be done.
 
 #### MockUSS interactions request check
-**[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+**[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
 
 #### Expect Notification not sent check
 As there is no subscription expected, no notification of operational_intent should be sent.
 **[interuss.f3548.notification_requirements.NoSubscriptionNoNotification](../../../../requirements/interuss/f3548/notification_requirements.md)**
-
 
 ### [Test_uss attempts to plan flight 1, expect failure test step](test_steps/plan_flight_intent_expect_failed.md)
 The test driver attempts to plan the flight 1 via the tested_uss. It checks if any conflicts with flight 2
