@@ -14,6 +14,7 @@ from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaRe
 from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class ISASimple(GenericTestScenario):
@@ -47,7 +48,7 @@ class ISASimple(GenericTestScenario):
             v.as_s2sphere() for v in problematically_big_area.specification.vertices
         ]
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self._setup_case()

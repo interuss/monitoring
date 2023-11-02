@@ -2,6 +2,7 @@ import arrow
 
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.uss_qualifier.common_data_definitions import Severity
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays
 
@@ -141,7 +142,7 @@ class FlightIntentValidation(TestScenario):
                 f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
         self.record_note(
             "Tested USS",

@@ -3,6 +3,7 @@ from datetime import datetime
 
 from monitoring.uss_qualifier.resources.dev import NoOpResource
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class NoOp(TestScenario):
@@ -10,7 +11,7 @@ class NoOp(TestScenario):
         super().__init__()
         self.sleep_secs = noop_config.sleep_secs
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
         self.begin_test_case("Sleep")
         self.begin_test_step("Sleep")

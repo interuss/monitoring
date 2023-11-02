@@ -18,6 +18,7 @@ from monitoring.uss_qualifier.resources.astm.f3411.dss import (
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 VERTICES: List[s2sphere.LatLng] = [
     s2sphere.LatLng.from_degrees(lng=130.6205, lat=-23.6558),
@@ -88,7 +89,7 @@ class DSSInteroperability(GenericTestScenario):
                 all_entities[entity.uuid] = entity
         return all_entities
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self.begin_test_case("Prerequisites")

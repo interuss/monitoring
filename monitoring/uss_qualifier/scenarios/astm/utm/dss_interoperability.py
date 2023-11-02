@@ -3,6 +3,7 @@ import socket
 from typing import List
 from urllib.parse import urlparse
 
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import Volume4D, Volume3D, Polygon, LatLngPoint
 
 from monitoring.uss_qualifier.common_data_definitions import Severity
@@ -39,7 +40,7 @@ class DSSInteroperability(TestScenario):
             if not dss.is_same_as(primary_dss_instance.dss)
         ]
 
-    def run(self):
+    def run(self, context: ExecutionContext):
 
         self.begin_test_scenario()
 

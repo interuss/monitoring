@@ -8,11 +8,7 @@ from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411 import DSSInstancesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
-from monitoring.uss_qualifier.scenarios.interuss.evaluation_scenario import (
-    ReportEvaluationScenario,
-)
 
-from monitoring.uss_qualifier.resources.interuss.report import TestSuiteReportResource
 from monitoring.uss_qualifier.resources.netrid import (
     NetRIDServiceProviders,
     NetRIDObserversResource,
@@ -24,8 +20,11 @@ from monitoring.uss_qualifier.resources.netrid.service_providers import (
 
 from loguru import logger
 
+from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
-class AggregateChecks(ReportEvaluationScenario):
+
+class AggregateChecks(GenericTestScenario):
     _rid_version: RIDVersion
     _service_providers: List[NetRIDServiceProvider]
     _observers: List[RIDSystemObserver]
@@ -38,13 +37,11 @@ class AggregateChecks(ReportEvaluationScenario):
 
     def __init__(
         self,
-        report_resource: TestSuiteReportResource,
         service_providers: NetRIDServiceProviders,
         observers: NetRIDObserversResource,
         dss_instances: DSSInstancesResource,
     ):
-        super().__init__(report_resource)
-        self._queries = self.report.queries()
+        super().__init__()
         self._service_providers = service_providers.service_providers
         self._observers = observers.observers
         self._dss_instances = dss_instances.dss_instances
@@ -71,6 +68,9 @@ class AggregateChecks(ReportEvaluationScenario):
             if dss.local_debug:
                 self._debug_mode_usses.add(dss.participant_id)
 
+    def _init_queries(self, context: ExecutionContext):
+        self._queries = list(context.sibling_queries())
+
         # collect and classify queries by participant
         self._queries_by_participant = {
             participant: list()
@@ -93,7 +93,9 @@ class AggregateChecks(ReportEvaluationScenario):
                 participant_queries.append(query)
                 self._queries_by_participant[query.participant_id] = participant_queries
 
-    def run(self):
+    def run(self, context: ExecutionContext):
+        self._init_queries(context)
+
         self.begin_test_scenario()
 
         self.record_note("participants", str(self._participants_by_base_url))

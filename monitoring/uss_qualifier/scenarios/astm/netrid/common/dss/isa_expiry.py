@@ -12,6 +12,7 @@ from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaRe
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss import utils
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class ISAExpiry(GenericTestScenario):
@@ -43,7 +44,7 @@ class ISAExpiry(GenericTestScenario):
         self._isa_end_time = self._isa.shifted_time_end(now)
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self._setup_case()

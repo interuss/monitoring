@@ -6,9 +6,6 @@ performances of the queries made during their execution.
 
 ## Resources
 
-### report_resource
-The report to evaluate. This resource is automatically injected by the test framework.
-
 ### service_providers
 The service providers to evaluate in the report.
 

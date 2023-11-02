@@ -9,11 +9,12 @@ from typing import Dict, List, Optional, Union, Iterator
 
 import arrow
 
-from implicitdict import StringBasedDateTime, ImplicitDict
+from implicitdict import StringBasedDateTime
 from loguru import logger
 import yaml
 
 from monitoring.monitorlib.dicts import JSONAddress
+from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.inspection import fullname
 from monitoring.monitorlib.versioning import repo_url_of
 from monitoring.uss_qualifier.action_generators.action_generator import (
@@ -24,15 +25,10 @@ from monitoring.uss_qualifier.action_generators.action_generator import (
 from monitoring.uss_qualifier.configurations.configuration import (
     ExecutionConfiguration,
     TestSuiteActionSelectionCondition,
-    AncestorSelectionCondition,
-    NthInstanceCondition,
 )
 from monitoring.uss_qualifier.fileio import resolve_filename
 from monitoring.uss_qualifier.reports.capabilities import (
     evaluate_condition_for_test_suite,
-)
-from monitoring.uss_qualifier.scenarios.interuss.evaluation_scenario import (
-    ReportEvaluationScenario,
 )
 from monitoring.uss_qualifier.reports.report import (
     ActionGeneratorReport,
@@ -128,7 +124,9 @@ class TestSuiteAction(object):
             report = TestSuiteActionReport(skipped_action=skip_report)
         else:
             if self.test_scenario:
-                report = TestSuiteActionReport(test_scenario=self._run_test_scenario())
+                report = TestSuiteActionReport(
+                    test_scenario=self._run_test_scenario(context)
+                )
             elif self.test_suite:
                 report = TestSuiteActionReport(test_suite=self._run_test_suite(context))
             elif self.action_generator:
@@ -142,14 +140,14 @@ class TestSuiteAction(object):
         context.end_action(self, report)
         return report
 
-    def _run_test_scenario(self) -> TestScenarioReport:
+    def _run_test_scenario(self, context: ExecutionContext) -> TestScenarioReport:
         scenario = self.test_scenario
 
         logger.info(f'Running "{scenario.documentation.name}" scenario...')
         scenario.on_failed_check = _print_failed_check
         try:
             try:
-                scenario.run()
+                scenario.run(context)
             except (ScenarioCannotContinueError, TestRunCannotContinueError):
                 pass
             scenario.go_to_cleanup()
@@ -270,31 +268,6 @@ class TestSuite(object):
                 )
         self.actions = actions
 
-    def _make_report_evaluation_action(
-        self, report: TestSuiteReport
-    ) -> TestSuiteAction:
-        """Create the action wrapping the ReportEvaluationScenario and inject the required resources."""
-
-        ReportEvaluationScenario.inject_report_resource(
-            self.definition.report_evaluation_scenario.resources,
-            self.local_resources,
-            report,
-        )
-        action_declaration = ImplicitDict.parse(
-            dict(
-                test_scenario=self.definition.report_evaluation_scenario,
-            ),
-            TestSuiteActionDeclaration,
-        )
-        action = TestSuiteAction(
-            action=action_declaration, resources=self.local_resources
-        )
-        if not issubclass(action.test_scenario.__class__, ReportEvaluationScenario):
-            raise ValueError(
-                f"Scenario type {action.test_scenario.__class__} is not a subclass of the ReportEvaluationScenario base class"
-            )
-        return action
-
     def run(self, context: ExecutionContext) -> TestSuiteReport:
         report = TestSuiteReport(
             name=self.definition.name,
@@ -308,9 +281,6 @@ class TestSuite(object):
         def actions() -> Iterator[Union[TestSuiteAction, SkippedActionReport]]:
             for a in self.actions:
                 yield a
-            # Execute report evaluation scenario as last action if specified, otherwise break loop
-            if self.definition.has_field_with_value("report_evaluation_scenario"):
-                yield self._make_report_evaluation_action(report)
 
         _run_actions(actions(), context, report)
 
@@ -379,6 +349,7 @@ class ActionStackFrame(object):
     action: TestSuiteAction
     parent: Optional[ActionStackFrame]
     children: List[ActionStackFrame]
+    report: Optional[TestSuiteActionReport] = None
 
     def address(self) -> JSONAddress:
         if self.action.test_scenario is not None:
@@ -416,6 +387,14 @@ class ExecutionContext(object):
         self.config = config
         self.top_frame = None
         self.current_frame = None
+
+    def sibling_queries(self) -> Iterator[Query]:
+        if self.current_frame.parent is None:
+            return
+        for child in self.current_frame.parent.children:
+            if child.report is not None:
+                for q in child.report.queries():
+                    yield q
 
     def _compute_n_of(
         self, target: TestSuiteAction, condition: TestSuiteActionSelectionCondition
@@ -595,4 +574,5 @@ class ExecutionContext(object):
             raise RuntimeError(
                 f"Action {self.current_frame.action.declaration.get_action_type()} {self.current_frame.action.declaration.get_child_type()} was started, but a different action {action.declaration.get_action_type()} {action.declaration.get_child_type()} was ended"
             )
+        self.current_frame.report = report
         self.current_frame = self.current_frame.parent

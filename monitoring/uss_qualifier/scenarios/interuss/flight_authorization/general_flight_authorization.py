@@ -27,7 +27,7 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestCheckDocumentation,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
-
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 # Check names from documentation
 _VALID_API_RESPONSE_NAME = "Valid planning response"
@@ -59,7 +59,7 @@ class GeneralFlightAuthorization(TestScenario):
         self.flight_planner = planner.client
         self.participant_id = planner.participant_id
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self.begin_test_case("Flight planning")

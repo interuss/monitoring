@@ -14,6 +14,7 @@ from monitoring.uss_qualifier.scenarios.interuss.mock_uss.unconfigure_locality i
     unconfigure_stack,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class ConfigureLocality(TestScenario):
@@ -29,7 +30,7 @@ class ConfigureLocality(TestScenario):
         self.locality_code = locality.locality_code
         self.to_unconfigure = []
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self.begin_test_case("Set locality")

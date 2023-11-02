@@ -37,7 +37,6 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
 from monitoring.uss_qualifier.resources.definitions import ResourceTypeName, ResourceID
 from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
 
-
 _STOP_FAST_FLAG = "USS_QUALIFIER_STOP_FAST"
 STOP_FAST = os.environ.get(_STOP_FAST_FLAG, "").strip().lower() == "true"
 
@@ -229,7 +228,13 @@ class GenericTestScenario(ABC):
         return scenario
 
     @abstractmethod
-    def run(self):
+    def run(self, context):
+        """Execute the test scenario.
+
+        Args:
+            context: Execution context with type monitoring.uss_qualifier.suites.suite.ExecutionContext.  Type hint is
+                not annotated because doing so would create a circular reference.
+        """
         raise NotImplementedError(
             "A concrete test scenario must implement `run` method"
         )

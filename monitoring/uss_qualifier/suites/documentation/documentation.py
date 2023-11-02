@@ -115,23 +115,6 @@ def make_test_suite_documentation(
                 ),
             )
         )
-    if (
-        "report_evaluation_scenario" in suite_def
-        and suite_def.report_evaluation_scenario
-    ):
-        lines.extend(
-            _render_scenario(
-                suite_def.report_evaluation_scenario.scenario_type,
-                TestSuiteRenderContext(
-                    parent_yaml_file=suite_yaml_file,
-                    parent_doc_file=suite_doc_file,
-                    base_path=base_path,
-                    list_index=i + 2,
-                    indent=0,
-                    test_suites=test_suites,
-                ),
-            )
-        )
     lines.append("")
 
     lines.append(
@@ -355,15 +338,6 @@ def _collect_requirements_from_suite_def(
 
     for action in suite_def.actions:
         combine(_collect_requirements_from_action(action))
-    if (
-        "report_evaluation_scenario" in suite_def
-        and suite_def.report_evaluation_scenario
-    ):
-        combine(
-            _collect_requirements_from_scenario(
-                suite_def.report_evaluation_scenario.scenario_type
-            )
-        )
     return reqs
 
 

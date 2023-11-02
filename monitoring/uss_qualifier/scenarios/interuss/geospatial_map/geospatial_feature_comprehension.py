@@ -13,7 +13,7 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestCheckDocumentation,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
-
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 _BLOCK_CHECK_NAME = "Blocking geospatial features present"
 _ADVISE_CHECK_NAME = "Advisory geospatial features present"
@@ -35,7 +35,7 @@ class GeospatialFeatureComprehension(TestScenario):
         super().__init__()
         self.table = table.table
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self.begin_test_case("Map query")

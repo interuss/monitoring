@@ -1,6 +1,7 @@
 from typing import List
 
 from monitoring.monitorlib.fetch import QueryError
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightResponseResult,
 )
@@ -67,7 +68,7 @@ class Validation(TestScenario):
                         f"`{self.me()}` TestScenario requires all flight intents except the last to have invalid flight authorisation data.  Instead, intent {fID} had valid flight authorisation data."
                     )
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self.record_note("Planner", self.ussp.participant_id)
