@@ -45,7 +45,7 @@ Flight 2 should be successfully planned by the control USS.
 ### [Validate flight 2 sharing test step](../validate_shared_operational_intent.md)
 Validate that flight 2 is planned
 
-### [Validate no notification pushed for flight 2](test_steps/validate_no_notification_operational_intent.md)
+### Validate no notification pushed for flight 2 test step
 Check there is no subscription by tested_uss to trigger notification of flight 2.
 If no notification is pushed by control_uss to tested_uss, we know tested_uss has no subscription.
 This will ensure that while planning a nearby flight, tested_uss will need to make a GET request to control_uss for flight 2 details.
@@ -87,7 +87,7 @@ The control_uss, which is mock_uss is instructed to share invalid data with othe
 ### [Validate flight 2 shared operational intent with invalid data test step](test_steps/validate_sharing_operational_intent_but_with_invalid_interuss_data.md)
 Validate that flight 2 is shared with invalid data as a modified behavior is injected by uss_qualifier for a negative test.
 
-### [Validate no notification pushed for flight 2](test_steps/validate_no_notification_operational_intent.md)
+### Validate no notification pushed for flight 2 test step
 Check there is no subscription by tested_uss to trigger notification of flight 2.
 If no notification is pushed by control_uss to tested_uss, we know tested_uss has no subscription.
 This will ensure that while planning a nearby flight, tested_uss will need to make a GET request to control_uss for flight 2 details.
