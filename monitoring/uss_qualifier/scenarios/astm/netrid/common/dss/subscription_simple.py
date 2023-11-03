@@ -21,9 +21,6 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 TIME_TOLERANCE_SEC = 1
 
-# TODO check if this is something that needs to be configurable.
-USS_QUALIFIER_OWNER = "uss_qualifier"
-
 
 class SubscriptionSimple(GenericTestScenario):
     """Based on prober/rid/v2/test_subscription_simple.py from the legacy prober tool."""
@@ -32,6 +29,9 @@ class SubscriptionSimple(GenericTestScenario):
 
     # Base identifier for the subscriptions that will be created
     _base_sub_id: str
+
+    # The value for 'owner' we'll expect the DSS to set on subscriptions
+    _owner: str
 
     _test_subscription_ids: List[str]
 
@@ -73,6 +73,8 @@ class SubscriptionSimple(GenericTestScenario):
         # Used to validate some special-case handling by the DSS
         self._isa_area_loop = self._isa_area.copy()
         self._isa_area_loop.append(self._isa_area_loop[0])
+
+        self._owner = id_generator.subscriber
 
         # Prepare 4 different subscription ids:
         self._test_subscription_ids = [
@@ -631,11 +633,11 @@ class SubscriptionSimple(GenericTestScenario):
         with self.check(
             "Returned subscription owner is correct", [self._dss_wrapper.participant_id]
         ) as check:
-            if sub_under_test.owner != USS_QUALIFIER_OWNER:
+            if sub_under_test.owner != self._owner:
                 check.record_failed(
                     "Returned subscription owner does not match provided one",
                     Severity.High,
-                    f"Provided: {USS_QUALIFIER_OWNER}, Returned: {sub_under_test.owner}",
+                    f"Provided: {self._owner}, Returned: {sub_under_test.owner}",
                     query_timestamps=query_timestamps,
                 )
 
