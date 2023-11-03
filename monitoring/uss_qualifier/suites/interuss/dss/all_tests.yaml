@@ -2,6 +2,7 @@ name: ASTM DSS tests
 resources:
   f3411v19_dss_instances: resources.astm.f3411.DSSInstancesResource
   f3411v22a_dss_instances: resources.astm.f3411.DSSInstancesResource
+  utm_client_identity: resources.communications.ClientIdentityResource
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
   problematically_big_area: resources.VerticesResource
@@ -10,6 +11,7 @@ actions:
       generator_type: action_generators.astm.f3411.ForEachDSS
       resources:
         dss_instances: f3411v19_dss_instances
+        utm_client_identity: utm_client_identity
         id_generator: id_generator
         service_area: service_area
         problematically_big_area: problematically_big_area
@@ -20,6 +22,7 @@ actions:
             resources:
               dss: dss
               all_dss_instances: dss_instances
+              utm_client_identity: utm_client_identity
               id_generator: id_generator
               isa: service_area
               problematically_big_area: problematically_big_area
@@ -31,6 +34,7 @@ actions:
       generator_type: action_generators.astm.f3411.ForEachDSS
       resources:
         dss_instances: f3411v22a_dss_instances
+        utm_client_identity: utm_client_identity
         id_generator: id_generator
         service_area: service_area
         problematically_big_area: problematically_big_area
@@ -41,6 +45,7 @@ actions:
             resources:
               dss: dss
               all_dss_instances: dss_instances
+              utm_client_identity: utm_client_identity
               id_generator: id_generator
               isa: service_area
               problematically_big_area: problematically_big_area
