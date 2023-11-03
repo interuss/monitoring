@@ -32,6 +32,12 @@ class NumericComparison(ImplicitDict):
 # ===== Applicability =====
 
 
+class TestScenarioApplicability(ImplicitDict):
+    """TestScenarioReport test report elements are applicable according to this specification."""
+
+    pass
+
+
 class FailedCheckApplicability(ImplicitDict):
     """FailedCheck test report elements are applicable according to this specification."""
 
@@ -64,6 +70,9 @@ class ValidationCriterionApplicability(ImplicitDict):
 
     Exactly one field must be specified."""
 
+    test_scenarios: Optional[TestScenarioApplicability]
+    """Only this kind of TestScenarioReport elements are applicable."""
+
     failed_checks: Optional[FailedCheckApplicability]
     """Only this kind of FailedCheck elements are applicable."""
 
@@ -91,6 +100,9 @@ class EachElementCondition(ImplicitDict):
 
     has_severity: Optional[SeverityComparison]
     """The element must be a FailedCheck that has this specified kind of severity."""
+
+    has_execution_error: Optional[bool]
+    """The element must be a TestScenarioReport that either must have or must not have an execution error."""
 
 
 class ElementGroupCondition(ImplicitDict):

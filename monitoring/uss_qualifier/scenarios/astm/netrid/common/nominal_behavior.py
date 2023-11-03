@@ -28,6 +28,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class NominalBehavior(GenericTestScenario):
@@ -61,7 +62,7 @@ class NominalBehavior(GenericTestScenario):
             "NominalBehavior test scenario subclass must specify _rid_version"
         )
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
         self.begin_test_case("Nominal flight")
 

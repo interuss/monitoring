@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -149,9 +151,6 @@ class TestSuiteDefinition(ImplicitDict):
 
     actions: List[TestSuiteActionDeclaration]
     """The actions to take when running the test suite.  Components will be executed in order."""
-
-    report_evaluation_scenario: Optional[TestScenarioDeclaration]
-    """The scenario executed after all the actions that evaluates the test suite report. Must be a ReportEvaluationScenario."""
 
     participant_verifiable_capabilities: Optional[List[ParticipantCapabilityDefinition]]
     """Definitions of capabilities verified by this test suite for individual participants."""

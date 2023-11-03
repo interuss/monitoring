@@ -52,12 +52,12 @@ actions:
       scenario_type: scenarios.astm.netrid.v22a.OperatorInteractions
       resources: {}
       on_failure: Continue
-report_evaluation_scenario:
-  scenario_type: scenarios.astm.netrid.v22a.AggregateChecks
-  resources:
-    service_providers: service_providers
-    observers: observers
-    dss_instances: dss_instances
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v22a.AggregateChecks
+      resources:
+        service_providers: service_providers
+        observers: observers
+        dss_instances: dss_instances
 participant_verifiable_capabilities:
   - id: service_provider
     name: NetRID Service Provider

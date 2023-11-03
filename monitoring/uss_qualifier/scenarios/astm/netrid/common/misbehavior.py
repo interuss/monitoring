@@ -31,6 +31,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class Misbehavior(GenericTestScenario):
@@ -69,7 +70,7 @@ class Misbehavior(GenericTestScenario):
             "Misbehavior test scenario subclass must specify _rid_version"
         )
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
         self.begin_test_case("Unauthenticated requests")
 

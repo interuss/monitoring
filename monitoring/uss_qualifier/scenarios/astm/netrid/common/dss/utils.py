@@ -54,8 +54,8 @@ def delete_isa_if_exists(
                 )
 
         for subscriber_url, notification in deleted.notifications.items():
-            with scenario.check("Notified subscriber", [subscriber_url]) as check:
-                # TODO: Find a better way to identify a subscriber who couldn't be notified
+            pid = notification.query.participant_id
+            with scenario.check("Notified subscriber", [pid] if pid else []) as check:
                 if not notification.success:
                     check.record_failed(
                         "Could not notify ISA subscriber",

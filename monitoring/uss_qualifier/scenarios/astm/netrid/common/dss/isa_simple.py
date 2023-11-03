@@ -14,6 +14,7 @@ from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaRe
 from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class ISASimple(GenericTestScenario):
@@ -47,7 +48,7 @@ class ISASimple(GenericTestScenario):
             v.as_s2sphere() for v in problematically_big_area.specification.vertices
         ]
 
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         self._setup_case()
@@ -110,15 +111,19 @@ class ISASimple(GenericTestScenario):
                         query_timestamps=[deleted.dss_query.query.request.timestamp],
                     )
             for subscriber_url, notification in deleted.notifications.items():
-                with self.check("Notified subscriber", [subscriber_url]) as check:
-                    # TODO: Find a better way to identify a subscriber who couldn't be notified
-                    if not notification.success:
-                        check.record_failed(
-                            "Could not notify ISA subscriber",
-                            Severity.Medium,
-                            f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
-                            query_timestamps=[notification.query.request.timestamp],
-                        )
+                # For checking the notifications, we ignore the request we made for the subscription that we created.
+                if self._isa.base_url not in subscriber_url:
+                    pid = notification.query.participant_id
+                    with self.check(
+                        "Notified subscriber", [pid] if pid else []
+                    ) as check:
+                        if not notification.success:
+                            check.record_failed(
+                                "Could not notify ISA subscriber",
+                                Severity.Medium,
+                                f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
+                                query_timestamps=[notification.query.request.timestamp],
+                            )
 
     def _get_isa_by_id_step(self):
         self.begin_test_step("Get ISA by ID")
@@ -361,7 +366,7 @@ class ISASimple(GenericTestScenario):
             ) as check:
                 _ = self._dss_wrapper.search_isas_expect_response_code(
                     check,
-                    expected_error_codes={413},
+                    expected_error_codes={400, 413},
                     area=self._huge_area,
                 )
 

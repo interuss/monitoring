@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Optional
 
 import s2sphere
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -33,8 +33,8 @@ def make_volume_4d(
     vertices: List[s2sphere.LatLng],
     alt_lo: float,
     alt_hi: float,
-    start_time: datetime.datetime,
-    end_time: datetime.datetime,
+    start_time: Optional[datetime.datetime],
+    end_time: Optional[datetime.datetime],
 ) -> Volume4D:
     return ImplicitDict.parse(
         {
@@ -48,8 +48,8 @@ def make_volume_4d(
                 "altitude_lower": make_altitude(alt_lo),
                 "altitude_upper": make_altitude(alt_hi),
             },
-            "time_start": make_time(start_time),
-            "time_end": make_time(end_time),
+            **({"time_start": make_time(start_time)} if start_time is not None else {}),
+            **({"time_end": make_time(end_time)} if end_time is not None else {}),
         },
         Volume4D,
     )

@@ -5,6 +5,7 @@ from monitoring.monitorlib.locality import LocalityCode
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 @dataclass
@@ -20,7 +21,7 @@ UnconfigureLocality will reset localities according to the most recent stack add
 
 
 class UnconfigureLocality(TestScenario):
-    def run(self):
+    def run(self, context: ExecutionContext):
         self.begin_test_scenario()
 
         if not unconfigure_stack:

@@ -118,9 +118,15 @@ v1:
   # test run report.  All of the criteria must be met to return a successful code.
   validation:
     criteria:
-        # applicability indicates which test report elements the pass_condition applies to
+      # applicability indicates which test report elements the pass_condition applies to
       - applicability:
-          # We want to make sure there are no failed checks...
+          # We want to make sure no test scenarios had execution errors
+          test_scenarios: {}
+        pass_condition:
+          each_element:
+            has_execution_error: false
+      - applicability:
+          # We also want to make sure there are no failed checks...
           failed_checks:
             # ...at least, no failed checks with severity higher than "Low".
             has_severity:
