@@ -939,9 +939,45 @@ class DSSWrapper(object):
             "DSS query was not successful, but a High Severity issue didn't interrupt execution"
         )
 
+    def cleanup_subs_in_area(
+        self,
+        area: List[s2sphere.LatLng],
+    ):
+        """Cleanup any subscription that is returned for the search in the provided area"""
+
+        with self._scenario.check(
+            "Successful subscription search query", [self.participant_id]
+        ) as check:
+            found_subs = self.search_subs(check, area)
+
+        try:
+            for sub_id, sub in found_subs.subscriptions.items():
+                with self._scenario.check(
+                    "Subscription can be deleted", [self.participant_id]
+                ) as check:
+                    del_sub = mutate.delete_subscription(
+                        subscription_id=sub_id,
+                        subscription_version=sub.version,
+                        rid_version=self._dss.rid_version,
+                        utm_client=self._dss.client,
+                        participant_id=self._dss.participant_id,
+                    )
+
+                    self._handle_query_result(
+                        check,
+                        del_sub,
+                        f"Failed to delete subscription {sub}",
+                        {404, 200},
+                        Severity.Medium,
+                    )
+        except QueryError as e:
+            self._handle_query_error(check, e)
+            raise RuntimeError(
+                "DSS query was not successful, but a High Severity issue didn't interrupt execution"
+            )
+
     def cleanup_sub(
         self,
-        check: PendingCheck,
         sub_id: str,
     ) -> Optional[ChangedSubscription]:
         """Cleanup a subscription at the DSS. Does not fail if it is not found.
@@ -950,39 +986,45 @@ class DSSWrapper(object):
         :return: the DSS response if the subscription exists
         """
         try:
-            sub = fetch.subscription(
-                subscription_id=sub_id,
-                rid_version=self._dss.rid_version,
-                session=self._dss.client,
-                participant_id=self._dss.participant_id,
-            )
+            with self._scenario.check(
+                "Subscription can be queried by ID", [self.participant_id]
+            ) as check:
+                sub = fetch.subscription(
+                    subscription_id=sub_id,
+                    rid_version=self._dss.rid_version,
+                    session=self._dss.client,
+                    participant_id=self._dss.participant_id,
+                )
 
-            self._handle_query_result(
-                check,
-                sub,
-                f"Failed to get subscription {sub_id}",
-                {404, 200},
-                Severity.Medium,
-            )
+                self._handle_query_result(
+                    check,
+                    sub,
+                    f"Failed to get subscription {sub_id}",
+                    {404, 200},
+                    Severity.Medium,
+                )
 
             if sub.status_code == 404:
                 return None
 
-            del_sub = mutate.delete_subscription(
-                subscription_id=sub_id,
-                subscription_version=sub.subscription.version,
-                rid_version=self._dss.rid_version,
-                utm_client=self._dss.client,
-                participant_id=self._dss.participant_id,
-            )
+            with self._scenario.check(
+                "Subscription can be deleted", [self.participant_id]
+            ) as check:
+                del_sub = mutate.delete_subscription(
+                    subscription_id=sub_id,
+                    subscription_version=sub.subscription.version,
+                    rid_version=self._dss.rid_version,
+                    utm_client=self._dss.client,
+                    participant_id=self._dss.participant_id,
+                )
 
-            self._handle_query_result(
-                check,
-                del_sub,
-                f"Failed to delete subscription {sub_id}",
-                {404, 200},
-                Severity.Medium,
-            )
+                self._handle_query_result(
+                    check,
+                    del_sub,
+                    f"Failed to delete subscription {sub_id}",
+                    {404, 200},
+                    Severity.Medium,
+                )
 
             return del_sub
 

@@ -331,6 +331,10 @@ Any entities (ISAs or Subscriptions) not deleted normally will be deleted here.
 
 **[astm.f3411.v19.DSS0130,A2-6-1,2a](../../../../requirements/astm/f3411/v19.md)**
 
-### Subscription deleted with proper response check
+### Subscription can be queried by ID check
+
+**[astm.f3411.v19.DSS0130,A2-6-1,4a](../../../../requirements/astm/f3411/v19.md)**
+
+### Subscription can be deleted check
 
 **[astm.f3411.v19.DSS0130,A2-6-1,4a](../../../../requirements/astm/f3411/v19.md)**

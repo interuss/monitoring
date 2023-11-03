@@ -172,12 +172,7 @@ class SubscriptionSimple(GenericTestScenario):
         which is why we need to explicitly test for their presence.
         """
         for sub_id in self._test_subscription_ids:
-            # TODO migrate this to the two-check pattern when the utility has been migrated
-            with self.check(
-                "Ensure subscription with test ID does not exist",
-                [self._dss_wrapper.participant_id],
-            ) as check:
-                self._dss_wrapper.cleanup_sub(check, sub_id)
+            self._dss_wrapper.cleanup_sub(sub_id)
 
     def _ensure_no_active_subs_exist(self):
         """Ensure that we don't currently have any other active subscriptions at the DSS:

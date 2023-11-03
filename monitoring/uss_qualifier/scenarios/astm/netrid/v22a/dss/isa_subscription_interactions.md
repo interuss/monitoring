@@ -38,7 +38,7 @@ If an ISA with the intended ID is already present in the DSS, it needs to be rem
 
 When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).  If a notification cannot be delivered, then the **[astm.f3411.v22a.NET0730](../../../../../requirements/astm/f3411/v22a.md)** requirement to implement the POST ISAs endpoint isn't met.
 
-#### Successful subscription query check
+#### Successful subscription search query check
 
 **[astm.f3411.v22a.DSS0030,f](../../../../../requirements/astm/f3411/v22a.md)** requires the implementation of the DSS endpoint to allow callers to retrieve the subscriptions they created.
 
@@ -139,7 +139,7 @@ If an ISA with the intended ID is already present in the DSS, it needs to be rem
 
 When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).  If a notification cannot be delivered, then the **[astm.f3411.v22a.NET0730](../../../../../requirements/astm/f3411/v22a.md)** requirement to implement the POST ISAs endpoint isn't met.
 
-#### Successful subscription query check
+#### Successful subscription search query check
 
 **[astm.f3411.v22a.DSS0030,f](../../../../../requirements/astm/f3411/v22a.md)** requires the implementation of the DSS endpoint to allow callers to retrieve the subscriptions they created.
 

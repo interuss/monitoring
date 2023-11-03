@@ -768,14 +768,9 @@ class DSSInteroperability(GenericTestScenario):
                     )
 
             elif entity.type == EntityType.Sub:
-                with self.check(
-                    "Subscription deleted with proper response",
-                    [self._dss_primary.participant_id],
-                ) as check:
-                    _ = self._dss_primary.cleanup_sub(
-                        check,
-                        sub_id=entity.uuid,
-                    )
+                _ = self._dss_primary.cleanup_sub(
+                    sub_id=entity.uuid,
+                )
 
             else:
                 raise RuntimeError(f"Unknown Entity type: {entity.type}")

@@ -18,6 +18,12 @@
     <th><a href="../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v19.md">astm<br>.f3411<br>.v19</a></td>
+    <td><a href="../../requirements/astm/f3411/v19.md">DSS0030,e</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/dss/subscription_simple.md">ASTM NetRID DSS: Subscription Simple</a></td>
+  </tr>
+  <tr>
     <td rowspan="87" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
     <td><a href="../../requirements/astm/f3411/v22a.md">DSS0030</a></td>
     <td>Implemented</td>
