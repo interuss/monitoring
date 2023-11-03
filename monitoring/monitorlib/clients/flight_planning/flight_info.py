@@ -209,7 +209,7 @@ class BasicFlightPlanInformation(ImplicitDict):
     uas_state: UasState
     """State of the user's UAS associated with this flight plan."""
 
-    area: List[Volume4D]
+    area: Volume4DCollection
     """User intends to or may fly anywhere in this entire area."""
 
     @staticmethod
@@ -219,7 +219,9 @@ class BasicFlightPlanInformation(ImplicitDict):
         return BasicFlightPlanInformation(
             usage_state=AirspaceUsageState(info.usage_state),
             uas_state=UasState(info.uas_state),
-            area=[Volume4D.from_flight_planning_api(v) for v in info.area],
+            area=Volume4DCollection(
+                [Volume4D.from_flight_planning_api(v) for v in info.area]
+            ),
         )
 
     def to_flight_planning_api(self) -> fp_api.BasicFlightPlanInformation:
@@ -339,7 +341,7 @@ class FlightInfo(ImplicitDict):
         basic_information = BasicFlightPlanInformation(
             usage_state=usage_states[request.operational_intent.state],
             uas_state=uas_states[request.operational_intent.state],
-            area=v4c.volumes,
+            area=v4c,
         )
         astm_f3548v21 = ASTMF354821OpIntentInformation(
             priority=request.operational_intent.priority

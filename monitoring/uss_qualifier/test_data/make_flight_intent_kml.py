@@ -12,8 +12,9 @@ from pykml.factory import KML_ElementMaker as kml
 from pykml.util import format_xml_with_cdata
 import yaml
 
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict
 from monitoring.monitorlib.geo import AltitudeDatum, Altitude, DistanceUnits
+from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.fileio import load_dict_with_references, resolve_filename
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntentCollection,
@@ -67,7 +68,7 @@ def main() -> int:
     path = args.flight_intent_collection
     output_path = os.path.splitext(resolve_filename(path))[0] + ".kml"
 
-    start_of_test = StringBasedDateTime(args.start_of_test or arrow.utcnow().datetime)
+    start_of_test = Time(args.start_of_test or arrow.utcnow().datetime)
     if args.geoid_offset is None:
         logger.warning(
             "geoid_offset was not provided.  Assuming 0 offset, and this may cause altitude errors of up to tens of meters."
@@ -82,7 +83,7 @@ def main() -> int:
 
     folders = []
     for name, template in flight_intents.items():
-        flight_intent = template.resolve(start_of_test.datetime)
+        flight_intent = template.resolve(start_of_test)
         non_basic_info = json.loads(
             json.dumps(
                 {k: v for k, v in flight_intent.items() if k != "basic_information"}

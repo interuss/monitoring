@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from implicitdict import ImplicitDict
 
@@ -12,7 +11,11 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
     BasicFlightPlanInformation,
     FlightInfo,
 )
-from monitoring.monitorlib.geotemporal import Volume4DTemplate, resolve_volume4d
+from monitoring.monitorlib.geotemporal import (
+    Volume4DTemplateCollection,
+    Volume4DCollection,
+)
+from monitoring.monitorlib.temporal import Time
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
 
@@ -25,12 +28,14 @@ class BasicFlightPlanInformationTemplate(ImplicitDict):
     uas_state: UasState
     """State of the user's UAS associated with this flight plan."""
 
-    area: List[Volume4DTemplate]
+    area: Volume4DTemplateCollection
     """User intends to or may fly anywhere in this entire area."""
 
-    def resolve(self, start_of_test: datetime) -> BasicFlightPlanInformation:
+    def resolve(self, start_of_test: Time) -> BasicFlightPlanInformation:
         kwargs = {k: v for k, v in self.items()}
-        kwargs["area"] = [resolve_volume4d(t, start_of_test) for t in self.area]
+        kwargs["area"] = Volume4DCollection(
+            [t.resolve(start_of_test) for t in self.area]
+        )
         return ImplicitDict.parse(kwargs, BasicFlightPlanInformation)
 
 
@@ -48,14 +53,12 @@ class FlightInfoTemplate(ImplicitDict):
     additional_information: Optional[dict]
     """Any information relevant to a particular jurisdiction or use case not described in the standard schema. The keys and values must be agreed upon between the test designers and USSs under test."""
 
-    def resolve(self, start_of_test: datetime) -> FlightInfo:
+    def resolve(self, start_of_test: Time) -> FlightInfo:
         kwargs = {k: v for k, v in self.items()}
         kwargs["basic_information"] = self.basic_information.resolve(start_of_test)
         return ImplicitDict.parse(kwargs, FlightInfo)
 
-    def scd_inject_request(
-        self, start_of_test: datetime
-    ) -> scd_api.InjectFlightRequest:
+    def to_scd_inject_request(self, start_of_test: Time) -> scd_api.InjectFlightRequest:
         """Render a legacy SCD injection API request object from this object."""
 
         info = self.resolve(start_of_test)
