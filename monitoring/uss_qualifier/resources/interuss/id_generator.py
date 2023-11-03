@@ -25,6 +25,7 @@ class IDGeneratorSpecification(ImplicitDict):
 
 class IDGeneratorResource(Resource[IDGeneratorSpecification]):
     id_factory: IDFactory
+    subscriber: str
 
     def __init__(
         self,
@@ -39,5 +40,5 @@ class IDGeneratorResource(Resource[IDGeneratorSpecification]):
             raise ValueError(
                 f"`sub` claim not found in payload of token using {type(auth_adapter).__name__} requesting {specification.whoami_scope} scope for {specification.whoami_audience} audience: {token}"
             )
-        subscriber = payload["sub"]
-        self.id_factory = IDFactory(subscriber)
+        self.subscriber = payload["sub"]
+        self.id_factory = IDFactory(self.subscriber)
