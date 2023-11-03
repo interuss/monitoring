@@ -2,8 +2,7 @@ import os
 import traceback
 from datetime import datetime, timedelta
 import time
-from typing import List, Tuple, Optional
-import uuid
+from typing import Tuple, Optional
 
 import flask
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -12,14 +11,12 @@ import requests.exceptions
 
 from monitoring.mock_uss.flights.planning import lock_flight, release_flight_lock
 from monitoring.mock_uss.f3548v21 import utm_client
-from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
-from uas_standards.astm.f3548.v21 import api
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    FlightInfo,
+    AirspaceUsageState,
+)
 from uas_standards.astm.f3548.v21.api import (
-    OperationalIntent,
     PutOperationalIntentDetailsParameters,
-    ImplicitSubscriptionParameters,
-    PutOperationalIntentReferenceParameters,
-    OperationalIntentDetails,
 )
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightResponse,
@@ -31,35 +28,32 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     ClearAreaResponse,
     Capability,
     CapabilitiesResponse,
-    OperationalIntentState,
 )
 
 from monitoring.mock_uss import webapp, require_config_value, uspace
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
-from monitoring.mock_uss.flights import database
 from monitoring.mock_uss.flights.database import db, FlightRecord
 from monitoring.mock_uss.f3548v21.flight_planning import (
     validate_request,
-    check_for_disallowed_conflicts,
     PlanningError,
-    op_intent_from_flightrecord,
-    op_intent_transition_valid,
+    check_op_intent,
+    share_op_intent,
+    op_intent_from_flightinfo,
 )
 import monitoring.mock_uss.uspace.flight_auth
 from monitoring.monitorlib import versioning
 from monitoring.monitorlib.clients import scd as scd_client
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geo import Polygon
-from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
+from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.idempotency import idempotent_request
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
 )
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUSSInjectFlightRequest,
-    MockUssFlightBehavior,
 )
 
 require_config_value(KEY_BASE_URL)
@@ -71,53 +65,6 @@ def _make_stacktrace(e) -> str:
     return "".join(
         traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
     )
-
-
-def query_operational_intents(
-    area_of_interest: api.Volume4D,
-) -> List[OperationalIntent]:
-    """Retrieve a complete set of operational intents in an area, including details.
-
-    :param area_of_interest: Area where intersecting operational intents must be discovered
-    :return: Full definition for every operational intent discovered
-    """
-    op_intent_refs = scd_client.query_operational_intent_references(
-        utm_client, area_of_interest
-    )
-    tx = db.value
-    get_details_for = []
-    own_flights = {f.op_intent.reference.id: f for f in tx.flights.values() if f}
-    result = []
-    for op_intent_ref in op_intent_refs:
-        if op_intent_ref.id in own_flights:
-            # This is our own flight
-            result.append(
-                op_intent_from_flightrecord(own_flights[op_intent_ref.id], "GET")
-            )
-        elif (
-            op_intent_ref.id in tx.cached_operations
-            and tx.cached_operations[op_intent_ref.id].reference.version
-            == op_intent_ref.version
-        ):
-            # We have a current version of this op intent cached
-            result.append(tx.cached_operations[op_intent_ref.id])
-        else:
-            # We need to get the details for this op intent
-            get_details_for.append(op_intent_ref)
-
-    updated_op_intents = []
-    for op_intent_ref in get_details_for:
-        op_intent, _ = scd_client.get_operational_intent_details(
-            utm_client, op_intent_ref.uss_base_url, op_intent_ref.id
-        )
-        updated_op_intents.append(op_intent)
-    result.extend(updated_op_intents)
-
-    with db as tx:
-        for op_intent in updated_op_intents:
-            tx.cached_operations[op_intent.reference.id] = op_intent
-
-    return result
 
 
 @webapp.route("/scdsc/v1/status", methods=["GET"])
@@ -182,15 +129,6 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
     return flask.jsonify(json), code
 
 
-def _mock_uss_flight_behavior_in_req(
-    req_body: MockUSSInjectFlightRequest,
-) -> Optional[MockUssFlightBehavior]:
-    if "behavior" in req_body:
-        return req_body.behavior
-    else:
-        return None
-
-
 def inject_flight(
     flight_id: str,
     req_body: MockUSSInjectFlightRequest,
@@ -202,8 +140,16 @@ def inject_flight(
     def log(msg: str):
         logger.debug(f"[inject_flight/{pid}:{flight_id}] {msg}")
 
+    # Construct potential new flight
+    flight_info = FlightInfo.from_scd_inject_flight_request(req_body)
+    op_intent = op_intent_from_flightinfo(flight_info, flight_id)
+    new_flight = FlightRecord(
+        flight_info=flight_info,
+        op_intent=op_intent,
+        mod_op_sharing_behavior=req_body.behavior if "behavior" in req_body else None,
+    )
+
     # Validate request
-    log("Validating request")
     try:
         if locality.is_uspace_applicable():
             uspace.flight_auth.validate_request(req_body)
@@ -218,120 +164,20 @@ def inject_flight(
 
     step_name = "performing unknown operation"
     try:
-        # Check the transition is valid
-        state_transition_from = (
-            OperationalIntentState(existing_flight.op_intent.reference.state)
-            if existing_flight
-            else None
-        )
-        state_transition_to = OperationalIntentState(req_body.operational_intent.state)
-        if not op_intent_transition_valid(state_transition_from, state_transition_to):
+        step_name = "checking F3548-21 operational intent"
+        try:
+            key = check_op_intent(new_flight, existing_flight, locality, log)
+        except PlanningError as e:
             return (
                 InjectFlightResponse(
                     result=InjectFlightResponseResult.Rejected,
-                    notes=f"Operational intent state transition from {state_transition_from} to {state_transition_to} is invalid",
+                    notes=str(e),
                 ),
                 200,
             )
 
-        if req_body.operational_intent.state in (
-            OperationalIntentState.Accepted,
-            OperationalIntentState.Activated,
-        ):
-            # Check for intersections if the flight is nominal
-
-            # Check for operational intents in the DSS
-            step_name = "querying for operational intents"
-            log("Obtaining latest operational intent information")
-            v1 = Volume4DCollection.from_interuss_scd_api(
-                req_body.operational_intent.volumes
-                + req_body.operational_intent.off_nominal_volumes
-            )
-            vol4 = v1.bounding_volume.to_f3548v21()
-            op_intents = query_operational_intents(vol4)
-
-            # Check for intersections
-            step_name = "checking for intersections"
-            log(
-                f"Checking for intersections with {', '.join(op_intent.reference.id for op_intent in op_intents)}"
-            )
-            try:
-                check_for_disallowed_conflicts(
-                    req_body, existing_flight, op_intents, locality, log
-                )
-            except PlanningError as e:
-                return (
-                    InjectFlightResponse(
-                        result=InjectFlightResponseResult.ConflictWithFlight,
-                        notes=str(e),
-                    ),
-                    200,
-                )
-
-            key = [op.reference.ovn for op in op_intents]
-        else:
-            # Flight is not nominal and therefore doesn't need to check intersections
-            key = []
-
-        # Create operational intent in DSS
         step_name = "sharing operational intent in DSS"
-        log("Sharing operational intent with DSS")
-        base_url = "{}/mock/scd".format(webapp.config[KEY_BASE_URL])
-        req = PutOperationalIntentReferenceParameters(
-            extents=req_body.operational_intent.volumes
-            + req_body.operational_intent.off_nominal_volumes,
-            key=key,
-            state=req_body.operational_intent.state,
-            uss_base_url=base_url,
-            new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url),
-        )
-        if existing_flight:
-            id = existing_flight.op_intent.reference.id
-            step_name = f"updating existing operational intent {id} in DSS"
-            log(step_name)
-            result = scd_client.update_operational_intent_reference(
-                utm_client,
-                id,
-                existing_flight.op_intent.reference.ovn,
-                req,
-            )
-        else:
-            id = str(uuid.uuid4())
-            step_name = f"creating new operational intent {id} in DSS"
-            log(step_name)
-            result = scd_client.create_operational_intent_reference(utm_client, id, req)
-
-        # Notify subscribers
-        subscriber_list = ", ".join(s.uss_base_url for s in result.subscribers)
-        step_name = f"notifying subscribers {{{subscriber_list}}}"
-        op_intent = OperationalIntent(
-            reference=result.operational_intent_reference,
-            details=OperationalIntentDetails(
-                volumes=req_body.operational_intent.volumes,
-                off_nominal_volumes=req_body.operational_intent.off_nominal_volumes,
-                priority=req_body.operational_intent.priority,
-            ),
-        )
-        record = database.FlightRecord(
-            op_intent=op_intent,
-            flight_info=FlightInfo.from_scd_inject_flight_request(req_body),
-            mod_op_sharing_behavior=_mock_uss_flight_behavior_in_req(req_body),
-        )
-        operational_intent = op_intent_from_flightrecord(record, "POST")
-        for subscriber in result.subscribers:
-            if subscriber.uss_base_url == base_url:
-                # Do not notify ourselves
-                continue
-            update = PutOperationalIntentDetailsParameters(
-                operational_intent_id=result.operational_intent_reference.id,
-                operational_intent=operational_intent,
-                subscriptions=subscriber.subscriptions,
-            )
-            log(f"Notifying subscriber at {subscriber.uss_base_url}")
-            step_name = f"notifying subscriber {{{subscriber.uss_base_url}}}"
-            scd_client.notify_operational_intent_details_changed(
-                utm_client, subscriber.uss_base_url, update
-            )
+        record = share_op_intent(new_flight, existing_flight, key, log)
 
         # Store flight in database
         step_name = "storing flight in database"
@@ -343,14 +189,17 @@ def inject_flight(
         log("Complete.")
 
         if (
-            result.operational_intent_reference.state
-            == OperationalIntentState.Activated
+            new_flight.flight_info.basic_information.usage_state
+            == AirspaceUsageState.InUse
         ):
             injection_result = InjectFlightResponseResult.ReadyToFly
         else:
             injection_result = InjectFlightResponseResult.Planned
         return (
-            InjectFlightResponse(result=injection_result, operational_intent_id=id),
+            InjectFlightResponse(
+                result=injection_result,
+                operational_intent_id=new_flight.op_intent.reference.id,
+            ),
             200,
         )
     except (ValueError, ConnectionError) as e:

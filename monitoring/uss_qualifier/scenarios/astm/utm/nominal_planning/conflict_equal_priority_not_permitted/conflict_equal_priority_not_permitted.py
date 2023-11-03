@@ -487,7 +487,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 "Declare flight 2 non-conforming",
                 "Successful transition to non-conforming state",
                 {
-                    InjectFlightResponseResult.Planned,
+                    InjectFlightResponseResult.ReadyToFly,
                     InjectFlightResponseResult.NotSupported,
                 },
                 {InjectFlightResponseResult.Failed: "Failure"},
