@@ -71,29 +71,16 @@ class FlightInfoTemplate(ImplicitDict):
                 f"Legacy SCD injection API requires uspace_flight_authorisation to be specified in FlightInfo"
             )
         volumes = [v.to_interuss_scd_api() for v in info.basic_information.area]
-        if info.basic_information.usage_state == AirspaceUsageState.Planned:
-            state = scd_api.OperationalIntentState.Accepted
-            off_nominal_volumes = []
-        elif info.basic_information.usage_state == AirspaceUsageState.InUse:
-            if info.basic_information.uas_state == UasState.Nominal:
-                state = scd_api.OperationalIntentState.Activated
-                off_nominal_volumes = []
-            elif info.basic_information.uas_state == UasState.OffNominal:
-                state = scd_api.OperationalIntentState.Nonconforming
-                off_nominal_volumes = volumes
-                volumes = []
-            elif info.basic_information.uas_state == UasState.Contingent:
-                state = scd_api.OperationalIntentState.Contingent
-                off_nominal_volumes = volumes
-                volumes = []
-            else:
-                raise ValueError(
-                    f"Unrecognized uas_state '{info.basic_information.uas_state}'"
-                )
-        else:
-            raise ValueError(
-                f"Unrecognized usage_state '{info.basic_information.usage_state}'"
-            )
+        off_nominal_volumes = []
+        state = scd_api.OperationalIntentState(
+            info.basic_information.f3548v21_op_intent_state()
+        )
+        if state in (
+            scd_api.OperationalIntentState.Nonconforming,
+            scd_api.OperationalIntentState.Contingent,
+        ):
+            off_nominal_volumes = volumes
+            volumes = []
         operational_intent = scd_api.OperationalIntentTestInjection(
             state=state,
             priority=scd_api.Priority(info.astm_f3548_21.priority),

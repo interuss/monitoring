@@ -4,6 +4,7 @@ from typing import Optional, List
 
 from implicitdict import ImplicitDict
 from uas_standards.ansi_cta_2063_a import SerialNumber
+from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.en4709_02 import OperatorRegistrationNumber
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api as fp_api
@@ -227,6 +228,24 @@ class BasicFlightPlanInformation(ImplicitDict):
             uas_state=fp_api.BasicFlightPlanInformationUasState(self.uas_state),
             area=[v.to_flight_planning_api() for v in self.area],
         )
+
+    def f3548v21_op_intent_state(self) -> f3548v21.OperationalIntentState:
+        usage_state = self.usage_state
+        if usage_state == AirspaceUsageState.Planned:
+            state = f3548v21.OperationalIntentState.Accepted
+        elif usage_state == AirspaceUsageState.InUse:
+            uas_state = self.uas_state
+            if uas_state == UasState.Nominal:
+                state = f3548v21.OperationalIntentState.Activated
+            elif uas_state == UasState.OffNominal:
+                state = f3548v21.OperationalIntentState.Nonconforming
+            elif uas_state == UasState.Contingent:
+                state = f3548v21.OperationalIntentState.Contingent
+            else:
+                raise ValueError(f"Unknown uas_state '{uas_state}'")
+        else:
+            raise ValueError(f"Unknown usage_state '{usage_state}'")
+        return state
 
 
 class FlightInfo(ImplicitDict):
