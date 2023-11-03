@@ -226,25 +226,14 @@ def op_intent_from_flightinfo(
 ) -> f3548_v21.OperationalIntent:
     volumes = [v.to_f3548v21() for v in flight_info.basic_information.area]
     off_nominal_volumes = []
-    usage_state = flight_info.basic_information.usage_state
-    if usage_state == AirspaceUsageState.Planned:
-        state = f3548_v21.OperationalIntentState.Accepted
-    elif usage_state == AirspaceUsageState.InUse:
-        uas_state = flight_info.basic_information.uas_state
-        if uas_state == UasState.Nominal:
-            state = f3548_v21.OperationalIntentState.Activated
-        elif uas_state == UasState.OffNominal:
-            state = f3548_v21.OperationalIntentState.Nonconforming
-            off_nominal_volumes = volumes
-            volumes = []
-        elif uas_state == UasState.Contingent:
-            state = f3548_v21.OperationalIntentState.Contingent
-            off_nominal_volumes = volumes
-            volumes = []
-        else:
-            raise ValueError(f"Unknown uas_state '{uas_state}'")
-    else:
-        raise ValueError(f"Unknown usage_state '{usage_state}'")
+
+    state = flight_info.basic_information.f3548v21_op_intent_state()
+    if state in (
+        f3548_v21.OperationalIntentState.Nonconforming,
+        f3548_v21.OperationalIntentState.Contingent,
+    ):
+        off_nominal_volumes = volumes
+        volumes = []
 
     v4c = Volume4DCollection(volumes=flight_info.basic_information.area)
 
