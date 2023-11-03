@@ -1,7 +1,6 @@
-from typing import Tuple, Optional, Set
+from typing import Tuple, Optional, Set, get_type_hints
 from urllib.parse import urlparse
 from implicitdict import ImplicitDict
-
 from monitoring.monitorlib import infrastructure, fetch
 from monitoring.monitorlib.clients.flight_planning.client import (
     PlanningActivityError,
@@ -90,6 +89,13 @@ class FlightPlannerConfiguration(ImplicitDict):
         )
 
 
+def _additional_fields_in_request(request: InjectFlightRequest) -> dict:
+    addl_fields = {}
+    for k, v in request.items():
+        if k not in get_type_hints(InjectFlightRequest):
+            addl_fields[k] = v
+    return addl_fields
+
 class FlightPlanner:
     """Manages the state and the interactions with flight planner USS.
 
@@ -123,7 +129,6 @@ class FlightPlanner:
         self,
         request: InjectFlightRequest,
         flight_id: Optional[str] = None,
-        additional_fields: Optional[dict] = None,
     ) -> Tuple[InjectFlightResponse, fetch.Query, str]:
         usage_states = {
             OperationalIntentState.Accepted: AirspaceUsageState.Planned,
@@ -166,6 +171,13 @@ class FlightPlanner:
             basic_information=basic_information,
             astm_f3548_21=astm_f3548v21,
             uspace_flight_authorisation=uspace_flight_authorisation,
+        )
+
+        # Extracting if any additional fields from subclasses of InjectFlightRequest
+        additional_fields = (
+            None
+            if not _additional_fields_in_request(request)
+            else _additional_fields_in_request(request)
         )
 
         if not flight_id:
