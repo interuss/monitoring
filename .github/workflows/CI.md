@@ -38,7 +38,7 @@ This check runs unit tests for mock_uss.
 
 ### uss_qualifier tests (`make test` in monitoring/uss_qualifier)
 
-Note: `export USS_QUALIFIER_STOP_FAST=true` is recommended as defining that environment variable will cause testing to stop on the first failure, and this is usually the desired behavior when debugging.
+Note: setting configuration `stop_fast` to `true` is recommended as setting that flag in configuration will cause testing to stop on the first failure, and this is usually the desired behavior when debugging.
 
 This action:
 

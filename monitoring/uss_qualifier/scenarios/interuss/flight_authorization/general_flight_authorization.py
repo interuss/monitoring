@@ -60,7 +60,7 @@ class GeneralFlightAuthorization(TestScenario):
         self.participant_id = planner.participant_id
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         self.begin_test_case("Flight planning")
         self._plan_flights()

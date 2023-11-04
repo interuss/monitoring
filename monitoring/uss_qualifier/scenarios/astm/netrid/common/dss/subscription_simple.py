@@ -95,7 +95,7 @@ class SubscriptionSimple(GenericTestScenario):
         ]
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         loguru.logger.info("setup")
         self._setup_case()
