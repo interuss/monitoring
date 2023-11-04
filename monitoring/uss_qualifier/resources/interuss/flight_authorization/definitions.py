@@ -2,8 +2,9 @@ from enum import Enum
 from typing import List
 
 from implicitdict import ImplicitDict
-from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
-    FlightInfoTemplate,
+from monitoring.monitorlib.clients.flight_planning.flight_info import ExecutionStyle
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
+    FlightIntentID,
 )
 
 
@@ -39,8 +40,11 @@ class FlightCheck(ImplicitDict):
     description: str
     """Human-readable test step description to aid in the debugging and traceability."""
 
-    flight_info: FlightInfoTemplate
-    """Information about the flight, as a user would provide it to the USS."""
+    flight_intent: FlightIntentID
+    """ID of the flight intent, as a user would provide it to the USS, referring to one of the flight intents provided in a separate dictionary relating FlightIntentID to FlightInfoTemplate."""
+
+    execution_style: ExecutionStyle
+    """The manner in which the USS should be instructed to plan the flight."""
 
     acceptance_expectation: AcceptanceExpectation = AcceptanceExpectation.Irrelevant
     """Expected outcome when authorizing a flight as described."""

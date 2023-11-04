@@ -10,6 +10,10 @@ This test acts as a user using a USS's flight planning/authorization interface a
 
 [Flight Check Table](../../../resources/interuss/flight_authorization/flight_check_table.py) consisting of a list of Flight Check rows.  Each Flight Check row will cause this test to attempt to plan/authorize a flight using the planning/authorization interfaces of each USS under test according to the information in that Flight Check row.  This test will then perform checks according to the expected outcomes from those planning/authorization attempts, according to the Flight Check row.
 
+### flight_intents
+
+[FlightIntentsResource](../../../resources/flight_planning/flight_intents_resource.py) defining all flight intents referenced by `table` above.
+
 ### planner
 
 [Flight planner](../../../resources/flight_planning/flight_planners.py) providing access to the flight-planning USS under test in this scenario.

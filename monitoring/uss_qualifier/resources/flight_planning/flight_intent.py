@@ -94,7 +94,9 @@ class FlightIntentCollection(ImplicitDict):
                         unprocessed_intent.delta.mutation,
                     )
                 else:
-                    raise ValueError(f"{intent_id} is invalid")
+                    raise ValueError(
+                        f"{intent_id} flight intent in FlightIntentCollection is invalid; must specify `full` or `delta`"
+                    )
 
                 nb_processed += 1
                 processed_intents[intent_id] = processed_intent

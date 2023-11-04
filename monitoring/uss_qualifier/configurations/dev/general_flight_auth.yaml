@@ -4,6 +4,7 @@ v1:
     resources:
       resource_declarations:
         example_flight_check_table: {$ref: 'library/resources.yaml#/example_flight_check_table'}
+        flight_intents: {$ref: 'library/resources.yaml#/che_general_flight_auth_flights'}
 
         utm_auth: {$ref: 'library/environment.yaml#/utm_auth'}
         uss1_flight_planner: {$ref: 'library/environment.yaml#/uss1_flight_planner'}
@@ -15,6 +16,7 @@ v1:
         scenario_type: scenarios.interuss.flight_authorization.GeneralFlightAuthorization
         resources:
           table: example_flight_check_table
+          flight_intents: flight_intents
           planner: uss1_flight_planner
   artifacts:
     output_path: output/general_flight_auth

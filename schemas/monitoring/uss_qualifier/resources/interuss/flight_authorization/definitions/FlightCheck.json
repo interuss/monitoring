@@ -29,13 +29,22 @@
       "description": "Human-readable test step description to aid in the debugging and traceability.",
       "type": "string"
     },
+    "execution_style": {
+      "description": "The manner in which the USS should be instructed to plan the flight.",
+      "enum": [
+        "Hypothetical",
+        "IfAllowed",
+        "InReality"
+      ],
+      "type": "string"
+    },
     "flight_check_id": {
       "description": "Unique (within table) test step/row identifier.",
       "type": "string"
     },
-    "flight_info": {
-      "$ref": "../../../../../monitorlib/clients/flight_planning/flight_info_template/FlightInfoTemplate.json",
-      "description": "Information about the flight, as a user would provide it to the USS."
+    "flight_intent": {
+      "description": "ID of the flight intent, as a user would provide it to the USS, referring to one of the flight intents provided in a separate dictionary relating FlightIntentID to FlightInfoTemplate.",
+      "type": "string"
     },
     "requirement_ids": {
       "description": "Jurisdictional identifiers of the requirements this test step is evaluating.",
@@ -47,8 +56,9 @@
   },
   "required": [
     "description",
+    "execution_style",
     "flight_check_id",
-    "flight_info",
+    "flight_intent",
     "requirement_ids"
   ],
   "type": "object"
