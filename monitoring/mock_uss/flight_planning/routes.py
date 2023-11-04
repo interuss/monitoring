@@ -22,6 +22,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUSSUpsertFlightPlanRequest,
 )
+from monitoring.monitorlib.geotemporal import Volume4D
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api
 from uas_standards.interuss.automated_testing.flight_planning.v1.constants import Scope
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
@@ -129,13 +130,14 @@ def flight_planning_v1_clear_area() -> Tuple[str, int]:
         msg = "Unable to parse ClearAreaRequest JSON request: {}".format(e)
         return msg, 400
 
-    scd_req = scd_api.ClearAreaRequest(
-        request_id=req.request_id,
-        extent=ImplicitDict.parse(req.extent, scd_api.Volume4D),
+    clear_resp = clear_area(Volume4D.from_flight_planning_api(req.extent))
+
+    resp = api.ClearAreaResponse(
+        outcome=api.ClearAreaOutcome(
+            success=clear_resp.success,
+            message="See `details`",
+            details=clear_resp,
+        )
     )
 
-    scd_resp, code = clear_area(scd_req)
-
-    resp = ImplicitDict.parse(scd_resp, api.ClearAreaResponse)
-
-    return flask.jsonify(resp), code
+    return flask.jsonify(resp), 200

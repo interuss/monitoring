@@ -1,8 +1,9 @@
 from __future__ import annotations
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from implicitdict import ImplicitDict
+from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
@@ -122,3 +123,28 @@ class PlanningActivityResponse(ImplicitDict):
             )
         notes = {"notes": self.notes} if "notes" in self else {}
         return scd_api.InjectFlightResponse(result=result, **notes)
+
+
+class ClearAreaResponse(ImplicitDict):
+    flights_deleted: List[FlightID]
+    """List of IDs of flights that were deleted during this area clearing operation."""
+
+    flight_deletion_errors: Dict[FlightID, dict]
+    """When an error was encountered deleting a particular flight, information about that error."""
+
+    op_intents_removed: List[f3548v21.EntityOVN]
+    """List of IDs of ASTM F3548-21 operational intent references that were removed during this area clearing operation."""
+
+    op_intent_removal_errors: Dict[f3548v21.EntityOVN, dict]
+    """When an error was encountered removing a particular operational intent reference, information about that error."""
+
+    error: Optional[dict] = None
+    """If an error was encountered that could not be linked to a specific flight or operational intent, information about it will be populated here."""
+
+    @property
+    def success(self) -> bool:
+        return (
+            not self.flight_deletion_errors
+            and not self.op_intent_removal_errors
+            and self.error is None
+        )

@@ -1,8 +1,7 @@
 import os
 import traceback
 from datetime import datetime, timedelta
-import time
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List, Dict
 
 import flask
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -17,18 +16,20 @@ from monitoring.mock_uss.flights.planning import (
 from monitoring.mock_uss.f3548v21 import utm_client
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     FlightInfo,
+    FlightID,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
     PlanningActivityResult,
     FlightPlanStatus,
 )
+from uas_standards.astm.f3548.v21 import api as f3548v21
+from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     DeleteFlightResponse,
     DeleteFlightResponseResult,
     ClearAreaRequest,
     ClearAreaOutcome,
-    ClearAreaResponse,
     Capability,
     CapabilitiesResponse,
 )
@@ -49,6 +50,7 @@ from monitoring.mock_uss.f3548v21.flight_planning import (
 import monitoring.mock_uss.uspace.flight_auth
 from monitoring.monitorlib import versioning
 from monitoring.monitorlib.clients import scd as scd_client
+from monitoring.monitorlib.clients.flight_planning.planning import ClearAreaResponse
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geo import Polygon
 from monitoring.monitorlib.geotemporal import Volume4D
@@ -320,27 +322,42 @@ def scdsc_clear_area() -> Tuple[str, int]:
     except ValueError as e:
         msg = "Unable to parse ClearAreaRequest JSON request: {}".format(e)
         return msg, 400
-    json, code = clear_area(req)
-    return flask.jsonify(json), code
+    clear_resp = clear_area(Volume4D.from_interuss_scd_api(req.extent))
+
+    resp = scd_api.ClearAreaResponse(
+        outcome=ClearAreaOutcome(
+            success=clear_resp.success,
+            message="See `details` field for more information",
+            timestamp=StringBasedDateTime(datetime.utcnow()),
+        ),
+    )
+    resp["request"] = req
+    resp["details"] = clear_resp
+
+    return flask.jsonify(resp), 200
 
 
-def clear_area(req: ClearAreaRequest) -> Tuple[ClearAreaResponse, int]:
-    def make_result(success: bool, msg: str) -> ClearAreaResponse:
-        return ClearAreaResponse(
-            outcome=ClearAreaOutcome(
-                success=success,
-                message=msg,
-                timestamp=StringBasedDateTime(datetime.utcnow()),
-            ),
-            request=req,
+def clear_area(extent: Volume4D) -> ClearAreaResponse:
+    flights_deleted: List[FlightID] = []
+    flight_deletion_errors: Dict[FlightID, dict] = {}
+    op_intents_removed: List[f3548v21.EntityOVN] = []
+    op_intent_removal_errors: Dict[f3548v21.EntityOVN, dict] = {}
+
+    def make_result(error: Optional[dict] = None) -> ClearAreaResponse:
+        resp = ClearAreaResponse(
+            flights_deleted=flights_deleted,
+            flight_deletion_errors=flight_deletion_errors,
+            op_intents_removed=op_intents_removed,
+            op_intent_removal_errors=op_intent_removal_errors,
         )
+        if error is not None:
+            resp.error = error
+        return resp
 
     step_name = "performing unknown operation"
     try:
-        # Find operational intents in the DSS
+        # Find every operational intent in the DSS relevant to the extent
         step_name = "constructing DSS operational intent query"
-        # TODO: Simply use the req.extent 4D volume more directly
-        extent = Volume4D.from_interuss_scd_api(req.extent)
         start_time = extent.time_start.datetime
         end_time = extent.time_end.datetime
         area = extent.rect_bounds
@@ -357,77 +374,64 @@ def clear_area(req: ClearAreaRequest) -> Tuple[ClearAreaResponse, int]:
         op_intent_refs = scd_client.query_operational_intent_references(
             utm_client, vol4
         )
+        op_intent_ids = {oi.id for oi in op_intent_refs}
 
-        # Try to delete every operational intent found
-        op_intent_ids = ", ".join(op_intent_ref.id for op_intent_ref in op_intent_refs)
-        step_name = f"deleting operational intents {{{op_intent_ids}}}"
-        dss_deletion_results = {}
-        deleted = set()
+        # Try to remove all relevant flights normally
+        for flight_id, flight in db.value.flights.items():
+            # TODO: Check for intersection with flight's area rather than just relying on DSS query
+            if flight.op_intent.reference.id not in op_intent_ids:
+                continue
+
+            del_resp = delete_flight(flight_id)
+            if (
+                del_resp.activity_result == PlanningActivityResult.Completed
+                and del_resp.flight_plan_status == FlightPlanStatus.Closed
+            ):
+                flights_deleted.append(flight_id)
+                op_intents_removed.append(flight.op_intent.reference.id)
+            else:
+                notes = f"Deleting known flight {flight_id} {del_resp.activity_result} with `flight_plan_status`={del_resp.flight_plan_status}"
+                if "notes" in del_resp and del_resp.notes:
+                    notes += ": " + del_resp.notes
+                flight_deletion_errors[flight_id] = {"notes": notes}
+
+        # Try to delete every remaining operational intent
+        op_intent_refs = [
+            oi for oi in op_intent_refs if oi.id not in op_intents_removed
+        ]
+        op_intent_ids_str = ", ".join(
+            op_intent_ref.id for op_intent_ref in op_intent_refs
+        )
+        step_name = f"deleting operational intents {{{op_intent_ids_str}}}"
         for op_intent_ref in op_intent_refs:
             try:
                 scd_client.delete_operational_intent_reference(
                     utm_client, op_intent_ref.id, op_intent_ref.ovn
                 )
-                dss_deletion_results[op_intent_ref.id] = "Deleted from DSS"
-                deleted.add(op_intent_ref.id)
+                op_intents_removed.append(op_intent_ref.id)
             except QueryError as e:
-                dss_deletion_results[op_intent_ref.id] = {
-                    "deletion_success": False,
+                op_intent_removal_errors[op_intent_ref.id] = {
                     "message": str(e),
                     "queries": e.queries,
                     "stacktrace": e.stacktrace,
                 }
 
-        # Delete corresponding flight injections and cached operational intents
-        step_name = "deleting flight injections and cached operational intents"
-        deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
-        while True:
-            pending_flights = set()
-            with db as tx:
-                flights_to_delete = []
-                for flight_id, record in tx.flights.items():
-                    if record is None or record.locked:
-                        pending_flights.add(flight_id)
-                        continue
-                    if record.op_intent.reference.id in deleted:
-                        flights_to_delete.append(flight_id)
-                for flight_id in flights_to_delete:
-                    del tx.flights[flight_id]
-
-                cache_deletions = []
-                for op_intent_id in deleted:
-                    if op_intent_id in tx.cached_operations:
-                        del tx.cached_operations[op_intent_id]
-                        cache_deletions.append(op_intent_id)
-
-            if not pending_flights:
-                break
-            time.sleep(0.5)
-            if datetime.utcnow() > deadline:
-                logger.error(
-                    f"[clear_area] Deadlock (now: {datetime.utcnow()}, deadline: {deadline})"
-                )
-                raise RuntimeError(
-                    f"Deadlock in clear_area while attempting to gain access to flight(s) {', '.join(pending_flights)}"
-                )
+        # Clear the op intent cache for every op intent removed
+        with db as tx:
+            for op_intent_id in op_intents_removed:
+                if op_intent_id in tx.cached_operations:
+                    del tx.cached_operations[op_intent_id]
 
     except (ValueError, ConnectionError) as e:
         msg = f"{e.__class__.__name__} while {step_name}: {str(e)}"
-        return make_result(False, msg), 200
+        return make_result({"message": msg})
     except requests.exceptions.ConnectionError as e:
         msg = f"Connection error to {e.request.method} {e.request.url} while {step_name}: {str(e)}"
-        result = make_result(False, msg)
-        result["stacktrace"] = _make_stacktrace(e)
-        return result, 200
+        return make_result({"message": msg, "stacktrace": _make_stacktrace(e)})
     except QueryError as e:
         msg = f"Unexpected response from remote server while {step_name}: {str(e)}"
-        result = make_result(False, msg)
-        result["queries"] = e.queries
-        result["stacktrace"] = e.stacktrace
-        return result, 200
+        return make_result(
+            {"message": msg, "queries": e.queries, "stacktrace": e.stacktrace}
+        )
 
-    result = make_result(True, "Area clearing attempt complete")
-    result["dss_deletions"] = dss_deletion_results
-    result["flight_deletions"] = (flights_to_delete,)
-    result["cache_deletions"] = cache_deletions
-    return result, 200
+    return make_result()
