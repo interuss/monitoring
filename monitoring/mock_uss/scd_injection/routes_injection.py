@@ -9,18 +9,21 @@ from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 import requests.exceptions
 
-from monitoring.mock_uss.flights.planning import lock_flight, release_flight_lock
+from monitoring.mock_uss.flights.planning import (
+    lock_flight,
+    release_flight_lock,
+    delete_flight_record,
+)
 from monitoring.mock_uss.f3548v21 import utm_client
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     FlightInfo,
-    AirspaceUsageState,
 )
-from uas_standards.astm.f3548.v21.api import (
-    PutOperationalIntentDetailsParameters,
+from monitoring.monitorlib.clients.flight_planning.planning import (
+    PlanningActivityResponse,
+    PlanningActivityResult,
+    FlightPlanStatus,
 )
 from uas_standards.interuss.automated_testing.scd.v1.api import (
-    InjectFlightResponse,
-    InjectFlightResponseResult,
     DeleteFlightResponse,
     DeleteFlightResponseResult,
     ClearAreaRequest,
@@ -41,6 +44,7 @@ from monitoring.mock_uss.f3548v21.flight_planning import (
     check_op_intent,
     share_op_intent,
     op_intent_from_flightinfo,
+    delete_op_intent,
 )
 import monitoring.mock_uss.uspace.flight_auth
 from monitoring.monitorlib import versioning
@@ -122,23 +126,6 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
         msg = "Create flight {} unable to parse JSON: {}".format(flight_id, e)
         return msg, 400
     existing_flight = lock_flight(flight_id, log)
-    try:
-        json, code = inject_flight(flight_id, req_body, existing_flight)
-    finally:
-        release_flight_lock(flight_id, log)
-    return flask.jsonify(json), code
-
-
-def inject_flight(
-    flight_id: str,
-    req_body: MockUSSInjectFlightRequest,
-    existing_flight: Optional[FlightRecord],
-) -> Tuple[InjectFlightResponse, int]:
-    pid = os.getpid()
-    locality = get_locality()
-
-    def log(msg: str):
-        logger.debug(f"[inject_flight/{pid}:{flight_id}] {msg}")
 
     # Construct potential new flight
     flight_info = FlightInfo.from_scd_inject_flight_request(req_body)
@@ -149,18 +136,46 @@ def inject_flight(
         mod_op_sharing_behavior=req_body.behavior if "behavior" in req_body else None,
     )
 
+    try:
+        resp = inject_flight(flight_id, new_flight, existing_flight)
+    finally:
+        release_flight_lock(flight_id, log)
+    return flask.jsonify(resp.to_inject_flight_response()), 200
+
+
+def inject_flight(
+    flight_id: str,
+    new_flight: FlightRecord,
+    existing_flight: Optional[FlightRecord],
+) -> PlanningActivityResponse:
+    pid = os.getpid()
+    locality = get_locality()
+
+    def log(msg: str):
+        logger.debug(f"[inject_flight/{pid}:{flight_id}] {msg}")
+
+    old_status = FlightPlanStatus.from_flightinfo(
+        existing_flight.flight_info if existing_flight else None
+    )
+
+    def unsuccessful(
+        result: PlanningActivityResult, msg: str
+    ) -> PlanningActivityResponse:
+        return PlanningActivityResponse(
+            flight_id=flight_id,
+            queries=[],
+            activity_result=result,
+            flight_plan_status=old_status,
+            notes=msg,
+        )
+
     # Validate request
     try:
         if locality.is_uspace_applicable():
-            uspace.flight_auth.validate_request(req_body)
-        validate_request(req_body)
+            uspace.flight_auth.validate_request(new_flight.flight_info)
+        validate_request(new_flight.op_intent)
     except PlanningError as e:
-        return (
-            InjectFlightResponse(
-                result=InjectFlightResponseResult.Rejected, notes=str(e)
-            ),
-            200,
-        )
+        return unsuccessful(PlanningActivityResult.Rejected, str(e))
 
     step_name = "performing unknown operation"
     try:
@@ -168,13 +183,7 @@ def inject_flight(
         try:
             key = check_op_intent(new_flight, existing_flight, locality, log)
         except PlanningError as e:
-            return (
-                InjectFlightResponse(
-                    result=InjectFlightResponseResult.Rejected,
-                    notes=str(e),
-                ),
-                200,
-            )
+            return unsuccessful(PlanningActivityResult.Rejected, str(e))
 
         step_name = "sharing operational intent in DSS"
         record = share_op_intent(new_flight, existing_flight, key, log)
@@ -188,144 +197,115 @@ def inject_flight(
         step_name = "returning final successful result"
         log("Complete.")
 
-        if (
-            new_flight.flight_info.basic_information.usage_state
-            == AirspaceUsageState.InUse
-        ):
-            injection_result = InjectFlightResponseResult.ReadyToFly
-        else:
-            injection_result = InjectFlightResponseResult.Planned
-        return (
-            InjectFlightResponse(
-                result=injection_result,
-                operational_intent_id=new_flight.op_intent.reference.id,
-            ),
-            200,
+        return PlanningActivityResponse(
+            flight_id=flight_id,
+            queries=[],  # TODO: Add queries used
+            activity_result=PlanningActivityResult.Completed,
+            flight_plan_status=FlightPlanStatus.from_flightinfo(record.flight_info),
         )
     except (ValueError, ConnectionError) as e:
         notes = (
             f"{e.__class__.__name__} while {step_name} for flight {flight_id}: {str(e)}"
         )
-        return (
-            InjectFlightResponse(result=InjectFlightResponseResult.Failed, notes=notes),
-            200,
-        )
+        return unsuccessful(PlanningActivityResult.Failed, notes)
     except requests.exceptions.ConnectionError as e:
         notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
-        response = InjectFlightResponse(
-            result=InjectFlightResponseResult.Failed, notes=notes
-        )
+        response = unsuccessful(PlanningActivityResult.Failed, notes)
         response["stacktrace"] = _make_stacktrace(e)
-        return response, 200
+        return response
     except QueryError as e:
         notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
-        response = InjectFlightResponse(
-            result=InjectFlightResponseResult.Failed, notes=notes
-        )
+        response = unsuccessful(PlanningActivityResult.Failed, notes)
         response["queries"] = e.queries
         response["stacktrace"] = e.stacktrace
-        return response, 200
+        return response
 
 
 @webapp.route("/scdsc/v1/flights/<flight_id>", methods=["DELETE"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def scdsc_delete_flight(flight_id: str) -> Tuple[str, int]:
     """Implements flight deletion in SCD automated testing injection API."""
-    json, code = delete_flight(flight_id)
-    return flask.jsonify(json), code
+    del_resp = delete_flight(flight_id)
 
-
-def delete_flight(flight_id) -> Tuple[DeleteFlightResponse, int]:
-    pid = os.getpid()
-    logger.debug(f"[delete_flight/{pid}:{flight_id}] Acquiring flight")
-    deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
-    while True:
-        with db as tx:
-            if flight_id in tx.flights:
-                flight = tx.flights[flight_id]
-                if flight and not flight.locked:
-                    # FlightRecord was a true existing flight not being mutated anywhere else
-                    del tx.flights[flight_id]
-                    break
-            else:
-                # No FlightRecord found
-                flight = None
-                break
-        # There is a race condition with another handler to create or modify the requested flight; wait for that to resolve
-        time.sleep(0.5)
-        if datetime.utcnow() > deadline:
-            logger.error(
-                f"[delete_flight/{pid}:{flight_id}] Deadlock (now: {datetime.utcnow()}, deadline: {deadline})"
-            )
+    if del_resp.activity_result == PlanningActivityResult.Completed:
+        if del_resp.flight_plan_status != FlightPlanStatus.Closed:
             raise RuntimeError(
-                f"Deadlock in delete_flight while attempting to gain access to flight {flight_id}"
+                f"delete_flight indicated {del_resp.activity_result}, but flight_plan_status was '{del_resp.flight_plan_status}' rather than Closed"
             )
+        result = DeleteFlightResponseResult.Closed
+        if "notes" in del_resp and del_resp.notes:
+            notes = del_resp.notes
+        else:
+            notes = None
+    else:
+        result = DeleteFlightResponseResult.Failed
+        notes = f"delete_flight indicated `activity_result`={del_resp.activity_result}, `flight_plan_status`={del_resp.flight_plan_status}"
+        if "notes" in del_resp and del_resp.notes:
+            notes += ": " + del_resp.notes
+    resp = DeleteFlightResponse(result=result)
+    if notes is not None:
+        resp.notes = notes
+    return flask.jsonify(resp), 200
+
+
+def delete_flight(flight_id) -> PlanningActivityResponse:
+    pid = os.getpid()
+
+    def log(msg: str):
+        logger.debug(f"[delete_flight/{pid}:{flight_id}] {msg}")
+
+    log("Acquiring and deleting flight")
+    flight = delete_flight_record(flight_id)
+
+    old_status = FlightPlanStatus.from_flightinfo(
+        flight.flight_info if flight else None
+    )
+
+    def unsuccessful(msg: str) -> PlanningActivityResponse:
+        return PlanningActivityResponse(
+            flight_id=flight_id,
+            queries=[],
+            activity_result=PlanningActivityResult.Failed,
+            flight_plan_status=old_status,
+            notes=msg,
+        )
 
     if flight is None:
-        return (
-            DeleteFlightResponse(
-                result=DeleteFlightResponseResult.Failed,
-                notes="Flight {} does not exist".format(flight_id),
-            ),
-            200,
-        )
+        return unsuccessful("Flight {} does not exist".format(flight_id))
 
     # Delete operational intent from DSS
     step_name = "performing unknown operation"
     try:
         step_name = f"deleting operational intent {flight.op_intent.reference.id} with OVN {flight.op_intent.reference.ovn} from DSS"
-        logger.debug(f"[delete_flight/{pid}:{flight_id}] {step_name}")
-        result = scd_client.delete_operational_intent_reference(
-            utm_client,
-            flight.op_intent.reference.id,
-            flight.op_intent.reference.ovn,
-        )
-
-        step_name = "notifying subscribers"
-        base_url = "{}/mock/scd".format(webapp.config[KEY_BASE_URL])
-        for subscriber in result.subscribers:
-            if subscriber.uss_base_url == base_url:
-                # Do not notify ourselves
-                continue
-            update = PutOperationalIntentDetailsParameters(
-                operational_intent_id=result.operational_intent_reference.id,
-                subscriptions=subscriber.subscriptions,
-            )
-            logger.debug(
-                f"[delete_flight/{pid}:{flight_id}] Notifying {subscriber.uss_base_url}"
-            )
-            scd_client.notify_operational_intent_details_changed(
-                utm_client, subscriber.uss_base_url, update
-            )
+        log(step_name)
+        delete_op_intent(flight.op_intent.reference, log)
     except (ValueError, ConnectionError) as e:
         notes = (
             f"{e.__class__.__name__} while {step_name} for flight {flight_id}: {str(e)}"
         )
-        logger.debug(f"[delete_flight/{pid}:{flight_id}] {notes}")
-        return (
-            DeleteFlightResponse(result=DeleteFlightResponseResult.Failed, notes=notes),
-            200,
-        )
+        log(notes)
+        return unsuccessful(notes)
     except requests.exceptions.ConnectionError as e:
         notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
-        logger.debug(f"[delete_flight/{pid}:{flight_id}] {notes}")
-        response = DeleteFlightResponse(
-            result=DeleteFlightResponseResult.Failed, notes=notes
-        )
+        log(notes)
+        response = unsuccessful(notes)
         response["stacktrace"] = _make_stacktrace(e)
-        return response, 200
+        return response
     except QueryError as e:
         notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
-        logger.debug(f"[delete_flight/{pid}:{flight_id}] {notes}")
-        response = DeleteFlightResponse(
-            result=DeleteFlightResponseResult.Failed, notes=notes
-        )
+        log(notes)
+        response = unsuccessful(notes)
         response["queries"] = e.queries
         response["stacktrace"] = e.stacktrace
-        return response, 200
+        return response
 
-    logger.debug(f"[delete_flight/{pid}:{flight_id}] Complete.")
-    return DeleteFlightResponse(result=DeleteFlightResponseResult.Closed), 200
+    log("Complete.")
+    return PlanningActivityResponse(
+        flight_id=flight_id,
+        queries=[],
+        activity_result=PlanningActivityResult.Completed,
+        flight_plan_status=FlightPlanStatus.Closed,
+    )
 
 
 @webapp.route("/scdsc/v1/clear_area_requests", methods=["POST"])
