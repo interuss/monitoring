@@ -94,13 +94,13 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 ### Check for flight planning readiness test step
 Both USSs are queried for their readiness to ensure this test can proceed.
 
-#### Flight planning USS not ready check
+#### 🛑 Flight planning USS not ready check
 If either USS does not respond appropriately to the endpoint queried to determine readiness, this check will fail and the USS will have failed to meet **[astm.f3548.v21.GEN0310](../../../../../requirements/astm/f3548/v21.md)** as the USS does not support the InterUSS implementation of that requirement.
 
 ### Area clearing test step
 Both USSs are requested to remove all flights from the area under test.
 
-#### Area cleared successfully check
+#### 🛑 Area cleared successfully check
 **[interuss.automated_testing.flight_planning.ClearArea](../../../../../requirements/interuss/automated_testing/flight_planning.md)**
 
 
@@ -196,13 +196,13 @@ Do note that executing this test step requires the control USS to support the CM
 transition to non-conforming state, it will be assumed that the control USS does not support this role and the test
 execution will stop without failing.
 
-#### Successful transition to non-conforming state check
+#### ℹ️ Successful transition to non-conforming state check
 All flight intent data provided is correct and notably contains an off-nominal volume, therefore it should have been
 transitioned to non-conforming state by the USS
 per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 If the USS indicates a conflict, this check will fail. If the USS indicates that the injection attempt failed, this check will fail.
 
-#### Failure check
+#### 🛑 Failure check
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
 to reject or accept the flight. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
@@ -218,12 +218,12 @@ modification was initiated. While this modification is expected to be accepted b
 rejection of the modification does not constitute a violation of a requirement. However, the modification request must
 not result in a failure per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-#### Successful modification or rejection check
+#### 🛑 Successful modification or rejection check
 All flight intent data provided is correct and the USS should have either successfully modified the flight or rejected
 properly the modification per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 If the USS indicates that the injection attempt failed, this check will fail.
 
-#### Failure check
+#### 🛑 Failure check
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
 to reject or accept the flight. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
@@ -235,5 +235,5 @@ either Flight 1 should not have been modified (because the USS kept the original
 been removed (because the USS rejected the replacement plan provided).
 
 ## Cleanup
-### Successful flight deletion check
+### ⚠️ Successful flight deletion check
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../../requirements/interuss/automated_testing/flight_planning.md)**
