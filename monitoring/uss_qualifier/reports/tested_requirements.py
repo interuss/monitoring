@@ -185,8 +185,8 @@ class TestedBreakdown(ImplicitDict):
 
 class TestRunInformation(ImplicitDict):
     test_run_id: str
-    start_time: Optional[str]
-    end_time: Optional[str]
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
     baseline: str
     environment: str
 

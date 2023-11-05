@@ -9,6 +9,8 @@ def validate_request(flight_info: FlightInfo) -> None:
     Args:
         flight_info: Information about the requested flight.
     """
-    problems = problems_with_flight_authorisation(flight_info.flight_authorisation)
+    problems = problems_with_flight_authorisation(
+        flight_info.uspace_flight_authorisation
+    )
     if problems:
         raise PlanningError(", ".join(problems))

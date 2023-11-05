@@ -242,10 +242,15 @@ def op_intent_from_flightinfo(
         uss_base_url="{}/mock/scd".format(webapp.config[KEY_BASE_URL]),
         subscription_id="UNKNOWN",
     )
+    if "astm_f3548_21" in flight_info and flight_info.astm_f3548_21:
+        priority = flight_info.astm_f3548_21.priority
+    else:
+        # TODO: Ensure this function is only called when sufficient information is available, or raise ValueError
+        priority = 0
     details = f3548_v21.OperationalIntentDetails(
         volumes=volumes,
         off_nominal_volumes=off_nominal_volumes,
-        priority=flight_info.astm_f3548_21.priority,
+        priority=priority,
     )
     return f3548_v21.OperationalIntent(
         reference=reference,
