@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-if [[ $# < 2 ]]; then
+if [[ $# -lt 2 ]]; then
   echo "Usage: $0 <CONFIG_NAME(s)> <REPORT_NAME(s)>"
   echo "Generates artifacts according to the specified configuration(s) using the specified report(s)"
   echo "<CONFIG_NAME>: Location of the configuration file."
@@ -39,7 +39,7 @@ CACHE_DIR="monitoring/uss_qualifier/.templates_cache"
 mkdir -p "$CACHE_DIR"
 
 # shellcheck disable=SC2086
-docker run ${docker_args} --name uss_qualifier \
+docker run --name uss_qualifier \
   --rm \
   -u "$(id -u):$(id -g)" \
   -e PYTHONBUFFERED=1 \
