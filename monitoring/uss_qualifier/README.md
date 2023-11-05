@@ -30,6 +30,10 @@ At this point, uss_qualifier can be run again with a different configuration tar
 
 Note that all baseline test configurations using local mocks can be run with `monitoring/uss_qualifier/run_locally.sh`.
 
+### Artifacts
+
+Part of a configuration defines artifacts that should be produced by the test run.  The raw output of the test run is a raw TestRunReport, which can be produced with the `raw_report` artifact option and has the file name `report.json`.  Given a `report.json`, any other artifacts can be generated with [`make_artifacts.sh`](./make_artifacts.sh).  From the repository root, for instance: `monitoring/uss_qualifier/make_artifacts.sh configurations.personal.my_artifacts file://output/report.json`.  That command loads the report at monitoring/uss_qualifier/output/report.json along with the configuration at monitoring/configurations/personal/my_artifacts.yaml and write the artifacts defined in the my_artifacts configuration.
+
 ### Local testing
 
 See the [local testing page](local_testing.md) for more information regarding running uss_qualifier on a single local system.
