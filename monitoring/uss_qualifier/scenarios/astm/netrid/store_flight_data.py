@@ -26,7 +26,7 @@ class StoreFlightData(TestScenario):
         self._storage_config = storage_configuration
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
         self.record_note(
             "Flight count",
             f"{len(self._flights_data.flight_collection.flights)} flights",

@@ -69,7 +69,7 @@ class Validation(TestScenario):
                     )
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         self.record_note("Planner", self.ussp.participant_id)
 

@@ -14,7 +14,7 @@ class UnitTestScenario(GenericTestScenario):
         super().__init__()
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
         self.begin_test_case("Case under test")
         self.begin_test_step("Step under test")
         self.step_under_test(self)

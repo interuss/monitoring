@@ -72,7 +72,7 @@ class ISAValidation(GenericTestScenario):
             ValueError(f"Unsupported RID version '{self._dss.rid_version}'")
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         self._setup_case()
 
