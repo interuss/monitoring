@@ -617,17 +617,12 @@ class RIDCommonDictionaryEvaluator(object):
         participants: List[str],
     ):
         if self._rid_version == RIDVersion.f3411_22a:
+            if not position_obs:
+                return  # Operator location is optional and there was no location specified
+
             with self._test_scenario.check(
                 "Operator Location consistency with Common Dictionary", participants
             ) as check:
-                if not position_obs:
-                    check.record_failed(
-                        "Missing Operator Location position",
-                        details=f"Invalid position: {position_obs}",
-                        severity=Severity.Medium,
-                    )
-                    return
-
                 lat = position_obs.lat
                 try:
                     lat = validate_lat(lat)
