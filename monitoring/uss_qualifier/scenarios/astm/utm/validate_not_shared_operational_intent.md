@@ -6,10 +6,10 @@ This assumes an area lock on the extent of the flight intent.
 
 See `OpIntentValidator.expect_not_shared()` in [test_steps.py](test_steps.py).
 
-## DSS responses check
+## 🛑 DSS responses check
 
 **[astm.f3548.v21.DSS0005](../../../requirements/astm/f3548/v21.md)**
 
-## Operational intent not shared check
+## 🛑 Operational intent not shared check
 If there are new operational intent references in the area of the flight intent, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../requirements/interuss/automated_testing/flight_planning.md)**.

@@ -126,6 +126,9 @@ class ExecutionConfiguration(ImplicitDict):
     skip_action_when: Optional[List[TestSuiteActionSelectionCondition]] = None
     """If specified, do not execute test actions if they are selected by ANY of these conditions."""
 
+    stop_fast: Optional[bool] = False
+    """If true, escalate the Severity of any failed check to Critical in order to end the test run early."""
+
 
 class TestConfiguration(ImplicitDict):
     action: TestSuiteActionDeclaration

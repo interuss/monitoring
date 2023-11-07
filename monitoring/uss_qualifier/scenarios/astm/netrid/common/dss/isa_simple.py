@@ -49,7 +49,7 @@ class ISASimple(GenericTestScenario):
         ]
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         self._setup_case()
         self._create_and_check_isa_case()

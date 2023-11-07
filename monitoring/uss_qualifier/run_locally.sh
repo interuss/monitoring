@@ -66,7 +66,6 @@ docker run ${docker_args} --name uss_qualifier \
   -u "$(id -u):$(id -g)" \
   -e PYTHONBUFFERED=1 \
   -e AUTH_SPEC=${AUTH_SPEC} \
-  -e USS_QUALIFIER_STOP_FAST=${USS_QUALIFIER_STOP_FAST:-} \
   -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
   -v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \
   -v "$(pwd)/$CACHE_DIR:/app/$CACHE_DIR" \
