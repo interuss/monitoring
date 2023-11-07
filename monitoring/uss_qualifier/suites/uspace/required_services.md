@@ -460,10 +460,10 @@
     <td><a href="../../scenarios/astm/netrid/v22a/dss/isa_expiry.md">ASTM NetRID DSS: ISA Expiry</a><br><a href="../../scenarios/astm/netrid/v22a/dss/isa_subscription_interactions.md">ASTM NetRID DSS: ISA Subscription Interactions</a><br><a href="../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../scenarios/astm/netrid/v22a/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></td>
   </tr>
   <tr>
-    <td rowspan="20" style="vertical-align:top;"><a href="../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
+    <td rowspan="21" style="vertical-align:top;"><a href="../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0005</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0300</a></td>
@@ -473,7 +473,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">GEN0310</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">GEN0500</a></td>
@@ -483,17 +483,17 @@
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">OPIN0015</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">OPIN0020</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">OPIN0025</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">OPIN0030</a></td>
@@ -528,7 +528,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">SCD0035</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a></td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">SCD0040</a></td>
@@ -551,35 +551,40 @@
     <td><a href="../../scenarios/astm/utm/aggregate_checks.md">ASTM F3548 UTM aggregate checks</a></td>
   </tr>
   <tr>
+    <td><a href="../../requirements/astm/f3548/v21.md">SCD0085</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a></td>
+  </tr>
+  <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">USS0005</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">USS0105</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td rowspan="4" style="vertical-align:top;"><a href="../../requirements/interuss/automated_testing/flight_planning.md">interuss<br>.automated_testing<br>.flight_planning</a></td>
     <td><a href="../../requirements/interuss/automated_testing/flight_planning.md">ClearArea</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/flight_planning.md">DeleteFlightSuccess</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/uspace/flight_auth/validation.md">Flight authorisation validation</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/uspace/flight_auth/validation.md">Flight authorisation validation</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/flight_planning.md">ExpectedBehavior</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/uspace/flight_auth/validation.md">Flight authorisation validation</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/uspace/flight_auth/validation.md">Flight authorisation validation</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/flight_planning.md">FlightCoveredByOperationalIntent</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td rowspan="4" style="vertical-align:top;"><a href="../../requirements/interuss/automated_testing/rid/injection.md">interuss<br>.automated_testing<br>.rid<br>.injection</a></td>
@@ -623,6 +628,18 @@
     <td><a href="../../requirements/interuss/f3411/dss_endpoints.md">SearchISAs</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss/isa_expiry.md">ASTM NetRID DSS: ISA Expiry</a><br><a href="../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/interuss/f3548/notification_requirements.md">interuss<br>.f3548<br>.notification_requirements</a></td>
+    <td><a href="../../requirements/interuss/f3548/notification_requirements.md">NoDssEntityNoNotification</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a></td>
+  </tr>
+  <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/interuss/mock_uss/hosted_instance.md">interuss<br>.mock_uss<br>.hosted_instance</a></td>
+    <td><a href="../../requirements/interuss/mock_uss/hosted_instance.md">ExposeInterface</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a></td>
   </tr>
   <tr>
     <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/versioning.md">versioning</a></td>
