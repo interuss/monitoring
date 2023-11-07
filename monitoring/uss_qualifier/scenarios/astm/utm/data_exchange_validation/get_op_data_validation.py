@@ -1,4 +1,5 @@
 from typing import Optional
+from loguru import logger
 
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
@@ -46,7 +47,12 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.control_uss = control_uss.mock_uss
         self.dss = dss.dss
 
-    def run(self):
+    def run(self, context):
         self.begin_test_scenario()
         pass
         self.end_test_scenario()
+
+    def cleanup(self):
+        self.begin_cleanup()
+        pass
+        self.end_cleanup()

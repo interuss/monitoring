@@ -17,7 +17,9 @@ v1:
           conflicting_flights: conflicting_flights
           priority_preemption_flights: priority_preemption_flights
           invalid_flight_intents: invalid_flight_intents
+          non_conflicting_flights: non_conflicting_flights
           dss: dss
+          mock_uss: mock_uss
 
     # This block defines all the resources available in the resource pool.
     # Presumably all resources defined below would be used either
@@ -71,6 +73,14 @@ v1:
             file:
               path: test_data.che.flight_intents.invalid_flight_intents
 
+        # Details of non-conflicting flights (used in data validation scenario)
+        non_conflicting_flights:
+          resource_type: resources.flight_planning.FlightIntentsResource
+          specification:
+            planning_time: '0:05:00'
+            file:
+              path: file://./test_data/usa/kentland/flight_intents/non_conflicting.yaml
+
         # Location of DSS instance that can be used to verify flight planning outcomes
         dss:
           resource_type: resources.astm.f3548.v21.DSSInstanceResource
@@ -80,6 +90,14 @@ v1:
             # A USS that hosts a DSS instance is also a participant in the test, even if they don't fulfill any other roles
             participant_id: uss1
             base_url: http://dss.uss1.localutm
+        mock_uss:
+          resource_type: resources.interuss.mock_uss.client.MockUSSResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            participant_id: mock_uss
+            mock_uss_base_url: http://scdsc.log.uss6.localutm
+
 
     # When a test run is executed, a "baseline signature" is computed uniquely identifying the "baseline" of the test,
     # usually excluding exactly what systems are participating in the test (the "environment").  This is a list of
