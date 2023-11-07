@@ -8,8 +8,6 @@ from monitoring.mock_uss import webapp
 from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     FlightInfo,
-    AirspaceUsageState,
-    UasState,
 )
 from monitoring.uss_qualifier.resources.overrides import apply_overrides
 from uas_standards.astm.f3548.v21 import api as f3548_v21
@@ -235,7 +233,7 @@ def op_intent_from_flightinfo(
         off_nominal_volumes = volumes
         volumes = []
 
-    v4c = Volume4DCollection(volumes=flight_info.basic_information.area)
+    v4c = flight_info.basic_information.area
 
     reference = f3548_v21.OperationalIntentReference(
         id=f3548_v21.EntityID(flight_id),

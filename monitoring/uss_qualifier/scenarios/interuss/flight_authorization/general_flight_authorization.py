@@ -11,6 +11,7 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     FlightPlanStatus,
     AdvisoryInclusion,
 )
+from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.flight_planning import FlightPlannerResource
@@ -69,7 +70,7 @@ class GeneralFlightAuthorization(TestScenario):
         self.end_test_scenario()
 
     def _plan_flights(self):
-        start_time = arrow.utcnow().datetime
+        start_time = Time(arrow.utcnow().datetime)
         for row in self.table.rows:
             checks = [
                 _get_check_by_name(self._current_case.steps[0], name)
