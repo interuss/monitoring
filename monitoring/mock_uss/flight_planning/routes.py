@@ -96,7 +96,7 @@ def flight_planning_v1_upsert_flight_plan(flight_plan_id: str) -> Tuple[str, int
         flight_plan_status=api.FlightPlanStatus(inject_resp.flight_plan_status),
     )
     for k, v in inject_resp.items():
-        if k not in {"activity_result", "flight_plan_status"}:
+        if k not in {"planning_result", "flight_plan_status"}:
             resp[k] = v
     return flask.jsonify(resp), 200
 
@@ -111,9 +111,9 @@ def flight_planning_v1_delete_flight(flight_plan_id: str) -> Tuple[str, int]:
         planning_result=api.PlanningActivityResult(del_resp.activity_result),
         flight_plan_status=api.FlightPlanStatus(del_resp.flight_plan_status),
     )
-    if "notes" in del_resp and del_resp.notes:
-        resp.notes = del_resp.notes
-
+    for k, v in del_resp.items():
+        if k not in {"planning_result", "flight_plan_status"}:
+            resp[k] = v
     return flask.jsonify(resp), 200
 
 
