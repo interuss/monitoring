@@ -63,7 +63,7 @@ class NominalBehavior(GenericTestScenario):
         )
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
         self.begin_test_case("Nominal flight")
 
         self.begin_test_step("Injection")

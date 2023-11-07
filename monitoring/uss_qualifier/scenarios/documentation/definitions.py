@@ -1,6 +1,7 @@
 from typing import Optional, List
 
 from implicitdict import ImplicitDict
+from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.reports.report import RequirementID
 
 
@@ -9,6 +10,7 @@ class TestCheckDocumentation(ImplicitDict):
     url: Optional[str] = None
     applicable_requirements: List[RequirementID]
     has_todo: bool
+    severity: Optional[Severity] = None
 
 
 class TestStepDocumentation(ImplicitDict):

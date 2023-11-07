@@ -48,7 +48,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.dss = dss.dss
 
     def run(self, context):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
         pass
         self.end_test_scenario()
 

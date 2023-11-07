@@ -90,7 +90,7 @@ class DSSInteroperability(GenericTestScenario):
         return all_entities
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         self.begin_test_case("Prerequisites")
 

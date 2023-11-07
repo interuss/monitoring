@@ -22,7 +22,7 @@ UnconfigureLocality will reset localities according to the most recent stack add
 
 class UnconfigureLocality(TestScenario):
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         if not unconfigure_stack:
             raise ValueError(

@@ -96,7 +96,7 @@ class AggregateChecks(GenericTestScenario):
     def run(self, context: ExecutionContext):
         self._init_queries(context)
 
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         self.record_note("participants", str(self._participants_by_base_url))
         self.record_note("nb_queries", str(len(self._queries)))
