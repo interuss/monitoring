@@ -5,8 +5,8 @@ set -eo pipefail
 if [[ $# -lt 2 ]]; then
   echo "Usage: $0 <CONFIG_NAME(s)> <REPORT_NAME(s)>"
   echo "Generates artifacts according to the specified configuration(s) using the specified report(s)"
-  echo "<CONFIG_NAME>: Location of the configuration file."
-  echo "<REPORT_NAME>: Location of the report file."
+  echo "<CONFIG_NAME>: Location of the configuration file (or multiple locations separated by commas)."
+  echo "<REPORT_NAME>: Location of the report file (or multiple locations separated by commas)."
   exit 1
 fi
 
