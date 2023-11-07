@@ -14,7 +14,10 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
 from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
-from monitoring.uss_qualifier.resources.flight_planning import FlightPlannerResource
+from monitoring.uss_qualifier.resources.flight_planning import (
+    FlightPlannerResource,
+    FlightIntentsResource,
+)
 from monitoring.uss_qualifier.resources.interuss.flight_authorization.definitions import (
     FlightCheckTable,
     AcceptanceExpectation,
@@ -53,12 +56,14 @@ class GeneralFlightAuthorization(TestScenario):
     def __init__(
         self,
         table: FlightCheckTableResource,
+        flight_intents: FlightIntentsResource,
         planner: FlightPlannerResource,
     ):
         super().__init__()
         self.table = table.table
         self.flight_planner = planner.client
         self.participant_id = planner.participant_id
+        self.flight_intents = flight_intents.get_flight_intents()
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
@@ -72,6 +77,7 @@ class GeneralFlightAuthorization(TestScenario):
     def _plan_flights(self):
         start_time = Time(arrow.utcnow().datetime)
         for row in self.table.rows:
+            # Collect checks applicable to this row/test step
             checks = [
                 _get_check_by_name(self._current_case.steps[0], name)
                 for name in (_VALID_API_RESPONSE_NAME, _SUCCESSFUL_CLOSURE_NAME)
@@ -110,6 +116,7 @@ class GeneralFlightAuthorization(TestScenario):
                     f"conditions_expectation value of {row.conditions_expectation} is not yet supported"
                 )
 
+            # Construct documentation for this test step
             # Note that we are duck-typing a List[str] into a List[RequirementID] for applicable_requirements, but this
             # should be ok as the requirements are only used as strings from this point.
             step_checks = [
@@ -126,14 +133,16 @@ class GeneralFlightAuthorization(TestScenario):
                 url=self._current_case.steps[0].url,
                 checks=step_checks,
             )
+
+            # Officially begin the test step
             self.begin_dynamic_test_step(doc)
 
             # Attempt planning action
-            info = row.flight_info.resolve(start_time)
+            info = self.flight_intents[row.flight_intent].resolve(start_time)
             with self.check(_VALID_API_RESPONSE_NAME, [self.participant_id]) as check:
                 try:
                     resp = self.flight_planner.try_plan_flight(
-                        info, ExecutionStyle.IfAllowed
+                        info, row.execution_style
                     )
                 except PlanningActivityError as e:
                     for q in e.queries:
