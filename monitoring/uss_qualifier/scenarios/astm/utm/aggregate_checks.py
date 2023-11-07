@@ -52,7 +52,7 @@ class AggregateChecks(TestScenario):
 
     def run(self, context: ExecutionContext):
         self._init_queries(context)
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         self.record_note("all_queries", f"{len(self._queries)}")
         for participant, queries_by_type in self._attributed_queries.items():

@@ -7,6 +7,6 @@ class OperatorInteractions(GenericTestScenario):
         super().__init__()
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
         # TODO: Implement
         self.end_test_scenario()

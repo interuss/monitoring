@@ -15,7 +15,7 @@ class StartMessageSigningReport(TestScenario):
         self._mock_uss = mock_uss.mock_uss
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         self.begin_test_case("Start message signing")
 

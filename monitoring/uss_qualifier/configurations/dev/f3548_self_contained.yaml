@@ -89,6 +89,12 @@ v1:
       - v1.test_run.resources.resource_declarations.flight_planners
       - v1.test_run.resources.resource_declarations.dss
 
+    # How to execute a test run using this configuration
+    execution:
+      # Since we expect no failed checks and want to stop execution immediately if there are any failed checks, we set
+      # this parameter to true.
+      stop_fast: true
+
   # This block defines artifacts related to the test run.  Note that all paths are
   # relative to where uss_qualifier is executed from, and are located inside the
   # Docker container executing uss_qualifier.

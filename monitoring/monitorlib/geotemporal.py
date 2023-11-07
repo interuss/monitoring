@@ -1,101 +1,19 @@
 from __future__ import annotations
 
 import math
-from ctypes import Union
 from datetime import datetime, timedelta
-from enum import Enum
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Iterator
 
 import arrow
-from implicitdict import ImplicitDict, StringBasedTimeDelta, StringBasedDateTime
-from pvlib.solarposition import get_solarposition
+from implicitdict import ImplicitDict, StringBasedTimeDelta
 import s2sphere as s2sphere
 from uas_standards.astm.f3548.v21 import api as f3548v21
-from uas_standards.interuss.automated_testing.scd.v1 import api as interuss_scd_api
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api as fp_api
+from uas_standards.interuss.automated_testing.scd.v1 import api as interuss_scd_api
 
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.geo import LatLngPoint, Circle, Altitude, Volume3D, Polygon
-
-
-class OffsetTime(ImplicitDict):
-    starting_from: TestTime
-    """The time from which the offset should be applied."""
-
-    offset: StringBasedTimeDelta
-    """Offset from starting time."""
-
-
-class NextSunPosition(ImplicitDict):
-    starting_from: TestTime
-    """The time after which the first time the sun is at the specified position should be found."""
-
-    observed_from: LatLngPoint
-    """The location on earth observing the sun."""
-
-    elevation_deg: float
-    """Elevation of the center of the sun above horizontal, in degrees."""
-
-
-class DayOfTheWeek(str, Enum):
-    Mo = "Mo"
-    """Monday"""
-    Tu = "Tu"
-    """Tuesday"""
-    We = "We"
-    """Wednesday"""
-    Th = "Th"
-    """Thursday"""
-    Fr = "Fr"
-    """Friday"""
-    Sa = "Sa"
-    """Saturday"""
-    Su = "Su"
-    """Sunday"""
-
-
-class NextDay(ImplicitDict):
-    starting_from: TestTime
-    """The time after which the first instance of one of the days should be found."""
-
-    time_zone: str
-    """Time zone in which "day" is understood.  Examples:
-      * "local" (local time of machine running this code)
-      * "Z" (Zulu time)
-      * "-08:00" (ISO time zone)
-      * "US/Pacific" (IANA time zone)"""
-
-    days_of_the_week: Optional[List[DayOfTheWeek]] = None
-    """Acceptable days of the week.  Omit to indicate that any day of the week is acceptable."""
-
-
-class TestTime(ImplicitDict):
-    """Exactly one of the time option fields of this object must be specified."""
-
-    absolute_time: Optional[StringBasedDateTime] = None
-    """Time option field to use a precise timestamp which does not change with test conditions.
-
-    The value of absolute_time is limited given that the specific time a test will be started is unknown, and the jurisdictions usually impose a limit on how far in the future an operation can be planned.
-    """
-
-    start_of_test: Optional[dict] = None
-    """Time option field to, if specified, use the timestamp at which the current test run started."""
-
-    next_day: Optional[NextDay] = None
-    """Time option field to use a timestamp equal to midnight beginning the next occurrence of any matching day following the specified reference timestamp."""
-
-    next_sun_position: Optional[NextSunPosition] = None
-    """Time option field to use a timestamp equal to the next time after the specified reference timestamp at which the sun will be at the specified angle above the horizon."""
-
-    offset_from: Optional[OffsetTime] = None
-    """Time option field to use a timestamp that is offset by the specified amount from the specified time."""
-
-    use_timezone: Optional[str] = None
-    """If specified, report the timestamp in the specified time zone.  Examples:
-      * "local" (local time of machine running this code)
-      * "Z" (Zulu time)
-      * "-08:00" (ISO time zone)
-      * "US/Pacific" (IANA time zone)"""
+from monitoring.monitorlib.temporal import TestTime, Time
 
 
 class Volume4DTemplate(ImplicitDict):
@@ -120,120 +38,53 @@ class Volume4DTemplate(ImplicitDict):
     altitude_upper: Optional[Altitude] = None
     """The maximum altitude at which the virtual user will fly while using this volume for their flight."""
 
+    def resolve(self, start_of_test: Time) -> Volume4D:
+        """Resolve Volume4DTemplate into concrete Volume4D."""
+        # Make 3D volume
+        kwargs = {}
+        if self.outline_circle is not None:
+            kwargs["outline_circle"] = self.outline_circle
+        if self.outline_polygon is not None:
+            kwargs["outline_polygon"] = self.outline_polygon
+        if self.altitude_lower is not None:
+            kwargs["altitude_lower"] = self.altitude_lower
+        if self.altitude_upper is not None:
+            kwargs["altitude_upper"] = self.altitude_upper
+        volume = Volume3D(**kwargs)
 
-_weekdays = [
-    DayOfTheWeek.Mo,
-    DayOfTheWeek.Tu,
-    DayOfTheWeek.We,
-    DayOfTheWeek.Th,
-    DayOfTheWeek.Fr,
-    DayOfTheWeek.Sa,
-    DayOfTheWeek.Su,
-]
-"""Days of the week with indices corresponding with datetime.weekdays()"""
+        # Make 4D volume
+        kwargs = {"volume": volume}
 
+        if self.start_time is not None:
+            time_start = self.start_time.resolve(start_of_test)
+        else:
+            time_start = None
 
-def _sun_elevation(t: datetime, lat_deg: float, lng_deg: float) -> float:
-    """Compute sun elevation at the specified time and place.
+        if self.end_time is not None:
+            time_end = self.end_time.resolve(start_of_test)
+        else:
+            time_end = None
 
-    Args:
-        t: Time at which to compute sun position.
-        lat_deg: Latitude at which to compute sun position (degrees).
-        lng_deg: Longitude at which to compute sun position (degrees).
-
-    Returns: Degrees above the horizon of the center of the sun.
-    """
-    return get_solarposition(t, lat_deg, lng_deg).elevation.values[0]
-
-
-class Time(StringBasedDateTime):
-    def offset(self, dt: timedelta) -> Time:
-        return Time(self.datetime + dt)
-
-    def to_f3548v21(self) -> f3548v21.Time:
-        return f3548v21.Time(value=self)
-
-
-def resolve_time(test_time: TestTime, start_of_test: datetime) -> datetime:
-    """Resolve TestTime into specific datetime."""
-    result = None
-    if test_time.absolute_time is not None:
-        result = test_time.absolute_time.datetime
-    elif test_time.start_of_test is not None:
-        result = start_of_test
-    elif test_time.next_day is not None:
-        t0 = (
-            arrow.get(resolve_time(test_time.next_day.starting_from, start_of_test))
-            .to(test_time.next_day.time_zone)
-            .datetime
-        )
-        t = datetime(
-            year=t0.year, month=t0.month, day=t0.day, tzinfo=t0.tzinfo
-        ) + timedelta(days=1)
-        if test_time.next_day.days_of_the_week:
-            allowed_weekdays = {
-                _weekdays.index(d) for d in test_time.next_day.days_of_the_week
-            }
-            while t.weekday() not in allowed_weekdays:
-                t += timedelta(days=1)
-        result = t
-    elif test_time.offset_from is not None:
-        result = (
-            resolve_time(test_time.offset_from.starting_from, start_of_test)
-            + test_time.offset_from.offset.timedelta
-        )
-    elif test_time.next_sun_position is not None:
-        t0 = resolve_time(test_time.next_sun_position.starting_from, start_of_test)
-
-        dt = timedelta(minutes=5)
-        lat = test_time.next_sun_position.observed_from.lat
-        lng = test_time.next_sun_position.observed_from.lng
-        el_target = test_time.next_sun_position.elevation_deg
-
-        # Step linearly through the day looking for two adjacent times that surround the target sun elevation.
-        # Note that this will fail to capture the very peak sun elevation if it is targeted.
-        t2 = t0
-        el2 = _sun_elevation(t2, lat, lng)
-        found = False
-        while t2 <= t0 + timedelta(days=1):
-            t1 = t2
-            el1 = el2
-            t2 += dt
-            el2 = _sun_elevation(t2, lat, lng)
-            if (el_target > el1) != (el_target > el2):
-                found = True
-                break
-        if not found:
-            raise ValueError(
-                f"Sun did not reach an elevation of {el_target} degrees between {t0} and {t2}"
-            )
-
-        # Refine time that sun elevation matches the target
-        while (t2 - t1).total_seconds() > 5:
-            t_m = t1 + 0.5 * (t2 - t1)
-            el_m = _sun_elevation(t_m, lat, lng)
-            if (el_target > el1) != (el_target > el_m):
-                t2 = t_m
-                el2 = el_m
-            elif (el_target > el_m) != (el_target > el2):
-                t1 = t_m
-                el1 = el_m
-            else:
+        if self.duration is not None:
+            if time_start is not None and time_end is not None:
                 raise ValueError(
-                    f"When refining sun elevation timing, the elevation target {el_target} did not appear in between t1 {t1} ({el1} degrees) and midpoint {t_m} ({el_m} degrees) nor between midpoint and t2 {t2} ({el2} degrees)"
+                    "A Volume4DTemplate may not specify time_start, time_end, and duration as this over-determines the time span"
                 )
+            if time_start is None and time_end is None:
+                raise ValueError(
+                    "A Volume4DTemplate may not specify duration without either time_start or time_end as this under-determines the time span"
+                )
+            if time_start is None:
+                time_start = Time(time_end.datetime - self.duration.timedelta)
+            if time_end is None:
+                time_end = Time(time_start.datetime + self.duration.timedelta)
 
-        result = t1 + 0.5 * (t2 - t1)
+        if time_start is not None:
+            kwargs["time_start"] = time_start
+        if time_end is not None:
+            kwargs["time_end"] = time_end
 
-    if result is None:
-        raise NotImplementedError(
-            "TestTime did not specify a supported option for defining a time"
-        )
-
-    if test_time.use_timezone:
-        result = arrow.get(result).to(test_time.use_timezone).datetime
-
-    return result
+        return Volume4D(**kwargs)
 
 
 class Volume4D(ImplicitDict):
@@ -318,7 +169,7 @@ class Volume4D(ImplicitDict):
         return Volume4D(**kwargs)
 
     @staticmethod
-    def from_f3548v21(vol: Union[f3548v21.Volume4D, dict]) -> Volume4D:
+    def from_f3548v21(vol: f3548v21.Volume4D) -> Volume4D:
         if not isinstance(vol, f3548v21.Volume4D) and isinstance(vol, dict):
             vol = ImplicitDict.parse(vol, f3548v21.Volume4D)
         kwargs = {"volume": Volume3D.from_f3548v21(vol.volume)}
@@ -370,69 +221,25 @@ class Volume4D(ImplicitDict):
         return fp_api.Volume4D(**kwargs)
 
 
-def resolve_volume4d(template: Volume4DTemplate, start_of_test: datetime) -> Volume4D:
-    """Resolve Volume4DTemplate into concrete Volume4D."""
-    # Make 3D volume
-    kwargs = {}
-    if template.outline_circle is not None:
-        kwargs["outline_circle"] = template.outline_circle
-    if template.outline_polygon is not None:
-        kwargs["outline_polygon"] = template.outline_polygon
-    if template.altitude_lower is not None:
-        kwargs["altitude_lower"] = template.altitude_lower
-    if template.altitude_upper is not None:
-        kwargs["altitude_upper"] = template.altitude_upper
-    volume = Volume3D(**kwargs)
-
-    # Make 4D volume
-    kwargs = {"volume": volume}
-
-    if template.start_time is not None:
-        time_start = StringBasedDateTime(
-            resolve_time(template.start_time, start_of_test)
-        )
-    else:
-        time_start = None
-
-    if template.end_time is not None:
-        time_end = StringBasedDateTime(resolve_time(template.end_time, start_of_test))
-    else:
-        time_end = None
-
-    if template.duration is not None:
-        if time_start is not None and time_end is not None:
-            raise ValueError(
-                "A Volume4DTemplate may not specify time_start, time_end, and duration as this over-determines the time span"
-            )
-        if time_start is None and time_end is None:
-            raise ValueError(
-                "A Volume4DTemplate may not specify duration without either time_start or time_end as this under-determines the time span"
-            )
-        if time_start is None:
-            time_start = StringBasedDateTime(
-                time_end.datetime - template.duration.timedelta
-            )
-        if time_end is None:
-            time_end = StringBasedDateTime(
-                time_start.datetime + template.duration.timedelta
-            )
-
-    if time_start is not None:
-        kwargs["time_start"] = time_start
-    if time_end is not None:
-        kwargs["time_end"] = time_end
-
-    return Volume4D(**kwargs)
-
-
-class Volume4DCollection(ImplicitDict):
-    volumes: List[Volume4D]
+class Volume4DCollection(List[Volume4D]):
+    def __init__(self, iterator: Iterator[dict]):
+        parsed_values = [
+            v if isinstance(v, Volume4D) else ImplicitDict.parse(v, Volume4D)
+            for v in iterator
+        ]
+        super(Volume4DCollection, self).__init__(parsed_values)
 
     def __add__(self, other):
         if isinstance(other, Volume4D):
-            return Volume4DCollection(volumes=self.volumes + [other])
+            full_list = []
+            full_list.extend(self)
+            full_list.append(other)
+            return Volume4DCollection(full_list)
         elif isinstance(other, Volume4DCollection):
-            return Volume4DCollection(volumes=self.volumes + other.volumes)
+            full_list = []
+            full_list.extend(self)
+            full_list.extend(other)
+            return Volume4DCollection(full_list)
         else:
             raise NotImplementedError(
                 f"Cannot add {type(other).__name__} to {type(self).__name__}"
@@ -440,9 +247,9 @@ class Volume4DCollection(ImplicitDict):
 
     def __iadd__(self, other):
         if isinstance(other, Volume4D):
-            self.volumes.append(other)
+            self.append(other)
         elif isinstance(other, Volume4DCollection):
-            self.volumes.extend(other.volumes)
+            self.extend(other)
         else:
             raise NotImplementedError(
                 f"Cannot iadd {type(other).__name__} to {type(self).__name__}"
@@ -451,25 +258,25 @@ class Volume4DCollection(ImplicitDict):
     @property
     def time_start(self) -> Optional[Time]:
         return (
-            Time(value=min(v.time_start.datetime for v in self.volumes))
-            if all("time_start" in v and v.time_start for v in self.volumes)
+            Time(min(v.time_start.datetime for v in self))
+            if all("time_start" in v and v.time_start for v in self)
             else None
         )
 
     @property
     def time_end(self) -> Optional[Time]:
         return (
-            Time(value=max(v.time_end.datetime for v in self.volumes))
-            if all("time_end" in v and v.time_end for v in self.volumes)
+            Time(max(v.time_end.datetime for v in self))
+            if all("time_end" in v and v.time_end for v in self)
             else None
         )
 
     def offset_times(self, dt: timedelta) -> Volume4DCollection:
-        return Volume4DCollection(volumes=[v.offset_time(dt) for v in self.volumes])
+        return Volume4DCollection([v.offset_time(dt) for v in self])
 
     @property
     def rect_bounds(self) -> s2sphere.LatLngRect:
-        if not self.volumes:
+        if not self:
             raise ValueError(
                 "Cannot compute rectangular bounds when no volumes are present"
             )
@@ -477,7 +284,7 @@ class Volume4DCollection(ImplicitDict):
         lat_max = -math.inf
         lng_min = math.inf
         lng_max = -math.inf
-        for vol4 in self.volumes:
+        for vol4 in self:
             if "outline_polygon" in vol4.volume and vol4.volume.outline_polygon:
                 for v in vol4.volume.outline_polygon.vertices:
                     lat_min = min(lat_min, v.lat)
@@ -538,17 +345,17 @@ class Volume4DCollection(ImplicitDict):
     def meter_altitude_bounds(self) -> Tuple[float, float]:
         alt_lo = min(
             vol4.volume.altitude_lower.value
-            for vol4 in self.volumes
+            for vol4 in self
             if "altitude_lower" in vol4.volume
         )
         alt_hi = max(
             vol4.volume.altitude_upper.value
-            for vol4 in self.volumes
+            for vol4 in self
             if "altitude_upper" in vol4.volume
         )
         units = [
             vol4.volume.altitude_lower.units
-            for vol4 in self.volumes
+            for vol4 in self
             if "altitude_lower" in vol4.volume
             and vol4.volume.altitude_lower.units != "M"
         ]
@@ -558,7 +365,7 @@ class Volume4DCollection(ImplicitDict):
             )
         units = [
             vol4.volume.altitude_upper.units
-            for vol4 in self.volumes
+            for vol4 in self
             if "altitude_upper" in vol4.volume
             and vol4.volume.altitude_upper.units != "M"
         ]
@@ -569,34 +376,42 @@ class Volume4DCollection(ImplicitDict):
         return alt_lo, alt_hi
 
     def intersects_vol4s(self, vol4s_2: Volume4DCollection) -> bool:
-        for v1 in self.volumes:
-            for v2 in vol4s_2.volumes:
+        for v1 in self:
+            for v2 in vol4s_2:
                 if v1.intersects_vol4(v2):
                     return True
         return False
 
     @staticmethod
-    def from_f3548v21(
-        vol4s: List[Union[f3548v21.Volume4D, dict]]
-    ) -> Volume4DCollection:
+    def from_f3548v21(vol4s: List[f3548v21.Volume4D]) -> Volume4DCollection:
         volumes = [Volume4D.from_f3548v21(v) for v in vol4s]
-        return Volume4DCollection(volumes=volumes)
+        return Volume4DCollection(volumes)
 
     @staticmethod
     def from_interuss_scd_api(
         vol4s: List[interuss_scd_api.Volume4D],
     ) -> Volume4DCollection:
         volumes = [Volume4D.from_interuss_scd_api(v) for v in vol4s]
-        return Volume4DCollection(volumes=volumes)
+        return Volume4DCollection(volumes)
 
     def to_f3548v21(self) -> List[f3548v21.Volume4D]:
-        return [v.to_f3548v21() for v in self.volumes]
+        return [v.to_f3548v21() for v in self]
 
     def to_interuss_scd_api(self) -> List[interuss_scd_api.Volume4D]:
-        return [v.to_interuss_scd_api() for v in self.volumes]
+        return [v.to_interuss_scd_api() for v in self]
 
     def has_active_volume(self, time_ref: datetime) -> bool:
         return any(
-            vol.time_start.datetime <= time_ref <= vol.time_end.datetime
-            for vol in self.volumes
+            vol.time_start.datetime <= time_ref <= vol.time_end.datetime for vol in self
         )
+
+
+class Volume4DTemplateCollection(List[Volume4DTemplate]):
+    def __init__(self, iterator: Iterator[dict]):
+        parsed_values = [
+            v
+            if isinstance(v, Volume4DTemplate)
+            else ImplicitDict.parse(v, Volume4DTemplate)
+            for v in iterator
+        ]
+        super(Volume4DTemplateCollection, self).__init__(parsed_values)

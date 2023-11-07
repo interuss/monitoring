@@ -1,6 +1,5 @@
 import arrow
 
-from monitoring.monitorlib.geotemporal import resolve_volume4d
 from monitoring.uss_qualifier.resources.interuss.geospatial_map import (
     FeatureCheckTableResource,
 )
@@ -36,7 +35,7 @@ class GeospatialFeatureComprehension(TestScenario):
         self.table = table.table
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         self.begin_test_case("Map query")
         self._map_query()
@@ -73,9 +72,7 @@ class GeospatialFeatureComprehension(TestScenario):
             self.begin_dynamic_test_step(doc)
 
             if row.volumes:
-                concrete_volumes = [
-                    resolve_volume4d(v, start_time) for v in row.volumes
-                ]
+                concrete_volumes = [v.resolve(start_time) for v in row.volumes]
 
             # TODO: Query USSs under test
             self.record_note(

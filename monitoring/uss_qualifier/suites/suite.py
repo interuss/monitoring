@@ -396,6 +396,16 @@ class ExecutionContext(object):
                 for q in child.report.queries():
                     yield q
 
+    @property
+    def stop_fast(self) -> bool:
+        if (
+            self.config is not None
+            and "stop_fast" in self.config
+            and self.config.stop_fast is not None
+        ):
+            return self.config.stop_fast
+        return False
+
     def _compute_n_of(
         self, target: TestSuiteAction, condition: TestSuiteActionSelectionCondition
     ) -> int:

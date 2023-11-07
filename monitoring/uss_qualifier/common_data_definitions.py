@@ -85,3 +85,12 @@ class Severity(str, Enum):
         else:
             raise ValueError(f"Cannot compare Severity to {type(other)}")
         return other >= self
+
+    @property
+    def symbol(self) -> str:
+        return {
+            Severity.Low.value: "ℹ️",
+            Severity.Medium.value: "⚠️",
+            Severity.High.value: "🛑",
+            Severity.Critical.value: "☢",
+        }.get(self.value, "�")

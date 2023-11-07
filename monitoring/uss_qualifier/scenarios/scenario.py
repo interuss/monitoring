@@ -1,4 +1,3 @@
-import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
@@ -37,9 +36,6 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
 from monitoring.uss_qualifier.resources.definitions import ResourceTypeName, ResourceID
 from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
 
-_STOP_FAST_FLAG = "USS_QUALIFIER_STOP_FAST"
-STOP_FAST = os.environ.get(_STOP_FAST_FLAG, "").strip().lower() == "true"
-
 
 class ScenarioCannotContinueError(Exception):
     def __init__(self, msg):
@@ -66,6 +62,7 @@ class PendingCheck(object):
     _phase: ScenarioPhase
     _documentation: TestCheckDocumentation
     _step_report: TestStepReport
+    _stop_fast: bool
     _on_failed_check: Optional[Callable[[FailedCheck], None]]
     _participants: List[ParticipantID]
     _outcome_recorded: bool = False
@@ -76,12 +73,14 @@ class PendingCheck(object):
         documentation: TestCheckDocumentation,
         participants: List[ParticipantID],
         step_report: TestStepReport,
+        stop_fast: bool,
         on_failed_check: Optional[Callable[[FailedCheck], None]],
     ):
         self._phase = phase
         self._documentation = documentation
         self._participants = participants
         self._step_report = step_report
+        self._stop_fast = stop_fast
         self._on_failed_check = on_failed_check
 
     def __enter__(self):
@@ -108,11 +107,11 @@ class PendingCheck(object):
             requirements = self._documentation.applicable_requirements
 
         if (
-            STOP_FAST
+            self._stop_fast
             and severity != Severity.Critical
             and self._phase != ScenarioPhase.CleaningUp
         ):
-            note = f"Severity {severity} upgraded to Critical because {_STOP_FAST_FLAG} environment variable indicates true"
+            note = f"Severity {severity} upgraded to Critical because `stop_fast` flag set true in configuration"
             logger.info(note)
             details += "\n" + note
             severity = Severity.Critical
@@ -192,6 +191,9 @@ class GenericTestScenario(ABC):
     _current_step: Optional[TestStepDocumentation] = None
     _step_report: Optional[TestStepReport] = None
     _allow_undocumented_checks = False  # When this variable is set to True, it allows undocumented checks to be executed by the scenario. This is primarly intended to simplify internal unit testing.
+
+    _context = None
+    """Execution context; set at begin_test_scenario."""
 
     def __init__(self):
         self.documentation = get_documentation(self.__class__)
@@ -284,7 +286,14 @@ class GenericTestScenario(ABC):
         )
         logger.info(f"Note: {key} -> {message}")
 
-    def begin_test_scenario(self) -> None:
+    def begin_test_scenario(self, context) -> None:
+        """Indicate that test scenario execution is beginning.
+
+        Args:
+            context: Execution context with type monitoring.uss_qualifier.suites.suite.ExecutionContext.  Type hint is
+                not annotated because doing so would create a circular reference.
+        """
+        self._context = context
         self._expect_phase(ScenarioPhase.NotStarted)
         self._make_scenario_report()
         self._phase = ScenarioPhase.ReadyForTestCase
@@ -400,6 +409,7 @@ class GenericTestScenario(ABC):
             documentation=check_documentation,
             participants=[] if participants is None else participants,
             step_report=self._step_report,
+            stop_fast=self._context.stop_fast,
             on_failed_check=self.on_failed_check,
         )
 
