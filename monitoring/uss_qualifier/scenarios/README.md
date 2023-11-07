@@ -83,7 +83,14 @@ If the entire test step heading is enclosed in a link, the contents of that link
 
 ### Test checks
 
-Each check a test step performs that may result in a finding/issue must be documented via a subsection of the parent test step, named with a " check" suffix (example: `#### Successful injection check`).
+Each check a test step performs that may result in a finding/issue must be documented via a subsection of the parent test step, named with a " check" suffix, and a prefix according to the severity of failure of that check (example: `#### 🛑 Successful injection check`).
+
+The severity of a failure of the check should be indicated with one of the following unicode symbols (these can be copied and pasted into the Markdown documentation):
+
+* ℹ️ Low severity: No requirement was violated, but this finding may be useful for improvement.
+* ⚠️ Medium severity: A requirement was violated, but the test scenario can continue.
+* 🛑 High severity: The test scenario should terminate after cleaning up.
+* ☢ Critical severity: Not only can the test scenario not continue, the entire test run should stop.
 
 A check should document the requirement(s) violated if the check fails.  Requirements are identified by putting a strong emphasis/bold style around the requirement ID (example: `**astm.f3411.v19.NET0420**`).  The description of a check should generally explain why the relevant requirement would fail when that information is useful, but the requirement itself should generally not be re-iterated in this description.  If the check is self-evident from the requirement, the requirement can be noted without further explanation.
 

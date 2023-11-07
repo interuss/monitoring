@@ -9,6 +9,7 @@ import marko.inline
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib.inspection import fullname, get_module_object_by_name
 from monitoring.monitorlib.versioning import repo_url_of
+from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.documentation import text_of
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
@@ -58,8 +59,19 @@ def _parse_test_check(
                     reqs.append(RequirementID(text_of(child)))
         c += 1
 
+    severity = None
+    for s in Severity:
+        if name.startswith(s.symbol):
+            severity = s
+            name = name[len(s.symbol) :].lstrip()
+            break
+
     return TestCheckDocumentation(
-        name=name, url=url, applicable_requirements=reqs, has_todo=has_todo
+        name=name,
+        url=url,
+        applicable_requirements=reqs,
+        has_todo=has_todo,
+        severity=severity,
     )
 
 

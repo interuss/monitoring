@@ -9,6 +9,7 @@ from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
+from monitoring.monitorlib.temporal import Time
 
 from monitoring.uss_qualifier.resources.files import ExternalFile
 from monitoring.uss_qualifier.resources.overrides import apply_overrides
@@ -26,8 +27,8 @@ class FlightIntent(ImplicitDict):
 
     @staticmethod
     def from_flight_info_template(info_template: FlightInfoTemplate) -> FlightIntent:
-        t = arrow.utcnow().datetime
-        request = info_template.scd_inject_request(t)
+        t = Time(arrow.utcnow().datetime)
+        request = info_template.to_scd_inject_request(t)
         return FlightIntent(reference_time=StringBasedDateTime(t), request=request)
 
 

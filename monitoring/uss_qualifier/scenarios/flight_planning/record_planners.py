@@ -11,7 +11,7 @@ class RecordPlanners(TestScenario):
         self._flight_planners = flight_planners
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         self.record_note(
             "Available flight planners",

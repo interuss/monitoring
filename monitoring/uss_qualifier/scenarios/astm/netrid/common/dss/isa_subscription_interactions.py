@@ -44,7 +44,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         self._setup_case()
 

@@ -154,7 +154,7 @@ class FlightPlanner:
         basic_information = BasicFlightPlanInformation(
             usage_state=usage_states[request.operational_intent.state],
             uas_state=uas_states[request.operational_intent.state],
-            area=v4c.volumes,
+            area=v4c,
         )
         astm_f3548v21 = ASTMF354821OpIntentInformation(
             priority=request.operational_intent.priority

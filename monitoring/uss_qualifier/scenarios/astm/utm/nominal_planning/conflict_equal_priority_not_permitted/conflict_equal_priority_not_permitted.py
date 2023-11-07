@@ -216,7 +216,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             )
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
 
         self.record_note(
             "Tested USS",

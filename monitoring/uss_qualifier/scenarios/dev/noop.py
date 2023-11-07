@@ -12,7 +12,7 @@ class NoOp(TestScenario):
         self.sleep_secs = noop_config.sleep_secs
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
         self.begin_test_case("Sleep")
         self.begin_test_step("Sleep")
 

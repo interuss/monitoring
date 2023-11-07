@@ -19,7 +19,7 @@ class GetSystemVersions(TestScenario):
         self._system_identity = system_identity.system_identity
 
     def run(self, context: ExecutionContext):
-        self.begin_test_scenario()
+        self.begin_test_scenario(context)
         self.begin_test_case("Get versions")
         self.begin_test_step("Get versions")
 

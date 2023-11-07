@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List, Optional
 
 from implicitdict import ImplicitDict
-from monitoring.monitorlib.geotemporal import Volume4DTemplate
+from monitoring.monitorlib.geotemporal import Volume4DTemplateCollection
 
 
 class ExpectedFeatureCheckResult(str, Enum):
@@ -29,7 +29,7 @@ class FeatureCheck(ImplicitDict):
     operation_rule_set: Optional[str] = None
     """The set of operating rules (or rule set) under which the operation described in the feature check should be performed."""
 
-    volumes: List[Volume4DTemplate]
+    volumes: Volume4DTemplateCollection
     """Spatial and temporal definition of the areas the virtual user intends to fly in.
 
     A service provider is expected to provide geospatial features relevant to any of the entire area specified and for any of the entire time specified.
