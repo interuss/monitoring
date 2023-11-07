@@ -395,9 +395,12 @@ def clear_area(extent: Volume4D) -> ClearAreaResponse:
                     notes += ": " + del_resp.notes
                 flight_deletion_errors[flight_id] = {"notes": notes}
 
-        # Try to delete every remaining operational intent
+        # Try to delete every remaining operational intent that we manage
+        self_sub = utm_client.auth_adapter.get_sub()
         op_intent_refs = [
-            oi for oi in op_intent_refs if oi.id not in op_intents_removed
+            oi
+            for oi in op_intent_refs
+            if oi.id not in op_intents_removed and oi.manager == self_sub
         ]
         op_intent_ids_str = ", ".join(
             op_intent_ref.id for op_intent_ref in op_intent_refs
