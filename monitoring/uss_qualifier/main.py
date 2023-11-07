@@ -177,12 +177,14 @@ def main() -> int:
         logger.info(
             f"========== Running uss_qualifier for configuration {config_name} =========="
         )
-        run_config(
+        exit_code = run_config(
             config_name,
             config_outputs[idx],
             args.skip_validation,
             args.exit_before_execution,
         )
+        if exit_code != os.EX_OK:
+            return exit_code
         logger.info(
             f"========== Completed uss_qualifier for configuration {config_name} =========="
         )
