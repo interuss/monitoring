@@ -6,8 +6,10 @@ resources:
   conflicting_flights: resources.flight_planning.FlightIntentsResource
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
+  non_conflicting_flights: resources.flight_planning.FlightIntentsResource
   nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   priority_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
+  mock_uss: resources.interuss.mock_uss.client.MockUSSResource
 actions:
 - action_generator:
     generator_type: action_generators.astm.f3548.ForEachDSS
@@ -95,6 +97,29 @@ actions:
     scenario_type: scenarios.astm.utm.AggregateChecks
     resources:
       flight_planners: flight_planners
+
+- action_generator:
+    generator_type: action_generators.flight_planning.FlightPlannerCombinations
+    resources:
+      flight_planners: flight_planners
+      non_conflicting_flights: non_conflicting_flights
+      dss: dss
+      mock_uss: mock_uss
+    specification:
+      action_to_repeat:
+        test_scenario:
+          scenario_type: scenarios.astm.utm.data_exchange_validation.GetOpResponseDataValidationByUSS
+          resources:
+            tested_uss: uss1
+            control_uss: mock_uss
+            dss: dss
+            flight_intents: non_conflicting_flights
+        on_failure: Continue
+      flight_planners_source: flight_planners
+      roles:
+        - uss1
+  on_failure: Continue
+
 participant_verifiable_capabilities:
   - id: scd
     name: Strategic Conflict Detection
