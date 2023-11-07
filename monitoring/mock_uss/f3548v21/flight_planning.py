@@ -25,18 +25,15 @@ class PlanningError(Exception):
     pass
 
 
-def validate_request(req_body: scd_api.InjectFlightRequest) -> None:
+def validate_request(op_intent: f3548_v21.OperationalIntent) -> None:
     """Raise a PlannerError if the request is not valid.
 
     Args:
-        req_body: Information about the requested flight.
+        op_intent: Information about the requested flight.
     """
     # Validate max number of vertices
     nb_vertices = 0
-    for volume in (
-        req_body.operational_intent.volumes
-        + req_body.operational_intent.off_nominal_volumes
-    ):
+    for volume in op_intent.details.volumes + op_intent.details.off_nominal_volumes:
         if volume.volume.has_field_with_value("outline_polygon"):
             nb_vertices += len(volume.volume.outline_polygon.vertices)
         if volume.volume.has_field_with_value("outline_circle"):
@@ -49,34 +46,32 @@ def validate_request(req_body: scd_api.InjectFlightRequest) -> None:
 
     # Validate max planning horizon for creation
     start_time = Volume4DCollection.from_interuss_scd_api(
-        req_body.operational_intent.volumes
-        + req_body.operational_intent.off_nominal_volumes
+        op_intent.details.volumes + op_intent.details.off_nominal_volumes
     ).time_start.datetime
     time_delta = start_time - datetime.now(tz=start_time.tzinfo)
     if (
         time_delta.days > OiMaxPlanHorizonDays
-        and req_body.operational_intent.state == scd_api.OperationalIntentState.Accepted
+        and op_intent.reference.state == scd_api.OperationalIntentState.Accepted
     ):
         raise PlanningError(
             f"Operational intent to plan is too far away in time (max OiMaxPlanHorizonDays={OiMaxPlanHorizonDays})"
         )
 
     # Validate no off_nominal_volumes if in Accepted or Activated state
-    if len(req_body.operational_intent.off_nominal_volumes) > 0 and (
-        req_body.operational_intent.state == scd_api.OperationalIntentState.Accepted
-        or req_body.operational_intent.state == scd_api.OperationalIntentState.Activated
+    if len(op_intent.details.off_nominal_volumes) > 0 and (
+        op_intent.reference.state == scd_api.OperationalIntentState.Accepted
+        or op_intent.reference.state == scd_api.OperationalIntentState.Activated
     ):
         raise PlanningError(
-            f"Operational intent specifies an off-nominal volume while being in {req_body.operational_intent.state} state"
+            f"Operational intent specifies an off-nominal volume while being in {op_intent.reference.state} state"
         )
 
     # Validate intent is currently active if in Activated state
     # I.e. at least one volume has start time in the past and end time in the future
-    if req_body.operational_intent.state == scd_api.OperationalIntentState.Activated:
+    if op_intent.reference.state == scd_api.OperationalIntentState.Activated:
         now = arrow.utcnow().datetime
         active_volume = Volume4DCollection.from_interuss_scd_api(
-            req_body.operational_intent.volumes
-            + req_body.operational_intent.off_nominal_volumes
+            op_intent.details.volumes + op_intent.details.off_nominal_volumes
         ).has_active_volume(now)
         if not active_volume:
             raise PlanningError(
@@ -247,10 +242,15 @@ def op_intent_from_flightinfo(
         uss_base_url="{}/mock/scd".format(webapp.config[KEY_BASE_URL]),
         subscription_id="UNKNOWN",
     )
+    if "astm_f3548_21" in flight_info and flight_info.astm_f3548_21:
+        priority = flight_info.astm_f3548_21.priority
+    else:
+        # TODO: Ensure this function is only called when sufficient information is available, or raise ValueError
+        priority = 0
     details = f3548_v21.OperationalIntentDetails(
         volumes=volumes,
         off_nominal_volumes=off_nominal_volumes,
-        priority=flight_info.astm_f3548_21.priority,
+        priority=priority,
     )
     return f3548_v21.OperationalIntent(
         reference=reference,
@@ -436,3 +436,38 @@ def share_op_intent(
             utm_client, subscriber.uss_base_url, update
         )
     return record
+
+
+def delete_op_intent(
+    op_intent_ref: f3548_v21.OperationalIntentReference, log: Callable[[str], None]
+):
+    """Remove the operational intent reference from the DSS in compliance with ASTM F3548-21.
+
+    Args:
+        op_intent_ref: Operational intent reference to remove.
+        log: Means of indicating debugging information.
+
+    Raises:
+        * QueryError
+        * ConnectionError
+        * requests.exceptions.ConnectionError
+    """
+    result = scd_client.delete_operational_intent_reference(
+        utm_client,
+        op_intent_ref.id,
+        op_intent_ref.ovn,
+    )
+
+    base_url = "{}/mock/scd".format(webapp.config[KEY_BASE_URL])
+    for subscriber in result.subscribers:
+        if subscriber.uss_base_url == base_url:
+            # Do not notify ourselves
+            continue
+        update = f3548_v21.PutOperationalIntentDetailsParameters(
+            operational_intent_id=result.operational_intent_reference.id,
+            subscriptions=subscriber.subscriptions,
+        )
+        log(f"Notifying {subscriber.uss_base_url}")
+        scd_client.notify_operational_intent_details_changed(
+            utm_client, subscriber.uss_base_url, update
+        )

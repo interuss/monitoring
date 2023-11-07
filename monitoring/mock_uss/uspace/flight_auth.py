@@ -1,14 +1,16 @@
 from monitoring.mock_uss.f3548v21.flight_planning import PlanningError
+from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 from monitoring.monitorlib.uspace import problems_with_flight_authorisation
-from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
 
-def validate_request(req_body: scd_api.InjectFlightRequest) -> None:
+def validate_request(flight_info: FlightInfo) -> None:
     """Raise a PlannerError if the request is not valid.
 
     Args:
-        req_body: Information about the requested flight.
+        flight_info: Information about the requested flight.
     """
-    problems = problems_with_flight_authorisation(req_body.flight_authorisation)
+    problems = problems_with_flight_authorisation(
+        flight_info.uspace_flight_authorisation
+    )
     if problems:
         raise PlanningError(", ".join(problems))

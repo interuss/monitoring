@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from typing import Callable
+from typing import Callable, Optional
 
 from monitoring.mock_uss.flights.database import FlightRecord, db, DEADLOCK_TIMEOUT
 
@@ -45,3 +45,24 @@ def release_flight_lock(flight_id: str, log: Callable[[str], None]) -> None:
                 # FlightRecord was just a placeholder for a new flight
                 log(f"Releasing placeholder for existing flight_id {flight_id}")
                 del tx.flights[flight_id]
+
+
+def delete_flight_record(flight_id: str) -> Optional[FlightRecord]:
+    deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
+    while True:
+        with db as tx:
+            if flight_id in tx.flights:
+                flight = tx.flights[flight_id]
+                if flight and not flight.locked:
+                    # FlightRecord was a true existing flight not being mutated anywhere else
+                    del tx.flights[flight_id]
+                    return flight
+            else:
+                # No FlightRecord found
+                return None
+        # There is a race condition with another handler to create or modify the requested flight; wait for that to resolve
+        time.sleep(0.5)
+        if datetime.utcnow() > deadline:
+            raise RuntimeError(
+                f"Deadlock in delete_flight while attempting to gain access to flight {flight_id} (now: {datetime.utcnow()}, deadline: {deadline})"
+            )
