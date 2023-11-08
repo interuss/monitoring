@@ -7,6 +7,7 @@ v1:
         che_conflicting_flights: {$ref: 'library/resources.yaml#/che_conflicting_flights'}
         che_invalid_flight_intents: {$ref: 'library/resources.yaml#/che_invalid_flight_intents'}
         che_invalid_flight_auth_flights: {$ref: 'library/resources.yaml#/che_invalid_flight_auth_flights'}
+        che_non_conflicting_flights: {$ref: 'library/resources.yaml#/che_non_conflicting_flights'}
         foca_flights_data: {$ref: 'library/resources.yaml#/foca_flights_data'}
         netrid_observation_evaluation_configuration: {$ref: 'library/resources.yaml#/netrid_observation_evaluation_configuration'}
         id_generator: {$ref: 'library/resources.yaml#/id_generator'}
@@ -15,6 +16,7 @@ v1:
 
         utm_auth: {$ref: 'library/environment.yaml#/utm_auth'}
         mock_uss_instances_scdsc: {$ref: 'library/environment.yaml#/mock_uss_instances_scdsc'}
+        mock_uss_instance_uss6: {$ref: 'library/environment.yaml#/mock_uss_instance_uss6'}
         scd_version_providers: {$ref: 'library/environment.yaml#/scd_version_providers'}
         all_flight_planners: {$ref: 'library/environment.yaml#/all_flight_planners'}
         scd_dss: {$ref: 'library/environment.yaml#/scd_dss'}
@@ -25,6 +27,7 @@ v1:
     non_baseline_inputs:
       - v1.test_run.resources.resource_declarations.utm_auth
       - v1.test_run.resources.resource_declarations.mock_uss_instances_scdsc
+      - v1.test_run.resources.resource_declarations.mock_uss_instance_uss6
       - v1.test_run.resources.resource_declarations.scd_version_providers
       - v1.test_run.resources.resource_declarations.all_flight_planners
       - v1.test_run.resources.resource_declarations.scd_dss
@@ -45,7 +48,9 @@ v1:
           priority_preemption_flights: che_conflicting_flights
           invalid_flight_intents: che_invalid_flight_intents
           invalid_flight_auth_flights: che_invalid_flight_auth_flights
+          non_conflicting_flights: che_non_conflicting_flights
           flight_planners: all_flight_planners
+          mock_uss: mock_uss_instance_uss6
           scd_dss: scd_dss
           scd_dss_instances: scd_dss_instances
 
@@ -70,7 +75,9 @@ v1:
                 priority_preemption_flights: priority_preemption_flights
                 invalid_flight_intents: invalid_flight_intents
                 invalid_flight_auth_flights: invalid_flight_auth_flights
+                non_conflicting_flights: non_conflicting_flights
                 flight_planners: flight_planners
+                mock_uss: mock_uss
                 scd_dss: scd_dss
                 scd_dss_instances: scd_dss_instances
 

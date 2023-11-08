@@ -192,7 +192,7 @@ class GenericTestScenario(ABC):
     _step_report: Optional[TestStepReport] = None
     _allow_undocumented_checks = False  # When this variable is set to True, it allows undocumented checks to be executed by the scenario. This is primarly intended to simplify internal unit testing.
 
-    _context = None
+    context = None
     """Execution context; set at begin_test_scenario."""
 
     def __init__(self):
@@ -293,7 +293,7 @@ class GenericTestScenario(ABC):
             context: Execution context with type monitoring.uss_qualifier.suites.suite.ExecutionContext.  Type hint is
                 not annotated because doing so would create a circular reference.
         """
-        self._context = context
+        self.context = context
         self._expect_phase(ScenarioPhase.NotStarted)
         self._make_scenario_report()
         self._phase = ScenarioPhase.ReadyForTestCase
@@ -409,7 +409,7 @@ class GenericTestScenario(ABC):
             documentation=check_documentation,
             participants=[] if participants is None else participants,
             step_report=self._step_report,
-            stop_fast=self._context.stop_fast,
+            stop_fast=self.context.stop_fast,
             on_failed_check=self.on_failed_check,
         )
 
