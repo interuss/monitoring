@@ -6,7 +6,9 @@ resources:
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
   invalid_flight_auth_flights: resources.flight_planning.FlightIntentsResource
+  non_conflicting_flights: resources.flight_planning.FlightIntentsResource
   flight_planners: resources.flight_planning.FlightPlannersResource
+  mock_uss: resources.interuss.mock_uss.client.MockUSSResource
   scd_dss: resources.astm.f3548.v21.DSSInstanceResource
   scd_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
 
@@ -37,7 +39,9 @@ actions:
       priority_preemption_flights: priority_preemption_flights
       invalid_flight_intents: invalid_flight_intents
       invalid_flight_auth_flights: invalid_flight_auth_flights
+      non_conflicting_flights: non_conflicting_flights
       flight_planners: flight_planners
+      mock_uss: mock_uss
       dss: scd_dss
       dss_instances: scd_dss_instances
   on_failure: Continue

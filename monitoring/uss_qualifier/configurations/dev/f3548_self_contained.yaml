@@ -91,7 +91,7 @@ v1:
             participant_id: uss1
             base_url: http://dss.uss1.localutm
 
-        # Mock USS that can be used in tests for flight planning, modifying data sharing behavior and recording interuss interactions
+        # Mock USS that can be used in tests for flight planning, modifying data sharing behavior and recording interactions
         mock_uss:
           resource_type: resources.interuss.mock_uss.client.MockUSSResource
           dependencies:
@@ -108,6 +108,7 @@ v1:
       - v1.test_run.resources.resource_declarations.utm_auth
       - v1.test_run.resources.resource_declarations.flight_planners
       - v1.test_run.resources.resource_declarations.dss
+      - v1.test_run.resources.resource_declarations.mock_uss
 
     # How to execute a test run using this configuration
     execution:

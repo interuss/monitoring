@@ -184,6 +184,14 @@ mock_uss_instance_uss1:
     participant_id: mock_uss
     mock_uss_base_url: http://localhost:8074
 
+mock_uss_instance_uss6:
+  resource_type: resources.interuss.mock_uss.client.MockUSSResource
+  dependencies:
+    auth_adapter: utm_auth
+  specification:
+    participant_id: mock_uss
+    mock_uss_base_url: http://localhost:8095
+
 mock_uss_instances_scdsc:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
   resource_type: resources.interuss.mock_uss.client.MockUSSsResource

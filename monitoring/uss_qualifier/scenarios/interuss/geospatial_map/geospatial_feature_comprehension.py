@@ -1,5 +1,6 @@
 import arrow
 
+from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.resources.interuss.geospatial_map import (
     FeatureCheckTableResource,
 )
@@ -72,7 +73,7 @@ class GeospatialFeatureComprehension(TestScenario):
             self.begin_dynamic_test_step(doc)
 
             if row.volumes:
-                concrete_volumes = [v.resolve(start_time) for v in row.volumes]
+                concrete_volumes = [v.resolve(Time(start_time)) for v in row.volumes]
 
             # TODO: Query USSs under test
             self.record_note(
