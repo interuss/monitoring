@@ -26,6 +26,10 @@ FlightIntentsResource containing flight intents that will be used in subsequent 
 
 (Optional) If more than one FlightIntentsResource will be used in subsequent tests, additional intents may be specified with this resource.
 
+### flight_intents4
+
+(Optional) If more than one FlightIntentsResource will be used in subsequent tests, additional intents may be specified with this resource.
+
 ## Preparation test case
 
 ### Check for flight planning readiness test step
@@ -34,7 +38,7 @@ All USSs are queried for their readiness to ensure later tests can proceed.
 
 #### ⚠️ Valid response to readiness query check
 
-**[interuss.automated_testing.flight_planning.ImplementInterface](../../../requirements/interuss/automated_testing/flight_planning.md)**
+**[interuss.automated_testing.flight_planning.ImplementAPI](../../../requirements/interuss/automated_testing/flight_planning.md)**
 
 #### ⚠️ Flight planning USS ready check
 
@@ -46,7 +50,7 @@ All USSs are requested to remove all flights from the area under test.
 
 #### ⚠️ Valid response to clearing query check
 
-**[interuss.automated_testing.flight_planning.ImplementInterface](../../../requirements/interuss/automated_testing/flight_planning.md)**
+**[interuss.automated_testing.flight_planning.ImplementAPI](../../../requirements/interuss/automated_testing/flight_planning.md)**
 
 #### ⚠️ Area cleared successfully check
 

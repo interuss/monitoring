@@ -146,7 +146,7 @@
     <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
-    <td><a href="../../requirements/interuss/automated_testing/flight_planning.md">ImplementInterface</a></td>
+    <td><a href="../../requirements/interuss/automated_testing/flight_planning.md">ImplementAPI</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/utm/prep_planners.md">ASTM F3548 flight planners preparation</a><br><a href="../../scenarios/flight_planning/prep_planners.md">Generic flight planners preparation</a></td>
   </tr>
