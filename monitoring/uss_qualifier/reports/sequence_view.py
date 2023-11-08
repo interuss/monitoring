@@ -27,6 +27,7 @@ from monitoring.uss_qualifier.reports.report import (
     PassedCheck,
     FailedCheck,
     SkippedActionReport,
+    ErrorReport,
 )
 from monitoring.uss_qualifier.reports.tested_requirements import (
     compute_test_run_information,
@@ -153,7 +154,8 @@ class TestedParticipant(object):
     has_queries: bool = False
 
 
-class TestedScenario(ImplicitDict):
+@dataclass
+class TestedScenario(object):
     type: TestScenarioTypeName
     name: str
     url: str
@@ -161,6 +163,7 @@ class TestedScenario(ImplicitDict):
     duration: str
     epochs: List[Epoch]
     participants: Dict[ParticipantID, TestedParticipant]
+    execution_error: Optional[ErrorReport]
 
     @property
     def rows(self) -> int:
@@ -421,6 +424,7 @@ def _compute_tested_scenario(
         epochs=epochs,
         scenario_index=indexer.scenario_index,
         participants=scenario_participants,
+        execution_error=report.execution_error if "execution_error" in report else None,
     )
     indexer.scenario_index += 1
     return scenario
