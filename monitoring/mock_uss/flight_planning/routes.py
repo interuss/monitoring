@@ -135,7 +135,7 @@ def flight_planning_v1_clear_area() -> Tuple[str, int]:
     resp = api.ClearAreaResponse(
         outcome=api.ClearAreaOutcome(
             success=clear_resp.success,
-            message="See `details`",
+            message="See `details` field in response for more information",
             details=clear_resp,
         )
     )
