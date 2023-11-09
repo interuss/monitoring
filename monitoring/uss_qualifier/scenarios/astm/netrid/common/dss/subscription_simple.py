@@ -211,25 +211,24 @@ class SubscriptionSimple(GenericTestScenario):
         When this function returns, four subscriptions are expected to be created at the DSS
         """
 
-        # TODO the existing dss_wrapper put_sub function (and the underlying mutate.upsert_subscription it relies on)
-        #  does not allow empty start/end times. We need to change that before we can test
-        #  DSS behaviors with respect to missing optional parameters.
+        # Create the subscription without start and end time
+        no_opt_params = self._default_creation_params.copy()
+        no_opt_params["sub_id"] = self._test_subscription_ids[0]
+        no_opt_params["start_time"] = None
+        no_opt_params["end_time"] = None
+        self._create_sub_with_params(no_opt_params)
 
-        # no_opt_params = self._default_creation_params.copy()
-        # no_opt_params["sub_id"] = self._test_subscription_ids[0]
-        # del no_opt_params["start_time"]
-        # del no_opt_params["end_time"]
-        # self._create_sub_with_params(no_opt_params)
-        #
-        # no_start_param = self._default_creation_params.copy()
-        # no_start_param["sub_id"] = self._test_subscription_ids[1]
-        # del no_start_param["start_time"]
-        # self._create_sub_with_params(no_start_param)
-        #
-        # no_end_param = self._default_creation_params.copy()
-        # no_end_param["sub_id"] = self._test_subscription_ids[2]
-        # del no_end_param["end_time"]
-        # self._create_sub_with_params(no_start_param)
+        # Create the subscription with only end time set
+        no_start_param = self._default_creation_params.copy()
+        no_start_param["sub_id"] = self._test_subscription_ids[1]
+        no_start_param["start_time"] = None
+        self._create_sub_with_params(no_start_param)
+
+        # Create the subscription with only start time set
+        no_end_param = self._default_creation_params.copy()
+        no_end_param["sub_id"] = self._test_subscription_ids[2]
+        no_end_param["end_time"] = None
+        self._create_sub_with_params(no_end_param)
 
         # Create the subscription with all parameters set:
         all_set_params = self._default_creation_params.copy()
@@ -680,33 +679,39 @@ class SubscriptionSimple(GenericTestScenario):
                     query_timestamps=query_timestamps,
                 )
 
-        with self.check(
-            "Returned start time is correct", [self._dss_wrapper.participant_id]
-        ) as check:
-            if (
-                abs(sub_under_test.time_start - expect_start_time).total_seconds()
-                > TIME_TOLERANCE_SEC
-            ):
-                check.record_failed(
-                    "Returned start time does not match provided one",
-                    Severity.High,
-                    f"Provided: {expect_start_time}, Returned: {sub_under_test.time_start}",
-                    query_timestamps=query_timestamps,
-                )
+        # When expect_start_time has not been defined, there is no clear specification on
+        # what the returned start time should be, so we only check it when we have requested one
+        if expect_start_time is not None:
+            with self.check(
+                "Returned start time is correct", [self._dss_wrapper.participant_id]
+            ) as check:
+                if (
+                    abs(sub_under_test.time_start - expect_start_time).total_seconds()
+                    > TIME_TOLERANCE_SEC
+                ):
+                    check.record_failed(
+                        "Returned start time does not match provided one",
+                        Severity.High,
+                        f"Provided: {expect_start_time}, Returned: {sub_under_test.time_start}",
+                        query_timestamps=query_timestamps,
+                    )
 
-        with self.check(
-            "Returned end time is correct", [self._dss_wrapper.participant_id]
-        ) as check:
-            if (
-                abs(sub_under_test.time_end - expect_end_time).total_seconds()
-                > TIME_TOLERANCE_SEC
-            ):
-                check.record_failed(
-                    "Returned end time does not match provided one",
-                    Severity.High,
-                    f"Provided: {expect_end_time}, Returned: {sub_under_test.time_end}",
-                    query_timestamps=query_timestamps,
-                )
+        # When expect_end_time has not been defined, there is no clear specification on
+        # what the returned end time should be, so we only check it when we have requested one
+        if expect_end_time is not None:
+            with self.check(
+                "Returned end time is correct", [self._dss_wrapper.participant_id]
+            ) as check:
+                if (
+                    abs(sub_under_test.time_end - expect_end_time).total_seconds()
+                    > TIME_TOLERANCE_SEC
+                ):
+                    check.record_failed(
+                        "Returned end time does not match provided one",
+                        Severity.High,
+                        f"Provided: {expect_end_time}, Returned: {sub_under_test.time_end}",
+                        query_timestamps=query_timestamps,
+                    )
 
         with self.check(
             "Returned subscription has a version", [self._dss_wrapper.participant_id]
