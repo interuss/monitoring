@@ -269,7 +269,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
 
         # Delete the subscription
         with self.check(
-            "Successful subscription deletion",
+            "Subscription can be deleted",
             [self._dss.participant_id],
         ) as check:
             self._dss_wrapper.del_sub(
