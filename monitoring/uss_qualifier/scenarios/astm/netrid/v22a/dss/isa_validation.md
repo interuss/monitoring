@@ -48,38 +48,38 @@ When a pre-existing ISA needs to be deleted to ensure a clean workspace, any sub
 
 #### ISA huge area check
 
-Attempting to put a too large ISA should result in a 400.
+Attempting to put a too large ISA should result in a 400, otherwise the DSS fails to meet **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
 #### ISA empty vertices check
 
-An ISA with a empty `vertices` array in the `extents.volume.outline_polygon` field of the ISA creation payload should not result in a successful submission.
+An ISA with a empty `vertices` array in the `extents.volume.outline_polygon` field of the ISA creation payload should not result in a successful submission, otherwise the DSS fails to meet **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
 #### ISA start time in the past check
 
-The DSS must reject ISAs with start times in the past.
+The DSS must reject ISAs with start times in the past, otherwise it fails to meet **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
 #### ISA start time after end time check
 
-The DSS must reject ISAs for which the start time is after the end time.
+The DSS must reject ISAs for which the start time is after the end time, otherwise it fails to meet **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
 #### ISA vertices are valid check
 
-The DSS must reject ISAs with invalid vertices, such as vertices that have latitude or longitude outside meaningful ranges.
+The DSS must reject ISAs with invalid vertices, such as vertices that have latitude or longitude outside meaningful ranges, otherwise it fails to meet **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
 #### ISA missing outline check
 
-If the outline polygon is missing from the `extents.volume.outline_polygon` field in the payload of the ISA creation request,
-the DSS is expected to reject the request.
+If the outline polygon is missing from the `extents.spatial_volume.footprint` field in the payload of the ISA creation request,
+the DSS is expected to reject the request, otherwise it fails to meet **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
 #### ISA missing volume check
 
-If the outline polygon is missing from the `extents.volume` field in the payload of the ISA creation request,
-the DSS is expected to reject the request.
+If the outline polygon is missing from the `extents.spatial_volume` field in the payload of the ISA creation request,
+the DSS is expected to reject the request, otherwise it fails to meet **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
 #### ISA missing extents check
 
 If the `extents` field is missing from the payload of the ISA creation request,
-the DSS is expected to reject the request.
+the DSS is expected to reject the request, otherwise it fails to meet **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
 ## Cleanup
 
