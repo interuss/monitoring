@@ -76,7 +76,7 @@ class DSSWrapper(object):
             query_timestamps=[q.request.timestamp for q in e.queries],
         )
 
-    def _handle_query_result(
+    def handle_query_result(
         self,
         check: PendingCheck,
         q: RIDQuery,
@@ -86,7 +86,23 @@ class DSSWrapper(object):
         fail_details: Optional[str] = None,
     ):
         """
-        :param required_status_code: one of those status code is expected, overrides the success check
+        Handle the result of the query, based on the expected result codes versus the actual one,
+        and fail the specified check accordingly if the query's HTTP response code is not a success or, if specified,
+        it is not present in `required_status_code`.
+
+        Note that this won't check anything about the response payloads: this is left to the discretion of the caller.
+
+        The passed query will be properly recorded in the scenario and in case of check failure, its timestamp will
+        be associated with the check.
+
+        Additionally, upon failure, the participant_id of the underlying DSS is set as the check's participants.
+
+        :param check: the check to fail if q is not successful (or, when applicable, its response code is not in required_status_code)
+        :param q: the query to check
+        :param fail_msg: the message to use when failing the check
+        :param required_status_code: the set of status codes that are considered successful. If this is None then success is defined by `q.success`
+        :param severity: the severity of the check failure
+        :param fail_details: the details passed to check.record_fail
         """
         self._scenario.record_query(q.query)
         if (required_status_code is None and not q.success) or (
@@ -127,7 +143,7 @@ class DSSWrapper(object):
             session=self._dss.client,
             participant_id=self._dss.participant_id,
         )
-        self._handle_query_result(
+        self.handle_query_result(
             main_check,
             isas,
             f"Failed to search ISAs in {area} from {start_time} to {end_time}",
@@ -178,7 +194,7 @@ class DSSWrapper(object):
             participant_id=self._dss.participant_id,
         )
 
-        self._handle_query_result(
+        self.handle_query_result(
             check=main_check,
             q=isas,
             required_status_code=expected_error_codes,
@@ -208,7 +224,7 @@ class DSSWrapper(object):
                 participant_id=self._dss.participant_id,
             )
 
-            self._handle_query_result(check, isa, f"Failed to get ISA {isa_id}")
+            self.handle_query_result(check, isa, f"Failed to get ISA {isa_id}")
 
             if isa_id != isa.isa.id:
                 check.record_failed(
@@ -247,7 +263,7 @@ class DSSWrapper(object):
             participant_id=self._dss.participant_id,
         )
 
-        self._handle_query_result(
+        self.handle_query_result(
             check=check,
             q=isa,
             required_status_code=expected_error_codes,
@@ -284,7 +300,7 @@ class DSSWrapper(object):
             participant_id=self._dss.participant_id,
         )
 
-        self._handle_query_result(
+        self.handle_query_result(
             check=check,
             q=mutated_isa.dss_query,
             fail_msg="ISA Put succeeded when expecting a failure",
@@ -327,7 +343,7 @@ class DSSWrapper(object):
             utm_client=self._dss.client,
             participant_id=self._dss.participant_id,
         )
-        self._handle_query_result(
+        self.handle_query_result(
             main_check, mutated_isa.dss_query, f"Failed to insert ISA {isa_id}"
         )
         for notification_query in mutated_isa.notifications.values():
@@ -458,7 +474,7 @@ class DSSWrapper(object):
             utm_client=self._dss.client,
             participant_id=self._dss.participant_id,
         )
-        self._handle_query_result(
+        self.handle_query_result(
             main_check, del_isa.dss_query, f"Failed to delete ISA {isa_id}"
         )
         for notification_query in del_isa.notifications.values():
@@ -544,7 +560,7 @@ class DSSWrapper(object):
             participant_id=self._dss.participant_id,
         )
 
-        self._handle_query_result(
+        self.handle_query_result(
             check=main_check,
             q=del_isa.dss_query,
             required_status_code=expected_error_codes,
@@ -572,7 +588,7 @@ class DSSWrapper(object):
                 participant_id=self._dss.participant_id,
             )
 
-            self._handle_query_result(
+            self.handle_query_result(
                 check, isa, f"Failed to get ISA {isa_id}", {404, 200}, Severity.Medium
             )
 
@@ -587,7 +603,7 @@ class DSSWrapper(object):
                 participant_id=self._dss.participant_id,
             )
 
-            self._handle_query_result(
+            self.handle_query_result(
                 check,
                 del_isa.dss_query,
                 f"Failed to delete ISA {isa_id}",
@@ -621,7 +637,7 @@ class DSSWrapper(object):
                 participant_id=self._dss.participant_id,
             )
 
-            self._handle_query_result(
+            self.handle_query_result(
                 check=check,
                 q=subs,
                 fail_msg=f"Search for subscriptions in area {area} failed to yield a result code in {expected_codes}",
@@ -654,7 +670,7 @@ class DSSWrapper(object):
                 participant_id=self._dss.participant_id,
             )
 
-            self._handle_query_result(
+            self.handle_query_result(
                 check, subs, f"Failed to search subscriptions in {area}"
             )
             return subs
@@ -683,7 +699,7 @@ class DSSWrapper(object):
                 participant_id=self._dss.participant_id,
             )
 
-            self._handle_query_result(
+            self.handle_query_result(
                 check=check,
                 q=sub,
                 fail_msg=f"The request to get subscription with ID {sub_id} yielded a response code that wasn't in {expected_response_codes}",
@@ -718,9 +734,7 @@ class DSSWrapper(object):
                 participant_id=self._dss.participant_id,
             )
 
-            self._handle_query_result(
-                check, sub, f"Failed to get subscription {sub_id}"
-            )
+            self.handle_query_result(check, sub, f"Failed to get subscription {sub_id}")
 
             if sub_id != sub.subscription.id:
                 check.record_failed(
@@ -758,7 +772,7 @@ class DSSWrapper(object):
                 participant_id=self._dss.participant_id,
             )
 
-            self._handle_query_result(
+            self.handle_query_result(
                 check, sub, f"Failed to get subscription {sub_id}", {404}
             )
             return
@@ -801,7 +815,7 @@ class DSSWrapper(object):
                 participant_id=self._dss.participant_id,
             )
 
-            self._handle_query_result(
+            self.handle_query_result(
                 check=check,
                 q=created_sub,
                 required_status_code=expected_error_codes,
@@ -850,7 +864,7 @@ class DSSWrapper(object):
                 participant_id=self._dss.participant_id,
             )
 
-            self._handle_query_result(
+            self.handle_query_result(
                 check, created_sub, f"Failed to insert subscription {sub_id}"
             )
             return created_sub
@@ -883,7 +897,7 @@ class DSSWrapper(object):
                 participant_id=self._dss.participant_id,
             )
 
-            self._handle_query_result(
+            self.handle_query_result(
                 check=check,
                 q=del_sub,
                 fail_msg=f"Query to delete subscription with ID {sub_id} wit not yield a response code in {expected_response_codes}",
@@ -918,7 +932,7 @@ class DSSWrapper(object):
                 participant_id=self._dss.participant_id,
             )
 
-            self._handle_query_result(
+            self.handle_query_result(
                 check, del_sub, f"Failed to delete subscription {sub_id}"
             )
 
@@ -963,7 +977,7 @@ class DSSWrapper(object):
                         participant_id=self._dss.participant_id,
                     )
 
-                    self._handle_query_result(
+                    self.handle_query_result(
                         check,
                         del_sub,
                         f"Failed to delete subscription {sub}",
@@ -996,7 +1010,7 @@ class DSSWrapper(object):
                     participant_id=self._dss.participant_id,
                 )
 
-                self._handle_query_result(
+                self.handle_query_result(
                     check,
                     sub,
                     f"Failed to get subscription {sub_id}",
@@ -1018,7 +1032,7 @@ class DSSWrapper(object):
                     participant_id=self._dss.participant_id,
                 )
 
-                self._handle_query_result(
+                self.handle_query_result(
                     check,
                     del_sub,
                     f"Failed to delete subscription {sub_id}",
@@ -1075,7 +1089,7 @@ class DSSWrapper(object):
         else:
             raise ValueError(f"Unknown RID version: {self._dss.rid_version}")
 
-        self._handle_query_result(
+        self.handle_query_result(
             check,
             rid_query,
             fail_msg,
