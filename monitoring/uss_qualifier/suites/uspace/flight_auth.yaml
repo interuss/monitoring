@@ -23,6 +23,12 @@ actions:
       dss: dss
       dss_instances: dss_instances
   on_failure: Continue
+- test_scenario:
+    scenario_type: scenarios.flight_planning.PrepareFlightPlanners
+    resources:
+      flight_planners: flight_planners
+      flight_intents: invalid_flight_auth_flights
+  on_failure: Abort
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:

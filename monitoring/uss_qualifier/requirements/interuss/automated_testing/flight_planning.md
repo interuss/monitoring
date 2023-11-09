@@ -10,6 +10,10 @@ When a USS implements the [InterUSS flight_planning automated testing API](https
 
 A USS must implement the endpoints defined in the API, accept requests in the data format prescribed in the API, and respond in the data format prescribed in the API.  If there is a problem using the API such as a connection error, invalid response code, or invalid data, the USS will have failed to meet this requirement.
 
+### <tt>Readiness</tt>
+
+A USS must implement the readiness endpoint defined in the API and then respond that it is ready to respond with an appropriate API version.
+
 ### <tt>ClearArea</tt>
 
 In order to conduct automated tests effectively, the USS must remove all of their existing flights from a particular area when instructed by the test director.  This is not an action performed on behalf of an emulated user, but rather an action performed in any way appropriate to support automated testing -- therefore, fulfilling this request may cause actions on the implementing USS's system that no normal user would be able to perform.

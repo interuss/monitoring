@@ -212,6 +212,6 @@ class V1FlightPlannerClient(FlightPlannerClient):
         if resp.outcome.success:
             errors = None
         else:
-            errors = [f"[{resp.outcome.timestamp}]: {resp.outcome.message}"]
+            errors = [resp.outcome.message]
 
         return TestPreparationActivityResponse(errors=errors, queries=[query])

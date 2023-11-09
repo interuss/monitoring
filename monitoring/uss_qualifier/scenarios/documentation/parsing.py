@@ -193,7 +193,12 @@ def _get_anchors(
     anchors = {}
 
     if isinstance(value, marko.block.Heading):
-        base_anchor = "#" + text_of(value).lower().replace(" ", "-")
+        heading_text = text_of(value)
+        for s in Severity:
+            if heading_text.startswith(s.symbol):
+                heading_text = heading_text[len(s.symbol) :].lstrip()
+                break
+        base_anchor = "#" + heading_text.lower().replace(" ", "-")
         if base_anchor not in header_counts:
             anchors[value] = base_anchor
         else:

@@ -26,6 +26,16 @@ actions:
       dss_instances_source: dss_instances
       dss_instance_id: dss
     on_failure: Continue
+- test_scenario:
+    scenario_type: scenarios.astm.utm.PrepareFlightPlanners
+    resources:
+      flight_planners: flight_planners
+      dss: dss
+      flight_intents: invalid_flight_intents
+      flight_intents2: priority_preemption_flights
+      flight_intents3: conflicting_flights
+      flight_intents4: non_conflicting_flights
+  on_failure: Abort
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
@@ -93,11 +103,6 @@ actions:
         - uss1
         - uss2
   on_failure: Continue
-- test_scenario:
-    scenario_type: scenarios.astm.utm.AggregateChecks
-    resources:
-      flight_planners: flight_planners
-
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
@@ -119,6 +124,10 @@ actions:
       roles:
         - uss1
   on_failure: Continue
+- test_scenario:
+    scenario_type: scenarios.astm.utm.AggregateChecks
+    resources:
+      flight_planners: flight_planners
 
 participant_verifiable_capabilities:
   - id: scd

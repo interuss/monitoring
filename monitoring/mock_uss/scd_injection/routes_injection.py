@@ -327,7 +327,7 @@ def scdsc_clear_area() -> Tuple[str, int]:
     resp = scd_api.ClearAreaResponse(
         outcome=ClearAreaOutcome(
             success=clear_resp.success,
-            message="See `details` field for more information",
+            message="See `details` field in response for more information",
             timestamp=StringBasedDateTime(datetime.utcnow()),
         ),
     )
