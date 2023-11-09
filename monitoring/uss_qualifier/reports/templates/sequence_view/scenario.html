@@ -202,6 +202,16 @@
       {% endif %}
     {% endfor %}
   </table>
+  {% if test_scenario.execution_error %}
+    <div id="execution_error">
+      <h4 class="fail_result"><code>{{ test_scenario.execution_error.type }}</code> at {{ test_scenario.execution_error.timestamp }}</h4>
+      <p><b>Message</b>: {{ test_scenario.execution_error.message }}</p>
+      <p>
+        <b>Stack trace</b>:<br>
+        <pre>{{ test_scenario.execution_error.stacktrace }}</pre>
+      </p>
+    </div>
+  {% endif %}
 </div>
 {{ explorer_footer(collapsible.queries) }}
 </body>

@@ -120,7 +120,7 @@
 </div>
 
 <div id="configuration_section" class="collapseable">
-  <div class="node_key" onclick="showHide(document.getElementById('configuration_section'))"><h2>Configuration</h2></div>
+  <div class="node_key" onclick="showHide(document.getElementById('configuration_section'))"><h2>Resources configuration</h2></div>
   <div class="node_value">
     {% for is_baseline in (True, False) %}
       <h3>{{ "Baseline" if is_baseline else "Environment" }}</h3>
@@ -182,9 +182,13 @@
           {% endif %}
         {% endfor %}
         {% if row.scenario_node %}
-          <td>
-            <a href="s{{ row.scenario_node.scenario.scenario_index }}.html">{{ row.scenario_node.scenario.name }}</a>
-          </td>
+          {% if row.scenario_node.scenario.execution_error %}
+            <td class="fail_result">
+          {% else %}
+            <td>
+          {% endif %}
+              <a href="s{{ row.scenario_node.scenario.scenario_index }}.html">{{ row.scenario_node.scenario.name }}</a>
+            </td>
         {% endif %}
         {% if row.skipped_action_node %}
           <td>
