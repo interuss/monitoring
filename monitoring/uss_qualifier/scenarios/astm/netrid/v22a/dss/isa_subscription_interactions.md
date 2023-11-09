@@ -42,7 +42,7 @@ When a pre-existing ISA needs to be deleted to ensure a clean workspace, any sub
 
 **[astm.f3411.v22a.DSS0030,f](../../../../../requirements/astm/f3411/v22a.md)** requires the implementation of the DSS endpoint to allow callers to retrieve the subscriptions they created.
 
-#### Successful subscription deletion check
+#### Subscription can be deleted check
 
 **[astm.f3411.v22a.DSS0030,d](../../../../../requirements/astm/f3411/v22a.md)** requires the implementation of the DSS endpoint to allow callers to delete subscriptions they created.
 
@@ -114,7 +114,7 @@ and return the up-to-date subscription in the response to the query deleting the
 
 Failure to do so means that the DSS is not properly implementing **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
-#### Successful subscription deletion check
+#### Subscription can be deleted check
 
 **[astm.f3411.v22a.DSS0030,d](../../../../../requirements/astm/f3411/v22a.md)** requires the implementation of the DSS endpoint to allow callers to delete subscriptions they created.
 
@@ -143,6 +143,6 @@ When a pre-existing ISA needs to be deleted to ensure a clean workspace, any sub
 
 **[astm.f3411.v22a.DSS0030,f](../../../../../requirements/astm/f3411/v22a.md)** requires the implementation of the DSS endpoint to allow callers to retrieve the subscriptions they created.
 
-#### Successful subscription deletion check
+#### Subscription can be deleted check
 
 **[astm.f3411.v22a.DSS0030,d](../../../../../requirements/astm/f3411/v22a.md)** requires the implementation of the DSS endpoint to allow callers to delete subscriptions they created.
