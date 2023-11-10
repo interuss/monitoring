@@ -27,6 +27,16 @@ class Locality(ABC):
         """Returns true iff locality allows intersections between two operations at this priority level for ASTM F3548-21"""
         raise NotImplementedError(Locality._NOT_IMPLEMENTED_MSG)
 
+    @abstractmethod
+    def lowest_bound_priority(self) -> int:
+        """Returns the lowest bound priority status for ASTM F3548-21, which is a priority level lower than the lowest priority bound defined by the regulator of this locality"""
+        raise NotImplementedError(Locality._NOT_IMPLEMENTED_MSG)
+
+    @abstractmethod
+    def highest_priority(self) -> int:
+        """Returns the highest priority level for ASTM F3548-21 defined by the regulator of this locality"""
+        raise NotImplementedError(Locality._NOT_IMPLEMENTED_MSG)
+
     def __str__(self):
         return self.__class__.__name__
 
@@ -56,6 +66,12 @@ class Switzerland(Locality):
     def allows_same_priority_intersections(self, priority: int) -> bool:
         return False
 
+    def lowest_bound_priority(self) -> int:
+        return -1
+
+    def highest_priority(self) -> int:
+        return 100
+
 
 class UnitedStatesIndustryCollaboration(Locality):
     @classmethod
@@ -67,3 +83,9 @@ class UnitedStatesIndustryCollaboration(Locality):
 
     def allows_same_priority_intersections(self, priority: int) -> bool:
         return False
+
+    def lowest_bound_priority(self) -> int:
+        return -1
+
+    def highest_priority(self) -> int:
+        return 100
