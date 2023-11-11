@@ -222,13 +222,6 @@ class Volume4D(ImplicitDict):
 
 
 class Volume4DCollection(List[Volume4D]):
-    def __init__(self, iterator: Iterator[dict]):
-        parsed_values = [
-            v if isinstance(v, Volume4D) else ImplicitDict.parse(v, Volume4D)
-            for v in iterator
-        ]
-        super(Volume4DCollection, self).__init__(parsed_values)
-
     def __add__(self, other):
         if isinstance(other, Volume4D):
             full_list = []
@@ -407,11 +400,4 @@ class Volume4DCollection(List[Volume4D]):
 
 
 class Volume4DTemplateCollection(List[Volume4DTemplate]):
-    def __init__(self, iterator: Iterator[dict]):
-        parsed_values = [
-            v
-            if isinstance(v, Volume4DTemplate)
-            else ImplicitDict.parse(v, Volume4DTemplate)
-            for v in iterator
-        ]
-        super(Volume4DTemplateCollection, self).__init__(parsed_values)
+    pass
