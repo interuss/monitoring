@@ -1,10 +1,13 @@
 from __future__ import annotations
 import math
 from enum import Enum
+import os
 from typing import List, Tuple, Union, Optional
 
 from implicitdict import ImplicitDict
+import numpy as np
 import s2sphere
+from scipy.interpolate import RectBivariateSpline as Spline
 import shapely.geometry
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3411.v19 import api as f3411v19
@@ -462,3 +465,34 @@ class LatLngBoundingBox(ImplicitDict):
 
 def latitude_degrees(distance_meters: float) -> float:
     return 360 * distance_meters / EARTH_CIRCUMFERENCE_M
+
+
+_egm96: Optional[Spline] = None
+"""Cached EGM96 geoid interpolation function with inverted latitude"""
+
+
+def egm96_geoid_offset(p: s2sphere.LatLng) -> float:
+    """Estimate the EGM96 geoid height above the WGS84 ellipsoid.
+
+    Args:
+        p: Point where offset should be estimated.
+
+    Returns: Meters above WGS84 ellipsoid of the EGM96 geoid at p.
+    """
+    global _egm96
+    if _egm96 is None:
+        grid_size = 0.25  # degrees
+        grid_path = os.path.join(os.path.dirname(__file__), "assets/WW15MGH.DAC")
+        grid = np.fromfile(grid_path, '>i2').reshape(int(180 / grid_size + 1), int(360 / grid_size)) / 100
+        _egm96 = Spline(
+            np.arange(-90, 90 + grid_size / 2, grid_size),
+            np.arange(0, 360, grid_size),
+            grid
+        )
+    lng = math.fmod(p.lng().degrees, 360)
+    while lng < 0:
+        lng += 360
+    lat = p.lat().degrees
+    if lat < -90 or lat > 90:
+        raise ValueError(f"Cannot compute EGM96 geoid offset at latitude {lat} degrees")
+    return _egm96.ev(-lat, lng)
