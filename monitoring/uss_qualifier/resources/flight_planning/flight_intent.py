@@ -113,5 +113,10 @@ class FlightIntentCollection(ImplicitDict):
 
 
 class FlightIntentsSpecification(ImplicitDict):
-    file: ExternalFile
+    """Exactly one field must be specified."""
+
+    intent_collection: Optional[FlightIntentCollection]
+    """Full flight intent collection, or a $ref to an external file containing a FlightIntentCollection."""
+
+    file: Optional[ExternalFile]
     """Location of file to load, containing a FlightIntentCollection"""
