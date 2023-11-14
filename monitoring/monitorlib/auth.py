@@ -2,9 +2,9 @@ import base64
 import datetime
 import hashlib
 import re
-from typing import Any, Dict, List, Optional, Tuple
 import urllib.parse
 import uuid
+from typing import Any, Dict, List, Optional, Tuple
 
 import cryptography.exceptions
 import cryptography.hazmat.backends
@@ -20,6 +20,7 @@ from google import auth as google_auth
 from google.auth import impersonated_credentials
 from google.auth.transport import requests as google_requests
 from google.oauth2 import service_account
+
 from monitoring.monitorlib.infrastructure import AuthAdapter, AuthSpec
 
 _UNIX_EPOCH = datetime.datetime.utcfromtimestamp(0)
@@ -79,6 +80,70 @@ class NoAuth(AuthAdapter):
             algs=["RS256"],
         )
         jwt.make_signed_token(NoAuth.dummy_private_key)
+        return jwt.serialize()
+
+
+class InvalidTokenSignatureAuth(AuthAdapter):
+    """Auth adapter that generates well-formed tokens that are signed with an unknown private key.
+
+    The generated tokens are not expected to be accepted,
+    and should be used in scenarios that test the authentication logic.
+    """
+
+    # A random RSA2048 private key
+    unknown_private_key = jwcrypto.jwk.JWK.from_pem(
+        "-----BEGIN PRIVATE KEY-----\n"
+        "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCsa9ZYfRoeA1A5\n"
+        "oUY38payXpOQzjFUVmm2CUh2WxY1HV3d2/0nkWcjHSD5wIKRCqhBQ3T3rj1AJm4f\n"
+        "mUasH0dAurutgggTDTxpX4XiskYdG8NuZfyQxtRMGBivFnbySi3A0FwOWZPW3ZXz\n"
+        "RC2r27URC1IvZc2cpSkbNngK9OUodbxX/pbFU6ltkPbyztcLgdnAcC/R7JfUUmgm\n"
+        "kmBg9ZTyCFB1gsX3Bgx2YSBGyjLejfTUBcySoJuYFPobSKxBpO1r3S0XWCnz4WOu\n"
+        "ho5asoqy23ucI5VXXcOSaNVIBVnJVhFyCum04m8E2BKUegJfsRU3DMmVA2kaZaTL\n"
+        "rcPqDbPzAgMBAAECggEAC5ATyM1i8f5Q4/x/xAK9vmp/ROe/ASPmZPHMbTuAisFU\n"
+        "aSt2l6+1lfI/IuCZIPbw/6dxcaa6rtGk8vOJfMOAOMQND/63YeeyVHK2fNRtxUf2\n"
+        "XDH0tRTQaeX3yc4c3fTBiruuYLv7IR6tDqpU0cCjLOhwc4NFPasJzaxicoGn2IWo\n"
+        "kItqGCBn9qz1Qpxe+GZq4Yzebja2czac0Y4khsvmDcWKuFvaX6rU58iiLEekaHeH\n"
+        "lu288MKYNUqdQ63HNhWhsAm+abVArAgcl2zWPwf5ex6jCyBxsPMRfoCUwjuJzI28\n"
+        "3AgOTrwnbmdrjEiF+2UVreTSHoBnVyMfGhAKZ1a0OQKBgQDZoANU/8jQZBSS4tdL\n"
+        "z5RIBa0pQEvV3mrB4n7rMvSytiYkCTHdD8HUT5PRSSF0fbqF6E3c7Fpq/4wP+Fhv\n"
+        "32+qJR/Y6uW6dMOwWMGAH5NV0+rvHaqCKRVugSvPx2DzZ7pJ0rEpfdCagc8mfIub\n"
+        "f0UBlnp13QVeNEfDPhJdk7HZ7QKBgQDK0z4ljFBNpRImdgn5gssR72697cSZim8E\n"
+        "F/wJinn9dHdCgUB/2hcpB4y2yzomHJAYZVI+I4jT0DryRi0NnlRDljkUXaC4dvlR\n"
+        "RboB8sPYBJ6GrtlAxBxFXYnzsIE3Xqozgt9LNQELhhKJNKSz4qG4AR4fGhwblaY5\n"
+        "ycTYXWaJXwKBgARXD5nzW/Lj/BEN2xNU+XUSP+jRsnF6dRCWzscsBftGbK5NTKRG\n"
+        "+yubxqvm1Hb5Ru4CuwLL5+W4YPe0kTbx8s0m3mK6FIjKaVir/HfsqUiN6GKKaesc\n"
+        "nKPOiawkIsfX6rwsKoJUUwOx0QrIcxRPznWApcKR/NhrHH9FTqJ1HpflAoGANp1B\n"
+        "G703lmC/jWm1b+E/Kxos2KmgibOUBycqL6uBA7WLs3W4V3TzTZIB2urIQqDoUBlg\n"
+        "Vukcm+RzKu+ojAU5LWXTAt/fOiyXH8JFvuaOw6kiwqNsTps//ZGdZuf9M1qjO/Ge\n"
+        "jNK98EtuzFFHlESPRUvPv5I5RVg7hU4GWjh0NsMCgYAqVoB5x4+ugae+eZgSLfwG\n"
+        "YWSOiHQhEqqLWAp3MHbuwDVNnpy1KNWh7A/f8Hd3xgPKQIGCl74dBQ+6pv08Dxyt\n"
+        "az+aNXi/CmaEb3v6abaKdF7uNJCpKUnYJ3lpLrrd9HsLbhszIhs1iPbJK38SDEm0\n"
+        "xgbwpLAv3YW+usS9x8LAPw==\n"
+        "-----END PRIVATE KEY-----".encode("UTF-8")
+    )
+
+    def __init__(self, sub: str = "uss_unsigned"):
+        super().__init__()
+        self.sub = sub
+
+    def issue_token(self, intended_audience: str, scopes: List[str]) -> str:
+        timestamp = int((datetime.datetime.utcnow() - _UNIX_EPOCH).total_seconds())
+        claims = {
+            "sub": self.sub,
+            "client_id": self.sub,
+            "scope": " ".join(scopes),
+            "aud": intended_audience,
+            "nbf": timestamp - 1,
+            "exp": timestamp + NoAuth.EXPIRATION,
+            "iss": "NoAuth",
+            "jti": str(uuid.uuid4()),
+        }
+        jwt = jwcrypto.jwt.JWT(
+            header={"typ": "JWT", "alg": "RS256"},
+            claims=claims,
+            algs=["RS256"],
+        )
+        jwt.make_signed_token(InvalidTokenSignatureAuth.unknown_private_key)
         return jwt.serialize()
 
 
@@ -490,7 +555,6 @@ class FlightPassport(ClientIdClientSecret):
         client_secret: str,
         send_request_as_data: str = "true",
     ):
-
         send_request_as_data = send_request_as_data.lower() == "true"
 
         super(FlightPassport, self).__init__(

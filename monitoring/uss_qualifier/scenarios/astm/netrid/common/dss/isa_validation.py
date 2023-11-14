@@ -256,7 +256,7 @@ class ISAValidation(GenericTestScenario):
 
             rid_query.set_participant_id(self._dss_wrapper.participant_id)
 
-            self._dss_wrapper._handle_query_result(
+            self._dss_wrapper.handle_query_result(
                 check=check,
                 q=rid_query,
                 fail_msg="ISA Creation with missing outline has unexpected result code",
@@ -290,7 +290,7 @@ class ISAValidation(GenericTestScenario):
 
             rid_query.set_participant_id(self._dss_wrapper.participant_id)
 
-            self._dss_wrapper._handle_query_result(
+            self._dss_wrapper.handle_query_result(
                 check=check,
                 q=rid_query,
                 fail_msg="ISA Creation with missing outline has unexpected result code",
@@ -319,7 +319,7 @@ class ISAValidation(GenericTestScenario):
             else:
                 raise ValueError(f"Unknown RID version: {self._dss.rid_version}")
 
-            self._dss_wrapper._handle_query_result(
+            self._dss_wrapper.handle_query_result(
                 check=check,
                 q=rid_query,
                 fail_msg="ISA Creation with missing outline has unexpected result code",
