@@ -483,11 +483,16 @@ def egm96_geoid_offset(p: s2sphere.LatLng) -> float:
     if _egm96 is None:
         grid_size = 0.25  # degrees
         grid_path = os.path.join(os.path.dirname(__file__), "assets/WW15MGH.DAC")
-        grid = np.fromfile(grid_path, '>i2').reshape(int(180 / grid_size + 1), int(360 / grid_size)) / 100
+        grid = (
+            np.fromfile(grid_path, ">i2").reshape(
+                int(180 / grid_size + 1), int(360 / grid_size)
+            )
+            / 100
+        )
         _egm96 = Spline(
             np.arange(-90, 90 + grid_size / 2, grid_size),
             np.arange(0, 360, grid_size),
-            grid
+            grid,
         )
     lng = math.fmod(p.lng().degrees, 360)
     while lng < 0:
