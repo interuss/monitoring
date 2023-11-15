@@ -12,6 +12,8 @@ It involves a tested USS and a control USS through which conflicting flights are
 
 This scenario skips execution and completes successfully at the setup case if a resource containing equal priority flight intents where conflicts are not allow is not provided, such as if a jurisdiction does not have any priority levels at which conflicts are not allowed.
 
+It assumes that the area used in the scenario is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario).
+
 ## Resources
 ### flight_intents
 If the jurisdiction in which these tests are being conducted does not have a priority level at which conflicts are not allowed, the FlightIntentsResource must be None to prevent the
@@ -88,20 +90,6 @@ CMSA role in order to transition some flight intents to the `Nonconforming` stat
 
 ### dss
 DSSInstanceResource that provides access to a DSS instance where flight creation/sharing can be verified.
-
-
-## Setup test case
-### Check for flight planning readiness test step
-Both USSs are queried for their readiness to ensure this test can proceed.
-
-#### 🛑 Flight planning USS not ready check
-If either USS does not respond appropriately to the endpoint queried to determine readiness, this check will fail and the USS will have failed to meet **[astm.f3548.v21.GEN0310](../../../../../requirements/astm/f3548/v21.md)** as the USS does not support the InterUSS implementation of that requirement.
-
-### Area clearing test step
-Both USSs are requested to remove all flights from the area under test.
-
-#### 🛑 Area cleared successfully check
-**[interuss.automated_testing.flight_planning.ClearArea](../../../../../requirements/interuss/automated_testing/flight_planning.md)**
 
 
 ## Attempt to plan flight into conflict test case

@@ -1,7 +1,6 @@
 import inspect
-from typing import List, Optional, Tuple, Iterable, Set, Dict, Union
+from typing import Optional, Tuple, Iterable, Set, Dict, Union
 
-from monitoring.monitorlib.geotemporal import Volume4DCollection
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
 from monitoring.monitorlib.fetch import QueryError
@@ -13,65 +12,10 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     DeleteFlightResponse,
 )
 from monitoring.uss_qualifier.common_data_definitions import Severity
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
-    FlightIntent,
-)
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlanner,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
-
-
-def clear_area(
-    scenario: TestScenarioType,
-    test_step: str,
-    flight_intents: List[FlightIntent],
-    flight_planners: List[FlightPlanner],
-) -> None:
-    """Perform a test step to clear the area that will be used in the scenario.
-
-    This function assumes:
-    * `scenario` is ready to execute a test step
-    * "Area cleared successfully" check declared for specified test step in `scenario`'s documentation
-
-    Args:
-      scenario: Scenario in which this step is being executed
-      test_step: Name of this test step (according to scenario's documentation)
-      flight_intents: Flight intents to be used in this test case (defines bounds of area to be cleared)
-      flight_planners: Flight planners to which clear area requests should be issued
-    """
-    scenario.begin_test_step(test_step)
-
-    volumes = []
-    for flight_intent in flight_intents:
-        volumes += flight_intent.request.operational_intent.volumes
-        volumes += flight_intent.request.operational_intent.off_nominal_volumes
-    extent = Volume4DCollection.from_f3548v21(volumes).bounding_volume
-    for uss in flight_planners:
-        with scenario.check("Area cleared successfully", [uss.participant_id]) as check:
-            try:
-                resp, query = uss.clear_area(extent)
-            except QueryError as e:
-                for q in e.queries:
-                    scenario.record_query(q)
-                check.record_failed(
-                    summary=f"Error from {uss.participant_id} when attempting to clear area",
-                    severity=Severity.High,
-                    details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
-                    query_timestamps=[q.request.timestamp for q in e.queries],
-                )
-            scenario.record_query(query)
-            if not resp.outcome.success:
-                check.record_failed(
-                    summary="Area could not be cleared",
-                    severity=Severity.High,
-                    details=f'Participant indicated "{resp.outcome.message}"'
-                    if "message" in resp.outcome
-                    else "See query",
-                    query_timestamps=[query.request.timestamp],
-                )
-
-    scenario.end_test_step()
 
 
 def expect_flight_intent_state(

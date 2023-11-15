@@ -10,6 +10,8 @@ exists a conflict with a higher priority flight:
 
 It involves a tested USS and a control USS through which conflicting flights are injected.
 
+It assumes that the area used in the scenario is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario).
+
 ## Resources
 ### flight_intents
 FlightIntentsResource that provides the following flight intents:
@@ -85,21 +87,6 @@ FlightPlannerResource that will manage conflicting flight 2.
 
 ### dss
 DSSInstanceResource that provides access to a DSS instance where flight creation/sharing can be verified.
-
-## Setup test case
-
-### Check for flight planning readiness test step
-Both USSs are queried for their readiness to ensure this test can proceed.
-
-#### Flight planning USS not ready check
-If either USS does not respond appropriately to the endpoint queried to determine readiness, this check will fail and the USS will have failed to meet **[astm.f3548.v21.GEN0310](../../../../../requirements/astm/f3548/v21.md)** as the USS does not support the InterUSS implementation of that requirement.
-
-### Area clearing test step
-Both USSs are requested to remove all flights from the area under test.
-
-#### Area cleared successfully check
-**[interuss.automated_testing.flight_planning.ClearArea](../../../../../requirements/interuss/automated_testing/flight_planning.md)**
-
 
 ## Attempt to plan flight in conflict test case
 ![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict.svg)

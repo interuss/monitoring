@@ -21,7 +21,6 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
-    clear_area,
     plan_flight_intent,
     cleanup_flights,
 )
@@ -73,11 +72,6 @@ class Validation(TestScenario):
 
         self.record_note("Planner", self.ussp.participant_id)
 
-        self.begin_test_case("Setup")
-        if not self._setup():
-            return
-        self.end_test_case()
-
         self.begin_test_case("Attempt invalid flights")
         if not self._attempt_invalid_flights():
             return
@@ -89,33 +83,6 @@ class Validation(TestScenario):
         self.end_test_case()
 
         self.end_test_scenario()
-
-    def _setup(self) -> bool:
-        self.begin_test_step("Check for flight planning readiness")
-
-        error, query = self.ussp.get_readiness()
-        self.record_query(query)
-        with self.check(
-            "Flight planning USSP ready", [self.ussp.participant_id]
-        ) as check:
-            if error:
-                check.record_failed(
-                    "Error determining readiness",
-                    Severity.High,
-                    "Error: " + error,
-                    query_timestamps=[query.request.timestamp],
-                )
-
-        self.end_test_step()
-
-        clear_area(
-            self,
-            "Area clearing",
-            [self.valid_flight_intent, *self.invalid_flight_intents],
-            [self.ussp],
-        )
-
-        return True
 
     def _attempt_invalid_flights(self) -> bool:
         self.begin_test_step("Inject invalid flight intents")
