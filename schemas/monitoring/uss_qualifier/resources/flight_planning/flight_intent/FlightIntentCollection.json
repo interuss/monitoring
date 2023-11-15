@@ -1,0 +1,28 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/flight_planning/flight_intent/FlightIntentCollection.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Specification for a collection of flight intents, each identified by a FlightIntentID.\n\nmonitoring.uss_qualifier.resources.flight_planning.flight_intent.FlightIntentCollection, as defined in monitoring/uss_qualifier/resources/flight_planning/flight_intent.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "intents": {
+      "additionalProperties": {
+        "$ref": "FlightIntentCollectionElement.json"
+      },
+      "description": "Flight planning actions that users want to perform.",
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "required": [
+    "intents"
+  ],
+  "type": "object"
+}
