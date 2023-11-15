@@ -24,6 +24,7 @@ from .behavior import DisplayProviderBehavior
 from .config import KEY_RID_VERSION
 from .database import db
 from monitoring.monitorlib.formatting import limit_resolution
+from monitoring.monitorlib.geo import egm96_geoid_offset
 
 
 def _make_flight_observation(
@@ -61,6 +62,8 @@ def _make_flight_observation(
         paths.append(current_path)
 
     p = flight.most_recent_position
+    msl_alt = p.alt - egm96_geoid_offset(s2sphere.LatLng.from_degrees(p.lat, p.lng))
+    # TODO: Return msl_alt in observation information
     current_state = observation_api.CurrentState(
         timestamp=p.time.isoformat(),
         operational_status=flight.operational_status,

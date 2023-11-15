@@ -1,0 +1,43 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/temporal/NextDay.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.monitorlib.temporal.NextDay, as defined in monitoring/monitorlib/temporal.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "days_of_the_week": {
+      "description": "Acceptable days of the week.  Omit to indicate that any day of the week is acceptable.",
+      "items": {
+        "enum": [
+          "Mo",
+          "Tu",
+          "We",
+          "Th",
+          "Fr",
+          "Sa",
+          "Su"
+        ],
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "starting_from": {
+      "$ref": "TestTime.json",
+      "description": "The time after which the first instance of one of the days should be found."
+    },
+    "time_zone": {
+      "description": "Time zone in which \"day\" is understood.  Examples:\n  * \"local\" (local time of machine running this code)\n  * \"Z\" (Zulu time)\n  * \"-08:00\" (ISO time zone)\n  * \"US/Pacific\" (IANA time zone)",
+      "type": "string"
+    }
+  },
+  "required": [
+    "starting_from",
+    "time_zone"
+  ],
+  "type": "object"
+}
