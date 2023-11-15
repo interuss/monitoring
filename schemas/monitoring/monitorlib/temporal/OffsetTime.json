@@ -1,0 +1,25 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/temporal/OffsetTime.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.monitorlib.temporal.OffsetTime, as defined in monitoring/monitorlib/temporal.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "offset": {
+      "description": "Offset from starting time.",
+      "format": "duration",
+      "type": "string"
+    },
+    "starting_from": {
+      "$ref": "TestTime.json",
+      "description": "The time from which the offset should be applied."
+    }
+  },
+  "required": [
+    "offset",
+    "starting_from"
+  ],
+  "type": "object"
+}
