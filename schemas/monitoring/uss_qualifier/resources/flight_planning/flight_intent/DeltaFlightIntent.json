@@ -1,0 +1,26 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/flight_planning/flight_intent/DeltaFlightIntent.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Represents an intent expressed as identical to another intent except for some specific changes.\n\nmonitoring.uss_qualifier.resources.flight_planning.flight_intent.DeltaFlightIntent, as defined in monitoring/uss_qualifier/resources/flight_planning/flight_intent.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "mutation": {
+      "description": "For each leaf subfield specified in this object, override the value in the corresponding subfield of the flight intent for this element with the specified value.\n\nConsider subfields prefixed with + as leaf subfields.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "source": {
+      "description": "Base the flight intent for this element of a FlightIntentCollection on the element of the collection identified by this field.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "source"
+  ],
+  "type": "object"
+}

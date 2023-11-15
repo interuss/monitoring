@@ -6,6 +6,9 @@ This test attempts to create flights with invalid values provided for various
 fields needed for a U-space flight authorisation, followed by successful flight
 creation when all fields are valid.
 
+It assumes that the area used in the scenario is already clear of any
+pre-existing flights (using, for instance, PrepareFlightPlanners scenario).
+
 ## Sequence
 
 ![Sequence diagram](sequence.png)
@@ -19,22 +22,6 @@ FlightIntentsResource that provides at least two flight intents. The flight inte
 ### flight_planner
 
 FlightPlannerResource that provides the flight planner (USSP) which should be tested.
-
-## Setup test case
-
-### Check for flight planning readiness test step
-Both USSs are queried for their readiness to ensure this test can proceed.
-
-#### Flight planning USSP ready check
-If the USS does not respond appropriately to the endpoint queried to determine readiness, this check will fail and the test cannot proceed.
-
-### Area clearing test step
-
-The USSP is requested to remove all flights from the area under test.
-
-#### Area cleared successfully check
-
-If the USSP does not respond appropriately or fails to clear the area of operations, this check will fail.
 
 ## Attempt invalid flights test case
 

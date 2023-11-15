@@ -1,7 +1,6 @@
 import arrow
 
 from monitoring.monitorlib.geotemporal import Volume4DCollection
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays
@@ -25,10 +24,8 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
-    clear_area,
     plan_flight_intent,
     cleanup_flights,
-    activate_flight_intent,
     submit_flight_intent,
     delete_flight_intent,
 )
@@ -149,11 +146,6 @@ class FlightIntentValidation(TestScenario):
             f"{self.tested_uss.config.participant_id}",
         )
 
-        self.begin_test_case("Setup")
-        if not self._setup():
-            return
-        self.end_test_case()
-
         self.begin_test_case("Attempt to plan invalid flight intents")
         self._attempt_invalid()
         self.end_test_case()
@@ -167,38 +159,6 @@ class FlightIntentValidation(TestScenario):
         self.end_test_case()
 
         self.end_test_scenario()
-
-    def _setup(self) -> bool:
-        self.begin_test_step("Check for flight planning readiness")
-
-        error, query = self.tested_uss.get_readiness()
-        self.record_query(query)
-        with self.check(
-            "Flight planning USS not ready", [self.tested_uss.participant_id]
-        ) as check:
-            if error:
-                check.record_failed(
-                    "Error determining readiness",
-                    Severity.High,
-                    "Error: " + error,
-                    query_timestamps=[query.request.timestamp],
-                )
-
-        self.end_test_step()
-
-        clear_area(
-            self,
-            "Area clearing",
-            [
-                self.valid_flight,
-                self.valid_activated,
-                self.invalid_too_far_away,
-                self.valid_conflict_tiny_overlap,
-            ],
-            [self.tested_uss],
-        )
-
-        return True
 
     def _attempt_invalid(self):
         with OpIntentValidator(
