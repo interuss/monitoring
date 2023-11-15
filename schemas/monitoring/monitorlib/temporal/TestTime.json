@@ -48,10 +48,15 @@
         }
       ]
     },
-    "start_of_test": {
-      "description": "Time option field to, if specified, use the timestamp at which the current test run started.",
+    "time_during_test": {
+      "description": "Time option field to, if specified, use a timestamp relating to the current test run.",
+      "enum": [
+        "StartOfTestRun",
+        "StartOfScenario",
+        "TimeOfEvaluation"
+      ],
       "type": [
-        "object",
+        "string",
         "null"
       ]
     },

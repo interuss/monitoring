@@ -14,7 +14,7 @@ import yaml
 
 from implicitdict import ImplicitDict
 from monitoring.monitorlib.geo import AltitudeDatum, Altitude, DistanceUnits
-from monitoring.monitorlib.temporal import Time
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.fileio import load_dict_with_references, resolve_filename
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntentCollection,
@@ -32,9 +32,9 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "--start_of_test",
+        "--start_of_test_run",
         default=None,
-        help="When start_of_test should be.  Defaults to now.",
+        help="When start_of_test_run should be.  Defaults to now.",
     )
 
     parser.add_argument(
@@ -68,7 +68,12 @@ def main() -> int:
     path = args.flight_intent_collection
     output_path = os.path.splitext(resolve_filename(path))[0] + ".kml"
 
-    start_of_test = Time(args.start_of_test or arrow.utcnow().datetime)
+    start_of_test_run = Time(args.start_of_test_run or arrow.utcnow().datetime)
+    times = {
+        TimeDuringTest.StartOfTestRun: start_of_test_run,
+        TimeDuringTest.StartOfScenario: start_of_test_run,
+        TimeDuringTest.TimeOfEvaluation: start_of_test_run,
+    }
     if args.geoid_offset is None:
         logger.warning(
             "geoid_offset was not provided.  Assuming 0 offset, and this may cause altitude errors of up to tens of meters."
@@ -83,7 +88,7 @@ def main() -> int:
 
     folders = []
     for name, template in flight_intents.items():
-        flight_intent = template.resolve(start_of_test)
+        flight_intent = template.resolve(times)
         non_basic_info = json.loads(
             json.dumps(
                 {k: v for k, v in flight_intent.items() if k != "basic_information"}

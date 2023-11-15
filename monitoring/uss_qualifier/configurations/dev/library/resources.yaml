@@ -211,14 +211,14 @@ example_feature_check_table:
                 units: M
                 reference: SFC
               start_time:
-                start_of_test: { }
+                time_during_test: StartOfTestRun
               end_time:
                 offset_from:
                   starting_from:
                     next_day:
                       time_zone: Europe/Zurich
                       starting_from:
-                        start_of_test: { }
+                        time_during_test: StartOfTestRun
                       days_of_the_week: [ "Mo", "Fr" ]
                   offset: 12h
           expected_result: Block
@@ -252,7 +252,7 @@ example_feature_check_table:
                   starting_from:
                     offset_from:
                       starting_from:
-                        start_of_test: { }
+                        time_during_test: StartOfTestRun
                       offset: 12h
                 use_timezone: +01:00
               duration: 5m
@@ -289,7 +289,7 @@ example_feature_check_table:
                         next_day:
                           time_zone: Europe/Zurich
                           starting_from:
-                            start_of_test: { }
+                            time_during_test: StartOfTestRun
                       offset: 12h
               duration: 5m
           expected_result: Advise

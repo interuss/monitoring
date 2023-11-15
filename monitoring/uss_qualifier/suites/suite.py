@@ -379,6 +379,7 @@ class ActionStackFrame(object):
 
 
 class ExecutionContext(object):
+    start_time: datetime
     config: Optional[ExecutionConfiguration]
     top_frame: Optional[ActionStackFrame]
     current_frame: Optional[ActionStackFrame]
@@ -387,6 +388,7 @@ class ExecutionContext(object):
         self.config = config
         self.top_frame = None
         self.current_frame = None
+        self.start_time = arrow.utcnow().datetime
 
     def sibling_queries(self) -> Iterator[Query]:
         if self.current_frame.parent is None:

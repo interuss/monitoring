@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import Dict
+
 import arrow
 from loguru import logger
 
@@ -11,7 +14,7 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     FlightPlanStatus,
     AdvisoryInclusion,
 )
-from monitoring.monitorlib.temporal import Time
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.flight_planning import (
@@ -67,15 +70,18 @@ class GeneralFlightAuthorization(TestScenario):
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
+        times = {
+            TimeDuringTest.StartOfTestRun: Time(context.start_time),
+            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
+        }
 
         self.begin_test_case("Flight planning")
-        self._plan_flights()
+        self._plan_flights(times)
         self.end_test_case()
 
         self.end_test_scenario()
 
-    def _plan_flights(self):
-        start_time = Time(arrow.utcnow().datetime)
+    def _plan_flights(self, times: Dict[TimeDuringTest, Time]):
         for row in self.table.rows:
             # Collect checks applicable to this row/test step
             checks = [
@@ -138,7 +144,8 @@ class GeneralFlightAuthorization(TestScenario):
             self.begin_dynamic_test_step(doc)
 
             # Attempt planning action
-            info = self.flight_intents[row.flight_intent].resolve(start_time)
+            times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+            info = self.flight_intents[row.flight_intent].resolve(times)
             with self.check(_VALID_API_RESPONSE_NAME, [self.participant_id]) as check:
                 try:
                     resp = self.flight_planner.try_plan_flight(
