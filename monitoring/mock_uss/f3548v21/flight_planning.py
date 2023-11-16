@@ -358,7 +358,7 @@ def get_down_uss_op_intent(
      between the flight to be planned and the conflicting operational intent.
     """
     # USS is declared as down and does not answer for details : minimum - 1
-    if op_intent_ref == f3548_v21.OperationalIntentState.Accepted:
+    if op_intent_ref.state == f3548_v21.OperationalIntentState.Accepted:
         return f3548_v21.OperationalIntent(
             reference=op_intent_ref,
             details=f3548_v21.OperationalIntentDetails(
@@ -367,7 +367,7 @@ def get_down_uss_op_intent(
             ),
         )
 
-    elif op_intent_ref == f3548_v21.OperationalIntentState.Activated:
+    elif op_intent_ref.state == f3548_v21.OperationalIntentState.Activated:
         return f3548_v21.OperationalIntent(
             reference=op_intent_ref,
             details=f3548_v21.OperationalIntentDetails(
@@ -377,8 +377,8 @@ def get_down_uss_op_intent(
         )
 
     elif (
-        op_intent_ref == f3548_v21.OperationalIntentState.Contingent
-        or op_intent_ref == f3548_v21.OperationalIntentState.Nonconforming
+        op_intent_ref.state == f3548_v21.OperationalIntentState.Contingent
+        or op_intent_ref.state == f3548_v21.OperationalIntentState.Nonconforming
     ):
         return f3548_v21.OperationalIntent(
             reference=op_intent_ref,
