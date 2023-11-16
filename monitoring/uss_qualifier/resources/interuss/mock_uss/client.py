@@ -135,7 +135,7 @@ class MockUSSSpecification(ImplicitDict):
     """Test participant responsible for this mock USS."""
 
     timeout_seconds: Optional[float] = None
-    """Number of seconds to allow for requests to this flight planner.  If None, use default."""
+    """Number of seconds to allow for requests to this mock_uss instance.  If None, use default."""
 
 
 class MockUSSResource(Resource[MockUSSSpecification]):
