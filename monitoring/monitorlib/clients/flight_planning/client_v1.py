@@ -1,16 +1,13 @@
-import json
 import uuid
-from typing import Optional
-
+from typing import Optional, Set
+from loguru import logger
 from implicitdict import ImplicitDict
 from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
-    PlanningActivityError,
 )
 from monitoring.monitorlib.clients.flight_planning.test_preparation import (
     TestPreparationActivityResponse,
 )
-
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     FlightInfo,
     FlightID,
@@ -23,18 +20,24 @@ from monitoring.monitorlib.fetch import query_and_describe, QueryType
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
-
+from monitoring.monitorlib.clients.flight_planning.client import PlanningActivityError
+from monitoring.monitorlib.clients.flight_planning.planning import (
+    PlanningActivityResult,
+    FlightPlanStatus,
+)
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api
 from uas_standards.interuss.automated_testing.flight_planning.v1.constants import Scope
 
 
 class V1FlightPlannerClient(FlightPlannerClient):
     _session: UTMClientSession
-    _participant_id: ParticipantID
+    participant_id: ParticipantID
+    base_url: str
 
     def __init__(self, session: UTMClientSession, participant_id: ParticipantID):
         self._session = session
-        self._participant_id = participant_id
+        self.participant_id = participant_id
+        self.created_flight_ids: Set[str] = set()
 
     def _inject(
         self,
@@ -61,8 +64,10 @@ class V1FlightPlannerClient(FlightPlannerClient):
             url,
             json=req,
             scope=Scope.Plan,
-            participant_id=self._participant_id,
-            query_type=QueryType.InterUSSFlightPlanningV1UpsertFlightPlan,
+            participant_id=self.participant_id,
+            query_type=QueryType.InterUSSFlightPlanningV1UpsertFlightPlan
+            if additional_fields
+            else None,
         )
         if query.status_code != 200 and query.status_code != 201:
             raise PlanningActivityError(
@@ -77,6 +82,15 @@ class V1FlightPlannerClient(FlightPlannerClient):
             raise PlanningActivityError(
                 f"Response to plan flight could not be parsed: {str(e)}", query
             )
+
+        created_status = [
+            FlightPlanStatus.Planned,
+            FlightPlanStatus.OkToFly,
+            FlightPlanStatus.OffNominal,
+        ]
+        if resp.planning_result == PlanningActivityResult.Completed:
+            if resp.flight_plan_status in created_status:
+                self.created_flight_ids.add(str(flight_plan_id))
 
         response = PlanningActivityResponse(
             flight_id=flight_plan_id,
@@ -122,7 +136,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
             op.verb,
             url,
             scope=Scope.Plan,
-            participant_id=self._participant_id,
+            participant_id=self.participant_id,
             query_type=QueryType.InterUSSFlightPlanningV1DeleteFlightPlan,
         )
         if query.status_code != 200:
@@ -138,7 +152,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
             raise PlanningActivityError(
                 f"Response to delete flight plan could not be parsed: {str(e)}", query
             )
-
+        self.created_flight_ids.discard(str(flight_id))
         response = PlanningActivityResponse(
             flight_id=flight_id,
             queries=[query],
@@ -154,7 +168,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
             op.verb,
             op.path,
             scope=Scope.DirectAutomatedTest,
-            participant_id=self._participant_id,
+            participant_id=self.participant_id,
             query_type=QueryType.InterUSSFlightPlanningV1GetStatus,
         )
         if query.status_code != 200:
@@ -192,7 +206,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
             op.path,
             json=req,
             scope=Scope.DirectAutomatedTest,
-            participant_id=self._participant_id,
+            participant_id=self.participant_id,
             query_type=QueryType.InterUSSFlightPlanningV1ClearArea,
         )
         if query.status_code != 200:

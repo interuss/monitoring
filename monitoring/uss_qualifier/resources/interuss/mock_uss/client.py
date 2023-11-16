@@ -4,11 +4,15 @@ from loguru import logger
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import fetch
+from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
+from monitoring.monitorlib.clients.flight_planning.client_v1 import (
+    V1FlightPlannerClient,
+)
 from monitoring.monitorlib.clients.mock_uss.locality import (
     GetLocalityResponse,
     PutLocalityRequest,
 )
-from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.fetch import QueryError, Query
 from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession
 from monitoring.monitorlib.locality import LocalityCode
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
@@ -24,22 +28,27 @@ from monitoring.monitorlib.clients.mock_uss.interactions import (
 from typing import Tuple, List
 from implicitdict import StringBasedDateTime
 
-
 MOCK_USS_CONFIG_SCOPE = "interuss.mock_uss.configure"
 
 
 class MockUSSClient(object):
     """Means to communicate with an InterUSS mock_uss instance"""
 
+    flight_planner: FlightPlannerClient
+
     def __init__(
         self,
         participant_id: str,
         base_url: str,
         auth_adapter: AuthAdapter,
+        timeout_seconds: Optional[float] = None,
     ):
         self.base_url = base_url
-        self.session = UTMClientSession(base_url, auth_adapter)
+        self.session = UTMClientSession(base_url, auth_adapter, timeout_seconds)
         self.participant_id = participant_id
+        v1_base_url = base_url + "/flight_planning/v1"
+        self.session_fp = UTMClientSession(v1_base_url, auth_adapter, timeout_seconds)
+        self.flight_planner = V1FlightPlannerClient(self.session_fp, participant_id)
 
     def get_status(self) -> fetch.Query:
         return fetch.query_and_describe(
@@ -108,7 +117,8 @@ class MockUSSClient(object):
                 msg=f"RecordedInteractionsResponse from mock_uss response contained invalid JSON: {str(e)}",
                 queries=[query],
             )
-        return response.interactions
+
+        return response.interactions, query
 
 
 class MockUSSSpecification(ImplicitDict):
@@ -124,6 +134,9 @@ class MockUSSSpecification(ImplicitDict):
     participant_id: ParticipantID
     """Test participant responsible for this mock USS."""
 
+    timeout_seconds: Optional[float] = None
+    """Number of seconds to allow for requests to this flight planner.  If None, use default."""
+
 
 class MockUSSResource(Resource[MockUSSSpecification]):
     mock_uss: MockUSSClient
@@ -137,6 +150,7 @@ class MockUSSResource(Resource[MockUSSSpecification]):
             specification.participant_id,
             specification.mock_uss_base_url,
             auth_adapter.adapter,
+            specification.timeout_seconds,
         )
 
 

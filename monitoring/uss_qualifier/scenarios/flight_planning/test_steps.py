@@ -1,10 +1,23 @@
 import inspect
 from typing import List, Optional, Tuple, Iterable, Set, Dict, Union
-
 from monitoring.monitorlib.geotemporal import Volume4DCollection
+from monitoring.monitorlib.clients.flight_planning.client import PlanningActivityError
+from monitoring.monitorlib.clients.flight_planning.planning import (
+    PlanningActivityResult,
+    FlightPlanStatus,
+)
+
+from monitoring.monitorlib.clients.flight_planning.client_v1 import (
+    FlightPlannerClient,
+)
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    FlightInfo,
+    ExecutionStyle,
+)
+from monitoring.monitorlib.fetch import QueryError, Query
+
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
-from monitoring.monitorlib.fetch import QueryError
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
     InjectFlightResponseResult,
@@ -370,6 +383,344 @@ def cleanup_flights(
             ) as check:
                 try:
                     resp, query = flight_planner.cleanup_flight(flight_id)
+                    scenario.record_query(query)
+                except QueryError as e:
+                    for q in e.queries:
+                        scenario.record_query(q)
+                    check.record_failed(
+                        summary=f"Failed to clean up flight {flight_id} from {flight_planner.participant_id}",
+                        severity=Severity.Medium,
+                        details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
+                        query_timestamps=[q.request.timestamp for q in e.queries],
+                    )
+                    continue
+
+                if resp.result == DeleteFlightResponseResult.Closed:
+                    removed.append(flight_id)
+                else:
+                    check.record_failed(
+                        summary="Failed to delete flight",
+                        details=f"USS indicated: {resp.notes}"
+                        if "notes" in resp
+                        else "See query",
+                        severity=Severity.Medium,
+                        query_timestamps=[query.request.timestamp],
+                    )
+
+
+def plan_flight(
+    scenario: TestScenarioType,
+    test_step: str,
+    flight_planner: FlightPlannerClient,
+    flight_info: FlightInfo,
+    additional_fields: Optional[dict] = None,
+) -> Tuple[InjectFlightResponse, Optional[str]]:
+    """Plan a flight intent that should result in success.
+
+    This function implements the test step described in
+    plan_flight_intent.md.
+
+    Returns:
+      * The injection response.
+      * The ID of the injected flight if it is returned, None otherwise.
+    """
+    return submit_flight(
+        scenario=scenario,
+        test_step=test_step,
+        success_check="Successful planning",
+        expected_results={InjectFlightResponseResult.Planned},
+        failed_checks={InjectFlightResponseResult.Failed: "Failure"},
+        flight_planner=flight_planner,
+        flight_info=flight_info,
+        additional_fields=additional_fields,
+    )
+
+
+def submit_flight(
+    scenario: TestScenarioType,
+    test_step: str,
+    success_check: str,
+    expected_results: Set[InjectFlightResponseResult],
+    failed_checks: Dict[InjectFlightResponseResult, Union[str, Tuple[str, Severity]]],
+    flight_planner: FlightPlannerClient,
+    flight_info: FlightInfo,
+    flight_id: Optional[str] = None,
+    additional_fields: Optional[dict] = None,
+) -> Tuple[InjectFlightResponse, Optional[str]]:
+    """Submit a flight intent with an expected result.
+    A check fail is considered by default of high severity and as such will raise an ScenarioCannotContinueError.
+    The severity of each failed check may be overridden if needed.
+
+    This function does not directly implement a test step.
+
+    Returns:
+      * The injection response.
+      * The ID of the injected flight if it is returned, None otherwise.
+    """
+
+    scenario.begin_test_step(test_step)
+    with scenario.check(success_check, [flight_planner.participant_id]) as check:
+        try:
+            resp, query, flight_id = request_flight(
+                flight_planner, flight_info, flight_id, additional_fields
+            )
+        except QueryError as e:
+            for q in e.queries:
+                scenario.record_query(q)
+            check.record_failed(
+                summary=f"Error from {flight_planner.participant_id} when attempting to submit a flight intent (flight ID: {flight_id})",
+                severity=Severity.High,
+                details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
+                query_timestamps=[q.request.timestamp for q in e.queries],
+            )
+        scenario.record_query(query)
+        notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
+
+        for unexpected_result, failed_test_check in failed_checks.items():
+            if isinstance(failed_test_check, str):
+                check_name = failed_test_check
+                check_severity = Severity.High
+            else:
+                check_name, check_severity = failed_test_check
+
+            with scenario.check(
+                check_name, [flight_planner.participant_id]
+            ) as specific_failed_check:
+                if resp.result == unexpected_result:
+                    specific_failed_check.record_failed(
+                        summary=f"Flight unexpectedly {resp.result}",
+                        severity=check_severity,
+                        details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}{notes_suffix}',
+                        query_timestamps=[query.request.timestamp],
+                    )
+
+        if resp.result in expected_results:
+            scenario.end_test_step()
+            return resp, flight_id
+        else:
+            check.record_failed(
+                summary=f"Flight unexpectedly {resp.result}",
+                severity=Severity.High,
+                details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}{notes_suffix}',
+                query_timestamps=[query.request.timestamp],
+            )
+
+    raise RuntimeError(
+        "Error with submission of flight intent, but a High Severity issue didn't interrupt execution"
+    )
+
+
+def request_flight(
+    flight_planner: FlightPlannerClient,
+    flight_info: FlightInfo,
+    flight_id: Optional[str],
+    additional_fields: Optional[dict] = None,
+) -> Tuple[InjectFlightResponse, Query, str]:
+    """
+    This method is needed till we are able to have checks with PlanningActivityResult.
+    Uses FlightPlannerClient to plan the flight
+    Args:
+        flight_planner:
+        flight_info:
+        flight_id:
+
+    Returns:
+        InjectFlightResponse, Query, flight_id
+    """
+    if not flight_id:
+        try:
+            resp = flight_planner.try_plan_flight(
+                flight_info, ExecutionStyle.IfAllowed, additional_fields
+            )
+        except PlanningActivityError as e:
+            raise QueryError(str(e), e.queries)
+        flight_id = resp.flight_id
+    else:
+        try:
+            resp = flight_planner.try_update_flight(
+                flight_id, flight_info, ExecutionStyle.IfAllowed
+            )
+        except PlanningActivityError as e:
+            raise QueryError(str(e), e.queries)
+
+    if resp.activity_result == PlanningActivityResult.Failed:
+        result = InjectFlightResponseResult.Failed
+    elif resp.activity_result == PlanningActivityResult.NotSupported:
+        result = InjectFlightResponseResult.NotSupported
+    elif resp.activity_result == PlanningActivityResult.Rejected:
+        result = InjectFlightResponseResult.Rejected
+    elif resp.activity_result == PlanningActivityResult.Completed:
+        if resp.flight_plan_status == FlightPlanStatus.Planned:
+            result = InjectFlightResponseResult.Planned
+        elif resp.flight_plan_status == FlightPlanStatus.OkToFly:
+            result = InjectFlightResponseResult.ReadyToFly
+        elif resp.flight_plan_status == FlightPlanStatus.OffNominal:
+            result = InjectFlightResponseResult.ReadyToFly
+        else:
+            raise NotImplementedError(
+                f"Unable to handle '{resp.flight_plan_status}' FlightPlanStatus with {resp.activity_result} PlanningActivityResult"
+            )
+    else:
+        raise NotImplementedError(
+            f"Unable to handle '{resp.activity_result}' PlanningActivityResult"
+        )
+
+    response = InjectFlightResponse(
+        result=result,
+        operational_intent_id="<not provided>",
+    )
+
+    return response, resp.queries[0], flight_id
+
+
+def cleanup_flight(
+    flight_planner: FlightPlannerClient, flight_id: str
+) -> Tuple[DeleteFlightResponse, Query]:
+    """
+    This method is required till we are able to have checks with PlanningActivityResult
+    Args:
+        flight_planner:
+        flight_id:
+
+    Returns:
+
+    """
+    try:
+        resp = flight_planner.try_end_flight(flight_id, ExecutionStyle.IfAllowed)
+    except PlanningActivityError as e:
+        raise QueryError(str(e), e.queries)
+
+    if (
+        resp.activity_result == PlanningActivityResult.Completed
+        and resp.flight_plan_status == FlightPlanStatus.Closed
+    ):
+        flight_planner.created_flight_ids.discard(str(flight_id))
+        return (
+            DeleteFlightResponse(result=DeleteFlightResponseResult.Closed),
+            resp.queries[0],
+        )
+    else:
+        return (
+            DeleteFlightResponse(result=DeleteFlightResponseResult.Failed),
+            resp.queries[0],
+        )
+
+
+def delete_flight(
+    scenario: TestScenarioType,
+    test_step: str,
+    flight_planner: FlightPlannerClient,
+    flight_id: str,
+) -> DeleteFlightResponse:
+    """Delete an existing flight intent that should result in success.
+    A check fail is considered of high severity and as such will raise an ScenarioCannotContinueError.
+
+    This function implements the test step described in `delete_flight_intent.md`.
+
+    Returns: The deletion response.
+    """
+    scenario.begin_test_step(test_step)
+    with scenario.check(
+        "Successful deletion", [flight_planner.participant_id]
+    ) as check:
+        try:
+            resp, query = cleanup_flight(flight_planner, flight_id)
+        except QueryError as e:
+            for q in e.queries:
+                scenario.record_query(q)
+            check.record_failed(
+                summary=f"Error from {flight_planner.participant_id} when attempting to delete a flight intent (flight ID: {flight_id})",
+                severity=Severity.High,
+                details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
+                query_timestamps=[q.request.timestamp for q in e.queries],
+            )
+        scenario.record_query(query)
+        notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
+
+        if resp.result == DeleteFlightResponseResult.Closed:
+            scenario.end_test_step()
+            return resp
+        else:
+            check.record_failed(
+                summary=f"Flight deletion attempt unexpectedly {resp.result}",
+                severity=Severity.High,
+                details=f"{flight_planner.participant_id} indicated {resp.result} rather than the expected {DeleteFlightResponseResult.Closed}{notes_suffix}",
+                query_timestamps=[query.request.timestamp],
+            )
+
+    raise RuntimeError(
+        "Error with deletion of flight intent, but a High Severity issue didn't interrupt execution"
+    )
+
+
+def clear_area_fp_client(
+    scenario: TestScenarioType,
+    test_step: str,
+    flight_intents: List[FlightIntent],
+    flight_planners: List[FlightPlannerClient],
+) -> None:
+    """Perform a test step to clear the area that will be used in the scenario.
+
+    This function assumes:
+    * `scenario` is ready to execute a test step
+    * "Area cleared successfully" check declared for specified test step in `scenario`'s documentation
+
+    Args:
+      scenario: Scenario in which this step is being executed
+      test_step: Name of this test step (according to scenario's documentation)
+      flight_intents: Flight intents to be used in this test case (defines bounds of area to be cleared)
+      flight_planners: Flight planners to which clear area requests should be issued
+    """
+    scenario.begin_test_step(test_step)
+
+    volumes = []
+    for flight_intent in flight_intents:
+        volumes += flight_intent.request.operational_intent.volumes
+        volumes += flight_intent.request.operational_intent.off_nominal_volumes
+    extent = Volume4DCollection.from_f3548v21(volumes).bounding_volume
+    for uss in flight_planners:
+        with scenario.check("Area cleared successfully", [uss.participant_id]) as check:
+            try:
+                resp = uss.clear_area(extent)
+            except PlanningActivityError as e:
+                for q in e.queries:
+                    scenario.record_query(q)
+                check.record_failed(
+                    summary=f"Error from {uss.participant_id} when attempting to clear area",
+                    severity=Severity.High,
+                    details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
+                    query_timestamps=[q.request.timestamp for q in e.queries],
+                )
+            scenario.record_query(resp.queries[0])
+            if resp.errors:
+                check.record_failed(
+                    summary="Area could not be cleared",
+                    severity=Severity.High,
+                    details=f'Participant indicated "{resp.errors}"',
+                    query_timestamps=[resp.queries[0].request.timestamp],
+                )
+
+    scenario.end_test_step()
+
+
+def cleanup_flights_fp_client(
+    scenario: TestScenarioType, flight_planners: Iterable[FlightPlannerClient]
+) -> None:
+    """Remove flights during a cleanup test step.
+
+    This function assumes:
+    * `scenario` is currently cleaning up (cleanup has started)
+    * "Successful flight deletion" check declared for cleanup phase in `scenario`'s documentation
+    """
+    for flight_planner in flight_planners:
+        removed = []
+        to_remove = flight_planner.created_flight_ids.copy()
+        for flight_id in to_remove:
+            with scenario.check(
+                "Successful flight deletion", [flight_planner.participant_id]
+            ) as check:
+                try:
+                    resp, query = cleanup_flight(flight_planner, flight_id)
                     scenario.record_query(query)
                 except QueryError as e:
                     for q in e.queries:

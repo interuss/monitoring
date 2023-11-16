@@ -227,13 +227,14 @@ services:
       - MOCK_USS_PUBLIC_KEY=/var/test-certs/auth2.pem
       - MOCK_USS_TOKEN_AUDIENCE=scdsc.log.uss6.localutm,localhost,host.docker.internal
       - MOCK_USS_BASE_URL=http://scdsc.log.uss6.localutm
-      - MOCK_USS_SERVICES=scdsc,interaction_logging
+      - MOCK_USS_SERVICES=scdsc,interaction_logging,flight_planning
       - MOCK_USS_INTERACTIONS_LOG_DIR=output/scdsc_interaction_logs
       - MOCK_USS_PORT=80
     expose:
       - 80
     ports:
       - 8095:80
+      - 5678:5678
     volumes:
       - ../../build/test-certs:/var/test-certs:ro
       - ./output/scdsc_interaction_logs:/app/monitoring/mock_uss/output/scdsc_interaction_logs
