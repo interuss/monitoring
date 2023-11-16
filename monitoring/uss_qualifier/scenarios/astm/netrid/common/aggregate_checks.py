@@ -79,10 +79,10 @@ class AggregateChecks(GenericTestScenario):
 
         for query in self._queries:
             for base_url, participant in self._participants_by_base_url.items():
-                if query.request.url.startswith(base_url):
-                    self._queries_by_participant[participant].append(query)
-                    # TODO opportunity here to set the participant_id on the query if it's not already there
-                    #  maybe do so after most/all queries have been tagged at the call site where possible
+                if query.request.url.startswith(
+                    base_url
+                ) and not query.has_field_with_value("participant_id"):
+                    query.participant_id = participant
                     break
 
             # Only consider queries with the participant/server explicitly identified
@@ -371,4 +371,9 @@ class AggregateChecks(GenericTestScenario):
             self.record_note(
                 f"{participant}/display_data",
                 f"percentiles on {len(relevant_queries)} relevant queries ({len(relevant_queries_by_url)} different URLs, {len(init_durations)} initial queries, {len(subsequent_durations)} subsequent queries): init 95th: {init_95th}; init 99th: {init_99th}; subsequent 95th: {subsequent_95th}; subsequent 99th: {subsequent_99th}",
+            )
+
+            self.record_note(
+                f"{participant}/display_data details",
+                f"Initial durations: {init_durations} subsequent durations: {subsequent_durations}",
             )
