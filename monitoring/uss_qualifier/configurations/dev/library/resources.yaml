@@ -115,8 +115,9 @@ che_invalid_flight_auth_flights:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
   resource_type: resources.flight_planning.FlightIntentsResource
   specification:
-    file:
-      path: file://./test_data/che/flight_intents/invalid_flight_auths.yaml
+    intent_collection:
+      # Note that $refs are relative to the file with the $ref (this one, in this case)
+      $ref: file://../../../test_data/che/flight_intents/invalid_flight_auths.yaml
 
 che_conflicting_flights:
   # Includes flight intents for both equal-priority-not-permitted and higher-priority
@@ -132,14 +133,16 @@ che_invalid_flight_intents:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
   resource_type: resources.flight_planning.FlightIntentsResource
   specification:
-    file:
-      path: test_data.che.flight_intents.invalid_flight_intents
+    intent_collection:
+      # Note that $refs may use package-based paths
+      $ref: test_data.che.flight_intents.invalid_flight_intents
 
 che_general_flight_auth_flights:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
   resource_type: resources.flight_planning.FlightIntentsResource
   specification:
     file:
+      # Note that ExternalFile local file paths are relative to the uss_qualifier folder
       path: file://./test_data/che/flight_intents/general_flight_auth_flights.yaml
 
 che_non_conflicting_flights:
@@ -147,6 +150,7 @@ che_non_conflicting_flights:
   resource_type: resources.flight_planning.FlightIntentsResource
   specification:
     file:
+      # Note that ExternalFile paths may be package-based
       path: test_data.che.flight_intents.non_conflicting
 
 # ===== General flight authorization =====

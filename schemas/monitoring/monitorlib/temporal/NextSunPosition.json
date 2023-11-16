@@ -1,0 +1,29 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/temporal/NextSunPosition.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.monitorlib.temporal.NextSunPosition, as defined in monitoring/monitorlib/temporal.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "elevation_deg": {
+      "description": "Elevation of the center of the sun above horizontal, in degrees.",
+      "type": "number"
+    },
+    "observed_from": {
+      "$ref": "../geo/LatLngPoint.json",
+      "description": "The location on earth observing the sun."
+    },
+    "starting_from": {
+      "$ref": "TestTime.json",
+      "description": "The time after which the first time the sun is at the specified position should be found."
+    }
+  },
+  "required": [
+    "elevation_deg",
+    "observed_from",
+    "starting_from"
+  ],
+  "type": "object"
+}

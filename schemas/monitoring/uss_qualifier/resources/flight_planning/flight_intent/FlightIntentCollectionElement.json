@@ -1,0 +1,34 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/flight_planning/flight_intent/FlightIntentCollectionElement.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Definition of a single flight intent within a FlightIntentCollection.  Exactly one field must be specified.\n\nmonitoring.uss_qualifier.resources.flight_planning.flight_intent.FlightIntentCollectionElement, as defined in monitoring/uss_qualifier/resources/flight_planning/flight_intent.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "delta": {
+      "description": "If specified, a flight planning intent based on another flight intent, but with some changes.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "DeltaFlightIntent.json"
+        }
+      ]
+    },
+    "full": {
+      "description": "If specified, the full definition of the flight planning intent.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../../../../monitorlib/clients/flight_planning/flight_info_template/FlightInfoTemplate.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

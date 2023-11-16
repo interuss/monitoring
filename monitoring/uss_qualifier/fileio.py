@@ -135,9 +135,19 @@ def _load_dict_with_references_from_file_name(
         and not base_file_name.startswith(HTTPS_PREFIX)
         and not base_file_name.startswith("/")
     ):
-        # This is a relative file path; it should be relative to the context
-        root_path = os.path.dirname(context_file_name)
-        base_file_name = os.path.join(root_path, base_file_name)
+        if (
+            base_file_name.startswith(".")
+            or "/" in base_file_name
+            or "\\" in base_file_name
+            or base_file_name.lower().endswith(".yaml")
+            or base_file_name.lower().endswith(".json")
+        ):
+            # This is a relative file path; it should be relative to the context
+            root_path = os.path.dirname(context_file_name)
+            base_file_name = os.path.join(root_path, base_file_name)
+        else:
+            # This is a package-based file path
+            base_file_name = resolve_filename(base_file_name)
 
     base_file_name = os.path.abspath(base_file_name)
 

@@ -7,7 +7,6 @@ from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
 )
 from monitoring.monitorlib.geotemporal import Volume4DCollection
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
@@ -38,7 +37,6 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioCannotContinueError,
 )
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
-    clear_area,
     plan_flight_intent,
     cleanup_flights,
     activate_flight_intent,
@@ -227,11 +225,6 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             f"{self.control_uss.config.participant_id}",
         )
 
-        self.begin_test_case("Setup")
-        if not self._setup():
-            return
-        self.end_test_case()
-
         self.begin_test_case("Attempt to plan flight into conflict")
         flight_2_oi_ref = self._attempt_plan_flight_conflict()
         self.end_test_case()
@@ -257,43 +250,6 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
         self.end_test_case()
 
         self.end_test_scenario()
-
-    def _setup(self) -> bool:
-        self.begin_test_step("Check for flight planning readiness")
-
-        for uss in (self.tested_uss, self.control_uss):
-            error, query = uss.get_readiness()
-            self.record_query(query)
-            with self.check(
-                "Flight planning USS not ready", [uss.participant_id]
-            ) as check:
-                if error:
-                    check.record_failed(
-                        "Error determining readiness",
-                        Severity.High,
-                        "Error: " + error,
-                        query_timestamps=[query.request.timestamp],
-                    )
-
-        self.end_test_step()
-
-        clear_area(
-            self,
-            "Area clearing",
-            [
-                self.flight_1_planned_vol_A,
-                self.flight_1_activated_vol_A,
-                self.flight_1_activated_vol_A_extended,
-                self.flight_1_planned_vol_B,
-                self.flight_1_activated_vol_B,
-                self.flight_2_equal_prio_planned_vol_B,
-                self.flight_2_equal_prio_activated_vol_B,
-                self.flight_2_equal_prio_nonconforming_vol_A,
-            ],
-            [self.tested_uss, self.control_uss],
-        )
-
-        return True
 
     def _attempt_plan_flight_conflict(self) -> OperationalIntentReference:
         with OpIntentValidator(
