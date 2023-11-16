@@ -357,6 +357,11 @@ def get_down_uss_op_intent(
      conflict, that way we can just retrieve the conflicting area instead of having to compute again the intersection
      between the flight to be planned and the conflicting operational intent.
     """
+
+    # at that point the value of the OVN as it is returned by the DSS may be `Available from USS`, so we explicitly
+    # remove it so that it is excluded from the key
+    op_intent_ref.ovn = None
+
     # USS is declared as down and does not answer for details : minimum - 1
     if op_intent_ref == f3548_v21.OperationalIntentState.Accepted:
         return f3548_v21.OperationalIntent(
@@ -437,7 +442,11 @@ def check_op_intent(
             new_flight.op_intent, existing_flight, op_intents, locality, log
         )
 
-        key = [f3548_v21.EntityOVN(op.reference.ovn) for op in op_intents]
+        key = [
+            f3548_v21.EntityOVN(op.reference.ovn)
+            for op in op_intents
+            if op.reference.ovn is not None
+        ]
     else:
         # Flight is not nominal and therefore doesn't need to check intersections
         key = []
