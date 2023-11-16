@@ -1,6 +1,5 @@
 import uuid
 from typing import Optional, Set
-from loguru import logger
 from implicitdict import ImplicitDict
 from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
