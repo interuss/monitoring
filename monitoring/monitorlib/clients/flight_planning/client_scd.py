@@ -123,6 +123,16 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 scd_api.InjectFlightResponseResult.NotSupported: old_state,
             }[resp.result],
         )
+
+        created_status = [
+            FlightPlanStatus.Planned,
+            FlightPlanStatus.OkToFly,
+            FlightPlanStatus.OffNominal,
+        ]
+        if response.planning_result == PlanningActivityResult.Completed:
+            if resp.flight_plan_status in created_status:
+                self.created_flight_ids.add(str(flight_id))
+
         self._plan_statuses[flight_id] = response.flight_plan_status
         return response
 
@@ -186,6 +196,8 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         )
         if resp.result == scd_api.DeleteFlightResponseResult.Closed:
             del self._plan_statuses[flight_id]
+            self.created_flight_ids.discard(str(flight_id))
+
         else:
             self._plan_statuses[flight_id] = response.flight_plan_status
         return response
@@ -247,5 +259,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
             errors = None
         else:
             errors = [f"[{resp.outcome.timestamp}]: {resp.outcome.message}"]
+
+        self.created_flight_ids.clear()
 
         return TestPreparationActivityResponse(errors=errors, queries=[query])
