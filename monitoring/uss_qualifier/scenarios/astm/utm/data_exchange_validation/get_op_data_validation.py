@@ -24,11 +24,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_s
     plan_flight_intent_expect_failed,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import OpIntentValidator
-from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
-    expect_interuss_post_interactions,
-    expect_interuss_get_interactions,
-    expect_no_interuss_post_interactions,
-)
+
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUssFlightBehavior,
 )
