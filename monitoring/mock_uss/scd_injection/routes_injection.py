@@ -180,6 +180,7 @@ def inject_flight(
         return unsuccessful(PlanningActivityResult.Rejected, str(e))
 
     step_name = "performing unknown operation"
+    notes: Optional[str] = None
     try:
         step_name = "checking F3548-21 operational intent"
         try:
@@ -188,7 +189,13 @@ def inject_flight(
             return unsuccessful(PlanningActivityResult.Rejected, str(e))
 
         step_name = "sharing operational intent in DSS"
-        record = share_op_intent(new_flight, existing_flight, key, log)
+        record, notif_errors = share_op_intent(new_flight, existing_flight, key, log)
+        if notif_errors:
+            notif_errors_messages = [
+                f"{url}: {str(err)}" for url, err in notif_errors.items()
+            ]
+            notes = f"Injection succeeded, but notification to some subscribers failed: {'; '.join(notif_errors_messages)}"
+            log(notes)
 
         # Store flight in database
         step_name = "storing flight in database"
@@ -204,6 +211,7 @@ def inject_flight(
             queries=[],  # TODO: Add queries used
             activity_result=PlanningActivityResult.Completed,
             flight_plan_status=FlightPlanStatus.from_flightinfo(record.flight_info),
+            notes=notes,
         )
     except (ValueError, ConnectionError) as e:
         notes = (
@@ -277,10 +285,18 @@ def delete_flight(flight_id) -> PlanningActivityResponse:
 
     # Delete operational intent from DSS
     step_name = "performing unknown operation"
+    notes: Optional[str] = None
     try:
         step_name = f"deleting operational intent {flight.op_intent.reference.id} with OVN {flight.op_intent.reference.ovn} from DSS"
         log(step_name)
-        delete_op_intent(flight.op_intent.reference, log)
+        notif_errors = delete_op_intent(flight.op_intent.reference, log)
+        if notif_errors:
+            notif_errors_messages = [
+                f"{url}: {str(err)}" for url, err in notif_errors.items()
+            ]
+            notes = f"Deletion succeeded, but notification to some subscribers failed: {'; '.join(notif_errors_messages)}"
+            log(notes)
+
     except (ValueError, ConnectionError) as e:
         notes = (
             f"{e.__class__.__name__} while {step_name} for flight {flight_id}: {str(e)}"
@@ -307,6 +323,7 @@ def delete_flight(flight_id) -> PlanningActivityResponse:
         queries=[],
         activity_result=PlanningActivityResult.Completed,
         flight_plan_status=FlightPlanStatus.Closed,
+        notes=notes,
     )
 
 

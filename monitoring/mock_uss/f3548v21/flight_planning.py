@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Optional, List, Callable
+from typing import Optional, List, Callable, Dict, Tuple
 
 import arrow
 
@@ -459,7 +459,18 @@ def share_op_intent(
     existing_flight: Optional[FlightRecord],
     key: List[f3548_v21.EntityOVN],
     log: Callable[[str], None],
-):
+) -> Tuple[FlightRecord, Dict[f3548_v21.SubscriptionUssBaseURL, Exception]]:
+    """Share the operational intent reference with the DSS in compliance with ASTM F3548-21.
+
+    Returns:
+        The flight record shared;
+        Notification errors if any, by subscriber.
+
+    Raises:
+        * QueryError
+        * ConnectionError
+        * requests.exceptions.ConnectionError
+    """
     # Create operational intent in DSS
     log("Sharing operational intent with DSS")
     base_url = new_flight.op_intent.reference.uss_base_url
@@ -498,30 +509,26 @@ def share_op_intent(
         mod_op_sharing_behavior=new_flight.mod_op_sharing_behavior,
     )
     operational_intent = op_intent_from_flightrecord(record, "POST")
-    for subscriber in result.subscribers:
-        if subscriber.uss_base_url == base_url:
-            # Do not notify ourselves
-            continue
-        update = f3548_v21.PutOperationalIntentDetailsParameters(
-            operational_intent_id=result.operational_intent_reference.id,
-            operational_intent=operational_intent,
-            subscriptions=subscriber.subscriptions,
-        )
-        log(f"Notifying subscriber at {subscriber.uss_base_url}")
-        scd_client.notify_operational_intent_details_changed(
-            utm_client, subscriber.uss_base_url, update
-        )
-    return record
+    notif_errors = notify_subscribers(
+        result.operational_intent_reference.id,
+        operational_intent,
+        result.subscribers,
+        log,
+    )
+    return record, notif_errors
 
 
 def delete_op_intent(
     op_intent_ref: f3548_v21.OperationalIntentReference, log: Callable[[str], None]
-):
+) -> Dict[f3548_v21.SubscriptionUssBaseURL, Exception]:
     """Remove the operational intent reference from the DSS in compliance with ASTM F3548-21.
 
     Args:
         op_intent_ref: Operational intent reference to remove.
         log: Means of indicating debugging information.
+
+    Returns:
+        Notification errors if any, by subscriber.
 
     Raises:
         * QueryError
@@ -533,17 +540,42 @@ def delete_op_intent(
         op_intent_ref.id,
         op_intent_ref.ovn,
     )
+    return notify_subscribers(
+        result.operational_intent_reference.id, None, result.subscribers, log
+    )
 
+
+def notify_subscribers(
+    op_intent_id: f3548_v21.EntityID,
+    op_intent: Optional[f3548_v21.OperationalIntent],
+    subscribers: List[f3548_v21.SubscriberToNotify],
+    log: Callable[[str], None],
+) -> Dict[f3548_v21.SubscriptionUssBaseURL, Exception]:
+    """
+    Notify subscribers of a changed or deleted operational intent.
+    This function will attempt all notifications, even if some of them fail.
+
+    :return: Notification errors if any, by subscriber.
+    """
+    notif_errors: Dict[f3548_v21.SubscriptionUssBaseURL, Exception] = {}
     base_url = "{}/mock/scd".format(webapp.config[KEY_BASE_URL])
-    for subscriber in result.subscribers:
+    for subscriber in subscribers:
         if subscriber.uss_base_url == base_url:
             # Do not notify ourselves
             continue
         update = f3548_v21.PutOperationalIntentDetailsParameters(
-            operational_intent_id=result.operational_intent_reference.id,
+            operational_intent_id=op_intent_id,
+            operational_intent=op_intent,
             subscriptions=subscriber.subscriptions,
         )
         log(f"Notifying {subscriber.uss_base_url}")
-        scd_client.notify_operational_intent_details_changed(
-            utm_client, subscriber.uss_base_url, update
-        )
+        try:
+            scd_client.notify_operational_intent_details_changed(
+                utm_client, subscriber.uss_base_url, update
+            )
+        except Exception as e:
+            log(f"Failed to notify {subscriber.uss_base_url}: {str(e)}")
+            notif_errors[subscriber.uss_base_url] = e
+
+    log(f"{len(notif_errors) if notif_errors else 'No'} notifications failed")
+    return notif_errors
