@@ -130,7 +130,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
             FlightPlanStatus.OffNominal,
         ]
         if response.activity_result == PlanningActivityResult.Completed:
-            if resp.flight_plan_status in created_status:
+            if response.flight_plan_status in created_status:
                 self.created_flight_ids.add(str(flight_id))
 
         self._plan_statuses[flight_id] = response.flight_plan_status
