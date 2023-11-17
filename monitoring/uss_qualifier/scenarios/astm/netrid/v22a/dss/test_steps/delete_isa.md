@@ -18,3 +18,15 @@ Because the ISA version must be used in URLs, it must be URL-safe even though th
 ## ISA version matches check
 
 When the ISA is deleted, the DSS returns the version of the ISA in the response body.  If this version does not match the version in the resource path, **[astm.f3411.v22a.DSS0030,b](../../../../../../requirements/astm/f3411/v22a.md)** was not implemented correctly and this check will fail.
+
+## ISA start time matches check
+
+If a start time between slightly before now and an arbitrary time in the future was specified, and the DSS response indicates an ISA start time different from this value, **[astm.f3411.v22a.DSS0030,a](../../../../../../requirements/astm/f3411/v22a.md)** is not implemented correctly and this check will fail.
+
+## ISA end time matches check
+
+The ISA creation request specified an exact end time, so the DSS should have created an ISA ending at exactly that time. If the DSS response indicates the ISA end time is not this value, **[astm.f3411.v22a.DSS0030,a](../../../../../../requirements/astm/f3411/v22a.md)** is not implemented correctly and this check will fail.
+
+## ISA URL matches check
+
+When the ISA is created, the DSS returns the URL of the ISA in the response body. If this URL does not match the URL requested, **[astm.f3411.v22a.DSS0030,a](../../../../../../requirements/astm/f3411/v22a.md)** is not implemented correctly and this check will fail.
