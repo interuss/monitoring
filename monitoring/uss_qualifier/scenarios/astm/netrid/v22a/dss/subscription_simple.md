@@ -34,7 +34,7 @@ If the DSS fails to let us search in the area for which test subscriptions will 
 
 #### Subscription can be queried by ID check
 
-If the DSS cannot be queried for the existing test ID, the DSS is likely not implementing **[astm.f3411.v19.DSS0030,e](../../../../../requirements/astm/f3411/v19.md)** correctly.
+If the DSS cannot be queried for the existing test ID, the DSS is likely not implementing **[astm.f3411.v22a.DSS0030,e](../../../../../requirements/astm/f3411/v22a.md)** correctly.
 
 #### Subscription can be deleted check
 
@@ -390,7 +390,7 @@ The cleanup phase of this test scenario removes the subscription with the known 
 
 #### Subscription can be queried by ID check
 
-If the DSS cannot be queried for the existing test ID, the DSS is likely not implementing **[astm.f3411.v19.DSS0030,e](../../../../../requirements/astm/f3411/v19.md)** correctly.
+If the DSS cannot be queried for the existing test ID, the DSS is likely not implementing **[astm.f3411.v22a.DSS0030,e](../../../../../requirements/astm/f3411/v22a.md)** correctly.
 
 #### Subscription can be deleted check
 
