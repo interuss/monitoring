@@ -210,7 +210,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.begin_test_step(
             "Validate flight 2 shared operational intent with invalid data"
         )
-            # ToDo - Add the test step details
+        # ToDo - Add the test step details
         self.end_test_step()
 
         self.begin_test_step(
@@ -226,9 +226,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             FlightInfo.from_scd_inject_flight_request(self.flight_1.request),
         )
 
-        self.begin_test_step(
-            "Validate flight 1 not shared by tested_uss"
-        )
+        self.begin_test_step("Validate flight 1 not shared by tested_uss")
         # ToDo - Add the test step details
         self.end_test_step()
 

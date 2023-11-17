@@ -51,4 +51,3 @@ def plan_flight_intent_expect_failed(
         flight_planner,
         flight_intent,
     )
-
