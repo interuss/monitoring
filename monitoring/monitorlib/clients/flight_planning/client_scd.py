@@ -26,14 +26,17 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
 from monitoring.monitorlib.fetch import query_and_describe
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 
 
 class SCDFlightPlannerClient(FlightPlannerClient):
     SCD_SCOPE = scd_api_constants.Scope.Inject
     _session: UTMClientSession
     _plan_statuses: Dict[FlightID, FlightPlanStatus]
+    participant_id: ParticipantID
 
-    def __init__(self, session: UTMClientSession):
+    def __init__(self, session: UTMClientSession, participant_id: ParticipantID):
+        super(SCDFlightPlannerClient, self).__init__(participant_id=participant_id)
         self._session = session
         self._plan_statuses = {}
 

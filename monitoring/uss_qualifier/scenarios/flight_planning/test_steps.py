@@ -1,8 +1,8 @@
 import inspect
 from typing import Optional, Tuple, Iterable, Set, Dict, Union
-from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.monitorlib.clients.flight_planning.client import PlanningActivityError
 from monitoring.monitorlib.clients.flight_planning.planning import (
+    PlanningActivityResponse,
     PlanningActivityResult,
     FlightPlanStatus,
 )
@@ -53,6 +53,7 @@ def plan_flight_intent(
     flight_intent: InjectFlightRequest,
 ) -> Tuple[InjectFlightResponse, Optional[str]]:
     """Plan a flight intent that should result in success.
+    Note: This method will be deprecated in favor of plan_flight
 
     This function implements the test step described in
     plan_flight_intent.md.
@@ -202,6 +203,8 @@ def submit_flight_intent(
     flight_id: Optional[str] = None,
 ) -> Tuple[InjectFlightResponse, Optional[str]]:
     """Submit a flight intent with an expected result.
+    Note: This method will be deprecated in favor of submit_flight
+
     A check fail is considered by default of high severity and as such will raise an ScenarioCannotContinueError.
     The severity of each failed check may be overridden if needed.
 
@@ -270,6 +273,8 @@ def delete_flight_intent(
     flight_id: str,
 ) -> DeleteFlightResponse:
     """Delete an existing flight intent that should result in success.
+    Note: This method will be deprecated in favor of delete_flight
+
     A check fail is considered of high severity and as such will raise an ScenarioCannotContinueError.
 
     This function implements the test step described in `delete_flight_intent.md`.
@@ -314,6 +319,7 @@ def cleanup_flights(
     scenario: TestScenarioType, flight_planners: Iterable[FlightPlanner]
 ) -> None:
     """Remove flights during a cleanup test step.
+    Note: This method will be deprecated in favor of cleanup_flights_fp_client
 
     This function assumes:
     * `scenario` is currently cleaning up (cleanup has started)
@@ -359,7 +365,7 @@ def plan_flight(
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     additional_fields: Optional[dict] = None,
-) -> Tuple[InjectFlightResponse, Optional[str]]:
+) -> Tuple[PlanningActivityResponse, Optional[str]]:
     """Plan a flight intent that should result in success.
 
     This function implements the test step described in
@@ -373,8 +379,8 @@ def plan_flight(
         scenario=scenario,
         test_step=test_step,
         success_check="Successful planning",
-        expected_results={InjectFlightResponseResult.Planned},
-        failed_checks={InjectFlightResponseResult.Failed: "Failure"},
+        expected_results={(PlanningActivityResult.Completed, FlightPlanStatus.Planned)},
+        failed_checks={PlanningActivityResult.Failed: "Failure"},
         flight_planner=flight_planner,
         flight_info=flight_info,
         additional_fields=additional_fields,
@@ -385,13 +391,13 @@ def submit_flight(
     scenario: TestScenarioType,
     test_step: str,
     success_check: str,
-    expected_results: Set[InjectFlightResponseResult],
-    failed_checks: Dict[InjectFlightResponseResult, Union[str, Tuple[str, Severity]]],
+    expected_results: Set[Tuple[PlanningActivityResult, FlightPlanStatus]],
+    failed_checks: Dict[PlanningActivityResult, Union[str, Tuple[str, Severity]]],
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     flight_id: Optional[str] = None,
     additional_fields: Optional[dict] = None,
-) -> Tuple[InjectFlightResponse, Optional[str]]:
+) -> Tuple[PlanningActivityResponse, Optional[str]]:
     """Submit a flight intent with an expected result.
     A check fail is considered by default of high severity and as such will raise an ScenarioCannotContinueError.
     The severity of each failed check may be overridden if needed.
@@ -431,7 +437,7 @@ def submit_flight(
             with scenario.check(
                 check_name, [flight_planner.participant_id]
             ) as specific_failed_check:
-                if resp.result == unexpected_result:
+                if resp.activity_result == unexpected_result:
                     specific_failed_check.record_failed(
                         summary=f"Flight unexpectedly {resp.result}",
                         severity=check_severity,
@@ -439,7 +445,7 @@ def submit_flight(
                         query_timestamps=[query.request.timestamp],
                     )
 
-        if resp.result in expected_results:
+        if (resp.activity_result, resp.flight_plan_status) in expected_results:
             scenario.end_test_step()
             return resp, flight_id
         else:
@@ -460,7 +466,7 @@ def request_flight(
     flight_info: FlightInfo,
     flight_id: Optional[str],
     additional_fields: Optional[dict] = None,
-) -> Tuple[InjectFlightResponse, Query, str]:
+) -> Tuple[PlanningActivityResponse, Query, str]:
     """
     This method is needed till we are able to have checks with PlanningActivityResult.
     Uses FlightPlannerClient to plan the flight
@@ -488,39 +494,12 @@ def request_flight(
         except PlanningActivityError as e:
             raise QueryError(str(e), e.queries)
 
-    if resp.activity_result == PlanningActivityResult.Failed:
-        result = InjectFlightResponseResult.Failed
-    elif resp.activity_result == PlanningActivityResult.NotSupported:
-        result = InjectFlightResponseResult.NotSupported
-    elif resp.activity_result == PlanningActivityResult.Rejected:
-        result = InjectFlightResponseResult.Rejected
-    elif resp.activity_result == PlanningActivityResult.Completed:
-        if resp.flight_plan_status == FlightPlanStatus.Planned:
-            result = InjectFlightResponseResult.Planned
-        elif resp.flight_plan_status == FlightPlanStatus.OkToFly:
-            result = InjectFlightResponseResult.ReadyToFly
-        elif resp.flight_plan_status == FlightPlanStatus.OffNominal:
-            result = InjectFlightResponseResult.ReadyToFly
-        else:
-            raise NotImplementedError(
-                f"Unable to handle '{resp.flight_plan_status}' FlightPlanStatus with {resp.activity_result} PlanningActivityResult"
-            )
-    else:
-        raise NotImplementedError(
-            f"Unable to handle '{resp.activity_result}' PlanningActivityResult"
-        )
-
-    response = InjectFlightResponse(
-        result=result,
-        operational_intent_id="<not provided>",
-    )
-
-    return response, resp.queries[0], flight_id
+    return resp, resp.queries[0], flight_id
 
 
 def cleanup_flight(
     flight_planner: FlightPlannerClient, flight_id: str
-) -> Tuple[DeleteFlightResponse, Query]:
+) -> Tuple[PlanningActivityResponse, Query]:
     """
     This method is required till we are able to have checks with PlanningActivityResult
     Args:
@@ -535,20 +514,11 @@ def cleanup_flight(
     except PlanningActivityError as e:
         raise QueryError(str(e), e.queries)
 
-    if (
-        resp.activity_result == PlanningActivityResult.Completed
-        and resp.flight_plan_status == FlightPlanStatus.Closed
-    ):
-        flight_planner.created_flight_ids.discard(str(flight_id))
-        return (
-            DeleteFlightResponse(result=DeleteFlightResponseResult.Closed),
-            resp.queries[0],
-        )
-    else:
-        return (
-            DeleteFlightResponse(result=DeleteFlightResponseResult.Failed),
-            resp.queries[0],
-        )
+    flight_planner.created_flight_ids.discard(str(flight_id))
+    return (
+        resp,
+        resp.queries[0],
+    )
 
 
 def delete_flight(
@@ -556,7 +526,7 @@ def delete_flight(
     test_step: str,
     flight_planner: FlightPlannerClient,
     flight_id: str,
-) -> DeleteFlightResponse:
+) -> PlanningActivityResponse:
     """Delete an existing flight intent that should result in success.
     A check fail is considered of high severity and as such will raise an ScenarioCannotContinueError.
 
@@ -582,14 +552,17 @@ def delete_flight(
         scenario.record_query(query)
         notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
 
-        if resp.result == DeleteFlightResponseResult.Closed:
+        if (
+            resp.activity_result == PlanningActivityResult.Completed
+            and resp.flight_plan_status == FlightPlanStatus.Closed
+        ):
             scenario.end_test_step()
             return resp
         else:
             check.record_failed(
-                summary=f"Flight deletion attempt unexpectedly {resp.result}",
+                summary=f"Flight deletion attempt unexpectedly {(resp.activity_result,resp.flight_plan_status)}",
                 severity=Severity.High,
-                details=f"{flight_planner.participant_id} indicated {resp.result} rather than the expected {DeleteFlightResponseResult.Closed}{notes_suffix}",
+                details=f"{flight_planner.participant_id} indicated {(resp.activity_result,resp.flight_plan_status)} rather than the expected {PlanningActivityResult.Completed,FlightPlanStatus.Closed}{notes_suffix}",
                 query_timestamps=[query.request.timestamp],
             )
 
@@ -602,6 +575,7 @@ def cleanup_flights_fp_client(
     scenario: TestScenarioType, flight_planners: Iterable[FlightPlannerClient]
 ) -> None:
     """Remove flights during a cleanup test step.
+    Note: This method should be renamed to cleanup_flights once deprecated cleanup_flights method is removed
 
     This function assumes:
     * `scenario` is currently cleaning up (cleanup has started)
@@ -628,7 +602,10 @@ def cleanup_flights_fp_client(
                     )
                     continue
 
-                if resp.result == DeleteFlightResponseResult.Closed:
+                if (
+                    resp.activity_result == PlanningActivityResult.Completed
+                    and resp.flight_plan_status == FlightPlanStatus.Closed
+                ):
                     removed.append(flight_id)
                 else:
                     check.record_failed(

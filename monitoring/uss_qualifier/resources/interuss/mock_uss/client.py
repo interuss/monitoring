@@ -12,7 +12,7 @@ from monitoring.monitorlib.clients.mock_uss.locality import (
     GetLocalityResponse,
     PutLocalityRequest,
 )
-from monitoring.monitorlib.fetch import QueryError, Query
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession
 from monitoring.monitorlib.locality import LocalityCode
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
@@ -47,8 +47,9 @@ class MockUSSClient(object):
         self.session = UTMClientSession(base_url, auth_adapter, timeout_seconds)
         self.participant_id = participant_id
         v1_base_url = base_url + "/flight_planning/v1"
-        self.session_fp = UTMClientSession(v1_base_url, auth_adapter, timeout_seconds)
-        self.flight_planner = V1FlightPlannerClient(self.session_fp, participant_id)
+        self.flight_planner = V1FlightPlannerClient(
+            UTMClientSession(v1_base_url, auth_adapter, timeout_seconds), participant_id
+        )
 
     def get_status(self) -> fetch.Query:
         return fetch.query_and_describe(
@@ -86,7 +87,9 @@ class MockUSSClient(object):
 
     # TODO: Add other methods to interact with the mock USS in other ways (like starting/stopping message signing data collection)
 
-    def get_interactions(self, from_time: StringBasedDateTime) -> List[Interaction]:
+    def get_interactions(
+        self, from_time: StringBasedDateTime
+    ) -> Tuple[List[Interaction], fetch.Query]:
         """
         Requesting interuss interactions from mock_uss from a given time till now
         Args:

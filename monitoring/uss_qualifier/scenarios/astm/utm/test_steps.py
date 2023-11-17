@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from monitoring.monitorlib import schema_validation, fetch
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
@@ -46,7 +46,7 @@ class OpIntentValidator(object):
     def __init__(
         self,
         scenario: TestScenarioType,
-        flight_planner: FlightPlanner | FlightPlannerClient,
+        flight_planner: Union[FlightPlanner, FlightPlannerClient],
         dss: DSSInstance,
         test_step: str,
         extent: Volume4D,
@@ -61,7 +61,7 @@ class OpIntentValidator(object):
         :param orig_oi_ref: if this is validating a previously existing operational intent (e.g. modification), pass the original reference.
         """
         self._scenario: TestScenarioType = scenario
-        self._flight_planner: FlightPlanner | FlightPlannerClient = flight_planner
+        self._flight_planner: Union[FlightPlanner, FlightPlannerClient] = flight_planner
         self._dss: DSSInstance = dss
         self._test_step: str = test_step
         self._extent: Volume4D = extent

@@ -1,6 +1,7 @@
 import uuid
-from typing import Optional, Set
+from typing import Optional
 from implicitdict import ImplicitDict
+from loguru import logger
 from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
 )
@@ -31,12 +32,10 @@ from uas_standards.interuss.automated_testing.flight_planning.v1.constants impor
 class V1FlightPlannerClient(FlightPlannerClient):
     _session: UTMClientSession
     participant_id: ParticipantID
-    base_url: str
 
     def __init__(self, session: UTMClientSession, participant_id: ParticipantID):
+        super(V1FlightPlannerClient, self).__init__(participant_id=participant_id)
         self._session = session
-        self.participant_id = participant_id
-        self.created_flight_ids: Set[str] = set()
 
     def _inject(
         self,
@@ -221,7 +220,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
             raise PlanningActivityError(
                 f"Response to clear area could not be parsed: {str(e)}", query
             )
-
+        self.created_flight_ids.clear()
         if resp.outcome.success:
             errors = None
         else:
