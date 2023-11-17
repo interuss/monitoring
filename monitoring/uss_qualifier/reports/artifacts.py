@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Optional
 
 from loguru import logger
 
@@ -14,8 +15,13 @@ from monitoring.uss_qualifier.reports.tested_requirements import (
 )
 
 
-def generate_artifacts(report: TestRunReport, artifacts: ArtifactsConfiguration):
-    os.makedirs(artifacts.output_path, exist_ok=True)
+def generate_artifacts(
+    report: TestRunReport,
+    artifacts: ArtifactsConfiguration,
+    output_path_override: Optional[str] = None,
+):
+    output_path = output_path_override or artifacts.output_path
+    os.makedirs(output_path, exist_ok=True)
 
     def _should_redact(cfg) -> bool:
         return "redact_access_tokens" in cfg and cfg.redact_access_tokens
@@ -26,7 +32,7 @@ def generate_artifacts(report: TestRunReport, artifacts: ArtifactsConfiguration)
 
     if artifacts.raw_report:
         # Raw report
-        path = os.path.join(artifacts.output_path, "report.json")
+        path = os.path.join(output_path, "report.json")
         logger.info(f"Writing raw report to {path}")
         raw_report = artifacts.raw_report
         report_to_write = redacted_report if _should_redact(raw_report) else report
@@ -38,7 +44,7 @@ def generate_artifacts(report: TestRunReport, artifacts: ArtifactsConfiguration)
 
     if artifacts.report_html:
         # HTML rendering of raw report
-        path = os.path.join(artifacts.output_path, "report.html")
+        path = os.path.join(output_path, "report.html")
         logger.info(f"Writing HTML report to {path}")
         report_to_write = (
             redacted_report if _should_redact(artifacts.report_html) else report
@@ -49,7 +55,7 @@ def generate_artifacts(report: TestRunReport, artifacts: ArtifactsConfiguration)
     if artifacts.templated_reports:
         # Templated reports
         render_templates(
-            artifacts.output_path,
+            output_path,
             artifacts.templated_reports,
             redacted_report,
         )
@@ -57,13 +63,13 @@ def generate_artifacts(report: TestRunReport, artifacts: ArtifactsConfiguration)
     if artifacts.tested_requirements:
         # Tested requirements view
         for tested_reqs_config in artifacts.tested_requirements:
-            path = os.path.join(artifacts.output_path, tested_reqs_config.report_name)
+            path = os.path.join(output_path, tested_reqs_config.report_name)
             logger.info(f"Writing tested requirements view to {path}")
             generate_tested_requirements(redacted_report, tested_reqs_config, path)
 
     if artifacts.sequence_view:
         # Sequence view
-        path = os.path.join(artifacts.output_path, "sequence")
+        path = os.path.join(output_path, "sequence")
         logger.info(f"Writing sequence view to {path}")
         report_to_write = (
             redacted_report if _should_redact(artifacts.sequence_view) else report
