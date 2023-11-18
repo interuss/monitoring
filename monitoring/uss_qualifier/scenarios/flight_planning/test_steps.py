@@ -476,7 +476,9 @@ def request_flight(
         flight_id:
 
     Returns:
-        InjectFlightResponse, Query, flight_id
+        * Response from planning activity to request new flight or update existing flight
+        * Query used to request planning activity
+        * ID of flight
     """
     if not flight_id:
         try:
