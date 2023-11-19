@@ -22,6 +22,7 @@ action=${1:?The action must be specified as --check or --generate}
 # shellcheck disable=SC2086
 docker run --name type_schema_manager \
   --rm \
+  -u "$(id -u):$(id -g)" \
   -v "$(pwd):/app" \
   interuss/monitoring \
   python /app/schemas/manage_type_schemas.py "${action}"
