@@ -1,4 +1,4 @@
-from typing import Tuple, Optional, Set, get_type_hints
+from typing import Tuple, Optional, Set
 from urllib.parse import urlparse
 from implicitdict import ImplicitDict
 from monitoring.monitorlib import infrastructure, fetch

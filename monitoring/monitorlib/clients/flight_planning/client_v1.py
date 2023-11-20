@@ -88,7 +88,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
         ]
         if resp.planning_result == PlanningActivityResult.Completed:
             if resp.flight_plan_status in created_status:
-                self.created_flight_ids.add(str(flight_plan_id))
+                self.created_flight_ids.add(flight_plan_id)
 
         response = PlanningActivityResponse(
             flight_id=flight_plan_id,
@@ -150,7 +150,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
             raise PlanningActivityError(
                 f"Response to delete flight plan could not be parsed: {str(e)}", query
             )
-        self.created_flight_ids.discard(str(flight_id))
+        self.created_flight_ids.discard(flight_id)
         response = PlanningActivityResponse(
             flight_id=flight_id,
             queries=[query],
@@ -220,7 +220,6 @@ class V1FlightPlannerClient(FlightPlannerClient):
             raise PlanningActivityError(
                 f"Response to clear area could not be parsed: {str(e)}", query
             )
-        self.created_flight_ids.clear()
         if resp.outcome.success:
             errors = None
         else:

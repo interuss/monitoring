@@ -1,5 +1,6 @@
 from typing import Optional
-from urllib.parse import urlsplit
+from monitoring.monitorlib.temporal import Time
+import arrow
 
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
@@ -7,14 +8,12 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
 )
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
-    FlightIntent,
-)
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
+
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
     MockUSSResource,
@@ -36,13 +35,11 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     plan_flight,
     delete_flight,
 )
-from implicitdict import StringBasedDateTime
-from datetime import datetime
 
 
 class GetOpResponseDataValidationByUSS(TestScenario):
-    flight_1: FlightIntent
-    flight_2: FlightIntent
+    flight_1: FlightInfo
+    flight_2: FlightInfo
 
     tested_uss_client: FlightPlannerClient
     control_uss: MockUSSClient
@@ -70,18 +67,15 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             )
             raise ScenarioCannotContinueError(msg)
 
+        t = Time(arrow.utcnow().datetime)
         _flight_intents = {
-            k: FlightIntent.from_flight_info_template(v)
-            for k, v in flight_intents.get_flight_intents().items()
+            k: v.resolve(t) for k, v in flight_intents.get_flight_intents().items()
         }
 
         extents = []
         for intent in _flight_intents.values():
-            extents.extend(intent.request.operational_intent.volumes)
-            extents.extend(intent.request.operational_intent.off_nominal_volumes)
-        self._intents_extent = Volume4DCollection.from_interuss_scd_api(
-            extents
-        ).bounding_volume.to_f3548v21()
+            extents.append(intent.basic_information.area.bounding_volume)
+        self._intents_extent = Volume4DCollection(extents).bounding_volume.to_f3548v21()
 
         try:
             (self.flight_1, self.flight_2,) = (
@@ -89,12 +83,8 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 _flight_intents["flight_2"],
             )
 
-            assert not Volume4DCollection.from_interuss_scd_api(
-                self.flight_1.request.operational_intent.volumes
-            ).intersects_vol4s(
-                Volume4DCollection.from_interuss_scd_api(
-                    self.flight_2.request.operational_intent.volumes
-                )
+            assert not self.flight_1.basic_information.area.intersects_vol4s(
+                self.flight_2.basic_information.area
             ), "flight_1 and flight_2 must not intersect"
 
         except KeyError as e:
@@ -141,10 +131,10 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 self,
                 "Control_uss plans flight 2",
                 self.control_uss_client,
-                FlightInfo.from_scd_inject_flight_request(self.flight_2.request),
+                self.flight_2,
             )
 
-            flight_2_oi_ref = validator.expect_shared(self.flight_2.request)
+            validator.expect_shared(self.flight_2)
 
         self.begin_test_step(
             "Precondition - check tested_uss has no subscription in flight 2 area"
@@ -163,11 +153,11 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 self,
                 "Tested_uss plans flight 1",
                 self.tested_uss_client,
-                FlightInfo.from_scd_inject_flight_request(self.flight_1.request),
+                self.flight_1,
             )
 
-            flight_1_oi_ref = validator.expect_shared(
-                self.flight_1.request,
+            validator.expect_shared(
+                self.flight_1,
             )
 
         self.begin_test_step("Validate flight2 GET interaction")
@@ -186,7 +176,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         )
 
     def _tested_uss_unable_to_plan_flight_near_invalid_shared_existing_flight(self):
-        req = self.flight_2.request
+        flight_info = self.flight_2
         # Modifying the request with invalid data
         behavior = MockUssFlightBehavior(
             modify_sharing_methods=["GET", "POST"],
@@ -196,7 +186,6 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             },
         )
 
-        flight_info = FlightInfo.from_scd_inject_flight_request(req)
         additional_fields = {"behavior": behavior}
 
         _, self.flight_2_id = plan_flight(
@@ -223,7 +212,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self,
             "Tested_uss attempts to plan flight 1, expect failure",
             self.tested_uss_client,
-            FlightInfo.from_scd_inject_flight_request(self.flight_1.request),
+            self.flight_1,
         )
 
         self.begin_test_step("Validate flight 1 not shared by tested_uss")

@@ -53,7 +53,7 @@ def plan_flight_intent(
     flight_intent: InjectFlightRequest,
 ) -> Tuple[InjectFlightResponse, Optional[str]]:
     """Plan a flight intent that should result in success.
-    Note: This method will be deprecated in favor of plan_flight
+    Note: This method is deprecated in favor of plan_flight
 
     This function implements the test step described in
     plan_flight_intent.md.
@@ -203,7 +203,7 @@ def submit_flight_intent(
     flight_id: Optional[str] = None,
 ) -> Tuple[InjectFlightResponse, Optional[str]]:
     """Submit a flight intent with an expected result.
-    Note: This method will be deprecated in favor of submit_flight
+    Note: This method is deprecated in favor of submit_flight
 
     A check fail is considered by default of high severity and as such will raise an ScenarioCannotContinueError.
     The severity of each failed check may be overridden if needed.
@@ -273,7 +273,7 @@ def delete_flight_intent(
     flight_id: str,
 ) -> DeleteFlightResponse:
     """Delete an existing flight intent that should result in success.
-    Note: This method will be deprecated in favor of delete_flight
+    Note: This method is deprecated in favor of delete_flight
 
     A check fail is considered of high severity and as such will raise an ScenarioCannotContinueError.
 
@@ -319,7 +319,7 @@ def cleanup_flights(
     scenario: TestScenarioType, flight_planners: Iterable[FlightPlanner]
 ) -> None:
     """Remove flights during a cleanup test step.
-    Note: This method will be deprecated in favor of cleanup_flights_fp_client
+    Note: This method is deprecated in favor of cleanup_flights_fp_client
 
     This function assumes:
     * `scenario` is currently cleaning up (cleanup has started)
@@ -468,12 +468,7 @@ def request_flight(
     additional_fields: Optional[dict] = None,
 ) -> Tuple[PlanningActivityResponse, Query, str]:
     """
-    This method is needed till we are able to have checks with PlanningActivityResult.
     Uses FlightPlannerClient to plan the flight
-    Args:
-        flight_planner:
-        flight_info:
-        flight_id:
 
     Returns:
         * Response from planning activity to request new flight or update existing flight
@@ -502,15 +497,7 @@ def request_flight(
 def cleanup_flight(
     flight_planner: FlightPlannerClient, flight_id: str
 ) -> Tuple[PlanningActivityResponse, Query]:
-    """
-    This method is required till we are able to have checks with PlanningActivityResult
-    Args:
-        flight_planner:
-        flight_id:
 
-    Returns:
-
-    """
     try:
         resp = flight_planner.try_end_flight(flight_id, ExecutionStyle.IfAllowed)
     except PlanningActivityError as e:
