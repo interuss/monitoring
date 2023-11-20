@@ -2,9 +2,13 @@
 lint: validate-docs
 
 .PHONY: validate-docs
-validate-docs:
+validate-docs: check-no-cross-reference
 	./scripts/validate_test_definitions.sh
 	./scripts/format_test_suite_docs.sh --lint
+
+.PHONY: check-no-cross-reference
+check-no-cross-reference:
+	./scripts/check-netrid-cross-references.sh
 
 .PHONY: format
 format: format-documentation

@@ -42,7 +42,7 @@
   <tr>
     <td><a href="../../../requirements/astm/f3411/v19.md">DSS0030,e</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/netrid/v22a/dss/subscription_simple.md">ASTM NetRID DSS: Subscription Simple</a></td>
+    <td><a href="../../../scenarios/astm/netrid/v19/dss/subscription_simple.md">ASTM NetRID DSS: Subscription Simple</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3411/v19.md">DSS0030,f</a></td>
