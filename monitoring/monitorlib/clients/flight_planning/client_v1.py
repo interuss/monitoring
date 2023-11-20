@@ -63,9 +63,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
             json=req,
             scope=Scope.Plan,
             participant_id=self.participant_id,
-            query_type=QueryType.InterUSSFlightPlanningV1UpsertFlightPlan
-            if additional_fields
-            else None,
+            query_type=QueryType.InterUSSFlightPlanningV1UpsertFlightPlan,
         )
         if query.status_code != 200 and query.status_code != 201:
             raise PlanningActivityError(
