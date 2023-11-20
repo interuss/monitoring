@@ -27,3 +27,4 @@ monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_riddp_v19
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_ridsp
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_riddp
 monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_tracer
+monitoring/mock_uss/wait_for_mock_uss.sh mock_uss_scdsc_interaction_log

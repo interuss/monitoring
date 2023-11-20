@@ -26,6 +26,7 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
 from monitoring.monitorlib.fetch import query_and_describe
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 
 
 class SCDFlightPlannerClient(FlightPlannerClient):
@@ -33,7 +34,8 @@ class SCDFlightPlannerClient(FlightPlannerClient):
     _session: UTMClientSession
     _plan_statuses: Dict[FlightID, FlightPlanStatus]
 
-    def __init__(self, session: UTMClientSession):
+    def __init__(self, session: UTMClientSession, participant_id: ParticipantID):
+        super(SCDFlightPlannerClient, self).__init__(participant_id=participant_id)
         self._session = session
         self._plan_statuses = {}
 
@@ -120,6 +122,16 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 scd_api.InjectFlightResponseResult.NotSupported: old_state,
             }[resp.result],
         )
+
+        created_status = [
+            FlightPlanStatus.Planned,
+            FlightPlanStatus.OkToFly,
+            FlightPlanStatus.OffNominal,
+        ]
+        if response.activity_result == PlanningActivityResult.Completed:
+            if response.flight_plan_status in created_status:
+                self.created_flight_ids.add(flight_id)
+
         self._plan_statuses[flight_id] = response.flight_plan_status
         return response
 
@@ -183,6 +195,8 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         )
         if resp.result == scd_api.DeleteFlightResponseResult.Closed:
             del self._plan_statuses[flight_id]
+            self.created_flight_ids.discard(flight_id)
+
         else:
             self._plan_statuses[flight_id] = response.flight_plan_status
         return response

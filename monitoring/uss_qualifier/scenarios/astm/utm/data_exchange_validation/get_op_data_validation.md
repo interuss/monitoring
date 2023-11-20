@@ -78,7 +78,7 @@ No notification pushed by control_uss to tested_uss, will ensure that tested_uss
 while planning a nearby flight.
 If a notification is sent to tested_uss, the precondition for running this scenario will not be satisfied.
 
-### [Test_uss attempts to plan flight 1, expect failure test step](test_steps/plan_flight_intent_expect_failed.md)
+### [Tested_uss attempts to plan flight 1, expect failure test step](test_steps/plan_flight_intent_expect_failed.md)
 The test driver attempts to plan the flight 1 via the tested_uss. It checks if any conflicts with flight 2
 which is of equal priority and came first.
 
