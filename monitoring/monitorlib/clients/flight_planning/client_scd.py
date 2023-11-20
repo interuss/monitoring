@@ -33,7 +33,6 @@ class SCDFlightPlannerClient(FlightPlannerClient):
     SCD_SCOPE = scd_api_constants.Scope.Inject
     _session: UTMClientSession
     _plan_statuses: Dict[FlightID, FlightPlanStatus]
-    participant_id: ParticipantID
 
     def __init__(self, session: UTMClientSession, participant_id: ParticipantID):
         super(SCDFlightPlannerClient, self).__init__(participant_id=participant_id)

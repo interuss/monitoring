@@ -1,7 +1,6 @@
 import uuid
 from typing import Optional
 from implicitdict import ImplicitDict
-from loguru import logger
 from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
 )
@@ -31,7 +30,6 @@ from uas_standards.interuss.automated_testing.flight_planning.v1.constants impor
 
 class V1FlightPlannerClient(FlightPlannerClient):
     _session: UTMClientSession
-    participant_id: ParticipantID
 
     def __init__(self, session: UTMClientSession, participant_id: ParticipantID):
         super(V1FlightPlannerClient, self).__init__(participant_id=participant_id)

@@ -26,6 +26,7 @@ class FlightPlannerClient(ABC):
     """Client to interact with a USS as a user performing flight planning activities and as the test director preparing for tests involving flight planning activities."""
 
     participant_id: ParticipantID
+    created_flight_ids: Set[FlightID]
 
     def __init__(self, participant_id: ParticipantID):
         self.participant_id = participant_id
