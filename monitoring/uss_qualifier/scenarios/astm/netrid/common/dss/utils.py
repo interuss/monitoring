@@ -1,5 +1,7 @@
 from typing import Optional
 
+from s2sphere import LatLng
+
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.mutate import rid as mutate
