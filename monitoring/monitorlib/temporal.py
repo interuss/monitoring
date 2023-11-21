@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedTimeDelta, StringBasedDateTime
@@ -62,6 +62,17 @@ class NextDay(ImplicitDict):
     """Acceptable days of the week.  Omit to indicate that any day of the week is acceptable."""
 
 
+class TimeDuringTest(str, Enum):
+    StartOfTestRun = "StartOfTestRun"
+    """The time at which the test run started."""
+
+    StartOfScenario = "StartOfScenario"
+    """The time at which the current scenario started."""
+
+    TimeOfEvaluation = "TimeOfEvaluation"
+    """The time at which a TestTime was resolved to an absolute time; generally close to 'now'."""
+
+
 class TestTime(ImplicitDict):
     """Exactly one of the time option fields of this object must be specified."""
 
@@ -71,8 +82,8 @@ class TestTime(ImplicitDict):
     The value of absolute_time is limited given that the specific time a test will be started is unknown, and the jurisdictions usually impose a limit on how far in the future an operation can be planned.
     """
 
-    start_of_test: Optional[dict] = None
-    """Time option field to, if specified, use the timestamp at which the current test run started."""
+    time_during_test: Optional[TimeDuringTest] = None
+    """Time option field to, if specified, use a timestamp relating to the current test run."""
 
     next_day: Optional[NextDay] = None
     """Time option field to use a timestamp equal to midnight beginning the next occurrence of any matching day following the specified reference timestamp."""
@@ -90,16 +101,20 @@ class TestTime(ImplicitDict):
       * "-08:00" (ISO time zone)
       * "US/Pacific" (IANA time zone)"""
 
-    def resolve(self: TestTime, start_of_test: Time) -> Time:
+    def resolve(self, times: Dict[TimeDuringTest, Time]) -> Time:
         """Resolve TestTime into specific Time."""
         result = None
         if self.absolute_time is not None:
             result = self.absolute_time.datetime
-        elif self.start_of_test is not None:
-            result = start_of_test.datetime
+        elif self.time_during_test is not None:
+            if self.time_during_test not in times:
+                raise ValueError(
+                    f"Specified {self.time_during_test} time during test was not provided when resolving TestTime"
+                )
+            result = times[self.time_during_test].datetime
         elif self.next_day is not None:
             t0 = (
-                arrow.get(self.next_day.starting_from.resolve(start_of_test).datetime)
+                arrow.get(self.next_day.starting_from.resolve(times).datetime)
                 .to(self.next_day.time_zone)
                 .datetime
             )
@@ -115,11 +130,11 @@ class TestTime(ImplicitDict):
             result = t
         elif self.offset_from is not None:
             result = (
-                self.offset_from.starting_from.resolve(start_of_test).datetime
+                self.offset_from.starting_from.resolve(times).datetime
                 + self.offset_from.offset.timedelta
             )
         elif self.next_sun_position is not None:
-            t0 = self.next_sun_position.starting_from.resolve(start_of_test).datetime
+            t0 = self.next_sun_position.starting_from.resolve(times).datetime
 
             dt = timedelta(minutes=5)
             lat = self.next_sun_position.observed_from.lat

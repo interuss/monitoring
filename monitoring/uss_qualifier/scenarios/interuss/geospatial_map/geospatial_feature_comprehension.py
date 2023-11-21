@@ -1,6 +1,9 @@
+from datetime import datetime
+from typing import Dict
+
 import arrow
 
-from monitoring.monitorlib.temporal import Time
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.resources.interuss.geospatial_map import (
     FeatureCheckTableResource,
 )
@@ -37,15 +40,18 @@ class GeospatialFeatureComprehension(TestScenario):
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
+        times = {
+            TimeDuringTest.StartOfTestRun: Time(context.start_time),
+            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
+        }
 
         self.begin_test_case("Map query")
-        self._map_query()
+        self._map_query(times)
         self.end_test_case()
 
         self.end_test_scenario()
 
-    def _map_query(self):
-        start_time = arrow.utcnow().datetime
+    def _map_query(self, times: Dict[TimeDuringTest, Time]):
         for row in self.table.rows:
             if row.expected_result not in _CHECK_NAMES:
                 raise NotImplementedError(
@@ -73,13 +79,14 @@ class GeospatialFeatureComprehension(TestScenario):
             self.begin_dynamic_test_step(doc)
 
             if row.volumes:
-                concrete_volumes = [v.resolve(Time(start_time)) for v in row.volumes]
+                times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+                concrete_volumes = [v.resolve(times) for v in row.volumes]
 
-            # TODO: Query USSs under test
-            self.record_note(
-                "map_query",
-                f"TODO: Query USSs for features from {row.restriction_source} for {row.operation_rule_set} that cause {row.expected_result} from {concrete_volumes[0].time_start} to {concrete_volumes[0].time_end}",
-            )
+                # TODO: Query USSs under test
+                self.record_note(
+                    "map_query",
+                    f"TODO: Query USSs for features from {row.restriction_source} for {row.operation_rule_set} that cause {row.expected_result} from {concrete_volumes[0].time_start} to {concrete_volumes[0].time_end}",
+                )
 
             with self.check(
                 _CHECK_NAMES[row.expected_result], []

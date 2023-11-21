@@ -1,5 +1,9 @@
-from typing import Optional
-from monitoring.monitorlib.temporal import Time
+from typing import Optional, Dict
+
+from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
+    FlightInfoTemplate,
+)
+from monitoring.monitorlib.temporal import TimeDuringTest, Time
 import arrow
 
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
@@ -12,7 +16,6 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
 from monitoring.monitorlib.geotemporal import Volume4DCollection
-from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
@@ -35,11 +38,12 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     plan_flight,
     delete_flight,
 )
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class GetOpResponseDataValidationByUSS(TestScenario):
-    flight_1: FlightInfo
-    flight_2: FlightInfo
+    flight_1: FlightInfoTemplate
+    flight_2: FlightInfoTemplate
 
     tested_uss_client: FlightPlannerClient
     control_uss: MockUSSClient
@@ -60,21 +64,24 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.dss = dss.dss
 
         if not flight_intents:
-            msg = f"No FlightIntentsResource was provided as input to this test, it is assumed that the jurisdiction of the tested USS ({self.tested_uss.config.participant_id}) does not allow any same priority conflicts, execution of the scenario was stopped without failure"
+            msg = f"No FlightIntentsResource was provided as input to this test, it is assumed that the jurisdiction does not allow any same priority conflicts, execution of the scenario was stopped without failure"
             self.record_note(
                 "Jurisdiction of tested USS does not allow any same priority conflicts",
                 msg,
             )
             raise ScenarioCannotContinueError(msg)
 
-        t = Time(arrow.utcnow().datetime)
-        _flight_intents = {
-            k: v.resolve(t) for k, v in flight_intents.get_flight_intents().items()
-        }
+        _flight_intents = flight_intents.get_flight_intents()
 
+        t_now = Time(arrow.utcnow().datetime)
+        times = {
+            TimeDuringTest.StartOfTestRun: t_now,
+            TimeDuringTest.StartOfScenario: t_now,
+            TimeDuringTest.TimeOfEvaluation: t_now,
+        }
         extents = []
         for intent in _flight_intents.values():
-            extents.append(intent.basic_information.area.bounding_volume)
+            extents.append(intent.resolve(times).basic_information.area.bounding_volume)
         self._intents_extent = Volume4DCollection(extents).bounding_volume.to_f3548v21()
 
         try:
@@ -83,8 +90,10 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 _flight_intents["flight_2"],
             )
 
-            assert not self.flight_1.basic_information.area.intersects_vol4s(
-                self.flight_2.basic_information.area
+            assert not self.flight_1.resolve(
+                times
+            ).basic_information.area.intersects_vol4s(
+                self.flight_2.resolve(times).basic_information.area
             ), "flight_1 and flight_2 must not intersect"
 
         except KeyError as e:
@@ -96,7 +105,11 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
 
-    def run(self, context):
+    def run(self, context: ExecutionContext):
+        times = {
+            TimeDuringTest.StartOfTestRun: Time(context.start_time),
+            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
+        }
         self.begin_test_scenario(context)
 
         self.record_note(
@@ -109,17 +122,22 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         )
 
         self.begin_test_case("Successfully plan flight near an existing flight")
-        self._tested_uss_plans_deconflicted_flight_near_existing_flight()
+        self._tested_uss_plans_deconflicted_flight_near_existing_flight(times)
         self.end_test_case()
 
         self.begin_test_case("Flight planning prevented due to invalid data sharing")
-        self._tested_uss_unable_to_plan_flight_near_invalid_shared_existing_flight()
+        self._tested_uss_unable_to_plan_flight_near_invalid_shared_existing_flight(
+            times
+        )
         self.end_test_case()
 
         self.end_test_scenario()
 
-    def _tested_uss_plans_deconflicted_flight_near_existing_flight(self):
-
+    def _tested_uss_plans_deconflicted_flight_near_existing_flight(
+        self, times: Dict[TimeDuringTest, Time]
+    ):
+        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        flight_2 = self.flight_2.resolve(times)
         with OpIntentValidator(
             self,
             self.control_uss_client,
@@ -131,16 +149,19 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 self,
                 "Control_uss plans flight 2",
                 self.control_uss_client,
-                self.flight_2,
+                flight_2,
             )
 
-            validator.expect_shared(self.flight_2)
+            validator.expect_shared(flight_2)
 
         self.begin_test_step(
             "Precondition - check tested_uss has no subscription in flight 2 area"
         )
         # ToDo - Add the test step details
         self.end_test_step()
+
+        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        flight_1 = self.flight_1.resolve(times)
 
         with OpIntentValidator(
             self,
@@ -153,11 +174,11 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 self,
                 "Tested_uss plans flight 1",
                 self.tested_uss_client,
-                self.flight_1,
+                flight_1,
             )
 
             validator.expect_shared(
-                self.flight_1,
+                flight_1,
             )
 
         self.begin_test_step("Validate flight2 GET interaction")
@@ -175,8 +196,12 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self, "Delete control_uss flight", self.control_uss_client, self.flight_2_id
         )
 
-    def _tested_uss_unable_to_plan_flight_near_invalid_shared_existing_flight(self):
-        flight_info = self.flight_2
+    def _tested_uss_unable_to_plan_flight_near_invalid_shared_existing_flight(
+        self, times: Dict[TimeDuringTest, Time]
+    ):
+        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        flight_info = self.flight_2.resolve(times)
+
         # Modifying the request with invalid data
         behavior = MockUssFlightBehavior(
             modify_sharing_methods=["GET", "POST"],
@@ -208,11 +233,14 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         # ToDo - Add the test step details
         self.end_test_step()
 
+        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        flight_1 = self.flight_1.resolve(times)
+
         _, self.flight_1_id = plan_flight_intent_expect_failed(
             self,
             "Tested_uss attempts to plan flight 1, expect failure",
             self.tested_uss_client,
-            self.flight_1,
+            flight_1,
         )
 
         self.begin_test_step("Validate flight 1 not shared by tested_uss")

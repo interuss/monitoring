@@ -8,7 +8,7 @@ from monitoring.monitorlib.clients.flight_planning.client import (
     PlanningActivityError,
 )
 from monitoring.monitorlib.geotemporal import Volume4DCollection, Volume4D
-from monitoring.monitorlib.temporal import Time
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.flight_planning import (
@@ -35,7 +35,9 @@ class PrepareFlightPlanners(TestScenario):
     ):
         super().__init__()
         now = Time(arrow.utcnow().datetime)
+        times_now = {t: now for t in TimeDuringTest}
         later = now.offset(MAX_TEST_DURATION)
+        times_later = {t: later for t in TimeDuringTest}
         self.areas = []
         for intents in (
             flight_intents,
@@ -48,14 +50,10 @@ class PrepareFlightPlanners(TestScenario):
             v4c = Volume4DCollection([])
             for flight_info_template in intents.get_flight_intents().values():
                 v4c.extend(
-                    flight_info_template.resolve(
-                        start_of_test=now
-                    ).basic_information.area
+                    flight_info_template.resolve(times_now).basic_information.area
                 )
                 v4c.extend(
-                    flight_info_template.resolve(
-                        start_of_test=later
-                    ).basic_information.area
+                    flight_info_template.resolve(times_later).basic_information.area
                 )
             self.areas.append(v4c.bounding_volume)
         self.flight_planners = {

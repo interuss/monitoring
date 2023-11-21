@@ -127,7 +127,7 @@ che_conflicting_flights:
     file:
       path: file://./test_data/che/flight_intents/conflicting_flights.yaml
       # Note that this hash_sha512 field can be safely deleted if the content changes
-      hash_sha512: 381b6a75e66f2f4ead4cc637744a3c6594d0cdcabf80e13acef087acf3d9195a8dfb521b1f997824b5c0f9dd83167263695b99bdb4fd3e604ac6ac513dad54ab
+      hash_sha512: ac109b89c95381ba4685d6db5f7064dac64875a8875e58989aad19d91d2e7b10e568d5091749b5ea2b0892191a84486971d999b63ac8c73fd4249131111a6c58
 
 che_invalid_flight_intents:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -211,14 +211,14 @@ example_feature_check_table:
                 units: M
                 reference: SFC
               start_time:
-                start_of_test: { }
+                time_during_test: StartOfTestRun
               end_time:
                 offset_from:
                   starting_from:
                     next_day:
                       time_zone: Europe/Zurich
                       starting_from:
-                        start_of_test: { }
+                        time_during_test: StartOfTestRun
                       days_of_the_week: [ "Mo", "Fr" ]
                   offset: 12h
           expected_result: Block
@@ -252,7 +252,7 @@ example_feature_check_table:
                   starting_from:
                     offset_from:
                       starting_from:
-                        start_of_test: { }
+                        time_during_test: StartOfTestRun
                       offset: 12h
                 use_timezone: +01:00
               duration: 5m
@@ -289,7 +289,7 @@ example_feature_check_table:
                         next_day:
                           time_zone: Europe/Zurich
                           starting_from:
-                            start_of_test: { }
+                            time_during_test: StartOfTestRun
                       offset: 12h
               duration: 5m
           expected_result: Advise

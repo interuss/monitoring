@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from datetime import datetime, timedelta
-from typing import Optional, List, Tuple, Iterator
+from typing import Optional, List, Tuple, Dict
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedTimeDelta
@@ -13,7 +13,7 @@ from uas_standards.interuss.automated_testing.scd.v1 import api as interuss_scd_
 
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.geo import LatLngPoint, Circle, Altitude, Volume3D, Polygon
-from monitoring.monitorlib.temporal import TestTime, Time
+from monitoring.monitorlib.temporal import TestTime, Time, TimeDuringTest
 
 
 class Volume4DTemplate(ImplicitDict):
@@ -38,7 +38,7 @@ class Volume4DTemplate(ImplicitDict):
     altitude_upper: Optional[Altitude] = None
     """The maximum altitude at which the virtual user will fly while using this volume for their flight."""
 
-    def resolve(self, start_of_test: Time) -> Volume4D:
+    def resolve(self, times: Dict[TimeDuringTest, Time]) -> Volume4D:
         """Resolve Volume4DTemplate into concrete Volume4D."""
         # Make 3D volume
         kwargs = {}
@@ -56,12 +56,12 @@ class Volume4DTemplate(ImplicitDict):
         kwargs = {"volume": volume}
 
         if self.start_time is not None:
-            time_start = self.start_time.resolve(start_of_test)
+            time_start = self.start_time.resolve(times)
         else:
             time_start = None
 
         if self.end_time is not None:
-            time_end = self.end_time.resolve(start_of_test)
+            time_end = self.end_time.resolve(times)
         else:
             time_end = None
 

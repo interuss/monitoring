@@ -9,7 +9,7 @@ from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
-from monitoring.monitorlib.temporal import Time
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 
 from monitoring.uss_qualifier.resources.files import ExternalFile
 from monitoring.uss_qualifier.resources.overrides import apply_overrides
@@ -27,9 +27,14 @@ class FlightIntent(ImplicitDict):
 
     @staticmethod
     def from_flight_info_template(info_template: FlightInfoTemplate) -> FlightIntent:
-        t = Time(arrow.utcnow().datetime)
-        request = info_template.to_scd_inject_request(t)
-        return FlightIntent(reference_time=StringBasedDateTime(t), request=request)
+        t_now = Time(arrow.utcnow().datetime)
+        times = {
+            TimeDuringTest.StartOfTestRun: t_now,
+            TimeDuringTest.StartOfScenario: t_now,
+            TimeDuringTest.TimeOfEvaluation: t_now,
+        }  # Not strictly correct, but this class is deprecated
+        request = info_template.to_scd_inject_request(times)
+        return FlightIntent(reference_time=StringBasedDateTime(t_now), request=request)
 
 
 FlightIntentID = str
