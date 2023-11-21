@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional, List, Callable, Dict, Tuple
 
 import arrow
+import requests
 
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.config import KEY_BASE_URL
@@ -573,7 +574,12 @@ def notify_subscribers(
             scd_client.notify_operational_intent_details_changed(
                 utm_client, subscriber.uss_base_url, update
             )
-        except Exception as e:
+        except (
+            ValueError,
+            ConnectionError,
+            requests.exceptions.ConnectionError,
+            QueryError,
+        ) as e:
             log(f"Failed to notify {subscriber.uss_base_url}: {str(e)}")
             notif_errors[subscriber.uss_base_url] = e
 
