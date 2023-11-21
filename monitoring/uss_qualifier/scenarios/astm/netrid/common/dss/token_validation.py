@@ -573,8 +573,10 @@ class TokenValidation(GenericTestScenario):
                 else:
                     return v19.constants.Scope.Write
             elif self._dss.rid_version == RIDVersion.f3411_22a:
-                # There does not seem to be an explicit 'read' or 'write' scope in v22a,
-                # TODO confirm that we can consider the display provider scope as a 'read only scope'
+                # There are no explicit 'read' or 'write' scopes in v22a,
+                # instead the scopes represent what kind of provider is accessing the DSS.
+                # DisplayProviders can only read ISAs and create subscriptions
+                # while ServiceProviders can do everything.
                 if scope_intent == "read":
                     return v22a.constants.Scope.DisplayProvider
                 else:
