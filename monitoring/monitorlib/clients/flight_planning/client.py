@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
+from typing import Optional, Set
 
 from monitoring.monitorlib.clients.flight_planning.test_preparation import (
     TestPreparationActivityResponse,
@@ -15,6 +15,7 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
 )
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4D
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 
 
 class PlanningActivityError(QueryError):
@@ -23,6 +24,13 @@ class PlanningActivityError(QueryError):
 
 class FlightPlannerClient(ABC):
     """Client to interact with a USS as a user performing flight planning activities and as the test director preparing for tests involving flight planning activities."""
+
+    participant_id: ParticipantID
+    created_flight_ids: Set[FlightID]
+
+    def __init__(self, participant_id: ParticipantID):
+        self.participant_id = participant_id
+        self.created_flight_ids: Set[FlightID] = set()
 
     # ===== Emulation of user actions =====
 

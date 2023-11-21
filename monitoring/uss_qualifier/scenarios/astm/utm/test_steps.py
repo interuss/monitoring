@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from monitoring.monitorlib import schema_validation, fetch
+from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentState,
@@ -10,11 +11,16 @@ from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
 )
 
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    UasState,
+    AirspaceUsageState,
+)
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlanner,
 )
+from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 from monitoring.uss_qualifier.scenarios.astm.utm.evaluation import (
     validate_op_intent_details,
 )
@@ -45,7 +51,7 @@ class OpIntentValidator(object):
     def __init__(
         self,
         scenario: TestScenarioType,
-        flight_planner: FlightPlanner,
+        flight_planner: Union[FlightPlanner, FlightPlannerClient],
         dss: DSSInstance,
         test_step: str,
         extent: Volume4D,
@@ -60,7 +66,7 @@ class OpIntentValidator(object):
         :param orig_oi_ref: if this is validating a previously existing operational intent (e.g. modification), pass the original reference.
         """
         self._scenario: TestScenarioType = scenario
-        self._flight_planner: FlightPlanner = flight_planner
+        self._flight_planner: Union[FlightPlanner, FlightPlannerClient] = flight_planner
         self._dss: DSSInstance = dss
         self._test_step: str = test_step
         self._extent: Volume4D = extent
@@ -140,7 +146,9 @@ class OpIntentValidator(object):
         self._scenario.end_test_step()
 
     def expect_shared(
-        self, flight_intent: InjectFlightRequest, skip_if_not_found: bool = False
+        self,
+        flight_intent: Union[InjectFlightRequest, FlightInfo],
+        skip_if_not_found: bool = False,
     ) -> Optional[OperationalIntentReference]:
         """Validate that operational intent information was correctly shared for a flight intent.
 
@@ -176,8 +184,23 @@ class OpIntentValidator(object):
                 if modified_oi_ref is None:
                     if not skip_if_not_found:
                         if (
-                            flight_intent.operational_intent.state
-                            == OperationalIntentState.Activated
+                            (isinstance(flight_intent, InjectFlightRequest))
+                            and (
+                                flight_intent.operational_intent.state
+                                == OperationalIntentState.Activated
+                            )
+                        ) or (
+                            isinstance(flight_intent, FlightInfo)
+                            and (
+                                (
+                                    flight_intent.basic_information.uas_state
+                                    == UasState.Nominal
+                                )
+                                and (
+                                    flight_intent.basic_information.usage_state
+                                    == AirspaceUsageState.InUse
+                                )
+                            )
                         ):
                             with self._scenario.check(
                                 "Operational intent for active flight not deleted",
@@ -257,13 +280,25 @@ class OpIntentValidator(object):
         with self._scenario.check(
             "Correct operational intent details", [self._flight_planner.participant_id]
         ) as check:
-            error_text = validate_op_intent_details(
-                oi_full.details,
-                flight_intent.operational_intent.priority,
-                Volume4DCollection.from_interuss_scd_api(
+            priority = (
+                flight_intent.operational_intent.priority
+                if isinstance(flight_intent, InjectFlightRequest)
+                else flight_intent.astm_f3548_21.priority
+            )
+            if isinstance(flight_intent, InjectFlightRequest):
+                priority = flight_intent.operational_intent.priority
+                vols = Volume4DCollection.from_interuss_scd_api(
                     flight_intent.operational_intent.volumes
                     + flight_intent.operational_intent.off_nominal_volumes
-                ).bounding_volume.to_f3548v21(),
+                )
+            elif isinstance(flight_intent, FlightInfo):
+                priority = flight_intent.astm_f3548_21.priority
+                vols = flight_intent.basic_information.area
+
+            error_text = validate_op_intent_details(
+                oi_full.details,
+                priority,
+                vols.bounding_volume.to_f3548v21(),
             )
             if error_text:
                 check.record_failed(

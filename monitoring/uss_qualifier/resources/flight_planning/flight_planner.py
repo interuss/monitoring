@@ -1,7 +1,6 @@
 from typing import Tuple, Optional, Set
 from urllib.parse import urlparse
 from implicitdict import ImplicitDict
-
 from monitoring.monitorlib import infrastructure, fetch
 from monitoring.monitorlib.clients.flight_planning.client import (
     PlanningActivityError,
@@ -79,7 +78,7 @@ class FlightPlannerConfiguration(ImplicitDict):
             session = infrastructure.UTMClientSession(
                 self.scd_injection_base_url, auth_adapter, self.timeout_seconds
             )
-            return SCDFlightPlannerClient(session)
+            return SCDFlightPlannerClient(session, self.participant_id)
         elif "v1_base_url" in self and self.v1_base_url:
             session = infrastructure.UTMClientSession(
                 self.v1_base_url, auth_adapter, self.timeout_seconds
@@ -123,7 +122,6 @@ class FlightPlanner:
         self,
         request: InjectFlightRequest,
         flight_id: Optional[str] = None,
-        additional_fields: Optional[dict] = None,
     ) -> Tuple[InjectFlightResponse, fetch.Query, str]:
         usage_states = {
             OperationalIntentState.Accepted: AirspaceUsageState.Planned,
@@ -171,7 +169,7 @@ class FlightPlanner:
         if not flight_id:
             try:
                 resp = self.client.try_plan_flight(
-                    flight_info, ExecutionStyle.IfAllowed, additional_fields
+                    flight_info, ExecutionStyle.IfAllowed
                 )
             except PlanningActivityError as e:
                 raise QueryError(str(e), e.queries)
