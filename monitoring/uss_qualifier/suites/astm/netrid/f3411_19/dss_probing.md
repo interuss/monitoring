@@ -218,6 +218,6 @@
   <tr>
     <td><a href="../../../../requirements/interuss/f3411/dss_endpoints.md">SearchISAs</a></td>
     <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v19/dss/isa_expiry.md">ASTM NetRID DSS: ISA Expiry</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a></td>
+    <td><a href="../../../../scenarios/astm/netrid/v19/dss/isa_expiry.md">ASTM NetRID DSS: ISA Expiry</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../../scenarios/astm/netrid/v19/dss/token_validation.md">ASTM NetRID DSS: Token Validation</a></td>
   </tr>
 </table>

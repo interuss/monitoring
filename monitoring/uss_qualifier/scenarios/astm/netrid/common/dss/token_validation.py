@@ -1,13 +1,15 @@
-from typing import Optional, Dict
+import datetime
+from typing import Optional, Dict, List
 
 import arrow
+import s2sphere
 from uas_standards.astm.f3411 import v19, v22a
 
 from monitoring.monitorlib import fetch, infrastructure
 from monitoring.monitorlib import rid_v1, rid_v2
 from monitoring.monitorlib.auth import InvalidTokenSignatureAuth
 from monitoring.monitorlib.fetch import rid as rid_fetch
-from monitoring.monitorlib.fetch.rid import FetchedISA
+from monitoring.monitorlib.fetch.rid import FetchedISA, FetchedISAs
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.mutate.rid import (
     ISAChange,
@@ -78,10 +80,9 @@ class TokenValidation(GenericTestScenario):
         self._create_isa()
         self._wrong_auth_get()
         self._wrong_auth_mutate()
+        self._wrong_auth_search()
         self._wrong_auth_delete()
         self._delete_isa()
-
-        # TODO to potentially be added in a subsequent PR: testing the search endpoint too
 
         self.end_test_step()
         self.end_test_case()
@@ -302,6 +303,67 @@ class TokenValidation(GenericTestScenario):
                     Severity.High,
                     f"Attempting to create ISA {self._isa_id} with a fake token returned {del_fake_token.dss_query.status_code}",
                     query_timestamps=[del_fake_token.dss_query.query.request.timestamp],
+                )
+
+    def _wrong_auth_search(self):
+        # confirm that a search with proper credentials returns a successful http code
+        search_ok = self._search_isas_tweak_auth(
+            utm_client=self._dss.client,
+            area=self._isa_area,
+            start_time=self._isa_start_time,
+            end_time=self._isa_end_time,
+        )
+
+        with self.check(
+            "Proper token is allowed to search for ISAs",
+            participants=[self._dss.participant_id],
+        ) as check:
+            if not search_ok.success:
+                check.record_failed(
+                    "Search request failed although a valid token was used",
+                    Severity.High,
+                    f"Attempting to search ISAs with a valid token returned failure code: {search_ok.query.status_code}",
+                    query_timestamps=[search_ok.query.request.timestamp],
+                )
+
+        # Search for ISAs with an invalid token
+        search_wrong_token = self._search_isas_tweak_auth(
+            utm_client=self._unsigned_token_session,
+            area=self._isa_area,
+            start_time=self._isa_start_time,
+            end_time=self._isa_end_time,
+        )
+
+        with self.check(
+            "Fake token cannot search for ISAs",
+            participants=[self._dss.participant_id],
+        ) as check:
+            if search_wrong_token.success:
+                check.record_failed(
+                    "Search endpoint returned successfully without a token",
+                    Severity.High,
+                    f"Attempting to search ISAs with invalid token returned successful query: {search_wrong_token.query.status_code}",
+                    query_timestamps=[search_wrong_token.query.request.timestamp],
+                )
+
+        # Search for ISAs with a missing token
+        search_no_token = self._search_isas_tweak_auth(
+            utm_client=self._no_token_session,
+            area=self._isa_area,
+            start_time=self._isa_start_time,
+            end_time=self._isa_end_time,
+        )
+
+        with self.check(
+            "Missing token cannot search for ISAs",
+            participants=[self._dss.participant_id],
+        ) as check:
+            if search_no_token.success:
+                check.record_failed(
+                    "Search endpoint returned successfully without a token",
+                    Severity.High,
+                    f"Attempting to search ISAs with no token returned successful query: {search_no_token.query.status_code}",
+                    query_timestamps=[search_no_token.query.request.timestamp],
                 )
 
     def _delete_isa(self):
@@ -561,6 +623,65 @@ class TokenValidation(GenericTestScenario):
             self.record_query(notification_query.query)
 
         return ISAChange(dss_query=dss_response, notifications=notifications)
+
+    def _search_isas_tweak_auth(
+        self,
+        utm_client: infrastructure.UTMClientSession,
+        area: List[s2sphere.LatLng],
+        start_time: Optional[datetime.datetime],
+        end_time: Optional[datetime.datetime],
+    ) -> FetchedISAs:
+
+        url_time_params = ""
+        if start_time is not None:
+            url_time_params += (
+                f"&earliest_time={self._dss.rid_version.format_time(start_time)}"
+            )
+        if end_time is not None:
+            url_time_params += (
+                f"&latest_time={self._dss.rid_version.format_time(end_time)}"
+            )
+
+        query_scope = self._query_scope_for_auth_params(utm_client, "read")
+
+        """A local version of fetch.rid.isas that lets us control authentication parameters"""
+        if self._dss.rid_version == RIDVersion.f3411_19:
+            op = v19.api.OPERATIONS[
+                v19.api.OperationID.SearchIdentificationServiceAreas
+            ]
+            area_str = rid_v1.geo_polygon_string_from_s2(area)
+            url = f"{self._dss.base_url}{op.path}?area={area_str}{url_time_params}"
+            response = FetchedISAs(
+                v19_query=fetch.query_and_describe(
+                    utm_client,
+                    op.verb,
+                    url,
+                    participant_id=self._dss.participant_id,
+                    **({} if query_scope is None else {"scope": query_scope}),
+                )
+            )
+        elif self._dss.rid_version == RIDVersion.f3411_22a:
+            op = v22a.api.OPERATIONS[
+                v22a.api.OperationID.SearchIdentificationServiceAreas
+            ]
+            area_str = rid_v2.geo_polygon_string_from_s2(area)
+            url = f"{self._dss.base_url}{op.path}?area={area_str}{url_time_params}"
+            response = FetchedISAs(
+                v22a_query=fetch.query_and_describe(
+                    utm_client,
+                    op.verb,
+                    url,
+                    participant_id=self._dss.participant_id,
+                    **({} if query_scope is None else {"scope": query_scope}),
+                )
+            )
+        else:
+            raise NotImplementedError(
+                f"Cannot query DSS for ISAs using RID version {self._dss.rid_version}"
+            )
+
+        self.record_query(response.query)
+        return response
 
     def _query_scope_for_auth_params(
         self, utm_client: infrastructure.UTMClientSession, scope_intent: str
