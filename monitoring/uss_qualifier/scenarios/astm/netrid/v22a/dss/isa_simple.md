@@ -27,20 +27,20 @@ after its time of applicability.
 
 ### Ensure clean workspace test step
 
-This scenario creates an ISA with a known ID.  This step ensures that ISA does not exist before the start of the main
+This scenario creates an ISA with a known ID.This step ensures that ISA does not exist before the start of the main
 part of the test.
 
 #### Successful ISA query check
 
-While F3411-22a does not explicitly require the implementation of a specific ISA retrieval endpoint, Annex A4 specifies the explicit format for this endpoint.  If this format is not followed and the error isn't a 404, this check will fail per **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+While F3411-22a does not explicitly require the implementation of a specific ISA retrieval endpoint, Annex A4 specifies the explicit format for this endpoint.If this format is not followed and the error isn't a 404, this check will fail per **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 #### Removed pre-existing ISA check
 
-If an ISA with the intended ID is already present in the DSS, it needs to be removed before proceeding with the test.  If that ISA cannot be deleted, then the **[astm.f3411.v22a.DSS0030,b](../../../../../requirements/astm/f3411/v22a.md)** requirement to implement the ISA deletion endpoint might not be met.
+If an ISA with the intended ID is already present in the DSS, it needs to be removed before proceeding with the test.If that ISA cannot be deleted, then the **[astm.f3411.v22a.DSS0030,b](../../../../../requirements/astm/f3411/v22a.md)** requirement to implement the ISA deletion endpoint might not be met.
 
 #### Notified subscriber check
 
-When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).  If a notification cannot be delivered, then the **[astm.f3411.v22a.NET0730](../../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0340](../../../../../requirements/astm/f3411/v22a.md)** requirements to implement the POST ISAs endpoint aren't met.
+When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).If a notification cannot be delivered, then the **[astm.f3411.v22a.NET0730](../../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0340](../../../../../requirements/astm/f3411/v22a.md)** requirements to implement the POST ISAs endpoint aren't met.
 
 ## Create and check ISA test case
 
@@ -60,11 +60,11 @@ This step attempts to retrieve the previously created ISA from the DSS.
 
 If the ISA cannot be queried, the GET ISA DSS endpoint in **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** is likely not implemented correctly.
 
-The DSS returns the ID of the ISA in the response body.  If this ID does not match the ID in the resource path, **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** was not implemented correctly and this check will fail.
+The DSS returns the ID of the ISA in the response body.If this ID does not match the ID in the resource path, **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** was not implemented correctly and this check will fail.
 
 #### ISA version match check
 
-The DSS returns the version of the ISA in the response body.  If this version does not match the version that was returned after creation, and that no modification of the ISA occurred in the meantime, **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** was not implemented correctly and this check will fail.
+The DSS returns the version of the ISA in the response body.If this version does not match the version that was returned after creation, and that no modification of the ISA occurred in the meantime, **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** was not implemented correctly and this check will fail.
 
 ## Update and search ISA test case
 
@@ -84,11 +84,11 @@ This step attempts to retrieve at the DSS the ISA just updated.
 
 If the ISA cannot be queried, the GET ISA DSS endpoint in **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** is likely not implemented correctly.
 
-The DSS returns the ID of the ISA in the response body.  If this ID does not match the ID in the resource path, **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** was not implemented correctly and this check will fail.
+The DSS returns the ID of the ISA in the response body.If this ID does not match the ID in the resource path, **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** was not implemented correctly and this check will fail.
 
 #### ISA version match check
 
-The DSS returns the version of the ISA in the response body.  If this version does not match the version that was returned after update, and that no modification of the ISA occurred in the meantime, **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** was not implemented correctly and this check will fail.
+The DSS returns the version of the ISA in the response body.If this version does not match the version that was returned after update, and that no modification of the ISA occurred in the meantime, **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** was not implemented correctly and this check will fail.
 
 ### [Search by earliest time (included) test step](test_steps/search_isas.md)
 
@@ -96,11 +96,11 @@ This step attempts an ISA search at the DSS with the area of the ISA resource an
 
 #### Successful ISAs search check
 
-The ISA search parameters are valid, as such the search should be successful.  If the request is not successful, this check will fail per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The ISA search parameters are valid, as such the search should be successful.If the request is not successful, this check will fail per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 #### ISA returned by search check
 
-The ISA search parameters cover the resource ISA, as such the resource ISA that exists at the DSS should be returned by the search.  If it is not returned, this check will fail.
+The ISA search parameters cover the resource ISA, as such the resource ISA that exists at the DSS should be returned by the search.If it is not returned, this check will fail.
 
 ### [Search by earliest time (excluded) test step](test_steps/search_isas.md)
 
@@ -108,11 +108,11 @@ This step attempts an ISA search at the DSS with the area of the ISA resource an
 
 #### Successful ISAs search check
 
-The ISA search parameters are valid, as such the search should be successful.  If the request is not successful, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The ISA search parameters are valid, as such the search should be successful.If the request is not successful, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 #### ISA not returned by search check
 
-The ISA search are parameter cover the resource ISA but the earliest time does not, as such the resource ISA that exists at the DSS should not be returned by the search.  If it is returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The ISA search are parameter cover the resource ISA but the earliest time does not, as such the resource ISA that exists at the DSS should not be returned by the search.If it is returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 ### [Search by latest time (included) test step](test_steps/search_isas.md)
 
@@ -120,11 +120,11 @@ This step attempts an ISA search at the DSS with the area of the ISA resource an
 
 #### Successful ISAs search check
 
-The ISA search parameters are valid, as such the search should be successful.  If the request is not successful, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The ISA search parameters are valid, as such the search should be successful.If the request is not successful, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 #### ISA returned by search check
 
-The ISA search parameters cover the resource ISA, as such the resource ISA that exists at the DSS should be returned by the search.  If it is not returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The ISA search parameters cover the resource ISA, as such the resource ISA that exists at the DSS should be returned by the search.If it is not returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 ### [Search by latest time (excluded) test step](test_steps/search_isas.md)
 
@@ -132,11 +132,11 @@ This step attempts an ISA search at the DSS with the area of the ISA resource an
 
 #### Successful ISAs search check
 
-The ISA search parameters are valid, as such the search should be successful.  If the request is not successful, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The ISA search parameters are valid, as such the search should be successful.If the request is not successful, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 #### ISA not returned by search check
 
-The ISA search are parameter cover the resource ISA but the latest time does not, as such the resource ISA that exists at the DSS should not be returned by the search.  If it is returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The ISA search are parameter cover the resource ISA but the latest time does not, as such the resource ISA that exists at the DSS should not be returned by the search.If it is returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 ### [Search by area only test step](test_steps/search_isas.md)
 
@@ -144,11 +144,11 @@ This step attempts an ISA search at the DSS with only the area of the ISA resour
 
 #### Successful ISAs search check
 
-The ISA search parameters are valid, as such the search should be successful.  If the request is not successful, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The ISA search parameters are valid, as such the search should be successful.If the request is not successful, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 #### ISA returned by search check
 
-The ISA search parameters cover the resource ISA, as such the resource ISA that exists at the DSS should be returned by the search.  If it is not returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The ISA search parameters cover the resource ISA, as such the resource ISA that exists at the DSS should be returned by the search.If it is not returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 ### Search with invalid params test step
 
@@ -156,7 +156,7 @@ This step attempts an ISA search at the DSS with an empty search area.
 
 #### Search request rejected check
 
-The search request contained invalid parameters (empty search area), as such the DSS should reject it with a 400 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The search request contained invalid parameters (empty search area), as such the DSS should reject it with a 400 HTTP code.If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 ### Search by huge area test step
 
@@ -164,7 +164,7 @@ This step attempts an ISA search at the DSS with a too large search area.
 
 #### Search request rejected check
 
-The search request contained invalid parameters (too large search area), as such the DSS should reject it with a 413 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The search request contained invalid parameters (too large search area), as such the DSS should reject it with a 413 HTTP code.If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 ### Search ISA with loop test step
 
@@ -172,7 +172,7 @@ This step attempts an ISA search at the DSS with a polygon defining the area tha
 
 #### Search request rejected check
 
-The search request contained invalid parameters (area polygon is a loop, which is not allowed), as such the DSS should reject it with a 400 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The search request contained invalid parameters (area polygon is a loop, which is not allowed), as such the DSS should reject it with a 400 HTTP code.If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 ## Delete ISA test case
 
@@ -182,7 +182,7 @@ This step attempts an ISA deletion with a wrong version.
 
 #### Delete request rejected check
 
-The deletion request contained invalid parameters (wrong version), as such the DSS should reject it with a 409 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[astm.f3411.v22a.DSS0030,b](../../../../../requirements/astm/f3411/v22a.md)**.
+The deletion request contained invalid parameters (wrong version), as such the DSS should reject it with a 409 HTTP code.If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[astm.f3411.v22a.DSS0030,b](../../../../../requirements/astm/f3411/v22a.md)**.
 
 ### Delete with empty version test step
 
@@ -190,7 +190,7 @@ This step attempts an ISA deletion with an empty version.
 
 #### Delete request rejected check
 
-The deletion request contained invalid parameters (empty version), as such the DSS should reject it with a 400 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[astm.f3411.v22a.DSS0030,b](../../../../../requirements/astm/f3411/v22a.md)**.
+The deletion request contained invalid parameters (empty version), as such the DSS should reject it with a 400 HTTP code.If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[astm.f3411.v22a.DSS0030,b](../../../../../requirements/astm/f3411/v22a.md)**.
 
 ### [Delete ISA test step](test_steps/delete_isa.md)
 
@@ -206,7 +206,7 @@ This step attempts to retrieve at the DSS the ISA just deleted.
 
 #### ISA not found check
 
-The ISA fetch request was about a deleted ISA, as such the DSS should reject it with a 404 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The ISA fetch request was about a deleted ISA, as such the DSS should reject it with a 404 HTTP code.If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 ### [Search ISA test step](test_steps/search_isas.md)
 
@@ -214,11 +214,11 @@ This step attempts an ISA search at the DSS with only the area of the ISA resour
 
 #### Successful ISAs search check
 
-The ISA search parameters are valid, as such the search should be successful.  If the request is not successful, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The ISA search parameters are valid, as such the search should be successful.If the request is not successful, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 #### ISA not returned by search check
 
-The ISA search are parameter cover the resource ISA, but it has been previously deleted, as such the ISA should not be returned by the search.  If it is returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+The ISA search are parameter cover the resource ISA, but it has been previously deleted, as such the ISA should not be returned by the search.If it is returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 ## Cleanup
 

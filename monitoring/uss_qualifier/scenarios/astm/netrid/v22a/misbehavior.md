@@ -26,7 +26,7 @@ A [`DSSInstanceResource`](../../../../resources/astm/f3411/dss.py) is required f
 
 ### Injection test step
 
-In this step, uss_qualifier injects a single nominal flight into each SP under test, usually with a start time in the future.  Each SP is expected to queue the provided telemetry and later simulate that telemetry coming from an aircraft at the designated timestamps.
+In this step, uss_qualifier injects a single nominal flight into each SP under test, usually with a start time in the future.Each SP is expected to queue the provided telemetry and later simulate that telemetry coming from an aircraft at the designated timestamps.
 
 #### Successful injection check
 
@@ -37,7 +37,7 @@ This check will fail if the flight was not successfully injected.
 
 #### Identifiable flights check
 
-This particular test requires each flight to be uniquely identifiable by its 2D telemetry position; the same (lat, lng) pair may not appear in two different telemetry points, even if the two points are in different injected flights.  This should generally be achieved by injecting appropriate data.
+This particular test requires each flight to be uniquely identifiable by its 2D telemetry position; the same (lat, lng) pair may not appear in two different telemetry points, even if the two points are in different injected flights.This should generally be achieved by injecting appropriate data.
 
 ### Unauthenticated requests test step
 

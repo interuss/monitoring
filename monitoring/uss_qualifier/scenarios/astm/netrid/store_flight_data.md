@@ -2,7 +2,7 @@
 
 ## Overview
 
-This scenario does not perform any checks, but instead writes NetRID flights data to files.  This may be useful to see or version-control the output of flight data generation, before it is used in a normal test suite.  Or, it may be useful to augment the standard report with exactly the flights data content being used in a normal test suite. 
+This scenario does not perform any checks, but instead writes NetRID flights data to files.This may be useful to see or version-control the output of flight data generation, before it is used in a normal test suite.Or, it may be useful to augment the standard report with exactly the flights data content being used in a normal test suite.
 
 ## Resources
 

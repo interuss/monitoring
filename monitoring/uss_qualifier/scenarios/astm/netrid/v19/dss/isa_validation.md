@@ -27,7 +27,7 @@ after its time of applicability.
 
 ### Ensure clean workspace test step
 
-This scenario creates an ISA with a known ID.  This step ensures that ISA does not exist before the start of the main
+This scenario creates an ISA with a known ID.This step ensures that ISA does not exist before the start of the main
 part of the test.
 
 #### Successful ISA query check
@@ -36,11 +36,11 @@ part of the test.
 
 #### Removed pre-existing ISA check
 
-If an ISA with the intended ID is already present in the DSS, it needs to be removed before proceeding with the test.  If that ISA cannot be deleted, then the **[astm.f3411.v19.DSS0030,b](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the ISA deletion endpoint might not be met.
+If an ISA with the intended ID is already present in the DSS, it needs to be removed before proceeding with the test.If that ISA cannot be deleted, then the **[astm.f3411.v19.DSS0030,b](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the ISA deletion endpoint might not be met.
 
 #### Notified subscriber check
 
-When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).  If a notification cannot be delivered, then the **[astm.f3411.v19.NET0730](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the POST ISAs endpoint isn't met.
+When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).If a notification cannot be delivered, then the **[astm.f3411.v19.NET0730](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the POST ISAs endpoint isn't met.
 
 ## ISA Validation test case
 

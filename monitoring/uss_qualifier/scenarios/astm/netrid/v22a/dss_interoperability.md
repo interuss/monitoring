@@ -3,10 +3,10 @@
 ## Overview
 
 The test scenario in this folder verifies that two DSS instances implementing
-the API required by ASTM F3411-22a in a shared DSS region  interoperate
-correctly.  This is generally accomplished by performing an  operation on one
-DSS instance and then verifying that the results are visible  in the other
-instance.  Neither of the two DSS instances need to be an InterUSS Platform
+the API required by ASTM F3411-22a in a shared DSS regioninteroperate
+correctly.This is generally accomplished by performing anoperation on one
+DSS instance and then verifying that the results are visiblein the other
+instance.Neither of the two DSS instances need to be an InterUSS Platform
 implementation.
 
 ## Resources
@@ -21,16 +21,16 @@ A resources.astm.f3411.DSSInstancesResource containing at least two DSS instance
 
 ## Test sequence legend
 
-* *P*: Primary DSS instance under test.  The sequence below is
+* *P*: Primary DSS instance under test.The sequence below is
 intended to be repeated so that each DSS is the primary DSS under test for one
 iteration of the sequence.
 * *n*: Each of the other (non-Primary) DSS instances.
 * ISA[*id*]: Reference to Identification Service Area with a particular test id
-(test id index, not full UUID identifier).  Note that the same UUID should be
+(test id index, not full UUID identifier).Note that the same UUID should be
 used for ISA[i] throughout the sequence even though the logical ISA may be
 created and deleted multiple times.
 * Subscription[*id*]: Reference to Subscription with a particular test *id*
-(test id index, not full UUID identifier).  Note that the same UUID should be
+(test id index, not full UUID identifier).Note that the same UUID should be
 used for Subscription[i] throughout the sequence even though the logical
 Subscription may be created and deleted multiple times.
 * D: Number of seconds needed to process requests to all DSS instances before

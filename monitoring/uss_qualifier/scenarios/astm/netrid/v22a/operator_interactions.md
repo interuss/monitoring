@@ -24,7 +24,7 @@ TODO: Create this resource
 
 ### flights_data
 
-A [`FlightDataResource`](../../../../resources/netrid/flight_data.py) containing 1 flight.  This flight must:
+A [`FlightDataResource`](../../../../resources/netrid/flight_data.py) containing 1 flight.This flight must:
 * (Phase 1): Start out nominal
 * (Phase 2): Then contain a pause (lack of telemetry) sufficient to trigger NET0040
 * (Phase 3): Then resume nominal telemetry
@@ -40,7 +40,7 @@ TODO: Create this resource
 
 ### Verify no ISAs test step
 
-uss_qualifier checks the DSS to ensure that the Service Provider under test does not have any ISAs in the system.  If ISAs are present, the Service Provider is instructed to clear the area of active flights, after which uss_qualifier reverifies the absence of ISAs.
+uss_qualifier checks the DSS to ensure that the Service Provider under test does not have any ISAs in the system.If ISAs are present, the Service Provider is instructed to clear the area of active flights, after which uss_qualifier reverifies the absence of ISAs.
 
 ### Disable DSS test step
 
@@ -66,7 +66,7 @@ uss_qualifier retrieves the current (after failed flight) set of operator notifi
 
 #### Operator notified of discoverability failure check
 
-The "after" set of operator notifications should contain at least one more entry than the "before" set of operator notifications.  If there was no new operator notification, the Service Provider will not have met **[astm.f3411.v22a.NET0620](../../../../requirements/astm/f3411/v22a.md)**.
+The "after" set of operator notifications should contain at least one more entry than the "before" set of operator notifications.If there was no new operator notification, the Service Provider will not have met **[astm.f3411.v22a.NET0620](../../../../requirements/astm/f3411/v22a.md)**.
 
 TODO: Implement
 

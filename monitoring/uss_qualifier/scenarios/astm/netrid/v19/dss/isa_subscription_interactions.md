@@ -32,11 +32,11 @@ Any previously created subscriptions for the test ISA's area that might still ex
 
 #### Removed pre-existing ISA check
 
-If an ISA with the intended ID is already present in the DSS, it needs to be removed before proceeding with the test.  If that ISA cannot be deleted, then the **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the ISA deletion endpoint might not be met.
+If an ISA with the intended ID is already present in the DSS, it needs to be removed before proceeding with the test.If that ISA cannot be deleted, then the **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the ISA deletion endpoint might not be met.
 
 #### Notified subscriber check
 
-When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).  If a notification cannot be delivered, then the **[astm.f3411.v19.NET0730](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the POST ISAs endpoint isn't met.
+When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).If a notification cannot be delivered, then the **[astm.f3411.v19.NET0730](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the POST ISAs endpoint isn't met.
 
 #### Successful subscription search query check
 
@@ -52,14 +52,14 @@ This test case will do the following, using the DSS being tested:
 
 1. Create an ISA with the configured footprint,
 2. Create a subscription for the ISA's area, and expect:
-   - to find the created ISA mentioned in the reply
-   - the notification index of the subscription to be 0
+ - to find the created ISA mentioned in the reply
+ - the notification index of the subscription to be 0
 3. Modify the ISA, and expect:
-   - to find the created subscription in the reply
-   - the notification index of the subscription to be greater than 0
+ - to find the created subscription in the reply
+ - the notification index of the subscription to be greater than 0
 4. Delete the ISA, and expect:
-   - to find the created subscription in the reply
-   - the notification index of the subscription to be greater than it was after the mutation
+ - to find the created subscription in the reply
+ - the notification index of the subscription to be greater than it was after the mutation
 5. Delete the subscription.
 
 ### ISA Subscription Interactions test step
@@ -120,7 +120,7 @@ Failure to do so means that the DSS is not properly implementing **[astm.f3411.v
 
 #### Notified subscriber check
 
-Notifications to any subscriber to the created ISA need to be successful.  If a notification cannot be delivered, then the **[astm.f3411.v19.NET0730](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the POST ISAs endpoint isn't met.
+Notifications to any subscriber to the created ISA need to be successful.If a notification cannot be delivered, then the **[astm.f3411.v19.NET0730](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the POST ISAs endpoint isn't met.
 
 ## Cleanup
 
@@ -133,11 +133,11 @@ also deleting any subscription it might have created for the ISA's area.
 
 #### Removed pre-existing ISA check
 
-If an ISA with the intended ID is already present in the DSS, it needs to be removed before proceeding with the test.  If that ISA cannot be deleted, then the **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the ISA deletion endpoint might not be met.
+If an ISA with the intended ID is already present in the DSS, it needs to be removed before proceeding with the test.If that ISA cannot be deleted, then the **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the ISA deletion endpoint might not be met.
 
 #### Notified subscriber check
 
-When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).  If a notification cannot be delivered, then the **[astm.f3411.v19.NET0730](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the POST ISAs endpoint isn't met.
+When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).If a notification cannot be delivered, then the **[astm.f3411.v19.NET0730](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the POST ISAs endpoint isn't met.
 
 #### Successful subscription search query check
 

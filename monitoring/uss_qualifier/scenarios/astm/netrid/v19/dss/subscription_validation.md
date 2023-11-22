@@ -22,7 +22,7 @@ Perform basic operations on a single DSS instance to create subscriptions and ch
 
 ### Ensure clean workspace test step
 
-This step ensures that we remove any subscription that may already exist for the service area.  First, the DSS is queried for any applicable existing subscriptions, and then any subscriptions found are deleted.
+This step ensures that we remove any subscription that may already exist for the service area.First, the DSS is queried for any applicable existing subscriptions, and then any subscriptions found are deleted.
 
 #### Successful subscription search query check
 

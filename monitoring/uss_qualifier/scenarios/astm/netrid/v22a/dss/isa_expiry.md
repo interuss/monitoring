@@ -30,11 +30,11 @@ This scenario creates an ISA with a known ID. This step ensures that the ISA doe
 
 #### Removed pre-existing ISA check
 
-If an ISA with the intended ID is already present in the DSS, it needs to be removed before proceeding with the test.  If that ISA cannot be deleted, then the **[astm.f3411.v22a.DSS0030,b](../../../../../requirements/astm/f3411/v22a.md)** requirement to implement the ISA deletion endpoint might not be met.
+If an ISA with the intended ID is already present in the DSS, it needs to be removed before proceeding with the test.If that ISA cannot be deleted, then the **[astm.f3411.v22a.DSS0030,b](../../../../../requirements/astm/f3411/v22a.md)** requirement to implement the ISA deletion endpoint might not be met.
 
 #### Notified subscriber check
 
-When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).  If a notification cannot be delivered, then the **[astm.f3411.v22a.NET0730](../../../../../requirements/astm/f3411/v22a.md)** requirement to implement the POST ISAs endpoint isn't met.
+When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).If a notification cannot be delivered, then the **[astm.f3411.v22a.NET0730](../../../../../requirements/astm/f3411/v22a.md)** requirement to implement the POST ISAs endpoint isn't met.
 
 ## ISA Expiry test case
 
