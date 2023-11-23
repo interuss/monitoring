@@ -22,7 +22,7 @@ lint: shell-lint python-lint
 	cd schemas && make lint
 
 .PHONY: check-hygiene
-check-hygiene: python-lint hygiene validate-uss-qualifier-docs shell-lint
+check-hygiene: python-lint hygiene validate-uss-qualifier-docs shell-lint json-schema-lint
 
 .PHONY: python-lint
 python-lint:
