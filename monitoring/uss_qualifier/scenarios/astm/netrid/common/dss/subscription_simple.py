@@ -2,7 +2,6 @@ import re
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
 
-import loguru
 import s2sphere
 
 from monitoring.monitorlib.fetch.rid import Subscription
@@ -96,55 +95,36 @@ class SubscriptionSimple(GenericTestScenario):
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
-
-        loguru.logger.info("setup")
         self._setup_case()
-
         self.begin_test_case("Subscription Simple")
 
         self.begin_test_step("Create subscription validation")
-
-        loguru.logger.info("create")
         self._create_and_validate_subs()
-
         self.end_test_step()
 
-        loguru.logger.info("mutate")
         self.begin_test_step("Mutate Subscription")
-
         self._test_mutate_subscriptions_shift_time()
         self._test_mutate_subscriptions_change_area()
-
         self.end_test_step()
-        self.begin_test_step("Query Existing Subscription")
 
-        loguru.logger.info("get")
+        self.begin_test_step("Query Existing Subscription")
         self._test_get_sub()
-        loguru.logger.info("search")
         self._test_valid_search_sub()
         self._test_huge_area_search_sub()
-
         self.end_test_step()
 
         self.begin_test_step("Delete Subscription")
-
-        loguru.logger.info("delete faulty")
         self._test_delete_sub_faulty()
-        loguru.logger.info("delete")
         self._test_delete_sub()
-
         self.end_test_step()
-        self.begin_test_step("Query Deleted Subscription")
 
-        loguru.logger.info("get deleted")
+        self.begin_test_step("Query Deleted Subscription")
         self._test_get_deleted_sub()
-        loguru.logger.info("search deleted")
         self._test_search_deleted_sub()
         self._test_loop_vertices_search_deleted_sub()
-
         self.end_test_step()
-        self.end_test_case()
 
+        self.end_test_case()
         self.end_test_scenario()
 
     def _setup_case(self):
@@ -243,7 +223,6 @@ class SubscriptionSimple(GenericTestScenario):
                 check,
                 **creation_params,
             )
-            loguru.logger.info(f"Created subscription {newly_created}")
         # Check that what we get back is valid and corresponds to what we want to create
         self._compare_upsert_resp_with_params(
             creation_params["sub_id"], newly_created, creation_params, False
