@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import sys
+from typing import Optional
 
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -57,6 +58,12 @@ def parseArgs() -> argparse.Namespace:
         help="If specified, do not validate the format of the provided configuration.",
     )
 
+    parser.add_argument(
+        "--output-path",
+        default=None,
+        help="If specified, override v1.artifacts.output_path with this value.  Overriding in this way does not change the test baseline.",
+    )
+
     return parser.parse_args()
 
 
@@ -108,6 +115,7 @@ def run_config(
     config_output: str,
     skip_validation: bool,
     exit_before_execution: bool,
+    output_path_override: Optional[str],
 ):
     config_src = load_dict_with_references(config_name)
 
@@ -146,7 +154,7 @@ def run_config(
     report = execute_test_run(whole_config)
 
     if config.artifacts:
-        generate_artifacts(report, config.artifacts)
+        generate_artifacts(report, config.artifacts, output_path_override)
 
     if "validation" in config and config.validation:
         logger.info(f"Validating test run report for configuration '{config_name}'")
@@ -182,6 +190,7 @@ def main() -> int:
             config_outputs[idx],
             args.skip_validation,
             args.exit_before_execution,
+            args.output_path,
         )
         if exit_code != os.EX_OK:
             return exit_code
