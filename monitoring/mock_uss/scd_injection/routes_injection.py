@@ -68,9 +68,7 @@ DEADLOCK_TIMEOUT = timedelta(seconds=5)
 
 
 def _make_stacktrace(e) -> str:
-    return "".join(
-        traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
-    )
+    return "".join(traceback.format_exception(e))
 
 
 @webapp.route("/scdsc/v1/status", methods=["GET"])

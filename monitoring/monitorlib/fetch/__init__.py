@@ -293,11 +293,7 @@ class QueryError(RuntimeError):
 
     @property
     def stacktrace(self) -> str:
-        return "".join(
-            traceback.format_exception(
-                etype=QueryError, value=self, tb=self.__traceback__
-            )
-        )
+        return "".join(traceback.format_exception(self))
 
 
 yaml.add_representer(Query, Representer.represent_dict)
