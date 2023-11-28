@@ -19,6 +19,7 @@ v1:
           invalid_flight_intents: invalid_flight_intents
           non_conflicting_flights: non_conflicting_flights
           dss: dss
+          dss_instances: dss_instances
           mock_uss: mock_uss
 
     # This block defines all the resources available in the resource pool.
@@ -86,6 +87,19 @@ v1:
             # A USS that hosts a DSS instance is also a participant in the test, even if they don't fulfill any other roles
             participant_id: uss1
             base_url: http://dss.uss1.localutm
+
+        dss_instances:
+            resource_type: resources.astm.f3548.v21.DSSInstancesResource
+            dependencies:
+                auth_adapter: utm_auth
+            specification:
+              dss_instances:
+                - participant_id: uss1
+                  base_url: http://dss.uss1.localutm
+                  has_private_address: true
+                - participant_id: uss2
+                  base_url: http://dss.uss2.localutm
+                  has_private_address: true
 
         # Mock USS that can be used in tests for flight planning, modifying data sharing behavior and recording interactions
         mock_uss:
