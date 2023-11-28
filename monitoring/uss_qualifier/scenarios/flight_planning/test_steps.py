@@ -439,9 +439,9 @@ def submit_flight(
             ) as specific_failed_check:
                 if resp.activity_result == unexpected_result:
                     specific_failed_check.record_failed(
-                        summary=f"Flight unexpectedly {resp.result}",
+                        summary=f"Flight unexpectedly {resp.activity_result}",
                         severity=check_severity,
-                        details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}{notes_suffix}',
+                        details=f'{flight_planner.participant_id} indicated {resp.activity_result} rather than the expected {" or ".join([activity_res for activity_res,_ in expected_results])}{notes_suffix}',
                         query_timestamps=[query.request.timestamp],
                     )
 
@@ -450,9 +450,9 @@ def submit_flight(
             return resp, flight_id
         else:
             check.record_failed(
-                summary=f"Flight unexpectedly {resp.result}",
+                summary=f"Flight unexpectedly {resp.activity_result}",
                 severity=Severity.High,
-                details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}{notes_suffix}',
+                details=f'{flight_planner.participant_id} indicated {resp.activity_result} rather than the expected {" or ".join([activity_res for activity_res,_ in expected_results])}{notes_suffix}',
                 query_timestamps=[query.request.timestamp],
             )
 
