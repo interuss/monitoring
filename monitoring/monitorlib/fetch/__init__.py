@@ -73,10 +73,14 @@ def describe_flask_request(request: flask.Request) -> RequestDescription:
         "received_at": StringBasedDateTime(datetime.datetime.utcnow()),
         "headers": headers,
     }
-    try:
-        kwargs["json"] = request.json
-    except ValueError:
-        kwargs["body"] = request.data.decode("utf-8")
+    data = request.data.decode("utf-8")
+    if request.is_json:
+        try:
+            kwargs["json"] = json.loads(data)
+        except ValueError:
+            kwargs["body"] = data
+    else:
+        kwargs["body"] = data
     return RequestDescription(**kwargs)
 
 
