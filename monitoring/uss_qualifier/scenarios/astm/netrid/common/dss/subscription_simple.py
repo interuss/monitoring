@@ -164,7 +164,7 @@ class SubscriptionSimple(GenericTestScenario):
         we want to avoid potentially reaching the limit during this scenario."""
 
         with self.check(
-            "Search for all subscriptions in ISA area",
+            "Successful subscription search query",
             [self._dss_wrapper.participant_id],
         ) as check:
             subs_in_area = self._dss_wrapper.search_subs(
