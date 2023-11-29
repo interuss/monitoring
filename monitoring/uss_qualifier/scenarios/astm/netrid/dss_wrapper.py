@@ -24,6 +24,9 @@ from monitoring.monitorlib.mutate.rid import ISAChange, ChangedSubscription
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
+from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss.isa_validator import (
+    ISAValidator,
+)
 from monitoring.uss_qualifier.scenarios.scenario import (
     PendingCheck,
     TestScenario,
@@ -351,7 +354,6 @@ class DSSWrapper(object):
 
         dss_id = [self._dss.participant_id]
         t_dss = mutated_isa.dss_query.query.request.timestamp
-        dss_isa = mutated_isa.dss_query.isa
 
         # sub-checks that do not fail the main check
         with self._scenario.check("ISA response code", dss_id) as sub_check:
@@ -363,93 +365,25 @@ class DSSWrapper(object):
                     query_timestamps=[t_dss],
                 )
 
-        with self._scenario.check("ISA response format", dss_id) as sub_check:
-            errors = schema_validation.validate(
-                self._dss.rid_version.openapi_path,
-                self._dss.rid_version.openapi_put_isa_response_path,
-                mutated_isa.dss_query.query.response.json,
-            )
-            if errors:
-                details = "\n".join(f"[{e.json_path}] {e.message}" for e in errors)
-                sub_check.record_failed(
-                    "PUT ISA response format was invalid",
-                    Severity.Medium,
-                    "Found the following schema validation errors in the DSS response:\n"
-                    + details,
-                    query_timestamps=[t_dss],
-                )
+        isa_validator = ISAValidator(
+            main_check=main_check,
+            scenario=self._scenario,
+            isa_params=dict(
+                area_vertices=area_vertices,
+                start_time=start_time,
+                end_time=end_time,
+                uss_base_url=uss_base_url,
+                alt_lo=alt_lo,
+                alt_hi=alt_hi,
+            ),
+            dss_id=dss_id,
+            rid_version=self._dss.rid_version,
+        )
 
-        # sub-checks that fail the main check
-        def _fail_sub_check(
-            _sub_check: PendingCheck, _summary: str, _details: str
-        ) -> None:
-            """Fails with Medium severity the sub_check and with High severity the main check."""
-
-            _sub_check.record_failed(
-                summary=_summary,
-                severity=Severity.Medium,
-                details=_details,
-                query_timestamps=[t_dss],
-            )
-            main_check.record_failed(
-                summary=f"PUT ISA request succeeded, but the DSS response is not valid: {_summary}",
-                severity=Severity.High,
-                details=_details,
-                query_timestamps=[t_dss],
-            )
-
-        with self._scenario.check("ISA ID matches", dss_id) as sub_check:
-            if isa_id != dss_isa.id:
-                _fail_sub_check(
-                    sub_check,
-                    "DSS did not return correct ISA",
-                    f"Expected ISA ID {isa_id} but got {dss_isa.id}",
-                )
-
-        if isa_version is not None:
-            with self._scenario.check("ISA version changed", dss_id) as sub_check:
-                if dss_isa.version == isa_version:
-                    _fail_sub_check(
-                        sub_check,
-                        "ISA was not modified",
-                        f"Got old version {isa_version} while expecting new version",
-                    )
-
-        with self._scenario.check("ISA version format", dss_id) as sub_check:
-            if not all(c not in "\0\t\r\n#%/:?@[\]" for c in dss_isa.version):
-                _fail_sub_check(
-                    sub_check,
-                    f"DSS returned ISA (ID {isa_id}) with invalid version format",
-                    f"DSS returned an ISA with a version that is not URL-safe: {dss_isa.version}",
-                )
-
-        with self._scenario.check("ISA start time matches", dss_id) as sub_check:
-            if abs((dss_isa.time_start - start_time).total_seconds()) > MAX_SKEW:
-                _fail_sub_check(
-                    sub_check,
-                    f"DSS returned ISA (ID {isa_id}) with incorrect start time",
-                    f"DSS should have returned an ISA with a start time of {start_time}, but instead the ISA returned had a start time of {dss_isa.time_start}",
-                )
-
-        with self._scenario.check("ISA end time matches", dss_id) as sub_check:
-            if abs((dss_isa.time_end - end_time).total_seconds()) > MAX_SKEW:
-                _fail_sub_check(
-                    sub_check,
-                    f"DSS returned ISA (ID {isa_id}) with incorrect end time",
-                    f"DSS should have returned an ISA with an end time of {end_time}, but instead the ISA returned had an end time of {dss_isa.time_end}",
-                )
-
-        with self._scenario.check("ISA URL matches", dss_id) as sub_check:
-            expected_flights_url = self._dss.rid_version.flights_url_of(uss_base_url)
-            actual_flights_url = dss_isa.flights_url
-            if actual_flights_url != expected_flights_url:
-                _fail_sub_check(
-                    sub_check,
-                    f"DSS returned ISA (ID {isa_id}) with incorrect URL",
-                    f"DSS should have returned an ISA with a flights URL of {expected_flights_url}, but instead the ISA returned had a flights URL of {actual_flights_url}",
-                )
-
-        # TODO: Validate subscriber notifications
+        isa_validator.validate_mutated_isa(
+            isa_id, mutated_isa.dss_query, previous_version=None
+        )
+        # TODO: Validate subscriber notifications (the validator currently does not)
 
         return mutated_isa
 
@@ -535,6 +469,18 @@ class DSSWrapper(object):
                     "Deleted ISA version did not match",
                     f"Expected ISA version {isa_version} but got {dss_isa.version}",
                 )
+
+        isa_validator = ISAValidator(
+            main_check=main_check,
+            scenario=self._scenario,
+            isa_params=None,  # won't check the ISA's content
+            dss_id=dss_id,
+            rid_version=self._dss.rid_version,
+        )
+
+        isa_validator.validate_deleted_isa(
+            isa_id, del_isa.dss_query, expected_version=isa_version
+        )
 
         return del_isa
 
