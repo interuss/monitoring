@@ -10,6 +10,7 @@ from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
+from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
@@ -30,7 +31,7 @@ class SubscriptionSimple(GenericTestScenario):
     _base_sub_id: str
 
     # The value for 'owner' we'll expect the DSS to set on subscriptions
-    _owner: str
+    _client_identity: ClientIdentityResource
 
     _test_subscription_ids: List[str]
 
@@ -52,6 +53,7 @@ class SubscriptionSimple(GenericTestScenario):
         id_generator: IDGeneratorResource,
         isa: ServiceAreaResource,
         problematically_big_area: VerticesResource,
+        client_identity: ClientIdentityResource,
     ):
         """
 
@@ -73,8 +75,6 @@ class SubscriptionSimple(GenericTestScenario):
         self._isa_area_loop = self._isa_area.copy()
         self._isa_area_loop.append(self._isa_area_loop[0])
 
-        self._owner = id_generator.subscriber
-
         # Prepare 4 different subscription ids:
         self._test_subscription_ids = [
             self._base_sub_id[:-1] + f"{i}" for i in range(4)
@@ -92,6 +92,8 @@ class SubscriptionSimple(GenericTestScenario):
             vertex.as_s2sphere()
             for vertex in problematically_big_area.specification.vertices
         ]
+
+        self._client_identity = client_identity
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
@@ -606,11 +608,12 @@ class SubscriptionSimple(GenericTestScenario):
         with self.check(
             "Returned subscription owner is correct", [self._dss_wrapper.participant_id]
         ) as check:
-            if sub_under_test.owner != self._owner:
+            client_sub = self._client_identity.subscriber()
+            if sub_under_test.owner != client_sub:
                 check.record_failed(
                     "Returned subscription owner does not match provided one",
                     Severity.High,
-                    f"Provided: {self._owner}, Returned: {sub_under_test.owner}",
+                    f"Provided: {client_sub}, Returned: {sub_under_test.owner}",
                     query_timestamps=query_timestamps,
                 )
 

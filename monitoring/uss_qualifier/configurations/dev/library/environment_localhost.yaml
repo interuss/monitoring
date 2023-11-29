@@ -9,6 +9,15 @@ utm_auth:
   specification:
     environment_variable_containing_auth_spec: AUTH_SPEC
 
+utm_client_identity:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.communications.ClientIdentityResource
+  dependencies:
+    auth_adapter: utm_auth
+  specification:
+    whoami_audience: localhost
+    whoami_scope: rid.display_provider
+
 # ===== NetRID =====
 
 netrid_service_providers_v19:
