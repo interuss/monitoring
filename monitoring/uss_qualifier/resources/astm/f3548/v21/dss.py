@@ -1,7 +1,7 @@
 from __future__ import annotations
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Dict, Optional
 from urllib.parse import urlparse
-
+from loguru import logger
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
@@ -98,6 +98,27 @@ class DSSInstance(object):
             result = ImplicitDict.parse(
                 query.response.json, GetOperationalIntentDetailsResponse
             ).operational_intent
+        return result, query
+
+    def get_full_op_intent_without_validation(
+        self, op_intent_ref: OperationalIntentReference
+    ) -> Tuple[Dict, fetch.Query]:
+        """
+        GET OperationalIntent without validating, as invalid data expected for negative tests
+        Args:
+            op_intent_ref:
+
+        Returns:
+            returns the response json when query is successful
+        """
+        url = f"{op_intent_ref.uss_base_url}/uss/v1/operational_intents/{op_intent_ref.id}"
+        query = fetch.query_and_describe(
+            self.client, "GET", url, scope=SCOPE_SC, participant_id=self.participant_id
+        )
+        result = None
+        if query.status_code == 200:
+            result = query.response.json
+
         return result, query
 
     def is_same_as(self, other: DSSInstance) -> bool:
