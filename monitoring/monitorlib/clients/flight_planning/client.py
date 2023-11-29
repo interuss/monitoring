@@ -93,3 +93,12 @@ class FlightPlannerClient(ABC):
             * PlanningActivityError
         """
         raise NotImplementedError()
+
+    @abstractmethod
+    def get_base_url(self) -> str:
+        """
+        Get the base_url associated with this FlightPlannerClient
+        Returns:
+
+        """
+        raise NotImplementedError
