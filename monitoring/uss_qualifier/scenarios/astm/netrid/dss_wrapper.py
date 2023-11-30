@@ -506,6 +506,9 @@ class DSSWrapper(object):
             participant_id=self._dss.participant_id,
         )
 
+        for notification_query in del_isa.notifications.values():
+            self._scenario.record_query(notification_query.query)
+
         self.handle_query_result(
             check=main_check,
             q=del_isa.dss_query,
