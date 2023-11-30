@@ -188,7 +188,7 @@ class DownUSS(TestScenario):
                 check.record_failed(
                     "Operational intent not successfully created",
                     Severity.High,
-                    f"DSS responded code {query.status_code}; error message: {query.json_result['message']}",
+                    f"DSS responded code {query.status_code}; error message: {query.error_message}",
                     query_timestamps=[query.request.timestamp],
                 )
         self.end_test_step()
