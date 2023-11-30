@@ -347,3 +347,69 @@ class OpIntentValidator(object):
 
         self._scenario.end_test_step()
         return oi_ref
+
+
+def set_uss_available(
+    scenario: TestScenarioType,
+    test_step: str,
+    dss: DSSInstance,
+    uss_sub: str,
+) -> str:
+    """Set the USS availability to 'Available'.
+
+    This function implements the test step described in set_uss_available.md.
+
+    Returns:
+        The new version of the USS availability.
+    """
+    scenario.begin_test_step(test_step)
+    availability_version, avail_query = dss.set_uss_availability(
+        uss_sub,
+        True,
+    )
+    scenario.record_query(avail_query)
+    with scenario.check(
+        "USS availability successfully set to 'Available'", [dss.participant_id]
+    ) as check:
+        if availability_version is None:
+            check.record_failed(
+                summary=f"Availability of USS {uss_sub} could not be set to available",
+                severity=Severity.High,
+                details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
+                query_timestamps=[avail_query.request.timestamp],
+            )
+    scenario.end_test_step()
+    return availability_version
+
+
+def set_uss_down(
+    scenario: TestScenarioType,
+    test_step: str,
+    dss: DSSInstance,
+    uss_sub: str,
+) -> str:
+    """Set the USS availability to 'Down'.
+
+    This function implements the test step described in set_uss_down.md.
+
+    Returns:
+        The new version of the USS availability.
+    """
+    scenario.begin_test_step(test_step)
+    availability_version, avail_query = dss.set_uss_availability(
+        uss_sub,
+        False,
+    )
+    scenario.record_query(avail_query)
+    with scenario.check(
+        "USS availability successfully set to 'Down'", [dss.participant_id]
+    ) as check:
+        if availability_version is None:
+            check.record_failed(
+                summary=f"Availability of USS {uss_sub} could not be set to down",
+                severity=Severity.High,
+                details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
+                query_timestamps=[avail_query.request.timestamp],
+            )
+    scenario.end_test_step()
+    return availability_version

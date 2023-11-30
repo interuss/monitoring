@@ -267,6 +267,14 @@ class Query(ImplicitDict):
     def json_result(self) -> Optional[Dict]:
         return self.response.json
 
+    @property
+    def error_message(self) -> Optional[str]:
+        return (
+            self.json_result["message"]
+            if self.json_result is not None and "message" in self.json_result
+            else None
+        )
+
 
 class QueryError(RuntimeError):
     """Error encountered when interacting with a server in the UTM ecosystem."""
