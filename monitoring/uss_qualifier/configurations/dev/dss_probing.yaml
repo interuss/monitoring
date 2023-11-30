@@ -3,14 +3,15 @@ v1:
   test_run:
     resources:
       resource_declarations:
-        id_generator: {$ref: 'library/resources.yaml#/id_generator'}
-        kentland_service_area: {$ref: 'library/resources.yaml#/kentland_service_area'}
-        kentland_problematically_big_area: {$ref: 'library/resources.yaml#/kentland_problematically_big_area'}
+        kentland_service_area: { $ref: 'library/resources.yaml#/kentland_service_area' }
+        kentland_problematically_big_area: { $ref: 'library/resources.yaml#/kentland_problematically_big_area' }
 
-        utm_auth: {$ref: 'library/environment.yaml#/utm_auth'}
-        scd_dss_instances: {$ref: 'library/environment.yaml#/scd_dss_instances'}
-        netrid_dss_instances_v22a: {$ref: 'library/environment.yaml#/netrid_dss_instances_v22a'}
-        netrid_dss_instances_v19: {$ref: 'library/environment.yaml#/netrid_dss_instances_v19'}
+        utm_auth: { $ref: 'library/environment.yaml#/utm_auth' }
+        utm_client_identity: { $ref: 'library/resources.yaml#/utm_client_identity' }
+        id_generator: { $ref: 'library/resources.yaml#/id_generator' }
+        scd_dss_instances: { $ref: 'library/environment.yaml#/scd_dss_instances' }
+        netrid_dss_instances_v22a: { $ref: 'library/environment.yaml#/netrid_dss_instances_v22a' }
+        netrid_dss_instances_v19: { $ref: 'library/environment.yaml#/netrid_dss_instances_v19' }
     non_baseline_inputs:
       - v1.test_run.resources.resource_declarations.utm_auth
       - v1.test_run.resources.resource_declarations.scd_dss_instances
@@ -22,6 +23,7 @@ v1:
         resources:
           f3411v19_dss_instances: netrid_dss_instances_v19
           f3411v22a_dss_instances: netrid_dss_instances_v22a
+          utm_client_identity: utm_client_identity
           id_generator: id_generator
           service_area: kentland_service_area
           problematically_big_area: kentland_problematically_big_area
@@ -29,8 +31,8 @@ v1:
       stop_fast: true
   artifacts:
     output_path: output/dss_probing
-    raw_report: {}
-    sequence_view: {}
+    raw_report: { }
+    sequence_view: { }
     tested_requirements:
       - report_name: requirements
         requirement_collections:
