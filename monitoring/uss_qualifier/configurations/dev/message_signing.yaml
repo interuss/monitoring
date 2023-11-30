@@ -4,6 +4,7 @@ v1:
       resource_declarations:
         che_conflicting_flights: {$ref: 'library/resources.yaml#/che_conflicting_flights'}
         che_invalid_flight_intents: {$ref: 'library/resources.yaml#/che_invalid_flight_intents'}
+        che_non_conflicting_flights: {$ref: 'library/resources.yaml#/che_non_conflicting_flights'}
         combination_selector:
           resource_type: resources.flight_planning.FlightPlannerCombinationSelectorResource
           specification:
@@ -14,6 +15,7 @@ v1:
 
         utm_auth: {$ref: 'library/environment.yaml#/utm_auth'}
         scd_dss: {$ref: 'library/environment.yaml#/scd_dss'}
+        scd_dss_instances: {$ref: 'library/environment.yaml#/scd_dss_instances'}
         flight_planners:
           resource_type: resources.flight_planning.FlightPlannersResource
           dependencies:
@@ -46,8 +48,11 @@ v1:
           flight_planners: flight_planners
           combination_selector: combination_selector
           conflicting_flights: che_conflicting_flights
+          invalid_flight_intents: che_invalid_flight_intents
+          non_conflicting_flights: che_non_conflicting_flights
           priority_preemption_flights: che_conflicting_flights
           dss: scd_dss
+          dss_instances: scd_dss_instances
     execution:
       stop_fast: true
 

@@ -1,24 +1,12 @@
 {
   "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/interuss/id_generator/IDGeneratorSpecification.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Generated IDs contain the client's identity so the appropriate client can clean up any dangling resources.\n\nNote that this may not be necessary/important with the resolution of https://github.com/interuss/dss/issues/939\n\nTo determine the client's identity, an access token is retrieved and the subscriber is read from the obtained token.\nTherefore, the client running uss_qualifier must have the ability to obtain an access token via an auth adapter.\n\nmonitoring.uss_qualifier.resources.interuss.id_generator.IDGeneratorSpecification, as defined in monitoring/uss_qualifier/resources/interuss/id_generator.py",
+  "description": "No fields required for the ID generator\n\nmonitoring.uss_qualifier.resources.interuss.id_generator.IDGeneratorSpecification, as defined in monitoring/uss_qualifier/resources/interuss/id_generator.py",
   "properties": {
     "$ref": {
       "description": "Path to content that replaces the $ref",
       "type": "string"
-    },
-    "whoami_audience": {
-      "description": "Audience to request for the access token used to determine subscriber identity.",
-      "type": "string"
-    },
-    "whoami_scope": {
-      "description": "Scope to request for the access token used to determine subscribe identity.  Must be a scope that the client is\nauthorized to obtain.",
-      "type": "string"
     }
   },
-  "required": [
-    "whoami_audience",
-    "whoami_scope"
-  ],
   "type": "object"
 }

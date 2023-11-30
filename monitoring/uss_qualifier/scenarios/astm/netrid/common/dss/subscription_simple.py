@@ -2,7 +2,6 @@ import re
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
 
-import loguru
 import s2sphere
 
 from monitoring.monitorlib.fetch.rid import Subscription
@@ -11,6 +10,7 @@ from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
+from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
@@ -31,7 +31,7 @@ class SubscriptionSimple(GenericTestScenario):
     _base_sub_id: str
 
     # The value for 'owner' we'll expect the DSS to set on subscriptions
-    _owner: str
+    _client_identity: ClientIdentityResource
 
     _test_subscription_ids: List[str]
 
@@ -53,6 +53,7 @@ class SubscriptionSimple(GenericTestScenario):
         id_generator: IDGeneratorResource,
         isa: ServiceAreaResource,
         problematically_big_area: VerticesResource,
+        client_identity: ClientIdentityResource,
     ):
         """
 
@@ -74,8 +75,6 @@ class SubscriptionSimple(GenericTestScenario):
         self._isa_area_loop = self._isa_area.copy()
         self._isa_area_loop.append(self._isa_area_loop[0])
 
-        self._owner = id_generator.subscriber
-
         # Prepare 4 different subscription ids:
         self._test_subscription_ids = [
             self._base_sub_id[:-1] + f"{i}" for i in range(4)
@@ -94,57 +93,40 @@ class SubscriptionSimple(GenericTestScenario):
             for vertex in problematically_big_area.specification.vertices
         ]
 
+        self._client_identity = client_identity
+
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
-
-        loguru.logger.info("setup")
         self._setup_case()
-
         self.begin_test_case("Subscription Simple")
 
         self.begin_test_step("Create subscription validation")
-
-        loguru.logger.info("create")
         self._create_and_validate_subs()
-
         self.end_test_step()
 
-        loguru.logger.info("mutate")
         self.begin_test_step("Mutate Subscription")
-
         self._test_mutate_subscriptions_shift_time()
         self._test_mutate_subscriptions_change_area()
-
         self.end_test_step()
-        self.begin_test_step("Query Existing Subscription")
 
-        loguru.logger.info("get")
+        self.begin_test_step("Query Existing Subscription")
         self._test_get_sub()
-        loguru.logger.info("search")
         self._test_valid_search_sub()
         self._test_huge_area_search_sub()
-
         self.end_test_step()
 
         self.begin_test_step("Delete Subscription")
-
-        loguru.logger.info("delete faulty")
         self._test_delete_sub_faulty()
-        loguru.logger.info("delete")
         self._test_delete_sub()
-
         self.end_test_step()
-        self.begin_test_step("Query Deleted Subscription")
 
-        loguru.logger.info("get deleted")
+        self.begin_test_step("Query Deleted Subscription")
         self._test_get_deleted_sub()
-        loguru.logger.info("search deleted")
         self._test_search_deleted_sub()
         self._test_loop_vertices_search_deleted_sub()
-
         self.end_test_step()
-        self.end_test_case()
 
+        self.end_test_case()
         self.end_test_scenario()
 
     def _setup_case(self):
@@ -243,7 +225,6 @@ class SubscriptionSimple(GenericTestScenario):
                 check,
                 **creation_params,
             )
-            loguru.logger.info(f"Created subscription {newly_created}")
         # Check that what we get back is valid and corresponds to what we want to create
         self._compare_upsert_resp_with_params(
             creation_params["sub_id"], newly_created, creation_params, False
@@ -627,11 +608,12 @@ class SubscriptionSimple(GenericTestScenario):
         with self.check(
             "Returned subscription owner is correct", [self._dss_wrapper.participant_id]
         ) as check:
-            if sub_under_test.owner != self._owner:
+            client_sub = self._client_identity.subscriber()
+            if sub_under_test.owner != client_sub:
                 check.record_failed(
                     "Returned subscription owner does not match provided one",
                     Severity.High,
-                    f"Provided: {self._owner}, Returned: {sub_under_test.owner}",
+                    f"Provided: {client_sub}, Returned: {sub_under_test.owner}",
                     query_timestamps=query_timestamps,
                 )
 

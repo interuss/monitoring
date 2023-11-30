@@ -1,0 +1,24 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/communications/client_identity/ClientIdentitySpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Specification for a Client Identity resource:\n\ndefines the audience and scope to use when a token is requested with the sole goal of\ndiscovering the identity under which the client is known to the DSS, and no other audience or scope\nare otherwise available in the context.\n\nThis is mostly useful for determining the client identity upon setup of the qualifier, when no\nrequests have yet been made to the DSS.\n\nmonitoring.uss_qualifier.resources.communications.client_identity.ClientIdentitySpecification, as defined in monitoring/uss_qualifier/resources/communications/client_identity.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "whoami_audience": {
+      "description": "Audience to request for the access token used to determine subscriber identity.",
+      "type": "string"
+    },
+    "whoami_scope": {
+      "description": "Scope to request for the access token used to determine subscribe identity.  Must be a scope that the client is\nauthorized to obtain.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "whoami_audience",
+    "whoami_scope"
+  ],
+  "type": "object"
+}

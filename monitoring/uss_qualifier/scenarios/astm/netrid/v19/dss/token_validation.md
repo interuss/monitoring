@@ -79,9 +79,21 @@ If the existing ISA can be mutated by using a read-only scope, the DSS is in vio
 
 If the existing ISA can be mutated without a token being provided, the DSS is in violation of **[astm.f3411.v19.DSS0030,a](../../../../../requirements/astm/f3411/v19.md)**
 
+#### Proper token is allowed to search for ISAs check
+
+If a valid token is presented as part of the search request, and the search parameters are valid, the DSS must return a 200 response, or be in violation of **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+
 #### Fake token cannot mutate an ISA check
 
 If the existing ISA can be mutated by using an invalid token, the DSS is in violation of **[astm.f3411.v19.DSS0030,a](../../../../../requirements/astm/f3411/v19.md)**
+
+#### Fake token cannot search for ISAs check
+
+If the DSS accepts search queries with an invalid token, it is in violation of **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+
+#### Missing token cannot search for ISAs check
+
+If the DSS accepts search queries without a token, it is in violation of **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 #### Read scope cannot delete an ISA check
 

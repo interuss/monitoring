@@ -22,6 +22,10 @@ Perform basic operations on a single DSS instance to create, update and delete s
 
 [`VerticesResource`](../../../../../resources/vertices.py) describing an area designed to be too big to be accepted by the DSS.
 
+### client_identity
+
+[`ClientIdentityResource`](../../../../../resources/communications/client_identity.py) to be used for this scenario.
+
 ## Setup test case
 
 ### Ensure clean workspace test step

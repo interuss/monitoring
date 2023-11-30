@@ -4,8 +4,11 @@ resources:
   flight_planners: resources.flight_planning.FlightPlannersResource
   combination_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource
   dss: resources.astm.f3548.v21.DSSInstanceResource
+  dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   conflicting_flights: resources.flight_planning.FlightIntentsResource
+  non_conflicting_flights: resources.flight_planning.FlightIntentsResource
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
+  invalid_flight_intents: resources.flight_planning.FlightIntentsResource
 actions:
 - test_scenario:
     scenario_type: scenarios.faa.uft.StartMessageSigningReport
@@ -15,12 +18,16 @@ actions:
 - test_suite:
     suite_type: suites.astm.utm.f3548_21
     resources:
+      mock_uss: mock_uss
       conflicting_flights: conflicting_flights
+      non_conflicting_flights: non_conflicting_flights
       priority_preemption_flights: priority_preemption_flights
       flight_planners: flight_planners
       nominal_planning_selector: combination_selector
+      invalid_flight_intents: invalid_flight_intents
       priority_planning_selector: combination_selector
       dss: dss
+      dss_instances: dss_instances
   on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.faa.uft.FinalizeMessageSigningReport

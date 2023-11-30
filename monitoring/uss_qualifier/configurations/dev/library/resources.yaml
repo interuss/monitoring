@@ -5,14 +5,21 @@ netrid_observation_evaluation_configuration:
   resource_type: resources.netrid.EvaluationConfigurationResource
   specification: { }
 
-id_generator:
+utm_client_identity:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.interuss.IDGeneratorResource
+  resource_type: resources.communications.ClientIdentityResource
   dependencies:
     auth_adapter: utm_auth
   specification:
     whoami_audience: localhost
     whoami_scope: rid.display_provider
+
+id_generator:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.interuss.IDGeneratorResource
+  dependencies:
+    client_identity: utm_client_identity
+  specification: { }
 
 kentland_service_area:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json

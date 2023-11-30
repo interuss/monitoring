@@ -300,6 +300,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
             rid_version=self._dss.rid_version,
             session=self._dss.client,
             participant_id=self._dss_wrapper.participant_id,
+            ignore_base_url=self._isa.base_url,
         )
 
     def _clean_any_sub(self):

@@ -5,7 +5,6 @@ from typing import List, Optional
 import s2sphere
 from arrow import ParserError
 from implicitdict import StringBasedDateTime
-from loguru import logger
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
 from uas_standards.astm.f3411.v22a.api import UASID
@@ -88,34 +87,27 @@ class RIDCommonDictionaryEvaluator(object):
         observed_flight: observation_api.Flight,
         participants: List[str],
     ):
-        with self._test_scenario.check("Current state present", participants) as check:
-            if not observed_flight.has_field_with_value("current_state"):
-                check.record_failed(
-                    f"Current state for flight {observed_flight.id}",
-                    details=f"The current state must be specified.",
-                    severity=Severity.High,
-                )
+        # If the state is present, we do validate its content,
+        # but its presence is optional
+        if injected_flight.has_field_with_value("current_state"):
+            self._evaluate_speed(
+                injected_flight.speed, observed_flight.current_state.speed, participants
+            )
+            self._evaluate_track(
+                injected_flight.track, observed_flight.current_state.track, participants
+            )
+            self._evaluate_timestamp(
+                injected_flight.timestamp,
+                observed_flight.current_state.timestamp,
+                participants,
+            )
 
-        logger.debug(f"Injected flight: {injected_flight}")
-        logger.debug(f"Observed flight: {observed_flight.current_state}")
+            # TODO check if worth adding correctness check here, it requires some slight (possibly non-trivial)
+            #  changes in evaluate_sp_flights as well
+            self._evaluate_operational_status(
+                observed_flight.current_state.operational_status, participants
+            )
 
-        self._evaluate_speed(
-            injected_flight.speed, observed_flight.current_state.speed, participants
-        )
-        self._evaluate_track(
-            injected_flight.track, observed_flight.current_state.track, participants
-        )
-        self._evaluate_timestamp(
-            injected_flight.timestamp,
-            observed_flight.current_state.timestamp,
-            participants,
-        )
-
-        # TODO check if worth adding correctness check here, it requires some slight (possibly non-trivial)
-        #  changes in evaluate_sp_flights as well
-        self._evaluate_operational_status(
-            observed_flight.current_state.operational_status, participants
-        )
         self._evaluate_position(
             injected_flight.position, observed_flight.most_recent_position, participants
         )

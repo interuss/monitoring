@@ -1,12 +1,10 @@
-from typing import Optional, List
+from typing import Optional
 
 from monitoring.monitorlib.fetch import rid as fetch
-from monitoring.monitorlib.geo import LatLngPoint
-from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
-from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 
 
@@ -16,7 +14,22 @@ def delete_isa_if_exists(
     rid_version: RIDVersion,
     session: UTMClientSession,
     participant_id: Optional[str] = None,
+    ignore_base_url: Optional[str] = None,
 ):
+    """
+    Deletes an ISA from the DSS that lives behind the provided session, and takes
+    care of notifying subscribers if any exists.
+
+    Args:
+        scenario: scenario for generating the required checks and recording queries
+        isa_id: ISA to delete
+        rid_version: RID version to use
+        session: the connection to the DSS
+        participant_id: the participant ID of the DSS, if it is known
+        ignore_base_url: the base URL provided by the uss_qualifier to filter out notifications
+            that are sent to itself
+
+    """
     fetched = fetch.isa(
         isa_id,
         rid_version=rid_version,
@@ -54,16 +67,22 @@ def delete_isa_if_exists(
                 )
 
         for subscriber_url, notification in deleted.notifications.items():
-            pid = (
-                notification.query.participant_id
-                if "participant_id" in notification.query
-                else None
-            )
-            with scenario.check("Notified subscriber", [pid] if pid else []) as check:
-                if not notification.success:
-                    check.record_failed(
-                        "Could not notify ISA subscriber",
-                        Severity.Medium,
-                        f"Attempting to notify subscriber for ISA {isa_id} at {subscriber_url} resulted in {notification.status_code}",
-                        query_timestamps=[notification.query.request.timestamp],
-                    )
+            # If a base URL to be ignored is specified, skip the check:
+            # This is useful to ignore notifications we send to ourselves
+            # and that are likely failures as we don't have the machinery to accept them.
+            if ignore_base_url is None or ignore_base_url not in subscriber_url:
+                pid = (
+                    notification.query.participant_id
+                    if "participant_id" in notification.query
+                    else None
+                )
+                with scenario.check(
+                    "Notified subscriber", [pid] if pid else []
+                ) as check:
+                    if not notification.success:
+                        check.record_failed(
+                            "Could not notify ISA subscriber",
+                            Severity.Medium,
+                            f"Attempting to notify subscriber for ISA {isa_id} at {subscriber_url} resulted in {notification.status_code}",
+                            query_timestamps=[notification.query.request.timestamp],
+                        )
