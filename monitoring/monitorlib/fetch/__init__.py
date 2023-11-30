@@ -268,7 +268,7 @@ class Query(ImplicitDict):
         return (
             self.json_result["message"]
             if self.json_result is not None and "message" in self.json_result
-            else "None"
+            else None
         )
 
 
