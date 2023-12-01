@@ -1,10 +1,13 @@
-from typing import Optional, List
+from typing import Dict, Optional
 
 import arrow
 
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.uss_qualifier.common_data_definitions import Severity
-from uas_standards.astm.f3548.v21.api import OperationalIntentState
+from uas_standards.astm.f3548.v21.api import (
+    OperationalIntentState,
+    OperationalIntentReference,
+)
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightResponseResult,
 )
@@ -37,10 +40,7 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class DownUSS(TestScenario):
-    flight_1_id: Optional[str] = None
     flight_1_planned_vol_A: FlightIntent
-
-    flight_2_planned_vol_A: FlightIntent
 
     uss_qualifier_sub: str
 
@@ -57,7 +57,7 @@ class DownUSS(TestScenario):
         self.tested_uss = tested_uss.flight_planner
         self.dss = dss.dss
 
-        _flight_intents = {
+        _flight_intents: Dict[str, FlightIntent] = {
             k: FlightIntent.from_flight_info_template(v)
             for k, v in flight_intents.get_flight_intents().items()
         }
@@ -70,47 +70,31 @@ class DownUSS(TestScenario):
             extents
         ).bounding_volume.to_f3548v21()
 
-        try:
-            (self.flight_1_planned_vol_A, self.flight_2_planned_vol_A,) = (
-                _flight_intents["flight_1_planned_vol_A"],
-                _flight_intents["flight_2_planned_vol_A"],
-            )
+        now = arrow.utcnow().datetime
+        for intent_name, intent in _flight_intents.items():
+            if (
+                intent.request.operational_intent.state
+                == OperationalIntentState.Activated
+            ):
+                if not Volume4DCollection.from_interuss_scd_api(
+                    intent.request.operational_intent.volumes
+                    + intent.request.operational_intent.off_nominal_volumes
+                ).has_active_volume(now):
+                    err_msg = f"at least one volume of activated intent {intent_name} must be active now (now is {now})"
+                    raise ValueError(
+                        f"`{self.me()}` TestScenario requirements for flight_intents not met: {err_msg}"
+                    )
 
-            now = arrow.utcnow().datetime
-            for intent_name, intent in _flight_intents.items():
-                if (
-                    intent.request.operational_intent.state
-                    == OperationalIntentState.Activated
-                ):
-                    assert Volume4DCollection.from_interuss_scd_api(
-                        intent.request.operational_intent.volumes
-                        + intent.request.operational_intent.off_nominal_volumes
-                    ).has_active_volume(
-                        now
-                    ), f"at least one volume of activated intent {intent_name} must be active now (now is {now})"
+        self._parse_flight_intents(_flight_intents)
+
+    def _parse_flight_intents(self, flight_intents: Dict[str, FlightIntent]) -> None:
+        try:
+            self.flight_1_planned_vol_A = flight_intents["flight_1_planned_vol_A"]
 
             assert (
                 self.flight_1_planned_vol_A.request.operational_intent.state
                 == OperationalIntentState.Accepted
             ), "flight_1_planned_vol_A must have state Accepted"
-            assert (
-                self.flight_2_planned_vol_A.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "flight_2_planned_vol_A must have state Accepted"
-
-            # TODO: check that flight data is the same across the different versions of the flight
-
-            assert (
-                self.flight_2_planned_vol_A.request.operational_intent.priority
-                > self.flight_1_planned_vol_A.request.operational_intent.priority
-            ), "flight_2 must have higher priority than flight_1"
-            assert Volume4DCollection.from_interuss_scd_api(
-                self.flight_1_planned_vol_A.request.operational_intent.volumes
-            ).intersects_vol4s(
-                Volume4DCollection.from_interuss_scd_api(
-                    self.flight_2_planned_vol_A.request.operational_intent.volumes
-                )
-            ), "flight_1_planned_vol_A and flight_2_planned_vol_A must intersect"
 
         except KeyError as e:
             raise ValueError(
@@ -168,30 +152,68 @@ class DownUSS(TestScenario):
         self._clear_op_intents()
         self.end_test_step()
 
-    def _plan_flight_conflict_planned(self):
+    def _put_conflicting_op_intent_step(
+        self,
+        conflicting_intent: FlightIntent,
+        target_state: OperationalIntentState,
+        old_op_intent: Optional[OperationalIntentReference] = None,
+    ) -> OperationalIntentReference:
+        if old_op_intent is not None:
+            key = [old_op_intent.ovn]
+            oi_id = old_op_intent.id
+            oi_ovn = old_op_intent.ovn
+        else:
+            key = None
+            oi_id = None
+            oi_ovn = None
 
-        # Virtual USS plans high-priority flight 2 test step
-        self.begin_test_step("Virtual USS plans high-priority flight 2")
+        if target_state == OperationalIntentState.Accepted:
+            msg_action = "creates"
+            msg_action_past = "created"
+        elif target_state == OperationalIntentState.Activated:
+            msg_action = "activates"
+            msg_action_past = "activated"
+        elif target_state == OperationalIntentState.Nonconforming:
+            msg_action = "transitions to Nonconforming"
+            msg_action_past = "transitioned to Nonconforming"
+        elif target_state == OperationalIntentState.Contingent:
+            msg_action = "transitions to Contingent"
+            msg_action_past = "transitioned to Contingent"
+        else:
+            raise ValueError(f"Invalid state {target_state}")
+
+        self.begin_test_step(f"Virtual USS {msg_action} conflicting operational intent")
         oi_ref, _, query = self.dss.put_op_intent(
             Volume4DCollection.from_interuss_scd_api(
-                self.flight_2_planned_vol_A.request.operational_intent.volumes
+                conflicting_intent.request.operational_intent.volumes
             ).to_f3548v21(),
-            [],  # we assume there is no other operational intent in that area
-            OperationalIntentState.Accepted,
+            key,
+            target_state,
             "https://fake.uss/down",
+            oi_id,
+            oi_ovn,
         )
         self.record_query(query)
         with self.check(
-            "Operational intent successfully created", [self.dss.participant_id]
+            f"Operational intent successfully {msg_action_past}",
+            [self.dss.participant_id],
         ) as check:
             if oi_ref is None:
                 check.record_failed(
-                    "Operational intent not successfully created",
+                    f"Operational intent not successfully {msg_action_past}",
                     Severity.High,
                     f"DSS responded code {query.status_code}; error message: {query.error_message}",
                     query_timestamps=[query.request.timestamp],
                 )
         self.end_test_step()
+        return oi_ref
+
+    def _plan_flight_conflict_planned(self):
+
+        # Virtual USS creates conflicting operational intent test step
+        self._put_conflicting_op_intent_step(
+            self.flight_1_planned_vol_A, OperationalIntentState.Accepted
+        )
 
         # Declare virtual USS as down at DSS test step
         set_uss_down(
