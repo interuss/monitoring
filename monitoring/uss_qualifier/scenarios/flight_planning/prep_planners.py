@@ -31,8 +31,8 @@ class PrepareFlightPlanners(TestScenario):
     def __init__(
         self,
         flight_planners: FlightPlannersResource,
-        mock_uss: MockUSSResource,
         flight_intents: FlightIntentsResource,
+        mock_uss: Optional[MockUSSResource] = None,
         flight_intents2: Optional[FlightIntentsResource] = None,
         flight_intents3: Optional[FlightIntentsResource] = None,
         flight_intents4: Optional[FlightIntentsResource] = None,
@@ -63,9 +63,10 @@ class PrepareFlightPlanners(TestScenario):
         self.flight_planners = {
             fp.participant_id: fp.client for fp in flight_planners.flight_planners
         }
-        self.flight_planners.update(
-            {mock_uss.mock_uss.participant_id: mock_uss.mock_uss.flight_planner}
-        )
+        if mock_uss is not None:
+            self.flight_planners.update(
+                {mock_uss.mock_uss.participant_id: mock_uss.mock_uss.flight_planner}
+            )
 
     def run(self, context):
         self.begin_test_scenario(context)

@@ -83,14 +83,9 @@ class DSSInstance(object):
         op_intent_ref: OperationalIntentReference,
         uss_participant_id: Optional[str] = None,
     ) -> Tuple[OperationalIntent, fetch.Query]:
-        url = f"{op_intent_ref.uss_base_url}/uss/v1/operational_intents/{op_intent_ref.id}"
-        query = fetch.query_and_describe(
-            self.client,
-            "GET",
-            url,
-            QueryType.F3548v21USSGetOperationalIntentDetails,
+        result, query = self.get_full_op_intent_without_validation(
+            op_intent_ref,
             uss_participant_id,
-            scope=SCOPE_SC,
         )
         if query.status_code != 200:
             result = None
@@ -101,19 +96,26 @@ class DSSInstance(object):
         return result, query
 
     def get_full_op_intent_without_validation(
-        self, op_intent_ref: OperationalIntentReference
+        self,
+        op_intent_ref: OperationalIntentReference,
+        uss_participant_id: Optional[str] = None,
     ) -> Tuple[Dict, fetch.Query]:
         """
         GET OperationalIntent without validating, as invalid data expected for negative tests
         Args:
             op_intent_ref:
-
+            uss_participant_id:
         Returns:
             returns the response json when query is successful
         """
         url = f"{op_intent_ref.uss_base_url}/uss/v1/operational_intents/{op_intent_ref.id}"
         query = fetch.query_and_describe(
-            self.client, "GET", url, scope=SCOPE_SC, participant_id=self.participant_id
+            self.client,
+            "GET",
+            url,
+            QueryType.F3548v21USSGetOperationalIntentDetails,
+            uss_participant_id,
+            scope=SCOPE_SC,
         )
         result = None
         if query.status_code == 200:

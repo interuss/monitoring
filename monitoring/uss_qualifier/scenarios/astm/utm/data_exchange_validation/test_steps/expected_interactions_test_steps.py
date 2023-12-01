@@ -11,9 +11,6 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSC
 from implicitdict import StringBasedDateTime
 from loguru import logger
 from monitoring.monitorlib.clients.mock_uss.interactions import Interaction
-from monitoring.uss_qualifier.scenarios.scenario import (
-    ScenarioCannotContinueError,
-)
 
 
 def expect_interuss_post_interactions(
@@ -23,17 +20,30 @@ def expect_interuss_post_interactions(
     posted_to_url: str,
     test_step: str,
 ):
+    """
+    This step checks if a notification was sent to a subscribed USS, from time 'st' to now
+    Args:
+        scenario:
+        mock_uss:
+        st:
+        posted_to_url: url of the subscribed USS
+        test_step:
+
+    Returns:
+
+    """
     scenario.begin_test_step(test_step)
+    interactions, query = _get_interuss_interactions_with_check(scenario, mock_uss, st)
+    logger.debug(f"Checking for POST request to {posted_to_url}")
+    found = any_post_interactions_to_url(interactions, posted_to_url)
     with scenario.check("Expect Notification sent") as check:
-        interactions = _get_interuss_interactions_with_check(scenario, mock_uss, st)
-        logger.debug(f"Checking for POST request to {posted_to_url}")
-        found = any_post_interactions_to_url(interactions, posted_to_url)
-        if found == False:
+        if not found:
             check.record_failed(
-                summary=f"Notification to {posted_to_url} not received",
+                summary=f"Notification to {posted_to_url} not sent",
                 severity=Severity.Medium,
-                details=f"Notification to {posted_to_url} not received",
-                requirements="SCDxxxx",
+                details=f"Notification to {posted_to_url} not sent",
+                requirements="SCD0085",
+                query_timestamps=[query.request.timestamp],
             )
     scenario.end_test_step()
 
@@ -45,17 +55,30 @@ def expect_no_interuss_post_interactions(
     posted_to_url: str,
     test_step: str,
 ):
+    """
+    This step checks no notification was sent to any USS as no DSS entity was created, from time 'st' to now
+    Args:
+        scenario:
+        mock_uss:
+        st:
+        posted_to_url:
+        test_step:
+
+    Returns:
+
+    """
     scenario.begin_test_step(test_step)
+    interactions, query = _get_interuss_interactions_with_check(scenario, mock_uss, st)
+    logger.debug(f"Checking for POST request to {posted_to_url}")
+    found = any_post_interactions_to_url(interactions, posted_to_url)
     with scenario.check("Expect Notification not sent") as check:
-        interactions = _get_interuss_interactions_with_check(scenario, mock_uss, st)
-        logger.debug(f"Checking for POST request to {posted_to_url}")
-        found = any_post_interactions_to_url(interactions, posted_to_url)
-        if found == True:
+        if found:
             check.record_failed(
-                summary=f"Notification to {posted_to_url} wrongly sent",
+                summary=f"Notification to {posted_to_url} wrongly sent for an entity not created.",
                 severity=Severity.Medium,
-                details=f"Notification to {posted_to_url} wrongly sent",
-                requirements="SCDxxxx",
+                details=f"Notification to {posted_to_url} wrongly sent for an entity not created.",
+                requirements="interuss.f3548.notification_requirements.NoDssEntityNoNotification",
+                query_timestamps=[query.request.timestamp],
             )
     scenario.end_test_step()
 
@@ -68,27 +91,37 @@ def expect_interuss_get_interactions(
     id: str,
     test_step: str,
 ):
-    scenario.begin_test_step(test_step)
-    if mock_uss is None:
-        raise ScenarioCannotContinueError("mock_uss should not be None.")
+    """
+    This step checks a GET request to a USS was made for an existing entity, from time 'st' to now
+    Args:
+        scenario:
+        mock_uss:
+        st:
+        get_from_url: USS managing the entity
+        id: entity id
+        test_step:
 
-    interactions = _get_interuss_interactions_with_check(scenario, mock_uss, st)
+    Returns:
+
+    """
+    scenario.begin_test_step(test_step)
+    interactions, query = _get_interuss_interactions_with_check(scenario, mock_uss, st)
     logger.debug(f"Checking for GET request to {get_from_url} for id {id}")
+    found = False
+    for interaction in interactions:
+        method = interaction.query.request.method
+        url = interaction.query.request.url
+        if method == "GET" and url.startswith(get_from_url) and id in url:
+            found = True
     with scenario.check("Expect GET request") as check:
-        found = False
-        for interaction in interactions:
-            method = interaction.query.request.method
-            url = interaction.query.request.url
-            if method == "GET" and get_from_url in url and id in url:
-                found = True
-        if found == False:
+        if not found:
             check.record_failed(
                 summary=f"No GET request received at {get_from_url} for {id} ",
                 severity=Severity.Medium,
                 details=f"No GET request received at  {get_from_url} for {id}",
-                requirements="SCDxxxx",
+                requirements="SCD0035",
+                query_timestamps=[query.request.timestamp],
             )
-
     scenario.end_test_step()
 
 
@@ -96,12 +129,22 @@ def _get_interuss_interactions_with_check(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,
-) -> List[Interaction]:
+) -> Tuple[List[Interaction], Query]:
+    """
+    Method to get interuss interactions with a scenario check from mock_uss from time 'st' to now.
+    Args:
+        scenario:
+        mock_uss:
+        st:
 
+    Returns:
+
+    """
     with scenario.check("MockUSS interactions request") as check:
         try:
             interactions, query = _get_interuss_interactions(mock_uss, st)
-            return interactions
+            scenario.record_query(query)
+            return interactions, query
         except QueryError as e:
             for q in e.queries:
                 scenario.record_query(q)
@@ -117,24 +160,34 @@ def _get_interuss_interactions(
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,
 ) -> Tuple[List[Interaction], Query]:
+    """
+        Method to get interuss interactions from mock_uss from time 'st' to now.
+    Args:
+        mock_uss:
+        st:
+
+    Returns:
+
+    """
+    # Wait - To make sure that interuss interactions are received and recorded
+    # Using a guess value of 5 seconds
     time.sleep(5)
-    if mock_uss is None:
-        raise ScenarioCannotContinueError("mock_uss should not be None.")
 
     all_interactions, query = mock_uss.get_interactions(st)
     exclude_sub = mock_uss.session.auth_adapter.get_sub()
 
+    def get_client_sub(headers):
+        token = headers.get("Authorization").split(" ")[1]
+        payload = jwt.decode(
+            token, algorithms="RS256", options={"verify_signature": False}
+        )
+        return payload["sub"]
+
     def is_uss_interaction(interaction: Interaction, excl_sub: str) -> bool:
         headers = interaction.query.request.headers
         if "Authorization" in headers:
-            token = headers.get("Authorization").split(" ")[1]
-            payload = jwt.decode(
-                token, algorithms="RS256", options={"verify_signature": False}
-            )
-            sub = payload["sub"]
-            logger.debug(f"sub of interuss_interaction token: {sub}")
+            sub = get_client_sub(headers)
             if sub == excl_sub:
-                logger.debug(f"Excluding interaction with sub: {sub} ")
                 return False
             else:
                 return True
@@ -159,17 +212,10 @@ def precondition_no_post_interaction(
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,
     posted_to_url: str,
-    test_step: str,
-):
-    scenario.begin_test_step(test_step)
-    interactions, _ = _get_interuss_interactions(mock_uss, st)
-    logger.debug(f"Checking for POST request to {posted_to_url}")
-    found = any_post_interactions_to_url(interactions, posted_to_url)
-    if found:
-        msg = f"As a precondition for the scenario tests, there should have been no post made to {posted_to_url}"
-        raise ScenarioCannotContinueError(msg)
-
-    scenario.end_test_step()
+) -> bool:
+    interactions, query = _get_interuss_interactions(mock_uss, st)
+    scenario.record_query(query)
+    return any_post_interactions_to_url(interactions, posted_to_url)
 
 
 def any_post_interactions_to_url(
@@ -179,6 +225,6 @@ def any_post_interactions_to_url(
     for interaction in interactions:
         method = interaction.query.request.method
         url = interaction.query.request.url
-        if method == "POST" and posted_to_url in url:
-            found = True
+        if method == "POST" and url.startswith(posted_to_url):
+            return True
     return found

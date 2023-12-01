@@ -1,13 +1,11 @@
 from typing import Optional, Dict
-
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
-from monitoring.monitorlib.temporal import TimeDuringTest, Time
+from monitoring.monitorlib.temporal import TimeDuringTest
 from urllib.parse import urlsplit
 import arrow
 from implicitdict import StringBasedDateTime
-from datetime import datetime
 
 from monitoring.monitorlib.temporal import Time
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
@@ -26,7 +24,6 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSResource,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.invalid_op_test_steps import (
-    InvalidOpIntentSharingValidator,
     plan_flight_intent_expect_failed,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import OpIntentValidator
@@ -148,6 +145,8 @@ class GetOpResponseDataValidationByUSS(TestScenario):
     ):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_2 = self.flight_2.resolve(times)
+
+        planning_time = Time(arrow.utcnow().datetime)
         with OpIntentValidator(
             self,
             self.control_uss_client,
@@ -164,17 +163,17 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
             flight_2_oi_ref = validator.expect_shared(flight_2)
 
-        precondition_no_post_interaction(
-            self,
+        self._precondition_no_post_interaction(
             self.control_uss,
-            times[TimeDuringTest.TimeOfEvaluation],
-            self.tested_uss_client.get_base_url(),
+            planning_time,
+            self._get_domain(self.tested_uss_client.get_base_url()),
             "Precondition - check tested_uss has no subscription in flight 2 area",
         )
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
 
+        planning_time = Time(arrow.utcnow().datetime)
         with OpIntentValidator(
             self,
             self.tested_uss_client,
@@ -192,13 +191,11 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 flight_1,
             )
 
-        control_uss_domain = "{0.scheme}://{0.netloc}/".format(
-            urlsplit(self.control_uss.base_url)
-        )
+        control_uss_domain = self.control_uss.base_url
         expect_interuss_get_interactions(
             self,
             self.control_uss,
-            times[TimeDuringTest.TimeOfEvaluation],
+            planning_time,
             control_uss_domain,
             flight_2_oi_ref.id,
             "Validate flight2 GET interaction",
@@ -206,7 +203,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         expect_interuss_post_interactions(
             self,
             self.control_uss,
-            times[TimeDuringTest.TimeOfEvaluation],
+            planning_time,
             control_uss_domain,
             "Validate flight1 Notification sent to Control_uss",
         )
@@ -235,7 +232,8 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
         additional_fields = {"behavior": behavior}
 
-        with InvalidOpIntentSharingValidator(
+        planning_time = Time(arrow.utcnow().datetime)
+        with OpIntentValidator(
             self,
             self.control_uss_client,
             self.dss,
@@ -251,17 +249,17 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             )
             flight_2_oi_ref = validator.expect_shared_with_invalid_data(flight_info)
 
-        precondition_no_post_interaction(
-            self,
+        self._precondition_no_post_interaction(
             self.control_uss,
-            times[TimeDuringTest.TimeOfEvaluation],
-            self.tested_uss_client.get_base_url(),
+            planning_time,
+            self._get_domain(self.tested_uss_client.get_base_url()),
             "Precondition - check tested_uss has no subscription in flight 2 area",
         )
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
-        with InvalidOpIntentSharingValidator(
+        planning_time = Time(arrow.utcnow().datetime)
+        with OpIntentValidator(
             self,
             self.tested_uss_client,
             self.dss,
@@ -276,13 +274,11 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             )
             validator.expect_not_shared()
 
-        control_uss_domain = "{0.scheme}://{0.netloc}/".format(
-            urlsplit(self.control_uss.base_url)
-        )
+        control_uss_domain = self.control_uss.base_url
         expect_interuss_get_interactions(
             self,
             self.control_uss,
-            times[TimeDuringTest.TimeOfEvaluation],
+            planning_time,
             control_uss_domain,
             flight_2_oi_ref.id,
             "Validate flight 2 GET interaction",
@@ -290,7 +286,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         expect_no_interuss_post_interactions(
             self,
             self.control_uss,
-            times[TimeDuringTest.TimeOfEvaluation],
+            planning_time,
             control_uss_domain,
             "Validate flight 1 Notification not sent to Control_uss",
         )
@@ -298,6 +294,26 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         delete_flight(
             self, "Delete Control_uss flight", self.control_uss_client, self.flight_2_id
         )
+
+    def _precondition_no_post_interaction(
+        self,
+        mock_uss: MockUSSClient,
+        st: StringBasedDateTime,
+        posted_to_url: str,
+        test_step: str,
+    ):
+        self.begin_test_step(test_step)
+
+        mock_uss_sent_notification = precondition_no_post_interaction(
+            self, mock_uss, st, posted_to_url
+        )
+        if mock_uss_sent_notification:
+            msg = f"As a precondition for the scenario tests, there should have been no post made to {posted_to_url}"
+            raise ScenarioCannotContinueError(msg)
+        self.end_test_step()
+
+    def _get_domain(self, url):
+        return "{0.scheme}://{0.netloc}/".format(urlsplit(url))
 
     def cleanup(self):
         self.begin_cleanup()

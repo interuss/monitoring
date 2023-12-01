@@ -30,8 +30,8 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
     ):
         super(PrepareFlightPlanners, self).__init__(
             flight_planners,
-            mock_uss,
             flight_intents,
+            mock_uss,
             flight_intents2,
             flight_intents3,
             flight_intents4,
