@@ -107,8 +107,8 @@ def test_create_isa_concurrent(ids, session_ridv1_async):
         )
     )
     for isa_id, resp in results:
-        assert resp[0] == 200, resp[1]
-        data = resp[1]
+        assert resp[0] == 200, resp[2]
+        data = resp[2]
         assert data["service_area"]["id"] == isa_id
         assert data["service_area"]["flights_url"] == "https://example.com/dss"
         assert_datetimes_are_equal(
@@ -133,9 +133,9 @@ def test_get_isa_by_ids_concurrent(ids, session_ridv1_async):
         )
     )
     for isa_id, resp in results:
-        assert resp[0] == 200, resp[1]
+        assert resp[0] == 200, resp[2]
 
-        data = resp[1]
+        data = resp[2]
         assert data["service_area"]["id"] == isa_id
         assert data["service_area"]["flights_url"] == FLIGHTS_URL
 
@@ -162,8 +162,8 @@ def test_delete_isa_concurrent(ids, session_ridv1_async):
     )
 
     for isa_id, resp in results:
-        assert resp[0] == 200, resp[1]
-        version = resp[1]["service_area"]["version"]
+        assert resp[0] == 200, resp[2]
+        version = resp[2]["service_area"]["version"]
         version_map[isa_id] = version
 
     # Delete ISAs concurrently
@@ -178,4 +178,4 @@ def test_delete_isa_concurrent(ids, session_ridv1_async):
     )
 
     for isa_id, resp in results:
-        assert resp[0], resp[1]
+        assert resp[0], resp[2]

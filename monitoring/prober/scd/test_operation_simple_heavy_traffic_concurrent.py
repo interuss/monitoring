@@ -258,7 +258,7 @@ def test_create_ops_concurrent(ids, scd_api, scd_session_async):
         op_id = req_map[0]
         op_resp_map[op_id] = {}
         op_resp_map[op_id]["status_code"] = resp[0][0]
-        op_resp_map[op_id]["content"] = resp[0][1]
+        op_resp_map[op_id]["content"] = resp[0][2]
     for op_id, resp in op_resp_map.items():
         if resp["status_code"] != 201:
             try:
@@ -342,7 +342,7 @@ def test_get_ops_by_ids_concurrent(ids, scd_api, scd_session_async):
     for op_id, resp in zip(map(ids, OP_TYPES), results):
         op_resp_map[op_id] = {}
         op_resp_map[op_id]["status_code"] = resp[0]
-        op_resp_map[op_id]["content"] = resp[1]
+        op_resp_map[op_id]["content"] = resp[2]
 
     for op_id, resp in op_resp_map.items():
         assert resp["status_code"] == 200, resp["content"]
@@ -381,7 +381,7 @@ def test_get_ops_by_search_concurrent(ids, scd_api, scd_session_async):
     for idx, resp in zip(range(len(OP_TYPES)), results):
         op_resp_map[idx] = {}
         op_resp_map[idx]["status_code"] = resp[0]
-        op_resp_map[idx]["content"] = resp[1]
+        op_resp_map[idx]["content"] = resp[2]
 
     for idx, resp in op_resp_map.items():
         assert resp["status_code"] == 200, resp["content"]
@@ -431,7 +431,7 @@ def test_mutate_ops_concurrent(ids, scd_api, scd_session, scd_session_async):
         op_id = req_map[0]
         op_resp_map[op_id] = {}
         op_resp_map[op_id]["status_code"] = resp[0][0]
-        op_resp_map[op_id]["content"] = resp[0][1]
+        op_resp_map[op_id]["content"] = resp[0][2]
 
     ovn_map.clear()
 
@@ -486,7 +486,7 @@ def test_delete_op_concurrent(ids, scd_api, scd_session_async):
     for op_id, resp in zip(map(ids, OP_TYPES), results):
         op_resp_map[op_id] = {}
         op_resp_map[op_id]["status_code"] = resp[0]
-        op_resp_map[op_id]["content"] = resp[1]
+        op_resp_map[op_id]["content"] = resp[2]
 
     assert len(op_resp_map) == len(OP_TYPES)
 
