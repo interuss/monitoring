@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 import time
 import jwt
 
@@ -170,8 +170,8 @@ def _get_interuss_interactions(
 
     """
     # Wait - To make sure that interuss interactions are received and recorded
-    # Using a guess value of 5 seconds
-    time.sleep(5)
+    # Using a guess value of 2 seconds
+    time.sleep(2)
 
     all_interactions, query = mock_uss.get_interactions(st)
     exclude_sub = mock_uss.session.auth_adapter.get_sub()
@@ -213,18 +213,32 @@ def precondition_no_post_interaction(
     st: StringBasedDateTime,
     posted_to_url: str,
 ) -> bool:
+    """
+    This method helps check a precondition that no POST is sent to a USS because no subscription exists
+    Args:
+        scenario:
+        mock_uss:
+        st:
+        posted_to_url: url to which POST request is sent
+
+    Returns:
+
+    """
     interactions, query = _get_interuss_interactions(mock_uss, st)
     scenario.record_query(query)
-    return any_post_interactions_to_url(interactions, posted_to_url)
+    # ToDo - Will need to find a way to get the base_url of a USS
+    # As we dont have access to USS base_url through flightplannerclient config, currently check is for no POSTs at all
+    return any_post_interactions_to_url(interactions)
 
 
 def any_post_interactions_to_url(
-    interactions: List[Interaction], posted_to_url: str
+    interactions: List[Interaction], posted_to_url: Optional[str] = None
 ) -> bool:
     found = False
     for interaction in interactions:
         method = interaction.query.request.method
         url = interaction.query.request.url
-        if method == "POST" and url.startswith(posted_to_url):
-            return True
+        if method == "POST":
+            if posted_to_url is None or url.startswith(posted_to_url):
+                return True
     return found
