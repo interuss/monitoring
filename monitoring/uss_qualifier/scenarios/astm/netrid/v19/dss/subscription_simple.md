@@ -28,21 +28,9 @@ Perform basic operations on a single DSS instance to create, update and delete s
 
 ## Setup test case
 
-### Ensure clean workspace test step
+### [Ensure clean workspace test step](test_steps/clean_workspace.md)
 
 This step ensures that no subscription with the known test ID exists in the DSS.
-
-#### Search for all subscriptions in ISA area check
-
-If the DSS fails to let us search in the area for which test subscriptions will be created, it is failing to properly implement **[astm.f3411.v19.DSS0030,f](../../../../../requirements/astm/f3411/v19.md)**.
-
-#### Subscription can be queried by ID check
-
-If the DSS cannot be queried for the existing test ID, the DSS is likely not implementing **[astm.f3411.v19.DSS0030,e](../../../../../requirements/astm/f3411/v19.md)** correctly.
-
-#### Subscription can be deleted check
-
-An attempt to delete a subscription when the correct version is provided should succeed, otherwise the DSS is in violation of **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)**.
 
 ## Subscription Simple test case
 
