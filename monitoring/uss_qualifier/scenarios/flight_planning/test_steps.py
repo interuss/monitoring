@@ -441,7 +441,7 @@ def submit_flight(
                     specific_failed_check.record_failed(
                         summary=f"Flight unexpectedly {resp.activity_result}",
                         severity=check_severity,
-                        details=f'{flight_planner.participant_id} indicated {resp.activity_result} rather than the expected {" or ".join([activity_res for activity_res,_ in expected_results])}{notes_suffix}',
+                        details=f'{flight_planner.participant_id} indicated {resp.activity_result} rather than the expected {" or ".join(r[0] for r in expected_results)}{notes_suffix}',
                         query_timestamps=[query.request.timestamp],
                     )
 
@@ -450,9 +450,9 @@ def submit_flight(
             return resp, flight_id
         else:
             check.record_failed(
-                summary=f"Flight unexpectedly {resp.activity_result}",
+                summary=f"Flight planning activity outcome was not expected",
                 severity=Severity.High,
-                details=f'{flight_planner.participant_id} indicated {resp.activity_result} rather than the expected {" or ".join([activity_res for activity_res,_ in expected_results])}{notes_suffix}',
+                details=f'{flight_planner.participant_id} indicated {resp.activity_result} with flight plan status {resp.flight_plan_status} rather than the expected {" or ".join(f"({expected_results[0]}, {expected_results[1]})")}{notes_suffix}',
                 query_timestamps=[query.request.timestamp],
             )
 
@@ -549,9 +549,9 @@ def delete_flight(
             return resp
         else:
             check.record_failed(
-                summary=f"Flight deletion attempt unexpectedly {(resp.activity_result,resp.flight_plan_status)}",
+                summary=f"Flight deletion attempt unexpectedly {resp.activity_result} with flight plan status {resp.flight_plan_status}",
                 severity=Severity.High,
-                details=f"{flight_planner.participant_id} indicated {(resp.activity_result,resp.flight_plan_status)} rather than the expected {PlanningActivityResult.Completed,FlightPlanStatus.Closed}{notes_suffix}",
+                details=f"{flight_planner.participant_id} indicated {resp.activity_result} with flight plan status {resp.flight_plan_status} rather than the expected Completed with flight plan status Closed{notes_suffix}",
                 query_timestamps=[query.request.timestamp],
             )
 
@@ -599,7 +599,7 @@ def cleanup_flights_fp_client(
                 else:
                     check.record_failed(
                         summary="Failed to delete flight",
-                        details=f"USS indicated: {resp.notes}"
+                        details=f"USS indicated {resp.activity_result} with flight plan status {resp.flight_plan_status} rather than the expected Completed with flight plan status Closed.  Its notes were: {resp.notes}"
                         if "notes" in resp
                         else "See query",
                         severity=Severity.Medium,

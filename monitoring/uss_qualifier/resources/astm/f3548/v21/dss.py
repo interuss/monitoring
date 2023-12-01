@@ -1,12 +1,13 @@
 from __future__ import annotations
+import uuid
 from typing import Tuple, List, Dict, Optional
+
 from urllib.parse import urlparse
-from loguru import logger
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
 from monitoring.monitorlib.fetch import QueryType
-from monitoring.monitorlib.scd import SCOPE_SC
+from monitoring.monitorlib.scd import SCOPE_SC, SCOPE_AA
 from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from uas_standards.astm.f3548.v21.api import (
@@ -16,6 +17,16 @@ from uas_standards.astm.f3548.v21.api import (
     QueryOperationalIntentReferenceResponse,
     OperationalIntent,
     GetOperationalIntentDetailsResponse,
+    PutOperationalIntentReferenceParameters,
+    EntityOVN,
+    OperationalIntentState,
+    ImplicitSubscriptionParameters,
+    UssBaseURL,
+    ChangeOperationalIntentReferenceResponse,
+    SubscriberToNotify,
+    SetUssAvailabilityStatusParameters,
+    UssAvailabilityState,
+    UssAvailabilityStatusResponse,
 )
 
 
@@ -122,6 +133,117 @@ class DSSInstance(object):
             result = query.response.json
 
         return result, query
+
+    def put_op_intent(
+        self,
+        extents: List[Volume4D],
+        key: List[EntityOVN],
+        state: OperationalIntentState,
+        base_url: UssBaseURL,
+        id: Optional[str] = None,
+        ovn: Optional[str] = None,
+    ) -> Tuple[
+        Optional[OperationalIntentReference],
+        Optional[List[SubscriberToNotify]],
+        fetch.Query,
+    ]:
+        if id is None:
+            url = f"/dss/v1/operational_intent_references/{str(uuid.uuid4())}"
+            query_type = QueryType.F3548v21DSSCreateOperationalIntentReference
+        else:
+            url = f"/dss/v1/operational_intent_references/{id}/{ovn}"
+            query_type = QueryType.F3548v21DSSUpdateOperationalIntentReference
+
+        req = PutOperationalIntentReferenceParameters(
+            extents=extents,
+            key=key,
+            state=state,
+            uss_base_url=base_url,
+            new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url),
+        )
+        query = fetch.query_and_describe(
+            self.client,
+            "PUT",
+            url,
+            query_type,
+            self.participant_id,
+            scope=SCOPE_SC,
+            json=req,
+        )
+        if query.status_code != 200 and query.status_code != 201:
+            return None, None, query
+        else:
+            result = ChangeOperationalIntentReferenceResponse(
+                ImplicitDict.parse(
+                    query.response.json, ChangeOperationalIntentReferenceResponse
+                )
+            )
+            return result.operational_intent_reference, result.subscribers, query
+
+    def delete_op_intent(
+        self,
+        id: str,
+        ovn: str,
+    ) -> Tuple[
+        Optional[OperationalIntentReference],
+        Optional[List[SubscriberToNotify]],
+        fetch.Query,
+    ]:
+        query = fetch.query_and_describe(
+            self.client,
+            "DELETE",
+            f"/dss/v1/operational_intent_references/{id}/{ovn}",
+            QueryType.F3548v21DSSDeleteOperationalIntentReference,
+            self.participant_id,
+            scope=SCOPE_SC,
+        )
+        if query.status_code != 200:
+            return None, None, query
+        else:
+            result = ChangeOperationalIntentReferenceResponse(
+                ImplicitDict.parse(
+                    query.response.json, ChangeOperationalIntentReferenceResponse
+                )
+            )
+            return result.operational_intent_reference, result.subscribers, query
+
+    def set_uss_availability(
+        self,
+        uss_id: str,
+        available: bool,
+        version: str = "",
+    ) -> Tuple[Optional[str], fetch.Query]:
+        """
+        Returns:
+            A tuple composed of
+            1) the new version of the USS availability, or None if the query failed;
+            2) the query.
+        """
+        if available:
+            availability = UssAvailabilityState.Normal
+        else:
+            availability = UssAvailabilityState.Down
+
+        req = SetUssAvailabilityStatusParameters(
+            old_version=version,
+            availability=availability,
+        )
+        query = fetch.query_and_describe(
+            self.client,
+            "PUT",
+            f"/dss/v1/uss_availability/{uss_id}",
+            QueryType.F3548v21DSSSetUssAvailability,
+            self.participant_id,
+            scope=SCOPE_AA,
+            json=req,
+        )
+        if query.status_code != 200:
+            return None, query
+        else:
+            result = UssAvailabilityStatusResponse(
+                ImplicitDict.parse(query.response.json, UssAvailabilityStatusResponse)
+            )
+            return result.version, query
 
     def is_same_as(self, other: DSSInstance) -> bool:
         return (

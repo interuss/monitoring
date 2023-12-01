@@ -73,10 +73,14 @@ def describe_flask_request(request: flask.Request) -> RequestDescription:
         "received_at": StringBasedDateTime(datetime.datetime.utcnow()),
         "headers": headers,
     }
-    try:
-        kwargs["json"] = request.json
-    except ValueError:
-        kwargs["body"] = request.data.decode("utf-8")
+    data = request.data.decode("utf-8")
+    if request.is_json:
+        try:
+            kwargs["json"] = json.loads(data)
+        except ValueError:
+            kwargs["body"] = data
+    else:
+        kwargs["body"] = data
     return RequestDescription(**kwargs)
 
 
@@ -262,6 +266,14 @@ class Query(ImplicitDict):
     @property
     def json_result(self) -> Optional[Dict]:
         return self.response.json
+
+    @property
+    def error_message(self) -> Optional[str]:
+        return (
+            self.json_result["message"]
+            if self.json_result is not None and "message" in self.json_result
+            else None
+        )
 
 
 class QueryError(RuntimeError):

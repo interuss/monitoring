@@ -3,7 +3,7 @@ import datetime
 import functools
 from typing import Dict, List, Optional
 import urllib.parse
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientResponse
 
 import jwt
 import requests
@@ -190,32 +190,52 @@ class AsyncUTMTestSession:
         return kwargs
 
     async def put(self, url, **kwargs):
+        """Returns (status, headers, json)"""
         url = self._prefix_url + url
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "PUT", kwargs)
         async with self._client.put(url, **kwargs) as response:
-            return response.status, await response.json()
+            return (
+                response.status,
+                {k: v for k, v in response.headers.items()},
+                await response.json(),
+            )
 
     async def get(self, url, **kwargs):
+        """Returns (status, headers, json)"""
         url = self._prefix_url + url
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "GET", kwargs)
         async with self._client.get(url, **kwargs) as response:
-            return response.status, await response.json()
+            return (
+                response.status,
+                {k: v for k, v in response.headers.items()},
+                await response.json(),
+            )
 
     async def post(self, url, **kwargs):
+        """Returns (status, headers, json)"""
         url = self._prefix_url + url
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "POST", kwargs)
         async with self._client.post(url, **kwargs) as response:
-            return response.status, await response.json()
+            return (
+                response.status,
+                {k: v for k, v in response.headers.items()},
+                await response.json(),
+            )
 
     async def delete(self, url, **kwargs):
+        """Returns (status, headers, json)"""
         url = self._prefix_url + url
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "DELETE", kwargs)
         async with self._client.delete(url, **kwargs) as response:
-            return response.status, await response.json()
+            return (
+                response.status,
+                {k: v for k, v in response.headers.items()},
+                await response.json(),
+            )
 
 
 def default_scopes(scopes: List[str]):
