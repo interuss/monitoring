@@ -41,7 +41,7 @@ def expect_interuss_post_interactions(
             check.record_failed(
                 summary=f"Notification to {posted_to_url} not sent",
                 severity=Severity.Medium,
-                details=f"Notification to {posted_to_url} not sent",
+                details=f"Notification to {posted_to_url} not sent even though DSS instructed the planning USS to notify due to subscription.",
                 requirements="SCD0085",
                 query_timestamps=[query.request.timestamp],
             )
