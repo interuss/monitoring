@@ -20,17 +20,9 @@ Perform basic operations on a single DSS instance to create subscriptions and ch
 
 ## Setup test case
 
-### Ensure clean workspace test step
+### [Ensure clean workspace test step](test_steps/clean_workspace.md)
 
 This step ensures that we remove any subscription that may already exist for the service area.  First, the DSS is queried for any applicable existing subscriptions, and then any subscriptions found are deleted.
-
-#### Successful subscription search query check
-
-If the search query for subscriptions fails, **[astm.f3411.v19.DSS0030,f](../../../../../requirements/astm/f3411/v19.md)** was not met.
-
-#### Subscription can be deleted check
-
-If the deletion attempt fails, **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)** was not met.
 
 ## Subscription quantity limitations test case
 
