@@ -287,7 +287,6 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self,
             self.control_uss,
             planning_time,
-            control_uss_domain,
             "Validate flight 1 Notification not sent to Control_uss",
         )
 

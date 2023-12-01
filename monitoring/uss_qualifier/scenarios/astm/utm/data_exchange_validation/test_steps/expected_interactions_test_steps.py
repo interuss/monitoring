@@ -52,7 +52,6 @@ def expect_no_interuss_post_interactions(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,
-    posted_to_url: str,
     test_step: str,
 ):
     """
@@ -69,14 +68,13 @@ def expect_no_interuss_post_interactions(
     """
     scenario.begin_test_step(test_step)
     interactions, query = _get_interuss_interactions_with_check(scenario, mock_uss, st)
-    logger.debug(f"Checking for POST request to {posted_to_url}")
-    found = any_post_interactions_to_url(interactions, posted_to_url)
+    found = any_post_interactions_to_url(interactions)
     with scenario.check("Expect Notification not sent") as check:
         if found:
             check.record_failed(
-                summary=f"Notification to {posted_to_url} wrongly sent for an entity not created.",
+                summary=f"Notification was wrongly sent for an entity not created.",
                 severity=Severity.Medium,
-                details=f"Notification to {posted_to_url} wrongly sent for an entity not created.",
+                details=f"Notification was wrongly sent for an entity not created.",
                 requirements="interuss.f3548.notification_requirements.NoDssEntityNoNotification",
                 query_timestamps=[query.request.timestamp],
             )
@@ -171,7 +169,7 @@ def _get_interuss_interactions(
     """
     # Wait - To make sure that interuss interactions are received and recorded
     # Using a guess value of 2 seconds
-    time.sleep(2)
+    time.sleep(5)
 
     all_interactions, query = mock_uss.get_interactions(st)
     exclude_sub = mock_uss.session.auth_adapter.get_sub()
