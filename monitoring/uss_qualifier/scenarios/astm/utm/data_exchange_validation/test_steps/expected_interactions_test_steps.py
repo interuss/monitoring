@@ -33,7 +33,9 @@ def expect_interuss_post_interactions(
 
     """
     scenario.begin_test_step(test_step)
-    interactions, query = _get_interuss_interactions_with_check(scenario, mock_uss, st)
+    interactions, query = _get_interuss_interactions_with_check(
+        scenario, mock_uss, st, 5
+    )
     logger.debug(f"Checking for POST request to {posted_to_url}")
     found = any_post_interactions_to_url(interactions, posted_to_url)
     with scenario.check("Expect Notification sent") as check:
@@ -60,14 +62,15 @@ def expect_no_interuss_post_interactions(
         scenario:
         mock_uss:
         st:
-        posted_to_url:
         test_step:
 
     Returns:
 
     """
     scenario.begin_test_step(test_step)
-    interactions, query = _get_interuss_interactions_with_check(scenario, mock_uss, st)
+    interactions, query = _get_interuss_interactions_with_check(
+        scenario, mock_uss, st, 5
+    )
     found = any_post_interactions_to_url(interactions)
     with scenario.check("Expect Notification not sent") as check:
         if found:
@@ -116,7 +119,7 @@ def expect_interuss_get_interactions(
             check.record_failed(
                 summary=f"No GET request received at {get_from_url} for {id} ",
                 severity=Severity.Medium,
-                details=f"No GET request received at  {get_from_url} for {id}",
+                details=f"No GET request received at  {get_from_url} for {id}. A planning USS in the area should have sent a reques to get the intent details.",
                 requirements="SCD0035",
                 query_timestamps=[query.request.timestamp],
             )
@@ -127,6 +130,7 @@ def _get_interuss_interactions_with_check(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,
+    wait_time_sec: Optional[int] = 0,
 ) -> Tuple[List[Interaction], Query]:
     """
     Method to get interuss interactions with a scenario check from mock_uss from time 'st' to now.
@@ -134,13 +138,15 @@ def _get_interuss_interactions_with_check(
         scenario:
         mock_uss:
         st:
-
+        wait_time_sec: Seconds to wait for getting interactions like asynchronous notifications
     Returns:
 
     """
     with scenario.check("MockUSS interactions request") as check:
         try:
-            interactions, query = _get_interuss_interactions(mock_uss, st)
+            interactions, query = _get_interuss_interactions(
+                mock_uss, st, wait_time_sec
+            )
             scenario.record_query(query)
             return interactions, query
         except QueryError as e:
@@ -155,21 +161,18 @@ def _get_interuss_interactions_with_check(
 
 
 def _get_interuss_interactions(
-    mock_uss: MockUSSClient,
-    st: StringBasedDateTime,
+    mock_uss: MockUSSClient, st: StringBasedDateTime, wait_time: Optional[int] = 0
 ) -> Tuple[List[Interaction], Query]:
     """
         Method to get interuss interactions from mock_uss from time 'st' to now.
     Args:
         mock_uss:
         st:
-
+        wait_time: Seconds to wait for getting interactions like asynchronous notifications
     Returns:
 
     """
-    # Wait - To make sure that interuss interactions are received and recorded
-    # Using a guess value of 2 seconds
-    time.sleep(5)
+    time.sleep(wait_time)
 
     all_interactions, query = mock_uss.get_interactions(st)
     exclude_sub = mock_uss.session.auth_adapter.get_sub()
@@ -209,7 +212,6 @@ def precondition_no_post_interaction(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,
-    posted_to_url: str,
 ) -> bool:
     """
     This method helps check a precondition that no POST is sent to a USS because no subscription exists
@@ -217,15 +219,12 @@ def precondition_no_post_interaction(
         scenario:
         mock_uss:
         st:
-        posted_to_url: url to which POST request is sent
 
     Returns:
 
     """
-    interactions, query = _get_interuss_interactions(mock_uss, st)
+    interactions, query = _get_interuss_interactions(mock_uss, st, 5)
     scenario.record_query(query)
-    # ToDo - Will need to find a way to get the base_url of a USS
-    # As we dont have access to USS base_url through flightplannerclient config, currently check is for no POSTs at all
     return any_post_interactions_to_url(interactions)
 
 

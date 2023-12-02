@@ -166,7 +166,6 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self._precondition_no_post_interaction(
             self.control_uss,
             planning_time,
-            self._get_domain(self.tested_uss_client.get_base_url()),
             "Precondition - check tested_uss has no subscription in flight 2 area",
         )
 
@@ -252,7 +251,6 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self._precondition_no_post_interaction(
             self.control_uss,
             planning_time,
-            self._get_domain(self.tested_uss_client.get_base_url()),
             "Precondition - check tested_uss has no subscription in flight 2 area",
         )
 
@@ -298,21 +296,17 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self,
         mock_uss: MockUSSClient,
         st: StringBasedDateTime,
-        posted_to_url: str,
         test_step: str,
     ):
         self.begin_test_step(test_step)
 
         mock_uss_sent_notification = precondition_no_post_interaction(
-            self, mock_uss, st, posted_to_url
+            self, mock_uss, st
         )
         if mock_uss_sent_notification:
             msg = f"As a precondition for the scenario tests, there should have been no post made to {posted_to_url}"
             raise ScenarioCannotContinueError(msg)
         self.end_test_step()
-
-    def _get_domain(self, url):
-        return "{0.scheme}://{0.netloc}/".format(urlsplit(url))
 
     def cleanup(self):
         self.begin_cleanup()
