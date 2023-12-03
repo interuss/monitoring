@@ -1,4 +1,4 @@
-# Delete ISA test step
+# Delete ISA test step fragment
 
 This page describes the content of a common test step where a deletion of an ISA should be successful.
 See `DSSWrapper.del_isa` in [`dss_wrapper.py`](../../../dss_wrapper.py).

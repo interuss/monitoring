@@ -1,4 +1,4 @@
-# Modify activated flight test step
+# Modify activated flight test step fragment
 
 This page describes the content of a common test case where a valid user flight intent in activated state is tentatively
 modified by a flight planned. Multiple outcomes may be valid.

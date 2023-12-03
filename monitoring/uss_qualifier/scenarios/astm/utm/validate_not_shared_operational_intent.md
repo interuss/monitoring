@@ -1,4 +1,4 @@
-# Validate operational intent not shared test step
+# Validate operational intent not shared test step fragment
 
 This step verifies that a previous attempt to create a flight did not result in a flight being shared with the DSS.
 It does so by querying the DSS for operational intents in the area of the flight before and after an attempted creation.

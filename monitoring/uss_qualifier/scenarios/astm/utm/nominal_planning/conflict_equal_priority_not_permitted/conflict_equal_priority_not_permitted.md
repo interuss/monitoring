@@ -95,7 +95,9 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 ## Attempt to plan flight into conflict test case
 ![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict.svg)
 
-### [Plan flight 2 test step](../../../../flight_planning/plan_flight_intent.md)
+### Plan flight 2 test step
+
+#### [Plan flight 2](../../../../flight_planning/plan_flight_intent.md)
 Flight 2 on time range B should be successfully planned by the control USS.
 
 ### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)
