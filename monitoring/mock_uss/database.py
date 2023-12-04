@@ -25,9 +25,7 @@ class TaskError(ImplicitDict):
             trigger=trigger,
             type=type(e).__name__,
             message=str(e),
-            stacktrace="".join(
-                traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
-            ),
+            stacktrace="".join(traceback.format_exception(e)),
         )
 
 

@@ -46,7 +46,7 @@ class SynchronizedValue(object):
         """
         self._lock = multiprocessing.RLock()
         self._shared_memory = multiprocessing.shared_memory.SharedMemory(
-            create=True, size=capacity_bytes + self.SIZE_BYTES
+            create=True, size=int(capacity_bytes + self.SIZE_BYTES)
         )
         self._encoder = (
             encoder
