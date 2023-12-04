@@ -303,6 +303,9 @@ class DSSWrapper(object):
             participant_id=self._dss.participant_id,
         )
 
+        for notification_query in mutated_isa.notifications.values():
+            self._scenario.record_query(notification_query.query)
+
         self.handle_query_result(
             check=check,
             q=mutated_isa.dss_query,

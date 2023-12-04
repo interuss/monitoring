@@ -297,7 +297,7 @@ def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
 
 
 def get_documentation(scenario: Type) -> TestScenarioDocumentation:
-    DOC_CACHE_ATTRIBUTE = "_md_documentation"
+    DOC_CACHE_ATTRIBUTE = f"_md_documentation_{scenario.__name__}"
     if not hasattr(scenario, DOC_CACHE_ATTRIBUTE):
         setattr(scenario, DOC_CACHE_ATTRIBUTE, _parse_documentation(scenario))
     return getattr(scenario, DOC_CACHE_ATTRIBUTE)

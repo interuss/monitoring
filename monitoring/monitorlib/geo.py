@@ -7,6 +7,7 @@ from typing import List, Tuple, Union, Optional
 from implicitdict import ImplicitDict
 import numpy as np
 import s2sphere
+from s2sphere import LatLng
 from scipy.interpolate import RectBivariateSpline as Spline
 import shapely.geometry
 from uas_standards.astm.f3548.v21 import api as f3548v21
@@ -501,3 +502,38 @@ def egm96_geoid_offset(p: s2sphere.LatLng) -> float:
     # listed -90 to 90.  Since latitude data are symmetric, we can simply
     # convert "-90 to 90" to "90 to -90" by inverting the requested latitude.
     return _egm96.ev(-lat, lng)
+
+
+def generate_slight_overlap_area(in_points: List[LatLng]) -> List[LatLng]:
+    """
+    Takes a list of LatLng points and returns a list of LatLng points that represents
+    a polygon only slightly overlapping with the input, and that is roughly half the diameter of the input.
+
+    The returned polygon is built from the first point of the input, from which a square
+    is drawn in the direction opposite of the center of the input polygon.
+
+    """
+    overlap_corner = in_points[0]  # the spot that will have a tiny overlap
+
+    # Compute the center of mass of the input polygon
+    center = LatLng.from_degrees(
+        sum([point.lat().degrees for point in in_points]) / len(in_points),
+        sum([point.lng().degrees for point in in_points]) / len(in_points),
+    )
+
+    delta_lat = center.lat().degrees - overlap_corner.lat().degrees
+    delta_lng = center.lng().degrees - overlap_corner.lng().degrees
+
+    same_lat_point = LatLng.from_degrees(
+        overlap_corner.lat().degrees, overlap_corner.lng().degrees - delta_lng
+    )
+    same_lng_point = LatLng.from_degrees(
+        overlap_corner.lat().degrees - delta_lat, overlap_corner.lng().degrees
+    )
+
+    opposite_corner = LatLng.from_degrees(
+        overlap_corner.lat().degrees - delta_lat,
+        overlap_corner.lng().degrees - delta_lng,
+    )
+
+    return [overlap_corner, same_lat_point, opposite_corner, same_lng_point]
