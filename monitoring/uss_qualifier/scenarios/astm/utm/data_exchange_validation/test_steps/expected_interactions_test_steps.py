@@ -11,7 +11,10 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSC
 from implicitdict import StringBasedDateTime
 from loguru import logger
 from monitoring.monitorlib.clients.mock_uss.interactions import Interaction
-from uas_standards.astm.f3548.v21.constants import MaxRespondToSubscriptionNotificationSeconds
+from uas_standards.astm.f3548.v21.constants import (
+    MaxRespondToSubscriptionNotificationSeconds,
+)
+
 
 def expect_interuss_post_interactions(
     scenario: TestScenarioType,
@@ -128,7 +131,7 @@ def _get_interuss_interactions_with_check(
     Returns:
 
     """
-    with scenario.check("MockUSS interactions request") as check:
+    with scenario.check("MockUSS interactions request", mock_uss.participant_id) as check:
         try:
             interactions, query = _get_interuss_interactions(
                 mock_uss, st, wait_time_sec
@@ -210,7 +213,9 @@ def precondition_no_post_interaction(
     Returns:
 
     """
-    interactions, query = _get_interuss_interactions(mock_uss, st, 5)
+    interactions, query = _get_interuss_interactions(
+        mock_uss, st, MaxRespondToSubscriptionNotificationSeconds
+    )
     scenario.record_query(query)
     return any_post_interactions_to_url(interactions)
 
