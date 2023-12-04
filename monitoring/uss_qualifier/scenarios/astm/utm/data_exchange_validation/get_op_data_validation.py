@@ -3,7 +3,6 @@ from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
 from monitoring.monitorlib.temporal import TimeDuringTest
-from urllib.parse import urlsplit
 import arrow
 from implicitdict import StringBasedDateTime
 
@@ -29,7 +28,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_s
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import OpIntentValidator
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
     expect_interuss_post_interactions,
-    expect_interuss_get_interactions,
+    expect_get_requests_to_mock_uss,
     expect_no_interuss_post_interactions,
     precondition_no_post_interaction,
 )
@@ -190,12 +189,12 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 flight_1,
             )
 
-        control_uss_domain = self.control_uss.base_url
-        expect_interuss_get_interactions(
+        control_uss_base_url = self.control_uss.base_url
+        expect_get_requests_to_mock_uss(
             self,
             self.control_uss,
             planning_time,
-            control_uss_domain,
+            control_uss_base_url,
             flight_2_oi_ref.id,
             "Validate flight2 GET interaction",
         )
@@ -203,7 +202,8 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self,
             self.control_uss,
             planning_time,
-            control_uss_domain,
+            control_uss_base_url,
+            self.tested_uss_client.participant_id,
             "Validate flight1 Notification sent to Control_uss",
         )
 
@@ -272,12 +272,12 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             )
             validator.expect_not_shared()
 
-        control_uss_domain = self.control_uss.base_url
-        expect_interuss_get_interactions(
+        control_uss_base_url = self.control_uss.base_url
+        expect_get_requests_to_mock_uss(
             self,
             self.control_uss,
             planning_time,
-            control_uss_domain,
+            control_uss_base_url,
             flight_2_oi_ref.id,
             "Validate flight 2 GET interaction",
         )
@@ -304,7 +304,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self, mock_uss, st
         )
         if mock_uss_sent_notification:
-            msg = f"As a precondition for the scenario tests, there should have been no post made to {posted_to_url}"
+            msg = f"As a precondition for the scenario tests, there should have been no post made to tested_uss"
             raise ScenarioCannotContinueError(msg)
         self.end_test_step()
 

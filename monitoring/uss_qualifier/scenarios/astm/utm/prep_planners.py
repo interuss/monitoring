@@ -21,9 +21,9 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
     def __init__(
         self,
         flight_planners: FlightPlannersResource,
-        mock_uss: MockUSSResource,
         dss: DSSInstanceResource,
         flight_intents: FlightIntentsResource,
+        mock_uss: Optional[MockUSSResource] = None,
         flight_intents2: Optional[FlightIntentsResource] = None,
         flight_intents3: Optional[FlightIntentsResource] = None,
         flight_intents4: Optional[FlightIntentsResource] = None,

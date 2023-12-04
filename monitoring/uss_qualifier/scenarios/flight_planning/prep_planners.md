@@ -12,7 +12,7 @@ FlightPlannersResource listing all USSs undergoing planning tests so that they c
 
 ### mock_uss
 
-MockUSSResource is checked for readiness and instructed to remove any existing flights from the area in this scenario.
+(Optional)  MockUSSResource is checked for readiness and instructed to remove any existing flights from the area in this scenario.
 
 ### flight_intents
 
