@@ -145,7 +145,6 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_2 = self.flight_2.resolve(times)
 
-        planning_time = Time(arrow.utcnow().datetime)
         with OpIntentValidator(
             self,
             self.control_uss_client,
@@ -153,6 +152,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 2 sharing",
             self._intents_extent,
         ) as validator:
+            planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
                 self,
                 "Control_uss plans flight 2",
@@ -231,7 +231,6 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
         additional_fields = {"behavior": behavior}
 
-        planning_time = Time(arrow.utcnow().datetime)
         with OpIntentValidator(
             self,
             self.control_uss_client,
@@ -239,6 +238,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 2 shared operational intent with invalid data",
             self._intents_extent,
         ) as validator:
+            planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
                 self,
                 "Control_uss plans flight 2, sharing invalid operational intent data",
