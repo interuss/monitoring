@@ -174,10 +174,6 @@ class DummyOAuth(AuthAdapter):
             )
         return response.json()["access_token"]
 
-    def get_sub(self) -> Optional[str]:
-        """directly return the configured `sub` value"""
-        return self._sub
-
 
 class _SessionIssuer:
     """Helper for issuing tokens using a pre-configured Google session."""

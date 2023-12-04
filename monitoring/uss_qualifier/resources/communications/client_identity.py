@@ -53,10 +53,10 @@ class ClientIdentityResource(Resource[ClientIdentitySpecification]):
             # sub might be none because no authentication has happened yet:
             # we force one using the client identify audience and scopes
 
-            # Do an initial token request so that adapter.get_sub() will return something
-            token = self._adapter.issue_token(
-                intended_audience=self.specification.whoami_audience,
-                scopes=[self.specification.whoami_scope],
+            # Trigger a caching initial token request so that adapter.get_sub() will return something
+            headers = self._adapter.get_headers(
+                f"https://{self.specification.whoami_audience}",
+                [self.specification.whoami_scope],
             )
 
             sub = self._adapter.get_sub()
@@ -65,7 +65,7 @@ class ClientIdentityResource(Resource[ClientIdentitySpecification]):
                 raise ValueError(
                     f"subscriber is None, meaning `sub` claim was not found in payload of token, "
                     f"using {type(self._adapter).__name__} requesting {self.specification.whoami_scope} scope "
-                    f"for {self.specification.whoami_audience} audience: {token}"
+                    f"for {self.specification.whoami_audience} audience: {headers['Authorization'][len('Bearer: '):]}"
                 )
 
         return sub
