@@ -1,14 +1,19 @@
 from typing import Optional, Tuple
 
-import arrow
-
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    AirspaceUsageState,
+    UasState,
+)
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
+    ExpectedFlightIntent,
+    validate_flight_intent_templates,
+)
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
 )
 
-from monitoring.monitorlib.geotemporal import Volume4DCollection
-from uas_standards.astm.f3548.v21.api import OperationalIntentState
+from monitoring.monitorlib.geotemporal import Volume4DCollection, Volume4D
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightResponseResult,
 )
@@ -63,6 +68,8 @@ class ConflictHigherPriority(TestScenario):
     control_uss: FlightPlanner
     dss: DSSInstance
 
+    _intents_extent: Volume4D
+
     def __init__(
         self,
         flight_intents: FlightIntentsResource,
@@ -75,122 +82,89 @@ class ConflictHigherPriority(TestScenario):
         self.control_uss = control_uss.flight_planner
         self.dss = dss.dss
 
-        _flight_intents = {
-            k: FlightIntent.from_flight_info_template(v)
-            for k, v in flight_intents.get_flight_intents().items()
-        }
+        expected_flight_intents = [
+            ExpectedFlightIntent(
+                "flight1_planned",
+                "Flight 1",
+                must_conflict_with=["Flight 2"],
+                must_not_conflict_with=["Flight 2m"],
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "flight1_activated",
+                "Flight 1",
+                must_conflict_with=["Flight 2"],
+                must_not_conflict_with=["Flight 2m"],
+                usage_state=AirspaceUsageState.InUse,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "flight1m_planned",
+                "Flight 1m",
+                must_conflict_with=["Flight 2"],
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "flight1m_activated",
+                "Flight 1m",
+                must_conflict_with=["Flight 2"],
+                usage_state=AirspaceUsageState.InUse,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "flight1c_activated",
+                "Flight 1c",
+                must_conflict_with=["Flight 2m"],
+                usage_state=AirspaceUsageState.InUse,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "flight2_planned",
+                "Flight 2",
+                must_conflict_with=["Flight 1"],
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+                f3548v21_priority_higher_than=["Flight 1"],
+            ),
+            ExpectedFlightIntent(
+                "flight2_activated",
+                name="Flight 2",
+                must_conflict_with=["Flight 1"],
+                usage_state=AirspaceUsageState.InUse,
+                uas_state=UasState.Nominal,
+                f3548v21_priority_higher_than=["Flight 1"],
+            ),
+            ExpectedFlightIntent(
+                "flight2m_activated",
+                name="Flight 2m",
+                must_conflict_with=["Flight 1c"],
+                must_not_conflict_with=["Flight 1"],
+                usage_state=AirspaceUsageState.InUse,
+                uas_state=UasState.Nominal,
+                f3548v21_priority_higher_than=["Flight 1"],
+            ),
+        ]
 
-        extents = []
-        for intent in _flight_intents.values():
-            extents.extend(intent.request.operational_intent.volumes)
-            extents.extend(intent.request.operational_intent.off_nominal_volumes)
-        self._intents_extent = Volume4DCollection.from_interuss_scd_api(
-            extents
-        ).bounding_volume.to_f3548v21()
-
+        templates = flight_intents.get_flight_intents()
         try:
-            (
-                self.flight1_planned,
-                self.flight1m_planned,
-                self.flight1_activated,
-                self.flight1m_activated,
-                self.flight1c_activated,
-                self.flight2_planned,
-                self.flight2_activated,
-                self.flight2m_activated,
-            ) = (
-                _flight_intents["flight1_planned"],
-                _flight_intents["flight1m_planned"],
-                _flight_intents["flight1_activated"],
-                _flight_intents["flight1m_activated"],
-                _flight_intents["flight1c_activated"],
-                _flight_intents["flight2_planned"],
-                _flight_intents["flight2_activated"],
-                _flight_intents["flight2m_activated"],
-            )
-
-            now = arrow.utcnow().datetime
-            for intent_name, intent in _flight_intents.items():
-                if (
-                    intent.request.operational_intent.state
-                    == OperationalIntentState.Activated
-                ):
-                    assert Volume4DCollection.from_interuss_scd_api(
-                        intent.request.operational_intent.volumes
-                        + intent.request.operational_intent.off_nominal_volumes
-                    ).has_active_volume(
-                        now
-                    ), f"at least one volume of activated intent {intent_name} must be active now (now is {now})"
-
-            assert (
-                self.flight1_planned.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "flight1_planned must have state Accepted"
-            assert (
-                self.flight1m_planned.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "flight1m_planned must have state Accepted"
-            assert (
-                self.flight1_activated.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight1_activated must have state Activated"
-            assert (
-                self.flight1m_activated.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight1m_activated must have state Activated"
-            assert (
-                self.flight1c_activated.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight1c_activated must have state Activated"
-            assert (
-                self.flight2_planned.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "flight2_planned must have state Accepted"
-            assert (
-                self.flight2_activated.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight2_activated must have state Activated"
-            assert (
-                self.flight2m_activated.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight2m_activated must have state Activated"
-
-            # TODO: check that flight data is the same across the different versions of the flight
-
-            assert (
-                self.flight2_planned.request.operational_intent.priority
-                > self.flight1_planned.request.operational_intent.priority
-            ), "flight_2 must have higher priority than flight_1"
-            assert Volume4DCollection.from_interuss_scd_api(
-                self.flight1_planned.request.operational_intent.volumes
-            ).intersects_vol4s(
-                Volume4DCollection.from_interuss_scd_api(
-                    self.flight2_planned.request.operational_intent.volumes
-                )
-            ), "flight1_planned and flight2_planned must intersect"
-            assert Volume4DCollection.from_interuss_scd_api(
-                self.flight1_planned.request.operational_intent.volumes
-            ).intersects_vol4s(
-                Volume4DCollection.from_interuss_scd_api(
-                    self.flight1m_planned.request.operational_intent.volumes
-                )
-            ), "flight1_planned and flight1m_planned must intersect"
-            assert not Volume4DCollection.from_interuss_scd_api(
-                self.flight1_planned.request.operational_intent.volumes
-            ).intersects_vol4s(
-                Volume4DCollection.from_interuss_scd_api(
-                    self.flight1c_activated.request.operational_intent.volumes
-                )
-            ), "flight1_planned and flight1c_activated must not intersect"
-
-        except KeyError as e:
-            raise ValueError(
-                f"`{self.me()}` TestScenario requirements for flight_intents not met: missing flight intent {e}"
-            )
-        except AssertionError as e:
+            validate_flight_intent_templates(templates, expected_flight_intents)
+        except ValueError as e:
             raise ValueError(
                 f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
+
+        extents = []
+        for efi in expected_flight_intents:
+            intent = FlightIntent.from_flight_info_template(templates[efi.intent_id])
+            extents.extend(intent.request.operational_intent.volumes)
+            extents.extend(intent.request.operational_intent.off_nominal_volumes)
+            setattr(self, efi.intent_id, intent)
+
+        self._intents_extent = Volume4DCollection.from_interuss_scd_api(
+            extents
+        ).bounding_volume.to_f3548v21()
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)

@@ -52,7 +52,7 @@ FlightIntentsResource that provides the following flight intents:
     <td><code>flight1c_activated</code></td>
     <td>Flight 1c</td>
     <td>Activated</td>
-    <td>Flight 2</td>
+    <td>Flight 2m</td>
     <td>N/A</td>
   </tr>
   <tr>
