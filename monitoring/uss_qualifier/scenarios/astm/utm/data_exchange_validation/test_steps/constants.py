@@ -1,0 +1,1 @@
+MaxTimeToWaitForSubscriptionNotificationSeconds = 7

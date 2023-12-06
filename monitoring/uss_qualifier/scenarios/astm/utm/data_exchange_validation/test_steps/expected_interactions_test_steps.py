@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 from typing import List, Tuple, Optional
 import time
 import jwt
@@ -11,8 +12,8 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSC
 from implicitdict import StringBasedDateTime
 from loguru import logger
 from monitoring.monitorlib.clients.mock_uss.interactions import Interaction
-from uas_standards.astm.f3548.v21.constants import (
-    MaxRespondToSubscriptionNotificationSeconds,
+from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.constants import (
+    MaxTimeToWaitForSubscriptionNotificationSeconds as max_wait_time,
 )
 
 
@@ -22,6 +23,7 @@ def expect_interuss_post_interactions(
     st: StringBasedDateTime,
     posted_to_url: str,
     participant_id: str,
+    plan_request_time: datetime.datetime,
     test_step: str,
 ):
     """
@@ -29,22 +31,35 @@ def expect_interuss_post_interactions(
     Args:
         posted_to_url: url of the subscribed USS
         participant_id: id of the participant responsible to send the notification
+        plan_request_time: timestamp of the flight plan query that would lead to sending notification
     Returns:
 
     """
     scenario.begin_test_step(test_step)
-    interactions, query = _get_interuss_interactions_with_check(
-        scenario, mock_uss, st, MaxRespondToSubscriptionNotificationSeconds
-    )
-    logger.debug(f"Checking for POST request to {posted_to_url}")
-    found = any_post_interactions_to_url(interactions, posted_to_url)
+    time_waited = 0
+    while time_waited <= max_wait_time:
+        duration = (
+            1 if max_wait_time - time_waited >= 1 else (max_wait_time - time_waited)
+        )
+        interactions, query = _get_interuss_interactions_with_check(
+            scenario,
+            mock_uss,
+            st,
+            duration,
+        )
+        found = any_post_interactions_to_url(interactions, posted_to_url)
+        time_waited += duration
+        if found:
+            logger.debug(f"Waited for {time_waited} to check notifications.")
+            break
+
     with scenario.check("Expect Notification sent", participant_id) as check:
         if not found:
             check.record_failed(
                 summary=f"Notification to {posted_to_url} not sent",
                 severity=Severity.Medium,
                 details=f"Notification to {posted_to_url} not sent even though DSS instructed the planning USS to notify due to subscription.",
-                query_timestamps=[query.request.timestamp],
+                query_timestamps=[plan_request_time, query.request.timestamp],
             )
     scenario.end_test_step()
 
@@ -62,8 +77,12 @@ def expect_no_interuss_post_interactions(
         participant_id: id of the participant responsible to send the notification
     """
     scenario.begin_test_step(test_step)
+    # Get interuss interactions in the next MaxTimeToWaitForSubscriptionNotificationSeconds duration
     interactions, query = _get_interuss_interactions_with_check(
-        scenario, mock_uss, st, MaxRespondToSubscriptionNotificationSeconds
+        scenario,
+        mock_uss,
+        st,
+        max_wait_time,
     )
     found = any_post_interactions_to_url(interactions)
     with scenario.check("Expect Notification not sent", participant_id) as check:
@@ -127,11 +146,10 @@ def _get_interuss_interactions_with_check(
     Method to get interuss interactions with a scenario check from mock_uss from time 'st' to now.
     Args:
         wait_time_sec: Seconds to wait for getting interactions like asynchronous notifications
-
-    Returns:
-
     """
-    with scenario.check("MockUSS interactions request", mock_uss.participant_id) as check:
+    with scenario.check(
+        "MockUSS interactions request", mock_uss.participant_id
+    ) as check:
         try:
             interactions, query = _get_interuss_interactions(
                 mock_uss, st, wait_time_sec
@@ -155,10 +173,7 @@ def _get_interuss_interactions(
     """
         Method to get interuss interactions from mock_uss from time 'st' to now.
     Args:
-        mock_uss:
-        st:
-        wait_time: Seconds to wait for getting interactions like asynchronous notifications
-    Returns:
+        wait_time: Seconds to wait for getting interactions like asynchronous notifications.
 
     """
     time.sleep(wait_time)
@@ -204,17 +219,11 @@ def precondition_no_post_interaction(
     st: StringBasedDateTime,
 ) -> bool:
     """
-    This method helps check a precondition that no POST is sent to a USS because no subscription exists
-    Args:
-        scenario:
-        mock_uss:
-        st:
-
-    Returns:
-
+    This method helps check a precondition that no POST is sent by mock_uss to a USS, as no subscription exists.
     """
     interactions, query = _get_interuss_interactions(
-        mock_uss, st, MaxRespondToSubscriptionNotificationSeconds
+        mock_uss,
+        st,
     )
     scenario.record_query(query)
     return any_post_interactions_to_url(interactions)
@@ -223,6 +232,10 @@ def precondition_no_post_interaction(
 def any_post_interactions_to_url(
     interactions: List[Interaction], posted_to_url: Optional[str] = None
 ) -> bool:
+    """
+    Checks if there is any POST request made to 'posted_to_url', and returns True if found.
+    If 'posted_to_url' is None, any POST request found returns True.
+    """
     for interaction in interactions:
         method = interaction.query.request.method
         url = interaction.query.request.url

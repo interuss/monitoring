@@ -16,8 +16,10 @@ If the operational intent details for the flight cannot be retrieved from the US
 
 ## Invalid data in Operational intent details shared by Mock USS for negative test check
 
-Mock USS shares operational intent details response for the negative test case as per [the GetOperationalIntentDetailsResponse schema of the OpenAPI specification](https://github.com/astm-utm/Protocol/blob/v1.0.0/utm.yaml#L1120).
-If the operational intent details from mock_uss is valid, this check will fail. It would mean mock_uss is not behaving correctly.
 **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
 
+Mock USS shares operational intent details with specified invalid data in response for the negative test case as per
+[the GetOperationalIntentDetailsResponse schema of the OpenAPI specification](https://github.com/astm-utm/Protocol/blob/v1.0.0/utm.yaml#L1120).
+If the operational intent details from mock_uss does not contain the specified invalid data, this check will fail.
+It would mean mock_uss is not behaving correctly.
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Set
 from implicitdict import ImplicitDict
 from monitoring.monitorlib import schema_validation, fetch
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
@@ -29,6 +29,11 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     TestRunCannotContinueError,
 )
 from uas_standards.interuss.automated_testing.scd.v1.api import InjectFlightRequest
+
+OI_DATA_FORMAT = "Operational intent details data format"
+OI_CORRECT_DETAILS = "Correct operational intent details"
+OFF_NOM_VOLS = "Off-nominal volumes"
+VERTICES = "Vertices"
 
 
 class OpIntentValidator(object):
@@ -167,16 +172,21 @@ class OpIntentValidator(object):
         self._scenario.record_query(oi_full_query)
         self._operational_intent_retrievable_check(oi_full_query)
 
+        validation_failures = self._evaluate_op_intent_validation(oi_full_query)
+
         with self._scenario.check(
-            "Operational intent details data format",
+            OI_DATA_FORMAT,
             [self._flight_planner.participant_id],
         ) as check:
-            errors = schema_validation.validate(
-                schema_validation.F3548_21.OpenAPIPath,
-                schema_validation.F3548_21.GetOperationalIntentDetailsResponse,
-                oi_full_query.response.json,
+            data_format_fail = (
+                self._expected_validation_failure_found(
+                    validation_failures, OI_DATA_FORMAT
+                )
+                if validation_failures
+                else None
             )
-            if errors:
+            if data_format_fail:
+                errors = data_format_fail.errors
                 check.record_failed(
                     summary="Operational intent details response failed schema validation",
                     severity=Severity.Medium,
@@ -188,7 +198,7 @@ class OpIntentValidator(object):
                 )
 
         with self._scenario.check(
-            "Correct operational intent details", [self._flight_planner.participant_id]
+            OI_CORRECT_DETAILS, [self._flight_planner.participant_id]
         ) as check:
             priority = (
                 flight_intent.operational_intent.priority
@@ -219,39 +229,36 @@ class OpIntentValidator(object):
                 )
 
         with self._scenario.check(
-            "Off-nominal volumes", [self._flight_planner.participant_id]
+            OFF_NOM_VOLS, [self._flight_planner.participant_id]
         ) as check:
-            if (
-                oi_full.reference.state == OperationalIntentState.Accepted
-                or oi_full.reference.state == OperationalIntentState.Activated
-            ) and oi_full.details.get("off_nominal_volumes", None):
+            off_nom_vol_fail = (
+                self._expected_validation_failure_found(
+                    validation_failures, OFF_NOM_VOLS
+                )
+                if validation_failures
+                else None
+            )
+            if off_nom_vol_fail:
                 check.record_failed(
                     summary="Accepted or Activated operational intents are not allowed off-nominal volumes",
                     severity=Severity.Medium,
-                    details=f"Operational intent {oi_full.reference.id} was {oi_full.reference.state} and had {len(oi_full.details.off_nominal_volumes)} off-nominal volumes",
+                    details=off_nom_vol_fail.error_text,
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
 
         with self._scenario.check(
-            "Vertices", [self._flight_planner.participant_id]
+            VERTICES, [self._flight_planner.participant_id]
         ) as check:
-
-            def volume_vertices(v4):
-                if "outline_circle" in v4.volume:
-                    return 1
-                if "outline_polygon" in v4.volume:
-                    return len(v4.volume.outline_polygon.vertices)
-
-            all_volumes = oi_full.details.get("volumes", []) + oi_full.details.get(
-                "off_nominal_volumes", []
+            vertices_fail = (
+                self._expected_validation_failure_found(validation_failures, VERTICES)
+                if validation_failures
+                else None
             )
-            n_vertices = sum(volume_vertices(v) for v in all_volumes)
-
-            if n_vertices > 10000:
+            if vertices_fail:
                 check.record_failed(
                     summary="Too many vertices",
                     severity=Severity.Medium,
-                    details=f"Operational intent {oi_full.reference.id} had {n_vertices} vertices total",
+                    details=vertices_fail.error_text,
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
 
@@ -261,13 +268,18 @@ class OpIntentValidator(object):
     def expect_shared_with_invalid_data(
         self,
         flight_intent: Union[InjectFlightRequest, FlightInfo],
+        invalid_validation_type: str,
+        invalid_fields: Optional[List],
         skip_if_not_found: bool = False,
     ) -> Optional[OperationalIntentReference]:
-        """Validate that operational intent information was shared with dss for a flight intent, but shared invalid data with USS.
+        """Validate that operational intent information was shared with dss,
+        but when shared with other USSes, it is expected to have specified invalid data.
 
         This function implements the test step described in validate_sharing_operational_intent_but_with_invalid_interuss_data.
 
         :param skip_if_not_found: set to True to skip the execution of the checks if the operational intent was not found while it should have been modified.
+        :param invalid_validation_type: specific type of validation failure expected
+        :param invalid_fields: Optional list of invalid fields to expect when invalid_validation_type is OI_DATA_FORMAT
 
         :returns: the shared operational intent reference. None if skipped because not found.
         """
@@ -281,51 +293,23 @@ class OpIntentValidator(object):
         self._scenario.record_query(oi_full_query)
         self._operational_intent_retrievable_check(oi_full_query)
 
+        validation_failures = self._evaluate_op_intent_validation(oi_full_query)
+        expected_validation_failure_found = self._expected_validation_failure_found(
+            validation_failures, invalid_validation_type, invalid_fields
+        )
+
         # validation errors expected check
         with self._scenario.check(
             "Invalid data in Operational intent details shared by Mock USS for negative test",
             [self._flight_planner.participant_id],
         ) as check:
-            validation_errors = []
-            try:
-                goidr = ImplicitDict.parse(
-                    goidr_json, GetOperationalIntentDetailsResponse
+            if not expected_validation_failure_found:
+                check.record_failed(
+                    summary="This negative test case requires specific invalid data shared with other USS in Operational intent details ",
+                    severity=Severity.High,
+                    details=f"Data shared by Mock USS with other USSes did not have the specified invalid data, as expected for test case.",
+                    query_timestamps=[oi_full_query.request.timestamp],
                 )
-                oi_full = goidr.operational_intent
-
-                if (
-                    oi_full.reference.state == OperationalIntentState.Accepted
-                    or oi_full.reference.state == OperationalIntentState.Activated
-                ) and oi_full.details.get("off_nominal_volumes", None):
-                    details = f"Operational intent {oi_full.reference.id} had {len(oi_full.details.off_nominal_volumes)} off-nominal volumes in wrong state - {oi_full.reference.state}"
-                    validation_errors.append(details)
-
-                def volume_vertices(v4):
-                    if "outline_circle" in v4.volume:
-                        return 1
-                    if "outline_polygon" in v4.volume:
-                        return len(v4.volume.outline_polygon.vertices)
-
-                all_volumes = oi_full.details.get("volumes", []) + oi_full.details.get(
-                    "off_nominal_volumes", []
-                )
-                n_vertices = sum(volume_vertices(v) for v in all_volumes)
-
-                if n_vertices > 10000:
-                    details = (
-                        f"Operational intent {oi_full.reference.id} had too many total vertices - {n_vertices}",
-                    )
-                    validation_errors.append(details)
-            except (KeyError, ValueError) as e:
-                validation_errors.append(e)
-
-        if not validation_errors:
-            check.record_failed(
-                summary="This negative test case requires invalid data shared with other USS in Operational intent details ",
-                severity=Severity.High,
-                details=f"Data shared by Mock USS with other USSes had no invalid data. This test case required invalid data for testing.",
-                query_timestamps=[oi_full_query.request.timestamp],
-            )
 
         self._scenario.end_test_step()
         return oi_ref
@@ -432,6 +416,126 @@ class OpIntentValidator(object):
                 oi_ref = self._new_oi_ref
 
         return oi_ref
+
+    def _evaluate_op_intent_validation(
+        self, oi_full_query: fetch.Query
+    ) -> Set[OpIntentValidationFailure]:
+        """Evaluates the validation failures in operational intent received"""
+
+        validation_failures = set()
+        errors = schema_validation.validate(
+            schema_validation.F3548_21.OpenAPIPath,
+            schema_validation.F3548_21.GetOperationalIntentDetailsResponse,
+            oi_full_query.response.json,
+        )
+        if errors:
+            validation_failures.add(
+                OpIntentValidationFailure(validation_name=OI_DATA_FORMAT, errors=errors)
+            )
+        else:
+            try:
+                goidr = ImplicitDict.parse(
+                    oi_full_query.response.json, GetOperationalIntentDetailsResponse
+                )
+                oi_full = goidr.operational_intent
+
+                if (
+                    oi_full.reference.state == OperationalIntentState.Accepted
+                    or oi_full.reference.state == OperationalIntentState.Activated
+                ) and oi_full.details.get("off_nominal_volumes", None):
+                    details = f"Operational intent {oi_full.reference.id} had {len(oi_full.details.off_nominal_volumes)} off-nominal volumes in wrong state - {oi_full.reference.state}"
+                    validation_failures.add(
+                        OpIntentValidationFailure(
+                            validation_name=OFF_NOM_VOLS, error_text=details
+                        )
+                    )
+
+                def volume_vertices(v4):
+                    if "outline_circle" in v4.volume:
+                        return 1
+                    if "outline_polygon" in v4.volume:
+                        return len(v4.volume.outline_polygon.vertices)
+
+                all_volumes = oi_full.details.get("volumes", []) + oi_full.details.get(
+                    "off_nominal_volumes", []
+                )
+                n_vertices = sum(volume_vertices(v) for v in all_volumes)
+
+                if n_vertices > 10000:
+                    details = (
+                        f"Operational intent {oi_full.reference.id} had too many total vertices - {n_vertices}",
+                    )
+                    validation_failures.add(
+                        validation_name=VERTICES, error_text=details
+                    )
+            except (KeyError, ValueError) as e:
+                validation_failures.add(validation_name=OI_DATA_FORMAT, error_text=e)
+
+        return validation_failures
+
+    def _expected_validation_failure_found(
+        self,
+        validation_failures: Set[OpIntentValidationFailure],
+        expected_validation_type: str,
+        expected_invalid_fields: Optional[List[str]],
+    ) -> OpIntentValidationFailure:
+        """
+        Checks if expected validation type is in validation failures
+        Args:
+            expected_invalid_fields: If provided with expected_validation_type OI_DATA_FORMAT, check is made for the fields.
+
+        Returns:
+            Returns the expected validation failure if found, or else None
+        """
+        failure_found: OpIntentValidationFailure = None
+        for failure in validation_failures:
+            if failure.validation_name == expected_validation_type:
+                failure_found = failure
+
+        if failure_found:
+            if expected_validation_type == OI_DATA_FORMAT and expected_invalid_fields:
+                errors = failure_found.errors
+
+                def expected_fields_in_errors(
+                    fields: List[str],
+                    errors: List[schema_validation.ValidationError],
+                ) -> bool:
+                    all_found = True
+                    for field in fields:
+                        field_in_error = False
+                        for error in errors:
+                            if field in error.json_path:
+                                field_in_error = True
+                                break
+                        all_found = all_found and field_in_error
+                    return all_found
+
+                if not expected_fields_in_errors(expected_invalid_fields, errors):
+                    failure_found = None
+
+        return failure_found
+
+
+class OpIntentValidationFailure(ImplicitDict):
+    validation_name: str
+    """Validation name same as the check name"""
+
+    error_text: Optional[str] = None
+    """Any error_text returned after validation check"""
+
+    errors: Optional[List[schema_validation.ValidationError]] = None
+    """Any errors returned after validation check"""
+
+    def __hash__(self):
+        return hash((self.validation_name, self.error_text, str(self.errors)))
+
+    def __eq__(self, other):
+        if isinstance(other, OpIntentValidationFailure):
+            return (self.validation_name, self.error_text, str(self.errors)) == (
+                other.validation_name,
+                other.error_text,
+                str(other.errors),
+            )
 
 
 def set_uss_available(

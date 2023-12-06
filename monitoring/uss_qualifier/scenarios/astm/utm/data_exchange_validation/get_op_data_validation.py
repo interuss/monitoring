@@ -25,7 +25,10 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.invalid_op_test_steps import (
     plan_flight_intent_expect_failed,
 )
-from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import OpIntentValidator
+from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
+    OpIntentValidator,
+    OI_DATA_FORMAT,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
     expect_interuss_post_interactions,
     expect_get_requests_to_mock_uss,
@@ -162,11 +165,17 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
             flight_2_oi_ref = validator.expect_shared(flight_2)
 
-        self._precondition_no_post_interaction(
+        self.begin_test_step(
+            "Precondition - check tested_uss has no subscription in flight 2 area"
+        )
+        if precondition_no_post_interaction(
+            self,
             self.control_uss,
             planning_time,
-            "Precondition - check tested_uss has no subscription in flight 2 area",
-        )
+        ):
+            msg = f"As a precondition for the scenario tests, there should have been no post made to tested_uss"
+            raise ScenarioCannotContinueError(msg)
+        self.end_test_step()
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
@@ -179,7 +188,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 1 sharing",
             self._intents_extent,
         ) as validator:
-            _, self.flight_1_id = plan_flight(
+            plan_res, self.flight_1_id = plan_flight(
                 self,
                 "Tested_uss plans flight 1",
                 self.tested_uss_client,
@@ -189,21 +198,22 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 flight_1,
             )
 
-        control_uss_base_url = self.control_uss.base_url
         expect_get_requests_to_mock_uss(
             self,
             self.control_uss,
             planning_time,
-            control_uss_base_url,
+            self.control_uss.base_url,
             flight_2_oi_ref.id,
+            self.tested_uss_client.participant_id,
             "Validate flight2 GET interaction",
         )
         expect_interuss_post_interactions(
             self,
             self.control_uss,
             planning_time,
-            control_uss_base_url,
+            self.control_uss.base_url,
             self.tested_uss_client.participant_id,
+            plan_res.queries[0].request.timestamp,
             "Validate flight1 Notification sent to Control_uss",
         )
 
@@ -220,12 +230,14 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_info = self.flight_2.resolve(times)
 
+        modify_field1 = "state"
+        modify_field2 = "priority"
         # Modifying the request with invalid data
         behavior = MockUssFlightBehavior(
             modify_sharing_methods=["GET", "POST"],
             modify_fields={
-                "reference": {"state": "Flying"},
-                "details": {"priority": -1},
+                "reference": {modify_field1: "Flying"},
+                "details": {modify_field2: 1.2},
             },
         )
 
@@ -246,13 +258,23 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 flight_info,
                 additional_fields,
             )
-            flight_2_oi_ref = validator.expect_shared_with_invalid_data(flight_info)
+            flight_2_oi_ref = validator.expect_shared_with_invalid_data(
+                flight_info,
+                invalid_validation_type=OI_DATA_FORMAT,
+                invalid_fields=[modify_field1, modify_field2],
+            )
 
-        self._precondition_no_post_interaction(
+        self.begin_test_step(
+            "Precondition - check tested_uss has no subscription in flight 2 area"
+        )
+        if precondition_no_post_interaction(
+            self,
             self.control_uss,
             planning_time,
-            "Precondition - check tested_uss has no subscription in flight 2 area",
-        )
+        ):
+            msg = f"As a precondition for the scenario tests, there should have been no post made to tested_uss"
+            raise ScenarioCannotContinueError(msg)
+        self.end_test_step()
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
@@ -272,41 +294,26 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             )
             validator.expect_not_shared()
 
-        control_uss_base_url = self.control_uss.base_url
         expect_get_requests_to_mock_uss(
             self,
             self.control_uss,
             planning_time,
-            control_uss_base_url,
+            self.control_uss.base_url,
             flight_2_oi_ref.id,
+            self.tested_uss_client.participant_id,
             "Validate flight 2 GET interaction",
         )
         expect_no_interuss_post_interactions(
             self,
             self.control_uss,
             planning_time,
+            self.tested_uss_client.participant_id,
             "Validate flight 1 Notification not sent to Control_uss",
         )
 
         delete_flight(
             self, "Delete Control_uss flight", self.control_uss_client, self.flight_2_id
         )
-
-    def _precondition_no_post_interaction(
-        self,
-        mock_uss: MockUSSClient,
-        st: StringBasedDateTime,
-        test_step: str,
-    ):
-        self.begin_test_step(test_step)
-
-        mock_uss_sent_notification = precondition_no_post_interaction(
-            self, mock_uss, st
-        )
-        if mock_uss_sent_notification:
-            msg = f"As a precondition for the scenario tests, there should have been no post made to tested_uss"
-            raise ScenarioCannotContinueError(msg)
-        self.end_test_step()
 
     def cleanup(self):
         self.begin_cleanup()
