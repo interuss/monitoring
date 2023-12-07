@@ -208,12 +208,12 @@ class ConflictHigherPriority(TestScenario):
             self,
             self.control_uss,
             self.dss,
-            "Validate flight 2 sharing",
+            "Validate Flight 2 sharing",
             self._intents_extent,
         ) as validator:
             resp_flight_2, self.flight2_id = plan_flight_intent(
                 self,
-                "Plan flight 2",
+                "Plan Flight 2",
                 self.control_uss,
                 self.flight2_planned.request,
             )
@@ -223,19 +223,19 @@ class ConflictHigherPriority(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 not shared",
+            "Validate Flight 1 not shared",
             self._intents_extent,
         ) as validator:
             _ = plan_priority_conflict_flight_intent(
                 self,
-                "Attempt to plan flight 1",
+                "Attempt to plan Flight 1",
                 self.tested_uss,
                 self.flight1_planned.request,
             )
             validator.expect_not_shared()
 
         _ = delete_flight_intent(
-            self, "Delete flight 2", self.control_uss, self.flight2_id
+            self, "Delete Flight 2", self.control_uss, self.flight2_id
         )
         self.flight2_id = None
 
@@ -246,12 +246,12 @@ class ConflictHigherPriority(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 sharing",
+            "Validate Flight 1 sharing",
             self._intents_extent,
         ) as validator:
             resp_flight_1, self.flight1_id = plan_flight_intent(
                 self,
-                "Plan flight 1",
+                "Plan Flight 1",
                 self.tested_uss,
                 self.flight1_planned.request,
             )
@@ -261,12 +261,12 @@ class ConflictHigherPriority(TestScenario):
             self,
             self.control_uss,
             self.dss,
-            "Validate flight 2 sharing",
+            "Validate Flight 2 sharing",
             self._intents_extent,
         ) as validator:
             resp_flight_2, self.flight2_id = plan_flight_intent(
                 self,
-                "Plan flight 2",
+                "Plan Flight 2",
                 self.control_uss,
                 self.flight2_planned.request,
             )
@@ -276,13 +276,13 @@ class ConflictHigherPriority(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 not modified",
+            "Validate Flight 1 not modified",
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
             _ = modify_planned_priority_conflict_flight_intent(
                 self,
-                "Attempt to modify planned flight 1 in conflict",
+                "Attempt to modify planned Flight 1 in conflict",
                 self.tested_uss,
                 self.flight1m_planned.request,
                 self.flight1_id,
@@ -300,13 +300,13 @@ class ConflictHigherPriority(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 not activated",
+            "Validate Flight 1 not activated",
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
             _ = activate_priority_conflict_flight_intent(
                 self,
-                "Attempt to activate conflicting flight 1",
+                "Attempt to activate conflicting Flight 1",
                 self.tested_uss,
                 self.flight1_activated.request,
                 self.flight1_id,
@@ -321,7 +321,7 @@ class ConflictHigherPriority(TestScenario):
         self, flight_1_oi_ref: Optional[OperationalIntentReference]
     ) -> Tuple[OperationalIntentReference, OperationalIntentReference]:
         _ = delete_flight_intent(
-            self, "Delete flight 2", self.control_uss, self.flight2_id
+            self, "Delete Flight 2", self.control_uss, self.flight2_id
         )
         self.flight2_id = None
 
@@ -329,13 +329,13 @@ class ConflictHigherPriority(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 sharing",
+            "Validate Flight 1 sharing",
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
             activate_flight_intent(
                 self,
-                "Activate flight 1",
+                "Activate Flight 1",
                 self.tested_uss,
                 self.flight1_activated.request,
                 self.flight1_id,
@@ -346,12 +346,12 @@ class ConflictHigherPriority(TestScenario):
             self,
             self.control_uss,
             self.dss,
-            "Validate flight 2 sharing",
+            "Validate Flight 2 sharing",
             self._intents_extent,
         ) as validator:
             _, self.flight2_id = plan_flight_intent(
                 self,
-                "Plan flight 2",
+                "Plan Flight 2",
                 self.control_uss,
                 self.flight2_planned.request,
             )
@@ -361,13 +361,13 @@ class ConflictHigherPriority(TestScenario):
             self,
             self.control_uss,
             self.dss,
-            "Validate flight 2 sharing",
+            "Validate Flight 2 sharing",
             self._intents_extent,
             flight_2_oi_ref,
         ) as validator:
             activate_flight_intent(
                 self,
-                "Activate flight 2",
+                "Activate Flight 2",
                 self.control_uss,
                 self.flight2_activated.request,
                 self.flight2_id,
@@ -378,13 +378,13 @@ class ConflictHigherPriority(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 sharing",
+            "Validate Flight 1 sharing",
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
             resp = modify_activated_flight_intent(
                 self,
-                "Modify activated flight 1 in conflict with activated flight 2",
+                "Modify activated Flight 1 in conflict with activated Flight 2",
                 self.tested_uss,
                 self.flight1m_activated.request,
                 self.flight1_id,
@@ -411,13 +411,13 @@ class ConflictHigherPriority(TestScenario):
             self,
             self.control_uss,
             self.dss,
-            "Validate flight 2 sharing",
+            "Validate Flight 2 sharing",
             self._intents_extent,
             flight_2_oi_ref,
         ) as validator:
             modify_activated_flight_intent(
                 self,
-                "Modify activated flight 2 to not conflict with activated flight 1",
+                "Modify activated Flight 2 to not conflict with activated Flight 1",
                 self.control_uss,
                 self.flight2m_activated.request,
                 self.flight2_id,
@@ -428,13 +428,13 @@ class ConflictHigherPriority(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 not modified",
+            "Validate Flight 1 not modified",
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
             modify_activated_priority_conflict_flight_intent(
                 self,
-                "Attempt to modify activated flight 1 in conflict",
+                "Attempt to modify activated Flight 1 in conflict",
                 self.tested_uss,
                 self.flight1c_activated.request,
                 self.flight1_id,
