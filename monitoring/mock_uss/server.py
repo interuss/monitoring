@@ -21,9 +21,7 @@ MAX_PERIODIC_LATENCY = timedelta(seconds=5)
 
 
 def _get_trace(e: Exception) -> str:
-    return "".join(
-        traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
-    )
+    return "".join(traceback.format_exception(e))
 
 
 class TaskTrigger(str, Enum):

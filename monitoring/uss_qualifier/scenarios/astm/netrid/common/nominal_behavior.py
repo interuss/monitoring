@@ -136,9 +136,7 @@ class NominalBehavior(GenericTestScenario):
                     )
                 check.record_passed()
             except (RequestException, ValueError) as e:
-                stacktrace = "".join(
-                    traceback.format_exception(type(e), value=e, tb=e.__traceback__)
-                )
+                stacktrace = "".join(traceback.format_exception(e))
                 check.record_failed(
                     summary="Error while trying to delete test flight",
                     severity=Severity.Medium,
