@@ -1,4 +1,4 @@
-# Validate flight sharing invalid data test step
+# Validate flight sharing invalid data test step fragment
 
 This step verifies that a created flight is shared properly per ASTM F3548-21 by querying the DSS for flights in the area of the flight intent, and then retrieving the details from the USS if the operational intent reference is found.  See `expect_shared_with_invalid_data` in invalid_op_test_steps.py.
 

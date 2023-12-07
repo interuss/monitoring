@@ -38,9 +38,9 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 class DownUSS(TestScenario):
     flight_1_id: Optional[str] = None
-    flight_1_planned_vol_A: FlightIntent
+    flight1_planned: FlightIntent
 
-    flight_2_planned_vol_A: FlightIntent
+    flight2_planned: FlightIntent
 
     uss_qualifier_sub: str
 
@@ -71,9 +71,9 @@ class DownUSS(TestScenario):
         ).bounding_volume.to_f3548v21()
 
         try:
-            (self.flight_1_planned_vol_A, self.flight_2_planned_vol_A,) = (
-                _flight_intents["flight_1_planned_vol_A"],
-                _flight_intents["flight_2_planned_vol_A"],
+            (self.flight1_planned, self.flight2_planned,) = (
+                _flight_intents["flight1_planned"],
+                _flight_intents["flight2_planned"],
             )
 
             now = arrow.utcnow().datetime
@@ -90,27 +90,27 @@ class DownUSS(TestScenario):
                     ), f"at least one volume of activated intent {intent_name} must be active now (now is {now})"
 
             assert (
-                self.flight_1_planned_vol_A.request.operational_intent.state
+                self.flight1_planned.request.operational_intent.state
                 == OperationalIntentState.Accepted
-            ), "flight_1_planned_vol_A must have state Accepted"
+            ), "flight1_planned must have state Accepted"
             assert (
-                self.flight_2_planned_vol_A.request.operational_intent.state
+                self.flight2_planned.request.operational_intent.state
                 == OperationalIntentState.Accepted
-            ), "flight_2_planned_vol_A must have state Accepted"
+            ), "flight2_planned must have state Accepted"
 
             # TODO: check that flight data is the same across the different versions of the flight
 
             assert (
-                self.flight_2_planned_vol_A.request.operational_intent.priority
-                > self.flight_1_planned_vol_A.request.operational_intent.priority
+                self.flight2_planned.request.operational_intent.priority
+                > self.flight1_planned.request.operational_intent.priority
             ), "flight_2 must have higher priority than flight_1"
             assert Volume4DCollection.from_interuss_scd_api(
-                self.flight_1_planned_vol_A.request.operational_intent.volumes
+                self.flight1_planned.request.operational_intent.volumes
             ).intersects_vol4s(
                 Volume4DCollection.from_interuss_scd_api(
-                    self.flight_2_planned_vol_A.request.operational_intent.volumes
+                    self.flight2_planned.request.operational_intent.volumes
                 )
-            ), "flight_1_planned_vol_A and flight_2_planned_vol_A must intersect"
+            ), "flight1_planned and flight2_planned must intersect"
 
         except KeyError as e:
             raise ValueError(
@@ -174,7 +174,7 @@ class DownUSS(TestScenario):
         self.begin_test_step("Virtual USS plans high-priority flight 2")
         oi_ref, _, query = self.dss.put_op_intent(
             Volume4DCollection.from_interuss_scd_api(
-                self.flight_2_planned_vol_A.request.operational_intent.volumes
+                self.flight2_planned.request.operational_intent.volumes
             ).to_f3548v21(),
             [],  # we assume there is no other operational intent in that area
             OperationalIntentState.Accepted,
@@ -231,11 +231,11 @@ class DownUSS(TestScenario):
                 expected_results,
                 failed_checks,
                 self.tested_uss,
-                self.flight_1_planned_vol_A.request,
+                self.flight1_planned.request,
             )
 
             if resp.result == InjectFlightResponseResult.Planned:
-                validator.expect_shared(self.flight_1_planned_vol_A.request)
+                validator.expect_shared(self.flight1_planned.request)
             elif (
                 resp.result == InjectFlightResponseResult.Rejected
                 or resp.result == InjectFlightResponseResult.ConflictWithFlight

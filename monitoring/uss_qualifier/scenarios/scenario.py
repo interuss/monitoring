@@ -280,6 +280,14 @@ class GenericTestScenario(ABC):
         )
         if "notes" not in self._scenario_report:
             self._scenario_report.notes = {}
+
+        if key in self._scenario_report.notes:
+            # prevent notes from being overriden by adding a suffix if key is a duplicate
+            suffix = 1
+            while f"{key}_{suffix}" in self._scenario_report.notes:
+                suffix += 1
+            key += f"_{suffix}"
+
         self._scenario_report.notes[key] = Note(
             message=message,
             timestamp=StringBasedDateTime(arrow.utcnow().datetime),

@@ -26,7 +26,7 @@ FlightIntentsResource that provides the following flight intents:
     <th>Must not conflict with</th>
   </tr>
   <tr>
-    <td><code>flight_1_planned_vol_A</code></td>
+    <td><code>flight1_planned</code></td>
     <td rowspan="2">Flight 1</td>
     <td rowspan="5">Any</td>
     <td>Accepted</td>
@@ -34,29 +34,29 @@ FlightIntentsResource that provides the following flight intents:
     <td rowspan="2">Flight 2m</td>
   </tr>
   <tr>
-    <td><code>flight_1_activated_vol_A</code></td>
+    <td><code>flight1_activated</code></td>
     <td>Activated</td>
   </tr>
   <tr>
-    <td><code>flight_1_planned_vol_A_extended</code></td>
+    <td><code>flight1m_planned</code></td>
     <td rowspan="2">Flight 1m</td>
     <td>Accepted</td>
     <td rowspan="2">Flight 2</td>
     <td rowspan="2">N/A</td>
   </tr>
   <tr>
-    <td><code>flight_1_activated_vol_A_extended</code></td>
+    <td><code>flight1m_activated</code></td>
     <td>Activated</td>
   </tr>
   <tr>
-    <td><code>flight_1_activated_vol_B</code></td>
+    <td><code>flight1c_activated</code></td>
     <td>Flight 1c</td>
     <td>Activated</td>
     <td>Flight 2</td>
     <td>N/A</td>
   </tr>
   <tr>
-    <td><code>flight_2_planned_vol_A</code></td>
+    <td><code>flight2_planned</code></td>
     <td rowspan="2">Flight 2</td>
     <td rowspan="3">Higher than Flight 1*</td>
     <td>Accepted</td>
@@ -64,11 +64,11 @@ FlightIntentsResource that provides the following flight intents:
     <td rowspan="2">N/A</td>
   </tr>
   <tr>
-    <td><code>flight_2_activated_vol_A</code></td>
+    <td><code>flight2_activated</code></td>
     <td>Activated</td>
   </tr>
   <tr>
-    <td><code>flight_2_activated_vol_B</code></td>
+    <td><code>flight2m_activated</code></td>
     <td>Flight 2m</td>
     <td>Activated</td>
     <td>Flight 1c</td>

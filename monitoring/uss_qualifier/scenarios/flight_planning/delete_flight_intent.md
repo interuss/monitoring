@@ -1,4 +1,4 @@
-# Delete flight test step
+# Delete flight test step fragment
 
 This page describes the content of a common test case where a flight intent should be successfully deleted by a flight planner.
 See `delete_flight_intent` in [test_steps.py](test_steps.py).

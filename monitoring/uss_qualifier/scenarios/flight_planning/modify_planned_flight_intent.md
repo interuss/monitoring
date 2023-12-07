@@ -1,4 +1,4 @@
-# Modify planned flight test step
+# Modify planned flight test step fragment
 
 This page describes the content of a common test case where a valid user flight intent in planned state should be
 successfully modified by a flight planner.  See `modify_planned_flight_intent` in [test_steps.py](test_steps.py).

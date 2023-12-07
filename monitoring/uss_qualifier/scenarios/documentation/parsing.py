@@ -25,6 +25,7 @@ CLEANUP_HEADING = "cleanup"
 TEST_SCENARIO_SUFFIX = " test scenario"
 TEST_CASE_SUFFIX = " test case"
 TEST_STEP_SUFFIX = " test step"
+TEST_STEP_FRAGMENT_SUFFIX = " test step fragment"
 TEST_CHECK_SUFFIX = " check"
 
 
@@ -75,7 +76,7 @@ def _parse_test_check(
     )
 
 
-def _get_linked_test_step(
+def _get_linked_test_step_fragment(
     doc_filename: str, origin_filename: str
 ) -> TestStepDocumentation:
     absolute_path = os.path.abspath(
@@ -84,7 +85,7 @@ def _get_linked_test_step(
     if absolute_path not in _test_step_cache:
         if not os.path.exists(absolute_path):
             raise ValueError(
-                f'Test step document "{doc_filename}" linked from "{origin_filename}" does not exist at "{absolute_path}"'
+                f'Test step fragment document "{doc_filename}" linked from "{origin_filename}" does not exist at "{absolute_path}"'
             )
         with open(absolute_path, "r") as f:
             doc = marko.parse(f.read())
@@ -92,10 +93,10 @@ def _get_linked_test_step(
         if (
             not isinstance(doc.children[0], marko.block.Heading)
             or doc.children[0].level != 1
-            or not text_of(doc.children[0]).lower().endswith(TEST_STEP_SUFFIX)
+            or not text_of(doc.children[0]).lower().endswith(TEST_STEP_FRAGMENT_SUFFIX)
         ):
             raise ValueError(
-                f'The first line of "{absolute_path}" must be a level-1 heading with the name of the test step + "{TEST_STEP_SUFFIX}" (e.g., "# Successful flight injection{TEST_STEP_SUFFIX}")'
+                f'The first line of "{absolute_path}" must be a level-1 heading with the name of the test step fragment + "{TEST_STEP_FRAGMENT_SUFFIX}" (e.g., "# Successful flight injection{TEST_STEP_FRAGMENT_SUFFIX}")'
             )
 
         anchors = _get_anchors(doc)
@@ -119,11 +120,13 @@ def _parse_test_step(
     if values[0].children and isinstance(
         values[0].children[0], marko.block.inline.Link
     ):
-        # We include the content of the linked test step document before
+        # We include the content of the linked test step fragment document before
         # extracting content from this section.
-        linked_step = _get_linked_test_step(values[0].children[0].dest, doc_filename)
-        url = linked_step.url
-        checks = linked_step.checks.copy()
+        linked_step_fragment = _get_linked_test_step_fragment(
+            values[0].children[0].dest, doc_filename
+        )
+        url = linked_step_fragment.url
+        checks = linked_step_fragment.checks.copy()
 
     c = 1
     while c < len(values):
@@ -133,6 +136,15 @@ def _parse_test_step(
                 dc = _length_of_section(values, c)
                 check = _parse_test_check(values[c : c + dc + 1], doc_filename, anchors)
                 checks.append(check)
+                c += dc
+            elif isinstance(values[c].children[0], marko.block.inline.Link):
+                # Heading is a link, so we infer this is a linked test step fragment
+                dc = _length_of_section(values, c)
+                linked_step_fragment = _get_linked_test_step_fragment(
+                    values[c].children[0].dest, doc_filename
+                )
+                url = linked_step_fragment.url
+                checks.extend(linked_step_fragment.checks.copy())
                 c += dc
             else:
                 c += 1
