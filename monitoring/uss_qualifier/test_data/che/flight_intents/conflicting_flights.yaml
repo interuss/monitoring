@@ -178,7 +178,7 @@ intents:
               altitude_upper:
                 value: 705
 
-  equal_prio_flight2_planned:
+  equal_prio_flight2m_planned:
     delta:
       source: flight2m_activated
       mutation:
@@ -186,19 +186,31 @@ intents:
           usage_state: Planned
           area:
             - altitude_lower:
-                value: 650.10
+                value: 650.13
+        astm_f3548_21:
+          priority: 0
+
+  equal_prio_flight2_planned:
+    delta:
+      source: flight2_planned
+      mutation:
+        basic_information:
+          area:
+            - altitude_lower:
+                value: 605.10
         astm_f3548_21:
           priority: 0
 
   equal_prio_flight2_activated:
     delta:
-      source: equal_prio_flight2_planned
+      source: flight2_activated
       mutation:
         basic_information:
-          usage_state: InUse
           area:
             - altitude_lower:
-                value: 650.11
+                value: 605.11
+        astm_f3548_21:
+          priority: 0
 
   equal_prio_flight2_nonconforming:
     delta:

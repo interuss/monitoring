@@ -1,13 +1,18 @@
 from typing import Optional
 
-import arrow
-
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    AirspaceUsageState,
+    UasState,
+)
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
+    validate_flight_intent_templates,
+    ExpectedFlightIntent,
+)
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
 )
 from monitoring.monitorlib.geotemporal import Volume4DCollection
-from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
@@ -41,6 +46,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights,
     activate_flight_intent,
     submit_flight_intent,
+    delete_flight_intent,
 )
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightResponseResult,
@@ -56,6 +62,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
     flight1c_activated: FlightIntent
 
     flight2_id: Optional[str] = None
+    flight2m_planned: FlightIntent
     flight2_planned: FlightIntent
     flight2_activated: FlightIntent
     flight2_nonconforming: FlightIntent
@@ -76,142 +83,92 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
         self.control_uss = control_uss.flight_planner
         self.dss = dss.dss
 
-        if not flight_intents:
-            msg = f"No FlightIntentsResource was provided as input to this test, it is assumed that the jurisdiction of the tested USS ({self.tested_uss.config.participant_id}) does not allow any same priority conflicts, execution of the scenario was stopped without failure"
-            self.record_note(
-                "Jurisdiction of tested USS does not allow any same priority conflicts",
-                msg,
-            )
-            raise ScenarioCannotContinueError(msg)
+        expected_flight_intents = [
+            ExpectedFlightIntent(
+                "flight1_planned",
+                "Flight 1",
+                must_conflict_with=["Flight 2"],
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "flight1_activated",
+                "Flight 1",
+                must_conflict_with=["Flight 2"],
+                usage_state=AirspaceUsageState.InUse,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "flight1m_activated",
+                "Flight 1m",
+                must_conflict_with=["Flight 2"],
+                usage_state=AirspaceUsageState.InUse,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "flight1c_planned",
+                "Flight 1c",
+                must_not_conflict_with=["Flight 2"],
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "flight1c_activated",
+                "Flight 1c",
+                must_not_conflict_with=["Flight 2"],
+                usage_state=AirspaceUsageState.InUse,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "equal_prio_flight2m_planned",
+                "Flight 2m",
+                must_not_conflict_with=["Flight 1"],
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "equal_prio_flight2_planned",
+                "Flight 2",
+                must_conflict_with=["Flight 1", "Flight 1m"],
+                must_not_conflict_with=["Flight 1c"],
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "equal_prio_flight2_activated",
+                "Flight 2",
+                must_conflict_with=["Flight 1", "Flight 1m"],
+                must_not_conflict_with=["Flight 1c"],
+                usage_state=AirspaceUsageState.InUse,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "equal_prio_flight2_nonconforming",
+                "Flight 2",
+                must_conflict_with=["Flight 1", "Flight 1m"],
+                must_not_conflict_with=["Flight 1c"],
+                usage_state=AirspaceUsageState.InUse,
+            ),  # Note: this intent expected to produce Nonconforming state, but this is hard to verify without telemetry.  UAS state is not actually off-nominal.
+        ]
 
-        _flight_intents = {
-            k: FlightIntent.from_flight_info_template(v)
-            for k, v in flight_intents.get_flight_intents().items()
-        }
-
-        extents = []
-        for intent in _flight_intents.values():
-            extents.extend(intent.request.operational_intent.volumes)
-            extents.extend(intent.request.operational_intent.off_nominal_volumes)
-        self._intents_extent = Volume4DCollection.from_interuss_scd_api(
-            extents
-        ).bounding_volume.to_f3548v21()
-
+        templates = flight_intents.get_flight_intents()
         try:
-            (
-                self.flight1_planned,
-                self.flight1_activated,
-                self.flight1m_activated,
-                self.flight1c_planned,
-                self.flight1c_activated,
-                self.flight2_planned,
-                self.flight2_activated,
-                self.flight2_nonconforming,
-            ) = (
-                _flight_intents["flight1_planned"],
-                _flight_intents["flight1_activated"],
-                _flight_intents["flight1m_activated"],
-                _flight_intents["flight1c_planned"],
-                _flight_intents["flight1c_activated"],
-                _flight_intents["equal_prio_flight2_planned"],
-                _flight_intents["equal_prio_flight2_activated"],
-                _flight_intents["equal_prio_flight2_nonconforming"],
-            )
-
-            now = arrow.utcnow().datetime
-            for intent_name, intent in _flight_intents.items():
-                if (
-                    intent.request.operational_intent.state
-                    == OperationalIntentState.Activated
-                ):
-                    assert Volume4DCollection.from_interuss_scd_api(
-                        intent.request.operational_intent.volumes
-                        + intent.request.operational_intent.off_nominal_volumes
-                    ).has_active_volume(
-                        now
-                    ), f"at least one volume of activated intent {intent_name} must be active now (now is {now})"
-
-            assert (
-                self.flight1_planned.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "flight1_planned must have state Accepted"
-            assert (
-                self.flight1_activated.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight1_activated must have state Activated"
-            assert (
-                self.flight1m_activated.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight1m_activated must have state Activated"
-            assert (
-                self.flight1c_planned.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "flight1c_planned must have state Accepted"
-            assert (
-                self.flight1c_activated.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "flight1c_activated must have state Activated"
-            assert (
-                self.flight2_planned.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "equal_prio_flight2_planned must have state Accepted"
-            assert (
-                self.flight2_activated.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ), "equal_prio_flight2_activated must have state Activated"
-            assert (
-                self.flight2_nonconforming.request.operational_intent.state
-                == OperationalIntentState.Nonconforming
-            ), "equal_prio_flight2_nonconforming must have state Nonconforming"
-
-            assert (
-                self.flight2_planned.request.operational_intent.priority
-                == self.flight1_planned.request.operational_intent.priority
-            ), "flight_2 must have priority equal to flight_1"
-            assert not Volume4DCollection.from_interuss_scd_api(
-                self.flight1_planned.request.operational_intent.volumes
-            ).intersects_vol4s(
-                Volume4DCollection.from_interuss_scd_api(
-                    self.flight2_planned.request.operational_intent.volumes
-                )
-            ), "flight1_planned and equal_prio_flight2_planned must not intersect"
-            assert not Volume4DCollection.from_interuss_scd_api(
-                self.flight1_planned.request.operational_intent.volumes
-            ).intersects_vol4s(
-                Volume4DCollection.from_interuss_scd_api(
-                    self.flight1c_activated.request.operational_intent.volumes
-                )
-            ), "flight1_planned and flight1c_activated must not intersect"
-            assert Volume4DCollection.from_interuss_scd_api(
-                self.flight1c_activated.request.operational_intent.volumes
-            ).intersects_vol4s(
-                Volume4DCollection.from_interuss_scd_api(
-                    self.flight2_activated.request.operational_intent.volumes
-                )
-            ), "flight1c_activated and equal_prio_flight2_activated must intersect"
-            assert Volume4DCollection.from_interuss_scd_api(
-                self.flight1_activated.request.operational_intent.volumes
-            ).intersects_vol4s(
-                Volume4DCollection.from_interuss_scd_api(
-                    self.flight2_nonconforming.request.operational_intent.off_nominal_volumes
-                )
-            ), "flight1_activated.volumes and equal_prio_flight2_nonconforming.off_nominal_volumes must intersect"
-
-            assert (
-                len(
-                    self.flight2_nonconforming.request.operational_intent.off_nominal_volumes
-                )
-                > 0
-            ), "equal_prio_flight2_nonconforming must have off-nominal volume"
-
-        except KeyError as e:
-            raise ValueError(
-                f"`{self.me()}` TestScenario requirements for flight_intents not met: missing flight intent {e}"
-            )
-        except AssertionError as e:
+            validate_flight_intent_templates(templates, expected_flight_intents)
+        except ValueError as e:
             raise ValueError(
                 f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
+
+        extents = []
+        for efi in expected_flight_intents:
+            intent = FlightIntent.from_flight_info_template(templates[efi.intent_id])
+            extents.extend(intent.request.operational_intent.volumes)
+            extents.extend(intent.request.operational_intent.off_nominal_volumes)
+            setattr(self, efi.intent_id.replace("equal_prio_", ""), intent)
+
+        self._intents_extent = Volume4DCollection.from_interuss_scd_api(
+            extents
+        ).bounding_volume.to_f3548v21()
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
@@ -226,7 +183,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
         )
 
         self.begin_test_case("Attempt to plan flight into conflict")
-        flight_2_oi_ref = self._attempt_plan_flight_conflict()
+        _ = self._attempt_plan_flight_conflict()
         self.end_test_case()
 
         self.begin_test_case("Attempt to activate flight into conflict")
@@ -244,9 +201,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
         self.end_test_case()
 
         self.begin_test_case("Modify activated flight with pre-existing conflict")
-        self._modify_activated_flight_preexisting_conflict(
-            flight_1_oi_ref, flight_2_oi_ref
-        )
+        self._modify_activated_flight_preexisting_conflict(flight_1_oi_ref)
         self.end_test_case()
 
         self.end_test_scenario()
@@ -256,12 +211,12 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self,
             self.control_uss,
             self.dss,
-            "Validate flight 2 sharing",
+            "Validate Flight 2 sharing",
             self._intents_extent,
         ) as validator:
             _, self.flight2_id = plan_flight_intent(
                 self,
-                "Plan flight 2",
+                "Plan Flight 2",
                 self.control_uss,
                 self.flight2_planned.request,
             )
@@ -271,13 +226,13 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self,
             self.control_uss,
             self.dss,
-            "Validate flight 2 sharing",
+            "Validate Flight 2 sharing",
             self._intents_extent,
             flight_2_oi_ref,
         ) as validator:
             activate_flight_intent(
                 self,
-                "Activate flight 2",
+                "Activate Flight 2",
                 self.control_uss,
                 self.flight2_activated.request,
                 self.flight2_id,
@@ -288,14 +243,14 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 not shared",
+            "Validate Flight 1 not shared",
             self._intents_extent,
         ) as validator:
             plan_conflict_flight_intent(
                 self,
-                "Attempt to plan flight 1",
+                "Attempt to plan Flight 1",
                 self.tested_uss,
-                self.flight1c_planned.request,
+                self.flight1_planned.request,
             )
             validator.expect_not_shared()
 
@@ -306,14 +261,14 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 not shared",
+            "Validate Flight 1 not shared",
             self._intents_extent,
         ) as validator:
             activate_conflict_flight_intent(
                 self,
-                "Attempt to directly activate conflicting flight 1",
+                "Attempt to directly activate conflicting Flight 1",
                 self.tested_uss,
-                self.flight1c_activated.request,
+                self.flight1_activated.request,
                 self.flight1_id,
             )
             validator.expect_not_shared()
@@ -325,34 +280,34 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 sharing",
+            "Validate Flight 1c sharing",
             self._intents_extent,
         ) as validator:
             _, self.flight1_id = plan_flight_intent(
                 self,
-                "Plan flight 1",
+                "Plan Flight 1c",
                 self.tested_uss,
-                self.flight1_planned.request,
+                self.flight1c_planned.request,
             )
-            flight_1_oi_ref = validator.expect_shared(self.flight1_planned.request)
+            flight_1_oi_ref = validator.expect_shared(self.flight1c_planned.request)
 
         with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 not modified",
+            "Validate Flight 1c not modified",
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
             modify_planned_conflict_flight_intent(
                 self,
-                "Attempt to modify planned flight 1 into conflict",
+                "Attempt to modify planned Flight 1c into conflict",
                 self.tested_uss,
-                self.flight1c_planned.request,
+                self.flight1_planned.request,
                 self.flight1_id,
             )
             flight_1_oi_ref = validator.expect_shared(
-                self.flight1_planned.request, skip_if_not_found=True
+                self.flight1c_planned.request, skip_if_not_found=True
             )
 
         return flight_1_oi_ref
@@ -364,56 +319,60 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 sharing",
+            "Validate Flight 1c sharing",
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
             activate_flight_intent(
                 self,
-                "Activate flight 1",
+                "Activate Flight 1c",
                 self.tested_uss,
-                self.flight1_activated.request,
+                self.flight1c_activated.request,
                 self.flight1_id,
             )
-            flight_1_oi_ref = validator.expect_shared(self.flight1_activated.request)
+            flight_1_oi_ref = validator.expect_shared(self.flight1c_activated.request)
 
         with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 not modified",
+            "Validate Flight 1c not modified",
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
             modify_activated_conflict_flight_intent(
                 self,
-                "Attempt to modify activated flight 1 into conflict",
+                "Attempt to modify activated Flight 1c into conflict",
                 self.tested_uss,
-                self.flight1c_activated.request,
+                self.flight1_activated.request,
                 self.flight1_id,
             )
             flight_1_oi_ref = validator.expect_shared(
-                self.flight1_activated.request, skip_if_not_found=True
+                self.flight1c_activated.request, skip_if_not_found=True
             )
+
+        _ = delete_flight_intent(
+            self, "Delete Flight 2", self.control_uss, self.flight2_id
+        )
+        self.flight2_id = None
 
         return flight_1_oi_ref
 
     def _modify_activated_flight_preexisting_conflict(
         self,
         flight_1_oi_ref: Optional[OperationalIntentReference],
-        flight_2_oi_ref: Optional[OperationalIntentReference],
     ):
         with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1 sharing",
+            "Validate Flight 1 sharing",
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
             activate_flight_intent(
                 self,
-                "Activate flight 1",
+                "Activate Flight 1",
                 self.tested_uss,
                 self.flight1_activated.request,
                 self.flight1_id,
@@ -424,13 +383,28 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self,
             self.control_uss,
             self.dss,
-            "Validate flight 2 sharing",
+            "Validate Flight 2m sharing",
+            self._intents_extent,
+        ) as validator:
+            _, self.flight2_id = plan_flight_intent(
+                self,
+                "Plan Flight 2m",
+                self.control_uss,
+                self.flight2m_planned.request,
+            )
+            flight_2_oi_ref = validator.expect_shared(self.flight2m_planned.request)
+
+        with OpIntentValidator(
+            self,
+            self.control_uss,
+            self.dss,
+            "Validate Flight 2 sharing",
             self._intents_extent,
             flight_2_oi_ref,
         ) as validator:
             resp_flight_2, _ = submit_flight_intent(
                 self,
-                "Declare flight 2 non-conforming",
+                "Declare Flight 2 non-conforming",
                 "Successful transition to non-conforming state",
                 {
                     InjectFlightResponseResult.ReadyToFly,
@@ -452,13 +426,13 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight 1",
+            "Validate Flight 1",
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
             resp_flight_1, _ = submit_flight_intent(
                 self,
-                "Attempt to modify activated flight 1 in conflict with nonconforming flight 2",
+                "Attempt to modify activated Flight 1 in conflict with nonconforming Flight 2",
                 "Successful modification or rejection",
                 {
                     InjectFlightResponseResult.ReadyToFly,
