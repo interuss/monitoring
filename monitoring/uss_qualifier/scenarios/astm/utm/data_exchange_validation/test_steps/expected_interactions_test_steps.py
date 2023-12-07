@@ -37,10 +37,8 @@ def expect_interuss_post_interactions(
     """
     scenario.begin_test_step(test_step)
     time_waited = 0
+    duration = 0
     while time_waited <= max_wait_time:
-        duration = (
-            1 if max_wait_time - time_waited >= 1 else (max_wait_time - time_waited)
-        )
         interactions, query = _get_interuss_interactions_with_check(
             scenario,
             mock_uss,
@@ -49,6 +47,9 @@ def expect_interuss_post_interactions(
         )
         found = any_post_interactions_to_url(interactions, posted_to_url)
         time_waited += duration
+        duration = (
+            1 if max_wait_time - time_waited >= 1 else (max_wait_time - time_waited)
+        )
         if found:
             logger.debug(f"Waited for {time_waited} to check notifications.")
             break
