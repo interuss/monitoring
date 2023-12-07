@@ -1,6 +1,6 @@
 $content_schema: monitoring/uss_qualifier/resources/flight_planning/flight_intent/FlightIntentCollection.json
 intents:
-  flight_1_planned_vol_A:
+  flight1_planned:
     full:
       basic_information:
         usage_state: Planned
@@ -53,9 +53,9 @@ intents:
         uas_id: ''
         uas_type_certificate: ''
 
-  flight_1_activated_vol_A:
+  flight1_activated:
     delta:
-      source: flight_1_planned_vol_A
+      source: flight1_planned
       mutation:
         basic_information:
           usage_state: InUse
@@ -63,9 +63,9 @@ intents:
             - altitude_lower:
                 value: 605.02
 
-  flight_1_planned_vol_A_extended:
+  flight1m_planned:
     delta:
-      source: flight_1_planned_vol_A
+      source: flight1_planned
       mutation:
         basic_information:
           area:
@@ -73,9 +73,9 @@ intents:
                 altitude_lower:
                   value: 575.03
 
-  flight_1_planned_vol_B:
+  flight1c_planned:
     delta:
-      source: flight_1_planned_vol_A
+      source: flight1_planned
       mutation:
         basic_information:
           area:
@@ -84,9 +84,9 @@ intents:
               altitude_upper:
                 value: 705
 
-  flight_1_activated_vol_A_extended:
+  flight1m_activated:
     delta:
-      source: flight_1_planned_vol_A_extended
+      source: flight1m_planned
       mutation:
         basic_information:
           usage_state: InUse
@@ -94,9 +94,9 @@ intents:
             - altitude_lower:
                 value: 575.05
 
-  flight_1_activated_vol_B:
+  flight1c_activated:
     delta:
-      source: flight_1_planned_vol_B
+      source: flight1c_planned
       mutation:
         basic_information:
           usage_state: InUse
@@ -104,7 +104,7 @@ intents:
             - altitude_lower:
                 value: 650.06
 
-  flight_2_planned_vol_A:
+  flight2_planned:
     full:
       basic_information:
         usage_state: Planned
@@ -157,9 +157,9 @@ intents:
         uas_id: ''
         uas_type_certificate: ''
 
-  flight_2_activated_vol_A:
+  flight2_activated:
     delta:
-      source: flight_2_planned_vol_A
+      source: flight2_planned
       mutation:
         basic_information:
           usage_state: InUse
@@ -167,9 +167,9 @@ intents:
             - altitude_lower:
                 value: 605.08
 
-  flight_2_activated_vol_B:
+  flight2m_activated:
     delta:
-      source: flight_2_activated_vol_A
+      source: flight2_activated
       mutation:
         basic_information:
           area:
@@ -178,9 +178,9 @@ intents:
               altitude_upper:
                 value: 705
 
-  flight_2_equal_prio_planned_vol_B:
+  equal_prio_flight2_planned:
     delta:
-      source: flight_2_activated_vol_B
+      source: flight2m_activated
       mutation:
         basic_information:
           usage_state: Planned
@@ -190,9 +190,9 @@ intents:
         astm_f3548_21:
           priority: 0
 
-  flight_2_equal_prio_activated_vol_B:
+  equal_prio_flight2_activated:
     delta:
-      source: flight_2_equal_prio_planned_vol_B
+      source: equal_prio_flight2_planned
       mutation:
         basic_information:
           usage_state: InUse
@@ -200,9 +200,9 @@ intents:
             - altitude_lower:
                 value: 650.11
 
-  flight_2_equal_prio_nonconforming_vol_A:
+  equal_prio_flight2_nonconforming:
     delta:
-      source: flight_2_equal_prio_activated_vol_B
+      source: equal_prio_flight2_activated
       mutation:
         basic_information:
           uas_state: OffNominal
