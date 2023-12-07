@@ -26,5 +26,5 @@ import_environment_variable(
     mutator=lambda s: set(svc.strip().lower() for svc in s.split(",")),
 )
 import_environment_variable(KEY_DSS_URL, required=False)
-import_environment_variable(KEY_BEHAVIOR_LOCALITY, default="US.IndustryCollaboration")
+import_environment_variable(KEY_BEHAVIOR_LOCALITY, default="CHE")
 import_environment_variable(KEY_CODE_VERSION, default="Unknown")
