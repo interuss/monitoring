@@ -1,4 +1,4 @@
-# Get ISA test step
+# Get ISA test step fragment
 
 This page describes the content of a common test step where a request for an ISA by its ID should be successful.
 See `ISAValidator` in [`isa_validator.py`](../../../common/dss/isa_validator.py).
