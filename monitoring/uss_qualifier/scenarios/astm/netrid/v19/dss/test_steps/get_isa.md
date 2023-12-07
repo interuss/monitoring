@@ -1,11 +1,11 @@
-# Search ISAs test step
+# Get ISA test step
 
-This page describes the content of a common test step where a search for ISAs should be successful.
-See `DSSWrapper.search_isa` in [`dss_wrapper.py`](../../../dss_wrapper.py).
+This page describes the content of a common test step where a request for an ISA by its ID should be successful.
+See `ISAValidator` in [`isa_validator.py`](../../../common/dss/isa_validator.py).
 
-## ISAs search response format check
+## ISA response format check
 
-While F3411-19 does not explicitly require the implementation of the ISA search endpoint, Annex A4 specifies the explicit format for this endpoint.  If this format is not followed, this check will fail per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
+While F3411-19 does not explicitly require the implementation of the ISA search endpoint, Annex A4 specifies the explicit format for this endpoint.  If this format is not followed, this check will fail per **[interuss.f3411.dss_endpoints.GetISA](../../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
 ## ISA ID matches check
 

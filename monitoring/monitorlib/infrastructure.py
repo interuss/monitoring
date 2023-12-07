@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import functools
+from enum import Enum
 from typing import Dict, List, Optional
 import urllib.parse
 from aiohttp import ClientSession, ClientResponse
@@ -39,6 +40,7 @@ class AuthAdapter(object):
     def get_headers(self, url: str, scopes: List[str] = None) -> Dict[str, str]:
         if scopes is None:
             scopes = ALL_SCOPES
+        scopes = [s.value if isinstance(s, Enum) else s for s in scopes]
         intended_audience = urllib.parse.urlparse(url).hostname
         scope_string = " ".join(scopes)
         if intended_audience not in self._tokens:

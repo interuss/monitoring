@@ -202,9 +202,7 @@ class ErrorReport(ImplicitDict):
             type=str(inspection.fullname(e.__class__)),
             message=str(e),
             timestamp=StringBasedDateTime(datetime.utcnow()),
-            stacktrace="".join(
-                traceback.format_exception(type(e), value=e, tb=e.__traceback__)
-            ),
+            stacktrace="".join(traceback.format_exception(e)),
         )
 
 

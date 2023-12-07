@@ -19,6 +19,9 @@ class F3411_19(str, Enum):
     SearchIdentificationServiceAreasResponse = (
         "components.schemas.SearchIdentificationServiceAreasResponse"
     )
+    GetIdentificationServiceAreaResponse = (
+        "components.schemas.GetIdentificationServiceAreaResponse"
+    )
     PutIdentificationServiceAreaResponse = (
         "components.schemas.PutIdentificationServiceAreaResponse"
     )
@@ -33,6 +36,9 @@ class F3411_22a(str, Enum):
     GetFlightDetailsResponse = "components.schemas.GetFlightDetailsResponse"
     SearchIdentificationServiceAreasResponse = (
         "components.schemas.SearchIdentificationServiceAreasResponse"
+    )
+    GetIdentificationServiceAreaResponse = (
+        "components.schemas.GetIdentificationServiceAreaResponse"
     )
     PutIdentificationServiceAreaResponse = (
         "components.schemas.PutIdentificationServiceAreaResponse"

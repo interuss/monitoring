@@ -452,7 +452,7 @@ def submit_flight(
             check.record_failed(
                 summary=f"Flight planning activity outcome was not expected",
                 severity=Severity.High,
-                details=f'{flight_planner.participant_id} indicated {resp.activity_result} with flight plan status {resp.flight_plan_status} rather than the expected {" or ".join(f"({expected_results[0]}, {expected_results[1]})")}{notes_suffix}',
+                details=f'{flight_planner.participant_id} indicated {resp.activity_result} with flight plan status {resp.flight_plan_status} rather than the expected {" or ".join([f"({expected_result[0]}, {expected_result[1]})" for expected_result in expected_results])}{notes_suffix}',
                 query_timestamps=[query.request.timestamp],
             )
 

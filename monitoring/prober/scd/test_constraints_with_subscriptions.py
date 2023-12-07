@@ -67,7 +67,7 @@ def _make_sub_req(base_url: str, notify_ops: bool, notify_constraints: bool) -> 
 
 def _read_both_scope(scd_api: str) -> str:
     if scd_api == scd.API_0_3_17:
-        return "{} {}".format(SCOPE_SC, SCOPE_CP)
+        return "{} {}".format(SCOPE_SC.value, SCOPE_CP.value)
     else:
         raise NotImplementedError("Unsupported API version {}".format(scd_api))
 

@@ -8,6 +8,7 @@ from typing import Dict, Optional, List, Union
 from enum import Enum
 from urllib.parse import urlparse
 
+import aiohttp
 import flask
 from loguru import logger
 import requests
@@ -146,6 +147,20 @@ def describe_response(resp: requests.Response) -> ResponseDescription:
         kwargs["json"] = resp.json()
     except ValueError:
         kwargs["body"] = resp.content.decode("utf-8")
+    return ResponseDescription(**kwargs)
+
+
+def describe_aiohttp_response(
+    status: int, headers: Dict, resp_json: Dict, duration: datetime.timedelta
+) -> ResponseDescription:
+    kwargs = {
+        "code": status,
+        "headers": headers,
+        "elapsed_s": duration.total_seconds(),
+        "reported": StringBasedDateTime(datetime.datetime.utcnow()),
+        "json": resp_json,
+    }
+
     return ResponseDescription(**kwargs)
 
 
@@ -293,11 +308,7 @@ class QueryError(RuntimeError):
 
     @property
     def stacktrace(self) -> str:
-        return "".join(
-            traceback.format_exception(
-                etype=QueryError, value=self, tb=self.__traceback__
-            )
-        )
+        return "".join(traceback.format_exception(self))
 
 
 yaml.add_representer(Query, Representer.represent_dict)

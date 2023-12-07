@@ -9,7 +9,7 @@
 #
 # This image is intended to be built from the repository root context/folder.
 
-FROM python:3.8-slim
+FROM python:3.11-slim
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
 RUN apt-get update && apt-get install -y openssl curl libgeos-dev gcc && apt-get install ca-certificates
