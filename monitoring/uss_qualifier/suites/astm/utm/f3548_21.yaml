@@ -4,6 +4,7 @@ resources:
   dss: resources.astm.f3548.v21.DSSInstanceResource
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   conflicting_flights: resources.flight_planning.FlightIntentsResource
+  conflicting_flights_no_equal_prio: resources.flight_planning.FlightIntentsResource?
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
@@ -150,15 +151,14 @@ actions:
     resources:
       flight_planners: flight_planners
       nominal_planning_selector: nominal_planning_selector?
-      conflicting_flights: conflicting_flights
+      conflicting_flights_no_equal_prio: conflicting_flights_no_equal_prio
       dss: dss
     specification:
       action_to_repeat:
         test_scenario:
-          # TODO: ability for this scenario to be skipped
           scenario_type: scenarios.astm.utm.DownUSSEqualPriorityNotPermitted
           resources:
-            flight_intents: conflicting_flights
+            flight_intents: conflicting_flights_no_equal_prio
             tested_uss: uss1
             dss: dss
         on_failure: Continue
