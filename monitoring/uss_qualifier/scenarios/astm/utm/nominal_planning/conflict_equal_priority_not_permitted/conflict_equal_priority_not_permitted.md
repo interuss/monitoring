@@ -31,7 +31,7 @@ Otherwise, the FlightIntentsResource must provide the following flight intents:
     <th>Must not conflict with</th>
   </tr>
   <tr>
-    <td><code>flight_1_planned_vol_A</code></td>
+    <td><code>flight1_planned</code></td>
     <td rowspan="2">Flight 1</td>
     <td rowspan="8">Any (but all the same)</td>
     <td>Accepted</td>
@@ -39,40 +39,40 @@ Otherwise, the FlightIntentsResource must provide the following flight intents:
     <td rowspan="2">N/A</td>
   </tr>
   <tr>
-    <td><code>flight_1_activated_vol_A</code></td>
+    <td><code>flight1_activated</code></td>
     <td>Activated</td>
   </tr>
   <tr>
-    <td><code>flight_1_activated_vol_A_extended</code></td>
+    <td><code>flight1m_activated</code></td>
     <td>Flight 1m</td>
     <td>Activated</td>
     <td>Flight 2</td>
     <td>N/A</td>
   </tr>
   <tr>
-    <td><code>flight_1_planned_vol_B</code></td>
+    <td><code>flight1c_planned</code></td>
     <td rowspan="2">Flight 1c</td>
     <td>Planned</td>
     <td rowspan="2">N/A</td>
     <td rowspan="2">Flight 2</td>
   </tr>
   <tr>
-    <td><code>flight_1_activated_vol_B</code></td>
+    <td><code>flight1c_activated</code></td>
     <td>Activated</td>
   </tr>
   <tr>
-    <td><code>flight_2_equal_prio_planned_vol_B</code></td>
+    <td><code>equal_prio_flight2_planned</code></td>
     <td rowspan="3">Flight 2</td>
     <td>Planned</td>
     <td rowspan="3">Flight 1, Flight 1m</td>
     <td rowspan="3">Flight 1c</td>
   </tr>
   <tr>
-    <td><code>flight_2_equal_prio_activated_vol_B</code></td>
+    <td><code>equal_prio_flight2_activated</code></td>
     <td>Activated</td>
   </tr>
   <tr>
-    <td><code>flight_2_equal_prio_nonconforming_vol_A</code></td>
+    <td><code>equal_prio_flight2_nonconforming</code></td>
     <td>Nonconforming</td>
   </tr>
 </table>
@@ -95,7 +95,9 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 ## Attempt to plan flight into conflict test case
 ![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict.svg)
 
-### [Plan flight 2 test step](../../../../flight_planning/plan_flight_intent.md)
+### Plan flight 2 test step
+
+#### [Plan flight 2](../../../../flight_planning/plan_flight_intent.md)
 Flight 2 on time range B should be successfully planned by the control USS.
 
 ### [Validate flight 2 sharing test step](../../validate_shared_operational_intent.md)

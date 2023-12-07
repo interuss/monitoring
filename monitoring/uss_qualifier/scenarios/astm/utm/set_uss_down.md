@@ -1,4 +1,4 @@
-# Set USS availability to 'Down' test step
+# Set USS availability to 'Down' test step fragment
 
 This step sets the USS availability to 'Down' at the DSS.
 

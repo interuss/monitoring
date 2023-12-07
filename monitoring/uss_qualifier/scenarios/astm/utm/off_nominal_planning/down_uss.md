@@ -21,7 +21,7 @@ FlightIntentsResource that provides the following flight intents:
     <th>Must not conflict with</th>
   </tr>
   <tr>
-    <td><code>flight_1_planned_vol_A</code></td>
+    <td><code>flight1_planned</code></td>
     <td rowspan="2">Flight 1</td>
     <td rowspan="5">Any</td>
     <td>Accepted</td>
@@ -29,7 +29,7 @@ FlightIntentsResource that provides the following flight intents:
     <td rowspan="2">Flight 2m</td>
   </tr>
   <tr>
-    <td><code>flight_2_planned_vol_A</code></td>
+    <td><code>flight2_planned</code></td>
     <td rowspan="2">Flight 2</td>
     <td rowspan="3">Higher than Flight 1*</td>
     <td>Accepted</td>

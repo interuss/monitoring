@@ -1,4 +1,4 @@
-# Create or update ISA test step
+# Create or update ISA test step fragment
 
 This page describes the content of a common test step where a creation or an update of an ISA should be successful.
 See `DSSWrapper.put_isa` in [`dss_wrapper.py`](../../../dss_wrapper.py).

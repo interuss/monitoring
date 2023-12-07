@@ -1,4 +1,4 @@
-# Plan flight test step
+# Plan flight test step fragment
 
 This page describes the content of a common test case where a valid user flight intent should be successfully planned by a flight planner.  See `plan_flight_intent` in [test_steps.py](test_steps.py).
 
