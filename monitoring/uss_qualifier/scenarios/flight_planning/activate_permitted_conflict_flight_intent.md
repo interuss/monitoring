@@ -1,4 +1,4 @@
-# Activate flight with permitted equal priority conflict test step
+# Activate flight with permitted equal priority conflict test step fragment
 
 This page describes the content of a common test step where a user flight intent should be successfully activated by a
 flight planner, given that there exists a permitted conflict with an equal priority flight intent.

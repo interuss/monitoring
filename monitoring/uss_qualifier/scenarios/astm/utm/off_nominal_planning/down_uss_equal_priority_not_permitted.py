@@ -25,16 +25,16 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class DownUSSEqualPriorityNotPermitted(DownUSS):
-    flight_2_planned_vol_A: FlightIntent
+    flight2_planned: FlightIntent
 
     def _parse_flight_intents(self, flight_intents: Dict[str, FlightIntent]) -> None:
         try:
-            self.flight_2_planned_vol_A = flight_intents["flight_2_planned_vol_A"]
+            self.flight2_planned = flight_intents["flight2_planned"]
 
             assert (
-                self.flight_2_planned_vol_A.request.operational_intent.state
+                self.flight2_planned.request.operational_intent.state
                 == OperationalIntentState.Accepted
-            ), "flight_2_planned_vol_A must have state Accepted"
+            ), "flight2_planned must have state Accepted"
 
         except KeyError as e:
             raise ValueError(
@@ -81,12 +81,12 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
 
         # Virtual USS creates conflicting operational intent test step
         oi_ref = self._put_conflicting_op_intent_step(
-            self.flight_2_planned_vol_A, OperationalIntentState.Accepted
+            self.flight2_planned, OperationalIntentState.Accepted
         )
 
         # Virtual USS activates conflicting operational intent test step
         oi_ref = self._put_conflicting_op_intent_step(
-            self.flight_2_planned_vol_A, OperationalIntentState.Activated, oi_ref
+            self.flight2_planned, OperationalIntentState.Activated, oi_ref
         )
 
         # Declare virtual USS as down at DSS test step
@@ -114,7 +114,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                     InjectFlightResponseResult.Failed: "Failure",
                 },
                 self.tested_uss,
-                self.flight_2_planned_vol_A.request,
+                self.flight2_planned.request,
             )
             validator.expect_not_shared()
 
@@ -134,7 +134,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
 
         # Virtual USS transitions to Nonconforming conflicting operational intent test step
         oi_ref = self._put_conflicting_op_intent_step(
-            self.flight_2_planned_vol_A, OperationalIntentState.Nonconforming, oi_ref
+            self.flight2_planned, OperationalIntentState.Nonconforming, oi_ref
         )
 
         # Declare virtual USS as down at DSS test step
@@ -162,7 +162,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                     InjectFlightResponseResult.Failed: "Failure",
                 },
                 self.tested_uss,
-                self.flight_2_planned_vol_A.request,
+                self.flight2_planned.request,
             )
             validator.expect_not_shared()
 
@@ -180,7 +180,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
 
         # Virtual USS transitions to Contingent conflicting operational intent test step
         self._put_conflicting_op_intent_step(
-            self.flight_2_planned_vol_A, OperationalIntentState.Contingent, oi_ref
+            self.flight2_planned, OperationalIntentState.Contingent, oi_ref
         )
 
         # Declare virtual USS as down at DSS test step
@@ -208,6 +208,6 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                     InjectFlightResponseResult.Failed: "Failure",
                 },
                 self.tested_uss,
-                self.flight_2_planned_vol_A.request,
+                self.flight2_planned.request,
             )
             validator.expect_not_shared()

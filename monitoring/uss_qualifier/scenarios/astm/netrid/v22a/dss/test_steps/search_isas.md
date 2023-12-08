@@ -1,4 +1,4 @@
-# Search ISAs test step
+# Search ISAs test step fragment
 
 This page describes the content of a common test step where a search for ISAs should be successful.
 See `DSSWrapper.search_isa` in [`dss_wrapper.py`](../../../dss_wrapper.py).

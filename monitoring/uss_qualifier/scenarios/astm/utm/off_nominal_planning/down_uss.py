@@ -40,7 +40,7 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class DownUSS(TestScenario):
-    flight_1_planned_vol_A: FlightIntent
+    flight1_planned: FlightIntent
 
     uss_qualifier_sub: str
 
@@ -89,12 +89,12 @@ class DownUSS(TestScenario):
 
     def _parse_flight_intents(self, flight_intents: Dict[str, FlightIntent]) -> None:
         try:
-            self.flight_1_planned_vol_A = flight_intents["flight_1_planned_vol_A"]
+            self.flight1_planned = flight_intents["flight1_planned"]
 
             assert (
-                self.flight_1_planned_vol_A.request.operational_intent.state
+                self.flight1_planned.request.operational_intent.state
                 == OperationalIntentState.Accepted
-            ), "flight_1_planned_vol_A must have state Accepted"
+            ), "flight1_planned must have state Accepted"
 
         except KeyError as e:
             raise ValueError(
@@ -212,7 +212,7 @@ class DownUSS(TestScenario):
 
         # Virtual USS creates conflicting operational intent test step
         self._put_conflicting_op_intent_step(
-            self.flight_1_planned_vol_A, OperationalIntentState.Accepted
+            self.flight1_planned, OperationalIntentState.Accepted
         )
 
         # Declare virtual USS as down at DSS test step
@@ -253,11 +253,11 @@ class DownUSS(TestScenario):
                 expected_results,
                 failed_checks,
                 self.tested_uss,
-                self.flight_1_planned_vol_A.request,
+                self.flight1_planned.request,
             )
 
             if resp.result == InjectFlightResponseResult.Planned:
-                validator.expect_shared(self.flight_1_planned_vol_A.request)
+                validator.expect_shared(self.flight1_planned.request)
             elif (
                 resp.result == InjectFlightResponseResult.Rejected
                 or resp.result == InjectFlightResponseResult.ConflictWithFlight

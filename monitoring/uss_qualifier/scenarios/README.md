@@ -10,7 +10,7 @@ A test scenario is separated into of a list of test cases, each of which are sep
 
 ### Test cases
 
-1. A test case is a single wholistic operation or action performed as part of a larger test scenario.
+1. A test case is a single holistic operation or action performed as part of a larger test scenario.
     * Test cases are like acts in the "play" of the test scenario they are a part of.
     * Test cases are typically the "gray headers” of the overview sequence diagrams.
 2. A given test case belongs to exactly one test scenario.
@@ -22,7 +22,7 @@ A test scenario is separated into of a list of test cases, each of which are sep
 1. A test step is a single task that must be performed in order to accomplish its associated test case.
     * Test steps are like scenes in the "play/act" of the test scenario/test case they are a part of.
 2. A given test step belongs to exactly one test case.
-3. A test step may have a list of checks associated with it.
+3. A test step should generally have a list of checks associated with it.
 
 ### Checks
 
@@ -30,6 +30,8 @@ A test scenario is separated into of a list of test cases, each of which are sep
 2. A check evaluates information collected during the actions performed for a test step.
 3. A given check belongs to exactly one test step.
 4. Each check defines which requirement(s) are not met if the check fails.
+5. In nearly all cases, the test participant(s) to which a check pertains should be specified when performing the check.
+    * If the test participant is not specified, then either everyone involved in a test or no one is responsible for meeting the requirements of that check, and this is very rarely appropriate.
 
 ## Creation
 
@@ -79,7 +81,23 @@ A scenario must document at least one test case (otherwise the scenario is doing
 
 Each test case in the documentation must document at least one test step (otherwise nothing is happening in the test case).  Each test step must be documented via a subsection of the parent test case named with a " test step" suffix (example: `### Injection test step`).
 
-If the entire test step heading is enclosed in a link, the contents of that linked file will be used to populate the test step (example: `### [Plan flight test step](plan_flight_step.md)`) and any content in this section will be ignored.  The linked file must follow the format requirements for a test step, starting with the first line being a top-level heading ending with " test step" (example: `# Plan flight test step`).
+If the entire test step heading is enclosed in a link, the contents of that linked file will be used to pre-populate the test step (example: `### [Plan flight test step](plan_flight_fragment.md)`) before reading the content in this section.  The linked file must follow the format requirements for a test step, but with the first line being a top-level heading ending with " test step fragment" (example: `# Plan flight test step fragment`).
+
+Multiple test step fragments may be included in a test step by linking to the test step fragment in a heading one level lower than the test step itself, and these lower-level headings may be combined with [checks](#test-checks) specific to the test step; for instance:
+
+```markdown
+### Plan flight test step
+
+This step does (a particular thing).
+
+#### [Actually plan flight](plan_flight_fragment.md)
+
+#### Special check
+
+If the system under test doesn't Foo, then requirement **Bar** will not be met.
+
+#### [Ensure flight baz](check_flight_baz_fragment.md)
+```
 
 ### Test checks
 

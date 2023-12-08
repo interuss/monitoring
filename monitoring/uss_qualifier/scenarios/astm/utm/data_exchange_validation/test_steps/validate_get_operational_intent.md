@@ -1,4 +1,4 @@
-# Validate GET interaction test step
+# Validate GET interaction test step fragment
 
 This step verifies that a USS makes a GET request to get the intent_details of an existing operation when needed as per ASTM F3548-21 by checking the interuss interactions of mock uss
 

@@ -19,9 +19,9 @@ FlightIntentsResource that provides the following flight intents:
     <th>State</th><!-- TODO: Update with usage_state and uas_state when new flight planning API is adopted -->
   </tr>
   <tr>
-    <td><code>flight_2_planned_vol_A</code></td>
-    <td rowspan="2">Flight 2</td>
-    <td rowspan="3">High priority</td>
+    <td><code>flight2_planned</code></td>
+    <td>Flight 2</td>
+    <td>High priority</td>
     <td>Accepted</td>
   </tr>
 </table>
