@@ -15,6 +15,6 @@ that USS did not send notification.
 The max duration for sending a notification in [SCD0085](../../../../../requirements/astm/f3548/v21.md) is MaxRespondToSubscriptionNotification(5) seconds.
 However, this duration is from time start - Receipt of subscription notification from DSS, which does not exist for this check.
 In this check we use time start when the test driver asked the USS to plan the failed flight.
-When checking noitification not sent, we should wait for the same duration that is used for when checking notification sent.
+When checking notification not sent, we should wait for the same duration that is used for when checking notification sent.
 [Expect Notification sent](./validate_notification_operational_intent.md).
 So, we plan to use [MaxTimeToWaitForSubscriptionNotificationSeconds](./constants.py) (7 seconds).

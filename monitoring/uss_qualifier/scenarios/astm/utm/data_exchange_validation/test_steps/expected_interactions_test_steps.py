@@ -3,7 +3,6 @@ from __future__ import annotations
 import datetime
 from typing import List, Tuple, Optional
 import time
-import jwt
 
 from monitoring.monitorlib.fetch import QueryError, Query
 from monitoring.uss_qualifier.common_data_definitions import Severity
@@ -15,6 +14,9 @@ from monitoring.monitorlib.clients.mock_uss.interactions import Interaction
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.constants import (
     MaxTimeToWaitForSubscriptionNotificationSeconds as max_wait_time,
 )
+
+# Interval to wait for checking notification received
+WAIT_INTERVAL = 1
 
 
 def expect_interuss_post_interactions(
@@ -32,29 +34,33 @@ def expect_interuss_post_interactions(
         posted_to_url: url of the subscribed USS
         participant_id: id of the participant responsible to send the notification
         plan_request_time: timestamp of the flight plan query that would lead to sending notification
-    Returns:
 
     """
     scenario.begin_test_step(test_step)
+
+    # Check for 'notification found' will be done periodically by waiting for a duration till max_wait_time
     time_waited = 0
     duration = 0
     while time_waited <= max_wait_time:
+        time.sleep(duration)
         interactions, query = _get_interuss_interactions_with_check(
             scenario,
             mock_uss,
             st,
-            duration,
         )
-        found = any_post_interactions_to_url(interactions, posted_to_url)
+        found = _any_oi_notification_in_interactions(interactions, posted_to_url)
         time_waited += duration
-        duration = (
-            1 if max_wait_time - time_waited >= 1 else (max_wait_time - time_waited)
-        )
         if found:
             logger.debug(f"Waited for {time_waited} to check notifications.")
             break
+        # wait for WAIT_INTERVAL till max_wait_time reached
+        duration = (
+            WAIT_INTERVAL
+            if max_wait_time - time_waited >= WAIT_INTERVAL
+            else (max_wait_time - time_waited)
+        )
 
-    with scenario.check("Expect Notification sent", participant_id) as check:
+    with scenario.check("Expect Notification sent", [participant_id]) as check:
         if not found:
             check.record_failed(
                 summary=f"Notification to {posted_to_url} not sent",
@@ -78,15 +84,16 @@ def expect_no_interuss_post_interactions(
         participant_id: id of the participant responsible to send the notification
     """
     scenario.begin_test_step(test_step)
-    # Get interuss interactions in the next MaxTimeToWaitForSubscriptionNotificationSeconds duration
+
+    # Wait for next MaxTimeToWaitForSubscriptionNotificationSeconds duration to capture any notification
+    time.sleep(max_wait_time)
     interactions, query = _get_interuss_interactions_with_check(
         scenario,
         mock_uss,
         st,
-        max_wait_time,
     )
-    found = any_post_interactions_to_url(interactions)
-    with scenario.check("Expect Notification not sent", participant_id) as check:
+    found = _any_oi_notification_in_interactions(interactions)
+    with scenario.check("Expect Notification not sent", [participant_id]) as check:
         if found:
             check.record_failed(
                 summary=f"Notification was wrongly sent for an entity not created.",
@@ -113,8 +120,6 @@ def expect_get_requests_to_mock_uss(
         id: entity id
         participant_id: id of the participant responsible to send GET request
 
-    Returns:
-
     """
     scenario.begin_test_step(test_step)
     interactions, query = _get_interuss_interactions_with_check(scenario, mock_uss, st)
@@ -126,7 +131,7 @@ def expect_get_requests_to_mock_uss(
         if method == "GET" and url.startswith(mock_uss_base_url) and id in url:
             found = True
             break
-    with scenario.check("Expect GET request", participant_id) as check:
+    with scenario.check("Expect GET request", [participant_id]) as check:
         if not found:
             check.record_failed(
                 summary=f"No GET request received at {mock_uss_base_url} for {id} ",
@@ -141,7 +146,6 @@ def _get_interuss_interactions_with_check(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,
-    wait_time_sec: Optional[int] = 0,
 ) -> Tuple[List[Interaction], Query]:
     """
     Method to get interuss interactions with a scenario check from mock_uss from time 'st' to now.
@@ -149,11 +153,12 @@ def _get_interuss_interactions_with_check(
         wait_time_sec: Seconds to wait for getting interactions like asynchronous notifications
     """
     with scenario.check(
-        "MockUSS interactions request", mock_uss.participant_id
+        "MockUSS interactions request", [mock_uss.participant_id]
     ) as check:
         try:
             interactions, query = _get_interuss_interactions(
-                mock_uss, st, wait_time_sec
+                mock_uss,
+                st,
             )
             scenario.record_query(query)
             return interactions, query
@@ -169,30 +174,17 @@ def _get_interuss_interactions_with_check(
 
 
 def _get_interuss_interactions(
-    mock_uss: MockUSSClient, st: StringBasedDateTime, wait_time: Optional[int] = 0
+    mock_uss: MockUSSClient,
+    st: StringBasedDateTime,
 ) -> Tuple[List[Interaction], Query]:
     """
-        Method to get interuss interactions from mock_uss from time 'st' to now.
-    Args:
-        wait_time: Seconds to wait for getting interactions like asynchronous notifications.
-
+    Method to get interuss interactions from mock_uss from time 'st' to now.
     """
-    time.sleep(wait_time)
-
     all_interactions, query = mock_uss.get_interactions(st)
     exclude_sub = mock_uss.session.auth_adapter.get_sub()
 
-    def get_client_sub(query: Query):
-        headers = query.request.headers
-        if "Authorization" in headers:
-            token = headers.get("Authorization").split(" ")[1]
-            payload = jwt.decode(
-                token, algorithms="RS256", options={"verify_signature": False}
-            )
-            return payload["sub"]
-
     def is_uss_interaction(interaction: Interaction, excl_sub: str) -> bool:
-        sub = get_client_sub(interaction.query)
+        sub = interaction.query.get_client_sub()
         if sub:
             if sub == excl_sub:
                 return False
@@ -214,33 +206,35 @@ def _get_interuss_interactions(
     return interuss_interactions, query
 
 
-def precondition_no_post_interaction(
+def check_any_notification(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,
 ) -> bool:
     """
-    This method helps check a precondition that no POST is sent by mock_uss to a USS, as no subscription exists.
+    This method helps check any notification have been sent, to or from mock_uss.
+
+    Returns: True if any notification found, otherwise False
     """
     interactions, query = _get_interuss_interactions(
         mock_uss,
         st,
     )
     scenario.record_query(query)
-    return any_post_interactions_to_url(interactions)
+    return _any_oi_notification_in_interactions(interactions)
 
 
-def any_post_interactions_to_url(
-    interactions: List[Interaction], posted_to_url: Optional[str] = None
+def _any_oi_notification_in_interactions(
+    interactions: List[Interaction], recipient_base_url: Optional[str] = None
 ) -> bool:
     """
-    Checks if there is any POST request made to 'posted_to_url', and returns True if found.
-    If 'posted_to_url' is None, any POST request found returns True.
+    Checks if there is any POST request made to 'recipient_base_url', and returns True if found.
+    If 'recipient_base_url' is None, any POST request found returns True.
     """
     for interaction in interactions:
         method = interaction.query.request.method
         url = interaction.query.request.url
         if method == "POST":
-            if posted_to_url is None or url.startswith(posted_to_url):
+            if recipient_base_url is None or url.startswith(recipient_base_url):
                 return True
     return False

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import Enum
 from typing import List, Optional, Union, Set
 from implicitdict import ImplicitDict
 from monitoring.monitorlib import schema_validation, fetch
@@ -180,7 +181,7 @@ class OpIntentValidator(object):
         ) as check:
             data_format_fail = (
                 self._expected_validation_failure_found(
-                    validation_failures, OI_DATA_FORMAT
+                    validation_failures, OpIntentValidationFailureType.DataFormat
                 )
                 if validation_failures
                 else None
@@ -233,7 +234,8 @@ class OpIntentValidator(object):
         ) as check:
             off_nom_vol_fail = (
                 self._expected_validation_failure_found(
-                    validation_failures, OFF_NOM_VOLS
+                    validation_failures,
+                    OpIntentValidationFailureType.NominalWithOffNominalVolumes,
                 )
                 if validation_failures
                 else None
@@ -250,7 +252,9 @@ class OpIntentValidator(object):
             VERTICES, [self._flight_planner.participant_id]
         ) as check:
             vertices_fail = (
-                self._expected_validation_failure_found(validation_failures, VERTICES)
+                self._expected_validation_failure_found(
+                    validation_failures, OpIntentValidationFailureType.VertexCount
+                )
                 if validation_failures
                 else None
             )
@@ -265,10 +269,10 @@ class OpIntentValidator(object):
         self._scenario.end_test_step()
         return oi_full.reference
 
-    def expect_shared_with_invalid_data(
+    def expect_shared_with_specified_data(
         self,
         flight_intent: Union[InjectFlightRequest, FlightInfo],
-        invalid_validation_type: str,
+        validation_failure_type: OpIntentValidationFailureType,
         invalid_fields: Optional[List],
         skip_if_not_found: bool = False,
     ) -> Optional[OperationalIntentReference]:
@@ -278,8 +282,8 @@ class OpIntentValidator(object):
         This function implements the test step described in validate_sharing_operational_intent_but_with_invalid_interuss_data.
 
         :param skip_if_not_found: set to True to skip the execution of the checks if the operational intent was not found while it should have been modified.
-        :param invalid_validation_type: specific type of validation failure expected
-        :param invalid_fields: Optional list of invalid fields to expect when invalid_validation_type is OI_DATA_FORMAT
+        :param validation_failure_type: specific type of validation failure expected
+        :param invalid_fields: Optional list of invalid fields to expect when validation_failure_type is OI_DATA_FORMAT
 
         :returns: the shared operational intent reference. None if skipped because not found.
         """
@@ -295,7 +299,7 @@ class OpIntentValidator(object):
 
         validation_failures = self._evaluate_op_intent_validation(oi_full_query)
         expected_validation_failure_found = self._expected_validation_failure_found(
-            validation_failures, invalid_validation_type, invalid_fields
+            validation_failures, validation_failure_type, invalid_fields
         )
 
         # validation errors expected check
@@ -432,7 +436,10 @@ class OpIntentValidator(object):
         )
         if errors:
             validation_failures.add(
-                OpIntentValidationFailure(validation_name=OI_DATA_FORMAT, errors=errors)
+                OpIntentValidationFailure(
+                    validation_name=OpIntentValidationFailureType.DataFormat,
+                    errors=errors,
+                )
             )
         else:
             try:
@@ -448,7 +455,8 @@ class OpIntentValidator(object):
                     details = f"Operational intent {oi_full.reference.id} had {len(oi_full.details.off_nominal_volumes)} off-nominal volumes in wrong state - {oi_full.reference.state}"
                     validation_failures.add(
                         OpIntentValidationFailure(
-                            validation_name=OFF_NOM_VOLS, error_text=details
+                            validation_name=OpIntentValidationFailureType.NominalWithOffNominalVolumes,
+                            error_text=details,
                         )
                     )
 
@@ -468,17 +476,21 @@ class OpIntentValidator(object):
                         f"Operational intent {oi_full.reference.id} had too many total vertices - {n_vertices}",
                     )
                     validation_failures.add(
-                        validation_name=VERTICES, error_text=details
+                        validation_name=OpIntentValidationFailureType.VertexCount,
+                        error_text=details,
                     )
             except (KeyError, ValueError) as e:
-                validation_failures.add(validation_name=OI_DATA_FORMAT, error_text=e)
+                validation_failures.add(
+                    validation_name=OpIntentValidationFailureType.DataFormat,
+                    error_text=e,
+                )
 
         return validation_failures
 
     def _expected_validation_failure_found(
         self,
         validation_failures: Set[OpIntentValidationFailure],
-        expected_validation_type: str,
+        expected_validation_type: OpIntentValidationFailureType,
         expected_invalid_fields: Optional[List[str]],
     ) -> OpIntentValidationFailure:
         """
@@ -495,7 +507,10 @@ class OpIntentValidator(object):
                 failure_found = failure
 
         if failure_found:
-            if expected_validation_type == OI_DATA_FORMAT and expected_invalid_fields:
+            if (
+                expected_validation_type == OpIntentValidationFailureType.DataFormat
+                and expected_invalid_fields
+            ):
                 errors = failure_found.errors
 
                 def expected_fields_in_errors(
@@ -518,8 +533,19 @@ class OpIntentValidator(object):
         return failure_found
 
 
+class OpIntentValidationFailureType(str, Enum):
+    DataFormat = "DataFormat"
+    """The operational intent did not validate against the canonical JSON Schema."""
+
+    NominalWithOffNominalVolumes = "NominalWithOffNominalVolumes"
+    """The operational intent was nominal, but it specified off-nominal volumes."""
+
+    VertexCount = "VertexCount"
+    """The operational intent had too many vertices."""
+
+
 class OpIntentValidationFailure(ImplicitDict):
-    validation_name: str
+    validation_name: OpIntentValidationFailureType
     """Validation name same as the check name"""
 
     error_text: Optional[str] = None

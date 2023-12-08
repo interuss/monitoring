@@ -27,13 +27,13 @@ from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_s
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     OpIntentValidator,
-    OI_DATA_FORMAT,
+    OpIntentValidationFailureType,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
     expect_interuss_post_interactions,
     expect_get_requests_to_mock_uss,
     expect_no_interuss_post_interactions,
-    precondition_no_post_interaction,
+    check_any_notification,
 )
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUssFlightBehavior,
@@ -155,7 +155,6 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 2 sharing",
             self._intents_extent,
         ) as validator:
-            planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
                 self,
                 "Control_uss plans flight 2",
@@ -165,22 +164,9 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
             flight_2_oi_ref = validator.expect_shared(flight_2)
 
-        self.begin_test_step(
-            "Precondition - check tested_uss has no subscription in flight 2 area"
-        )
-        if precondition_no_post_interaction(
-            self,
-            self.control_uss,
-            planning_time,
-        ):
-            msg = f"As a precondition for the scenario tests, there should have been no post made to tested_uss"
-            raise ScenarioCannotContinueError(msg)
-        self.end_test_step()
-
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
 
-        planning_time = Time(arrow.utcnow().datetime)
         with OpIntentValidator(
             self,
             self.tested_uss_client,
@@ -188,6 +174,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 1 sharing",
             self._intents_extent,
         ) as validator:
+            planning_time = Time(arrow.utcnow().datetime)
             plan_res, self.flight_1_id = plan_flight(
                 self,
                 "Tested_uss plans flight 1",
@@ -250,7 +237,6 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 2 shared operational intent with invalid data",
             self._intents_extent,
         ) as validator:
-            planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
                 self,
                 "Control_uss plans flight 2, sharing invalid operational intent data",
@@ -258,27 +244,14 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 flight_info,
                 additional_fields,
             )
-            flight_2_oi_ref = validator.expect_shared_with_invalid_data(
+            flight_2_oi_ref = validator.expect_shared_with_specified_data(
                 flight_info,
-                invalid_validation_type=OI_DATA_FORMAT,
+                validation_failure_type=OpIntentValidationFailureType.DataFormat,
                 invalid_fields=[modify_field1, modify_field2],
             )
 
-        self.begin_test_step(
-            "Precondition - check tested_uss has no subscription in flight 2 area"
-        )
-        if precondition_no_post_interaction(
-            self,
-            self.control_uss,
-            planning_time,
-        ):
-            msg = f"As a precondition for the scenario tests, there should have been no post made to tested_uss"
-            raise ScenarioCannotContinueError(msg)
-        self.end_test_step()
-
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
-        planning_time = Time(arrow.utcnow().datetime)
         with OpIntentValidator(
             self,
             self.tested_uss_client,
@@ -286,6 +259,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 1 not shared by tested_uss",
             self._intents_extent,
         ) as validator:
+            planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_1_id = plan_flight_intent_expect_failed(
                 self,
                 "Tested_uss attempts to plan flight 1, expect failure",
