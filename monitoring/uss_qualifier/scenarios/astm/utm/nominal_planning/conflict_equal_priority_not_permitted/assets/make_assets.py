@@ -259,14 +259,6 @@ def make_attempt_to_modify_activated_flight_into_conflict():
 def make_modify_activated_flight_with_preexisting_conflict():
     elements = [
         svg.Polygon(
-            points=flight2_points,
-            stroke=outline,
-            fill=nonconforming,
-            fill_opacity=0.4,
-            stroke_width=8,
-        ),
-        svg.Text(x=60, y=90, class_=["heavy"], text="Flight 2"),
-        svg.Polygon(
             points=flight1_points,
             stroke=outline,
             fill=activated,
@@ -274,6 +266,14 @@ def make_modify_activated_flight_with_preexisting_conflict():
             stroke_width=8,
         ),
         svg.Text(x=222, y=145, class_=["heavy"], text="Flight 1"),
+        svg.Polygon(
+            points=flight2_points,
+            stroke=outline,
+            fill=nonconforming,
+            fill_opacity=0.4,
+            stroke_width=8,
+        ),
+        svg.Text(x=60, y=90, class_=["heavy"], text="Flight 2"),
         svg.Polygon(
             points=translate(flight2_points, 440, 0),
             stroke=outline,
