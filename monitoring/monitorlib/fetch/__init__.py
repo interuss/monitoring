@@ -3,6 +3,7 @@ import json
 import os
 import traceback
 import uuid
+import jwt
 from typing import Dict, Optional, List, Union
 
 from enum import Enum
@@ -289,6 +290,15 @@ class Query(ImplicitDict):
             if self.json_result is not None and "message" in self.json_result
             else None
         )
+
+    def get_client_sub(self):
+        headers = self.request.headers
+        if "Authorization" in headers:
+            token = headers.get("Authorization").split(" ")[1]
+            payload = jwt.decode(
+                token, algorithms="RS256", options={"verify_signature": False}
+            )
+            return payload["sub"]
 
 
 class QueryError(RuntimeError):
