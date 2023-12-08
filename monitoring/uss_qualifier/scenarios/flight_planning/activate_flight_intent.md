@@ -1,4 +1,4 @@
-# Activate flight test step
+# Activate flight test step fragment
 
 This page describes the content of a common test step where a valid user flight intent should be successfully activated by a flight planner.  See `activate_flight_intent` in [test_steps.py](test_steps.py).
 

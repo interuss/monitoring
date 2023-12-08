@@ -1,4 +1,4 @@
-# Ensure clean workspace test step
+# Ensure clean workspace test step fragment
 
 This page describes the content of a common test step that ensures a clean workspace for testing interactions with a DSS
 
