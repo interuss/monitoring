@@ -17,6 +17,9 @@ RUN apt-get update && apt-get install -y openssl curl libgeos-dev gcc && apt-get
 # required for gevent to build without error in an ARM environment
 RUN apt-get update && apt-get install -y libffi-dev libssl-dev python3-dev build-essential
 
+# required for lxml to install successfully with pip (at least on an ARM environment)
+RUN apt-get update && apt-get install -y libxml2-dev libxslt-dev
+
 RUN mkdir -p /app/monitoring
 COPY ./requirements.txt /app/monitoring/requirements.txt
 RUN pip install -r /app/monitoring/requirements.txt
