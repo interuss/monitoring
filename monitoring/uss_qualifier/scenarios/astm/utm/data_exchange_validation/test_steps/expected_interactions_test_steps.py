@@ -54,11 +54,7 @@ def expect_interuss_post_interactions(
             logger.debug(f"Waited for {time_waited} to check notifications.")
             break
         # wait for WAIT_INTERVAL till max_wait_time reached
-        duration = (
-            WAIT_INTERVAL
-            if max_wait_time - time_waited >= WAIT_INTERVAL
-            else (max_wait_time - time_waited)
-        )
+        duration = min(WAIT_INTERVAL, max_wait_time - time_waited)
 
     with scenario.check("Expect Notification sent", [participant_id]) as check:
         if not found:
