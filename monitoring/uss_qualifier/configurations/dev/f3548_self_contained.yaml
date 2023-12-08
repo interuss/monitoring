@@ -15,8 +15,6 @@ v1:
         resources:
           flight_planners: flight_planners
           conflicting_flights: conflicting_flights
-          conflicting_flights_no_equal_prio: conflicting_flights
-          priority_preemption_flights: priority_preemption_flights
           invalid_flight_intents: invalid_flight_intents
           non_conflicting_flights: non_conflicting_flights
           dss: dss
@@ -57,13 +55,6 @@ v1:
           specification:
             file:
               path: file://./test_data/che/flight_intents/conflicting_flights.yaml
-
-        # Details of priority-preemption flights (used in nominal planning priority scenario)
-        priority_preemption_flights:
-          resource_type: resources.flight_planning.FlightIntentsResource
-          specification:
-            file:
-              path: test_data.che.flight_intents.conflicting_flights
 
         # Details of flights with invalid operational intents (used in flight intent validation scenario)
         invalid_flight_intents:
