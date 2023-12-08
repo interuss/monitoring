@@ -9,19 +9,27 @@ resources:
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
   nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   priority_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
+  second_utm_auth: resources.communications.AuthAdapterResource?
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource
+  id_generator: resources.interuss.IDGeneratorResource
 actions:
 - action_generator:
     generator_type: action_generators.astm.f3548.ForEachDSS
     resources:
       dss_instances: dss_instances
+      second_utm_auth: second_utm_auth
+      flight_intents: non_conflicting_flights
+      id_generator: id_generator
     specification:
       action_to_repeat:
         test_suite:
           suite_type: suites.astm.utm.dss_probing
           resources:
             dss: dss
+            second_utm_auth: second_utm_auth
             all_dss_instances: dss_instances
+            flight_intents: flight_intents
+            id_generator: id_generator
         on_failure: Continue
       dss_instances_source: dss_instances
       dss_instance_id: dss

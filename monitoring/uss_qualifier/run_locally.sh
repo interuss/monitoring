@@ -43,6 +43,7 @@ echo "Running configuration(s): ${CONFIG_NAME}"
 CONFIG_FLAG="--config ${CONFIG_NAME}"
 
 AUTH_SPEC='DummyOAuth(http://oauth.authority.localutm:8085/token,uss_qualifier)'
+AUTH_SPEC_2='DummyOAuth(http://oauth.authority.localutm:8085/token,uss_qualifier_2)'
 
 QUALIFIER_OPTIONS="$CONFIG_FLAG $OTHER_ARGS"
 
@@ -66,6 +67,7 @@ docker run ${docker_args} --name uss_qualifier \
   -u "$(id -u):$(id -g)" \
   -e PYTHONBUFFERED=1 \
   -e AUTH_SPEC=${AUTH_SPEC} \
+  -e AUTH_SPEC_2=${AUTH_SPEC_2} \
   -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
   -v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \
   -v "$(pwd)/$CACHE_DIR:/app/$CACHE_DIR" \

@@ -14,6 +14,9 @@ v1:
               mock_uss: 1
 
         utm_auth: {$ref: 'library/environment.yaml#/utm_auth'}
+        second_utm_auth: {$ref: 'library/environment.yaml#/second_utm_auth'}
+        utm_client_identity: {$ref: 'library/resources.yaml#/utm_client_identity'}
+        id_generator: {$ref: 'library/resources.yaml#/id_generator'}
         scd_dss: {$ref: 'library/environment.yaml#/scd_dss'}
         scd_dss_instances: {$ref: 'library/environment.yaml#/scd_dss_instances'}
         flight_planners:
@@ -53,6 +56,8 @@ v1:
           priority_preemption_flights: che_conflicting_flights
           dss: scd_dss
           dss_instances: scd_dss_instances
+          id_generator: id_generator
+          second_utm_auth: second_utm_auth
     execution:
       stop_fast: true
 

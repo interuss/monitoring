@@ -9,7 +9,8 @@ resources:
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource
   dss: resources.astm.f3548.v21.DSSInstanceResource
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
-
+  id_generator: resources.interuss.IDGeneratorResource
+  second_utm_auth: resources.communications.AuthAdapterResource?
 actions:
 - test_suite:
     suite_type: suites.astm.utm.f3548_21
@@ -22,6 +23,8 @@ actions:
       mock_uss: mock_uss
       dss: dss
       dss_instances: dss_instances
+      id_generator: id_generator
+      second_utm_auth: second_utm_auth
   on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.flight_planning.PrepareFlightPlanners
