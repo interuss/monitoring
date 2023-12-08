@@ -58,19 +58,19 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
         self.end_test_case()
 
         self.begin_test_case(
-            "Plan flight in conflict with activated flight managed by down USS"
+            "Plan Flight 2 in conflict with activated operational intent managed by down USS"
         )
         oi_ref = self._plan_flight_conflict_activated()
         self.end_test_case()
 
         self.begin_test_case(
-            "Plan flight in conflict with nonconforming flight managed by down USS"
+            "Plan Flight 2 in conflict with nonconforming operational intent managed by down USS"
         )
         oi_ref = self._plan_flight_conflict_nonconforming(oi_ref)
         self.end_test_case()
 
         self.begin_test_case(
-            "Plan flight in conflict with contingent flight managed by down USS"
+            "Plan Flight 2 in conflict with contingent operational intent managed by down USS"
         )
         self._plan_flight_conflict_contingent(oi_ref)
         self.end_test_case()
@@ -99,12 +99,12 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
             self,
             self.tested_uss,
             self.dss,
-            "Validate high-priority flight 2 not shared",
+            "Validate high-priority Flight 2 not shared",
             self._intents_extent,
         ) as validator:
             submit_flight_intent(
                 self,
-                "Tested USS attempts to plan high-priority flight 2",
+                "Tested USS attempts to plan high-priority Flight 2",
                 "Incorrectly planned",
                 {
                     InjectFlightResponseResult.Rejected,
@@ -147,12 +147,12 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
             self,
             self.tested_uss,
             self.dss,
-            "Validate high-priority flight 2 not shared",
+            "Validate high-priority Flight 2 not shared",
             self._intents_extent,
         ) as validator:
             submit_flight_intent(
                 self,
-                "Tested USS attempts to plan high-priority flight 2",
+                "Tested USS attempts to plan high-priority Flight 2",
                 "Incorrectly planned",
                 {
                     InjectFlightResponseResult.Rejected,
@@ -193,12 +193,12 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
             self,
             self.tested_uss,
             self.dss,
-            "Validate high-priority flight 2 not shared",
+            "Validate high-priority Flight 2 not shared",
             self._intents_extent,
         ) as validator:
             submit_flight_intent(
                 self,
-                "Tested USS attempts to plan high-priority flight 2",
+                "Tested USS attempts to plan high-priority Flight 2",
                 "Incorrectly planned",
                 {
                     InjectFlightResponseResult.Rejected,

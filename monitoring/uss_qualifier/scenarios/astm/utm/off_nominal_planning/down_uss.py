@@ -118,7 +118,7 @@ class DownUSS(TestScenario):
         self.end_test_case()
 
         self.begin_test_case(
-            "Plan flight in conflict with planned flight managed by down USS"
+            "Plan Flight 1 in conflict with accepted operational intent managed by down USS"
         )
         self._plan_flight_conflict_planned()
         self.end_test_case()
@@ -225,7 +225,7 @@ class DownUSS(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            "Validate low-priority flight 1 status",
+            "Validate low-priority Flight 1 status",
             self._intents_extent,
         ) as validator:
             expected_results = {
@@ -248,7 +248,7 @@ class DownUSS(TestScenario):
 
             resp, flight_id = submit_flight_intent(
                 self,
-                "Tested USS attempts to plan low-priority flight 1",
+                "Tested USS attempts to plan low-priority Flight 1",
                 "Successful planning",
                 expected_results,
                 failed_checks,
