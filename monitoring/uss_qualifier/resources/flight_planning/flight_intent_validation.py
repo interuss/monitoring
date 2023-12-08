@@ -39,34 +39,36 @@ def validate_flight_intent_templates(
     templates: Dict[FlightIntentID, FlightInfoTemplate],
     expected_intents: List[ExpectedFlightIntent],
 ) -> None:
-    now = arrow.utcnow().datetime
+    now = Time(arrow.utcnow().datetime)
     times = {
-        TimeDuringTest.StartOfTestRun: Time(now),
-        TimeDuringTest.StartOfScenario: Time(now),
-        TimeDuringTest.TimeOfEvaluation: Time(now),
+        TimeDuringTest.StartOfTestRun: now,
+        TimeDuringTest.StartOfScenario: now,
+        TimeDuringTest.TimeOfEvaluation: now,
     }
     flight_intents = {k: v.resolve(times) for k, v in templates.items()}
-    validate_flight_intents(flight_intents, expected_intents)
+    validate_flight_intents(flight_intents, expected_intents, now)
 
-    later = now + MAX_TEST_RUN_DURATION
+    later = Time(now.datetime + MAX_TEST_RUN_DURATION)
     times = {
-        TimeDuringTest.StartOfTestRun: Time(now),
-        TimeDuringTest.StartOfScenario: Time(later),
-        TimeDuringTest.TimeOfEvaluation: Time(later),
+        TimeDuringTest.StartOfTestRun: now,
+        TimeDuringTest.StartOfScenario: later,
+        TimeDuringTest.TimeOfEvaluation: later,
     }
     flight_intents = {k: v.resolve(times) for k, v in templates.items()}
-    validate_flight_intents(flight_intents, expected_intents)
+    validate_flight_intents(flight_intents, expected_intents, later)
 
 
 def validate_flight_intents(
     intents: Dict[FlightIntentID, FlightInfo],
     expected_intents: List[ExpectedFlightIntent],
+    now: Time,
 ) -> None:
     """Validate that `intents` contains all intents meeting all the criteria in `expected_intents`.
 
     Args:
         intents: Flight intents we actually have.
         expected_intents: Criteria that our flight intents are expected to meet.
+        now: Current time, for validation that in-use intents include this time.
 
     Raises:
         * ValueError when a validation criterion is not met.
@@ -79,6 +81,34 @@ def validate_flight_intents(
 
     for expected_intent in expected_intents:
         intent = intents[expected_intent.intent_id]
+
+        # Ensure in-use intent includes now
+        if intent.basic_information.usage_state == AirspaceUsageState.InUse:
+            start_time = intent.basic_information.area.time_start
+            if start_time is None:
+                raise ValueError(
+                    f"At least one volume in `{expected_intent.intent_id}` is missing a start time"
+                )
+            if now.datetime < start_time.datetime:
+                raise ValueError(
+                    f"When evaluated at {now.datetime.isoformat()}, `{expected_intent.intent_id}`'s start time {start_time.datetime.isoformat()} is in the future even though the intent is indicated as InUse"
+                )
+            end_time = intent.basic_information.area.time_end
+            if end_time is None:
+                raise ValueError(
+                    f"At least one volume in `{expected_intent.intent_id}` is missing an end time"
+                )
+            if now.datetime > end_time.datetime:
+                raise ValueError(
+                    f"When evaluated at {now.datetime.isoformat()}, `{expected_intent.intent_id}`'s end time {end_time.datetime.isoformat()} is in the past even though the intent is indicated as InUse"
+                )
+
+        # Ensure not-in-use intent does not indicate an off-nominal UAS
+        if intent.basic_information.usage_state != AirspaceUsageState.InUse:
+            if intent.basic_information.uas_state != UasState.Nominal:
+                raise ValueError(
+                    f"`{expected_intent.intent_id}` indicates the intent is not in use ({intent.basic_information.usage_state}), but the UAS state is specified as off-nominal ({intent.basic_information.uas_state})"
+                )
 
         def named_intents(
             name: FlightIntentName,
