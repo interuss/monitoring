@@ -95,14 +95,18 @@ class PendingCheck(object):
         summary: str,
         severity: Severity,
         details: str = "",
-        participants: Optional[List[ParticipantID]] = None,
+        participants: Optional[Union[ParticipantID, List[ParticipantID]]] = None,
         query_timestamps: Optional[List[datetime]] = None,
         additional_data: Optional[dict] = None,
-        requirements: Optional[List[str]] = None,
+        requirements: Optional[Union[str, List[str]]] = None,
     ) -> None:
         self._outcome_recorded = True
+        if isinstance(participants, str):
+            participants = [participants]
         if participants is None:
             participants = self._participants
+        if isinstance(requirements, str):
+            requirements = [requirements]
         if requirements is None:
             requirements = self._documentation.applicable_requirements
 
@@ -388,8 +392,12 @@ class GenericTestScenario(ABC):
         return available_checks[name]
 
     def check(
-        self, name: str, participants: Optional[List[ParticipantID]] = None
+        self,
+        name: str,
+        participants: Optional[Union[ParticipantID, List[ParticipantID]]] = None,
     ) -> PendingCheck:
+        if isinstance(participants, str):
+            participants = [participants]
         self._expect_phase({ScenarioPhase.RunningTestStep, ScenarioPhase.CleaningUp})
         available_checks = {c.name: c for c in self._current_step.checks}
         if name in available_checks:
