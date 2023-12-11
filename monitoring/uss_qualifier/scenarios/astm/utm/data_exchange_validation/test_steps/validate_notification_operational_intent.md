@@ -19,14 +19,26 @@ Hence, for test cases that check notification sent for an operational intent, we
 [MaxTimeToWaitForSubscriptionNotificationSeconds](./constants.py)  (rounding to 7 seconds).
 
 ####Note -
-MaxRespondToSubscriptionNotification is measured from time start - Receipt of subscription notification
-from DSS - till time end - Entity details sent to subscribing USS.
-However, this check start time is w.r.t the time test driver initiated a plan, and the time end for this check is when
-mock_uss received the notification.
-Hence, we would need to investigate how much additional time is needed to account for -
-- processing time taken by a USS and DSS after the plan is requested by test driver.
-- network delays in the communication between test driver, USS and DSS
-- time taken for notification to reach from USS to mock_uss.
+As per **[astm.f3548.v21.SCD0085](../../../../../requirements/astm/f3548/v21.md)**, MaxRespondToSubscriptionNotification
+is measured from time_start - Receipt of subscription notification from DSS -
+till time_end - Entity details sent to subscribing USS.
+To make sure the test driver gives enough time for notifications to be received by mock_uss,
+it marks the time to get interactions from mock_uss as - the time test driver initiates the plan.
+The sequence of events is -
+1. Test driver initiates plan to tested_uss. t0
+2. Tested_uss shares the plan with DSS and receives DSS response. t_time_start.
+3. Tested_uss responds to test driver with Completed.
+4. Test driver checks for shared operational_intent in DSS and checks its retrievable. t1
+5. Test driver waits for MaxTimeToWaitForSubscriptionNotificationSeconds.
+6. Test driver retrieves interactions from mock_uss. t1 + MaxTimeToWaitForSubscriptionNotificationSeconds
+7. Test driver should find the notification in these interactions to declare that USS sent notifications.
+
+We know from above that waiting from t_time_start for MaxTimeToWaitForSubscriptionNotificationSeconds would
+give us 99% confidence that we receive the notifications. But, test_driver doesn't have access to t_time_start.
+So, it starts waiting from a point of time after the t_time_start that is t1.
+This ensures that test driver waits for a long enough duration before getting the interactions. Hence, we get
+a high confidence that the test driver correctly verifies if a notification was sent by tested_uss.
+
 
 
 ## Notification data is valid check
