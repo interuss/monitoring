@@ -345,14 +345,23 @@ class OpIntentValidator(object):
             "Operational intent shared correctly", [self._flight_planner.participant_id]
         ) as check:
             if self._orig_oi_ref is None:
-                # we expect a new op intent to have been created
+                # We expect a new op intent to have been created. Exception made if skip_if_not_found=True: step is
+                # skipped.
                 if self._new_oi_ref is None:
-                    check.record_failed(
-                        summary="Operational intent reference not found in DSS",
-                        severity=Severity.High,
-                        details=f"USS {self._flight_planner.participant_id} was supposed to have shared a new operational intent with the DSS, but no matching operational intent references were found in the DSS in the area of the flight intent",
-                        query_timestamps=[self._after_query.request.timestamp],
-                    )
+                    if not skip_if_not_found:
+                        check.record_failed(
+                            summary="Operational intent reference not found in DSS",
+                            severity=Severity.High,
+                            details=f"USS {self._flight_planner.participant_id} was supposed to have shared a new operational intent with the DSS, but no matching operational intent references were found in the DSS in the area of the flight intent",
+                            query_timestamps=[self._after_query.request.timestamp],
+                        )
+                    else:
+                        self._scenario.record_note(
+                            f"{self._flight_planner.participant_id} skipped step",
+                            f"No new operational intent was found in DSS, instructed to skip test step '{self._test_step}'.",
+                        )
+                        self._scenario.end_test_step()
+                        return None
                 oi_ref = self._new_oi_ref
 
             elif self._new_oi_ref is None:
@@ -403,8 +412,8 @@ class OpIntentValidator(object):
                             )
                     else:
                         self._scenario.record_note(
-                            self._flight_planner.participant_id,
-                            f"Operational intent reference with ID {self._orig_oi_ref.id} not found in DSS, instructed to skip test step.",
+                            f"{self._flight_planner.participant_id} skipped step",
+                            f"Operational intent reference with ID {self._orig_oi_ref.id} not found in DSS, instructed to skip test step '{self._test_step}'.",
                         )
                         self._scenario.end_test_step()
                         return None

@@ -420,6 +420,16 @@ def check_op_intent(
             f"Operational intent state transition from {state_transition_from} to {state_transition_to} is invalid"
         )
 
+    # Check the priority is allowed in the locality
+    priority = new_flight.op_intent.details.priority
+    if (
+        priority > locality.highest_priority()
+        or priority <= locality.lowest_bound_priority()
+    ):
+        raise PlanningError(
+            f"Operational intent priority {priority} is outside the bounds of the locality priority range (]{locality.lowest_bound_priority()},{locality.highest_priority()}])"
+        )
+
     if new_flight.op_intent.reference.state in (
         f3548_v21.OperationalIntentState.Accepted,
         f3548_v21.OperationalIntentState.Activated,
