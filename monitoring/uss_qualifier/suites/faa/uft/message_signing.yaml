@@ -9,6 +9,8 @@ resources:
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
+  id_generator: resources.interuss.IDGeneratorResource
+  second_utm_auth: resources.communications.AuthAdapterResource?
 actions:
 - test_scenario:
     scenario_type: scenarios.faa.uft.StartMessageSigningReport
@@ -28,6 +30,8 @@ actions:
       priority_planning_selector: combination_selector
       dss: dss
       dss_instances: dss_instances
+      id_generator: id_generator
+      second_utm_auth: second_utm_auth
   on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.faa.uft.FinalizeMessageSigningReport

@@ -18,6 +18,7 @@ resources:
   evaluation_configuration: resources.netrid.EvaluationConfigurationResource
   netrid_dss_instances: resources.astm.f3411.DSSInstancesResource
   utm_client_identity: resources.communications.ClientIdentityResource
+  second_utm_auth: resources.communications.AuthAdapterResource
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
   problematically_big_area: resources.VerticesResource
@@ -45,6 +46,8 @@ actions:
       mock_uss: mock_uss
       dss: scd_dss
       dss_instances: scd_dss_instances
+      id_generator: id_generator
+      second_utm_auth: second_utm_auth
   on_failure: Continue
 - test_suite:
     suite_type: suites.uspace.network_identification
