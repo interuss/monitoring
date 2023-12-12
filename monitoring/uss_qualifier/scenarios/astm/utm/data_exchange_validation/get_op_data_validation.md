@@ -35,6 +35,13 @@ Flight 2 should be successfully planned by the control USS.
 ### [Validate flight 2 sharing test step](../validate_shared_operational_intent.md)
 Validate that flight 2 is planned
 
+### Check for notification to tested_uss due to subscription in flight 2 area test step
+In order to run this test scenario, we need tested_uss to trigger GET operational intent request to mock_uss.
+But, if there is a subscription by tested_uss, that would trigger notification of flight 2 to tested_uss.
+Some USSes will not make a GET request to control_uss for flight 2 details, while planning a nearby flight,
+if they got a notification for flight2. Hence, if a USS didn't make a GET request, we will only fail it if didn't get
+a notification, or else, a precondition for the test will not be met.
+
 ### [Tested_uss plans flight 1 test step](../../../flight_planning/plan_flight_intent.md)
 The test driver attempts to plan flight 1 via the tested USS. It checks if any conflicts with flight 2
 which is of equal priority and came first.
@@ -63,6 +70,13 @@ The control_uss, which is mock_uss is instructed to share invalid data with othe
 
 ### [Validate flight 2 shared operational intent with invalid data test step](test_steps/validate_sharing_operational_intent_but_with_invalid_interuss_data.md)
 Validate that flight 2 is shared with invalid data as a modified behavior is injected by uss_qualifier for a negative test.
+
+### Check for notification to tested_uss due to subscription in flight 2 area test step
+In order to run this test scenario, we need tested_uss to trigger GET operational intent request to mock_uss.
+But, if there is a subscription by tested_uss, that would trigger notification of flight 2 to tested_uss.
+Some USSes will not make a GET request to control_uss for flight 2 details, while planning a nearby flight,
+if they got a notification for flight2. Hence, if a USS didn't make a GET request, we will only fail it if didn't get
+a notification, or else, a precondition for the test will not be met.
 
 ### [Tested_uss attempts to plan flight 1, expect failure test step](test_steps/plan_flight_intent_expect_failed.md)
 The test driver attempts to plan the flight 1 via the tested_uss. It checks if any conflicts with flight 2

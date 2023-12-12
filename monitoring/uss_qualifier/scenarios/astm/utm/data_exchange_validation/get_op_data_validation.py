@@ -155,6 +155,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 2 sharing",
             self._intents_extent,
         ) as validator:
+            planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
                 self,
                 "Control_uss plans flight 2",
@@ -163,6 +164,16 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             )
 
             flight_2_oi_ref = validator.expect_shared(flight_2)
+
+        self.begin_test_step(
+            "Check for notification to tested_uss due to subscription in flight 2 area"
+        )
+        tested_uss_notified = check_any_notification(
+            self,
+            self.control_uss,
+            planning_time,
+        )
+        self.end_test_step()
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
@@ -185,15 +196,21 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 flight_1,
             )
 
-        expect_get_requests_to_mock_uss(
+        get_requested, already_notified = expect_get_requests_to_mock_uss(
             self,
             self.control_uss,
             planning_time,
             self.control_uss.base_url,
             flight_2_oi_ref.id,
             self.tested_uss_client.participant_id,
+            tested_uss_notified,
             "Validate flight2 GET interaction",
         )
+
+        if get_requested == False and already_notified == True:
+            msg = f"GET request was not made by tested_uss, as it was notified of flight2, due to an exisitng subscription."
+            raise ScenarioCannotContinueError(msg)
+
         expect_interuss_post_interactions(
             self,
             self.control_uss,
@@ -229,7 +246,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         )
 
         additional_fields = {"behavior": behavior}
-
+        planning_time = Time(arrow.utcnow().datetime)
         with OpIntentValidator(
             self,
             self.control_uss_client,
@@ -250,6 +267,16 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 invalid_fields=[modify_field1, modify_field2],
             )
 
+        self.begin_test_step(
+            "Check for notification to tested_uss due to subscription in flight 2 area"
+        )
+        tested_uss_notified = check_any_notification(
+            self,
+            self.control_uss,
+            planning_time,
+        )
+        self.end_test_step()
+
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
         with OpIntentValidator(
@@ -268,15 +295,21 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             )
             validator.expect_not_shared()
 
-        expect_get_requests_to_mock_uss(
+        get_requested, already_notified = expect_get_requests_to_mock_uss(
             self,
             self.control_uss,
             planning_time,
             self.control_uss.base_url,
             flight_2_oi_ref.id,
             self.tested_uss_client.participant_id,
+            tested_uss_notified,
             "Validate flight 2 GET interaction",
         )
+
+        if get_requested == False and already_notified == True:
+            msg = f"GET request was not made by tested_uss, as it was notified of flight2, due to an exisitng subscription."
+            raise ScenarioCannotContinueError(msg)
+
         expect_no_interuss_post_interactions(
             self,
             self.control_uss,
