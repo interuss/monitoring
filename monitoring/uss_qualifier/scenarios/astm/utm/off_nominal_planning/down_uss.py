@@ -220,12 +220,12 @@ class DownUSS(TestScenario):
             self, "Declare virtual USS as down at DSS", self.dss, self.uss_qualifier_sub
         )
 
-        # Tested USS attempts to plan low-priority flight 1 test step
+        # Tested USS attempts to plan Flight 1 test step
         with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
-            "Validate low-priority Flight 1 status",
+            "Validate Flight 1 status",
             self._intents_extent,
         ) as validator:
             expected_results = {
@@ -248,7 +248,7 @@ class DownUSS(TestScenario):
 
             resp, flight_id = submit_flight_intent(
                 self,
-                "Tested USS attempts to plan low-priority Flight 1",
+                "Tested USS attempts to plan Flight 1",
                 "Successful planning",
                 expected_results,
                 failed_checks,
