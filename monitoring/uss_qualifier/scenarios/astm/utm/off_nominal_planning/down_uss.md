@@ -62,8 +62,8 @@ If the creation of the operational intent reference at the DSS fails, this check
 
 ### [Declare virtual USS as down at DSS test step](../set_uss_down.md)
 
-### Tested USS attempts to plan low-priority Flight 1 test step
-The low-priority Flight 1 of the tested USS conflicts with the operational intent of the virtual USS.
+### Tested USS attempts to plan Flight 1 test step
+Flight 1 of the tested USS conflicts with the operational intent of the virtual USS.
 However, since:
 - the virtual USS is declared as down at the DSS,
 - it does not respond for operational intent details, and
@@ -93,7 +93,7 @@ All flight intent data provided was complete and correct. It should have been pr
 to reject or accept Flight 1. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-### [Validate low-priority Flight 1 status test step](../validate_shared_operational_intent.md)
+### [Validate Flight 1 status test step](../validate_shared_operational_intent.md)
 This step validates that the response of the USS is consistent with the flight shared, i.e. either it was properly
 planned, or the USS rejected the planning.
 
