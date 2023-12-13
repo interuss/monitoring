@@ -97,13 +97,8 @@ class PendingCheck(object):
         details: str = "",
         query_timestamps: Optional[List[datetime]] = None,
         additional_data: Optional[dict] = None,
-        requirements: Optional[Union[str, List[str]]] = None,
     ) -> None:
         self._outcome_recorded = True
-        if isinstance(requirements, str):
-            requirements = [requirements]
-        if requirements is None:
-            requirements = self._documentation.applicable_requirements
 
         if (
             self._stop_fast
@@ -121,7 +116,7 @@ class PendingCheck(object):
             "timestamp": StringBasedDateTime(arrow.utcnow()),
             "summary": summary,
             "details": details,
-            "requirements": requirements,
+            "requirements": self._documentation.applicable_requirements,
             "severity": severity,
             "participants": self._participants,
         }
@@ -140,19 +135,14 @@ class PendingCheck(object):
         if severity == Severity.Critical:
             raise TestRunCannotContinueError(f"{severity}-severity issue: {summary}")
 
-    def record_passed(
-        self,
-        requirements: Optional[List[str]] = None,
-    ) -> None:
+    def record_passed(self) -> None:
         self._outcome_recorded = True
-        if requirements is None:
-            requirements = self._documentation.applicable_requirements
 
         passed_check = PassedCheck(
             name=self._documentation.name,
             timestamp=StringBasedDateTime(arrow.utcnow()),
             participants=self._participants,
-            requirements=requirements,
+            requirements=self._documentation.applicable_requirements,
         )
         self._step_report.passed_checks.append(passed_check)
 
