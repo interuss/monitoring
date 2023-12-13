@@ -155,8 +155,6 @@ def _get_interuss_interactions_with_check(
 ) -> Tuple[List[Interaction], Query]:
     """
     Method to get interuss interactions with a scenario check from mock_uss from time 'st' to now.
-    Args:
-        wait_time_sec: Seconds to wait for getting interactions like asynchronous notifications
     """
     with scenario.check(
         "MockUSS interactions request", [mock_uss.participant_id]

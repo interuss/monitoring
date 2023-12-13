@@ -208,7 +208,10 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         )
 
         if get_requested == False and already_notified == True:
-            msg = f"GET request was not made by tested_uss, as it was notified of flight2, due to an exisitng subscription."
+            msg = (
+                f"GET request was not made by tested_uss, as it was notified of flight2, due to an existing subscription. "
+                f"See documentation of test step - Check for notification to tested_uss due to subscription in flight 2 area"
+            )
             raise ScenarioCannotContinueError(msg)
 
         expect_interuss_post_interactions(
@@ -246,7 +249,6 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         )
 
         additional_fields = {"behavior": behavior}
-        planning_time = Time(arrow.utcnow().datetime)
         with OpIntentValidator(
             self,
             self.control_uss_client,
@@ -254,6 +256,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 2 shared operational intent with invalid data",
             self._intents_extent,
         ) as validator:
+            planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
                 self,
                 "Control_uss plans flight 2, sharing invalid operational intent data",

@@ -446,7 +446,7 @@ class OpIntentValidator(object):
         if errors:
             validation_failures.add(
                 OpIntentValidationFailure(
-                    validation_name=OpIntentValidationFailureType.DataFormat,
+                    validation_failure_type=OpIntentValidationFailureType.DataFormat,
                     errors=errors,
                 )
             )
@@ -464,7 +464,7 @@ class OpIntentValidator(object):
                     details = f"Operational intent {oi_full.reference.id} had {len(oi_full.details.off_nominal_volumes)} off-nominal volumes in wrong state - {oi_full.reference.state}"
                     validation_failures.add(
                         OpIntentValidationFailure(
-                            validation_name=OpIntentValidationFailureType.NominalWithOffNominalVolumes,
+                            validation_failure_type=OpIntentValidationFailureType.NominalWithOffNominalVolumes,
                             error_text=details,
                         )
                     )
@@ -485,12 +485,12 @@ class OpIntentValidator(object):
                         f"Operational intent {oi_full.reference.id} had too many total vertices - {n_vertices}",
                     )
                     validation_failures.add(
-                        validation_name=OpIntentValidationFailureType.VertexCount,
+                        validation_failure_type=OpIntentValidationFailureType.VertexCount,
                         error_text=details,
                     )
             except (KeyError, ValueError) as e:
                 validation_failures.add(
-                    validation_name=OpIntentValidationFailureType.DataFormat,
+                    validation_failure_type=OpIntentValidationFailureType.DataFormat,
                     error_text=e,
                 )
 
@@ -512,7 +512,7 @@ class OpIntentValidator(object):
         """
         failure_found: OpIntentValidationFailure = None
         for failure in validation_failures:
-            if failure.validation_name == expected_validation_type:
+            if failure.validation_failure_type == expected_validation_type:
                 failure_found = failure
 
         if failure_found:
@@ -554,8 +554,7 @@ class OpIntentValidationFailureType(str, Enum):
 
 
 class OpIntentValidationFailure(ImplicitDict):
-    validation_name: OpIntentValidationFailureType
-    """Validation name same as the check name"""
+    validation_failure_type: OpIntentValidationFailureType
 
     error_text: Optional[str] = None
     """Any error_text returned after validation check"""
@@ -564,12 +563,16 @@ class OpIntentValidationFailure(ImplicitDict):
     """Any errors returned after validation check"""
 
     def __hash__(self):
-        return hash((self.validation_name, self.error_text, str(self.errors)))
+        return hash((self.validation_failure_type, self.error_text, str(self.errors)))
 
     def __eq__(self, other):
         if isinstance(other, OpIntentValidationFailure):
-            return (self.validation_name, self.error_text, str(self.errors)) == (
-                other.validation_name,
+            return (
+                self.validation_failure_type,
+                self.error_text,
+                str(self.errors),
+            ) == (
+                other.validation_failure_type,
                 other.error_text,
                 str(other.errors),
             )

@@ -9,7 +9,7 @@ This step verifies when a flight is not created, it is also not notified by chec
 
 **[interuss.f3548.notification_requirements.NoDssEntityNoNotification](../../../../../requirements/interuss/f3548/notification_requirements.md)**
 
-As per astm requirement, the notification should not be sent by a USS about an entity that could not be created in DSS
+As per the above requirement, the notification should not be sent by a USS about an entity that could not be created in DSS
 to any USS. To verify that notification was indeed not sent, we need to wait and check up to a threshold to get confidence
 that USS did not send notification.
 The max duration for sending a notification in [SCD0085](../../../../../requirements/astm/f3548/v21.md) is MaxRespondToSubscriptionNotification(5) seconds.
