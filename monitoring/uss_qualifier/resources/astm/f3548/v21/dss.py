@@ -27,7 +27,13 @@ from uas_standards.astm.f3548.v21.api import (
     SetUssAvailabilityStatusParameters,
     UssAvailabilityState,
     UssAvailabilityStatusResponse,
+    GetOperationalIntentReferenceResponse,
 )
+
+# A base URL for a USS that is not expected to be ever called
+# Used in scenarios where we mimic the behavior of a USS and need to provide a base URL.
+# As the area used for tests is cleared before the tests, there is no need to have this URL be reachable.
+DUMMY_USS_BASE_URL = "https://dummy.uss"
 
 
 class DSSInstanceSpecification(ImplicitDict):
@@ -89,6 +95,30 @@ class DSSInstance(object):
             ).operational_intent_references
         return result, query
 
+    def get_op_intent_reference(
+        self,
+        op_intent_id: str,
+    ) -> Tuple[OperationalIntentReference, fetch.Query]:
+        """
+        Retrieve an OP Intent from the DSS, using only its ID
+        """
+        url = f"/dss/v1/operational_intent_references/{op_intent_id}"
+        query = fetch.query_and_describe(
+            self.client,
+            "GET",
+            url,
+            QueryType.F3548v21DSSGetOperationalIntentReference,
+            self.participant_id,
+            scope=SCOPE_SC,
+        )
+        if query.status_code != 200:
+            result = None
+        else:
+            result = ImplicitDict.parse(
+                query.response.json, GetOperationalIntentReferenceResponse
+            ).operational_intent_reference
+        return result, query
+
     def get_full_op_intent(
         self,
         op_intent_ref: OperationalIntentReference,
@@ -147,11 +177,12 @@ class DSSInstance(object):
         Optional[List[SubscriberToNotify]],
         fetch.Query,
     ]:
-        if id is None:
-            url = f"/dss/v1/operational_intent_references/{str(uuid.uuid4())}"
+        oi_uuid = str(uuid.uuid4()) if id is None else id
+        if ovn is None:
+            url = f"/dss/v1/operational_intent_references/{oi_uuid}"
             query_type = QueryType.F3548v21DSSCreateOperationalIntentReference
         else:
-            url = f"/dss/v1/operational_intent_references/{id}/{ovn}"
+            url = f"/dss/v1/operational_intent_references/{oi_uuid}/{ovn}"
             query_type = QueryType.F3548v21DSSUpdateOperationalIntentReference
 
         req = PutOperationalIntentReferenceParameters(
