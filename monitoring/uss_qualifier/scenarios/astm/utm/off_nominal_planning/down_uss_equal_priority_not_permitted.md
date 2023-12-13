@@ -58,14 +58,14 @@ The USS qualifier, acting as a virtual USS, creates an operational intent at the
 The objective is to make the later request by the tested USS to retrieve operational intent details to fail.
 
 #### Operational intent successfully created check
-If the creation of the operational intent reference at the DSS fails, this check fails per **[astm.f3548.v21.DSS0005](../../../../requirements/astm/f3548/v21.md)**.
+If the creation of the operational intent reference at the DSS fails, this check fails per **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 ### Virtual USS activates conflicting operational intent test step
 The USS qualifier, acting as a virtual USS, activates the operational intent previously created at the DSS with a non-working base URL.
 The objective is to make the later request by the tested USS to retrieve operational intent details to fail.
 
 #### Operational intent successfully activated check
-If the activation of the operational intent reference at the DSS fails, this check fails per **[astm.f3548.v21.DSS0005](../../../../requirements/astm/f3548/v21.md)**.
+If the activation of the operational intent reference at the DSS fails, this check fails per **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Declare virtual USS as down at DSS test step](../set_uss_down.md)
 
@@ -102,7 +102,7 @@ The USS qualifier, acting as a virtual USS, transitions to Nonconforming the ope
 The objective is to make the later request by the tested USS to retrieve operational intent details to fail.
 
 #### Operational intent successfully transitioned to Nonconforming check
-If the transition of the operational intent reference at the DSS fails, this check fails per **[astm.f3548.v21.DSS0005](../../../../requirements/astm/f3548/v21.md)**.
+If the transition of the operational intent reference at the DSS fails, this check fails per **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Declare virtual USS as down at DSS test step](../set_uss_down.md)
 
@@ -139,7 +139,7 @@ The USS qualifier, acting as a virtual USS, transitions to Contingent the operat
 The objective is to make the later request by the tested USS to retrieve operational intent details to fail.
 
 #### Operational intent successfully transitioned to Contingent check
-If the transition of the operational intent reference at the DSS fails, this check fails per **[astm.f3548.v21.DSS0005](../../../../requirements/astm/f3548/v21.md)**.
+If the transition of the operational intent reference at the DSS fails, this check fails per **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Declare virtual USS as down at DSS test step](../set_uss_down.md)
 
