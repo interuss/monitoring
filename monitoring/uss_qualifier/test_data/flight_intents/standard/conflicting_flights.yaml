@@ -7,21 +7,19 @@ intents:
         uas_state: Nominal
         area:
           - outline_polygon:
+              # There are 0.00000898331 (roughly 0.00001) degrees of latitude (and longitude, at the equator) per meter.
+              # Therefore, each value below is roughly in meters.
               vertices:
-                - lng: 7.477419
-                  lat: 46.974785
-                - lng: 7.478261
-                  lat: 46.974776
-                - lng: 7.478263
-                  lat: 46.975519
-                - lng: 7.477415
-                  lat: 46.975528
+                - {lng: -0.00015, lat: -0.00020}
+                - {lng: -0.00015, lat:  0.00010}
+                - {lng:  0.00050, lat:  0.00010}
+                - {lng:  0.00055, lat: -0.00025}
             altitude_lower:
-              value: 605.01
+              value: 0.01
               reference: W84
               units: M
             altitude_upper:
-              value: 635
+              value: 30
               reference: W84
               units: M
             start_time:
@@ -39,39 +37,7 @@ intents:
         priority: 0
 
       uspace_flight_authorisation:
-        uas_serial_number: 1AF49UL5CC5J6K
-        operation_category: Open
-        operation_mode: Vlos
-        uas_class: C0
-        identification_technologies:
-          - ASTMNetRID
-        connectivity_methods:
-          - cellular
-        endurance_minutes: 30
-        emergency_procedure_url: https://example.interussplatform.org/emergency
-        operator_id: CHEo5kut30e0mt01-qwe
-        uas_id: ''
-        uas_type_certificate: ''
-
-  flight1_activated:
-    delta:
-      source: flight1_planned
-      mutation:
-        basic_information:
-          usage_state: InUse
-          area:
-            - altitude_lower:
-                value: 605.02
-
-  flight1m_planned:
-    delta:
-      source: flight1_planned
-      mutation:
-        basic_information:
-          area:
-            - outline_polygon:
-                altitude_lower:
-                  value: 575.03
+        $ref: ./flight_auths.yaml#/standard
 
   flight1c_planned:
     delta:
@@ -79,20 +45,16 @@ intents:
       mutation:
         basic_information:
           area:
-            - altitude_lower:
-                value: 650.04
+            - outline_polygon:
+                +vertices:
+                  - {lng: 0.00030, lat: -0.00020}
+                  - {lng: 0.00030, lat:  0.00010}
+                  - {lng: 0.00050, lat:  0.00010}
+                  - {lng: 0.00055, lat: -0.00025}
+              altitude_lower:
+                value: -5.04
               altitude_upper:
-                value: 705
-
-  flight1m_activated:
-    delta:
-      source: flight1m_planned
-      mutation:
-        basic_information:
-          usage_state: InUse
-          area:
-            - altitude_lower:
-                value: 575.05
+                value: 35
 
   flight1c_activated:
     delta:
@@ -101,8 +63,29 @@ intents:
         basic_information:
           usage_state: InUse
           area:
-            - altitude_lower:
-                value: 650.06
+            - outline_polygon:
+                +vertices:
+                  - {lng: 0.00030, lat: -0.00020}
+                  - {lng: 0.00030, lat: 0.00050}
+                  - {lng: 0.00050, lat: 0.00010}
+                  - {lng: 0.00055, lat: -0.00025}
+              altitude_lower:
+                value: 0.06
+
+  flight1m_planned:
+    delta:
+      source: flight1_planned
+      mutation:
+        basic_information:
+          area:
+            - outline_polygon:
+                +vertices:
+                  - {lng: 0.00010, lat: -0.00020}
+                  - {lng: 0.00010, lat: 0.00010}
+                  - {lng: 0.00050, lat: 0.00010}
+                  - {lng: 0.00055, lat: -0.00025}
+              altitude_lower:
+                value: -30.03
 
   flight2_planned:
     full:
@@ -112,20 +95,16 @@ intents:
         area:
           - outline_polygon:
               vertices:
-                - lng: 7.477918
-                  lat: 46.974515
-                - lng: 7.478182
-                  lat: 46.974719
-                - lng: 7.474489
-                  lat: 46.977435
-                - lng: 7.474139
-                  lat: 46.977289
+                - {lng: -0.00020, lat:  0.00020}
+                - {lng:  0.00000, lat: -0.00025}
+                - {lng:  0.00020, lat:  0.00015}
+                - {lng:  0.00000, lat:  0.00050}
             altitude_lower:
-              value: 605.07
+              value: -1.07
               reference: W84
               units: M
             altitude_upper:
-              value: 635
+              value: 28
               reference: W84
               units: M
             start_time:
@@ -143,19 +122,27 @@ intents:
         priority: 100
 
       uspace_flight_authorisation:
-        uas_serial_number: 1AF49UL5CC5J6K
-        operation_category: Open
-        operation_mode: Vlos
-        uas_class: C0
-        identification_technologies:
-          - ASTMNetRID
-        connectivity_methods:
-          - cellular
-        endurance_minutes: 30
-        emergency_procedure_url: https://example.interussplatform.org/emergency
-        operator_id: CHEo5kut30e0mt01-qwe
-        uas_id: ''
-        uas_type_certificate: ''
+        $ref: ./flight_auths.yaml#/standard
+
+  flight1_activated:
+    delta:
+      source: flight1_planned
+      mutation:
+        basic_information:
+          usage_state: InUse
+          area:
+            - altitude_lower:
+                value: 0.02
+
+  flight1m_activated:
+    delta:
+      source: flight1m_planned
+      mutation:
+        basic_information:
+          usage_state: InUse
+          area:
+            - altitude_lower:
+                value: -30.05
 
   flight2_activated:
     delta:
@@ -165,7 +152,7 @@ intents:
           usage_state: InUse
           area:
             - altitude_lower:
-                value: 605.08
+                value: 0.08
 
   flight2m_activated:
     delta:
@@ -173,10 +160,15 @@ intents:
       mutation:
         basic_information:
           area:
-            - altitude_lower:
-                value: 650.09
+            - outline_polygon:
+                +vertices:
+                  - {lng: -0.00020, lat: 0.00020}
+                  - {lng: 0.00040, lat: 0.00015}
+                  - {lng: 0.00000, lat: 0.00050}
+              altitude_lower:
+                value: -3.09
               altitude_upper:
-                value: 705
+                value: 50
 
   equal_prio_flight2m_planned:
     delta:
@@ -186,31 +178,31 @@ intents:
           usage_state: Planned
           area:
             - altitude_lower:
-                value: 650.13
+                value: 45.13
         astm_f3548_21:
           priority: 0
 
   equal_prio_flight2_planned:
     delta:
-      source: flight2_planned
+      source: flight2_activated
       mutation:
         basic_information:
+          usage_state: Planned
           area:
             - altitude_lower:
-                value: 605.10
+                value: 0.10
         astm_f3548_21:
           priority: 0
 
   equal_prio_flight2_activated:
     delta:
-      source: flight2_activated
+      source: equal_prio_flight2_planned
       mutation:
         basic_information:
+          usage_state: InUse
           area:
             - altitude_lower:
-                value: 605.11
-        astm_f3548_21:
-          priority: 0
+                value: 0.11
 
   equal_prio_flight2_nonconforming:
     delta:
@@ -220,4 +212,4 @@ intents:
           uas_state: OffNominal
           area:
             - altitude_lower:
-                value: 605.12
+                value: 0.12

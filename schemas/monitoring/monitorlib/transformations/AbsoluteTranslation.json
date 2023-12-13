@@ -1,0 +1,24 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/transformations/AbsoluteTranslation.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Move a geo feature to a specified location.\n\nmonitoring.monitorlib.transformations.AbsoluteTranslation, as defined in monitoring/monitorlib/transformations.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "new_latitude": {
+      "description": "The new latitude at which the feature should be located (degrees).",
+      "type": "number"
+    },
+    "new_longitude": {
+      "description": "The new longitude at which the feature should be located (degrees).",
+      "type": "number"
+    }
+  },
+  "required": [
+    "new_latitude",
+    "new_longitude"
+  ],
+  "type": "object"
+}

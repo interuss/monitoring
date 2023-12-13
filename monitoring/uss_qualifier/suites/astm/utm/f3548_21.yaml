@@ -40,9 +40,9 @@ actions:
       flight_planners: flight_planners
       dss: dss
       flight_intents: invalid_flight_intents
-      flight_intents2: priority_preemption_flights
-      flight_intents3: conflicting_flights
-      flight_intents4: non_conflicting_flights
+      flight_intents2: priority_preemption_flights?
+      flight_intents3: conflicting_flights?
+      flight_intents4: non_conflicting_flights?
   on_failure: Abort
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
@@ -158,14 +158,14 @@ actions:
     resources:
       flight_planners: flight_planners
       nominal_planning_selector: nominal_planning_selector?
-      priority_preemption_flights: priority_preemption_flights
+      conflicting_flights: conflicting_flights
       dss: dss
     specification:
       action_to_repeat:
         test_scenario:
           scenario_type: scenarios.astm.utm.DownUSSEqualPriorityNotPermitted
           resources:
-            flight_intents: priority_preemption_flights
+            flight_intents: conflicting_flights
             tested_uss: uss1
             dss: dss
         on_failure: Continue

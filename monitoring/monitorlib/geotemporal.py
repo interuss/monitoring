@@ -4,9 +4,10 @@ import math
 from datetime import datetime, timedelta
 from typing import Optional, List, Tuple, Dict
 
-import arrow
 from implicitdict import ImplicitDict, StringBasedTimeDelta
 import s2sphere as s2sphere
+
+from monitoring.monitorlib.transformations import Transformation
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api as fp_api
 from uas_standards.interuss.automated_testing.scd.v1 import api as interuss_scd_api
@@ -37,6 +38,9 @@ class Volume4DTemplate(ImplicitDict):
 
     altitude_upper: Optional[Altitude] = None
     """The maximum altitude at which the virtual user will fly while using this volume for their flight."""
+
+    transformations: Optional[List[Transformation]] = None
+    """If specified, transform this volume according to these transformations in order."""
 
     def resolve(self, times: Dict[TimeDuringTest, Time]) -> Volume4D:
         """Resolve Volume4DTemplate into concrete Volume4D."""
@@ -84,7 +88,16 @@ class Volume4DTemplate(ImplicitDict):
         if time_end is not None:
             kwargs["time_end"] = time_end
 
-        return Volume4D(**kwargs)
+        result = Volume4D(**kwargs)
+
+        if self.transformations:
+            from loguru import logger
+
+            logger.warning("Applying transformations")
+            for xform in self.transformations:
+                result = result.transform(xform)
+
+        return result
 
 
 class Volume4D(ImplicitDict):
@@ -100,6 +113,11 @@ class Volume4D(ImplicitDict):
             kwargs["time_start"] = self.time_start.offset(dt)
         if self.time_end:
             kwargs["time_end"] = self.time_end.offset(dt)
+        return Volume4D(**kwargs)
+
+    def transform(self, transformation: Transformation) -> Volume4D:
+        kwargs = {k: v for k, v in self.items() if v is not None}
+        kwargs["volume"] = self.volume.transform(transformation)
         return Volume4D(**kwargs)
 
     def intersects_vol4(self, vol4_2: Volume4D) -> bool:
