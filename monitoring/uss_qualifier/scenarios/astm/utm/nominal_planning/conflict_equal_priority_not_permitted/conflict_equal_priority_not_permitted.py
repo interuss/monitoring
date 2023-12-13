@@ -215,7 +215,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self._intents_extent,
         ) as validator:
             self.begin_test_step("Plan Flight 2")
-            _, self.flight2_id = plan_flight_intent(
+            _, self.flight2_id, _ = plan_flight_intent(
                 self,
                 self.control_uss,
                 self.flight2_planned.request,
@@ -287,7 +287,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self._intents_extent,
         ) as validator:
             self.begin_test_step("Plan Flight 1c")
-            _, self.flight1_id = plan_flight_intent(
+            _, self.flight1_id, _ = plan_flight_intent(
                 self,
                 self.tested_uss,
                 self.flight1c_planned.request,
@@ -393,7 +393,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self._intents_extent,
         ) as validator:
             self.begin_test_step("Plan Flight 2m")
-            _, self.flight2_id = plan_flight_intent(
+            _, self.flight2_id, _ = plan_flight_intent(
                 self,
                 self.control_uss,
                 self.flight2m_planned.request,
@@ -410,7 +410,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             flight_2_oi_ref,
         ) as validator:
             self.begin_test_step("Declare Flight 2 non-conforming")
-            resp_flight_2, _ = submit_flight_intent(
+            resp_flight_2, _, _ = submit_flight_intent(
                 self,
                 "Successful transition to non-conforming state",
                 {
@@ -442,7 +442,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self.begin_test_step(
                 "Attempt to modify activated Flight 1 in conflict with nonconforming Flight 2"
             )
-            resp_flight_1, _ = submit_flight_intent(
+            resp_flight_1, _, _ = submit_flight_intent(
                 self,
                 "Successful modification or rejection",
                 {

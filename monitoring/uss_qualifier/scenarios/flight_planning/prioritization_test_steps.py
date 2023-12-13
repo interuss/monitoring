@@ -31,7 +31,7 @@ def plan_priority_conflict_flight_intent(
     """
     expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Incorrectly planned",
         {
@@ -61,7 +61,7 @@ def modify_planned_priority_conflict_flight_intent(
     """
     expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Incorrectly modified",
         {
@@ -94,7 +94,7 @@ def activate_priority_conflict_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Incorrectly activated",
         {
@@ -127,7 +127,7 @@ def modify_activated_priority_conflict_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Incorrectly modified",
         {
@@ -157,7 +157,7 @@ def plan_conflict_flight_intent(
     """
     expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Incorrectly planned",
         {
@@ -187,7 +187,7 @@ def modify_planned_conflict_flight_intent(
     """
     expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Incorrectly modified",
         {
@@ -220,7 +220,7 @@ def activate_conflict_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Incorrectly activated",
         {
@@ -253,7 +253,7 @@ def modify_activated_conflict_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Incorrectly modified",
         {
@@ -287,7 +287,7 @@ def plan_permitted_conflict_flight_intent(
     """
     expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    resp, flight_id = submit_flight_intent(
+    resp, flight_id, _ = submit_flight_intent(
         scenario,
         "Successful planning",
         {InjectFlightResponseResult.Planned},
@@ -316,7 +316,7 @@ def modify_planned_permitted_conflict_flight_intent(
     """
     expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Successful modification",
         {InjectFlightResponseResult.Planned},
@@ -348,7 +348,7 @@ def activate_permitted_conflict_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Successful activation",
         {InjectFlightResponseResult.ReadyToFly},
@@ -380,7 +380,7 @@ def modify_activated_permitted_conflict_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Successful modification",
         {InjectFlightResponseResult.ReadyToFly},
