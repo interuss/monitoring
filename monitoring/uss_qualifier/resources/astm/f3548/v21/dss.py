@@ -28,6 +28,8 @@ from uas_standards.astm.f3548.v21.api import (
     UssAvailabilityState,
     UssAvailabilityStatusResponse,
     GetOperationalIntentReferenceResponse,
+    OPERATIONS,
+    OperationID,
 )
 
 # A base URL for a USS that is not expected to be ever called
@@ -76,12 +78,12 @@ class DSSInstance(object):
     def find_op_intent(
         self, extent: Volume4D
     ) -> Tuple[List[OperationalIntentReference], fetch.Query]:
-        url = "/dss/v1/operational_intent_references/query"
+        op = OPERATIONS[OperationID.QueryOperationalIntentReferences]
         req = QueryOperationalIntentReferenceParameters(area_of_interest=extent)
         query = fetch.query_and_describe(
             self.client,
-            "POST",
-            url,
+            op.verb,
+            op.path,
             QueryType.F3548v21DSSQueryOperationalIntentReferences,
             self.participant_id,
             scope=SCOPE_SC,
@@ -102,11 +104,11 @@ class DSSInstance(object):
         """
         Retrieve an OP Intent from the DSS, using only its ID
         """
-        url = f"/dss/v1/operational_intent_references/{op_intent_id}"
+        op = OPERATIONS[OperationID.GetOperationalIntentReference]
         query = fetch.query_and_describe(
             self.client,
-            "GET",
-            url,
+            op.verb,
+            op.path.format(entityid=op_intent_id),
             QueryType.F3548v21DSSGetOperationalIntentReference,
             self.participant_id,
             scope=SCOPE_SC,
@@ -149,11 +151,11 @@ class DSSInstance(object):
         Returns:
             returns the response json when query is successful
         """
-        url = f"{op_intent_ref.uss_base_url}/uss/v1/operational_intents/{op_intent_ref.id}"
+        op = OPERATIONS[OperationID.GetOperationalIntentDetails]
         query = fetch.query_and_describe(
             self.client,
-            "GET",
-            url,
+            op.verb,
+            f"{op_intent_ref.uss_base_url}{op.path.format(entityid=op_intent_ref.id)}",
             QueryType.F3548v21USSGetOperationalIntentDetails,
             uss_participant_id,
             scope=SCOPE_SC,
@@ -179,10 +181,12 @@ class DSSInstance(object):
     ]:
         oi_uuid = str(uuid.uuid4()) if id is None else id
         if ovn is None:
-            url = f"/dss/v1/operational_intent_references/{oi_uuid}"
+            op = OPERATIONS[OperationID.CreateOperationalIntentReference]
+            url = op.path.format(entityid=oi_uuid)
             query_type = QueryType.F3548v21DSSCreateOperationalIntentReference
         else:
-            url = f"/dss/v1/operational_intent_references/{oi_uuid}/{ovn}"
+            op = OPERATIONS[OperationID.UpdateOperationalIntentReference]
+            url = op.path.format(entityid=oi_uuid, ovn=ovn)
             query_type = QueryType.F3548v21DSSUpdateOperationalIntentReference
 
         req = PutOperationalIntentReferenceParameters(
@@ -194,7 +198,7 @@ class DSSInstance(object):
         )
         query = fetch.query_and_describe(
             self.client,
-            "PUT",
+            op.verb,
             url,
             query_type,
             self.participant_id,
@@ -220,10 +224,11 @@ class DSSInstance(object):
         Optional[List[SubscriberToNotify]],
         fetch.Query,
     ]:
+        op = OPERATIONS[OperationID.DeleteOperationalIntentReference]
         query = fetch.query_and_describe(
             self.client,
-            "DELETE",
-            f"/dss/v1/operational_intent_references/{id}/{ovn}",
+            op.verb,
+            op.path.format(entityid=id, ovn=ovn),
             QueryType.F3548v21DSSDeleteOperationalIntentReference,
             self.participant_id,
             scope=SCOPE_SC,
@@ -259,10 +264,11 @@ class DSSInstance(object):
             old_version=version,
             availability=availability,
         )
+        op = OPERATIONS[OperationID.SetUssAvailability]
         query = fetch.query_and_describe(
             self.client,
-            "PUT",
-            f"/dss/v1/uss_availability/{uss_id}",
+            op.verb,
+            op.path.format(uss_id=uss_id),
             QueryType.F3548v21DSSSetUssAvailability,
             self.participant_id,
             scope=SCOPE_AA,
