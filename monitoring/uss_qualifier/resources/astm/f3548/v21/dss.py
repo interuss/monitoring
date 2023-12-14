@@ -145,9 +145,7 @@ class DSSInstance(object):
     ) -> Tuple[Dict, fetch.Query]:
         """
         GET OperationalIntent without validating, as invalid data expected for negative tests
-        Args:
-            op_intent_ref:
-            uss_participant_id:
+
         Returns:
             returns the response json when query is successful
         """
