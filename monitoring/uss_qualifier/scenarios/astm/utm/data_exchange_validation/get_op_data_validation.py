@@ -264,7 +264,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 flight_info,
                 additional_fields,
             )
-            flight_2_oi_ref = validator.expect_shared_with_specified_data(
+            flight_2_oi_ref = validator.expect_shared_with_invalid_data(
                 flight_info,
                 validation_failure_type=OpIntentValidationFailureType.DataFormat,
                 invalid_fields=[modify_field1, modify_field2],

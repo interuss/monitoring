@@ -269,7 +269,7 @@ class OpIntentValidator(object):
         self._scenario.end_test_step()
         return oi_full.reference
 
-    def expect_shared_with_specified_data(
+    def expect_shared_with_invalid_data(
         self,
         flight_intent: Union[InjectFlightRequest, FlightInfo],
         validation_failure_type: OpIntentValidationFailureType,

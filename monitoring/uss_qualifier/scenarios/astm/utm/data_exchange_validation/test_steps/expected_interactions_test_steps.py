@@ -140,7 +140,7 @@ def expect_get_requests_to_mock_uss(
         with scenario.check("Expect GET request", [participant_id]) as check:
             check.record_failed(
                 summary=f"No GET request received at {mock_uss_base_url} for {id} ",
-                severity=Severity.Medium,
+                severity=Severity.High,
                 details=f"No GET request received at  {mock_uss_base_url} for {id}. A planning USS in the area should have sent a reques to get the intent details.",
                 query_timestamps=[query.request.timestamp],
             )
