@@ -4,7 +4,6 @@ from uas_standards.astm.f3548.v21 import constants
 
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.fetch import evaluation, QueryType
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.flight_planning import FlightPlannersResource
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
@@ -115,7 +114,6 @@ class AggregateChecks(TestScenario):
                 if p95 > constants.MaxRespondToOIDetailsRequestSeconds:
                     check.record_failed(
                         summary=f"95th percentile of durations for operational intent details requests to USS is higher than threshold",
-                        severity=Severity.Medium,
                         participants=[participant],
                         details=f"threshold: {constants.MaxRespondToOIDetailsRequestSeconds}s, 95th percentile: {p95}s",
                     )
@@ -174,7 +172,6 @@ class AggregateChecks(TestScenario):
                 if not success:
                     check.record_failed(
                         summary=f"No successful {query_type} interaction with interoperability test instance",
-                        severity=Severity.Medium,
                         details=f"Found no successful {query_type} interaction with interoperability test instance, "
                         f"indicating that the test instance is either not available or not properly implemented.",
                     )

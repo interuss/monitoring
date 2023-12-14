@@ -6,7 +6,6 @@ from urllib.parse import urlparse
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import Volume4D, Volume3D, Polygon, LatLngPoint
 
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
     DSSInstancesResource,
     DSSInstanceResource,
@@ -70,7 +69,6 @@ class DSSInteroperability(TestScenario):
                 elif ipaddress.ip_address(ip_addr).is_private:
                     check.record_failed(
                         summary=f"DSS host {parsed_url.netloc} is not publicly addressable",
-                        severity=Severity.Medium,
                         participants=[dss.participant_id],
                         details=f"DSS (URL: {dss.base_url}, netloc: {parsed_url.netloc}, resolved IP: {ip_addr}) is not publicly addressable",
                     )

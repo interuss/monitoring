@@ -16,7 +16,7 @@ The flight planners subject to evaluation.
 In this step, all successful requests for operational intent details made to the USSs that are part of the flight
 planners provided as resource are used to determine and evaluate the 95th percentile of the requests durations.
 
-#### Operational intent details requests take no more than [MaxRespondToOIDetailsRequest] second 95% of the time check
+#### ⚠️ Operational intent details requests take no more than [MaxRespondToOIDetailsRequest] second 95% of the time check
 
 If the 95th percentile of the requests durations is higher than the threshold `MaxRespondToOIDetailsRequest` (1 second),
 this check will fail per **[astm.f3548.v21.SCD0075](../../../requirements/astm/f3548/v21.md)**.
@@ -27,7 +27,7 @@ this check will fail per **[astm.f3548.v21.SCD0075](../../../requirements/astm/f
 
 This step verifies that interactions with the interoperability test instances happened and where at least partly successful.
 
-#### Interoperability test instance is available check
+#### ⚠️ Interoperability test instance is available check
 
 This check ensures that interactions with the interoperability test instance that each USS must provide are possible.
 

@@ -93,7 +93,7 @@ class PendingCheck(object):
     def record_failed(
         self,
         summary: str,
-        severity: Severity,
+        severity: Optional[Severity] = None,
         details: str = "",
         participants: Optional[Union[ParticipantID, List[ParticipantID]]] = None,
         query_timestamps: Optional[List[datetime]] = None,
@@ -101,6 +101,13 @@ class PendingCheck(object):
         requirements: Optional[Union[str, List[str]]] = None,
     ) -> None:
         self._outcome_recorded = True
+        if severity is None:
+            if "severity" in self._documentation and self._documentation.severity:
+                severity = self._documentation.severity
+            else:
+                raise ValueError(
+                    f"Severity of check '{self._documentation.name}' was not specified at failure time and is not documented in scenario documentation"
+                )
         if isinstance(participants, str):
             participants = [participants]
         if participants is None:

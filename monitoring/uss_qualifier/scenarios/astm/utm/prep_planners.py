@@ -1,6 +1,5 @@
 from typing import Optional
 
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
@@ -61,14 +60,12 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
                     check.record_failed(
                         summary="Error parsing DSS response",
                         details=str(e),
-                        severity=Severity.High,
                     )
                 self.record_query(query)
                 if op_intents is None:
                     check.record_failed(
                         summary="Error querying DSS for operational intents",
                         details="See query",
-                        severity=Severity.High,
                         query_timestamps=[query.request.timestamp],
                     )
             with self.check("Area is clear") as check:
@@ -83,6 +80,5 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
                     check.record_failed(
                         summary=summary,
                         details=details,
-                        severity=Severity.High,
                         query_timestamps=[query.request.timestamp],
                     )
