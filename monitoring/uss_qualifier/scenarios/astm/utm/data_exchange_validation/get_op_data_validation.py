@@ -209,7 +209,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         else:
             msg = (
                 f"Tested_uss was notified of flight2, due to an existing subscription. Hence, not checking for the GET requests."
-                f"Whether a GET request is made or not, it would be unclear clear if tested_uss used the information from notification or GET request for planning."
+                f"With a notification already sent, if a GET request is made, it would be unclear if tested_uss used the information from notification or GET request for planning."
                 f"As this test is for checking GET requests validation, we cannot continue the test."
                 f"See documentation of test step - Check for notification to tested_uss due to subscription in flight 2 area"
             )
@@ -312,7 +312,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         else:
             msg = (
                 f"Tested_uss was notified of flight2, due to an existing subscription. Hence, not checking for the GET requests."
-                f"Whether a GET request is made or not, it would be unclear clear if tested_uss used the information from notification or GET request for planning."
+                f"With a notification already sent, if a GET request is made, it would be unclear if tested_uss used the information from notification or GET request for planning."
                 f"As this test is for checking GET requests validation, we cannot continue the test."
                 f"See documentation of test step - Check for notification to tested_uss due to subscription in flight 2 area"
             )
