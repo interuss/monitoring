@@ -40,7 +40,9 @@ In order to run this test scenario, we need tested_uss to trigger GET operationa
 But, if there is a subscription by tested_uss, that would trigger notification of flight 2 to tested_uss.
 Some USSes will not make a GET request to control_uss for flight 2 details, while planning a nearby flight,
 if they got a notification for flight2. Hence, if a USS didn't make a GET request, we will only fail it if didn't get
-a notification, or else, a precondition for the test will not be met.
+a notification, or else, a precondition for the test will not be met. Some USSes might make a GET request despite getting
+a notification, but as it would not be clear whether invalid information through notification or GET request was used for planning,
+the test will be not be continued.
 
 ### [Tested_uss plans flight 1 test step](../../../flight_planning/plan_flight_intent.md)
 The test driver attempts to plan flight 1 via the tested USS. It checks if any conflicts with flight 2
@@ -76,7 +78,9 @@ In order to run this test scenario, we need tested_uss to trigger GET operationa
 But, if there is a subscription by tested_uss, that would trigger notification of flight 2 to tested_uss.
 Some USSes will not make a GET request to control_uss for flight 2 details, while planning a nearby flight,
 if they got a notification for flight2. Hence, if a USS didn't make a GET request, we will only fail it if didn't get
-a notification, or else, a precondition for the test will not be met.
+a notification, or else, a precondition for the test will not be met. Some USSes might make a GET request despite getting
+a notification, but as it would not be clear whether invalid information through notification or GET request was used for planning,
+the test will be not be continued.
 
 ### [Tested_uss attempts to plan flight 1, expect failure test step](test_steps/plan_flight_intent_expect_failed.md)
 The test driver attempts to plan the flight 1 via the tested_uss. It checks if any conflicts with flight 2

@@ -107,22 +107,15 @@ def expect_get_requests_to_mock_uss(
     mock_uss_base_url: str,
     id: str,
     participant_id: str,
-    already_notified_other_uss: bool,
     test_step: str,
-) -> Tuple[bool, bool]:
+):
     """
     This step checks a GET request was made to mock_uss for an existing entity, from time 'st' to now
     Args:
         mock_uss_base_url: url of the mock_uss that is managing the entity
         id: entity id
         participant_id: id of the participant responsible to send GET request
-        already_notified_other_uss: If True, then a subscription existed that caused mock_uss to send notification
 
-    Returns:
-        get_requested: bool, already_notified_other_uss: bool
-        [False, True] when GET request not made due to a notification already sent by mock_uss
-        [True, True|False] when GET request made
-        [False, False] other uss failed to make a GET request
     """
     scenario.begin_test_step(test_step)
     interactions, query = _get_interuss_interactions_with_check(scenario, mock_uss, st)
@@ -135,8 +128,6 @@ def expect_get_requests_to_mock_uss(
             get_requested = True
             break
     if not get_requested:
-        if already_notified_other_uss:
-            return get_requested, already_notified_other_uss
         with scenario.check("Expect GET request", [participant_id]) as check:
             check.record_failed(
                 summary=f"No GET request received at {mock_uss_base_url} for {id} ",
@@ -145,7 +136,6 @@ def expect_get_requests_to_mock_uss(
                 query_timestamps=[query.request.timestamp],
             )
     scenario.end_test_step()
-    return get_requested, already_notified_other_uss
 
 
 def _get_interuss_interactions_with_check(
@@ -202,10 +192,6 @@ def _get_interuss_interactions(
     for interaction in all_interactions:
         if is_uss_interaction(interaction, exclude_sub):
             interuss_interactions.append(interaction)
-            logger.debug(
-                f"Interuss interaction reported : {interaction.query.request.method} {interaction.query.request.url} "
-                f"with response {interaction.query.response.status_code}"
-            )
 
     return interuss_interactions, query
 

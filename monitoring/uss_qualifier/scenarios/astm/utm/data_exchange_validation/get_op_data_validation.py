@@ -196,20 +196,21 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 flight_1,
             )
 
-        get_requested, already_notified = expect_get_requests_to_mock_uss(
-            self,
-            self.control_uss,
-            planning_time,
-            self.control_uss.base_url,
-            flight_2_oi_ref.id,
-            self.tested_uss_client.participant_id,
-            tested_uss_notified,
-            "Validate flight2 GET interaction",
-        )
-
-        if get_requested == False and already_notified == True:
+        if tested_uss_notified:
+            expect_get_requests_to_mock_uss(
+                self,
+                self.control_uss,
+                planning_time,
+                self.control_uss.base_url,
+                flight_2_oi_ref.id,
+                self.tested_uss_client.participant_id,
+                "Validate flight2 GET interaction",
+            )
+        else:
             msg = (
-                f"GET request was not made by tested_uss, as it was notified of flight2, due to an existing subscription. "
+                f"Tested_uss was notified of flight2, due to an existing subscription. Hence, not checking for the GET requests."
+                f"Whether a GET request is made or not, it would be unclear clear if tested_uss used the information from notification or GET request for planning."
+                f"As this test is for checking GET requests validation, we cannot continue the test."
                 f"See documentation of test step - Check for notification to tested_uss due to subscription in flight 2 area"
             )
             raise ScenarioCannotContinueError(msg)
@@ -298,19 +299,23 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             )
             validator.expect_not_shared()
 
-        get_requested, already_notified = expect_get_requests_to_mock_uss(
-            self,
-            self.control_uss,
-            planning_time,
-            self.control_uss.base_url,
-            flight_2_oi_ref.id,
-            self.tested_uss_client.participant_id,
-            tested_uss_notified,
-            "Validate flight 2 GET interaction",
-        )
-
-        if get_requested == False and already_notified == True:
-            msg = f"GET request was not made by tested_uss, as it was notified of flight2, due to an exisitng subscription."
+        if tested_uss_notified:
+            expect_get_requests_to_mock_uss(
+                self,
+                self.control_uss,
+                planning_time,
+                self.control_uss.base_url,
+                flight_2_oi_ref.id,
+                self.tested_uss_client.participant_id,
+                "Validate flight 2 GET interaction",
+            )
+        else:
+            msg = (
+                f"Tested_uss was notified of flight2, due to an existing subscription. Hence, not checking for the GET requests."
+                f"Whether a GET request is made or not, it would be unclear clear if tested_uss used the information from notification or GET request for planning."
+                f"As this test is for checking GET requests validation, we cannot continue the test."
+                f"See documentation of test step - Check for notification to tested_uss due to subscription in flight 2 area"
+            )
             raise ScenarioCannotContinueError(msg)
 
         expect_no_interuss_post_interactions(
