@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 import arrow
 
@@ -10,6 +10,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
 from monitoring.monitorlib.temporal import Time, TimeDuringTest
+from monitoring.monitorlib.transformations import Transformation
 
 from monitoring.uss_qualifier.resources.files import ExternalFile
 from monitoring.uss_qualifier.resources.overrides import apply_overrides
@@ -71,6 +72,9 @@ class FlightIntentCollection(ImplicitDict):
     intents: Dict[FlightIntentID, FlightIntentCollectionElement]
     """Flight planning actions that users want to perform."""
 
+    transformations: Optional[List[Transformation]]
+    """Transformations to append to all FlightInfoTemplates."""
+
     def resolve(self) -> Dict[FlightIntentID, FlightInfoTemplate]:
         """Resolve the underlying delta flight intents."""
 
@@ -114,6 +118,16 @@ class FlightIntentCollection(ImplicitDict):
                     + ", ".join(i_id for i_id in unprocessed_intent_ids)
                 )
 
+        if "transformations" in self and self.transformations:
+            for v in processed_intents.values():
+                xforms = (
+                    v.transformations.copy()
+                    if v.has_field_with_value("transformations")
+                    else []
+                )
+                xforms.extend(self.transformations)
+                v.transformations = xforms
+
         return processed_intents
 
 
@@ -125,3 +139,6 @@ class FlightIntentsSpecification(ImplicitDict):
 
     file: Optional[ExternalFile]
     """Location of file to load, containing a FlightIntentCollection"""
+
+    transformations: Optional[List[Transformation]]
+    """Transformations to apply to all flight intents' 4D volumes after resolution (if specified)"""

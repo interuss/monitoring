@@ -1,0 +1,32 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/transformations/Transformation.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A transformation to apply to a geotemporal feature.  Exactly one field must be specified.\n\nmonitoring.monitorlib.transformations.Transformation, as defined in monitoring/monitorlib/transformations.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "absolute_translation": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AbsoluteTranslation.json"
+        }
+      ]
+    },
+    "relative_translation": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "RelativeTranslation.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

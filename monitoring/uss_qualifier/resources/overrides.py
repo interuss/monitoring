@@ -50,15 +50,18 @@ def _apply_overrides(base_object, overrides):
                 f"Attempted to override field with type {type(base_object)} with type {type(overrides)} ({json.dumps(base_object)} -> {json.dumps(overrides)})"
             )
         for field in overrides:
+            src_field = field
             if field.startswith("+"):
                 replace = True
                 field = field[1:]
             else:
                 replace = False
             if field in base_object and base_object[field] is not None and not replace:
-                result[field] = _apply_overrides(base_object[field], overrides[field])
+                result[field] = _apply_overrides(
+                    base_object[field], overrides[src_field]
+                )
             else:
-                result[field] = overrides[field]
+                result[field] = overrides[src_field]
         return result
 
     else:
