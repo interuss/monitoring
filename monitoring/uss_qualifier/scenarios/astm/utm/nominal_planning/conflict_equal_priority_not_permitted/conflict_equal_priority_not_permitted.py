@@ -402,9 +402,9 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self._intents_extent,
             flight_2_oi_ref,
         ) as validator:
+            self.begin_test_step("Declare Flight 2 non-conforming")
             resp_flight_2, _ = submit_flight_intent(
                 self,
-                "Declare Flight 2 non-conforming",
                 "Successful transition to non-conforming state",
                 {
                     InjectFlightResponseResult.ReadyToFly,
@@ -415,6 +415,8 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 self.flight2_nonconforming.request,
                 self.flight2_id,
             )
+            self.end_test_step()
+
             if resp_flight_2.result == InjectFlightResponseResult.NotSupported:
                 msg = f"{self.control_uss.config.participant_id} does not support the transition to a Nonconforming state; execution of the scenario was stopped without failure"
                 self.record_note("Control USS does not support CMSA role", msg)
@@ -430,9 +432,11 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
+            self.begin_test_step(
+                "Attempt to modify activated Flight 1 in conflict with nonconforming Flight 2"
+            )
             resp_flight_1, _ = submit_flight_intent(
                 self,
-                "Attempt to modify activated Flight 1 in conflict with nonconforming Flight 2",
                 "Successful modification or rejection",
                 {
                     InjectFlightResponseResult.ReadyToFly,
@@ -443,6 +447,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 self.flight1m_activated.request,
                 self.flight1_id,
             )
+            self.end_test_step()
 
             if resp_flight_1.result == InjectFlightResponseResult.ReadyToFly:
                 validator.expect_shared(self.flight1m_activated.request)

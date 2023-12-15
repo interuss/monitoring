@@ -34,9 +34,9 @@ def plan_priority_conflict_flight_intent(
         flight_intent, OperationalIntentState.Accepted, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Incorrectly planned",
         {
             InjectFlightResponseResult.ConflictWithFlight,
@@ -45,7 +45,10 @@ def plan_priority_conflict_flight_intent(
         {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
 
 
 def modify_planned_priority_conflict_flight_intent(
@@ -66,9 +69,9 @@ def modify_planned_priority_conflict_flight_intent(
         flight_intent, OperationalIntentState.Accepted, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Incorrectly modified",
         {
             InjectFlightResponseResult.ConflictWithFlight,
@@ -78,7 +81,10 @@ def modify_planned_priority_conflict_flight_intent(
         flight_planner,
         flight_intent,
         flight_id,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
 
 
 def activate_priority_conflict_flight_intent(
@@ -99,9 +105,9 @@ def activate_priority_conflict_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Incorrectly activated",
         {
             InjectFlightResponseResult.ConflictWithFlight,
@@ -111,7 +117,10 @@ def activate_priority_conflict_flight_intent(
         flight_planner,
         flight_intent,
         flight_id,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
 
 
 def modify_activated_priority_conflict_flight_intent(
@@ -132,9 +141,9 @@ def modify_activated_priority_conflict_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Incorrectly modified",
         {
             InjectFlightResponseResult.ConflictWithFlight,
@@ -144,7 +153,10 @@ def modify_activated_priority_conflict_flight_intent(
         flight_planner,
         flight_intent,
         flight_id,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
 
 
 def plan_conflict_flight_intent(
@@ -164,9 +176,9 @@ def plan_conflict_flight_intent(
         flight_intent, OperationalIntentState.Accepted, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Incorrectly planned",
         {
             InjectFlightResponseResult.ConflictWithFlight,
@@ -175,7 +187,10 @@ def plan_conflict_flight_intent(
         {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
 
 
 def modify_planned_conflict_flight_intent(
@@ -196,9 +211,9 @@ def modify_planned_conflict_flight_intent(
         flight_intent, OperationalIntentState.Accepted, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Incorrectly modified",
         {
             InjectFlightResponseResult.ConflictWithFlight,
@@ -208,7 +223,10 @@ def modify_planned_conflict_flight_intent(
         flight_planner,
         flight_intent,
         flight_id,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
 
 
 def activate_conflict_flight_intent(
@@ -229,9 +247,9 @@ def activate_conflict_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Incorrectly activated",
         {
             InjectFlightResponseResult.ConflictWithFlight,
@@ -241,7 +259,10 @@ def activate_conflict_flight_intent(
         flight_planner,
         flight_intent,
         flight_id,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
 
 
 def modify_activated_conflict_flight_intent(
@@ -262,9 +283,9 @@ def modify_activated_conflict_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Incorrectly modified",
         {
             InjectFlightResponseResult.ConflictWithFlight,
@@ -274,7 +295,10 @@ def modify_activated_conflict_flight_intent(
         flight_planner,
         flight_intent,
         flight_id,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
 
 
 def plan_permitted_conflict_flight_intent(
@@ -296,15 +320,18 @@ def plan_permitted_conflict_flight_intent(
         flight_intent, OperationalIntentState.Accepted, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, flight_id = submit_flight_intent(
         scenario,
-        test_step,
         "Successful planning",
         {InjectFlightResponseResult.Planned},
         {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
     )
+
+    scenario.end_test_step()
+    return resp, flight_id
 
 
 def modify_planned_permitted_conflict_flight_intent(
@@ -325,16 +352,19 @@ def modify_planned_permitted_conflict_flight_intent(
         flight_intent, OperationalIntentState.Accepted, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Successful modification",
         {InjectFlightResponseResult.Planned},
         {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
         flight_id,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
 
 
 def activate_permitted_conflict_flight_intent(
@@ -355,16 +385,19 @@ def activate_permitted_conflict_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Successful activation",
         {InjectFlightResponseResult.ReadyToFly},
         {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
         flight_id,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
 
 
 def modify_activated_permitted_conflict_flight_intent(
@@ -385,13 +418,16 @@ def modify_activated_permitted_conflict_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Successful modification",
         {InjectFlightResponseResult.ReadyToFly},
         {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
         flight_id,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
