@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List
 
 import loguru
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
@@ -6,7 +6,6 @@ from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
     DSSInstance,
@@ -133,8 +132,7 @@ class OpIntentAccessControl(TestScenario):
             if q.response.status_code not in [200, 404]:
                 check.record_failed(
                     f"Could not access operational intent using main credentials",
-                    Severity.High,
-                    f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_1}",
+                    details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_1}",
                     query_timestamps=[q.request.timestamp],
                 )
         if q.response.status_code != 404:
@@ -146,8 +144,7 @@ class OpIntentAccessControl(TestScenario):
                 ) as check:
                     check.record_failed(
                         f"Could not delete operational intent using main credentials",
-                        Severity.High,
-                        f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_1}",
+                        details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_1}",
                         query_timestamps=[dq.request.timestamp],
                     )
 
@@ -159,8 +156,7 @@ class OpIntentAccessControl(TestScenario):
             if q.response.status_code not in [200, 404]:
                 check.record_failed(
                     f"Could not access operational intent using second credentials",
-                    Severity.High,
-                    f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_2}",
+                    details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_2}",
                     query_timestamps=[q.request.timestamp],
                 )
         if q.response.status_code != 404:
@@ -174,8 +170,7 @@ class OpIntentAccessControl(TestScenario):
                 if dq.response.status_code != 200:
                     check.record_failed(
                         f"Could not delete operational intent using second credentials",
-                        Severity.High,
-                        f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_2}",
+                        details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_2}",
                         query_timestamps=[dq.request.timestamp],
                     )
 
@@ -192,8 +187,7 @@ class OpIntentAccessControl(TestScenario):
             if q.response.status_code != 200:
                 check.record_failed(
                     f"Could not search operational intents using main credentials",
-                    Severity.High,
-                    f"DSS responded with {q.response.status_code} to attempt to search OIs",
+                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs",
                     query_timestamps=[q.request.timestamp],
                 )
 
@@ -208,8 +202,7 @@ class OpIntentAccessControl(TestScenario):
                     if dq.response.status_code != 200:
                         check.record_failed(
                             f"Could not delete operational intent using main credentials",
-                            Severity.High,
-                            f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}",
+                            details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}",
                             query_timestamps=[dq.request.timestamp],
                         )
 
@@ -223,8 +216,7 @@ class OpIntentAccessControl(TestScenario):
             if q.response.status_code != 200:
                 check.record_failed(
                     f"Could not search operational intents using second credentials",
-                    Severity.High,
-                    f"DSS responded with {q.response.status_code} to attempt to search OIs",
+                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs",
                     query_timestamps=[q.request.timestamp],
                 )
 
@@ -244,8 +236,7 @@ class OpIntentAccessControl(TestScenario):
                     if dq.response.status_code != 200:
                         check.record_failed(
                             f"Could not delete operational intent using second credentials",
-                            Severity.High,
-                            f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}",
+                            details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}",
                             query_timestamps=[dq.request.timestamp],
                         )
 
@@ -265,8 +256,7 @@ class OpIntentAccessControl(TestScenario):
             if q1.response.status_code != 201:
                 check.record_failed(
                     f"Could not create operational intent using main credentials",
-                    Severity.High,
-                    f"DSS responded with {q1.response.status_code} to attempt to create OI {self._oid_1}",
+                    details=f"DSS responded with {q1.response.status_code} to attempt to create OI {self._oid_1}",
                     query_timestamps=[q1.request.timestamp],
                 )
 
@@ -288,8 +278,7 @@ class OpIntentAccessControl(TestScenario):
             if q2.response.status_code != 201:
                 check.record_failed(
                     f"Could not create operational intent using second credentials",
-                    Severity.High,
-                    f"DSS responded with {q2.response.status_code} to attempt to create OI {self._oid_2}",
+                    details=f"DSS responded with {q2.response.status_code} to attempt to create OI {self._oid_2}",
                     query_timestamps=[q2.request.timestamp],
                 )
 
@@ -306,8 +295,7 @@ class OpIntentAccessControl(TestScenario):
             ):
                 check.record_failed(
                     f"Second set of credentials is not different from the first",
-                    Severity.High,
-                    f"The same credentials were provided for the main 'dss' and the additional 'second_utm_auth'"
+                    details=f"The same credentials were provided for the main 'dss' and the additional 'second_utm_auth'"
                     f" resources ({self._dss.client.auth_adapter.get_sub()}),",
                 )
 
@@ -329,8 +317,7 @@ class OpIntentAccessControl(TestScenario):
             if q.response.status_code != 403:
                 check.record_failed(
                     f"Could update operational intent using second credentials",
-                    Severity.High,
-                    f"DSS responded with {q.response.status_code} to attempt to update OI {self._oid_1}",
+                    details=f"DSS responded with {q.response.status_code} to attempt to update OI {self._oid_1}",
                     query_timestamps=[q.request.timestamp],
                 )
         # Attempt to update the base_url of the intent created with the main credentials using the second credentials
@@ -350,8 +337,7 @@ class OpIntentAccessControl(TestScenario):
             if q.response.status_code != 403:
                 check.record_failed(
                     f"Could update operational intent using second credentials",
-                    Severity.High,
-                    f"DSS responded with {q.response.status_code} to attempt to update OI {self._oid_1}",
+                    details=f"DSS responded with {q.response.status_code} to attempt to update OI {self._oid_1}",
                     query_timestamps=[q.request.timestamp],
                 )
 
@@ -367,8 +353,7 @@ class OpIntentAccessControl(TestScenario):
             if dq.response.status_code != 403:
                 check.record_failed(
                     f"Could delete operational intent using second credentials",
-                    Severity.High,
-                    f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_1}",
+                    details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_1}",
                     query_timestamps=[dq.request.timestamp],
                 )
 
@@ -382,8 +367,7 @@ class OpIntentAccessControl(TestScenario):
             if qcheck.response.status_code != 200:
                 check.record_failed(
                     f"Could not access operational intent using main credentials",
-                    Severity.High,
-                    f"DSS responded with {qcheck.response.status_code} to attempt to access OI {self._oid_1} "
+                    details=f"DSS responded with {qcheck.response.status_code} to attempt to access OI {self._oid_1} "
                     f"while this OI should have been available.",
                     query_timestamps=[qcheck.request.timestamp],
                 )
@@ -395,8 +379,7 @@ class OpIntentAccessControl(TestScenario):
             if op_1_current != self._current_ref_1:
                 check.record_failed(
                     f"Could update operational intent using second credentials",
-                    Severity.High,
-                    f"Operational intent {self._oid_1} was modified by second credentials",
+                    details=f"Operational intent {self._oid_1} was modified by second credentials",
                     query_timestamps=[q.request.timestamp, qcheck.request.timestamp],
                 )
 

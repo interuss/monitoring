@@ -58,17 +58,17 @@ The setup will create two separate operational intents: one for each set of the 
 
 ### Ensure clean workspace test step
 
-#### Operational intents can be queried directly by their ID check
+#### 🛑 Operational intents can be queried directly by their ID check
 
 If an existing operational intent cannot directly be queried by its ID, the DSS implementation is in violation of
 **[astm.f3548.v21.DSS0005](../../../requirements/astm/f3548/v21.md)**.
 
-#### Operational intents can be searched using valid credentials check
+#### 🛑 Operational intents can be searched using valid credentials check
 
 A client with valid credentials should be allowed to search for operational intents in a given area.
 Otherwise, the DSS is not in compliance with **[astm.f3548.v21.DSS0005](../../../requirements/astm/f3548/v21.md)**.
 
-#### Operational intents can be deleted by their owner check
+#### 🛑 Operational intents can be deleted by their owner check
 
 If an existing operational intent cannot be deleted when providing the proper ID and OVN, the DSS implementation is in violation of
 **[astm.f3548.v21.DSS0005](../../../requirements/astm/f3548/v21.md)**.
@@ -79,12 +79,12 @@ This test step ensures that an operation intent created with the main credential
 
 To verify that the second credentials are valid, it will also create an operational intent with those credentials.
 
-#### Can create an operational intent with valid credentials check
+#### 🛑 Can create an operational intent with valid credentials check
 
 If the DSS does not allow the creation of operation intents when the required parameters and credentials are provided,
 it is in violation of **[astm.f3548.v21.DSS0005](../../../requirements/astm/f3548/v21.md)**.
 
-#### Passed sets of credentials are different check
+#### 🛑 Passed sets of credentials are different check
 
 This scenario requires two sets of credentials that have a different 'sub' claim in order to validate that the
 DSS properly controls access to operational intents.
@@ -98,29 +98,29 @@ This test case ensures that the DSS does not allow a caller to modify or delete 
 This test step will attempt to modify the operational intent that was created using the configured `dss` resource,
 using the credentials provided in the `second_utm_auth` resource, and expect all such attempts to fail.
 
-#### Operational intents can be queried directly by their ID check
+#### 🛑 Operational intents can be queried directly by their ID check
 
 If an existing operational intent cannot directly be queried by its ID, the DSS implementation is in violation of
 **[astm.f3548.v21.DSS0005](../../../requirements/astm/f3548/v21.md)**.
 
-#### Non-owning credentials cannot modify operational intent check
+#### 🛑 Non-owning credentials cannot modify operational intent check
 
 If an operational intent can be modified by a client which did not create it, the DSS implementation is
 in violation of **[astm.f3548.v21.OPIN0035](../../../requirements/astm/f3548/v21.md)**.
 
-#### Non-owning credentials cannot delete operational intent check
+#### 🛑 Non-owning credentials cannot delete operational intent check
 
 If an operational intent can be deleted by a client which did not create it, the DSS implementation is
 in violation of **[astm.f3548.v21.OPIN0035](../../../requirements/astm/f3548/v21.md)**.
 
 ## Cleanup
 
-### Operational intents can be queried directly by their ID check
+### 🛑 Operational intents can be queried directly by their ID check
 
 If an existing operational intent cannot directly be queried by its ID, the DSS implementation is in violation of
 **[astm.f3548.v21.DSS0005](../../../requirements/astm/f3548/v21.md)**.
 
-### Operational intents can be deleted by their owner check
+### 🛑 Operational intents can be deleted by their owner check
 
 If an existing operational intent cannot be deleted when providing the proper ID and OVN, the DSS implementation is in violation of
 **[astm.f3548.v21.DSS0005](../../../requirements/astm/f3548/v21.md)**.
