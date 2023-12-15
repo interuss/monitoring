@@ -24,13 +24,13 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
-class OpIntentAccessControl(TestScenario):
+class OpIntentReferenceAccessControl(TestScenario):
     """
     Tests that the DSS only allows a client to edit their own flight intents, but not those of another USS.
     """
 
-    OP_INTENT_1 = register_resource_type(375, "Operational Intent")
-    OP_INTENT_2 = register_resource_type(376, "Operational Intent")
+    OP_INTENT_1 = register_resource_type(375, "Operational Intent Reference")
+    OP_INTENT_2 = register_resource_type(376, "Operational Intent Reference")
 
     # The DSS under test
     _dss: DSSInstance
@@ -105,15 +105,21 @@ class OpIntentAccessControl(TestScenario):
         self._ensure_clean_workspace()
         self.end_test_step()
 
-        self.begin_test_step("Create operational intents with different credentials")
+        self.begin_test_step(
+            "Create operational intent references with different credentials"
+        )
         self._create_op_intents()
         self._ensure_credentials_are_different()
         self.end_test_step()
 
         self.end_test_case()
 
-        self.begin_test_case("Attempt unauthorized flight intent modification")
-        self.begin_test_step("Attempt unauthorized flight intent modification")
+        self.begin_test_case(
+            "Attempt unauthorized operational intent reference modification"
+        )
+        self.begin_test_step(
+            "Attempt unauthorized operational intent reference modification"
+        )
 
         self._check_mutation_on_non_owned_intent_fails()
 
@@ -126,7 +132,8 @@ class OpIntentAccessControl(TestScenario):
         (oi_ref, q) = self._dss.get_op_intent_reference(self._oid_1)
         self.record_query(q)
         with self.check(
-            "Operational intents can be queried directly by their ID", self._pid
+            "Operational intent references can be queried directly by their ID",
+            self._pid,
         ) as check:
             # If the Op Intent does not exist, it's fine to run into a 404.
             if q.response.status_code not in [200, 404]:
@@ -140,7 +147,8 @@ class OpIntentAccessControl(TestScenario):
             self.record_query(dq)
             if dq.response.status_code != 200:
                 with self.check(
-                    "Operational intents can be deleted by their owner", self._pid
+                    "Operational intent references can be deleted by their owner",
+                    self._pid,
                 ) as check:
                     check.record_failed(
                         f"Could not delete operational intent using main credentials",
@@ -151,7 +159,8 @@ class OpIntentAccessControl(TestScenario):
         (oi_ref, q) = self._dss_separate_creds.get_op_intent_reference(self._oid_2)
         self.record_query(q)
         with self.check(
-            "Operational intents can be queried directly by their ID", self._pid
+            "Operational intent references can be queried directly by their ID",
+            self._pid,
         ) as check:
             if q.response.status_code not in [200, 404]:
                 check.record_failed(
@@ -165,7 +174,7 @@ class OpIntentAccessControl(TestScenario):
             )
             self.record_query(dq)
             with self.check(
-                "Operational intents can be deleted by their owner", self._pid
+                "Operational intent references can be deleted by their owner", self._pid
             ) as check:
                 if dq.response.status_code != 200:
                     check.record_failed(
@@ -182,11 +191,12 @@ class OpIntentAccessControl(TestScenario):
         self.record_query(q)
         loguru.logger.info(f"Search query: {q.response}")
         with self.check(
-            "Operational intents can be searched using valid credentials", self._pid
+            "Operational intent references can be searched using valid credentials",
+            self._pid,
         ) as check:
             if q.response.status_code != 200:
                 check.record_failed(
-                    f"Could not search operational intents using main credentials",
+                    f"Could not search operational intent references using main credentials",
                     details=f"DSS responded with {q.response.status_code} to attempt to search OIs",
                     query_timestamps=[q.request.timestamp],
                 )
@@ -197,7 +207,8 @@ class OpIntentAccessControl(TestScenario):
                 (_, _, dq) = self._dss.delete_op_intent(op_intent.id, op_intent.ovn)
                 self.record_query(dq)
                 with self.check(
-                    "Operational intents can be deleted by their owner", self._pid
+                    "Operational intent references can be deleted by their owner",
+                    self._pid,
                 ) as check:
                     if dq.response.status_code != 200:
                         check.record_failed(
@@ -211,11 +222,12 @@ class OpIntentAccessControl(TestScenario):
         )
         self.record_query(q)
         with self.check(
-            "Operational intents can be searched using valid credentials", self._pid
+            "Operational intent references can be searched using valid credentials",
+            self._pid,
         ) as check:
             if q.response.status_code != 200:
                 check.record_failed(
-                    f"Could not search operational intents using second credentials",
+                    f"Could not search operational intent references using second credentials",
                     details=f"DSS responded with {q.response.status_code} to attempt to search OIs",
                     query_timestamps=[q.request.timestamp],
                 )
@@ -231,7 +243,8 @@ class OpIntentAccessControl(TestScenario):
                 )
                 self.record_query(dq)
                 with self.check(
-                    "Operational intents can be deleted by their owner", self._pid
+                    "Operational intent references can be deleted by their owner",
+                    self._pid,
                 ) as check:
                     if dq.response.status_code != 200:
                         check.record_failed(
@@ -362,7 +375,8 @@ class OpIntentAccessControl(TestScenario):
         self.record_query(qcheck)
 
         with self.check(
-            "Operational intents can be queried directly by their ID", self._pid
+            "Operational intent references can be queried directly by their ID",
+            self._pid,
         ) as check:
             if qcheck.response.status_code != 200:
                 check.record_failed(
