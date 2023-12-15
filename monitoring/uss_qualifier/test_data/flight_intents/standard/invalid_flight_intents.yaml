@@ -7,19 +7,18 @@ intents:
         uas_state: Nominal
         area:
           - outline_polygon:
+              # There are 0.00000898331 (roughly 0.00001) degrees of latitude (and longitude, at the equator) per meter.
+              # Therefore, each value below is roughly in meters.
               vertices:
-                - lat: 46.1929645
-                  lng: 6.1965395
-                - lat: 46.192911
-                  lng: 6.196423
-                - lat: 46.192918
-                  lng: 6.196678
+                - {lng:  0.00000, lat:  0.00000}
+                - {lng: -0.00030, lat:  0.00042}
+                - {lng:  0.00030, lat:  0.00042}
             altitude_lower:
-              value: 605
+              value: 0
               reference: W84
               units: M
             altitude_upper:
-              value: 635
+              value: 30
               reference: W84
               units: M
             start_time:
@@ -33,17 +32,7 @@ intents:
         priority: 0
 
       uspace_flight_authorisation:
-        uas_serial_number: 1AF49UL5CC5J6K
-        operation_category: Open
-        operation_mode: Vlos
-        uas_class: C0
-        identification_technologies:
-          - ASTMNetRID
-        connectivity_methods:
-          - cellular
-        endurance_minutes: 30
-        emergency_procedure_url: https://uav.example.com/emergency
-        operator_id: CHEo5kut30e0mt01-qwe
+        $ref: ./flight_auths.yaml#/standard
 
   valid_activated:
     delta:
@@ -74,9 +63,6 @@ intents:
             - outline_polygon:
               # polygon overlaps with polygon of valid_flight, distance between first vertex of each is 1.112cm
                 vertices:
-                  - lat: 46.1929644
-                    lng: 6.1965395
-                  - lat: 46.193236
-                    lng: 6.196235
-                  - lat: 46.193174
-                    lng: 6.196925
+                  - {lng:  0.00000, lat:  0.0000001}
+                  - {lng: -0.00030, lat: -0.00042}
+                  - {lng:  0.00030, lat: -0.00042}

@@ -1,8 +1,6 @@
 from typing import Dict, List
 
-import arrow
 from implicitdict import ImplicitDict
-from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
@@ -41,6 +39,16 @@ class FlightIntentsResource(Resource[FlightIntentsSpecification]):
             )
         elif has_literal:
             self._intent_collection = specification.intent_collection
+        if "transformations" in specification and specification.transformations:
+            if (
+                "transformations" in self._intent_collection
+                and self._intent_collection.transformations
+            ):
+                self._intent_collection.transformations.extend(
+                    specification.transformations
+                )
+            else:
+                self._intent_collection.transformations = specification.transformations
 
     def get_flight_intents(self) -> Dict[FlightIntentID, FlightInfoTemplate]:
         return self._intent_collection.resolve()

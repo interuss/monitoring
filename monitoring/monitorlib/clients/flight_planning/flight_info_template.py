@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 from implicitdict import ImplicitDict
 
@@ -11,11 +11,13 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
     BasicFlightPlanInformation,
     FlightInfo,
 )
+from monitoring.monitorlib.geo import LatLngPoint
 from monitoring.monitorlib.geotemporal import (
     Volume4DTemplateCollection,
     Volume4DCollection,
 )
 from monitoring.monitorlib.temporal import Time, TimeDuringTest
+from monitoring.monitorlib.transformations import Transformation
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
 
@@ -51,9 +53,16 @@ class FlightInfoTemplate(ImplicitDict):
     additional_information: Optional[dict]
     """Any information relevant to a particular jurisdiction or use case not described in the standard schema. The keys and values must be agreed upon between the test designers and USSs under test."""
 
+    transformations: Optional[List[Transformation]]
+    """If specified, transform this flight according to these transformations in order (after all templates are resolved)."""
+
     def resolve(self, times: Dict[TimeDuringTest, Time]) -> FlightInfo:
-        kwargs = {k: v for k, v in self.items()}
-        kwargs["basic_information"] = self.basic_information.resolve(times)
+        kwargs = {k: v for k, v in self.items() if k not in {"transformations"}}
+        basic_info = self.basic_information.resolve(times)
+        if "transformations" in self and self.transformations:
+            for xform in self.transformations:
+                basic_info.area = [v.transform(xform) for v in basic_info.area]
+        kwargs["basic_information"] = basic_info
         return ImplicitDict.parse(kwargs, FlightInfo)
 
     def to_scd_inject_request(
