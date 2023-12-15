@@ -110,6 +110,7 @@ class PendingCheck(object):
         if (
             self._stop_fast
             and severity != Severity.Critical
+            and severity != Severity.Low
             and self._phase != ScenarioPhase.CleaningUp
         ):
             note = f"Severity {severity} upgraded to Critical because `stop_fast` flag set true in configuration"
