@@ -1,19 +1,17 @@
 from typing import List, Dict
 
+from uas_standards.astm.f3548.v21 import constants
+
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.fetch import evaluation, QueryType
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.flight_planning import FlightPlannersResource
-from monitoring.uss_qualifier.suites.suite import ExecutionContext
-
-from uas_standards.astm.f3548.v21 import constants
-
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class AggregateChecks(TestScenario):
-
     _queries: List[fetch.Query]
     _attributed_queries: Dict[ParticipantID, Dict[QueryType, List[fetch.Query]]] = {}
 
@@ -76,6 +74,14 @@ class AggregateChecks(TestScenario):
         self.end_test_step()
         self.end_test_case()
 
+        self.begin_test_case("Interoperability test instance is available")
+        self.begin_test_step("Interoperability test instance is available")
+
+        self._confirm_test_harness_queries_work()
+
+        self.end_test_step()
+        self.end_test_case()
+
         self.end_test_scenario()
 
     def _op_intent_details_step(self):
@@ -118,3 +124,66 @@ class AggregateChecks(TestScenario):
                 f"{participant}/{QueryType.F3548v21USSGetOperationalIntentDetails}",
                 f"checked performances on {len(durations)} queries, 95th percentile: {p95}s",
             )
+
+    def _confirm_test_harness_queries_work(self):
+        """
+        For each different type of call to the interoperability test instance,
+        we look for at least one successful query.
+        """
+        for participant, queries_by_type in self._attributed_queries.items():
+            self._validate_participant_test_interop_instance(
+                participant, queries_by_type
+            )
+
+    def _validate_participant_test_interop_instance(
+        self,
+        participant_id: str,
+        participant_queries: dict[QueryType, List[fetch.Query]],
+    ):
+        # Keep track of how many interactions we've found for this participant
+        # if there is None the condition is not met
+        test_interactions = 0
+        success_by_type: Dict[QueryType, bool] = {}
+        for query_type, queries in participant_queries.items():
+            if _is_interop_test_interaction(query_type):
+                test_interactions += len(queries)
+                success_by_type[query_type] = False
+                for query in queries:
+                    if 200 <= query.response.status_code < 300:
+                        success_by_type[query_type] = True
+                        break
+
+        self.record_note(
+            "test_interop_interactions",
+            f"Found {test_interactions} interactions with interoperability test instance for {participant_id}",
+        )
+        if test_interactions == 0:
+            self.record_note(
+                "test_interop_check_skipped",
+                f"Skipping check for {participant_id} because no interactions with "
+                f"interoperability test instance were found",
+            )
+            # If no interactions are observed, we can't determine if the test instance is available
+            # and the step here.
+            return
+
+        with self.check(
+            "Interoperability test instance is available", [participant_id]
+        ) as check:
+            for query_type, success in success_by_type.items():
+                if not success:
+                    check.record_failed(
+                        summary=f"No successful {query_type} interaction with interoperability test instance",
+                        severity=Severity.Medium,
+                        details=f"Found no successful {query_type} interaction with interoperability test instance, "
+                        f"indicating that the test instance is either not available or not properly implemented.",
+                    )
+
+
+def _is_interop_test_interaction(query_type: QueryType):
+    return (
+        query_type == QueryType.InterUSSFlightPlanningV1GetStatus
+        or query_type == QueryType.InterUSSFlightPlanningV1ClearArea
+        or query_type == QueryType.InterUSSFlightPlanningV1UpsertFlightPlan
+        or query_type == QueryType.InterUSSFlightPlanningV1DeleteFlightPlan
+    )

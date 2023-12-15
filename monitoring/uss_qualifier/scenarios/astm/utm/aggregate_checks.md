@@ -20,3 +20,17 @@ planners provided as resource are used to determine and evaluate the 95th percen
 
 If the 95th percentile of the requests durations is higher than the threshold `MaxRespondToOIDetailsRequest` (1 second),
 this check will fail per **[astm.f3548.v21.SCD0075](../../../requirements/astm/f3548/v21.md)**.
+
+## Interoperability test instance is available test case
+
+### Interoperability test instance is available test step
+
+This step verifies that interactions with the interoperability test instances happened and where at least partly successful.
+
+#### Interoperability test instance is available check
+
+This check ensures that interactions with the interoperability test instance that each USS must provide are possible.
+
+If all interactions fail, or if no test instance can be reached, the USS is failing to meet **[astm.f3548.v21.GEN0300](../../../requirements/astm/f3548/v21.md)**.
+
+If no interaction with a test instance was found, this check is skipped.
