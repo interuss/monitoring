@@ -42,7 +42,7 @@ def expect_flight_intent_state(
     if flight_intent.operational_intent.state != expected_state:
         function_name = str(inspect.stack()[1][3])
         raise ValueError(
-            f"Error in test data: operational intent state for {function_name} during test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `Accepted`, but got `{flight_intent.operational_intent.state}` instead"
+            f"Error in test data: operational intent state for {function_name} during test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `{expected_state}`, but got `{flight_intent.operational_intent.state}` instead"
         )
 
 
@@ -66,15 +66,18 @@ def plan_flight_intent(
         flight_intent, OperationalIntentState.Accepted, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, flight_id = submit_flight_intent(
         scenario,
-        test_step,
         "Successful planning",
         {InjectFlightResponseResult.Planned},
         {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
     )
+
+    scenario.end_test_step()
+    return resp, flight_id
 
 
 def activate_flight_intent(
@@ -95,16 +98,19 @@ def activate_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Successful activation",
         {InjectFlightResponseResult.ReadyToFly},
         {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
         flight_id,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
 
 
 def modify_planned_flight_intent(
@@ -125,16 +131,19 @@ def modify_planned_flight_intent(
         flight_intent, OperationalIntentState.Accepted, scenario, test_step
     )
 
-    return submit_flight_intent(
+    scenario.begin_test_step(test_step)
+    resp, _ = submit_flight_intent(
         scenario,
-        test_step,
         "Successful modification",
         {InjectFlightResponseResult.Planned},
         {InjectFlightResponseResult.Failed: "Failure"},
         flight_planner,
         flight_intent,
         flight_id,
-    )[0]
+    )
+
+    scenario.end_test_step()
+    return resp
 
 
 def modify_activated_flight_intent(
@@ -157,47 +166,67 @@ def modify_activated_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario, test_step
     )
 
+    scenario.begin_test_step(test_step)
     if preexisting_conflict:
-        expected_results = {
-            InjectFlightResponseResult.ReadyToFly,
-            InjectFlightResponseResult.NotSupported,
-            # the following two results are considered expected in order to fail another check as low severity
-            InjectFlightResponseResult.Rejected,
-            InjectFlightResponseResult.ConflictWithFlight,
-        }
-        failed_checks = {
-            InjectFlightResponseResult.Failed: "Failure",
-            InjectFlightResponseResult.Rejected: (
-                "Rejected modification",
-                Severity.Low,
-            ),
-            InjectFlightResponseResult.ConflictWithFlight: (
-                "Rejected modification",
-                Severity.Low,
-            ),
-        }
-    else:
-        expected_results = {InjectFlightResponseResult.ReadyToFly}
-        failed_checks = {InjectFlightResponseResult.Failed: "Failure"}
+        resp, flight_id = submit_flight_intent(
+            scenario,
+            "Successful modification",
+            {
+                InjectFlightResponseResult.ReadyToFly,
+                InjectFlightResponseResult.NotSupported,
+                # the following two results are considered expected in order to fail another check as low severity
+                InjectFlightResponseResult.Rejected,
+                InjectFlightResponseResult.ConflictWithFlight,
+            },
+            {
+                InjectFlightResponseResult.Failed: "Failure",
+            },
+            flight_planner,
+            flight_intent,
+            flight_id,
+        )
 
-    return submit_flight_intent(
-        scenario,
-        test_step,
-        "Successful modification",
-        expected_results,
-        failed_checks,
-        flight_planner,
-        flight_intent,
-        flight_id,
-    )[0]
+        with scenario.check(
+            "Rejected modification", [flight_planner.participant_id]
+        ) as check:
+            if (
+                resp.result == InjectFlightResponseResult.Rejected
+                or resp.result == InjectFlightResponseResult.ConflictWithFlight
+            ):
+                check_details = (
+                    f"{flight_planner.participant_id} indicated {resp.result}"
+                )
+                check_details += (
+                    f' with notes "{resp.notes}"'
+                    if "notes" in resp and resp.notes
+                    else " with no notes"
+                )
+                check.record_failed(
+                    summary="Warning (not a failure): modification got rejected but a pre-existing conflict was present",
+                    severity=Severity.Low,
+                    details=check_details,
+                )
+
+    else:
+        resp, flight_id = submit_flight_intent(
+            scenario,
+            "Successful modification",
+            {InjectFlightResponseResult.ReadyToFly},
+            {InjectFlightResponseResult.Failed: "Failure"},
+            flight_planner,
+            flight_intent,
+            flight_id,
+        )
+
+    scenario.end_test_step()
+    return resp
 
 
 def submit_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     success_check: str,
     expected_results: Set[InjectFlightResponseResult],
-    failed_checks: Dict[InjectFlightResponseResult, Union[str, Tuple[str, Severity]]],
+    failed_checks: Dict[InjectFlightResponseResult, str],
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: Optional[str] = None,
@@ -214,7 +243,11 @@ def submit_flight_intent(
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
     """
-    scenario.begin_test_step(test_step)
+    if expected_results.intersection(failed_checks.keys()):
+        raise ValueError(
+            f"expected and unexpected results overlap: {expected_results.intersection(failed_checks.keys())}"
+        )
+
     with scenario.check(success_check, [flight_planner.participant_id]) as check:
         try:
             resp, query, flight_id = flight_planner.request_flight(
@@ -230,40 +263,34 @@ def submit_flight_intent(
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
         scenario.record_query(query)
-        notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
+        check_details = (
+            f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}'
+            + f' with notes "{resp.notes}"'
+            if "notes" in resp and resp.notes
+            else " with no notes"
+        )
 
-        for unexpected_result, failed_test_check in failed_checks.items():
-            if isinstance(failed_test_check, str):
-                check_name = failed_test_check
-                check_severity = Severity.High
-            else:
-                check_name, check_severity = failed_test_check
-
-            with scenario.check(
-                check_name, [flight_planner.participant_id]
-            ) as specific_failed_check:
-                if resp.result == unexpected_result:
-                    specific_failed_check.record_failed(
-                        summary=f"Flight unexpectedly {resp.result}",
-                        severity=check_severity,
-                        details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}{notes_suffix}',
-                        query_timestamps=[query.request.timestamp],
-                    )
-
-        if resp.result in expected_results:
-            scenario.end_test_step()
-            return resp, flight_id
-        else:
+        if resp.result not in expected_results:
             check.record_failed(
                 summary=f"Flight unexpectedly {resp.result}",
                 severity=Severity.High,
-                details=f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}{notes_suffix}',
+                details=check_details,
                 query_timestamps=[query.request.timestamp],
             )
 
-    raise RuntimeError(
-        "Error with submission of flight intent, but a High Severity issue didn't interrupt execution"
-    )
+    for failed_result, failed_check_name in failed_checks.items():
+        with scenario.check(
+            failed_check_name, [flight_planner.participant_id]
+        ) as check:
+            if resp.result == failed_result:
+                check.record_failed(
+                    summary=f"Flight unexpectedly {resp.result}",
+                    severity=Severity.High,
+                    details=check_details,
+                    query_timestamps=[query.request.timestamp],
+                )
+
+    return resp, flight_id
 
 
 def delete_flight_intent(

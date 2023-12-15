@@ -228,40 +228,45 @@ class DownUSS(TestScenario):
             "Validate Flight 1 status",
             self._intents_extent,
         ) as validator:
-            expected_results = {
-                InjectFlightResponseResult.Planned,
-                # the following two results are considered expected in order to fail another check as low severity
-                InjectFlightResponseResult.Rejected,
-                InjectFlightResponseResult.ConflictWithFlight,
-            }
-            failed_checks = {
-                InjectFlightResponseResult.Failed: "Failure",
-                InjectFlightResponseResult.Rejected: (
-                    "Rejected planning",
-                    Severity.Low,
-                ),
-                InjectFlightResponseResult.ConflictWithFlight: (
-                    "Rejected planning",
-                    Severity.Low,
-                ),
-            }
-
+            self.begin_test_step("Tested USS attempts to plan Flight 1")
             resp, flight_id = submit_flight_intent(
                 self,
-                "Tested USS attempts to plan Flight 1",
                 "Successful planning",
-                expected_results,
-                failed_checks,
+                {
+                    InjectFlightResponseResult.Planned,
+                    # the following two results are considered expected in order to fail another check as low severity
+                    InjectFlightResponseResult.Rejected,
+                    InjectFlightResponseResult.ConflictWithFlight,
+                },
+                {
+                    InjectFlightResponseResult.Failed: "Failure",
+                },
                 self.tested_uss,
                 self.flight1_planned.request,
             )
 
             if resp.result == InjectFlightResponseResult.Planned:
+                self.end_test_step()
                 validator.expect_shared(self.flight1_planned.request)
             elif (
                 resp.result == InjectFlightResponseResult.Rejected
                 or resp.result == InjectFlightResponseResult.ConflictWithFlight
             ):
+                with self.check(
+                    "Rejected planning", [self.tested_uss.participant_id]
+                ) as check:
+                    check_details = (
+                        f"{self.tested_uss.participant_id} indicated {resp.result}"
+                        + f' with notes "{resp.notes}"'
+                        if "notes" in resp and resp.notes
+                        else " with no notes"
+                    )
+                    check.record_failed(
+                        summary="Warning (not a failure): planning got rejected, USS may have been more conservative",
+                        severity=Severity.Low,
+                        details=check_details,
+                    )
+                self.end_test_step()
                 validator.expect_not_shared()
 
     def _clear_op_intents(self):

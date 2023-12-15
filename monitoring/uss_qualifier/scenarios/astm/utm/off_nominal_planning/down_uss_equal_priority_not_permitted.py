@@ -102,9 +102,9 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
             "Validate high-priority Flight 2 not shared",
             self._intents_extent,
         ) as validator:
+            self.begin_test_step("Tested USS attempts to plan high-priority Flight 2")
             submit_flight_intent(
                 self,
-                "Tested USS attempts to plan high-priority Flight 2",
                 "Incorrectly planned",
                 {
                     InjectFlightResponseResult.Rejected,
@@ -116,6 +116,8 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                 self.tested_uss,
                 self.flight2_planned.request,
             )
+            self.end_test_step()
+
             validator.expect_not_shared()
 
         # Restore virtual USS availability at DSS test step
@@ -150,9 +152,9 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
             "Validate high-priority Flight 2 not shared",
             self._intents_extent,
         ) as validator:
+            self.begin_test_step("Tested USS attempts to plan high-priority Flight 2")
             submit_flight_intent(
                 self,
-                "Tested USS attempts to plan high-priority Flight 2",
                 "Incorrectly planned",
                 {
                     InjectFlightResponseResult.Rejected,
@@ -164,6 +166,8 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                 self.tested_uss,
                 self.flight2_planned.request,
             )
+            self.end_test_step()
+
             validator.expect_not_shared()
 
         # Restore virtual USS availability at DSS test step
@@ -196,9 +200,9 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
             "Validate high-priority Flight 2 not shared",
             self._intents_extent,
         ) as validator:
+            self.begin_test_step("Tested USS attempts to plan high-priority Flight 2")
             submit_flight_intent(
                 self,
-                "Tested USS attempts to plan high-priority Flight 2",
                 "Incorrectly planned",
                 {
                     InjectFlightResponseResult.Rejected,
@@ -210,4 +214,6 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                 self.tested_uss,
                 self.flight2_planned.request,
             )
+            self.end_test_step()
+
             validator.expect_not_shared()
