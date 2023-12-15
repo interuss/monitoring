@@ -289,7 +289,6 @@ class RIDCommonDictionaryEvaluator(object):
                     if not SerialNumber(serial_number).valid:
                         check.record_failed(
                             f"Invalid uas_id serial number: {serial_number}",
-                            participants=participants,
                             severity=Severity.Medium,
                         )
                     else:
@@ -322,7 +321,7 @@ class RIDCommonDictionaryEvaluator(object):
                 self._test_scenario.check(
                     "UAS ID (Serial Number format) consistency with Common Dictionary",
                     participants,
-                ).record_passed(participants)
+                ).record_passed()
 
             if value_obs is not None:
                 with self._test_scenario.check(
@@ -750,6 +749,7 @@ class RIDCommonDictionaryEvaluator(object):
                         if not value_obs == value_inj:
                             check.record_failed(
                                 "Observed operational status inconsistent with injected one",
+                                severity=Severity.Medium,
                                 details=f"Injected operational status: {value_inj} - Observed {value_obs}",
                             )
 

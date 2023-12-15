@@ -132,9 +132,14 @@ che_conflicting_flights:
   resource_type: resources.flight_planning.FlightIntentsResource
   specification:
     file:
-      path: file://./test_data/che/flight_intents/conflicting_flights.yaml
+      path: file://./test_data/flight_intents/standard/conflicting_flights.yaml
       # Note that this hash_sha512 field can be safely deleted if the content changes
-      hash_sha512: 26ee66a5065e555512f8b1e354334678dfe1614c6fbba4898a1541e6306341620e96de8b48e4095c7b03ab6fd58d0aeeee9e69cf367e1b7346e0c5f287460792
+      hash_sha512: b5432d496928aaa1876acc754e9ffa12f407809a014fa90e23f450c013fb20e2321328d48a419bc129276f7e9e26002c0fea6fec9baf3952b60daec6197de6b7
+    transformations:
+      - relative_translation:
+          degrees_north: 46.9748
+          degrees_east: 7.4774
+          meters_up: 605
 
 che_invalid_flight_intents:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -142,7 +147,12 @@ che_invalid_flight_intents:
   specification:
     intent_collection:
       # Note that $refs may use package-based paths
-      $ref: test_data.che.flight_intents.invalid_flight_intents
+      $ref: test_data.flight_intents.standard.invalid_flight_intents
+    transformations:
+      - relative_translation:
+          degrees_north: 46.9748
+          degrees_east: 7.4774
+          meters_up: 605
 
 che_general_flight_auth_flights:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -158,7 +168,12 @@ che_non_conflicting_flights:
   specification:
     file:
       # Note that ExternalFile paths may be package-based
-      path: test_data.che.flight_intents.non_conflicting
+      path: test_data.flight_intents.standard.non_conflicting
+    transformations:
+      - relative_translation:
+          degrees_north: 46.9748
+          degrees_east: 7.4774
+          meters_up: 605
 
 # ===== General flight authorization =====
 

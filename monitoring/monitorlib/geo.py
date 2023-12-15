@@ -10,6 +10,12 @@ import s2sphere
 from s2sphere import LatLng
 from scipy.interpolate import RectBivariateSpline as Spline
 import shapely.geometry
+
+from monitoring.monitorlib.transformations import (
+    Transformation,
+    RelativeTranslation,
+    AbsoluteTranslation,
+)
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3411.v19 import api as f3411v19
 from uas_standards.astm.f3411.v22a import api as f3411v22a
@@ -69,6 +75,10 @@ class LatLngPoint(ImplicitDict):
     def to_flight_planning_api(self) -> fp_api.LatLngPoint:
         return fp_api.LatLngPoint(lat=self.lat, lng=self.lng)
 
+    @staticmethod
+    def from_s2(p: s2sphere.LatLng) -> LatLngPoint:
+        return LatLngPoint(lat=p.lat().degrees, lng=p.lng().degrees)
+
     def as_s2sphere(self) -> s2sphere.LatLng:
         return s2sphere.LatLng.from_degrees(self.lat, self.lng)
 
@@ -89,7 +99,12 @@ class Radius(ImplicitDict):
 
 
 class Polygon(ImplicitDict):
-    vertices: List[LatLngPoint]
+    vertices: Optional[List[LatLngPoint]]
+
+    def vertex_average(self) -> LatLngPoint:
+        lat = sum(p.lat for p in self.vertices) / len(self.vertices)
+        lng = sum(p.lng for p in self.vertices) / len(self.vertices)
+        return LatLngPoint(lat=lat, lng=lng)
 
     @staticmethod
     def from_coords(coords: List[Tuple[float, float]]) -> Polygon:
@@ -263,6 +278,81 @@ class Volume3D(ImplicitDict):
             raise ValueError("Neither outline_circle nor outline_polygon specified")
 
         return footprint1.intersects(footprint2)
+
+    def transform(self, transformation: Transformation):
+        if (
+            "relative_translation" in transformation
+            and transformation.relative_translation
+        ):
+            return self.translate_relative(transformation.relative_translation)
+        elif (
+            "absolute_translation" in transformation
+            and transformation.absolute_translation
+        ):
+            return self.translate_absolute(transformation.absolute_translation)
+        raise ValueError(
+            f"No supported transformation defined (keys: {', '.join(transformation)})"
+        )
+
+    def translate_relative(self, translation: RelativeTranslation) -> Volume3D:
+        def offset(p0: LatLngPoint, p: LatLngPoint) -> LatLngPoint:
+            s2_p0 = p0.as_s2sphere()
+            xy = flatten(s2_p0, p.as_s2sphere())
+            if "meters_east" in translation and translation.meters_east:
+                xy = (xy[0] + translation.meters_east, xy[1])
+            if "meters_north" in translation and translation.meters_north:
+                xy = (xy[0], xy[1] + translation.meters_north)
+            p1 = LatLngPoint.from_s2(unflatten(s2_p0, xy))
+            if "degrees_east" in translation and translation.degrees_east:
+                p1.lng += translation.degrees_east
+            if "degrees_north" in translation and translation.degrees_north:
+                p1.lat += translation.degrees_north
+            return p1
+
+        kwargs = {k: v for k, v in self.items() if v is not None}
+        if self.outline_circle is not None:
+            kwargs["outline_circle"] = Circle(
+                center=offset(self.outline_circle.center, self.outline_circle.center),
+                radius=self.outline_circle.radius,
+            )
+        if self.outline_polygon is not None:
+            ref0 = self.outline_polygon.vertex_average()
+            vertices = [offset(ref0, p) for p in self.outline_polygon.vertices]
+            kwargs["outline_polygon"] = Polygon(vertices=vertices)
+        result = Volume3D(**kwargs)
+        if "meters_up" in translation and translation.meters_up:
+            if result.altitude_lower:
+                if result.altitude_lower.units == DistanceUnits.M:
+                    result.altitude_lower.value += translation.meters_up
+                else:
+                    raise NotImplementedError(
+                        f"Cannot yet translate meters_up with {result.altitude_lower.units} lower altitude units"
+                    )
+            if result.altitude_upper:
+                if result.altitude_upper.units == DistanceUnits.M:
+                    result.altitude_upper.value += translation.meters_up
+                else:
+                    raise NotImplementedError(
+                        f"Cannot yet translate meters_up with {result.altitude_lower.units} upper altitude units"
+                    )
+        return result
+
+    def translate_absolute(self, translation: AbsoluteTranslation) -> Volume3D:
+        new_center = LatLngPoint(
+            lat=translation.new_latitude, lng=translation.new_longitude
+        )
+        kwargs = {k: v for k, v in self.items() if v is not None}
+        if self.outline_circle is not None:
+            kwargs["outline_circle"] = Circle(
+                center=new_center, radius=self.outline_circle.radius
+            )
+        if self.outline_polygon is not None:
+            ref0 = self.outline_polygon.vertex_average().as_s2sphere()
+            xy = [flatten(ref0, p.as_s2sphere()) for p in self.outline_polygon.vertices]
+            ref1 = new_center.as_s2sphere()
+            vertices = [LatLngPoint.from_s2(unflatten(ref1, p)) for p in xy]
+            kwargs["outline_polygon"] = Polygon(vertices=vertices)
+        return Volume3D(**kwargs)
 
     @staticmethod
     def from_flight_planning_api(vol: fp_api.Volume3D) -> Volume3D:
