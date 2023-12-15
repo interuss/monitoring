@@ -168,15 +168,17 @@ class FlightIntentValidation(TestScenario):
             "Validate flight intent too far ahead of time not planned",
             self._intents_extent,
         ) as validator:
+            self.begin_test_step("Attempt to plan flight intent too far ahead of time")
             submit_flight_intent(
                 self,
-                "Attempt to plan flight intent too far ahead of time",
                 "Incorrectly planned",
                 {InjectFlightResponseResult.Rejected},
                 {InjectFlightResponseResult.Failed: "Failure"},
                 self.tested_uss,
                 self.invalid_too_far_away.request,
             )
+            self.end_test_step()
+
             validator.expect_not_shared()
 
     def _validate_ended_cancellation(self):
@@ -222,9 +224,9 @@ class FlightIntentValidation(TestScenario):
             "Validate conflicting flight not planned",
             self._intents_extent,
         ) as validator:
+            self.begin_test_step("Attempt to plan flight conflicting by a tiny overlap")
             submit_flight_intent(
                 self,
-                "Attempt to plan flight conflicting by a tiny overlap",
                 "Incorrectly planned",
                 {
                     InjectFlightResponseResult.ConflictWithFlight,
@@ -234,6 +236,8 @@ class FlightIntentValidation(TestScenario):
                 self.tested_uss,
                 self.valid_conflict_tiny_overlap.request,
             )
+            self.end_test_step()
+
             validator.expect_not_shared()
 
     def cleanup(self):

@@ -213,5 +213,5 @@ original accepted request), or it should have been removed (because the USS reje
 
 
 ## Cleanup
-### Successful flight deletion check
+### ⚠️ Successful flight deletion check
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../../requirements/interuss/automated_testing/flight_planning.md)**

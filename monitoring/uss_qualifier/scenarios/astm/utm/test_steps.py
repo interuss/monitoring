@@ -603,7 +603,6 @@ def set_uss_available(
         if availability_version is None:
             check.record_failed(
                 summary=f"Availability of USS {uss_sub} could not be set to available",
-                severity=Severity.High,
                 details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
                 query_timestamps=[avail_query.request.timestamp],
             )
@@ -636,7 +635,6 @@ def set_uss_down(
         if availability_version is None:
             check.record_failed(
                 summary=f"Availability of USS {uss_sub} could not be set to down",
-                severity=Severity.High,
                 details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
                 query_timestamps=[avail_query.request.timestamp],
             )

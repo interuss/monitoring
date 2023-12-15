@@ -80,21 +80,42 @@ v1:
           resource_type: resources.flight_planning.FlightIntentsResource
           specification:
             file:
-              path: file://./test_data/che/flight_intents/conflicting_flights.yaml
+              path: file://./test_data/flight_intents/standard/conflicting_flights.yaml
+            transformations:
+              - relative_translation:
+                  # Put these flight intents in the DFW area
+                  degrees_north: 32.7181
+                  degrees_east: -96.7587
+
+                  # EGM96 geoid is 27.3 meters below the WGS84 ellipsoid at 32.7181, -96.7587
+                  # Ground level starts at roughly 120m above the EGM96 geoid
+                  # Therefore, ground level is at roughly 93m above the WGS84 ellipsoid
+                  meters_up: 93
 
         # Details of flights with invalid operational intents (used in flight intent validation scenario)
         invalid_flight_intents:
           resource_type: resources.flight_planning.FlightIntentsResource
           specification:
             intent_collection:
-              $ref: test_data.che.flight_intents.invalid_flight_intents
+              $ref: test_data.flight_intents.standard.invalid_flight_intents
+            transformations:
+              - relative_translation:
+                  degrees_north: 32.7181
+                  degrees_east: -96.7587
+                  meters_up: 93
 
         # Details of non-conflicting flights (used in data validation scenario)
         non_conflicting_flights:
           resource_type: resources.flight_planning.FlightIntentsResource
           specification:
             intent_collection:
-              $ref: file://../../test_data/usa/kentland/flight_intents/non_conflicting.yaml
+              # Note that $refs are relative to the file with the $ref (this one, in this case)
+              $ref: file://../../test_data/flight_intents/standard/non_conflicting.yaml
+            transformations:
+              - relative_translation:
+                  degrees_north: 32.7181
+                  degrees_east: -96.7587
+                  meters_up: 93
 
         # Location of DSS instance that can be used to verify flight planning outcomes
         dss:

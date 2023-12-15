@@ -1,0 +1,37 @@
+# Configuration to run just the ASTM F3548-21 part of the uspace.yaml configuration
+v1:
+  test_run:
+    resources:
+      $ref: ./uspace.yaml#/v1/test_run/resources
+    action:
+      $ref: ./uspace.yaml#/v1/test_run/action
+    execution:
+      stop_fast: true
+      skip_action_when:
+        - is_test_scenario: {}
+          except_when:
+            - has_ancestor:
+                which:
+                  - is_test_suite: {}
+                    regex_matches_name: ASTM F3548-21
+            - is_test_scenario: {}
+              regex_matches_name: Configure mock_uss locality
+            - is_test_scenario: {}
+              regex_matches_name: Unconfigure mock_uss locality
+  artifacts:
+    $ref: ./uspace.yaml#/v1/artifacts
+  validation:
+    criteria:
+      - applicability:
+          test_scenarios: {}
+        pass_condition:
+          each_element:
+            has_execution_error: false
+      - applicability:
+          failed_checks:
+            has_severity:
+              higher_than: Low
+        pass_condition:
+          elements:
+            count:
+              equal_to: 0

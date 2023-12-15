@@ -192,13 +192,16 @@ class ConflictHigherPriority(TestScenario):
 
         self.begin_test_case("Modify activated flight with pre-existing conflict")
         (
+            flight_1_intent,
             flight_1_oi_ref,
             flight_2_oi_ref,
         ) = self._modify_activated_flight_conflict_preexisting(flight_1_oi_ref)
         self.end_test_case()
 
         self.begin_test_case("Attempt to modify activated flight in conflict")
-        self._attempt_modify_activated_flight_conflict(flight_1_oi_ref, flight_2_oi_ref)
+        self._attempt_modify_activated_flight_conflict(
+            flight_1_intent, flight_1_oi_ref, flight_2_oi_ref
+        )
         self.end_test_case()
 
         self.end_test_scenario()
@@ -319,7 +322,7 @@ class ConflictHigherPriority(TestScenario):
 
     def _modify_activated_flight_conflict_preexisting(
         self, flight_1_oi_ref: Optional[OperationalIntentReference]
-    ) -> Tuple[OperationalIntentReference, OperationalIntentReference]:
+    ) -> Tuple[FlightIntent, OperationalIntentReference, OperationalIntentReference]:
         _ = delete_flight_intent(
             self, "Delete Flight 2", self.control_uss, self.flight2_id
         )
@@ -395,15 +398,16 @@ class ConflictHigherPriority(TestScenario):
                 flight_1_oi_ref = validator.expect_shared(
                     self.flight1m_activated.request
                 )
+                return self.flight1m_activated, flight_1_oi_ref, flight_2_oi_ref
             else:
                 flight_1_oi_ref = validator.expect_shared(
                     self.flight1_activated.request
                 )
-
-        return flight_1_oi_ref, flight_2_oi_ref
+                return self.flight1_activated, flight_1_oi_ref, flight_2_oi_ref
 
     def _attempt_modify_activated_flight_conflict(
         self,
+        flight_1_intent: FlightIntent,
         flight_1_oi_ref: OperationalIntentReference,
         flight_2_oi_ref: OperationalIntentReference,
     ):
@@ -440,7 +444,7 @@ class ConflictHigherPriority(TestScenario):
                 self.flight1_id,
             )
             validator.expect_shared(
-                self.flight1m_activated.request,
+                flight_1_intent.request,
                 skip_if_not_found=True,
             )
 

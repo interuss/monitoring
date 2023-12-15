@@ -20,12 +20,12 @@ A resources.astm.f3548.v21.DSSInstancesResource containing at least two DSS inst
 
 ### Test environment requirements test step
 
-#### DSS instance is publicly addressable check
+#### 🛑 DSS instance is publicly addressable check
 
 As per **[astm.f3548.v21.DSS0300](../../../requirements/astm/f3548/v21.md)** the DSS instance should be publicly addressable.
 As such, this check will fail if the resolved IP of the DSS host is a private IP address, unless that is explicitly
 expected.
 
-#### DSS instance is reachable check
+#### 🛑 DSS instance is reachable check
 As per **[astm.f3548.v21.DSS0300](../../../requirements/astm/f3548/v21.md)** the DSS instance should be publicly addressable.
 As such, this check will fail if the DSS is not reachable with a dummy query.
