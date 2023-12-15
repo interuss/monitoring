@@ -128,7 +128,9 @@ def expect_get_requests_to_mock_uss(
             get_requested = True
             break
     if not get_requested:
-        with scenario.check("Expect GET request", [participant_id]) as check:
+        with scenario.check(
+            "Expect GET request when no notification", [participant_id]
+        ) as check:
             check.record_failed(
                 summary=f"No GET request received at {mock_uss_base_url} for {id} ",
                 severity=Severity.High,

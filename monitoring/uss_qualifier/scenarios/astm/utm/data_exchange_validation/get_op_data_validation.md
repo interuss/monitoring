@@ -51,7 +51,7 @@ which is of equal priority and came first.
 ### [Validate flight 1 sharing test step](../validate_shared_operational_intent.md)
 Validate flight 1 is planned.
 
-### [Validate flight2 GET interaction test step](test_steps/validate_get_operational_intent.md)
+### [Validate flight2 GET interaction, if no notification test step](test_steps/validate_get_operational_intent.md)
 Validate that tested_uss makes a GET request for obtaining details of flight 2 from control_uss.
 In a previous step (Precondition - check tested_uss has no subscription in flight 2 area), we ensured that no notification of flight 2 was sent to tested_uss.
 Hence, tested_uss will need to make a GET request to obtain flight 2 details.
@@ -89,7 +89,7 @@ which is of equal priority and came first.
 ### [Validate flight 1 not shared by tested_uss test step](../validate_not_shared_operational_intent.md)
 Validate flight 1 is not shared with DSS, as plan failed.
 
-### [Validate flight 2 GET interaction test step](test_steps/validate_get_operational_intent.md)
+### [Validate flight2 GET interaction, if no notification test step](test_steps/validate_get_operational_intent.md)
 Validate that tested_uss makes a GET request for obtaining details of flight 2 from control_uss.
 In a previous step (Precondition - check tested_uss has no subscription in flight 2 area), we ensured that no notification of flight 2 was sent to tested_uss.
 Hence, tested_uss will need to make a GET request to obtain flight 2 details.
