@@ -95,20 +95,10 @@ class PendingCheck(object):
         summary: str,
         severity: Severity,
         details: str = "",
-        participants: Optional[Union[ParticipantID, List[ParticipantID]]] = None,
         query_timestamps: Optional[List[datetime]] = None,
         additional_data: Optional[dict] = None,
-        requirements: Optional[Union[str, List[str]]] = None,
     ) -> None:
         self._outcome_recorded = True
-        if isinstance(participants, str):
-            participants = [participants]
-        if participants is None:
-            participants = self._participants
-        if isinstance(requirements, str):
-            requirements = [requirements]
-        if requirements is None:
-            requirements = self._documentation.applicable_requirements
 
         if (
             self._stop_fast
@@ -126,9 +116,9 @@ class PendingCheck(object):
             "timestamp": StringBasedDateTime(arrow.utcnow()),
             "summary": summary,
             "details": details,
-            "requirements": requirements,
+            "requirements": self._documentation.applicable_requirements,
             "severity": severity,
-            "participants": participants,
+            "participants": self._participants,
         }
         if additional_data is not None:
             kwargs["additional_data"] = additional_data
@@ -145,22 +135,14 @@ class PendingCheck(object):
         if severity == Severity.Critical:
             raise TestRunCannotContinueError(f"{severity}-severity issue: {summary}")
 
-    def record_passed(
-        self,
-        participants: Optional[List[ParticipantID]] = None,
-        requirements: Optional[List[str]] = None,
-    ) -> None:
+    def record_passed(self) -> None:
         self._outcome_recorded = True
-        if participants is None:
-            participants = self._participants
-        if requirements is None:
-            requirements = self._documentation.applicable_requirements
 
         passed_check = PassedCheck(
             name=self._documentation.name,
             timestamp=StringBasedDateTime(arrow.utcnow()),
-            participants=participants,
-            requirements=requirements,
+            participants=self._participants,
+            requirements=self._documentation.applicable_requirements,
         )
         self._step_report.passed_checks.append(passed_check)
 

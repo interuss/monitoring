@@ -73,7 +73,6 @@ class DSSWrapper(object):
             self._scenario.record_query(q)
         check.record_failed(
             summary=f"Error when querying DSS",
-            participants=[self._dss.participant_id],
             severity=Severity.High,
             details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
             query_timestamps=[q.request.timestamp for q in e.queries],
@@ -115,7 +114,6 @@ class DSSWrapper(object):
             check.record_failed(
                 summary=fail_msg,
                 severity=severity,
-                participants=[self._dss.participant_id],
                 details=f"{fail_details}\n{q.status_code} response: "
                 + "\n".join(q.errors)
                 if fail_details is not None
@@ -233,7 +231,6 @@ class DSSWrapper(object):
                 check.record_failed(
                     summary=f"DSS did not return correct ISA",
                     severity=Severity.High,
-                    participants=[self._dss.participant_id],
                     details=f"Expected ISA ID {isa_id} but got {isa.id}",
                     query_timestamps=[isa.query.request.timestamp],
                 )
@@ -692,7 +689,6 @@ class DSSWrapper(object):
                 check.record_failed(
                     summary=f"DSS did not return correct subscription",
                     severity=Severity.High,
-                    participants=[self._dss.participant_id],
                     details=f"Expected Subscription ID {sub_id} but got {sub.subscription.id}",
                     query_timestamps=[sub.query.request.timestamp],
                 )
@@ -892,7 +888,6 @@ class DSSWrapper(object):
                 check.record_failed(
                     summary=f"Deleted subscription did not match",
                     severity=Severity.High,
-                    participants=[self._dss.participant_id],
                     details=f"DSS reported deletion of version {sub_version} while expecting {del_sub.subscription.version}",
                     query_timestamps=[del_sub.query.request.timestamp],
                 )
