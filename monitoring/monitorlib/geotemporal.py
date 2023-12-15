@@ -91,9 +91,6 @@ class Volume4DTemplate(ImplicitDict):
         result = Volume4D(**kwargs)
 
         if self.transformations:
-            from loguru import logger
-
-            logger.warning("Applying transformations")
             for xform in self.transformations:
                 result = result.transform(xform)
 
