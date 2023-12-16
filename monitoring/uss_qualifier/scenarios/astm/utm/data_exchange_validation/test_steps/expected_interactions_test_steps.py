@@ -112,7 +112,7 @@ def expect_get_requests_to_mock_uss_when_no_notification(
     """
     This step checks a GET request was made to mock_uss for an existing entity, from time 'st' to now
     Args:
-        mock_uss_base_url: url of the mock_uss that is managing the entity
+        mock_uss_base_url: url of the mock_uss that is managing  the entity
         id: entity id
         participant_id: id of the participant responsible to send GET request
 
