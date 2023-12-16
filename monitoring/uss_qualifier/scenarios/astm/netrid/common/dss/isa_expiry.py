@@ -98,7 +98,6 @@ class ISAExpiry(GenericTestScenario):
                 check.record_failed(
                     summary=f"Expired ISA {self._isa_id} found in search results",
                     severity=Severity.Medium,
-                    participants=[self._dss.participant_id],
                     details=f"Searched for area {self._isa_area} with unspecified end and start time.",
                     query_timestamps=[
                         created_isa.dss_query.query.request.timestamp,

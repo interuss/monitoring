@@ -188,7 +188,6 @@ class AggregateChecks(GenericTestScenario):
                         summary=f"found {len(cleartext_queries)} cleartext http queries",
                         details=f"unique cleartext urls: {urls}",
                         severity=Severity.Medium,
-                        participants=[participant_id],
                         query_timestamps=timestamps,
                     )
         else:
@@ -233,14 +232,12 @@ class AggregateChecks(GenericTestScenario):
                     check.record_failed(
                         summary=f"95th percentile of durations for DP display_data details queries is higher than threshold",
                         severity=Severity.Medium,
-                        participants=[participant],
                         details=f"threshold: {self._rid_version.dp_details_resp_percentile95_s}s, 95th percentile: {p95}s",
                     )
                 if p99 > self._rid_version.dp_details_resp_percentile99_s:
                     check.record_failed(
                         summary=f"99th percentile of durations for DP display_data details queries is higher than threshold",
                         severity=Severity.Medium,
-                        participants=[participant],
                         details=f"threshold: {self._rid_version.dp_details_resp_percentile99_s}s, 99th percentile: {p99}s",
                     )
 
@@ -279,7 +276,6 @@ class AggregateChecks(GenericTestScenario):
                     check.record_failed(
                         summary=f"95th percentile of /flights?view requests is {p95} s",
                         severity=Severity.Medium,
-                        participants=[participant],
                         details=f"expected less than {self._rid_version.sp_data_resp_percentile95_s} s, was {p95}",
                     )
             with self.check("99th percentile response time", [participant]) as check:
@@ -287,7 +283,6 @@ class AggregateChecks(GenericTestScenario):
                     check.record_failed(
                         summary=f"99th percentile of /flights?view requests is {p99} s",
                         severity=Severity.Medium,
-                        participants=[participant],
                         details=f"expected less than {self._rid_version.sp_data_resp_percentile99_s} s, was {p99}",
                     )
 
@@ -339,14 +334,12 @@ class AggregateChecks(GenericTestScenario):
                     check.record_failed(
                         summary=f"95th percentile of durations for initial DP display_data queries is higher than threshold",
                         severity=Severity.Medium,
-                        participants=[participant],
                         details=f"threshold: {self._rid_version.dp_init_resp_percentile95_s}, 95th percentile: {init_95th}",
                     )
                 if init_99th > self._rid_version.dp_init_resp_percentile99_s:
                     check.record_failed(
                         summary=f"99th percentile of durations for initial DP display_data queries is higher than threshold",
                         severity=Severity.Medium,
-                        participants=[participant],
                         details=f"threshold: {self._rid_version.dp_init_resp_percentile99_s}, 99th percentile: {init_99th}",
                     )
 
@@ -357,14 +350,12 @@ class AggregateChecks(GenericTestScenario):
                     check.record_failed(
                         summary=f"95th percentile of durations for subsequent DP display_data queries is higher than threshold",
                         severity=Severity.Medium,
-                        participants=[participant],
                         details=f"threshold: {self._rid_version.dp_data_resp_percentile95_s}, 95th percentile: {subsequent_95th}",
                     )
                 if subsequent_99th > self._rid_version.dp_data_resp_percentile99_s:
                     check.record_failed(
                         summary=f"99th percentile of durations for subsequent DP display_data queries is higher than threshold",
                         severity=Severity.Medium,
-                        participants=[participant],
                         details=f"threshold: {self._rid_version.dp_data_resp_percentile99_s}, 95th percentile: {subsequent_99th}",
                     )
 

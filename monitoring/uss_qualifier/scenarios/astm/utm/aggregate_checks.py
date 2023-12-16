@@ -114,7 +114,6 @@ class AggregateChecks(TestScenario):
                 if p95 > constants.MaxRespondToOIDetailsRequestSeconds:
                     check.record_failed(
                         summary=f"95th percentile of durations for operational intent details requests to USS is higher than threshold",
-                        participants=[participant],
                         details=f"threshold: {constants.MaxRespondToOIDetailsRequestSeconds}s, 95th percentile: {p95}s",
                     )
 

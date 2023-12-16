@@ -184,14 +184,12 @@ class Misbehavior(GenericTestScenario):
                 if uss_flights_query.success:
                     check.record_failed(
                         "Unauthenticated request for flights to USS was fulfilled",
-                        participants=[participant_id],
                         severity=Severity.Medium,
                         details=f"Queried flights on {flights_url} for USS {participant_id} with no credentials, expected a failure but got a success reply.",
                     )
                 elif uss_flights_query.status_code != 401:
                     check.record_failed(
                         "Unauthenticated request for flights failed with wrong HTTP code",
-                        participants=[participant_id],
                         severity=Severity.Medium,
                         details=f"Queried flights on {flights_url} for USS {participant_id} with no credentials, expected an HTTP 401 but got an HTTP {uss_flights_query.status_code}.",
                     )
@@ -211,14 +209,12 @@ class Misbehavior(GenericTestScenario):
                     if uss_flight_details_query.success:
                         check.record_failed(
                             "Unauthenticated request for flight details to USS was fulfilled",
-                            participants=[participant_id],
                             severity=Severity.Medium,
                             details=f"Queried flight details on {flights_url} for USS {participant_id} for flight {flight.id} with no credentials, expected a failure but got a success reply.",
                         )
                     elif uss_flight_details_query.status_code != 401:
                         check.record_failed(
                             "Unauthenticated request for flight details failed with wrong HTTP code",
-                            participants=[participant_id],
                             severity=Severity.Medium,
                             details=f"Queried flight details on {flights_url} for USS {participant_id} for flight {flight.id} with no credentials, expected an HTTP 401 but got an HTTP {uss_flight_details_query.status_code}.",
                         )
