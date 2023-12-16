@@ -100,7 +100,7 @@ def expect_no_interuss_post_interactions(
     scenario.end_test_step()
 
 
-def expect_get_requests_to_mock_uss(
+def expect_get_requests_to_mock_uss_when_no_notification(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,

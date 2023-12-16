@@ -31,7 +31,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
     expect_interuss_post_interactions,
-    expect_get_requests_to_mock_uss,
+    expect_get_requests_to_mock_uss_when_no_notification,
     expect_no_interuss_post_interactions,
     check_any_notification,
 )
@@ -197,7 +197,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             )
 
         if tested_uss_notified:
-            expect_get_requests_to_mock_uss(
+            expect_get_requests_to_mock_uss_when_no_notification(
                 self,
                 self.control_uss,
                 planning_time,
@@ -292,7 +292,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             validator.expect_not_shared()
 
         if tested_uss_notified:
-            expect_get_requests_to_mock_uss(
+            expect_get_requests_to_mock_uss_when_no_notification(
                 self,
                 self.control_uss,
                 planning_time,
