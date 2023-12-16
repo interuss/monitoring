@@ -4,8 +4,6 @@ from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
 )
 from monitoring.monitorlib.temporal import TimeDuringTest
 import arrow
-from implicitdict import StringBasedDateTime
-
 from monitoring.monitorlib.temporal import Time
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
@@ -195,8 +193,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             validator.expect_shared(
                 flight_1,
             )
-
-        if tested_uss_notified:
+        if not tested_uss_notified:
             expect_get_requests_to_mock_uss_when_no_notification(
                 self,
                 self.control_uss,
@@ -291,7 +288,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             )
             validator.expect_not_shared()
 
-        if tested_uss_notified:
+        if not tested_uss_notified:
             expect_get_requests_to_mock_uss_when_no_notification(
                 self,
                 self.control_uss,
