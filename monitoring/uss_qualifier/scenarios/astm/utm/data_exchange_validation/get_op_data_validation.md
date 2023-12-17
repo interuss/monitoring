@@ -35,12 +35,14 @@ Flight 2 should be successfully planned by the control USS.
 ### [Validate flight 2 sharing test step](../validate_shared_operational_intent.md)
 Validate that flight 2 is planned
 
-### Precondition - check tested_uss has no subscription in flight 2 area test step
+### Check for notification to tested_uss due to subscription in flight 2 area test step
 In order to run this test scenario, we need tested_uss to trigger GET operational intent request to mock_uss.
-So we need to make sure that there is no subscription of tested_uss, that would trigger notification of flight 2 to tested_uss.
-No notification pushed by control_uss to tested_uss, will ensure that tested_uss will make a GET request to control_uss for flight 2 details,
-while planning a nearby flight.
-If a notification is sent to tested_uss, the precondition for running this scenario will not be satisfied.
+But, if there is a subscription by tested_uss, that would trigger notification of flight 2 to tested_uss.
+Some USSes will not make a GET request to control_uss for flight 2 details, while planning a nearby flight,
+if they got a notification for flight2. Hence, if a USS didn't make a GET request, we will only fail it if didn't get
+a notification, or else, a precondition for the test will not be met. Some USSes might make a GET request despite getting
+a notification, but as it would not be clear whether invalid information through notification or GET request was used for planning,
+the test will be not be continued.
 
 ### [Tested_uss plans flight 1 test step](../../../flight_planning/plan_flight_intent.md)
 The test driver attempts to plan flight 1 via the tested USS. It checks if any conflicts with flight 2
@@ -49,7 +51,7 @@ which is of equal priority and came first.
 ### [Validate flight 1 sharing test step](../validate_shared_operational_intent.md)
 Validate flight 1 is planned.
 
-### [Validate flight2 GET interaction test step](test_steps/validate_get_operational_intent.md)
+### [Validate flight2 GET interaction, if no notification test step](test_steps/validate_get_operational_intent.md)
 Validate that tested_uss makes a GET request for obtaining details of flight 2 from control_uss.
 In a previous step (Precondition - check tested_uss has no subscription in flight 2 area), we ensured that no notification of flight 2 was sent to tested_uss.
 Hence, tested_uss will need to make a GET request to obtain flight 2 details.
@@ -71,12 +73,14 @@ The control_uss, which is mock_uss is instructed to share invalid data with othe
 ### [Validate flight 2 shared operational intent with invalid data test step](test_steps/validate_sharing_operational_intent_but_with_invalid_interuss_data.md)
 Validate that flight 2 is shared with invalid data as a modified behavior is injected by uss_qualifier for a negative test.
 
-### Precondition - check tested_uss has no subscription in flight 2 area test step
+### Check for notification to tested_uss due to subscription in flight 2 area test step
 In order to run this test scenario, we need tested_uss to trigger GET operational intent request to mock_uss.
-So we need to make sure that there is no subscription of tested_uss, that would trigger notification of flight 2 to tested_uss.
-No notification pushed by control_uss to tested_uss, will ensure that tested_uss will make a GET request to control_uss for flight 2 details,
-while planning a nearby flight.
-If a notification is sent to tested_uss, the precondition for running this scenario will not be satisfied.
+But, if there is a subscription by tested_uss, that would trigger notification of flight 2 to tested_uss.
+Some USSes will not make a GET request to control_uss for flight 2 details, while planning a nearby flight,
+if they got a notification for flight2. Hence, if a USS didn't make a GET request, we will only fail it if didn't get
+a notification, or else, a precondition for the test will not be met. Some USSes might make a GET request despite getting
+a notification, but as it would not be clear whether invalid information through notification or GET request was used for planning,
+the test will be not be continued.
 
 ### [Tested_uss attempts to plan flight 1, expect failure test step](test_steps/plan_flight_intent_expect_failed.md)
 The test driver attempts to plan the flight 1 via the tested_uss. It checks if any conflicts with flight 2
@@ -85,7 +89,7 @@ which is of equal priority and came first.
 ### [Validate flight 1 not shared by tested_uss test step](../validate_not_shared_operational_intent.md)
 Validate flight 1 is not shared with DSS, as plan failed.
 
-### [Validate flight 2 GET interaction test step](test_steps/validate_get_operational_intent.md)
+### [Validate flight2 GET interaction, if no notification test step](test_steps/validate_get_operational_intent.md)
 Validate that tested_uss makes a GET request for obtaining details of flight 2 from control_uss.
 In a previous step (Precondition - check tested_uss has no subscription in flight 2 area), we ensured that no notification of flight 2 was sent to tested_uss.
 Hence, tested_uss will need to make a GET request to obtain flight 2 details.

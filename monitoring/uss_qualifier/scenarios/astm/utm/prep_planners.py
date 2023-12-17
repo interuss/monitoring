@@ -9,6 +9,9 @@ from monitoring.uss_qualifier.resources.flight_planning import (
 from monitoring.uss_qualifier.scenarios.flight_planning.prep_planners import (
     PrepareFlightPlanners as GenericPrepareFlightPlanners,
 )
+from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
+    MockUSSResource,
+)
 
 
 class PrepareFlightPlanners(GenericPrepareFlightPlanners):
@@ -19,6 +22,7 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
         flight_planners: FlightPlannersResource,
         dss: DSSInstanceResource,
         flight_intents: FlightIntentsResource,
+        mock_uss: Optional[MockUSSResource] = None,
         flight_intents2: Optional[FlightIntentsResource] = None,
         flight_intents3: Optional[FlightIntentsResource] = None,
         flight_intents4: Optional[FlightIntentsResource] = None,
@@ -26,6 +30,7 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
         super(PrepareFlightPlanners, self).__init__(
             flight_planners,
             flight_intents,
+            mock_uss,
             flight_intents2,
             flight_intents3,
             flight_intents4,

@@ -1,11 +1,10 @@
 from typing import Optional, Dict
-
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
-from monitoring.monitorlib.temporal import TimeDuringTest, Time
+from monitoring.monitorlib.temporal import TimeDuringTest
 import arrow
-
+from monitoring.monitorlib.temporal import Time
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
@@ -24,8 +23,16 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.invalid_op_test_steps import (
     plan_flight_intent_expect_failed,
 )
-from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import OpIntentValidator
-
+from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
+    OpIntentValidator,
+    OpIntentValidationFailureType,
+)
+from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
+    expect_interuss_post_interactions,
+    expect_get_requests_to_mock_uss_when_no_notification,
+    expect_no_interuss_post_interactions,
+    check_any_notification,
+)
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUssFlightBehavior,
 )
@@ -138,6 +145,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
     ):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_2 = self.flight_2.resolve(times)
+
         with OpIntentValidator(
             self,
             self.control_uss_client,
@@ -145,6 +153,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 2 sharing",
             self._intents_extent,
         ) as validator:
+            planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
                 self,
                 "Control_uss plans flight 2",
@@ -152,12 +161,16 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 flight_2,
             )
 
-            validator.expect_shared(flight_2)
+            flight_2_oi_ref = validator.expect_shared(flight_2)
 
         self.begin_test_step(
-            "Precondition - check tested_uss has no subscription in flight 2 area"
+            "Check for notification to tested_uss due to subscription in flight 2 area"
         )
-        # ToDo - Add the test step details
+        tested_uss_notified = check_any_notification(
+            self,
+            self.control_uss,
+            planning_time,
+        )
         self.end_test_step()
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
@@ -170,24 +183,36 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 1 sharing",
             self._intents_extent,
         ) as validator:
-            _, self.flight_1_id = plan_flight(
+            planning_time = Time(arrow.utcnow().datetime)
+            plan_res, self.flight_1_id = plan_flight(
                 self,
                 "Tested_uss plans flight 1",
                 self.tested_uss_client,
                 flight_1,
             )
-
             validator.expect_shared(
                 flight_1,
             )
+        if not tested_uss_notified:
+            expect_get_requests_to_mock_uss_when_no_notification(
+                self,
+                self.control_uss,
+                planning_time,
+                self.control_uss.base_url,
+                flight_2_oi_ref.id,
+                self.tested_uss_client.participant_id,
+                "Validate flight2 GET interaction, if no notification",
+            )
 
-        self.begin_test_step("Validate flight2 GET interaction")
-        # ToDo - Add the test step details
-        self.end_test_step()
-
-        self.begin_test_step("Validate flight1 Notification sent to Control_uss")
-        # ToDo - Add the test step details
-        self.end_test_step()
+        expect_interuss_post_interactions(
+            self,
+            self.control_uss,
+            planning_time,
+            self.control_uss.base_url,
+            self.tested_uss_client.participant_id,
+            plan_res.queries[0].request.timestamp,
+            "Validate flight1 Notification sent to Control_uss",
+        )
 
         delete_flight(
             self, "Delete tested_uss flight", self.tested_uss_client, self.flight_1_id
@@ -202,58 +227,85 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_info = self.flight_2.resolve(times)
 
+        modify_field1 = "state"
+        modify_field2 = "priority"
         # Modifying the request with invalid data
         behavior = MockUssFlightBehavior(
             modify_sharing_methods=["GET", "POST"],
             modify_fields={
-                "reference": {"state": "Flying"},
-                "details": {"priority": -1},
+                "reference": {modify_field1: "Flying"},
+                "details": {modify_field2: 1.2},
             },
         )
 
         additional_fields = {"behavior": behavior}
-
-        _, self.flight_2_id = plan_flight(
+        with OpIntentValidator(
             self,
-            "Control_uss plans flight 2, sharing invalid operational intent data",
             self.control_uss_client,
-            flight_info,
-            additional_fields,
-        )
+            self.dss,
+            "Validate flight 2 shared operational intent with invalid data",
+            self._intents_extent,
+        ) as validator:
+            planning_time = Time(arrow.utcnow().datetime)
+            _, self.flight_2_id = plan_flight(
+                self,
+                "Control_uss plans flight 2, sharing invalid operational intent data",
+                self.control_uss_client,
+                flight_info,
+                additional_fields,
+            )
+            flight_2_oi_ref = validator.expect_shared_with_invalid_data(
+                flight_info,
+                validation_failure_type=OpIntentValidationFailureType.DataFormat,
+                invalid_fields=[modify_field1, modify_field2],
+            )
 
         self.begin_test_step(
-            "Validate flight 2 shared operational intent with invalid data"
+            "Check for notification to tested_uss due to subscription in flight 2 area"
         )
-        # ToDo - Add the test step details
-        self.end_test_step()
-
-        self.begin_test_step(
-            "Precondition - check tested_uss has no subscription in flight 2 area"
+        tested_uss_notified = check_any_notification(
+            self,
+            self.control_uss,
+            planning_time,
         )
-        # ToDo - Add the test step details
         self.end_test_step()
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
-
-        _, self.flight_1_id = plan_flight_intent_expect_failed(
+        with OpIntentValidator(
             self,
-            "Tested_uss attempts to plan flight 1, expect failure",
             self.tested_uss_client,
-            flight_1,
+            self.dss,
+            "Validate flight 1 not shared by tested_uss",
+            self._intents_extent,
+        ) as validator:
+            planning_time = Time(arrow.utcnow().datetime)
+            _, self.flight_1_id = plan_flight_intent_expect_failed(
+                self,
+                "Tested_uss attempts to plan flight 1, expect failure",
+                self.tested_uss_client,
+                flight_1,
+            )
+            validator.expect_not_shared()
+
+        if not tested_uss_notified:
+            expect_get_requests_to_mock_uss_when_no_notification(
+                self,
+                self.control_uss,
+                planning_time,
+                self.control_uss.base_url,
+                flight_2_oi_ref.id,
+                self.tested_uss_client.participant_id,
+                "Validate flight2 GET interaction, if no notification",
+            )
+
+        expect_no_interuss_post_interactions(
+            self,
+            self.control_uss,
+            planning_time,
+            self.tested_uss_client.participant_id,
+            "Validate flight 1 Notification not sent to Control_uss",
         )
-
-        self.begin_test_step("Validate flight 1 not shared by tested_uss")
-        # ToDo - Add the test step details
-        self.end_test_step()
-
-        self.begin_test_step("Validate flight 2 GET interaction")
-        # ToDo - Add the test step details
-        self.end_test_step()
-
-        self.begin_test_step("Validate flight 1 Notification not sent to Control_uss")
-        # ToDo - Add the test step details
-        self.end_test_step()
 
         delete_flight(
             self, "Delete Control_uss flight", self.control_uss_client, self.flight_2_id

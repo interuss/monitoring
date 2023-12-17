@@ -16,6 +16,9 @@ from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
+    MockUSSResource,
+)
 
 MAX_TEST_DURATION = timedelta(minutes=15)
 """The maximum time the tests depending on the area being clear might last."""
@@ -29,6 +32,7 @@ class PrepareFlightPlanners(TestScenario):
         self,
         flight_planners: FlightPlannersResource,
         flight_intents: FlightIntentsResource,
+        mock_uss: Optional[MockUSSResource] = None,
         flight_intents2: Optional[FlightIntentsResource] = None,
         flight_intents3: Optional[FlightIntentsResource] = None,
         flight_intents4: Optional[FlightIntentsResource] = None,
@@ -59,6 +63,10 @@ class PrepareFlightPlanners(TestScenario):
         self.flight_planners = {
             fp.participant_id: fp.client for fp in flight_planners.flight_planners
         }
+        if mock_uss is not None:
+            self.flight_planners.update(
+                {mock_uss.mock_uss.participant_id: mock_uss.mock_uss.flight_planner}
+            )
 
     def run(self, context):
         self.begin_test_scenario(context)
