@@ -90,9 +90,9 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
         )
 
         # Declare virtual USS as down at DSS test step
-        set_uss_down(
-            self, "Declare virtual USS as down at DSS", self.dss, self.uss_qualifier_sub
-        )
+        self.begin_test_step("Declare virtual USS as down at DSS")
+        set_uss_down(self, self.dss, self.uss_qualifier_sub)
+        self.end_test_step()
 
         # Tested USS attempts to plan high-priority flight 2 test step
         with OpIntentValidator(
@@ -121,12 +121,9 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
             validator.expect_not_shared()
 
         # Restore virtual USS availability at DSS test step
-        set_uss_available(
-            self,
-            "Restore virtual USS availability at DSS",
-            self.dss,
-            self.uss_qualifier_sub,
-        )
+        self.begin_test_step("Restore virtual USS availability at DSS")
+        set_uss_available(self, self.dss, self.uss_qualifier_sub)
+        self.end_test_step()
 
         return oi_ref
 
@@ -140,9 +137,9 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
         )
 
         # Declare virtual USS as down at DSS test step
-        set_uss_down(
-            self, "Declare virtual USS as down at DSS", self.dss, self.uss_qualifier_sub
-        )
+        self.begin_test_step("Declare virtual USS as down at DSS")
+        set_uss_down(self, self.dss, self.uss_qualifier_sub)
+        self.end_test_step()
 
         # Tested USS attempts to plan high-priority flight 2 test step
         with OpIntentValidator(
@@ -171,12 +168,9 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
             validator.expect_not_shared()
 
         # Restore virtual USS availability at DSS test step
-        set_uss_available(
-            self,
-            "Restore virtual USS availability at DSS",
-            self.dss,
-            self.uss_qualifier_sub,
-        )
+        self.begin_test_step("Restore virtual USS availability at DSS")
+        set_uss_available(self, self.dss, self.uss_qualifier_sub)
+        self.end_test_step()
 
         return oi_ref
 
@@ -188,9 +182,9 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
         )
 
         # Declare virtual USS as down at DSS test step
-        set_uss_down(
-            self, "Declare virtual USS as down at DSS", self.dss, self.uss_qualifier_sub
-        )
+        self.begin_test_step("Declare virtual USS as down at DSS")
+        set_uss_down(self, self.dss, self.uss_qualifier_sub)
+        self.end_test_step()
 
         # Tested USS attempts to plan high-priority flight 2 test step
         with OpIntentValidator(

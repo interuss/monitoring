@@ -144,9 +144,9 @@ class DownUSS(TestScenario):
         )
         self.end_test_step()
 
-        set_uss_available(
-            self, "Restore virtual USS availability", self.dss, self.uss_qualifier_sub
-        )
+        self.begin_test_step("Restore virtual USS availability")
+        set_uss_available(self, self.dss, self.uss_qualifier_sub)
+        self.end_test_step()
 
         self.begin_test_step("Clear operational intents created by virtual USS")
         self._clear_op_intents()
@@ -216,9 +216,9 @@ class DownUSS(TestScenario):
         )
 
         # Declare virtual USS as down at DSS test step
-        set_uss_down(
-            self, "Declare virtual USS as down at DSS", self.dss, self.uss_qualifier_sub
-        )
+        self.begin_test_step("Declare virtual USS as down at DSS")
+        set_uss_down(self, self.dss, self.uss_qualifier_sub)
+        self.end_test_step()
 
         # Tested USS attempts to plan Flight 1 test step
         with OpIntentValidator(
