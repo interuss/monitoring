@@ -7,6 +7,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
+from monitoring.monitorlib.clients.mock_uss.interactions import QueryDirection
 from monitoring.monitorlib.temporal import TimeDuringTest
 import arrow
 from monitoring.monitorlib.temporal import Time
@@ -40,10 +41,10 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     OpIntentValidationFailureType,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
-    expect_interuss_post_interactions,
-    expect_get_requests_to_mock_uss_when_no_notification,
     expect_no_interuss_post_interactions,
-    check_any_notification,
+    expect_mock_uss_receives_op_intent_notification,
+    mock_uss_interactions,
+    is_op_intent_notification_with_id,
 )
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUssFlightBehavior,
@@ -58,6 +59,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     delete_flight,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
+from uas_standards.astm.f3548.v21.api import OperationID
 
 
 class GetOpResponseDataValidationByUSS(TestScenario):
@@ -168,6 +170,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self._intents_extent,
         ) as validator:
             self.begin_test_step("mock_uss plans flight 2")
+            flight_2_planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
                 self,
                 self.mock_uss_client,
@@ -188,7 +191,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self._intents_extent,
         ) as validator:
             self.begin_test_step("tested_uss plans flight 1")
-            planning_time = Time(arrow.utcnow().datetime)
+            flight_1_planning_time = Time(arrow.utcnow().datetime)
             plan_res, self.flight_1_id = plan_flight(
                 self,
                 self.tested_uss_client,
@@ -202,31 +205,48 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.begin_test_step(
             "Check for notification to tested_uss due to subscription in flight 2 area"
         )
-        tested_uss_notified = check_any_notification(
-            self,
-            self.mock_uss,
-            planning_time,
+        tested_uss_notifications, _ = mock_uss_interactions(
+            scenario=self,
+            mock_uss=self.mock_uss,
+            op_id=OperationID.NotifyOperationalIntentDetailsChanged,
+            direction=QueryDirection.Outgoing,
+            since=flight_2_planning_time,
+            is_applicable=is_op_intent_notification_with_id(flight_2_oi_ref.id),
         )
         self.end_test_step()
 
         self.begin_test_step("Validate flight2 GET interaction, if no notification")
-        if not tested_uss_notified:
-            expect_get_requests_to_mock_uss_when_no_notification(
-                self,
-                self.mock_uss,
-                planning_time,
-                self.mock_uss.base_url,
-                flight_2_oi_ref.id,
-                self.tested_uss_client.participant_id,
+        if not tested_uss_notifications:
+            tested_uss_get_requests, query = mock_uss_interactions(
+                scenario=self,
+                mock_uss=self.mock_uss,
+                op_id=OperationID.GetOperationalIntentDetails,
+                direction=QueryDirection.Incoming,
+                since=flight_1_planning_time,
+                query_params={"entity_id": flight_2_oi_ref.id},
+            )
+            with self.check(
+                "Expect GET request when no notification",
+                [self.tested_uss_client.participant_id],
+            ) as check:
+                if not tested_uss_get_requests:
+                    check.record_failed(
+                        summary=f"mock_uss did not GET op intent details when planning",
+                        details=f"mock_uss did not receive a request to GET operational intent details for operational intent {flight_2_oi_ref.id}. tested_uss was not sent a notification with the operational intent details, so they should have requested the operational intent details during planning.",
+                        query_timestamps=[query.request.timestamp],
+                    )
+        else:
+            self.record_note(
+                "No flight 2a GET expected reason",
+                f"Notifications found to {', '.join(n.query.request.url for n in tested_uss_notifications)}",
             )
         self.end_test_step()
 
         self.begin_test_step("Validate flight1 Notification sent to mock_uss")
-        expect_interuss_post_interactions(
+        expect_mock_uss_receives_op_intent_notification(
             self,
             self.mock_uss,
-            planning_time,
-            self.mock_uss.base_url,
+            flight_1_planning_time,
             self.tested_uss_client.participant_id,
             plan_res.queries[0].request.timestamp,
         )
@@ -266,6 +286,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self.begin_test_step(
                 "mock_uss plans flight 2, sharing invalid operational intent data"
             )
+            flight_2_planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
                 self,
                 self.mock_uss_client,
@@ -289,7 +310,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self._intents_extent,
         ) as validator:
             self.begin_test_step("tested_uss attempts to plan flight 1, expect failure")
-            planning_time = Time(arrow.utcnow().datetime)
+            flight_1_planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_1_id = plan_flight_intent_expect_failed(
                 self,
                 self.tested_uss_client,
@@ -301,30 +322,48 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.begin_test_step(
             "Check for notification to tested_uss due to subscription in flight 2 area"
         )
-        tested_uss_notified = check_any_notification(
-            self,
-            self.mock_uss,
-            planning_time,
+        tested_uss_notifications, _ = mock_uss_interactions(
+            scenario=self,
+            mock_uss=self.mock_uss,
+            op_id=OperationID.NotifyOperationalIntentDetailsChanged,
+            direction=QueryDirection.Outgoing,
+            since=flight_2_planning_time,
+            is_applicable=is_op_intent_notification_with_id(flight_2_oi_ref.id),
         )
         self.end_test_step()
 
-        if not tested_uss_notified:
-            self.begin_test_step("Validate flight2 GET interaction, if no notification")
-            expect_get_requests_to_mock_uss_when_no_notification(
-                self,
-                self.mock_uss,
-                planning_time,
-                self.mock_uss.base_url,
-                flight_2_oi_ref.id,
-                self.tested_uss_client.participant_id,
+        self.begin_test_step("Validate flight2 GET interaction, if no notification")
+        if not tested_uss_notifications:
+            tested_uss_get_requests, query = mock_uss_interactions(
+                scenario=self,
+                mock_uss=self.mock_uss,
+                op_id=OperationID.GetOperationalIntentDetails,
+                direction=QueryDirection.Incoming,
+                since=flight_1_planning_time,
+                query_params={"entity_id": flight_2_oi_ref.id},
             )
-            self.end_test_step()
+            with self.check(
+                "Expect GET request when no notification",
+                [self.tested_uss_client.participant_id],
+            ) as check:
+                if not tested_uss_get_requests:
+                    check.record_failed(
+                        summary=f"mock_uss did not GET op intent details when planning",
+                        details=f"mock_uss did not receive a request to GET operational intent details for operational intent {flight_2_oi_ref.id}. tested_uss was not sent a notification with the operational intent details, so they should have requested the operational intent details during planning.",
+                        query_timestamps=[query.request.timestamp],
+                    )
+        else:
+            self.record_note(
+                "No flight 2b GET expected reason",
+                f"Notifications found to {', '.join(n.query.request.url for n in tested_uss_notifications)}",
+            )
+        self.end_test_step()
 
         self.begin_test_step("Validate flight 1 Notification not sent to mock_uss")
         expect_no_interuss_post_interactions(
             self,
             self.mock_uss,
-            planning_time,
+            flight_1_planning_time,
             self.tested_uss_client.participant_id,
         )
         self.end_test_step()

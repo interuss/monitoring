@@ -46,8 +46,9 @@ Validate flight 1 is planned.
 In the following test step, we want to assert that tested_uss must have retrieved operational intent details from
 mock_uss via a GET request.  This assertion is only valid, however, if tested_uss did not obtain the  operational
 intent details in a different way -- specifically, a notification due to a pre-existing subscription.  In this test
-step, we determine if tested_uss had a pre-existing subscription by checking if mock_uss sent a notification to
-tested_uss.
+step, we determine if tested_uss had a pre-existing subscription by:
+
+#### [checking if mock_uss sent a notification to tested_uss](test_steps/query_mock_uss_interactions.md)
 
 ### [Validate flight2 GET interaction, if no notification test step](test_steps/validate_get_operational_intent.md)
 This step is skipped if a notification to tested_uss was found in the previous step.
@@ -80,8 +81,9 @@ Validate flight 1 is not shared with DSS, as plan failed.
 In the following test step, we want to assert that tested_uss must have retrieved operational intent details from
 mock_uss via a GET request.  This assertion is only valid, however, if tested_uss did not obtain the  operational
 intent details in a different way -- specifically, a notification due to a pre-existing subscription.  In this test
-step, we determine if tested_uss had a pre-existing subscription by checking if mock_uss sent a notification to
-tested_uss.
+step, we determine if tested_uss had a pre-existing subscription by:
+
+#### [checking if mock_uss sent a notification to tested_uss](test_steps/query_mock_uss_interactions.md)
 
 ### [Validate flight2 GET interaction, if no notification test step](test_steps/validate_get_operational_intent.md)
 This step is skipped if a notification to tested_uss was found in the previous step.

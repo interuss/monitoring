@@ -2,10 +2,10 @@
 
 This step verifies that, when creating or modifying an operational intent, a USS sent the required notification for a relevant subscription owned by a mock_uss instance by checking the interactions of that mock_uss instance.
 
-## MockUSS interactions request check
+## 🛑 MockUSS interactions request check
 **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
 
-## Expect Notification sent check
+## ⚠️ Expect Notification sent check
 As per **[astm.f3548.v21.SCD0085](../../../../../requirements/astm/f3548/v21.md)**, the notification should be sent by a
 USS about its operational intent to the subscribing USS in no more than MaxRespondToSubscriptionNotification (5) seconds,
 95 percent of the time.
@@ -18,7 +18,7 @@ with 95 percentile at 5 seconds, then with the standard deviation of 3.04, we ge
 Hence, for test cases that check notification sent for an operational intent, we will wait for notifications till threshold
 [MaxTimeToWaitForSubscriptionNotificationSeconds](./constants.py)  (rounding to 7 seconds).
 
-####Note -
+#### Note
 As per **[astm.f3548.v21.SCD0085](../../../../../requirements/astm/f3548/v21.md)**, MaxRespondToSubscriptionNotification
 is measured from time_start - Receipt of subscription notification from DSS -
 till time_end - Entity details sent to subscribing USS.
@@ -39,7 +39,5 @@ So, it starts waiting from a point of time after the t_time_start that is t1.
 This ensures that test driver waits for a long enough duration before getting the interactions. Hence, we get
 a high confidence that the test driver correctly verifies if a notification was sent by tested_uss.
 
-
-
-## Notification data is valid check
+## 🛑 Notification data is valid check
 **[astm.f3548.v21.SCD0085](../../../../../requirements/astm/f3548/v21.md)**
