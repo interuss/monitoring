@@ -5,6 +5,7 @@
 ## [Actions](../README.md#actions)
 
 1. Suite: [ASTM F3411-22a](../astm/netrid/f3411_22a.md) ([`suites.astm.netrid.f3411_22a`](../astm/netrid/f3411_22a.yaml))
+2. Scenario: [U-space MSL altitude](../../scenarios/uspace/netrid/msl.md) ([`scenarios.uspace.netrid.msl.MSLAltitude`](../../scenarios/uspace/netrid/msl.py))
 
 ## [Checked requirements](../README.md#checked-requirements)
 
@@ -488,5 +489,11 @@
     <td><a href="../../requirements/interuss/f3411/dss_endpoints.md">SearchISAs</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss/heavy_traffic_concurrent.md">ASTM NetRID DSS: Concurrent Requests</a><br><a href="../../scenarios/astm/netrid/v22a/dss/isa_expiry.md">ASTM NetRID DSS: ISA Expiry</a><br><a href="../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../scenarios/astm/netrid/v22a/dss/token_validation.md">ASTM NetRID DSS: Token Validation</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/uspace/article8.md">uspace<br>.article8</a></td>
+    <td><a href="../../requirements/uspace/article8.md">MSLAltitude</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/uspace/netrid/msl.md">U-space MSL altitude</a></td>
   </tr>
 </table>
