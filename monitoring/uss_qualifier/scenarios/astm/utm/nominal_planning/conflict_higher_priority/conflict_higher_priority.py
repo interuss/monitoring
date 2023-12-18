@@ -214,12 +214,13 @@ class ConflictHigherPriority(TestScenario):
             "Validate Flight 2 sharing",
             self._intents_extent,
         ) as validator:
+            self.begin_test_step("Plan Flight 2")
             resp_flight_2, self.flight2_id = plan_flight_intent(
                 self,
-                "Plan Flight 2",
                 self.control_uss,
                 self.flight2_planned.request,
             )
+            self.end_test_step()
             validator.expect_shared(self.flight2_planned.request)
 
         with OpIntentValidator(
@@ -229,12 +230,13 @@ class ConflictHigherPriority(TestScenario):
             "Validate Flight 1 not shared",
             self._intents_extent,
         ) as validator:
+            self.begin_test_step("Attempt to plan Flight 1")
             _ = plan_priority_conflict_flight_intent(
                 self,
-                "Attempt to plan Flight 1",
                 self.tested_uss,
                 self.flight1_planned.request,
             )
+            self.end_test_step()
             validator.expect_not_shared()
 
         _ = delete_flight_intent(
@@ -252,12 +254,13 @@ class ConflictHigherPriority(TestScenario):
             "Validate Flight 1 sharing",
             self._intents_extent,
         ) as validator:
+            self.begin_test_step("Plan Flight 1")
             resp_flight_1, self.flight1_id = plan_flight_intent(
                 self,
-                "Plan Flight 1",
                 self.tested_uss,
                 self.flight1_planned.request,
             )
+            self.end_test_step()
             flight_1_oi_ref = validator.expect_shared(self.flight1_planned.request)
 
         with OpIntentValidator(
@@ -267,12 +270,13 @@ class ConflictHigherPriority(TestScenario):
             "Validate Flight 2 sharing",
             self._intents_extent,
         ) as validator:
+            self.begin_test_step("Plan Flight 2")
             resp_flight_2, self.flight2_id = plan_flight_intent(
                 self,
-                "Plan Flight 2",
                 self.control_uss,
                 self.flight2_planned.request,
             )
+            self.end_test_step()
             validator.expect_shared(self.flight2_planned.request)
 
         with OpIntentValidator(
@@ -283,13 +287,14 @@ class ConflictHigherPriority(TestScenario):
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
+            self.begin_test_step("Attempt to modify planned Flight 1 in conflict")
             _ = modify_planned_priority_conflict_flight_intent(
                 self,
-                "Attempt to modify planned Flight 1 in conflict",
                 self.tested_uss,
                 self.flight1m_planned.request,
                 self.flight1_id,
             )
+            self.end_test_step()
             flight_1_oi_ref = validator.expect_shared(
                 self.flight1_planned.request, skip_if_not_found=True
             )
@@ -307,13 +312,14 @@ class ConflictHigherPriority(TestScenario):
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
+            self.begin_test_step("Attempt to activate conflicting Flight 1")
             _ = activate_priority_conflict_flight_intent(
                 self,
-                "Attempt to activate conflicting Flight 1",
                 self.tested_uss,
                 self.flight1_activated.request,
                 self.flight1_id,
             )
+            self.end_test_step()
             flight_1_oi_ref = validator.expect_shared(
                 self.flight1_planned.request, skip_if_not_found=True
             )
@@ -352,12 +358,13 @@ class ConflictHigherPriority(TestScenario):
             "Validate Flight 2 sharing",
             self._intents_extent,
         ) as validator:
+            self.begin_test_step("Plan Flight 2")
             _, self.flight2_id = plan_flight_intent(
                 self,
-                "Plan Flight 2",
                 self.control_uss,
                 self.flight2_planned.request,
             )
+            self.end_test_step()
             flight_2_oi_ref = validator.expect_shared(self.flight2_planned.request)
 
         with OpIntentValidator(
@@ -436,13 +443,14 @@ class ConflictHigherPriority(TestScenario):
             self._intents_extent,
             flight_1_oi_ref,
         ) as validator:
+            self.begin_test_step("Attempt to modify activated Flight 1 in conflict")
             modify_activated_priority_conflict_flight_intent(
                 self,
-                "Attempt to modify activated Flight 1 in conflict",
                 self.tested_uss,
                 self.flight1c_activated.request,
                 self.flight1_id,
             )
+            self.end_test_step()
             validator.expect_shared(
                 flight_1_intent.request,
                 skip_if_not_found=True,

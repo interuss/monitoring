@@ -19,7 +19,6 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 def plan_priority_conflict_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
 ) -> InjectFlightResponse:
@@ -30,11 +29,8 @@ def plan_priority_conflict_flight_intent(
 
     Returns: The injection response.
     """
-    expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Accepted, scenario, test_step
-    )
+    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    scenario.begin_test_step(test_step)
     resp, _ = submit_flight_intent(
         scenario,
         "Incorrectly planned",
@@ -47,13 +43,11 @@ def plan_priority_conflict_flight_intent(
         flight_intent,
     )
 
-    scenario.end_test_step()
     return resp
 
 
 def modify_planned_priority_conflict_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: str,
@@ -65,11 +59,8 @@ def modify_planned_priority_conflict_flight_intent(
 
     Returns: The injection response.
     """
-    expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Accepted, scenario, test_step
-    )
+    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    scenario.begin_test_step(test_step)
     resp, _ = submit_flight_intent(
         scenario,
         "Incorrectly modified",
@@ -83,13 +74,11 @@ def modify_planned_priority_conflict_flight_intent(
         flight_id,
     )
 
-    scenario.end_test_step()
     return resp
 
 
 def activate_priority_conflict_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: Optional[str] = None,
@@ -102,10 +91,9 @@ def activate_priority_conflict_flight_intent(
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario, test_step
+        flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    scenario.begin_test_step(test_step)
     resp, _ = submit_flight_intent(
         scenario,
         "Incorrectly activated",
@@ -119,13 +107,11 @@ def activate_priority_conflict_flight_intent(
         flight_id,
     )
 
-    scenario.end_test_step()
     return resp
 
 
 def modify_activated_priority_conflict_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: str,
@@ -138,10 +124,9 @@ def modify_activated_priority_conflict_flight_intent(
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario, test_step
+        flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    scenario.begin_test_step(test_step)
     resp, _ = submit_flight_intent(
         scenario,
         "Incorrectly modified",
@@ -155,13 +140,11 @@ def modify_activated_priority_conflict_flight_intent(
         flight_id,
     )
 
-    scenario.end_test_step()
     return resp
 
 
 def plan_conflict_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
 ) -> InjectFlightResponse:
@@ -172,11 +155,8 @@ def plan_conflict_flight_intent(
 
     Returns: The injection response.
     """
-    expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Accepted, scenario, test_step
-    )
+    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    scenario.begin_test_step(test_step)
     resp, _ = submit_flight_intent(
         scenario,
         "Incorrectly planned",
@@ -189,13 +169,11 @@ def plan_conflict_flight_intent(
         flight_intent,
     )
 
-    scenario.end_test_step()
     return resp
 
 
 def modify_planned_conflict_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: str,
@@ -207,11 +185,8 @@ def modify_planned_conflict_flight_intent(
 
     Returns: The injection response.
     """
-    expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Accepted, scenario, test_step
-    )
+    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    scenario.begin_test_step(test_step)
     resp, _ = submit_flight_intent(
         scenario,
         "Incorrectly modified",
@@ -225,13 +200,11 @@ def modify_planned_conflict_flight_intent(
         flight_id,
     )
 
-    scenario.end_test_step()
     return resp
 
 
 def activate_conflict_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: Optional[str] = None,
@@ -244,10 +217,9 @@ def activate_conflict_flight_intent(
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario, test_step
+        flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    scenario.begin_test_step(test_step)
     resp, _ = submit_flight_intent(
         scenario,
         "Incorrectly activated",
@@ -261,13 +233,11 @@ def activate_conflict_flight_intent(
         flight_id,
     )
 
-    scenario.end_test_step()
     return resp
 
 
 def modify_activated_conflict_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: str,
@@ -280,10 +250,9 @@ def modify_activated_conflict_flight_intent(
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario, test_step
+        flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    scenario.begin_test_step(test_step)
     resp, _ = submit_flight_intent(
         scenario,
         "Incorrectly modified",
@@ -297,13 +266,11 @@ def modify_activated_conflict_flight_intent(
         flight_id,
     )
 
-    scenario.end_test_step()
     return resp
 
 
 def plan_permitted_conflict_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
 ) -> Tuple[InjectFlightResponse, Optional[str]]:
@@ -312,15 +279,14 @@ def plan_permitted_conflict_flight_intent(
     This function implements the test step described in plan_permitted_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0055.
 
+    TODO: Remove this function if it is not used in the future
+
     Returns:
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
     """
-    expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Accepted, scenario, test_step
-    )
+    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    scenario.begin_test_step(test_step)
     resp, flight_id = submit_flight_intent(
         scenario,
         "Successful planning",
@@ -330,13 +296,11 @@ def plan_permitted_conflict_flight_intent(
         flight_intent,
     )
 
-    scenario.end_test_step()
     return resp, flight_id
 
 
 def modify_planned_permitted_conflict_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: str,
@@ -346,13 +310,12 @@ def modify_planned_permitted_conflict_flight_intent(
     This function implements the test step described in modify_planned_permitted_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0060.
 
+    TODO: Remove this function if it is not used in the future
+
     Returns: The injection response.
     """
-    expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Accepted, scenario, test_step
-    )
+    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    scenario.begin_test_step(test_step)
     resp, _ = submit_flight_intent(
         scenario,
         "Successful modification",
@@ -363,13 +326,11 @@ def modify_planned_permitted_conflict_flight_intent(
         flight_id,
     )
 
-    scenario.end_test_step()
     return resp
 
 
 def activate_permitted_conflict_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: Optional[str] = None,
@@ -379,13 +340,14 @@ def activate_permitted_conflict_flight_intent(
     This function implements the test step described in activate_permitted_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0065.
 
+    TODO: Remove this function if it is not used in the future
+
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario, test_step
+        flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    scenario.begin_test_step(test_step)
     resp, _ = submit_flight_intent(
         scenario,
         "Successful activation",
@@ -396,13 +358,11 @@ def activate_permitted_conflict_flight_intent(
         flight_id,
     )
 
-    scenario.end_test_step()
     return resp
 
 
 def modify_activated_permitted_conflict_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: str,
@@ -412,13 +372,14 @@ def modify_activated_permitted_conflict_flight_intent(
     This function implements the test step described in modify_activated_permitted_conflict_flight_intent.md.
     It validates requirement astm.f3548.v21.SCD0070.
 
+    TODO: Remove this function if it is not used in the future
+
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario, test_step
+        flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    scenario.begin_test_step(test_step)
     resp, _ = submit_flight_intent(
         scenario,
         "Successful modification",
@@ -429,5 +390,4 @@ def modify_activated_permitted_conflict_flight_intent(
         flight_id,
     )
 
-    scenario.end_test_step()
     return resp

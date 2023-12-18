@@ -242,6 +242,12 @@ class GenericTestScenario(ABC):
     def me(self) -> str:
         return inspection.fullname(self.__class__)
 
+    def current_step_name(self) -> Optional[str]:
+        if self._current_step:
+            return self._current_step.name
+        else:
+            return None
+
     def _make_scenario_report(self) -> None:
         self._scenario_report = TestScenarioReport(
             name=self.documentation.name,

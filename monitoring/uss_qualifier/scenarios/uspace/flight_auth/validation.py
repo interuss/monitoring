@@ -78,8 +78,10 @@ class Validation(TestScenario):
         self.end_test_case()
 
         self.begin_test_case("Plan valid flight")
+        self.begin_test_step("Plan valid flight intent")
         if not self._plan_valid_flight():
             return
+        self.end_test_step()
         self.end_test_case()
 
         self.end_test_scenario()
@@ -135,7 +137,6 @@ class Validation(TestScenario):
     def _plan_valid_flight(self) -> bool:
         resp, _ = plan_flight_intent(
             self,
-            "Plan valid flight intent",
             self.ussp,
             self.valid_flight_intent.request,
         )
