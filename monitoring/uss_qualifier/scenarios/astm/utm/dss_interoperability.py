@@ -69,7 +69,6 @@ class DSSInteroperability(TestScenario):
                 elif ipaddress.ip_address(ip_addr).is_private:
                     check.record_failed(
                         summary=f"DSS host {parsed_url.netloc} is not publicly addressable",
-                        participants=[dss.participant_id],
                         details=f"DSS (URL: {dss.base_url}, netloc: {parsed_url.netloc}, resolved IP: {ip_addr}) is not publicly addressable",
                     )
 
