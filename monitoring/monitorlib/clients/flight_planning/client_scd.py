@@ -260,3 +260,6 @@ class SCDFlightPlannerClient(FlightPlannerClient):
             errors = [f"[{resp.outcome.timestamp}]: {resp.outcome.message}"]
 
         return TestPreparationActivityResponse(errors=errors, queries=[query])
+
+    def get_base_url(self):
+        return self._session.get_prefix_url()

@@ -10,6 +10,10 @@ This scenario prepares flight planner systems for execution of controlled test s
 
 FlightPlannersResource listing all USSs undergoing planning tests so that they can be checked for readiness and instructed to remove any existing flights from the area in this scenario.
 
+### mock_uss
+
+(Optional) MockUSSResource is checked for readiness and instructed to remove any existing flights from the area in this scenario.
+
 ### dss
 
 DSSInstanceResource to check for lingering operational intents after the area has been cleared.

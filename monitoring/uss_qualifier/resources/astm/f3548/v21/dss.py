@@ -1,9 +1,8 @@
 from __future__ import annotations
-
 import uuid
-from typing import Tuple, List, Optional
-from urllib.parse import urlparse
+from typing import Tuple, List, Dict, Optional
 
+from urllib.parse import urlparse
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
@@ -127,6 +126,29 @@ class DSSInstance(object):
         op_intent_ref: OperationalIntentReference,
         uss_participant_id: Optional[str] = None,
     ) -> Tuple[OperationalIntent, fetch.Query]:
+        result, query = self.get_full_op_intent_without_validation(
+            op_intent_ref,
+            uss_participant_id,
+        )
+        if query.status_code != 200:
+            result = None
+        else:
+            result = ImplicitDict.parse(
+                query.response.json, GetOperationalIntentDetailsResponse
+            ).operational_intent
+        return result, query
+
+    def get_full_op_intent_without_validation(
+        self,
+        op_intent_ref: OperationalIntentReference,
+        uss_participant_id: Optional[str] = None,
+    ) -> Tuple[Dict, fetch.Query]:
+        """
+        GET OperationalIntent without validating, as invalid data expected for negative tests
+
+        Returns:
+            returns the response json when query is successful
+        """
         op = OPERATIONS[OperationID.GetOperationalIntentDetails]
         query = fetch.query_and_describe(
             self.client,
@@ -136,12 +158,10 @@ class DSSInstance(object):
             uss_participant_id,
             scope=SCOPE_SC,
         )
-        if query.status_code != 200:
-            result = None
-        else:
-            result = ImplicitDict.parse(
-                query.response.json, GetOperationalIntentDetailsResponse
-            ).operational_intent
+        result = None
+        if query.status_code == 200:
+            result = query.response.json
+
         return result, query
 
     def put_op_intent(
