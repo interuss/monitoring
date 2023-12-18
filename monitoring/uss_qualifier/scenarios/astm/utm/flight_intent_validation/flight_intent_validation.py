@@ -196,12 +196,13 @@ class FlightIntentValidation(TestScenario):
                 "Validate flight intent shared correctly",
                 self._intents_extent,
             ) as planned_validator:
+                self.begin_test_step("Plan flight intent")
                 _, flight_id = plan_flight_intent(
                     self,
-                    "Plan flight intent",
                     self.tested_uss,
                     self.valid_flight.request,
                 )
+                self.end_test_step()
                 planned_validator.expect_shared(self.valid_flight.request)
 
             _ = delete_flight_intent(
@@ -210,12 +211,13 @@ class FlightIntentValidation(TestScenario):
             cancelled_validator.expect_not_shared()
 
     def _validate_precision_intersection(self):
+        self.begin_test_step("Plan control flight intent")
         _, _ = plan_flight_intent(
             self,
-            "Plan control flight intent",
             self.tested_uss,
             self.valid_flight.request,
         )
+        self.end_test_step()
 
         with OpIntentValidator(
             self,
