@@ -2,17 +2,17 @@
 
 ## Description
 
-Article 8(2)(c) specifies (emphasis added):
+[Article 8](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32021R0664&qid=1702917443967#d1e905-161-1)(2)(c) specifies (emphasis added):
 
 > The network identification service shall allow for the authorised users to receive messages with the geographical position of the UAS, its *altitude above mean sea level* and its height above the surface or take-off point.
 
 
-ASTM F3411 provides geodetic altitude above the WGS84 ellipsoidal estimate of sea level, however AMC1 specifies:
+ASTM F3411 provides geodetic altitude above the WGS84 ellipsoidal estimate of sea level, however [AMC1](https://www.easa.europa.eu/en/document-library/acceptable-means-of-compliance-and-guidance-materials/amc-and-gm-implementing) specifies:
 
 > USSPs should convert the heights above the WGS 84 ellipsoid exchanged with the ASTM F-3411-22A standard to height above mean sea level (MSL) before providing it to the UAS operators.
 
 
-GM1 further clarifies the desired definition of mean sea level:
+[GM1](https://www.easa.europa.eu/en/document-library/acceptable-means-of-compliance-and-guidance-materials/amc-and-gm-implementing) further clarifies the desired definition of mean sea level:
 
 > Wherever the flight altitude above sea level is required to be determined with the use of GNSS systems, it is recommended to use the EGM2008 or at least the EGM96 geoid models as the definition of mean sea level, as agreed with the competent authority.
 
