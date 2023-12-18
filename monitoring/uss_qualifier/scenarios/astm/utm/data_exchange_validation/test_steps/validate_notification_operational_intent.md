@@ -26,8 +26,8 @@ To make sure the test driver gives enough time for notifications to be received 
 it marks the time to get interactions from mock_uss as - the time test driver initiates the plan.
 The sequence of events is -
 1. Test driver initiates plan to tested_uss. t0
-2. Tested_uss shares the plan with DSS and receives DSS response. t_time_start.
-3. Tested_uss responds to test driver with Completed.
+2. tested_uss shares the plan with DSS and receives DSS response. t_time_start.
+3. tested_uss responds to test driver with Completed.
 4. Test driver checks for shared operational_intent in DSS and checks its retrievable. t1
 5. Test driver waits for MaxTimeToWaitForSubscriptionNotificationSeconds.
 6. Test driver retrieves interactions from mock_uss. t1 + MaxTimeToWaitForSubscriptionNotificationSeconds

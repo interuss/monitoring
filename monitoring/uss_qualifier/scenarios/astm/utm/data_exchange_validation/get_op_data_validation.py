@@ -1,4 +1,9 @@
 from typing import Optional, Dict
+
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    AirspaceUsageState,
+    UasState,
+)
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
@@ -10,6 +15,13 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResourc
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
+)
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
+    FlightIntent,
+)
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
+    ExpectedFlightIntent,
+    validate_flight_intent_templates,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
@@ -53,21 +65,21 @@ class GetOpResponseDataValidationByUSS(TestScenario):
     flight_2: FlightInfoTemplate
 
     tested_uss_client: FlightPlannerClient
-    control_uss: MockUSSClient
-    control_uss_client: FlightPlannerClient
+    mock_uss: MockUSSClient
+    mock_uss_client: FlightPlannerClient
     dss: DSSInstance
 
     def __init__(
         self,
         tested_uss: FlightPlannerResource,
-        control_uss: MockUSSResource,
+        mock_uss: MockUSSResource,
         dss: DSSInstanceResource,
         flight_intents: Optional[FlightIntentsResource] = None,
     ):
         super().__init__()
         self.tested_uss_client = tested_uss.client
-        self.control_uss = control_uss.mock_uss
-        self.control_uss_client = control_uss.mock_uss.flight_planner
+        self.mock_uss = mock_uss.mock_uss
+        self.mock_uss_client = mock_uss.mock_uss.flight_planner
         self.dss = dss.dss
 
         if not flight_intents:
@@ -78,39 +90,45 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             )
             raise ScenarioCannotContinueError(msg)
 
-        _flight_intents = flight_intents.get_flight_intents()
+        expected_flight_intents = [
+            ExpectedFlightIntent(
+                "flight_1",
+                "Flight 1",
+                must_not_conflict_with=["Flight 2"],
+                f3548v21_priority_equal_to=["Flight 2"],
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+                # TODO: Must intersect bounding box of Flight 2
+            ),
+            ExpectedFlightIntent(
+                "flight_2",
+                "Flight 2",
+                must_not_conflict_with=["Flight 1"],
+                f3548v21_priority_equal_to=["Flight 1"],
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+                # TODO: Must intersect bounding box of Flight 1
+            ),
+        ]
 
-        t_now = Time(arrow.utcnow().datetime)
-        times = {
-            TimeDuringTest.StartOfTestRun: t_now,
-            TimeDuringTest.StartOfScenario: t_now,
-            TimeDuringTest.TimeOfEvaluation: t_now,
-        }
-        extents = []
-        for intent in _flight_intents.values():
-            extents.append(intent.resolve(times).basic_information.area.bounding_volume)
-        self._intents_extent = Volume4DCollection(extents).bounding_volume.to_f3548v21()
-
+        templates = flight_intents.get_flight_intents()
         try:
-            (self.flight_1, self.flight_2,) = (
-                _flight_intents["flight_1"],
-                _flight_intents["flight_2"],
-            )
-
-            assert not self.flight_1.resolve(
-                times
-            ).basic_information.area.intersects_vol4s(
-                self.flight_2.resolve(times).basic_information.area
-            ), "flight_1 and flight_2 must not intersect"
-
-        except KeyError as e:
-            raise ValueError(
-                f"`{self.me()}` TestScenario requirements for flight_intents not met: missing flight intent {e}"
-            )
-        except AssertionError as e:
+            validate_flight_intent_templates(templates, expected_flight_intents)
+        except ValueError as e:
             raise ValueError(
                 f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
+
+        extents = []
+        for efi in expected_flight_intents:
+            intent = FlightIntent.from_flight_info_template(templates[efi.intent_id])
+            extents.extend(intent.request.operational_intent.volumes)
+            extents.extend(intent.request.operational_intent.off_nominal_volumes)
+            setattr(self, efi.intent_id, templates[efi.intent_id])
+
+        self._intents_extent = Volume4DCollection.from_interuss_scd_api(
+            extents
+        ).bounding_volume.to_f3548v21()
 
     def run(self, context: ExecutionContext):
         times = {
@@ -125,53 +143,39 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         )
         self.record_note(
             "Control USS",
-            f"{self.control_uss_client.participant_id}",
+            f"{self.mock_uss_client.participant_id}",
         )
 
         self.begin_test_case("Successfully plan flight near an existing flight")
-        self._tested_uss_plans_deconflicted_flight_near_existing_flight(times)
+        self._plan_successfully_test_case(times)
         self.end_test_case()
 
         self.begin_test_case("Flight planning prevented due to invalid data sharing")
-        self._tested_uss_unable_to_plan_flight_near_invalid_shared_existing_flight(
-            times
-        )
+        self._plan_unsuccessfully_test_case(times)
         self.end_test_case()
 
         self.end_test_scenario()
 
-    def _tested_uss_plans_deconflicted_flight_near_existing_flight(
-        self, times: Dict[TimeDuringTest, Time]
-    ):
+    def _plan_successfully_test_case(self, times: Dict[TimeDuringTest, Time]):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_2 = self.flight_2.resolve(times)
 
         with OpIntentValidator(
             self,
-            self.control_uss_client,
+            self.mock_uss_client,
             self.dss,
             "Validate flight 2 sharing",
             self._intents_extent,
         ) as validator:
-            planning_time = Time(arrow.utcnow().datetime)
+            self.begin_test_step("mock_uss plans flight 2")
             _, self.flight_2_id = plan_flight(
                 self,
-                "Control_uss plans flight 2",
-                self.control_uss_client,
+                self.mock_uss_client,
                 flight_2,
             )
+            self.end_test_step()
 
             flight_2_oi_ref = validator.expect_shared(flight_2)
-
-        self.begin_test_step(
-            "Check for notification to tested_uss due to subscription in flight 2 area"
-        )
-        tested_uss_notified = check_any_notification(
-            self,
-            self.control_uss,
-            planning_time,
-        )
-        self.end_test_step()
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
@@ -183,47 +187,60 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 1 sharing",
             self._intents_extent,
         ) as validator:
+            self.begin_test_step("tested_uss plans flight 1")
             planning_time = Time(arrow.utcnow().datetime)
             plan_res, self.flight_1_id = plan_flight(
                 self,
-                "Tested_uss plans flight 1",
                 self.tested_uss_client,
                 flight_1,
             )
+            self.end_test_step()
             validator.expect_shared(
                 flight_1,
             )
+
+        self.begin_test_step(
+            "Check for notification to tested_uss due to subscription in flight 2 area"
+        )
+        tested_uss_notified = check_any_notification(
+            self,
+            self.mock_uss,
+            planning_time,
+        )
+        self.end_test_step()
+
+        self.begin_test_step("Validate flight2 GET interaction, if no notification")
         if not tested_uss_notified:
             expect_get_requests_to_mock_uss_when_no_notification(
                 self,
-                self.control_uss,
+                self.mock_uss,
                 planning_time,
-                self.control_uss.base_url,
+                self.mock_uss.base_url,
                 flight_2_oi_ref.id,
                 self.tested_uss_client.participant_id,
-                "Validate flight2 GET interaction, if no notification",
             )
+        self.end_test_step()
 
+        self.begin_test_step("Validate flight1 Notification sent to mock_uss")
         expect_interuss_post_interactions(
             self,
-            self.control_uss,
+            self.mock_uss,
             planning_time,
-            self.control_uss.base_url,
+            self.mock_uss.base_url,
             self.tested_uss_client.participant_id,
             plan_res.queries[0].request.timestamp,
-            "Validate flight1 Notification sent to Control_uss",
         )
+        self.end_test_step()
 
-        delete_flight(
-            self, "Delete tested_uss flight", self.tested_uss_client, self.flight_1_id
-        )
-        delete_flight(
-            self, "Delete control_uss flight", self.control_uss_client, self.flight_2_id
-        )
+        self.begin_test_step("Delete tested_uss flight")
+        delete_flight(self, self.tested_uss_client, self.flight_1_id)
+        self.end_test_step()
 
-    def _tested_uss_unable_to_plan_flight_near_invalid_shared_existing_flight(
-        self, times: Dict[TimeDuringTest, Time]
-    ):
+        self.begin_test_step("Delete mock_uss flight")
+        delete_flight(self, self.mock_uss_client, self.flight_2_id)
+        self.end_test_step()
+
+    def _plan_unsuccessfully_test_case(self, times: Dict[TimeDuringTest, Time]):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_info = self.flight_2.resolve(times)
 
@@ -241,34 +258,26 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         additional_fields = {"behavior": behavior}
         with OpIntentValidator(
             self,
-            self.control_uss_client,
+            self.mock_uss_client,
             self.dss,
             "Validate flight 2 shared operational intent with invalid data",
             self._intents_extent,
         ) as validator:
-            planning_time = Time(arrow.utcnow().datetime)
+            self.begin_test_step(
+                "mock_uss plans flight 2, sharing invalid operational intent data"
+            )
             _, self.flight_2_id = plan_flight(
                 self,
-                "Control_uss plans flight 2, sharing invalid operational intent data",
-                self.control_uss_client,
+                self.mock_uss_client,
                 flight_info,
                 additional_fields,
             )
+            self.end_test_step()
             flight_2_oi_ref = validator.expect_shared_with_invalid_data(
                 flight_info,
                 validation_failure_type=OpIntentValidationFailureType.DataFormat,
                 invalid_fields=[modify_field1, modify_field2],
             )
-
-        self.begin_test_step(
-            "Check for notification to tested_uss due to subscription in flight 2 area"
-        )
-        tested_uss_notified = check_any_notification(
-            self,
-            self.control_uss,
-            planning_time,
-        )
-        self.end_test_step()
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
@@ -279,41 +288,52 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Validate flight 1 not shared by tested_uss",
             self._intents_extent,
         ) as validator:
+            self.begin_test_step("tested_uss attempts to plan flight 1, expect failure")
             planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_1_id = plan_flight_intent_expect_failed(
                 self,
-                "Tested_uss attempts to plan flight 1, expect failure",
                 self.tested_uss_client,
                 flight_1,
             )
+            self.end_test_step()
             validator.expect_not_shared()
 
+        self.begin_test_step(
+            "Check for notification to tested_uss due to subscription in flight 2 area"
+        )
+        tested_uss_notified = check_any_notification(
+            self,
+            self.mock_uss,
+            planning_time,
+        )
+        self.end_test_step()
+
         if not tested_uss_notified:
+            self.begin_test_step("Validate flight2 GET interaction, if no notification")
             expect_get_requests_to_mock_uss_when_no_notification(
                 self,
-                self.control_uss,
+                self.mock_uss,
                 planning_time,
-                self.control_uss.base_url,
+                self.mock_uss.base_url,
                 flight_2_oi_ref.id,
                 self.tested_uss_client.participant_id,
-                "Validate flight2 GET interaction, if no notification",
             )
+            self.end_test_step()
 
+        self.begin_test_step("Validate flight 1 Notification not sent to mock_uss")
         expect_no_interuss_post_interactions(
             self,
-            self.control_uss,
+            self.mock_uss,
             planning_time,
             self.tested_uss_client.participant_id,
-            "Validate flight 1 Notification not sent to Control_uss",
         )
+        self.end_test_step()
 
-        delete_flight(
-            self, "Delete Control_uss flight", self.control_uss_client, self.flight_2_id
-        )
+        self.begin_test_step("Delete mock_uss flight")
+        delete_flight(self, self.mock_uss_client, self.flight_2_id)
+        self.end_test_step()
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights_fp_client(
-            self, (self.control_uss_client, self.tested_uss_client)
-        ),
+        cleanup_flights_fp_client(self, (self.mock_uss_client, self.tested_uss_client)),
         self.end_cleanup()

@@ -26,7 +26,6 @@ def expect_interuss_post_interactions(
     posted_to_url: str,
     participant_id: str,
     plan_request_time: datetime.datetime,
-    test_step: str,
 ):
     """
     This step checks if a notification was sent to a subscribed USS, from time 'st' to now
@@ -36,7 +35,6 @@ def expect_interuss_post_interactions(
         plan_request_time: timestamp of the flight plan query that would lead to sending notification
 
     """
-    scenario.begin_test_step(test_step)
 
     # Check for 'notification found' will be done periodically by waiting for a duration till max_wait_time
     time_waited = 0
@@ -64,7 +62,6 @@ def expect_interuss_post_interactions(
                 details=f"Notification to {posted_to_url} not sent even though DSS instructed the planning USS to notify due to subscription.",
                 query_timestamps=[plan_request_time, query.request.timestamp],
             )
-    scenario.end_test_step()
 
 
 def expect_no_interuss_post_interactions(
@@ -72,15 +69,12 @@ def expect_no_interuss_post_interactions(
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,
     participant_id: str,
-    test_step: str,
 ):
     """
     This step checks no notification was sent to any USS as no DSS entity was created, from time 'st' to now
     Args:
         participant_id: id of the participant responsible to send the notification
     """
-    scenario.begin_test_step(test_step)
-
     # Wait for next MaxTimeToWaitForSubscriptionNotificationSeconds duration to capture any notification
     time.sleep(max_wait_time)
     interactions, query = _get_interuss_interactions_with_check(
@@ -97,7 +91,6 @@ def expect_no_interuss_post_interactions(
                 details=f"Notification was wrongly sent for an entity not created.",
                 query_timestamps=[query.request.timestamp],
             )
-    scenario.end_test_step()
 
 
 def expect_get_requests_to_mock_uss_when_no_notification(
@@ -107,7 +100,6 @@ def expect_get_requests_to_mock_uss_when_no_notification(
     mock_uss_base_url: str,
     id: str,
     participant_id: str,
-    test_step: str,
 ):
     """
     This step checks a GET request was made to mock_uss for an existing entity, from time 'st' to now
@@ -117,7 +109,6 @@ def expect_get_requests_to_mock_uss_when_no_notification(
         participant_id: id of the participant responsible to send GET request
 
     """
-    scenario.begin_test_step(test_step)
     interactions, query = _get_interuss_interactions_with_check(scenario, mock_uss, st)
     logger.debug(f"Checking for GET request to {mock_uss_base_url} for id {id}")
     get_requested = False
@@ -137,7 +128,6 @@ def expect_get_requests_to_mock_uss_when_no_notification(
                 details=f"No GET request received at  {mock_uss_base_url} for {id}. A planning USS in the area should have sent a reques to get the intent details.",
                 query_timestamps=[query.request.timestamp],
             )
-    scenario.end_test_step()
 
 
 def _get_interuss_interactions_with_check(

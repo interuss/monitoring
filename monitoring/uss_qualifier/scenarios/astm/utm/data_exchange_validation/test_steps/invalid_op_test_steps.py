@@ -16,7 +16,6 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
 
 def plan_flight_intent_expect_failed(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlannerClient,
     flight_intent: FlightInfo,
 ) -> Tuple[PlanningActivityResponse, Optional[str]]:
@@ -30,7 +29,6 @@ def plan_flight_intent_expect_failed(
 
     return submit_flight(
         scenario,
-        test_step,
         "Plan should fail",
         {(PlanningActivityResult.Failed, FlightPlanStatus.NotPlanned)},
         {},
