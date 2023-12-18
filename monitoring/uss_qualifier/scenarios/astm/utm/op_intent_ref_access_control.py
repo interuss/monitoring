@@ -1,10 +1,9 @@
 from typing import List
 
-import loguru
+from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
 from monitoring.monitorlib.geotemporal import Volume4DCollection
-from uas_standards.astm.f3548.v21 import api as f3548v21
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -102,29 +101,35 @@ class OpIntentReferenceAccessControl(TestScenario):
         self.begin_test_case("Setup")
 
         self.begin_test_step("Ensure clean workspace")
-        self._ensure_clean_workspace()
+        ws_is_clean = self._ensure_clean_workspace()
         self.end_test_step()
 
-        self.begin_test_step(
-            "Create operational intent references with different credentials"
-        )
-        self._create_op_intents()
-        self._ensure_credentials_are_different()
-        self.end_test_step()
+        if ws_is_clean:
+            self.begin_test_step(
+                "Create operational intent references with different credentials"
+            )
+            self._create_op_intents()
+            self._ensure_credentials_are_different()
+            self.end_test_step()
 
-        self.end_test_case()
+            self.end_test_case()
 
-        self.begin_test_case(
-            "Attempt unauthorized operational intent reference modification"
-        )
-        self.begin_test_step(
-            "Attempt unauthorized operational intent reference modification"
-        )
+            self.begin_test_case(
+                "Attempt unauthorized operational intent reference modification"
+            )
+            self.begin_test_step(
+                "Attempt unauthorized operational intent reference modification"
+            )
 
-        self._check_mutation_on_non_owned_intent_fails()
+            self._check_mutation_on_non_owned_intent_fails()
 
-        self.end_test_step()
-        self.end_test_case()
+            self.end_test_step()
+            self.end_test_case()
+        else:
+            self.record_note(
+                "clean_workspace",
+                "Could not clean up workspace, skipping scenario",
+            )
 
         self.end_test_scenario()
 
@@ -183,13 +188,11 @@ class OpIntentReferenceAccessControl(TestScenario):
                         query_timestamps=[dq.request.timestamp],
                     )
 
-    def _ensure_clean_workspace(self):
-        self._clean_known_op_intents_ids()
-
+    def _attempt_to_delete_remaining_op_intents(self):
+        """Search for op intents and attempt to delete them using the main credentials"""
         # Also check for any potential other op_intents and delete them
         (op_intents_1, q) = self._dss.find_op_intent(self._intents_extent)
         self.record_query(q)
-        loguru.logger.info(f"Search query: {q.response}")
         with self.check(
             "Operational intent references can be searched using valid credentials",
             self._pid,
@@ -252,6 +255,51 @@ class OpIntentReferenceAccessControl(TestScenario):
                             details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}",
                             query_timestamps=[dq.request.timestamp],
                         )
+
+    def _ensure_clean_workspace(self) -> bool:
+        """
+        Tries to provide a clean workspace. If it fails to do so and the underlying check
+        has a severity below HIGH, this function will return false.
+
+        It will only return true if the workspace is clean.
+        """
+        # Record the subscription to help with troubleshooting in case of failures to clean-up
+        self.record_note("main_credentials", self._dss.client.auth_adapter.get_sub())
+        self.record_note(
+            "secondary_credentials",
+            self._dss_separate_creds.client.auth_adapter.get_sub(),
+        )
+        # Delete what we know about
+        self._clean_known_op_intents_ids()
+        # Search and attempt deleting what may be found through search
+        self._attempt_to_delete_remaining_op_intents()
+
+        # We can't delete anything that would be left.
+        (stray_oir, q) = self._dss.find_op_intent(self._intents_extent)
+        self.record_query(q)
+        with self.check(
+            "Operational intent references can be searched using valid credentials",
+            self._pid,
+        ) as check:
+            if q.response.status_code != 200:
+                check.record_failed(
+                    f"Could not search operational intent references using main credentials",
+                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs",
+                    query_timestamps=[q.request.timestamp],
+                )
+
+        with self.check(
+            "Any existing operational intent reference has been removed", self._pid
+        ) as check:
+            if len(stray_oir) > 0:
+                check.record_failed(
+                    f"Found operational intents that cannot be cleaned up",
+                    details=f"Operational intents that cannot be cleaned up were found: {stray_oir}",
+                    query_timestamps=[q.request.timestamp],
+                )
+                return False
+
+        return True
 
     def _create_op_intents(self):
         (self._current_ref_1, subscribers1, q1) = self._dss.put_op_intent(

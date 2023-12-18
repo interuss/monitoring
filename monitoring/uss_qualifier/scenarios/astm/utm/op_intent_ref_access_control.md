@@ -73,6 +73,18 @@ Otherwise, the DSS is not in compliance with **[astm.f3548.v21.DSS0005,2](../../
 If an existing operational intent cannot be deleted when providing the proper ID and OVN, the DSS implementation is in violation of
 **[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**.
 
+#### ⚠️ Any existing operational intent reference has been removed check
+
+If, after cleanup, one or more operational intent reference are still present at the DSS, this scenario cannot proceed.
+
+This scenario is able to remove any operational intent reference that belongs to the configured credentials, but it cannot remove references
+that belong to other credentials.
+
+A regular failure of this check indicates that other scenarios might not properly clean up their resources, or that the _Prepare Flight Planners_
+scenario should be moved in front of the present one.
+
+If this check fails, the rest of the scenario is entirely skipped.
+
 ### Create operational intent references with different credentials test step
 
 This test step ensures that an operation intent reference created with the main credentials is available for the main test case.
