@@ -13,6 +13,17 @@ resources:
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
   id_generator: resources.interuss.IDGeneratorResource
 actions:
+- test_scenario:
+    scenario_type: scenarios.astm.utm.PrepareFlightPlanners
+    resources:
+      flight_planners: flight_planners
+      mock_uss: mock_uss
+      dss: dss
+      flight_intents: invalid_flight_intents
+      flight_intents2: priority_preemption_flights?
+      flight_intents3: conflicting_flights?
+      flight_intents4: non_conflicting_flights?
+  on_failure: Abort
 - action_generator:
     generator_type: action_generators.astm.f3548.ForEachDSS
     resources:
@@ -34,17 +45,6 @@ actions:
       dss_instances_source: dss_instances
       dss_instance_id: dss
     on_failure: Continue
-- test_scenario:
-    scenario_type: scenarios.astm.utm.PrepareFlightPlanners
-    resources:
-      flight_planners: flight_planners
-      mock_uss: mock_uss
-      dss: dss
-      flight_intents: invalid_flight_intents
-      flight_intents2: priority_preemption_flights?
-      flight_intents3: conflicting_flights?
-      flight_intents4: non_conflicting_flights?
-  on_failure: Abort
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
