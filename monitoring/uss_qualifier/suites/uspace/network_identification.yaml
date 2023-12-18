@@ -22,6 +22,11 @@ actions:
       id_generator: id_generator
       service_area: service_area
       problematically_big_area: problematically_big_area
+  on_failure: Abort
+- test_scenario:
+    scenario_type: scenarios.uspace.netrid.msl.MSLAltitude
+    resources:
+      observers: observers
   on_failure: Continue
 participant_verifiable_capabilities:
 - id: uspace_netrid_service_provider

@@ -820,7 +820,6 @@ class RIDObservationEvaluator(object):
                     summary="Could not query ISAs from DSS",
                     severity=Severity.Medium,
                     details=f"Query to {self._dss.participant_id}'s DSS at {sp_observation.dss_isa_query.query.request.url} failed {sp_observation.dss_isa_query.query.status_code}",
-                    participants=[self._dss.participant_id],
                     query_timestamps=[
                         sp_observation.dss_isa_query.query.request.initiated_at.datetime
                     ],
@@ -936,7 +935,6 @@ class RIDObservationEvaluator(object):
                         summary="Flight details query not successful",
                         severity=Severity.Medium,
                         details=f"Flight details query to {details_query.query.request.url} failed {details_query.status_code}",
-                        participants=[mapping.injected_flight.uss_participant_id],
                         query_timestamps=[details_query.query.request.timestamp],
                     )
             errors = schema_validation.validate(

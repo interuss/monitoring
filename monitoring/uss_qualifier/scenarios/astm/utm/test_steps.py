@@ -580,18 +580,16 @@ class OpIntentValidationFailure(ImplicitDict):
 
 def set_uss_available(
     scenario: TestScenarioType,
-    test_step: str,
     dss: DSSInstance,
     uss_sub: str,
 ) -> str:
     """Set the USS availability to 'Available'.
 
-    This function implements the test step described in set_uss_available.md.
+    This function implements the test step fragment described in set_uss_available.md.
 
     Returns:
         The new version of the USS availability.
     """
-    scenario.begin_test_step(test_step)
     availability_version, avail_query = dss.set_uss_availability(
         uss_sub,
         True,
@@ -606,24 +604,21 @@ def set_uss_available(
                 details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
                 query_timestamps=[avail_query.request.timestamp],
             )
-    scenario.end_test_step()
     return availability_version
 
 
 def set_uss_down(
     scenario: TestScenarioType,
-    test_step: str,
     dss: DSSInstance,
     uss_sub: str,
 ) -> str:
     """Set the USS availability to 'Down'.
 
-    This function implements the test step described in set_uss_down.md.
+    This function implements the test step fragment described in set_uss_down.md.
 
     Returns:
         The new version of the USS availability.
     """
-    scenario.begin_test_step(test_step)
     availability_version, avail_query = dss.set_uss_availability(
         uss_sub,
         False,
@@ -638,5 +633,4 @@ def set_uss_down(
                 details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
                 query_timestamps=[avail_query.request.timestamp],
             )
-    scenario.end_test_step()
     return availability_version
