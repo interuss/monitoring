@@ -5,6 +5,7 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
     PlanningActivityResult,
     FlightPlanStatus,
+    AdvisoryInclusion,
 )
 
 from monitoring.monitorlib.clients.flight_planning.client_v1 import (
@@ -50,7 +51,7 @@ def plan_flight_intent(
     scenario: TestScenarioType,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
-) -> Tuple[InjectFlightResponse, Optional[str]]:
+) -> Tuple[InjectFlightResponse, Optional[str], Optional[AdvisoryInclusion]]:
     """Plan a flight intent that should result in success.
     Note: This method is deprecated in favor of plan_flight
 
@@ -63,7 +64,7 @@ def plan_flight_intent(
     """
     expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    resp, flight_id = submit_flight_intent(
+    resp, flight_id, advisories = submit_flight_intent(
         scenario,
         "Successful planning",
         {InjectFlightResponseResult.Planned},
@@ -72,7 +73,7 @@ def plan_flight_intent(
         flight_intent,
     )
 
-    return resp, flight_id
+    return resp, flight_id, advisories
 
 
 def activate_flight_intent(
@@ -94,7 +95,7 @@ def activate_flight_intent(
     )
 
     scenario.begin_test_step(test_step)
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Successful activation",
         {InjectFlightResponseResult.ReadyToFly},
@@ -125,7 +126,7 @@ def modify_planned_flight_intent(
     expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
     scenario.begin_test_step(test_step)
-    resp, _ = submit_flight_intent(
+    resp, _, _ = submit_flight_intent(
         scenario,
         "Successful modification",
         {InjectFlightResponseResult.Planned},
@@ -161,7 +162,7 @@ def modify_activated_flight_intent(
 
     scenario.begin_test_step(test_step)
     if preexisting_conflict:
-        resp, flight_id = submit_flight_intent(
+        resp, flight_id, _ = submit_flight_intent(
             scenario,
             "Successful modification",
             {
@@ -201,7 +202,7 @@ def modify_activated_flight_intent(
                 )
 
     else:
-        resp, flight_id = submit_flight_intent(
+        resp, flight_id, _ = submit_flight_intent(
             scenario,
             "Successful modification",
             {InjectFlightResponseResult.ReadyToFly},
@@ -223,7 +224,7 @@ def submit_flight_intent(
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: Optional[str] = None,
-) -> Tuple[InjectFlightResponse, Optional[str]]:
+) -> Tuple[InjectFlightResponse, Optional[str], Optional[AdvisoryInclusion]]:
     """Submit a flight intent with an expected result.
     Note: This method is deprecated in favor of submit_flight
 
@@ -243,7 +244,7 @@ def submit_flight_intent(
 
     with scenario.check(success_check, [flight_planner.participant_id]) as check:
         try:
-            resp, query, flight_id = flight_planner.request_flight(
+            resp, query, flight_id, advisories = flight_planner.request_flight(
                 flight_intent, flight_id
             )
         except QueryError as e:
@@ -273,7 +274,8 @@ def submit_flight_intent(
 
     for failed_result, failed_check_name in failed_checks.items():
         with scenario.check(
-            failed_check_name, [flight_planner.participant_id]
+            failed_check_name,
+            [flight_planner.participant_id],
         ) as check:
             if resp.result == failed_result:
                 check.record_failed(
@@ -283,7 +285,7 @@ def submit_flight_intent(
                     query_timestamps=[query.request.timestamp],
                 )
 
-    return resp, flight_id
+    return resp, flight_id, advisories
 
 
 def delete_flight_intent(

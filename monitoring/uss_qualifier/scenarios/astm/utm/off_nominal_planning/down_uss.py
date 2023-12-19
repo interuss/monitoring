@@ -229,7 +229,7 @@ class DownUSS(TestScenario):
             self._intents_extent,
         ) as validator:
             self.begin_test_step("Tested USS attempts to plan Flight 1")
-            resp, flight_id = submit_flight_intent(
+            resp, flight_id, _ = submit_flight_intent(
                 self,
                 "Successful planning",
                 {

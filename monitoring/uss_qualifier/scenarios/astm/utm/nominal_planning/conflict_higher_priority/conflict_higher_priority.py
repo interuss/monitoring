@@ -215,7 +215,7 @@ class ConflictHigherPriority(TestScenario):
             self._intents_extent,
         ) as validator:
             self.begin_test_step("Plan Flight 2")
-            resp_flight_2, self.flight2_id = plan_flight_intent(
+            resp_flight_2, self.flight2_id, _ = plan_flight_intent(
                 self,
                 self.control_uss,
                 self.flight2_planned.request,
@@ -255,7 +255,7 @@ class ConflictHigherPriority(TestScenario):
             self._intents_extent,
         ) as validator:
             self.begin_test_step("Plan Flight 1")
-            resp_flight_1, self.flight1_id = plan_flight_intent(
+            resp_flight_1, self.flight1_id, _ = plan_flight_intent(
                 self,
                 self.tested_uss,
                 self.flight1_planned.request,
@@ -271,7 +271,7 @@ class ConflictHigherPriority(TestScenario):
             self._intents_extent,
         ) as validator:
             self.begin_test_step("Plan Flight 2")
-            resp_flight_2, self.flight2_id = plan_flight_intent(
+            resp_flight_2, self.flight2_id, _ = plan_flight_intent(
                 self,
                 self.control_uss,
                 self.flight2_planned.request,
@@ -359,7 +359,7 @@ class ConflictHigherPriority(TestScenario):
             self._intents_extent,
         ) as validator:
             self.begin_test_step("Plan Flight 2")
-            _, self.flight2_id = plan_flight_intent(
+            _, self.flight2_id, _ = plan_flight_intent(
                 self,
                 self.control_uss,
                 self.flight2_planned.request,

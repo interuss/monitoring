@@ -24,6 +24,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResult,
     FlightPlanStatus,
+    AdvisoryInclusion,
 )
 from monitoring.monitorlib.fetch import QueryError, Query
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
@@ -122,7 +123,7 @@ class FlightPlanner:
         self,
         request: InjectFlightRequest,
         flight_id: Optional[str] = None,
-    ) -> Tuple[InjectFlightResponse, fetch.Query, str]:
+    ) -> Tuple[InjectFlightResponse, fetch.Query, str, Optional[AdvisoryInclusion]]:
         usage_states = {
             OperationalIntentState.Accepted: AirspaceUsageState.Planned,
             OperationalIntentState.Activated: AirspaceUsageState.InUse,
@@ -210,7 +211,7 @@ class FlightPlanner:
             operational_intent_id="<not provided>",
         )
 
-        return response, resp.queries[0], flight_id
+        return response, resp.queries[0], flight_id, resp.includes_advisories
 
     def cleanup_flight(
         self, flight_id: str
