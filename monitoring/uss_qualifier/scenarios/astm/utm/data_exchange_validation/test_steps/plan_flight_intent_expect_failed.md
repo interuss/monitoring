@@ -2,7 +2,7 @@
 
 This page describes the content of a common test case where a valid user flight intent fails in a flight planner, because of invalid data shared for a nearby flight shared by another USS.  See `plan_flight_intent_expect_failed` in invalid_op_test_steps.py.
 
-## Plan should fail check
+## 🛑 Plan should fail check
 
 A USS shouldn't go ahead and plan if it doesn't have accurate information.
 As per SCD0035 a USS needs to verify a particular conflict status.

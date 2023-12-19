@@ -2,19 +2,19 @@
 
 This step verifies that a created flight is shared properly per ASTM F3548-21 by querying the DSS for flights in the area of the flight intent, and then retrieving the details from the USS if the operational intent reference is found.  See `expect_shared_with_invalid_data` in invalid_op_test_steps.py.
 
-## DSS responses check
+## 🛑 DSS responses check
 
 **[astm.f3548.v21.DSS0005](../../../../../requirements/astm/f3548/v21.md)**
 
-## Operational intent shared correctly check
+## 🛑 Operational intent shared correctly check
 
 If a reference to the operational intent for the flight is not found in the DSS, this check will fail per **[astm.f3548.v21.USS0005](../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.OPIN0025](../../../../../requirements/astm/f3548/v21.md)**.
 
-## Operational intent details retrievable check
+## 🛑 Operational intent details retrievable check
 
 If the operational intent details for the flight cannot be retrieved from the USS, this check will fail per **[astm.f3548.v21.USS0105](../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.OPIN0025](../../../../../requirements/astm/f3548/v21.md)**.
 
-## Invalid data in Operational intent details shared by Mock USS for negative test check
+## 🛑 Invalid data in Operational intent details shared by Mock USS for negative test check
 
 **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
 

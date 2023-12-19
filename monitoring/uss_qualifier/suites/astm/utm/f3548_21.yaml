@@ -124,14 +124,14 @@ actions:
         test_scenario:
           scenario_type: scenarios.astm.utm.data_exchange_validation.GetOpResponseDataValidationByUSS
           resources:
-            tested_uss: uss1
-            control_uss: mock_uss
+            tested_uss: tested_uss
+            mock_uss: mock_uss
             dss: dss
             flight_intents: non_conflicting_flights
         on_failure: Continue
       flight_planners_source: flight_planners
       roles:
-        - uss1
+        - tested_uss
   on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations

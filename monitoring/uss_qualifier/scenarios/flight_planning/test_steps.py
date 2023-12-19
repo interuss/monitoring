@@ -383,14 +383,13 @@ def cleanup_flights(
 
 def plan_flight(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     additional_fields: Optional[dict] = None,
 ) -> Tuple[PlanningActivityResponse, Optional[str]]:
     """Plan a flight intent that should result in success.
 
-    This function implements the test step described in
+    This function implements the test step fragment described in
     plan_flight_intent.md.
 
     Returns:
@@ -399,7 +398,6 @@ def plan_flight(
     """
     return submit_flight(
         scenario=scenario,
-        test_step=test_step,
         success_check="Successful planning",
         expected_results={(PlanningActivityResult.Completed, FlightPlanStatus.Planned)},
         failed_checks={PlanningActivityResult.Failed: "Failure"},
@@ -411,10 +409,9 @@ def plan_flight(
 
 def submit_flight(
     scenario: TestScenarioType,
-    test_step: str,
     success_check: str,
     expected_results: Set[Tuple[PlanningActivityResult, FlightPlanStatus]],
-    failed_checks: Dict[PlanningActivityResult, Union[str, Tuple[str, Severity]]],
+    failed_checks: Dict[PlanningActivityResult, str],
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     flight_id: Optional[str] = None,
@@ -431,7 +428,6 @@ def submit_flight(
       * The ID of the injected flight if it is returned, None otherwise.
     """
 
-    scenario.begin_test_step(test_step)
     with scenario.check(success_check, [flight_planner.participant_id]) as check:
         try:
             resp, query, flight_id = request_flight(
@@ -442,7 +438,6 @@ def submit_flight(
                 scenario.record_query(q)
             check.record_failed(
                 summary=f"Error from {flight_planner.participant_id} when attempting to submit a flight intent (flight ID: {flight_id})",
-                severity=Severity.High,
                 details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
@@ -450,11 +445,7 @@ def submit_flight(
         notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
 
         for unexpected_result, failed_test_check in failed_checks.items():
-            if isinstance(failed_test_check, str):
-                check_name = failed_test_check
-                check_severity = Severity.High
-            else:
-                check_name, check_severity = failed_test_check
+            check_name = failed_test_check
 
             with scenario.check(
                 check_name, [flight_planner.participant_id]
@@ -462,18 +453,15 @@ def submit_flight(
                 if resp.activity_result == unexpected_result:
                     specific_failed_check.record_failed(
                         summary=f"Flight unexpectedly {resp.activity_result}",
-                        severity=check_severity,
                         details=f'{flight_planner.participant_id} indicated {resp.activity_result} rather than the expected {" or ".join(r[0] for r in expected_results)}{notes_suffix}',
                         query_timestamps=[query.request.timestamp],
                     )
 
         if (resp.activity_result, resp.flight_plan_status) in expected_results:
-            scenario.end_test_step()
             return resp, flight_id
         else:
             check.record_failed(
                 summary=f"Flight planning activity outcome was not expected",
-                severity=Severity.High,
                 details=f'{flight_planner.participant_id} indicated {resp.activity_result} with flight plan status {resp.flight_plan_status} rather than the expected {" or ".join([f"({expected_result[0]}, {expected_result[1]})" for expected_result in expected_results])}{notes_suffix}',
                 query_timestamps=[query.request.timestamp],
             )
@@ -534,7 +522,6 @@ def cleanup_flight(
 
 def delete_flight(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlannerClient,
     flight_id: str,
 ) -> PlanningActivityResponse:
@@ -545,7 +532,6 @@ def delete_flight(
 
     Returns: The deletion response.
     """
-    scenario.begin_test_step(test_step)
     with scenario.check(
         "Successful deletion", [flight_planner.participant_id]
     ) as check:
@@ -567,7 +553,6 @@ def delete_flight(
             resp.activity_result == PlanningActivityResult.Completed
             and resp.flight_plan_status == FlightPlanStatus.Closed
         ):
-            scenario.end_test_step()
             return resp
         else:
             check.record_failed(
