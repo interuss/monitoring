@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import datetime
 import re
-from typing import List, Tuple, Optional
+from typing import Callable, Dict, List, Tuple, Optional
 import time
 
 from implicitdict import StringBasedDateTime
 from loguru import logger
 from uas_standards.astm.f3548.v21 import api
-from uas_standards.astm.f3548.v21.api import OperationID
+from uas_standards.astm.f3548.v21.api import OperationID, EntityID
 
 from monitoring.monitorlib.clients.mock_uss.interactions import Interaction
 from monitoring.monitorlib.clients.mock_uss.interactions import QueryDirection
