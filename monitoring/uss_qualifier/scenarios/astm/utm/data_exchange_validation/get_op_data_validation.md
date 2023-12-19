@@ -2,7 +2,7 @@
 
 ## Description
 This test checks that the USS being tested validates the operational intents received as response to its GET request from another USS.
-mock_uss which is a mock uss plans a nearby V-shaped operation, and provides the data that tested_uss GETs.
+mock_uss plans a nearby V-shaped operation, and provides the data that tested_uss GETs.
 tested_uss validates the GET response from mock_uss and accordingly plan its operation.
 Notably the following requirements:
 
@@ -65,7 +65,7 @@ Teardown
 ## Flight planning prevented due to invalid data sharing test case
 ### [mock_uss plans flight 2, sharing invalid operational intent data test step](../../../flight_planning/plan_flight_intent.md)
 Flight 2 should be successfully planned by the mock_uss.
-The mock_uss, which is mock_uss is instructed to share invalid data with other USS, for negative test.
+The mock_uss is instructed to share invalid data with other USS, for negative test.
 
 ### [Validate flight 2 shared operational intent with invalid data test step](test_steps/validate_sharing_operational_intent_but_with_invalid_interuss_data.md)
 Validate that flight 2 is shared with invalid data as a modified behavior is injected by uss_qualifier for a negative test.

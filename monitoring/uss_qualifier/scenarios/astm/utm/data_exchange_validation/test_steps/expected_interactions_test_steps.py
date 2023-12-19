@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import datetime
+from datetime import datetime, timedelta
 import re
 from typing import Callable, Dict, List, Tuple, Optional
 import time
 
+import arrow
 from implicitdict import StringBasedDateTime
 from loguru import logger
 from uas_standards.astm.f3548.v21 import api
@@ -21,7 +22,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_s
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 # Interval to wait for checking notification received
-WAIT_INTERVAL = 1
+WAIT_INTERVAL_SECONDS = 1
 
 
 def expect_mock_uss_receives_op_intent_notification(
@@ -29,7 +30,7 @@ def expect_mock_uss_receives_op_intent_notification(
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,
     participant_id: str,
-    plan_request_time: datetime.datetime,
+    plan_request_time: datetime,
 ):
     """This step checks if a notification is sent to mock_uss within the required time window.
 
@@ -40,10 +41,8 @@ def expect_mock_uss_receives_op_intent_notification(
     """
 
     # Check for 'notification found' will be done periodically by waiting for a duration till max_wait_time
-    time_waited = 0
-    duration = 0
-    while time_waited <= max_wait_time:
-        time.sleep(duration)
+    wait_until = arrow.utcnow().datetime + timedelta(seconds=max_wait_time)
+    while arrow.utcnow().datetime < wait_until:
         found, query = mock_uss_interactions(
             scenario=scenario,
             mock_uss=mock_uss,
@@ -51,12 +50,11 @@ def expect_mock_uss_receives_op_intent_notification(
             direction=QueryDirection.Incoming,
             since=st,
         )
-        time_waited += duration
         if found:
-            logger.debug(f"Waited for {time_waited} to check notifications.")
             break
-        # wait for WAIT_INTERVAL till max_wait_time reached
-        duration = min(WAIT_INTERVAL, max_wait_time - time_waited)
+        dt = (wait_until - arrow.utcnow().datetime).total_seconds()
+        if dt > 0:
+            time.sleep(min(dt, WAIT_INTERVAL_SECONDS))
 
     with scenario.check("Expect Notification sent", [participant_id]) as check:
         if not found:
