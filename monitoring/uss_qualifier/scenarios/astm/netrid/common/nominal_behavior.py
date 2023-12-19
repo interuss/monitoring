@@ -1,9 +1,9 @@
-import traceback
 from typing import List, Optional
 
 from requests.exceptions import RequestException
 from s2sphere import LatLngRect
 
+from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
@@ -136,7 +136,7 @@ class NominalBehavior(GenericTestScenario):
                     )
                 check.record_passed()
             except (RequestException, ValueError) as e:
-                stacktrace = "".join(traceback.format_exception(e))
+                stacktrace = stacktrace_string(e)
                 check.record_failed(
                     summary="Error while trying to delete test flight",
                     severity=Severity.Medium,

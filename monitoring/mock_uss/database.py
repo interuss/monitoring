@@ -1,8 +1,8 @@
 import json
-import traceback
 from typing import List, Dict, Optional
 
 from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
+from monitoring.monitorlib.errors import stacktrace_string
 
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 
@@ -25,7 +25,7 @@ class TaskError(ImplicitDict):
             trigger=trigger,
             type=type(e).__name__,
             message=str(e),
-            stacktrace="".join(traceback.format_exception(e)),
+            stacktrace=stacktrace_string(e),
         )
 
 
