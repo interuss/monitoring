@@ -92,7 +92,7 @@ class Validation(TestScenario):
         for flight_intent in self.invalid_flight_intents:
             with self.check("Failure", [self.ussp.participant_id]) as failure_check:
                 try:
-                    resp, query, flight_id = self.ussp.request_flight(
+                    resp, query, flight_id, _ = self.ussp.request_flight(
                         flight_intent.request
                     )
                 except QueryError as e:
@@ -135,7 +135,7 @@ class Validation(TestScenario):
         return True
 
     def _plan_valid_flight(self) -> bool:
-        resp, _ = plan_flight_intent(
+        resp, _, _ = plan_flight_intent(
             self,
             self.ussp,
             self.valid_flight_intent.request,

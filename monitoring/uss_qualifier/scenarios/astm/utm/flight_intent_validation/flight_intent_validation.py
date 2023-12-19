@@ -197,7 +197,7 @@ class FlightIntentValidation(TestScenario):
                 self._intents_extent,
             ) as planned_validator:
                 self.begin_test_step("Plan flight intent")
-                _, flight_id = plan_flight_intent(
+                _, flight_id, _ = plan_flight_intent(
                     self,
                     self.tested_uss,
                     self.valid_flight.request,
@@ -212,7 +212,7 @@ class FlightIntentValidation(TestScenario):
 
     def _validate_precision_intersection(self):
         self.begin_test_step("Plan control flight intent")
-        _, _ = plan_flight_intent(
+        _, _, _ = plan_flight_intent(
             self,
             self.tested_uss,
             self.valid_flight.request,

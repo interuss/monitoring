@@ -1,12 +1,14 @@
 import uuid
 from typing import Optional
+
 from implicitdict import ImplicitDict
+from uas_standards.interuss.automated_testing.flight_planning.v1 import api
+from uas_standards.interuss.automated_testing.flight_planning.v1.constants import Scope
+
 from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
 )
-from monitoring.monitorlib.clients.flight_planning.test_preparation import (
-    TestPreparationActivityResponse,
-)
+from monitoring.monitorlib.clients.flight_planning.client import PlanningActivityError
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     FlightInfo,
     FlightID,
@@ -15,17 +17,17 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
 )
-from monitoring.monitorlib.fetch import query_and_describe, QueryType
-from monitoring.monitorlib.geotemporal import Volume4D
-from monitoring.monitorlib.infrastructure import UTMClientSession
-from monitoring.uss_qualifier.configurations.configuration import ParticipantID
-from monitoring.monitorlib.clients.flight_planning.client import PlanningActivityError
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResult,
     FlightPlanStatus,
 )
-from uas_standards.interuss.automated_testing.flight_planning.v1 import api
-from uas_standards.interuss.automated_testing.flight_planning.v1.constants import Scope
+from monitoring.monitorlib.clients.flight_planning.test_preparation import (
+    TestPreparationActivityResponse,
+)
+from monitoring.monitorlib.fetch import query_and_describe, QueryType
+from monitoring.monitorlib.geotemporal import Volume4D
+from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 
 
 class V1FlightPlannerClient(FlightPlannerClient):
@@ -91,6 +93,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
             queries=[query],
             activity_result=resp.planning_result,
             flight_plan_status=resp.flight_plan_status,
+            includes_advisories=resp.includes_advisories,
         )
 
         return response
