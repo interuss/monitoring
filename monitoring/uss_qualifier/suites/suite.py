@@ -223,10 +223,13 @@ class TestSuite(object):
         self.declaration = declaration
         self.definition = TestSuiteDefinition.load_from_declaration(declaration)
         if "resources" in declaration and declaration.resources:
-            self.local_resources = {
-                local_resource_id: resources[parent_resource_id]
-                for local_resource_id, parent_resource_id in declaration.resources.items()
-            }
+            if "suite_type" in declaration and declaration.suite_type:
+                subject = declaration.suite_type
+            else:
+                subject = "<custom definition>"
+            self.local_resources = make_child_resources(
+                resources, declaration.resources, f"Test suite {subject}"
+            )
         else:
             self.local_resources = {}
         if "local_resources" in self.definition and self.definition.local_resources:

@@ -17,7 +17,7 @@ actions:
     scenario_type: scenarios.astm.utm.PrepareFlightPlanners
     resources:
       flight_planners: flight_planners
-      mock_uss: mock_uss
+      mock_uss: mock_uss?
       dss: dss
       flight_intents: invalid_flight_intents
       flight_intents2: priority_preemption_flights?
@@ -28,7 +28,7 @@ actions:
     generator_type: action_generators.astm.f3548.ForEachDSS
     resources:
       dss_instances: dss_instances
-      second_utm_auth: second_utm_auth
+      second_utm_auth: second_utm_auth?
       flight_intents: non_conflicting_flights
       id_generator: id_generator
     specification:
@@ -37,7 +37,7 @@ actions:
           suite_type: suites.astm.utm.dss_probing
           resources:
             dss: dss
-            second_utm_auth: second_utm_auth
+            second_utm_auth: second_utm_auth?
             all_dss_instances: dss_instances
             flight_intents: flight_intents
             id_generator: id_generator
