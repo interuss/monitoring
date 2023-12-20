@@ -59,22 +59,19 @@ class OpIntentValidator(object):
         scenario: TestScenarioType,
         flight_planner: Union[FlightPlanner, FlightPlannerClient],
         dss: DSSInstance,
-        test_step: str,
         extent: Volume4D,
         orig_oi_ref: Optional[OperationalIntentReference] = None,
     ):
         """
-        :param scenario:
-        :param flight_planner:
-        :param dss:
-        :param test_step:
+        :param scenario: test scenario in which the operational intent is being validated.
+        :param flight_planner: flight planner responsible for maintenance of the operational intent.
+        :param dss: DSS instance in which to check for operational intents.
         :param extent: the extent over which the operational intents are to be compared.
         :param orig_oi_ref: if this is validating a previously existing operational intent (e.g. modification), pass the original reference.
         """
         self._scenario: TestScenarioType = scenario
         self._flight_planner: Union[FlightPlanner, FlightPlannerClient] = flight_planner
         self._dss: DSSInstance = dss
-        self._test_step: str = test_step
         self._extent: Volume4D = extent
         self._orig_oi_ref: Optional[OperationalIntentReference] = orig_oi_ref
 
@@ -96,7 +93,7 @@ class OpIntentValidator(object):
         found = [oi_ref for oi_ref in self._after_oi_refs if oi_ref.id == oi_id]
         return found[0] if len(found) != 0 else None
 
-    def _begin_step(self):
+    def _begin_step_fragment(self):
         self._after_oi_refs, self._after_query = self._dss.find_op_intent(self._extent)
         oi_ids_delta = {oi_ref.id for oi_ref in self._after_oi_refs} - {
             oi_ref.id for oi_ref in self._before_oi_refs
@@ -111,7 +108,6 @@ class OpIntentValidator(object):
         if len(oi_ids_delta) == 1:
             self._new_oi_ref = self._find_after_oi(oi_ids_delta.pop())
 
-        self._scenario.begin_test_step(self._test_step)
         self._scenario.record_query(self._before_query)
         self._scenario.record_query(self._after_query)
 
@@ -131,12 +127,18 @@ class OpIntentValidator(object):
                     query_timestamps=[self._after_query.request.timestamp],
                 )
 
+    def expect_removed(self, flight_id: EntityID) -> None:
+        """Validate that a specific operational intent reference was removed from the DSS.
+
+        It implements the test step described in validate_removed_operational_intent.md.
+        """
+
     def expect_not_shared(self) -> None:
         """Validate that an operational intent information was not shared with the DSS.
 
         It implements the test step described in validate_not_shared_operational_intent.md.
         """
-        self._begin_step()
+        self._begin_step_fragment()
 
         with self._scenario.check(
             "Operational intent not shared", [self._flight_planner.participant_id]
@@ -148,8 +150,6 @@ class OpIntentValidator(object):
                     details=f"USS {self._flight_planner.participant_id} was not supposed to share an operational intent with the DSS, but the new operational intent with ID {self._new_oi_ref.id} was found",
                     query_timestamps=[self._after_query.request.timestamp],
                 )
-
-        self._scenario.end_test_step()
 
     def expect_shared(
         self,
@@ -266,7 +266,6 @@ class OpIntentValidator(object):
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
 
-        self._scenario.end_test_step()
         return oi_full.reference
 
     def expect_shared_with_invalid_data(
@@ -315,7 +314,6 @@ class OpIntentValidator(object):
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
 
-        self._scenario.end_test_step()
         return oi_ref
 
     def _operational_intent_retrievable_check(
@@ -337,9 +335,9 @@ class OpIntentValidator(object):
         self,
         flight_intent: Union[InjectFlightRequest | FlightInfo],
         skip_if_not_found: bool,
-    ) -> OperationalIntentReference:
+    ) -> Optional[OperationalIntentReference]:
 
-        self._begin_step()
+        self._begin_step_fragment()
 
         with self._scenario.check(
             "Operational intent shared correctly", [self._flight_planner.participant_id]
@@ -357,10 +355,9 @@ class OpIntentValidator(object):
                         )
                     else:
                         self._scenario.record_note(
-                            f"{self._flight_planner.participant_id} skipped step",
-                            f"No new operational intent was found in DSS, instructed to skip test step '{self._test_step}'.",
+                            f"{self._flight_planner.participant_id} no op intent",
+                            f"No new operational intent was found in DSS for test step '{self._scenario.current_step_name()}'.",
                         )
-                        self._scenario.end_test_step()
                         return None
                 oi_ref = self._new_oi_ref
 
@@ -412,10 +409,9 @@ class OpIntentValidator(object):
                             )
                     else:
                         self._scenario.record_note(
-                            f"{self._flight_planner.participant_id} skipped step",
-                            f"Operational intent reference with ID {self._orig_oi_ref.id} not found in DSS, instructed to skip test step '{self._test_step}'.",
+                            f"{self._flight_planner.participant_id} no op intent",
+                            f"Operational intent reference with ID {self._orig_oi_ref.id} not found in DSS for test step '{self._scenario.current_step_name()}'.",
                         )
-                        self._scenario.end_test_step()
                         return None
                 oi_ref = modified_oi_ref
 

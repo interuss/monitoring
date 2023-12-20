@@ -221,14 +221,13 @@ class DownUSS(TestScenario):
         self.end_test_step()
 
         # Tested USS attempts to plan Flight 1 test step
+        self.begin_test_step("Tested USS attempts to plan Flight 1")
         with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
-            "Validate Flight 1 status",
             self._intents_extent,
         ) as validator:
-            self.begin_test_step("Tested USS attempts to plan Flight 1")
             resp, flight_id, _ = submit_flight_intent(
                 self,
                 "Successful planning",
@@ -246,7 +245,6 @@ class DownUSS(TestScenario):
             )
 
             if resp.result == InjectFlightResponseResult.Planned:
-                self.end_test_step()
                 validator.expect_shared(self.flight1_planned.request)
             elif (
                 resp.result == InjectFlightResponseResult.Rejected
@@ -266,8 +264,8 @@ class DownUSS(TestScenario):
                         severity=Severity.Low,
                         details=check_details,
                     )
-                self.end_test_step()
                 validator.expect_not_shared()
+        self.end_test_step()
 
     def _clear_op_intents(self):
         oi_refs, find_query = self.dss.find_op_intent(self._intents_extent)

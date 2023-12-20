@@ -95,14 +95,13 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
         self.end_test_step()
 
         # Tested USS attempts to plan high-priority flight 2 test step
+        self.begin_test_step("Tested USS attempts to plan high-priority Flight 2")
         with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
-            "Validate high-priority Flight 2 not shared",
             self._intents_extent,
         ) as validator:
-            self.begin_test_step("Tested USS attempts to plan high-priority Flight 2")
             submit_flight_intent(
                 self,
                 "Incorrectly planned",
@@ -116,9 +115,9 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                 self.tested_uss,
                 self.flight2_planned.request,
             )
-            self.end_test_step()
 
             validator.expect_not_shared()
+        self.end_test_step()
 
         # Restore virtual USS availability at DSS test step
         self.begin_test_step("Restore virtual USS availability at DSS")
@@ -142,14 +141,13 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
         self.end_test_step()
 
         # Tested USS attempts to plan high-priority flight 2 test step
+        self.begin_test_step("Tested USS attempts to plan high-priority Flight 2")
         with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
-            "Validate high-priority Flight 2 not shared",
             self._intents_extent,
         ) as validator:
-            self.begin_test_step("Tested USS attempts to plan high-priority Flight 2")
             submit_flight_intent(
                 self,
                 "Incorrectly planned",
@@ -163,9 +161,9 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                 self.tested_uss,
                 self.flight2_planned.request,
             )
-            self.end_test_step()
 
             validator.expect_not_shared()
+        self.end_test_step()
 
         # Restore virtual USS availability at DSS test step
         self.begin_test_step("Restore virtual USS availability at DSS")
@@ -187,14 +185,13 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
         self.end_test_step()
 
         # Tested USS attempts to plan high-priority flight 2 test step
+        self.begin_test_step("Tested USS attempts to plan high-priority Flight 2")
         with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
-            "Validate high-priority Flight 2 not shared",
             self._intents_extent,
         ) as validator:
-            self.begin_test_step("Tested USS attempts to plan high-priority Flight 2")
             submit_flight_intent(
                 self,
                 "Incorrectly planned",
@@ -208,6 +205,6 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                 self.tested_uss,
                 self.flight2_planned.request,
             )
-            self.end_test_step()
 
             validator.expect_not_shared()
+        self.end_test_step()
