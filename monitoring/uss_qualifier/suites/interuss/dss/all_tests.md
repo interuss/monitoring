@@ -4,9 +4,11 @@
 
 ## [Actions](../../README.md#actions)
 
-1. Action generator: [`action_generators.astm.f3411.ForEachDSS`](../../../action_generators/astm/f3411/for_each_dss.py)
-    1. Suite: [DSS testing for ASTM NetRID F3411-19](../../astm/netrid/f3411_19/dss_probing.md) ([`suites.astm.netrid.f3411_19.dss_probing`](../../astm/netrid/f3411_19/dss_probing.yaml))
+1. Action generator: [`action_generators.astm.f3548.ForEachDSS`](../../../action_generators/astm/f3548/for_each_dss.py)
+    1. Suite: [DSS testing for ASTM NetRID F3548-21](../../astm/utm/dss_probing.md) ([`suites.astm.utm.dss_probing`](../../astm/utm/dss_probing.yaml))
 2. Action generator: [`action_generators.astm.f3411.ForEachDSS`](../../../action_generators/astm/f3411/for_each_dss.py)
+    1. Suite: [DSS testing for ASTM NetRID F3411-19](../../astm/netrid/f3411_19/dss_probing.md) ([`suites.astm.netrid.f3411_19.dss_probing`](../../astm/netrid/f3411_19/dss_probing.yaml))
+3. Action generator: [`action_generators.astm.f3411.ForEachDSS`](../../../action_generators/astm/f3411/for_each_dss.py)
     1. Suite: [DSS testing for ASTM NetRID F3411-22a](../../astm/netrid/f3411_22a/dss_probing.md) ([`suites.astm.netrid.f3411_22a.dss_probing`](../../astm/netrid/f3411_22a/dss_probing.yaml))
 
 ## [Checked requirements](../../README.md#checked-requirements)
@@ -404,6 +406,27 @@
     <td><a href="../../../requirements/astm/f3411/v22a.md">NET0730</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/netrid/v22a/dss/heavy_traffic_concurrent.md">ASTM NetRID DSS: Concurrent Requests</a><br><a href="../../../scenarios/astm/netrid/v22a/dss/isa_expiry.md">ASTM NetRID DSS: ISA Expiry</a><br><a href="../../../scenarios/astm/netrid/v22a/dss/isa_subscription_interactions.md">ASTM NetRID DSS: ISA Subscription Interactions</a><br><a href="../../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../../scenarios/astm/netrid/v22a/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a><br><a href="../../../scenarios/astm/netrid/v22a/dss/subscription_simple.md">ASTM NetRID DSS: Subscription Simple</a><br><a href="../../../scenarios/astm/netrid/v22a/dss/subscription_validation.md">ASTM NetRID DSS: Subscription Validation</a><br><a href="../../../scenarios/astm/netrid/v22a/dss/token_validation.md">ASTM NetRID DSS: Token Validation</a></td>
+  </tr>
+  <tr>
+    <td rowspan="4" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0005,1</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0005,2</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0300</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss_interoperability.md">ASTM F3548-21 UTM DSS interoperability</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">OPIN0035</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a></td>
   </tr>
   <tr>
     <td rowspan="2" style="vertical-align:top;"><a href="../../../requirements/interuss/f3411/dss_endpoints.md">interuss<br>.f3411<br>.dss_endpoints</a></td>

@@ -1,12 +1,39 @@
 name: ASTM DSS tests
 resources:
-  f3411v19_dss_instances: resources.astm.f3411.DSSInstancesResource
-  f3411v22a_dss_instances: resources.astm.f3411.DSSInstancesResource
+  f3411v19_dss_instances: resources.astm.f3411.DSSInstancesResource?
+  f3411v22a_dss_instances: resources.astm.f3411.DSSInstancesResource?
+  f3548v21_dss_instances: resources.astm.f3548.v21.dss.DSSInstancesResource?
+
   utm_client_identity: resources.communications.ClientIdentityResource
   id_generator: resources.interuss.IDGeneratorResource
-  service_area: resources.netrid.ServiceAreaResource
-  problematically_big_area: resources.VerticesResource
+
+  service_area: resources.netrid.ServiceAreaResource?
+  problematically_big_area: resources.VerticesResource?
+
+  second_utm_auth: resources.communications.AuthAdapterResource?
+  flight_intents: resources.flight_planning.FlightIntentsResource?
 actions:
+  - action_generator:
+      generator_type: action_generators.astm.f3548.ForEachDSS
+      resources:
+        dss_instances: f3548v21_dss_instances
+        second_utm_auth: second_utm_auth?
+        flight_intents: flight_intents
+        id_generator: id_generator
+      specification:
+        action_to_repeat:
+          test_suite:
+            suite_type: suites.astm.utm.dss_probing
+            resources:
+              dss: dss
+              second_utm_auth: second_utm_auth?
+              all_dss_instances: dss_instances
+              flight_intents: flight_intents
+              id_generator: id_generator
+          on_failure: Continue
+        dss_instances_source: dss_instances
+        dss_instance_id: dss
+      on_failure: Continue
   - action_generator:
       generator_type: action_generators.astm.f3411.ForEachDSS
       resources:
