@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-import traceback
 import uuid
 import jwt
 from typing import Dict, Optional, List, Union
@@ -9,7 +8,6 @@ from typing import Dict, Optional, List, Union
 from enum import Enum
 from urllib.parse import urlparse
 
-import aiohttp
 import flask
 from loguru import logger
 import requests
@@ -19,6 +17,7 @@ from yaml.representer import Representer
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.monitorlib import infrastructure
+from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
 
 TIMEOUTS = (5, 5)  # Timeouts of `connect` and `read` in seconds
@@ -318,7 +317,7 @@ class QueryError(RuntimeError):
 
     @property
     def stacktrace(self) -> str:
-        return "".join(traceback.format_exception(self))
+        return stacktrace_string(self)
 
 
 yaml.add_representer(Query, Representer.represent_dict)

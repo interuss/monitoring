@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
-import traceback
 from typing import List, Optional, Dict, Tuple, Any, Union, Set, Iterator, Callable
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 
 from monitoring.monitorlib import fetch, inspection
+from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.uss_qualifier.action_generators.definitions import GeneratorTypeName
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import (
@@ -202,7 +202,7 @@ class ErrorReport(ImplicitDict):
             type=str(inspection.fullname(e.__class__)),
             message=str(e),
             timestamp=StringBasedDateTime(datetime.utcnow()),
-            stacktrace="".join(traceback.format_exception(e)),
+            stacktrace=stacktrace_string(e),
         )
 
 

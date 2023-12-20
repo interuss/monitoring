@@ -110,6 +110,7 @@ def idempotent_request(get_request_id: Optional[Callable[[], Optional[str]]] = N
                     return flask.jsonify(response["json"]), response["code"]
 
             result = fn(*args, **kwargs)
+            to_return = result
 
             response = {
                 "timestamp": arrow.utcnow().isoformat(),
@@ -150,7 +151,7 @@ def idempotent_request(get_request_id: Optional[Callable[[], Optional[str]]] = N
             with _fulfilled_requests as cached_requests:
                 cached_requests[request_id] = response
 
-            return result
+            return to_return
 
         return wrapper
 

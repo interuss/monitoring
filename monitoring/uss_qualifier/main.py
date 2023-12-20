@@ -71,6 +71,7 @@ def execute_test_run(whole_config: USSQualifierConfiguration):
     config = whole_config.v1.test_run
     codebase_version = get_code_version()
     commit_hash = get_commit_hash()
+    logger.info(f"Codebase version {codebase_version}, commit hash {commit_hash}")
 
     logger.info("Instantiating resources")
     resources = create_resources(config.resources.resource_declarations)

@@ -1,4 +1,3 @@
-import traceback
 from typing import List, Set
 
 import s2sphere
@@ -6,6 +5,7 @@ from requests.exceptions import RequestException
 from s2sphere import LatLngRect
 
 from monitoring.monitorlib import auth
+from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.fetch import rid
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
@@ -246,7 +246,7 @@ class Misbehavior(GenericTestScenario):
                     )
                 check.record_passed()
             except (RequestException, ValueError) as e:
-                stacktrace = "".join(traceback.format_exception(e))
+                stacktrace = stacktrace_string(e)
                 check.record_failed(
                     summary="Error while trying to delete test flight",
                     severity=Severity.Medium,

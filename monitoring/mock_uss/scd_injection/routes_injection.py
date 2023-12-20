@@ -1,5 +1,4 @@
 import os
-import traceback
 from datetime import datetime, timedelta
 from typing import Tuple, Optional, List, Dict
 
@@ -23,6 +22,7 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResult,
     FlightPlanStatus,
 )
+from monitoring.monitorlib.errors import stacktrace_string
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 from uas_standards.interuss.automated_testing.scd.v1.api import (
@@ -65,10 +65,6 @@ from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
 require_config_value(KEY_BASE_URL)
 
 DEADLOCK_TIMEOUT = timedelta(seconds=5)
-
-
-def _make_stacktrace(e) -> str:
-    return "".join(traceback.format_exception(e))
 
 
 @webapp.route("/scdsc/v1/status", methods=["GET"])
@@ -219,7 +215,7 @@ def inject_flight(
     except requests.exceptions.ConnectionError as e:
         notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
         response = unsuccessful(PlanningActivityResult.Failed, notes)
-        response["stacktrace"] = _make_stacktrace(e)
+        response["stacktrace"] = stacktrace_string(e)
         return response
     except QueryError as e:
         notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
@@ -305,7 +301,7 @@ def delete_flight(flight_id) -> PlanningActivityResponse:
         notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
         log(notes)
         response = unsuccessful(notes)
-        response["stacktrace"] = _make_stacktrace(e)
+        response["stacktrace"] = stacktrace_string(e)
         return response
     except QueryError as e:
         notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
@@ -445,7 +441,7 @@ def clear_area(extent: Volume4D) -> ClearAreaResponse:
         return make_result({"message": msg})
     except requests.exceptions.ConnectionError as e:
         msg = f"Connection error to {e.request.method} {e.request.url} while {step_name}: {str(e)}"
-        return make_result({"message": msg, "stacktrace": _make_stacktrace(e)})
+        return make_result({"message": msg, "stacktrace": stacktrace_string(e)})
     except QueryError as e:
         msg = f"Unexpected response from remote server while {step_name}: {str(e)}"
         return make_result(

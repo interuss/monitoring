@@ -1,4 +1,3 @@
-import traceback
 from enum import Enum
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -15,13 +14,9 @@ from loguru import logger
 
 from implicitdict import StringBasedDateTime, StringBasedTimeDelta
 from .database import db, PeriodicTaskStatus, TaskError, Database
-
+from ..monitorlib.errors import stacktrace_string
 
 MAX_PERIODIC_LATENCY = timedelta(seconds=5)
-
-
-def _get_trace(e: Exception) -> str:
-    return "".join(traceback.format_exception(e))
 
 
 class TaskTrigger(str, Enum):
@@ -114,11 +109,11 @@ class MockUSS(flask.Flask):
                     tx.task_errors.append(TaskError.from_exception(trigger, e))
                 if trigger == TaskTrigger.Shutdown:
                     logger.error(
-                        f"{type(e).__name__} error in '{task_name}' on process ID {os.getpid()} while shutting down mock_uss: {str(e)}\n{_get_trace(e)}"
+                        f"{type(e).__name__} error in '{task_name}' on process ID {os.getpid()} while shutting down mock_uss: {str(e)}\n{stacktrace_string(e)}"
                     )
                 else:
                     logger.error(
-                        f"Stopping mock_uss due to {type(e).__name__} error in '{task_name}' {trigger} task on process ID {os.getpid()}: {str(e)}\n{_get_trace(e)}"
+                        f"Stopping mock_uss due to {type(e).__name__} error in '{task_name}' {trigger} task on process ID {os.getpid()}: {str(e)}\n{stacktrace_string(e)}"
                     )
                     self.stop()
                     return
@@ -259,7 +254,7 @@ class MockUSS(flask.Flask):
                         time.sleep(dt.total_seconds())
         except Exception as e:
             logger.error(
-                f"Shutting down mock_uss due to {type(e).__name__} error while executing '{task_to_execute}' periodic task: {str(e)}\n{_get_trace(e)}"
+                f"Shutting down mock_uss due to {type(e).__name__} error while executing '{task_to_execute}' periodic task: {str(e)}\n{stacktrace_string(e)}"
             )
             with db as tx:
                 tx.task_errors.append(TaskError.from_exception(TaskTrigger.Setup, e))
