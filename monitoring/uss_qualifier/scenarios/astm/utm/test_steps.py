@@ -272,7 +272,7 @@ class OpIntentValidator(object):
         self,
         flight_intent: Union[InjectFlightRequest, FlightInfo],
         validation_failure_type: OpIntentValidationFailureType,
-        invalid_fields: Optional[List],
+        invalid_fields: Optional[List] = None,
         skip_if_not_found: bool = False,
     ) -> Optional[OperationalIntentReference]:
         """Validate that operational intent information was shared with dss,
@@ -496,7 +496,7 @@ class OpIntentValidator(object):
         self,
         validation_failures: Set[OpIntentValidationFailure],
         expected_validation_type: OpIntentValidationFailureType,
-        expected_invalid_fields: Optional[List[str]],
+        expected_invalid_fields: Optional[List[str]] = None,
     ) -> OpIntentValidationFailure:
         """
         Checks if expected validation type is in validation failures
