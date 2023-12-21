@@ -193,7 +193,7 @@ class FlightIntentValidation(TestScenario):
                 self.tested_uss,
                 self.valid_flight.request,
             )
-            planned_validator.expect_shared(self.valid_flight.request)
+            oi_ref = planned_validator.expect_shared(self.valid_flight.request)
         self.end_test_step()
 
         self.begin_test_step("Remove flight intent")
@@ -204,7 +204,7 @@ class FlightIntentValidation(TestScenario):
             self._intents_extent,
         ) as cancelled_validator:
             _ = delete_flight_intent(self, self.tested_uss, flight_id)
-            cancelled_validator.expect_removed(flight_id)
+            cancelled_validator.expect_removed(oi_ref.id)
         self.end_test_step()
 
     def _validate_precision_intersection(self):

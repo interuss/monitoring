@@ -127,11 +127,34 @@ class OpIntentValidator(object):
                     query_timestamps=[self._after_query.request.timestamp],
                 )
 
-    def expect_removed(self, flight_id: EntityID) -> None:
+    def expect_removed(self, oi_id: EntityID) -> None:
         """Validate that a specific operational intent reference was removed from the DSS.
 
         It implements the test step described in validate_removed_operational_intent.md.
         """
+        self._begin_step_fragment()
+
+        with self._scenario.check(
+            "Operational intent not shared", self._flight_planner.participant_id
+        ) as check:
+            if oi_id in [oi_ref.id for oi_ref in self._after_oi_refs]:
+                check.record_failed(
+                    summary=f"Removed flight's op intent {oi_id} remained shared",
+                    details=f"{self._flight_planner.participant_id} should have removed their flight which should include removal of the corresponding operational intent from the interoperability ecosystem, but a reference to operational intent {oi_id} was still found in the DSS after removal",
+                    query_timestamps=[
+                        self._before_query.request.timestamp,
+                        self._after_query.request.timestamp,
+                    ],
+                )
+            if self._new_oi_ref is not None:
+                check.record_failed(
+                    summary=f"New op intent {self._new_oi_ref.id} was shared",
+                    details=f"{self._flight_planner.participant_id} should have removed their flight which should have included removal of the corresponding operational intent from the interoperability ecosystem, but a new operational intent {self._new_oi_ref.id} was created during the time {oi_id} should have been removed",
+                    query_timestamps=[
+                        self._before_query.request.timestamp,
+                        self._after_query.request.timestamp,
+                    ],
+                )
 
     def expect_not_shared(self) -> None:
         """Validate that an operational intent information was not shared with the DSS.
