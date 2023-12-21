@@ -76,7 +76,7 @@ Then, scroll down to the bottom of the page to see the list of GitHub Actions ar
 
 ![GitHub Actions artifacts](../../assets/ci/artifacts.png)
 
-Click on this artifact to download a zip file which can then be unzipped to reveal a uss_qualifier/output folder structure.  Each subfolder in uss_qualifier/output contains the output of a particular test run of uss_qualifier -- for instance, the `f3548` folder contains the output from running the [`configurations.dev.f3548_self_contained` configuration](../monitoring/uss_qualifier/configurations/dev/f3548_self_contained.yaml).  The sequence view artifact is often particularly useful for debugging.
+Click on this artifact to download a zip file which can then be unzipped to reveal a uss_qualifier/output folder structure.  Each subfolder in uss_qualifier/output contains the output of a particular test run of uss_qualifier -- for instance, the `f3548` folder contains the output from running the [`configurations.dev.f3548_self_contained` configuration](../../monitoring/uss_qualifier/configurations/dev/f3548_self_contained.yaml).  The sequence view artifact is often particularly useful for debugging.
 
 ### Automated testing logs
 
