@@ -16,6 +16,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
+    AdvisoryInclusion,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResult,
@@ -93,7 +94,9 @@ class V1FlightPlannerClient(FlightPlannerClient):
             queries=[query],
             activity_result=resp.planning_result,
             flight_plan_status=resp.flight_plan_status,
-            includes_advisories=resp.includes_advisories,
+            includes_advisories=resp.includes_advisories
+            if "includes_advisories" in resp
+            else AdvisoryInclusion.Unknown,
         )
 
         return response
