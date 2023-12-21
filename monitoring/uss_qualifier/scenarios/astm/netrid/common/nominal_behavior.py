@@ -77,7 +77,7 @@ class NominalBehavior(GenericTestScenario):
 
     def _inject_flights(self):
         (self._injected_flights, self._injected_tests) = injection.inject_flights(
-            self, self._flights_data, self._service_providers
+            self, self._flights_data, self._service_providers, self._rid_version
         )
 
     def _poll_during_flights(self):
@@ -128,7 +128,9 @@ class NominalBehavior(GenericTestScenario):
             sp = matching_sps[0]
             check = self.check("Successful test deletion", [sp.participant_id])
             try:
-                query = sp.delete_test(injected_test.test_id, injected_test.version)
+                query = sp.delete_test(
+                    injected_test.test_id, injected_test.version, self._rid_version
+                )
                 self.record_query(query)
                 if query.status_code != 200:
                     raise ValueError(

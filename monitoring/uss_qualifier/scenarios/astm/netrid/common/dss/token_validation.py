@@ -8,7 +8,7 @@ from uas_standards.astm.f3411 import v19, v22a
 from monitoring.monitorlib import fetch, infrastructure
 from monitoring.monitorlib import rid_v1, rid_v2
 from monitoring.monitorlib.auth import InvalidTokenSignatureAuth
-from monitoring.monitorlib.fetch import rid as rid_fetch
+from monitoring.monitorlib.fetch import rid as rid_fetch, QueryType
 from monitoring.monitorlib.fetch.rid import FetchedISA, FetchedISAs
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.mutate.rid import (
@@ -466,11 +466,13 @@ class TokenValidation(GenericTestScenario):
                     v19.api.OperationID.CreateIdentificationServiceArea
                 ]
                 url = op.path.format(id=self._isa_id)
+                query_type = QueryType.F3411v19DSSCreateIdentificationServiceArea
             else:
                 op = v19.api.OPERATIONS[
                     v19.api.OperationID.UpdateIdentificationServiceArea
                 ]
                 url = op.path.format(id=self._isa_id, version=isa_version)
+                query_type = QueryType.F3411v19DSSUpdateIdentificationServiceArea
             dss_response = ChangedISA(
                 mutation=mutation,
                 v19_query=fetch.query_and_describe(
@@ -479,6 +481,7 @@ class TokenValidation(GenericTestScenario):
                     url,
                     json=body,
                     participant_id=self._dss.participant_id,
+                    query_type=query_type,
                     **({} if query_scope is None else {"scope": query_scope}),
                 ),
             )
@@ -498,11 +501,13 @@ class TokenValidation(GenericTestScenario):
                     v22a.api.OperationID.CreateIdentificationServiceArea
                 ]
                 url = op.path.format(id=self._isa_id)
+                query_type = QueryType.F3411v22aDSSCreateIdentificationServiceArea
             else:
                 op = v22a.api.OPERATIONS[
                     v22a.api.OperationID.UpdateIdentificationServiceArea
                 ]
                 url = op.path.format(id=self._isa_id, version=isa_version)
+                query_type = QueryType.F3411v22aDSSUpdateIdentificationServiceArea
             dss_response = ChangedISA(
                 mutation=mutation,
                 v22a_query=fetch.query_and_describe(
@@ -511,6 +516,7 @@ class TokenValidation(GenericTestScenario):
                     url,
                     json=body,
                     participant_id=self._dss.participant_id,
+                    query_type=query_type,
                     **({} if query_scope is None else {"scope": query_scope}),
                 ),
             )
@@ -586,6 +592,7 @@ class TokenValidation(GenericTestScenario):
                     op.verb,
                     url,
                     participant_id=self._dss.participant_id,
+                    query_type=QueryType.F3411v19DSSDeleteIdentificationServiceArea,
                     **({} if query_scope is None else {"scope": query_scope}),
                 ),
             )
@@ -601,6 +608,7 @@ class TokenValidation(GenericTestScenario):
                     op.verb,
                     url,
                     participant_id=self._dss.participant_id,
+                    query_type=QueryType.F3411v22aDSSDeleteIdentificationServiceArea,
                     **({} if query_scope is None else {"scope": query_scope}),
                 ),
             )
@@ -657,6 +665,7 @@ class TokenValidation(GenericTestScenario):
                     op.verb,
                     url,
                     participant_id=self._dss.participant_id,
+                    query_type=QueryType.F3411v19DSSSearchIdentificationServiceAreas,
                     **({} if query_scope is None else {"scope": query_scope}),
                 )
             )
@@ -672,6 +681,7 @@ class TokenValidation(GenericTestScenario):
                     op.verb,
                     url,
                     participant_id=self._dss.participant_id,
+                    query_type=QueryType.F3411v22aDSSSearchIdentificationServiceAreas,
                     **({} if query_scope is None else {"scope": query_scope}),
                 )
             )

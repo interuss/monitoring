@@ -35,7 +35,7 @@ class RIDSystemObserver(object):
         self.local_debug = local_debug
 
     def observe_system(
-        self, rect: s2sphere.LatLngRect
+        self, rect: s2sphere.LatLngRect, rid_version: RIDVersion
     ) -> Tuple[Optional[observation_api.GetDisplayDataResponse], fetch.Query]:
         url = "/display_data?view={},{},{},{}".format(
             rect.lo().lat().degrees,
@@ -49,7 +49,7 @@ class RIDSystemObserver(object):
             url,
             scope=Scope.Observe,
             participant_id=self.participant_id,
-            query_type=QueryType.InterUSSRIDObservationV1GetDisplayData,
+            query_type=QueryType.flight_details(rid_version),
         )
         try:
             result = (

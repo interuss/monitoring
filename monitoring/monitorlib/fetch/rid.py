@@ -687,6 +687,14 @@ class RIDQuery(ImplicitDict):
         else:
             raise NotImplementedError(f"Cannot set participant_id")
 
+    def set_query_type(self, query_type: QueryType) -> None:
+        if self.v19_query is not None:
+            self.v19_query.query_type = query_type
+        elif self.v22a_query is not None:
+            self.v22a_query.query_type = query_type
+        else:
+            raise NotImplementedError(f"Cannot set query_type")
+
 
 class FetchedISA(RIDQuery):
     """Version-independent representation of an ISA read from the DSS."""
@@ -773,6 +781,7 @@ def isa(
                 url,
                 scope=v19.constants.Scope.Read,
                 participant_id=participant_id,
+                query_type=QueryType.F3411v19DSSGetIdentificationServiceArea,
             )
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -785,6 +794,7 @@ def isa(
                 url,
                 scope=v22a.constants.Scope.DisplayProvider,
                 participant_id=participant_id,
+                query_type=QueryType.F3411v22aDSSGetIdentificationServiceArea,
             )
         )
     else:
@@ -915,6 +925,7 @@ def isas(
                 url,
                 scope=v19.constants.Scope.Read,
                 participant_id=participant_id,
+                query_type=QueryType.F3411v19DSSSearchIdentificationServiceAreas,
             )
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -928,6 +939,7 @@ def isas(
                 url,
                 scope=v22a.constants.Scope.DisplayProvider,
                 participant_id=participant_id,
+                query_type=QueryType.F3411v22aDSSSearchIdentificationServiceAreas,
             )
         )
     else:
@@ -1023,7 +1035,7 @@ def uss_flights(
                 else "false",
             },
             scope=v19.constants.Scope.Read,
-            query_type=QueryType.F3411v19Flights,
+            query_type=QueryType.F3411v19USSGetDisplayData,
             participant_id=participant_id,
         )
         return FetchedUSSFlights(v19_query=query)
@@ -1044,7 +1056,7 @@ def uss_flights(
             flights_url,
             params=params,
             scope=v22a.constants.Scope.DisplayProvider,
-            query_type=QueryType.F3411v22aFlights,
+            query_type=QueryType.F3411v22aUSSGetDisplayData,
             participant_id=participant_id,
         )
         return FetchedUSSFlights(v22a_query=query)
@@ -1143,13 +1155,20 @@ def flight_details(
             )
         else:
             kwargs["scope"] = v19.constants.Scope.Read
-        query = fetch.query_and_describe(session, "GET", url, **kwargs)
+        query = fetch.query_and_describe(
+            session,
+            "GET",
+            url,
+            query_type=QueryType.F3411v19USSGetFlightDetails,
+            **kwargs,
+        )
         return FetchedUSSFlightDetails(v19_query=query)
     elif rid_version == RIDVersion.f3411_22a:
         query = fetch.query_and_describe(
             session,
             "GET",
             url,
+            query_type=QueryType.F3411v22aUSSGetFlightDetails,
             scope=v22a.constants.Scope.DisplayProvider,
             participant_id=participant_id,
         )
@@ -1329,6 +1348,7 @@ def subscription(
                 url,
                 scope=v19.constants.Scope.Read,
                 participant_id=participant_id,
+                query_type=QueryType.F3411v19DSSGetSubscription,
             )
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -1341,6 +1361,7 @@ def subscription(
                 url,
                 scope=v22a.constants.Scope.DisplayProvider,
                 participant_id=participant_id,
+                query_type=QueryType.F3411v22aDSSGetSubscription,
             )
         )
     else:
@@ -1436,6 +1457,7 @@ def subscriptions(
                 url,
                 scope=v19.constants.Scope.Read,
                 participant_id=participant_id,
+                query_type=QueryType.F3411v19DSSSearchSubscriptions,
             )
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -1448,6 +1470,7 @@ def subscriptions(
                 url,
                 scope=v22a.constants.Scope.DisplayProvider,
                 participant_id=participant_id,
+                query_type=QueryType.F3411v22aDSSSearchSubscriptions,
             )
         )
     else:

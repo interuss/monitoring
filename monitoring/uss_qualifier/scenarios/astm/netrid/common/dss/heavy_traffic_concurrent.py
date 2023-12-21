@@ -11,6 +11,7 @@ from monitoring.monitorlib.fetch import (
     describe_request,
     Query,
     describe_aiohttp_response,
+    QueryType,
 )
 from monitoring.monitorlib.fetch.rid import FetchedISA
 from monitoring.monitorlib.infrastructure import AsyncUTMTestSession
@@ -217,6 +218,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                     status, headers, resp_json, duration
                 ),
                 participant_id=self._dss.participant_id,
+                query_type=QueryType.dss_get_isa(self._dss.rid_version),
             )
             return isa_id, self._wrap_isa_get_query(rq)
 
@@ -245,6 +247,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                     status, headers, resp_json, duration
                 ),
                 participant_id=self._dss.participant_id,
+                query_type=QueryType.dss_create_isa(self._dss.rid_version),
             )
             return isa_id, self._wrap_isa_put_query(rq, "create")
 
@@ -268,6 +271,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                     status, headers, resp_json, duration
                 ),
                 participant_id=self._dss.participant_id,
+                query_type=QueryType.dss_delete_isa(self._dss.rid_version),
             )
             return isa_id, self._wrap_isa_put_query(rq, "delete")
 

@@ -10,6 +10,7 @@ from loguru import logger
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib import fetch, inspection
 from monitoring.monitorlib.errors import current_stack_string
+from monitoring.monitorlib.fetch import QueryType
 from monitoring.monitorlib.inspection import fullname
 from monitoring.uss_qualifier import scenarios as scenarios_module
 from monitoring.uss_qualifier.common_data_definitions import Severity
@@ -36,6 +37,17 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceTypeName, ResourceID
 from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
+
+SQUELCH_WARN_ON_QUERY_TYPE = [
+    # Posting an ISA is done for notifications: we can't always know the participant ID
+    QueryType.F3411v19USSPostIdentificationServiceArea,
+    QueryType.F3411v22aUSSPostIdentificationServiceArea,
+    # When querying for display data and flight details, we don't always know the participant ID
+    QueryType.F3411v19USSGetDisplayData,
+    QueryType.F3411v22aUSSGetDisplayData,
+    QueryType.F3411v19USSGetFlightDetails,
+    QueryType.F3411v22aUSSGetFlightDetails,
+]
 
 
 class ScenarioCannotContinueError(Exception):
@@ -383,9 +395,14 @@ class GenericTestScenario(ABC):
             if not query.has_field_with_value("query_type")
             else query.query_type
         )
-        logger.debug(
-            f"Queried {query.request['method']} {query.request['url']} -> {query.response.status_code} ({query.response.elapsed_s:.1f}s); attributed participant {participant} and type {query_type}"
-        )
+        # Log a warning if we are missing query metadata, unless the query type is one for which
+        # we expect to occasionally not know the participant ID
+        if (
+            participant == "UNKNOWN" or query_type == "UNKNOWN"
+        ) and query_type not in SQUELCH_WARN_ON_QUERY_TYPE:
+            logger.warning(
+                f"Missing query metadata: {query.request['method']} {query.request['url']} has participant {participant} and type {query_type}"
+            )
 
     def _get_check(self, name: str) -> TestCheckDocumentation:
         available_checks = {c.name: c for c in self._current_step.checks}

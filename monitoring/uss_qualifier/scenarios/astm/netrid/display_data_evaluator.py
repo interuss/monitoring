@@ -258,7 +258,7 @@ class RIDObservationEvaluator(object):
         if perform_observation:
             self._test_scenario.begin_test_step("Observer polling")
             for observer in observers:
-                (observation, query) = observer.observe_system(rect)
+                (observation, query) = observer.observe_system(rect, self._rid_version)
                 self._test_scenario.record_query(query)
                 self._evaluate_observation(
                     observer,

@@ -180,10 +180,81 @@ def describe_flask_response(resp: flask.Response, elapsed_s: float):
 
 
 class QueryType(str, Enum):
-    F3411v22aFlights = "astm.f3411.v22a.sp.flights"
-    F3411v19Flights = "astm.f3411.v19.sp.flights"
-    F3411v22aFlightDetails = "astm.f3411.v22a.sp.flight_details"
-    F3411v19aFlightDetails = "astm.f3411.v19.sp.flight_details"
+
+    # ASTM F3411-19 and F3411-22a (RID)
+    F3411v19DSSSearchIdentificationServiceAreas = (
+        "astm.f3411.v19.dss.searchIdentificationServiceAreas"
+    )
+    F3411v22aDSSSearchIdentificationServiceAreas = (
+        "astm.f3411.v22a.dss.searchIdentificationServiceAreas"
+    )
+
+    F3411v19DSSGetIdentificationServiceArea = (
+        "astm.f3411.v19.dss.getIdentificationServiceArea"
+    )
+    F3411v22aDSSGetIdentificationServiceArea = (
+        "astm.f3411.v22a.dss.getIdentificationServiceArea"
+    )
+
+    F3411v19DSSCreateIdentificationServiceArea = (
+        "astm.f3411.v19.dss.createIdentificationServiceArea"
+    )
+    F3411v22aDSSCreateIdentificationServiceArea = (
+        "astm.f3411.v22a.dss.createIdentificationServiceArea"
+    )
+
+    F3411v19DSSUpdateIdentificationServiceArea = (
+        "astm.f3411.v19.dss.updateIdentificationServiceArea"
+    )
+    F3411v22aDSSUpdateIdentificationServiceArea = (
+        "astm.f3411.v22a.dss.updateIdentificationServiceArea"
+    )
+
+    F3411v19DSSDeleteIdentificationServiceArea = (
+        "astm.f3411.v19.dss.deleteIdentificationServiceArea"
+    )
+    F3411v22aDSSDeleteIdentificationServiceArea = (
+        "astm.f3411.v22a.dss.deleteIdentificationServiceArea"
+    )
+
+    F3411v19DSSSearchFlights = "astm.f3411.v19.dss.searchFlights"
+    F3411v22aDSSSearchFlights = "astm.f3411.v22a.dss.searchFlights"
+
+    F3411v19DSSSearchSubscriptions = "astm.f3411.v19.dss.searchSubscriptions"
+    F3411v22aDSSSearchSubscriptions = "astm.f3411.v22a.dss.searchSubscriptions"
+
+    F3411v19DSSGetSubscription = "astm.f3411.v19.dss.getSubscription"
+    F3411v22aDSSGetSubscription = "astm.f3411.v22a.dss.getSubscription"
+
+    F3411v19DSSCreateSubscription = "astm.f3411.v19.dss.createSubscription"
+    F3411v22aDSSCreateSubscription = "astm.f3411.v22a.dss.createSubscription"
+
+    F3411v19DSSUpdateSubscription = "astm.f3411.v19.dss.updateSubscription"
+    F3411v22aDSSUpdateSubscription = "astm.f3411.v22a.dss.updateSubscription"
+
+    F3411v19DSSDeleteSubscription = "astm.f3411.v19.dss.deleteSubscription"
+    F3411v22aDSSDeleteSubscription = "astm.f3411.v22a.dss.deleteSubscription"
+
+    F3411v19USSPostIdentificationServiceArea = (
+        "astm.f3411.v19.uss.postIdentificationServiceArea"
+    )
+    F3411v22aUSSPostIdentificationServiceArea = (
+        "astm.f3411.v22a.uss.postIdentificationServiceArea"
+    )
+
+    # Flight injection (test harness)
+
+    F3411v19USSCreateTest = "rid.f3411.v19.sp.createTest"
+    F3411v22aUSSCreateTest = "rid.f3411.v22a.sp.createTest"
+
+    F3411v19USSDeleteTest = "rid.f3411.v19.sp.deleteTest"
+    F3411v22aUSSDeleteTest = "rid.f3411.v22a.sp.deleteTest"
+
+    # RID flight details endpoint that a USS provides (!= DSS)
+    F3411v22aUSSGetDisplayData = "rid.f3411.v22a.sp.getDisplayData"
+    F3411v19USSGetDisplayData = "rid.f3411.v19.sp.getDisplayData"
+    F3411v22aUSSGetFlightDetails = "rid.f3411.v22a.sp.getDetails"
+    F3411v19USSGetFlightDetails = "rid.f3411.v19.sp.getDetails"
 
     # ASTM F3548-21
     F3548v21DSSQueryOperationalIntentReferences = (
@@ -268,9 +339,63 @@ class QueryType(str, Enum):
     @staticmethod
     def flight_details(rid_version: RIDVersion):
         if rid_version == RIDVersion.f3411_19:
-            return QueryType.F3411v19aFlightDetails
+            return QueryType.F3411v19USSGetFlightDetails
         elif rid_version == RIDVersion.f3411_22a:
-            return QueryType.F3411v22aFlightDetails
+            return QueryType.F3411v22aUSSGetFlightDetails
+        else:
+            raise ValueError(f"Unsupported RID version: {rid_version}")
+
+    @staticmethod
+    def dss_get_isa(rid_version: RIDVersion):
+        if rid_version == RIDVersion.f3411_19:
+            return QueryType.F3411v19DSSGetIdentificationServiceArea
+        elif rid_version == RIDVersion.f3411_22a:
+            return QueryType.F3411v22aDSSGetIdentificationServiceArea
+        else:
+            raise ValueError(f"Unsupported RID version: {rid_version}")
+
+    @staticmethod
+    def dss_create_isa(rid_version: RIDVersion):
+        if rid_version == RIDVersion.f3411_19:
+            return QueryType.F3411v19DSSCreateIdentificationServiceArea
+        elif rid_version == RIDVersion.f3411_22a:
+            return QueryType.F3411v22aDSSCreateIdentificationServiceArea
+        else:
+            raise ValueError(f"Unsupported RID version: {rid_version}")
+
+    @staticmethod
+    def dss_update_isa(rid_version: RIDVersion):
+        if rid_version == RIDVersion.f3411_19:
+            return QueryType.F3411v19DSSUpdateIdentificationServiceArea
+        elif rid_version == RIDVersion.f3411_22a:
+            return QueryType.F3411v22aDSSUpdateIdentificationServiceArea
+        else:
+            raise ValueError(f"Unsupported RID version: {rid_version}")
+
+    @staticmethod
+    def dss_delete_isa(rid_version: RIDVersion):
+        if rid_version == RIDVersion.f3411_19:
+            return QueryType.F3411v19DSSDeleteIdentificationServiceArea
+        elif rid_version == RIDVersion.f3411_22a:
+            return QueryType.F3411v22aDSSDeleteIdentificationServiceArea
+        else:
+            raise ValueError(f"Unsupported RID version: {rid_version}")
+
+    @staticmethod
+    def sp_create_test(rid_version: RIDVersion):
+        if rid_version == RIDVersion.f3411_19:
+            return QueryType.F3411v19USSCreateTest
+        elif rid_version == RIDVersion.f3411_22a:
+            return QueryType.F3411v22aUSSCreateTest
+        else:
+            raise ValueError(f"Unsupported RID version: {rid_version}")
+
+    @staticmethod
+    def sp_delete_test(rid_version: RIDVersion):
+        if rid_version == RIDVersion.f3411_19:
+            return QueryType.F3411v19USSDeleteTest
+        elif rid_version == RIDVersion.f3411_22a:
+            return QueryType.F3411v22aUSSDeleteTest
         else:
             raise ValueError(f"Unsupported RID version: {rid_version}")
 
