@@ -12,11 +12,13 @@ This repository has a very strict Python linter, as well as very strict expected
 
 When [a PR is created](https://github.com/interuss/tsc/blob/main/repo_contributions.md#create-draft-pr-in-interuss-repository), the [continuous integration (CI) tests for this repository](./.github/workflows/CI.md) will run, and the PR will generally not be reviewed until they pass (unless [committer help is requested](https://github.com/interuss/tsc/blob/main/repo_contributions.md#request-committer-help-via-comment-in-pr) to address the failure).  See [the continuous integration test documentation](./.github/workflows/CI.md) for how to run these tests on your local system more quickly and efficiently to be confident your PR will pass the CI tests when created (or when updates are made).
 
+### Troubleshooting
+
+See [the continuous integration test documentation](./.github/workflows/CI.md) for how to troubleshoot failing CI for a PR.
+
 ### Failing "uss_qualifier tests" CI check
 
-If `make presubmit` succeeds on a developer's local machine, the GitHub CI actions should succeed as well.  [A known issue](https://github.com/interuss/monitoring/issues/28) frequently causes the "uss_qualifier tests" check to fail.  If the failed check indicates a query response code of 999 (this is the code InterUSS indicates when no response is received), this is very likely the problem.  A committer can rerun the CI check and it is likely to succeed on the second try with no changes.
-
-If anyone can resolve [issue #28](https://github.com/interuss/monitoring/issues/28) which causes this problem, that help would be enormously appreciated by InterUSS.
+If `make presubmit` succeeds on a developer's local machine, the GitHub CI actions should succeed as well.  If `make presubmit` succeeds locally but the GitHub CI actions fail, that may indicate help from an InterUSS committer would be helpful.
 
 ## uss_qualifier test scenarios
 
