@@ -68,7 +68,7 @@ def test_valid_immediately(ids, session_ridv2):
 
 def test_sleep_5_seconds():
     # But if we wait 5 seconds it will expire...
-    time.sleep(5)
+    sleep(5, "if we wait 5 seconds, the ISA of interest will expire")
 
 
 @default_scope(Scope.DisplayProvider)

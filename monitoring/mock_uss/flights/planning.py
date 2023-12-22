@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Callable, Optional
 
 from monitoring.mock_uss.flights.database import FlightRecord, db, DEADLOCK_TIMEOUT
+from monitoring.monitorlib.delay import sleep
 
 
 def lock_flight(flight_id: str, log: Callable[[str], None]) -> FlightRecord:
@@ -25,7 +26,7 @@ def lock_flight(flight_id: str, log: Callable[[str], None]) -> FlightRecord:
                 break
         # We found an existing flight but it was locked; wait for it to become
         # available
-        time.sleep(0.5)
+        sleep(0.5, f"flight {flight_id} is currently already locked")
 
         if datetime.utcnow() > deadline:
             raise RuntimeError(
@@ -61,7 +62,10 @@ def delete_flight_record(flight_id: str) -> Optional[FlightRecord]:
                 # No FlightRecord found
                 return None
         # There is a race condition with another handler to create or modify the requested flight; wait for that to resolve
-        time.sleep(0.5)
+        sleep(
+            0.5,
+            f"flight {flight_id} is currently already locked while we are trying to delete it",
+        )
         if datetime.utcnow() > deadline:
             raise RuntimeError(
                 f"Deadlock in delete_flight while attempting to gain access to flight {flight_id} (now: {datetime.utcnow()}, deadline: {deadline})"

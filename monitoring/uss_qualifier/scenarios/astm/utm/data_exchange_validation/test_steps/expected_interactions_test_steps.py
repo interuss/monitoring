@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import re
 from typing import Callable, Dict, List, Tuple, Optional
-import time
 
 import arrow
 from implicitdict import StringBasedDateTime
@@ -13,6 +12,7 @@ from uas_standards.astm.f3548.v21.api import OperationID, EntityID
 
 from monitoring.monitorlib.clients.mock_uss.interactions import Interaction
 from monitoring.monitorlib.clients.mock_uss.interactions import QueryDirection
+from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch import QueryError, Query
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
@@ -54,7 +54,10 @@ def expect_mock_uss_receives_op_intent_notification(
             break
         dt = (wait_until - arrow.utcnow().datetime).total_seconds()
         if dt > 0:
-            time.sleep(min(dt, WAIT_INTERVAL_SECONDS))
+            sleep(
+                min(dt, WAIT_INTERVAL_SECONDS),
+                "the expected notification was not found yet",
+            )
 
     with scenario.check("Expect Notification sent", [participant_id]) as check:
         if not found:
@@ -77,8 +80,10 @@ def expect_no_interuss_post_interactions(
         st: the earliest time a notification may have been sent
         participant_id: id of the participant responsible to send the notification
     """
-    # Wait for next MaxTimeToWaitForSubscriptionNotificationSeconds duration to capture any notification
-    time.sleep(max_wait_time)
+    sleep(
+        max_wait_time,
+        "we have to wait the longest it may take a USS to send a notification before we can establish that they didn't send a notification",
+    )
     found, query = mock_uss_interactions(
         scenario=scenario,
         mock_uss=mock_uss,

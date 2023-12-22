@@ -3,6 +3,7 @@
 import datetime
 import time
 
+from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import rid_v1
 from monitoring.prober.infrastructure import register_resource_type
@@ -64,7 +65,7 @@ def test_valid_immediately(ids, session_ridv1):
 
 def test_sleep_5_seconds():
     # But if we wait 5 seconds it will expire...
-    time.sleep(5)
+    sleep(5, "if we wait 5 seconds, the ISA of interest will expire")
 
 
 @default_scope(Scope.Read)
