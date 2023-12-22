@@ -66,7 +66,9 @@ uss_qualifier verifies with the DSS that there are no operational intents remain
 
 #### 🛑 DSS responses check
 
-**[astm.f3548.v21.DSS0005](../../../requirements/astm/f3548/v21.md)**
+If the DSS fails to reply to a query concerning operational intent references in a given area, or fails to allow the deletion of
+an operational intent from its own creator, it is in violation of **[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**
+or **[astm.f3548.v21.DSS0005,2](../../../requirements/astm/f3548/v21.md)**, and this check will fail.
 
 #### 🛑 Area is clear check
 

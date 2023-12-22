@@ -32,7 +32,7 @@ FlightPlannerResource that is under test and will manage Flight 1.
 ### dss
 DSSInstanceResource that provides access to a DSS instance where:
 - flight creation/sharing can be verified,
-- the USS qualifier acting as a virtual USS can create operational intents, and
+- the USS qualifier acting as a virtual USS can create operational intent references, and
 - the USS qualifier can act as an availability arbitrator.
 
 ## Setup test case
@@ -44,11 +44,10 @@ Make a dummy request to the DSS in order to resolve the USS ID of the virtual US
 ### [Restore virtual USS availability test step](../set_uss_available.md)
 
 ### Clear operational intents created by virtual USS test step
-Delete any leftover operational intents created at DSS by virtual USS.
+Delete any leftover operational intent references created at DSS by virtual USS.
 
 #### Successful operational intents cleanup check
-If the search for own operational intents or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005](../../../../requirements/astm/f3548/v21.md)**.
-
+If the search for operational intent references or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**, respectively.
 
 ## Plan Flight 1 in conflict with accepted operational intent managed by down USS test case
 This test case aims at testing requirement **[astm.f3548.v21.SCD0005](../../../../requirements/astm/f3548/v21.md)**.
@@ -113,4 +112,4 @@ Delete flights injected at USS through the flight planning interface.
 
 ### Successful operational intents cleanup check
 Delete operational intents created at DSS by virtual USS.
-If the search for own operational intents or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005](../../../../requirements/astm/f3548/v21.md)**.
+If the search for operational intent references or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**, respectively.
