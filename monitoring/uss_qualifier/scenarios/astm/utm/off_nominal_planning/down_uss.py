@@ -278,7 +278,7 @@ class DownUSS(TestScenario):
         ) as check:
             if find_query.status_code != 200:
                 check.record_failed(
-                    summary=f"Failed to query operational intents from DSS in {self._intents_extent} for cleanup",
+                    summary=f"Failed to query operational intent references from DSS in {self._intents_extent} for cleanup",
                     severity=Severity.High,
                     details=f"DSS responded code {find_query.status_code}; error message: {find_query.error_message}",
                     query_timestamps=[find_query.request.timestamp],

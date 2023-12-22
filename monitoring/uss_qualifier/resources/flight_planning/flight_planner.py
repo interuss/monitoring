@@ -211,7 +211,14 @@ class FlightPlanner:
             operational_intent_id="<not provided>",
         )
 
-        return response, resp.queries[0], flight_id, resp.includes_advisories
+        return (
+            response,
+            resp.queries[0],
+            flight_id,
+            resp.includes_advisories
+            if "includes_advisories" in resp
+            else AdvisoryInclusion.Unknown,
+        )
 
     def cleanup_flight(
         self, flight_id: str

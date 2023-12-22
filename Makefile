@@ -83,13 +83,13 @@ collect-local-logs:
 	-sh -c "build/dev/run_locally.sh logs --timestamps" > logs/local_infra.log 2>&1
 	-docker logs mock_uss_scdsc_a > logs/mock_uss_scdsc_a.log 2>&1
 	-docker logs mock_uss_scdsc_b > logs/mock_uss_scdsc_b.log 2>&1
-	-docker logs mock_uss_ridsp > logs/mock_uss_ridsp.log 2>&1
-	-docker logs mock_uss_ridsp_v22a > logs/mock_uss_ridsp_v22a.log 2>&1
-	-docker logs mock_uss_riddp > logs/mock_uss_riddp.log 2>&1
-	-docker logs mock_uss_riddp_v22a > logs/mock_uss_riddp_v22a.log 2>&1
 	-docker logs mock_uss_geoawareness > logs/mock_uss_geoawareness.log 2>&1
+	-docker logs mock_uss_ridsp > logs/mock_uss_ridsp.log 2>&1
+	-docker logs mock_uss_riddp > logs/mock_uss_riddp.log 2>&1
+	-docker logs mock_uss_ridsp_v19 > logs/mock_uss_ridsp_v19.log 2>&1
+	-docker logs mock_uss_riddp_v19 > logs/mock_uss_riddp_v19.log 2>&1
 	-docker logs mock_uss_tracer > logs/mock_uss_tracer.log 2>&1
-	-docker logs mock_uss_tracer_v22a > logs/mock_uss_tracer_v22a.log 2>&1
+	-docker logs mock_uss_scdsc_interaction_log > logs/mock_uss_scdsc_interaction_log.log 2>&1
 
 .PHONY: stop-locally
 stop-locally:
