@@ -93,11 +93,14 @@ All flight intent data provided was complete and correct. It should have been pr
 to reject or accept Flight 1. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-### [Validate Flight 1 status test step](../validate_shared_operational_intent.md)
+### Validate Flight 1 status test step
 This step validates that the response of the USS is consistent with the flight shared, i.e. either it was properly
 planned, or the USS rejected the planning.
 
+#### [Validate accepted Flight 1 status](../validate_shared_operational_intent.md)
 If the planning was accepted, Flight 1 should have been shared.
+
+#### [Validate rejected Flight 1 status](../validate_not_shared_operational_intent.md)
 If the planning was rejected, Flight 1 should not have been shared, thus should not exist.
 
 ## Cleanup
