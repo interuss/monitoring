@@ -1,7 +1,6 @@
 """Test ISAs aren't returned after they expire."""
 
 import datetime
-import time
 
 from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.infrastructure import default_scope

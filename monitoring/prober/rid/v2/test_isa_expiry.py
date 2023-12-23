@@ -1,8 +1,8 @@
 """Test ISAs aren't returned after they expire."""
 
 import datetime
-import time
 
+from monitoring.monitorlib.delay import sleep
 from uas_standards.astm.f3411.v22a.api import OPERATIONS, OperationID
 from uas_standards.astm.f3411.v22a.constants import Scope
 
