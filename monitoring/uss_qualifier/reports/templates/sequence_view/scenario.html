@@ -104,9 +104,9 @@
               {% elif event.type == EventType.Query %}
                 <td>&#x1F310;</td>
                 <td>
-                  {{ event.query.request.method }} {{ event.query.request.url_hostname }}
+                  {% set query_dict = {event.query.request.method + " " + event.query.request.url_hostname + " " + str(event.query.response.status_code): event.query} %}
                   {% set query_id = "e" + str(event.event_index) + "query" %}
-                  {{ explorer_content(query_id, event.query) }}
+                  {{ explorer_content(query_id, query_dict) }}
                   {% set collapsible.queries = collapsible.queries + [query_id] %}
                 </td>
                 {% for participant_id in all_participants %}
