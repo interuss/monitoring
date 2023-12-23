@@ -33,6 +33,8 @@ _test_step_cache: Dict[str, TestStepDocumentation] = {}
 
 
 def _length_of_section(values, start_of_section: int) -> int:
+    if start_of_section + 1 >= len(values):
+        return 1
     level = values[start_of_section].level
     c = start_of_section + 1
     while c < len(values):

@@ -1,69 +1,11 @@
 <!DOCTYPE html>
 {% from "explorer.html" import explorer_header, explorer_content, explorer_footer %}
+{% from "sequence_view/severity.html" import severity_symbol, severity_class with context %}
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>s{{ test_scenario.scenario_index }} - {{ test_scenario.name }}</title>
-  <style>
-    body {
-      margin: 0;
-      color: #24292f;
-      background-color: #ffffff;
-      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
-      font-size: 16px;
-      line-height: 1.5;
-      word-wrap: break-word;
-    }
-    table {
-      border-spacing: 0;
-      border-collapse: collapse;
-      width: max-content;
-      max-width: 100%;
-      overflow: auto;
-    }
-    tr {
-      border-top: 1px solid hsla(210,18%,87%,1);
-    }
-    table tr:nth-child(2n) {
-      background-color: #f6f8fa;
-    }
-    td {
-      padding: 6px 6px;
-      vertical-align: top;
-      border: 1px solid #d0d7de;
-    }
-    th {
-      padding: 6px 6px;
-      text-align: left;
-      background-color: rgb(230, 230, 230);
-      border: 1px solid #d0d7de;
-    }
-    a {
-      background-color: transparent;
-      color: #0969da;
-      text-decoration: none;
-    }
-    h2 {
-      margin-block-end: 0.1em;
-    }
-    .sticky_cell_value {
-      position: sticky;
-      top: 0px;
-      z-index: 0;
-    }
-    .pass_result {
-      background-color: rgb(192, 255, 192);
-    }
-    .fail_result {
-      background-color: rgb(255, 192, 192);
-    }
-    .not_tested {
-      background-color: rgb(192, 192, 192);
-    }
-    .failed_check_summary {
-      font-style: italic;
-    }
-  </style>
+  {% include "sequence_view/style.html" %}
   {{ explorer_header() }}
 </head>
 <body>
@@ -131,8 +73,8 @@
                   {% endif %}
                 {% endfor %}
               {% elif event.type == EventType.FailedCheck %}
-                <td>&#x274C;</td>
-                <td class="fail_result">
+                <td>{{ severity_symbol(event.failed_check.severity) }}</td>
+                <td class="{{ severity_class(event.failed_check.severity) }}">
                   {% if event.failed_check.documentation_url %}
                     <a href="{{ event.failed_check.documentation_url }}">{{ event.failed_check.name }}</a>
                   {% else %}
@@ -152,7 +94,9 @@
                 </td>
                 {% for participant_id in all_participants %}
                   {% if (participant_id != UNATTRIBUTED_PARTICIPANT and participant_id in event.failed_check.participants) or (participant_id == UNATTRIBUTED_PARTICIPANT and not event.failed_check.participants) %}
-                    <td class="fail_result">&#x274C;</td>
+                    <td class="{{ severity_class(event.failed_check.severity) }}">
+                      {{ severity_symbol(event.failed_check.severity) }}
+                    </td>
                   {% else %}
                     <td></td>
                   {% endif %}
