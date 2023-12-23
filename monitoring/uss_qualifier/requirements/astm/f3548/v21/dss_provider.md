@@ -4,7 +4,7 @@ This file describes the set of ASTM F3548-21 requirements with which a USS provi
 
 ## DSS Compliance Matrix
 
-* **astm.f3548.v21.DSS0005**
+* DSS0005
   * **astm.f3548.v21.DSS0005,1**
   * **astm.f3548.v21.DSS0005,2**
   * **astm.f3548.v21.DSS0005,3**
