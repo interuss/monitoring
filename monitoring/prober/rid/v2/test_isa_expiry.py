@@ -1,8 +1,8 @@
 """Test ISAs aren't returned after they expire."""
 
 import datetime
-import time
 
+from monitoring.monitorlib.delay import sleep
 from uas_standards.astm.f3411.v22a.api import OPERATIONS, OperationID
 from uas_standards.astm.f3411.v22a.constants import Scope
 
@@ -68,7 +68,7 @@ def test_valid_immediately(ids, session_ridv2):
 
 def test_sleep_5_seconds():
     # But if we wait 5 seconds it will expire...
-    time.sleep(5)
+    sleep(5, "if we wait 5 seconds, the ISA of interest will expire")
 
 
 @default_scope(Scope.DisplayProvider)

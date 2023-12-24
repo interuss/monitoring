@@ -1,10 +1,9 @@
-import time
-
 from monitoring.deployment_manager import deploylib
 import monitoring.deployment_manager.deploylib.namespaces
 import monitoring.deployment_manager.deploylib.systems
 from monitoring.deployment_manager.infrastructure import deployment_action, Context
 from monitoring.deployment_manager.systems.test import hello_world
+from monitoring.monitorlib.delay import sleep
 
 
 @deployment_action("test/hello_world/deploy")
@@ -52,7 +51,7 @@ def destroy(context: Context) -> None:
             namespace.metadata.name, context.spec.cluster.name
         )
     )
-    time.sleep(15)
+    sleep(15, "destruction of hello_world system may take a few seconds")
 
     deploylib.systems.delete_resources(
         existing_resources, namespace, context.clients, context.log
