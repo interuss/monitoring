@@ -59,7 +59,9 @@ The flight intent should be successfully transition to Ended state by the flight
 ### Validate flight intent is non-discoverable test step
 
 #### DSS responses check
-**[astm.f3548.v21.DSS0005](../../../../requirements/astm/f3548/v21.md)**
+
+If the DSS fails to reply to a query concerning operational intent references in a given area,
+it is in violation of **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**, and this check will fail.
 
 #### Operational intent not shared check
 If the operational intent is still discoverable after it was transitioned to Ended,

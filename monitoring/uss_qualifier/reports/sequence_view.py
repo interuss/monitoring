@@ -26,6 +26,7 @@ from monitoring.uss_qualifier.reports.report import (
     TestScenarioReport,
     PassedCheck,
     FailedCheck,
+    Severity,
     SkippedActionReport,
     ErrorReport,
 )
@@ -150,6 +151,7 @@ class Epoch(ImplicitDict):
 @dataclass
 class TestedParticipant(object):
     has_failures: bool = False
+    has_infos: bool = False
     has_successes: bool = False
     has_queries: bool = False
 
@@ -337,7 +339,10 @@ def _compute_tested_scenario(
                 )
                 for pid in participants:
                     p = scenario_participants.get(pid, TestedParticipant())
-                    p.has_failures = True
+                    if failed_check.severity == Severity.Low:
+                        p.has_infos = True
+                    else:
+                        p.has_failures = True
                     scenario_participants[pid] = p
             if "notes" in report and report.notes:
                 for key, note in report.notes.items():
@@ -618,6 +623,7 @@ def _generate_scenario_pages(
                     UNATTRIBUTED_PARTICIPANT=UNATTRIBUTED_PARTICIPANT,
                     len=len,
                     str=str,
+                    Severity=Severity,
                 )
             )
     else:
@@ -654,5 +660,6 @@ def generate_sequence_view(
                 ActionNodeType=ActionNodeType,
                 UNATTRIBUTED_PARTICIPANT=UNATTRIBUTED_PARTICIPANT,
                 len=len,
+                Severity=Severity,
             )
         )

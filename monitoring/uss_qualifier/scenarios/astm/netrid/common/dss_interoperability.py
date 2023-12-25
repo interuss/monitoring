@@ -1,6 +1,5 @@
 import ipaddress
 import socket
-import time
 import uuid
 from dataclasses import dataclass
 import datetime
@@ -10,6 +9,7 @@ from urllib.parse import urlparse
 
 import s2sphere
 
+from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch.rid import ISA
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
@@ -499,8 +499,10 @@ class DSSInteroperability(GenericTestScenario):
         """Expired ISA automatically removed, ISA modifications
         accessible from all non-primary DSSs"""
 
-        # sleep X seconds for ISA_1 to expire
-        time.sleep(SHORT_WAIT_SEC)
+        sleep(
+            SHORT_WAIT_SEC,
+            "ISA_1 needs to expire so we can check it is automatically removed",
+        )
 
         isa_1 = self._context["isa_1"]
 
@@ -590,7 +592,10 @@ class DSSInteroperability(GenericTestScenario):
     def step12(self):
         """Expired Subscriptions don’t trigger subscription notification requests"""
 
-        time.sleep(SHORT_WAIT_SEC)
+        sleep(
+            SHORT_WAIT_SEC,
+            "ISA needs to expire so we can check it doesn't trigger notifications",
+        )
 
         isa_3 = self._new_isa("isa_3")
         all_sub_2_ids = self._get_entities_by_prefix("sub_2_").keys()

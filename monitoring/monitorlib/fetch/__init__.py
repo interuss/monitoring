@@ -254,6 +254,9 @@ class QueryType(str, Enum):
         "interuss.automated_testing.flight_planning.v1.DeleteFlightPlan"
     )
 
+    def __str__(self):
+        return self.value
+
     @staticmethod
     def flight_details(rid_version: RIDVersion):
         if rid_version == RIDVersion.f3411_19:

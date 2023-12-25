@@ -1,0 +1,21 @@
+{% macro severity_symbol(s) %}
+  {% if s == Severity.Low %}
+    &#8505;&#65039;
+  {% elif s == Severity.Medium %}
+    &#9888;&#65039;
+  {% elif s == Severity.High %}
+    &#x1F6D1;
+  {% elif s == Severity.Critical %}
+    &#9762;&#65039;
+  {% else %}
+    ?
+  {% endif %}
+{% endmacro %}
+
+{% macro severity_class(s) %}
+  {% if s == Severity.Low %}
+    info_result
+  {% else %}
+    fail_result
+  {% endif %}
+{% endmacro %}
