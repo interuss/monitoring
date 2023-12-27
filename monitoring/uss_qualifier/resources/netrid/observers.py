@@ -3,14 +3,15 @@ from typing import List, Optional, Tuple
 from loguru import logger
 import s2sphere
 from implicitdict import ImplicitDict
+from uas_standards.interuss.automated_testing.rid.v1 import (
+    observation as observation_api,
+)
+from uas_standards.interuss.automated_testing.rid.v1.constants import Scope
 
 from monitoring.monitorlib import fetch, infrastructure
 from monitoring.monitorlib.fetch import QueryType
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
-from uas_standards.interuss.automated_testing.rid.v1 import (
-    observation as observation_api,
-)
 from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 
@@ -46,9 +47,7 @@ class RIDSystemObserver(object):
             self.session,
             "GET",
             url,
-            # TODO replace with 'uas_standards.interuss.automated_testing.rid.v1.constants.Scope.Observe' once
-            #  the standard is updated with https://github.com/interuss/uas_standards/pull/11/files
-            scope="dss.read.identification_service_areas",
+            scope=Scope.Observe,
             participant_id=self.participant_id,
         )
         try:
@@ -71,9 +70,7 @@ class RIDSystemObserver(object):
             self.session,
             "GET",
             f"/display_data/{flight_id}",
-            # TODO replace with 'uas_standards.interuss.automated_testing.rid.v1.constants.Scope.Observe' once
-            #  the standard is updated with https://github.com/interuss/uas_standards/pull/11/files
-            scope="dss.read.identification_service_areas",
+            scope=Scope.Observe,
             participant_id=self.participant_id,
         )
         # Record query metadata for later use in the aggregate checks
@@ -119,6 +116,13 @@ class NetRIDObserversResource(Resource[NetRIDObserversSpecification]):
         specification: NetRIDObserversSpecification,
         auth_adapter: AuthAdapterResource,
     ):
+        auth_adapter.assert_scopes_available(
+            scopes_required={
+                Scope.Observe: "observe RID flights visible to user from USSs under test"
+            },
+            consumer_name=self.__class__.__name__,
+        )
+
         self.observers = [
             RIDSystemObserver(
                 o.participant_id,

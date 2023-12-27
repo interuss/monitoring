@@ -1,10 +1,10 @@
 name: ASTM F3411-22a
 resources:
   flights_data: resources.netrid.FlightDataResource
-  service_providers: resources.netrid.NetRIDServiceProviders
+  service_providers: resources.netrid.NetRIDServiceProviders?
   observers: resources.netrid.NetRIDObserversResource
   evaluation_configuration: resources.netrid.EvaluationConfigurationResource
-  dss_instances: resources.astm.f3411.DSSInstancesResource
+  dss_instances: resources.astm.f3411.DSSInstancesResource?
   utm_client_identity: resources.communications.ClientIdentityResource
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
@@ -40,7 +40,7 @@ actions:
         service_providers: service_providers
         observers: observers
         evaluation_configuration: evaluation_configuration
-        dss_pool: dss_instances
+        dss_pool: dss_instances?
     on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.Misbehavior

@@ -185,7 +185,9 @@ class GenericTestScenario(ABC):
     _case_report: Optional[TestCaseReport] = None
     _current_step: Optional[TestStepDocumentation] = None
     _step_report: Optional[TestStepReport] = None
-    _allow_undocumented_checks = False  # When this variable is set to True, it allows undocumented checks to be executed by the scenario. This is primarly intended to simplify internal unit testing.
+
+    _allow_undocumented_checks = False
+    """When this variable is set to True, it allows undocumented checks to be executed by the scenario. This is primarly intended to simplify internal unit testing."""
 
     context = None
     """Execution context; set at begin_test_scenario."""

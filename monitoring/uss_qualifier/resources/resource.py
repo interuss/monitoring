@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import get_type_hints, Dict, Generic, Tuple, TypeVar, Type
+from typing import get_type_hints, Dict, Generic, Set, Tuple, TypeVar, Type
 
 from implicitdict import ImplicitDict
+from loguru import logger
 
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib import inspection
@@ -47,7 +48,8 @@ class MissingResourceError(ValueError):
 
 
 def create_resources(
-    resource_declarations: Dict[ResourceID, ResourceDeclaration]
+    resource_declarations: Dict[ResourceID, ResourceDeclaration],
+    stop_when_not_created: bool = False,
 ) -> Dict[ResourceID, ResourceType]:
     """Instantiate all resources from the provided declarations.
 
@@ -56,37 +58,58 @@ def create_resources(
 
     Args:
         resource_declarations: Mapping between resource ID and declaration for that resource.
+        stop_when_not_created: If true, reraise any MissingResourceErrors encountered while creating resources.
 
     Returns: Mapping between resource ID and an instance of that declared resource.
     """
     resource_pool: Dict[ResourceID, ResourceType] = {}
+    could_not_create: Set[ResourceID] = set()
 
     resources_created = 1
     unmet_dependencies_by_resource = {}
     while resources_created > 0:
         resources_created = 0
         for name, declaration in resource_declarations.items():
-            if name in resource_pool:
+            if name in resource_pool or name in could_not_create:
                 continue
             unmet_dependencies = [
-                d for d in declaration.dependencies.values() if d not in resource_pool
+                d
+                for d in declaration.dependencies.values()
+                if d not in resource_pool and d not in could_not_create
             ]
             if unmet_dependencies:
                 unmet_dependencies_by_resource[name] = unmet_dependencies
             else:
-                resource_pool[name] = _make_resource(declaration, resource_pool)
-                resources_created += 1
+                uncreated = [
+                    d
+                    for d in declaration.dependencies.values()
+                    if d in could_not_create
+                ]
+                if uncreated:
+                    logger.warning(
+                        f"Could not create resource `{name}` because it depends on resources that could not be created: {', '.join(uncreated)}"
+                    )
+                    could_not_create.add(name)
+                else:
+                    try:
+                        resource_pool[name] = _make_resource(declaration, resource_pool)
+                        resources_created += 1
+                    except MissingResourceError as e:
+                        logger.warning(
+                            f"Could not create resource `{name}` because {e}"
+                        )
+                        if stop_when_not_created:
+                            raise e
+                        could_not_create.add(name)
 
-    if len(resource_pool) != len(resource_declarations):
+    if len(resource_pool) + len(could_not_create) != len(resource_declarations):
         uncreated_resources = [
             (r + " ({} missing)".format(", ".join(unmet_dependencies_by_resource[r])))
             for r in resource_declarations
-            if r not in resource_pool
+            if r not in resource_pool and r not in could_not_create
         ]
         raise ValueError(
-            "Could not create resources: {} (do you have circular dependencies?)".format(
-                ", ".join(uncreated_resources)
-            )
+            f"Could not create resources: {', '.join(uncreated_resources)} (do you have circular dependencies?)"
         )
 
     return resource_pool
