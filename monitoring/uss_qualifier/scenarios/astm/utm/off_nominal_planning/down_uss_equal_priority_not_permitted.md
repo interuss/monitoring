@@ -48,7 +48,7 @@ Make a dummy request to the DSS in order to resolve the USS ID of the virtual US
 Delete any leftover operational intents created at DSS by virtual USS.
 
 #### Successful operational intents cleanup check
-If the search for own operational intents or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005](../../../../requirements/astm/f3548/v21.md)**.
+If the search for operational intent references or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**, respectively.
 
 ## Plan Flight 2 in conflict with activated operational intent managed by down USS test case
 This test case aims at testing requirement **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)**.
@@ -176,4 +176,4 @@ Delete flights injected at USS through the flight planning interface.
 
 ### Successful operational intents cleanup check
 Delete operational intents created at DSS by virtual USS.
-If the search for own operational intents or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005](../../../../requirements/astm/f3548/v21.md)**.
+If the search for operational intent references or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**, respectively.

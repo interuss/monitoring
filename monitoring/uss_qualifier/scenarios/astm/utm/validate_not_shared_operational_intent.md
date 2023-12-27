@@ -8,7 +8,8 @@ See `OpIntentValidator.expect_not_shared()` in [test_steps.py](test_steps.py).
 
 ## 🛑 DSS responses check
 
-**[astm.f3548.v21.DSS0005](../../../requirements/astm/f3548/v21.md)**
+If the DSS fails to reply to a query concerning operational intent references in a given area,
+it is in violation of **[astm.f3548.v21.DSS0005,2](../../../requirements/astm/f3548/v21.md)**, and this check will fail.
 
 ## 🛑 Operational intent not shared check
 If there are new operational intent references in the area of the flight intent, this check will fail per

@@ -5,7 +5,6 @@ from typing import List, Optional, Union, Set
 from implicitdict import ImplicitDict
 from monitoring.monitorlib import schema_validation, fetch
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
-from monitoring.monitorlib.geotemporal import Volume4DCollection
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentState,
     Volume4D,
@@ -30,11 +29,6 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     TestRunCannotContinueError,
 )
 from uas_standards.interuss.automated_testing.scd.v1.api import InjectFlightRequest
-
-OI_DATA_FORMAT = "Operational intent details data format"
-OI_CORRECT_DETAILS = "Correct operational intent details"
-OFF_NOM_VOLS = "Off-nominal volumes"
-VERTICES = "Vertices"
 
 
 class OpIntentValidator(object):
@@ -103,7 +97,7 @@ class OpIntentValidator(object):
             len(oi_ids_delta) > 1
         ):  # TODO: could a USS cut up a submitted flight intent into several op intents?
             raise TestRunCannotContinueError(
-                f"unexpectedly got more than 1 new operational intent after planning request was created (IDs: {oi_ids_delta}): the test scenario might be malformed or some external requests might have interfered"
+                f"unexpectedly got more than 1 new operational intent reference after planning request was created (IDs: {oi_ids_delta}): the test scenario might be malformed or some external requests might have interfered"
             )
         if len(oi_ids_delta) == 1:
             self._new_oi_ref = self._find_after_oi(oi_ids_delta.pop())
@@ -114,14 +108,14 @@ class OpIntentValidator(object):
         with self._scenario.check("DSS responses", [self._dss.participant_id]) as check:
             if self._before_query.status_code != 200:
                 check.record_failed(
-                    summary="Failed to query DSS for operational intents before planning request",
+                    summary="Failed to query DSS for operational intent references before planning request",
                     severity=Severity.High,
                     details=f"Received status code {self._before_query.status_code} from the DSS",
                     query_timestamps=[self._before_query.request.timestamp],
                 )
             if self._after_query.status_code != 200:
                 check.record_failed(
-                    summary="Failed to query DSS for operational intents after planning request",
+                    summary="Failed to query DSS for operational intent references after planning request",
                     severity=Severity.High,
                     details=f"Received status code {self._after_query.status_code} from the DSS",
                     query_timestamps=[self._after_query.request.timestamp],
@@ -188,108 +182,26 @@ class OpIntentValidator(object):
 
         :returns: the shared operational intent reference. None if skipped because not found.
         """
+        if isinstance(flight_intent, InjectFlightRequest):
+            flight_intent = FlightInfo.from_scd_inject_flight_request(flight_intent)
+
+        self._begin_step()
         oi_ref = self._operational_intent_shared_check(flight_intent, skip_if_not_found)
+        if oi_ref is None:
+            self._scenario.end_test_step()
+            return None
 
-        oi_full, oi_full_query = self._dss.get_full_op_intent(
-            oi_ref, self._flight_planner.participant_id
-        )
-        self._scenario.record_query(oi_full_query)
-        self._operational_intent_retrievable_check(oi_full_query, oi_ref.id)
+        self._check_op_intent_details(flight_intent, oi_ref)
 
-        validation_failures = self._evaluate_op_intent_validation(oi_full_query)
+        # Check telemetry if intent is off-nominal
+        if flight_intent.basic_information.uas_state in {
+            UasState.OffNominal,
+            UasState.Contingent,
+        }:
+            self._check_op_intent_telemetry(oi_ref)
 
-        with self._scenario.check(
-            OI_DATA_FORMAT,
-            [self._flight_planner.participant_id],
-        ) as check:
-            data_format_fail = (
-                self._expected_validation_failure_found(
-                    validation_failures, OpIntentValidationFailureType.DataFormat
-                )
-                if validation_failures
-                else None
-            )
-            if data_format_fail:
-                errors = data_format_fail.errors
-                check.record_failed(
-                    summary="Operational intent details response failed schema validation",
-                    severity=Severity.Medium,
-                    details="The response received from querying operational intent details failed validation against the required OpenAPI schema:\n"
-                    + "\n".join(
-                        f"At {e.json_path} in the response: {e.message}" for e in errors
-                    ),
-                    query_timestamps=[oi_full_query.request.timestamp],
-                )
-
-        with self._scenario.check(
-            OI_CORRECT_DETAILS, [self._flight_planner.participant_id]
-        ) as check:
-            priority = (
-                flight_intent.operational_intent.priority
-                if isinstance(flight_intent, InjectFlightRequest)
-                else flight_intent.astm_f3548_21.priority
-            )
-            if isinstance(flight_intent, InjectFlightRequest):
-                priority = flight_intent.operational_intent.priority
-                vols = Volume4DCollection.from_interuss_scd_api(
-                    flight_intent.operational_intent.volumes
-                    + flight_intent.operational_intent.off_nominal_volumes
-                )
-            elif isinstance(flight_intent, FlightInfo):
-                priority = flight_intent.astm_f3548_21.priority
-                vols = flight_intent.basic_information.area
-
-            error_text = validate_op_intent_details(
-                oi_full.details,
-                priority,
-                vols.bounding_volume.to_f3548v21(),
-            )
-            if error_text:
-                check.record_failed(
-                    summary="Operational intent details do not match user flight intent",
-                    severity=Severity.High,
-                    details=error_text,
-                    query_timestamps=[oi_full_query.request.timestamp],
-                )
-
-        with self._scenario.check(
-            OFF_NOM_VOLS, [self._flight_planner.participant_id]
-        ) as check:
-            off_nom_vol_fail = (
-                self._expected_validation_failure_found(
-                    validation_failures,
-                    OpIntentValidationFailureType.NominalWithOffNominalVolumes,
-                )
-                if validation_failures
-                else None
-            )
-            if off_nom_vol_fail:
-                check.record_failed(
-                    summary="Accepted or Activated operational intents are not allowed off-nominal volumes",
-                    severity=Severity.Medium,
-                    details=off_nom_vol_fail.error_text,
-                    query_timestamps=[oi_full_query.request.timestamp],
-                )
-
-        with self._scenario.check(
-            VERTICES, [self._flight_planner.participant_id]
-        ) as check:
-            vertices_fail = (
-                self._expected_validation_failure_found(
-                    validation_failures, OpIntentValidationFailureType.VertexCount
-                )
-                if validation_failures
-                else None
-            )
-            if vertices_fail:
-                check.record_failed(
-                    summary="Too many vertices",
-                    severity=Severity.Medium,
-                    details=vertices_fail.error_text,
-                    query_timestamps=[oi_full_query.request.timestamp],
-                )
-
-        return oi_full.reference
+        self._scenario.end_test_step()
+        return oi_ref
 
     def expect_shared_with_invalid_data(
         self,
@@ -309,8 +221,14 @@ class OpIntentValidator(object):
 
         :returns: the shared operational intent reference. None if skipped because not found.
         """
+        if isinstance(flight_intent, InjectFlightRequest):
+            flight_intent = FlightInfo.from_scd_inject_flight_request(flight_intent)
 
+        self._begin_step()
         oi_ref = self._operational_intent_shared_check(flight_intent, skip_if_not_found)
+        if oi_ref is None:
+            self._scenario.end_test_step()
+            return None
 
         goidr_json, oi_full_query = self._dss.get_full_op_intent_without_validation(
             oi_ref, self._flight_planner.participant_id
@@ -356,11 +274,9 @@ class OpIntentValidator(object):
 
     def _operational_intent_shared_check(
         self,
-        flight_intent: Union[InjectFlightRequest | FlightInfo],
+        flight_intent: FlightInfo,
         skip_if_not_found: bool,
     ) -> Optional[OperationalIntentReference]:
-
-        self._begin_step_fragment()
 
         with self._scenario.check(
             "Operational intent shared correctly", [self._flight_planner.participant_id]
@@ -393,23 +309,11 @@ class OpIntentValidator(object):
                 if modified_oi_ref is None:
                     if not skip_if_not_found:
                         if (
-                            (isinstance(flight_intent, InjectFlightRequest))
-                            and (
-                                flight_intent.operational_intent.state
-                                == OperationalIntentState.Activated
-                            )
-                        ) or (
-                            isinstance(flight_intent, FlightInfo)
-                            and (
-                                (
-                                    flight_intent.basic_information.uas_state
-                                    == UasState.Nominal
-                                )
-                                and (
-                                    flight_intent.basic_information.usage_state
-                                    == AirspaceUsageState.InUse
-                                )
-                            )
+                            flight_intent.basic_information.uas_state
+                            == UasState.Nominal
+                        ) and (
+                            flight_intent.basic_information.usage_state
+                            == AirspaceUsageState.InUse
                         ):
                             with self._scenario.check(
                                 "Operational intent for active flight not deleted",
@@ -450,6 +354,118 @@ class OpIntentValidator(object):
                 oi_ref = self._new_oi_ref
 
         return oi_ref
+
+    def _check_op_intent_details(
+        self, flight_intent: FlightInfo, oi_ref: OperationalIntentReference
+    ):
+        oi_full, oi_full_query = self._dss.get_full_op_intent(
+            oi_ref, self._flight_planner.participant_id
+        )
+        self._scenario.record_query(oi_full_query)
+        self._operational_intent_retrievable_check(oi_full_query, oi_ref.id)
+
+        validation_failures = self._evaluate_op_intent_validation(oi_full_query)
+        with self._scenario.check(
+            "Operational intent details data format",
+            [self._flight_planner.participant_id],
+        ) as check:
+            data_format_fail = (
+                self._expected_validation_failure_found(
+                    validation_failures, OpIntentValidationFailureType.DataFormat
+                )
+                if validation_failures
+                else None
+            )
+            if data_format_fail:
+                errors = data_format_fail.errors
+                check.record_failed(
+                    summary="Operational intent details response failed schema validation",
+                    severity=Severity.Medium,
+                    details="The response received from querying operational intent details failed validation against the required OpenAPI schema:\n"
+                    + "\n".join(
+                        f"At {e.json_path} in the response: {e.message}" for e in errors
+                    ),
+                    query_timestamps=[oi_full_query.request.timestamp],
+                )
+
+        with self._scenario.check(
+            "Correct operational intent details", [self._flight_planner.participant_id]
+        ) as check:
+            error_text = validate_op_intent_details(
+                oi_full.details,
+                flight_intent.astm_f3548_21.priority,
+                flight_intent.basic_information.area.bounding_volume.to_f3548v21(),
+            )
+            if error_text:
+                check.record_failed(
+                    summary="Operational intent details do not match user flight intent",
+                    severity=Severity.High,
+                    details=error_text,
+                    query_timestamps=[oi_full_query.request.timestamp],
+                )
+
+        with self._scenario.check(
+            "Off-nominal volumes", [self._flight_planner.participant_id]
+        ) as check:
+            off_nom_vol_fail = (
+                self._expected_validation_failure_found(
+                    validation_failures,
+                    OpIntentValidationFailureType.NominalWithOffNominalVolumes,
+                )
+                if validation_failures
+                else None
+            )
+            if off_nom_vol_fail:
+                check.record_failed(
+                    summary="Accepted or Activated operational intents are not allowed off-nominal volumes",
+                    severity=Severity.Medium,
+                    details=off_nom_vol_fail.error_text,
+                    query_timestamps=[oi_full_query.request.timestamp],
+                )
+
+        with self._scenario.check(
+            "Vertices", [self._flight_planner.participant_id]
+        ) as check:
+            vertices_fail = (
+                self._expected_validation_failure_found(
+                    validation_failures, OpIntentValidationFailureType.VertexCount
+                )
+                if validation_failures
+                else None
+            )
+            if vertices_fail:
+                check.record_failed(
+                    summary="Too many vertices",
+                    severity=Severity.Medium,
+                    details=vertices_fail.error_text,
+                    query_timestamps=[oi_full_query.request.timestamp],
+                )
+
+    def _check_op_intent_telemetry(self, oi_ref: OperationalIntentReference):
+        oi_tel, oi_tel_query = self._dss.get_op_intent_telemetry(
+            oi_ref, self._flight_planner.participant_id
+        )
+        self._scenario.record_query(oi_tel_query)
+
+        with self._scenario.check(
+            "Operational intent telemetry retrievable",
+            [self._flight_planner.participant_id],
+        ) as check:
+            if oi_tel_query.status_code not in {200, 412}:
+                check.record_failed(
+                    summary="Operational intent telemetry could not be retrieved from USS",
+                    severity=Severity.High,
+                    details=f"Received status code {oi_tel_query.status_code} from {self._flight_planner.participant_id} when querying for telemetry of operational intent {oi_ref.id}",
+                    query_timestamps=[oi_tel_query.request.timestamp],
+                )
+
+            if oi_tel is None:
+                check.record_failed(
+                    summary="Warning (not a failure): USS indicated that no operational intent telemetry was available",
+                    severity=Severity.Low,
+                    details=f"Received status code {oi_tel_query.status_code} from {self._flight_planner.participant_id} when querying for details of operational intent {oi_ref.id}",
+                    query_timestamps=[oi_tel_query.request.timestamp],
+                )
 
     def _evaluate_op_intent_validation(
         self, oi_full_query: fetch.Query
@@ -504,13 +520,17 @@ class OpIntentValidator(object):
                         f"Operational intent {oi_full.reference.id} had too many total vertices - {n_vertices}",
                     )
                     validation_failures.add(
-                        validation_failure_type=OpIntentValidationFailureType.VertexCount,
-                        error_text=details,
+                        OpIntentValidationFailure(
+                            validation_failure_type=OpIntentValidationFailureType.VertexCount,
+                            error_text=details,
+                        )
                     )
             except (KeyError, ValueError) as e:
                 validation_failures.add(
-                    validation_failure_type=OpIntentValidationFailureType.DataFormat,
-                    error_text=e,
+                    OpIntentValidationFailure(
+                        validation_failure_type=OpIntentValidationFailureType.DataFormat,
+                        error_text=e,
+                    )
                 )
 
         return validation_failures

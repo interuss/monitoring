@@ -4,7 +4,8 @@ This step verifies that a created flight is shared properly per ASTM F3548-21 by
 
 ## 🛑 DSS responses check
 
-**[astm.f3548.v21.DSS0005](../../../requirements/astm/f3548/v21.md)**
+If the DSS fails to properly respond to a valid search query for operational intents in an area,
+it is in violation of **[astm.f3548.v21.DSS0005,2](../../../requirements/astm/f3548/v21.md)**, and this check will fail.
 
 ## 🛑 Operational intent shared correctly check
 
@@ -35,3 +36,9 @@ If the operational intent details reported by the USS do not match the user's fl
 ## ⚠️ Vertices check
 
 **[astm.f3548.v21.OPIN0020](../../../requirements/astm/f3548/v21.md)**
+
+## 🛑 Operational intent telemetry retrievable check
+
+If the operational intent is in an off-nominal state and that its telemetry cannot be retrieved from the USS, this check will fail per **[astm.f3548.v21.SCD0100](../../../requirements/astm/f3548/v21.md)**.
+
+The USS may explicitly indicate that no telemetry is available for this operational intent, in which case, as a warning, this check will fail with a low severity.

@@ -1,4 +1,3 @@
-import time
 from datetime import timedelta, datetime
 from typing import Optional, Callable, List
 from loguru import logger
@@ -6,6 +5,7 @@ from loguru import logger
 import arrow
 from s2sphere import LatLngRect
 
+from monitoring.monitorlib.delay import sleep
 from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection import (
     InjectedFlightCollection,
 )
@@ -114,7 +114,6 @@ class VirtualObserver(object):
                 break
             delay = t_next - arrow.utcnow()
             if delay.total_seconds() > 0:
-                logger.debug(
-                    f"Waiting {delay.total_seconds()} seconds before polling RID system again..."
+                sleep(
+                    delay, "RID sytem doesn't need to be polled again until this time"
                 )
-                time.sleep(delay.total_seconds())

@@ -9,6 +9,7 @@ from loguru import logger
 
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib import fetch, inspection
+from monitoring.monitorlib.errors import current_stack_string
 from monitoring.monitorlib.inspection import fullname
 from monitoring.uss_qualifier import scenarios as scenarios_module
 from monitoring.uss_qualifier.common_data_definitions import Severity
@@ -363,6 +364,12 @@ class GenericTestScenario(ABC):
         self._expect_phase({ScenarioPhase.RunningTestStep, ScenarioPhase.CleaningUp})
         if "queries" not in self._step_report:
             self._step_report.queries = []
+        for existing_query in self._step_report.queries:
+            if query.request.timestamp == existing_query.request.timestamp:
+                logger.error(
+                    f"The same query ({query.query_type} to {query.participant_id} at {query.request.timestamp}) was recorded multiple times.  This is likely a bug in uss_qualifier at:\n{current_stack_string(2)}"
+                )
+                return
         self._step_report.queries.append(query)
         participant = (
             "UNKNOWN"
