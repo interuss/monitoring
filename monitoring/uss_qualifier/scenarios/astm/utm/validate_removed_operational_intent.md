@@ -8,7 +8,7 @@ See `OpIntentValidator.expect_removed()` in [test_steps.py](test_steps.py).
 
 ## 🛑 DSS responses check
 
-**[astm.f3548.v21.DSS0005](../../../requirements/astm/f3548/v21.md)**
+**[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**
 
 ## 🛑 Operational intent not shared check
 If the operational intent reference for the flight is still found in the area of the flight intent, this check will fail per
