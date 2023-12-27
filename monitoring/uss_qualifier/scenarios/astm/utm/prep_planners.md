@@ -34,7 +34,7 @@ FlightIntentsResource containing flight intents that will be used in subsequent 
 
 (Optional) If more than one FlightIntentsResource will be used in subsequent tests, additional intents may be specified with this resource.
 
-## Preparation test case
+## Flight planners preparation test case
 
 ### Check for flight planning readiness test step
 
@@ -70,6 +70,29 @@ If the DSS fails to reply to a query concerning operational intent references in
 an operational intent from its own creator, it is in violation of **[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**
 or **[astm.f3548.v21.DSS0005,2](../../../requirements/astm/f3548/v21.md)**, and this check will fail.
 
+#### 🛑 Area is clear of foreign op intents check
+
+If operational intents from foreign (non-uss_qualifier) users remain in the 4D area(s) following the preceding area clearing, then the current state of the test environment is not suitable to conduct tests so this check will fail.
+
+## uss_qualifier preparation test case
+
+In addition to foreign flight planners, uss_qualifier may have left operational intents in the DSS from an incomplete previous run.  This test case attempts to clean them up if they exist.  If there are no operational intents from uss_qualifier in the flight intent areas, this test case will be skipped.
+
+### Remove uss_qualifier op intents test step
+
+#### [Remove op intents](./dss/remove_op_intent.md)
+
+The operational intent references managed by uss_qualifier discovered in the previous test case are removed.
+
+### Clear area validation test step
+
+uss_qualifier verifies with the DSS that there are no operational intents remaining in the area.
+
+#### 🛑 DSS responses check
+
+If the DSS fails to reply to a query concerning operational intent references in a given area, it is in violation of **[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**
+or **[astm.f3548.v21.DSS0005,2](../../../requirements/astm/f3548/v21.md)**, and this check will fail.
+
 #### 🛑 Area is clear check
 
-If operational intents remain in the 4D area(s) following the preceding area clearing, then the current state of the test environment is not suitable to conduct tests so this check will fail.
+If any operational intents remain in the 4D area(s) following the preceding area clearing, then the current state of the test environment is not suitable to conduct tests so this check will fail.
