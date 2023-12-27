@@ -185,10 +185,9 @@ class OpIntentValidator(object):
         if isinstance(flight_intent, InjectFlightRequest):
             flight_intent = FlightInfo.from_scd_inject_flight_request(flight_intent)
 
-        self._begin_step()
+        self._begin_step_fragment()
         oi_ref = self._operational_intent_shared_check(flight_intent, skip_if_not_found)
         if oi_ref is None:
-            self._scenario.end_test_step()
             return None
 
         self._check_op_intent_details(flight_intent, oi_ref)
@@ -200,7 +199,6 @@ class OpIntentValidator(object):
         }:
             self._check_op_intent_telemetry(oi_ref)
 
-        self._scenario.end_test_step()
         return oi_ref
 
     def expect_shared_with_invalid_data(
@@ -224,10 +222,9 @@ class OpIntentValidator(object):
         if isinstance(flight_intent, InjectFlightRequest):
             flight_intent = FlightInfo.from_scd_inject_flight_request(flight_intent)
 
-        self._begin_step()
+        self._begin_step_fragment()
         oi_ref = self._operational_intent_shared_check(flight_intent, skip_if_not_found)
         if oi_ref is None:
-            self._scenario.end_test_step()
             return None
 
         goidr_json, oi_full_query = self._dss.get_full_op_intent_without_validation(
