@@ -62,9 +62,10 @@
       <h3>{{ "Baseline" if is_baseline else "Environment" }}</h3>
       <ul>
         {% set current = namespace(address="v1.test_run.resources.resource_declarations") %}
-        {% for resource_id, resource_dec in report.configuration.resources.resource_declarations.items() %}
+        {% set config = report.configuration.v1.test_run %}
+        {% for resource_id, resource_dec in config.resources.resource_declarations.items() %}
           {% set current.address = current.address + "." + resource_id %}
-          {% if ("non_baseline_inputs" in report.configuration and report.configuration.non_baseline_inputs and (current.address in report.configuration.non_baseline_inputs) != is_baseline) or (("non_baseline_inputs" not in report.configuration or not report.configuration.non_baseline_inputs) and is_baseline) %}
+          {% if ("non_baseline_inputs" in config and config.non_baseline_inputs and (current.address in config.non_baseline_inputs) != is_baseline) or (("non_baseline_inputs" not in config or not config.non_baseline_inputs) and is_baseline) %}
             <li id="resource_{{ resource_id }}"><code>{{ resource_id }}</code> ({{ resource_dec.resource_type }})
               <ul>
                 {% if resource_dec.dependencies %}

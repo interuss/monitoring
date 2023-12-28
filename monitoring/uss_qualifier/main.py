@@ -106,7 +106,7 @@ def execute_test_run(whole_config: USSQualifierConfiguration):
         commit_hash=commit_hash,
         baseline_signature=baseline_signature,
         environment_signature=environment_signature,
-        configuration=config,
+        configuration=whole_config,
         report=report,
     )
 
