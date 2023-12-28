@@ -4,6 +4,7 @@ from typing import Optional
 
 import arrow
 
+from monitoring.monitorlib.delay import sleep
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
@@ -83,7 +84,7 @@ class ISAExpiry(GenericTestScenario):
             )
 
         # Wait for it to expire
-        time.sleep(5)
+        sleep(5, "we need to wait for the short-lived ISA to expire")
 
         # Search for ISAs: we should not find the expired one
         with self.check(

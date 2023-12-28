@@ -7,7 +7,7 @@ from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure, fetch
 from monitoring.monitorlib.fetch import QueryType
-from monitoring.monitorlib.scd import SCOPE_SC, SCOPE_AA
+from monitoring.monitorlib.scd import SCOPE_SC, SCOPE_AA, SCOPE_CM_SA
 from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from uas_standards.astm.f3548.v21.api import (
@@ -30,6 +30,8 @@ from uas_standards.astm.f3548.v21.api import (
     GetOperationalIntentReferenceResponse,
     OPERATIONS,
     OperationID,
+    GetOperationalIntentTelemetryResponse,
+    VehicleTelemetry,
 )
 
 # A base URL for a USS that is not expected to be ever called
@@ -163,6 +165,29 @@ class DSSInstance(object):
             result = query.response.json
 
         return result, query
+
+    def get_op_intent_telemetry(
+        self,
+        op_intent_ref: OperationalIntentReference,
+        uss_participant_id: Optional[str] = None,
+    ) -> Tuple[Optional[VehicleTelemetry], fetch.Query]:
+        op = OPERATIONS[OperationID.GetOperationalIntentTelemetry]
+        query = fetch.query_and_describe(
+            self.client,
+            op.verb,
+            f"{op_intent_ref.uss_base_url}{op.path.format(entityid=op_intent_ref.id)}",
+            QueryType.F3548v21USSGetOperationalIntentTelemetry,
+            uss_participant_id,
+            scope=SCOPE_CM_SA,
+        )
+        if query.status_code == 200:
+            result: GetOperationalIntentTelemetryResponse = ImplicitDict.parse(
+                query.response.json, GetOperationalIntentTelemetryResponse
+            )
+            telemetry = result.telemetry if "telemetry" in result else None
+            return telemetry, query
+        else:
+            return None, query
 
     def put_op_intent(
         self,

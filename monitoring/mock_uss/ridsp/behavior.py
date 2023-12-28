@@ -1,6 +1,6 @@
-from time import sleep
 from typing import Optional
 
+from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3411.v19.api import RIDFlight
@@ -56,6 +56,9 @@ def adjust_reported_flight(
                 p.position.alt *= FEET_PER_METER
 
     if behavior.delay_flight_report_s > 0:
-        sleep(behavior.delay_flight_report_s)
+        sleep(
+            behavior.delay_flight_report_s,
+            "specified Service Provider behavior is to delay before reporting flight",
+        )
 
     return adjusted

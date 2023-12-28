@@ -37,6 +37,7 @@ from monitoring.uss_qualifier.reports.report import (
     TestSuiteReport,
     TestSuiteActionReport,
     ParticipantCapabilityEvaluationReport,
+    Severity,
     SkippedActionReport,
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID
@@ -62,9 +63,14 @@ from monitoring.uss_qualifier.suites.definitions import (
 
 def _print_failed_check(failed_check: FailedCheck) -> None:
     yaml_lines = yaml.dump(json.loads(json.dumps(failed_check))).split("\n")
-    logger.warning(
-        "New failed check:\n{}", "\n".join("  " + line for line in yaml_lines)
-    )
+    if failed_check.severity == Severity.Low:
+        logger.info(
+            "Informational finding:\n{}", "\n".join("  " + line for line in yaml_lines)
+        )
+    else:
+        logger.warning(
+            "New failed check:\n{}", "\n".join("  " + line for line in yaml_lines)
+        )
 
 
 class TestSuiteAction(object):
