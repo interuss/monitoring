@@ -631,10 +631,41 @@ def _generate_scenario_pages(
             _generate_scenario_pages(child, config, output_path)
 
 
+def _make_resources_config(config: TestConfiguration) -> dict:
+    baseline = {}
+    environment = {}
+    non_baseline_inputs = (
+        config.non_baseline_inputs
+        if "non_baseline_inputs" in config and config.non_baseline_inputs
+        else []
+    )
+    for resource_id, resource_dec in config.resources.resource_declarations.items():
+        value = {"Specification": resource_dec.specification}
+        if "dependencies" in resource_dec and resource_dec.dependencies:
+            value["Dependencies"] = {
+                f"<code>{local_name}</code>": f"From <code>{source_name}</code> resource"
+                for local_name, source_name in resource_dec.dependencies.items()
+            }
+        key = f"<code>{resource_id}</code> ({resource_dec.resource_type})"
+        current_address = "v1.test_run.resources.resource_declarations." + resource_id
+        if current_address in non_baseline_inputs:
+            environment[key] = value
+        else:
+            baseline[key] = value
+    result = {}
+    if baseline:
+        result["Baseline"] = baseline
+    if environment:
+        result["Environment"] = environment
+    return result
+
+
 def generate_sequence_view(
     report: TestRunReport, config: SequenceViewConfiguration, output_path: str
 ) -> None:
     node = _compute_action_node(report.report, Indexer())
+
+    resources_config = _make_resources_config(report.configuration.v1.test_run)
 
     os.makedirs(output_path, exist_ok=True)
     _generate_scenario_pages(node, config, output_path)
@@ -653,6 +684,7 @@ def generate_sequence_view(
         f.write(
             template.render(
                 report=report,
+                resources_config=resources_config,
                 test_run=compute_test_run_information(report),
                 overview_rows=overview_rows,
                 max_suite_cols=max_suite_cols,
