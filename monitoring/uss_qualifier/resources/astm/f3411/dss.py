@@ -89,6 +89,17 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     def __init__(
         self, specification: DSSInstanceSpecification, auth_adapter: AuthAdapterResource
     ):
+        # Note that the current implementation does not support acting as just a
+        # SP accessing the DSS or just a DP accessing the DSS, but this could be
+        # improved.
+        auth_adapter.assert_scopes_available(
+            scopes_required={
+                specification.rid_version.scope_sp(): "act as an ASTM F3411 NetRID Service Provider to facilitate testing",
+                specification.rid_version.scope_dp(): "act as an ASTM F3411 NetRID Display Provider to facilitate testing",
+            },
+            consumer_name=f"{self.__class__.__name__} resource",
+        )
+
         self.dss_instance = DSSInstance(
             specification.participant_id,
             specification.base_url,
@@ -118,13 +129,6 @@ class DSSInstancesResource(Resource[DSSInstancesSpecification]):
         auth_adapter: AuthAdapterResource,
     ):
         self.dss_instances = [
-            DSSInstance(
-                s.participant_id,
-                s.base_url,
-                s.has_private_address,
-                s.local_debug,
-                s.rid_version,
-                auth_adapter.adapter,
-            )
+            DSSInstanceResource(s, auth_adapter).dss_instance
             for s in specification.dss_instances
         ]

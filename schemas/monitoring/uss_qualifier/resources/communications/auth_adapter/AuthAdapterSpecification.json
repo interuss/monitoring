@@ -1,7 +1,7 @@
 {
   "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/communications/auth_adapter/AuthAdapterSpecification.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Specification for an AuthAdapter resource.\n\nExactly one of the fields defined must be populated.\n\nmonitoring.uss_qualifier.resources.communications.auth_adapter.AuthAdapterSpecification, as defined in monitoring/uss_qualifier/resources/communications/auth_adapter.py",
+  "description": "Specification for an AuthAdapter resource.\n\nExactly one of these fields must be populated:\n  * auth_spec\n  * environment_variable_containing_auth_spec\n\nmonitoring.uss_qualifier.resources.communications.auth_adapter.AuthAdapterSpecification, as defined in monitoring/uss_qualifier/resources/communications/auth_adapter.py",
   "properties": {
     "$ref": {
       "description": "Path to content that replaces the $ref",
@@ -20,7 +20,17 @@
         "string",
         "null"
       ]
+    },
+    "scopes_authorized": {
+      "description": "List of scopes the user in the auth spec is authorized to obtain.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
     }
   },
+  "required": [
+    "scopes_authorized"
+  ],
   "type": "object"
 }

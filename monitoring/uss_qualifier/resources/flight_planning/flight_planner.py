@@ -90,7 +90,7 @@ class FlightPlannerConfiguration(ImplicitDict):
         )
 
 
-class FlightPlanner:
+class FlightPlanner(object):
     """Manages the state and the interactions with flight planner USS.
 
     Note: this class will be deprecated in favor of FlightPlannerClient."""

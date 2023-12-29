@@ -129,6 +129,9 @@ class ExecutionConfiguration(ImplicitDict):
     stop_fast: Optional[bool] = False
     """If true, escalate the Severity of any failed check to Critical in order to end the test run early."""
 
+    stop_when_resource_not_created: Optional[bool] = False
+    """If true, stop test execution if one of the resources cannot be created.  Otherwise, resources that cannot be created due to missing prerequisites are simply treated as omitted."""
+
 
 class TestConfiguration(ImplicitDict):
     action: TestSuiteActionDeclaration
