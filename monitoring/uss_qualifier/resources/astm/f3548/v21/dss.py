@@ -259,12 +259,15 @@ class DSSInstance(object):
         if query.status_code != 200:
             return None, None, query
         else:
-            result = ChangeOperationalIntentReferenceResponse(
-                ImplicitDict.parse(
-                    query.response.json, ChangeOperationalIntentReferenceResponse
+            try:
+                result = ChangeOperationalIntentReferenceResponse(
+                    ImplicitDict.parse(
+                        query.response.json, ChangeOperationalIntentReferenceResponse
+                    )
                 )
-            )
-            return result.operational_intent_reference, result.subscribers, query
+                return result.operational_intent_reference, result.subscribers, query
+            except ValueError as e:
+                return None, None, query
 
     def set_uss_availability(
         self,
