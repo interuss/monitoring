@@ -3,7 +3,7 @@ import arrow
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
-from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays
+from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays, Scope
 
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
@@ -54,7 +54,11 @@ class FlightIntentValidation(TestScenario):
     ):
         super().__init__()
         self.tested_uss = tested_uss.flight_planner
-        self.dss = dss.dss
+        self.dss = dss.get_instance(
+            {
+                Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities"
+            }
+        )
 
         _flight_intents = {
             k: FlightIntent.from_flight_info_template(v)
