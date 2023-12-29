@@ -55,35 +55,19 @@
   </div>
 </div>
 
-<div id="configuration_section" class="collapseable">
-  <div class="node_key" onclick="showHide(document.getElementById('configuration_section'))"><h2>Resources configuration</h2></div>
+<div id="resources_configuration_section" class="collapseable">
+  <div class="node_key" onclick="showHide(document.getElementById('resources_configuration_section'))"><h2>Resources configuration</h2></div>
   <div class="node_value">
-    {% for is_baseline in (True, False) %}
-      <h3>{{ "Baseline" if is_baseline else "Environment" }}</h3>
-      <ul>
-        {% set current = namespace(address="v1.test_run.resources.resource_declarations") %}
-        {% for resource_id, resource_dec in report.configuration.resources.resource_declarations.items() %}
-          {% set current.address = current.address + "." + resource_id %}
-          {% if ("non_baseline_inputs" in report.configuration and report.configuration.non_baseline_inputs and (current.address in report.configuration.non_baseline_inputs) != is_baseline) or (("non_baseline_inputs" not in report.configuration or not report.configuration.non_baseline_inputs) and is_baseline) %}
-            <li id="resource_{{ resource_id }}"><code>{{ resource_id }}</code> ({{ resource_dec.resource_type }})
-              <ul>
-                {% if resource_dec.dependencies %}
-                  {% for local_name, source_name in resource_dec.dependencies.items() %}
-                    <li><code>{{ local_name }}</code>: From <a href="#resource_{{ source_name }}"><code>{{ source_name }}</code> resource</a></li>
-                  {% endfor %}
-                {% endif %}
-                <li>Specification:
-                  {% set spec_id = "specification_" + resource_id %}
-                  {{ explorer_content(spec_id, resource_dec.specification) }}
-                  {% set collapsible.queries = collapsible.queries + [spec_id] %}
-                </li>
-              </ul>
-            </li>
-          {% endif %}
-          {% set current.address = ".".join(current.address.split(".")[0:-1]) %}
-        {% endfor %}
-      </ul>
-    {% endfor %}
+    {{ explorer_content("resources_configuration_tree", resources_config) }}
+    {% set collapsible.queries = collapsible.queries + ["resources_configuration_tree"] %}
+  </div>
+</div>
+
+<div id="full_configuration_section" class="collapseable">
+  <div class="node_key" onclick="showHide(document.getElementById('full_configuration_section'))"><h2>Full configuration</h2></div>
+  <div class="node_value">
+    {{ explorer_content("full_configuration_tree", report.configuration) }}
+    {% set collapsible.queries = collapsible.queries + ["full_configuration_tree"] %}
   </div>
 </div>
 
@@ -160,7 +144,8 @@
 </div>
 {{ explorer_footer(collapsible.queries) }}
 <script>
-  showHide(document.getElementById('configuration_section'));
+  showHide(document.getElementById('resources_configuration_section'));
+  showHide(document.getElementById('full_configuration_section'));
 </script>
 </body>
 </html>
