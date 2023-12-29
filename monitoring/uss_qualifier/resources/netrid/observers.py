@@ -118,6 +118,13 @@ class NetRIDObserversResource(Resource[NetRIDObserversSpecification]):
         specification: NetRIDObserversSpecification,
         auth_adapter: AuthAdapterResource,
     ):
+        auth_adapter.assert_scopes_available(
+            scopes_required={
+                Scope.Observe: "observe RID flights visible to user from USSs under test"
+            },
+            consumer_name=self.__class__.__name__,
+        )
+
         self.observers = [
             RIDSystemObserver(
                 o.participant_id,

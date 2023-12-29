@@ -269,7 +269,7 @@ def generate_tested_requirements(
             participant_breakdown, report.report, participant_id, req_set
         )
         _populate_breakdown_with_action_declaration(
-            participant_breakdown, report.configuration.action, req_set
+            participant_breakdown, report.configuration.v1.test_run.action, req_set
         )
         if participant_id in participant_req_collections:
             _populate_breakdown_with_req_set(

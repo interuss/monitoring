@@ -87,6 +87,13 @@ class NetRIDServiceProviders(Resource[NetRIDServiceProvidersSpecification]):
         specification: NetRIDServiceProvidersSpecification,
         auth_adapter: AuthAdapterResource,
     ):
+        auth_adapter.assert_scopes_available(
+            scopes_required={
+                SCOPE_RID_QUALIFIER_INJECT: "inject RID test flight data into USSs under test"
+            },
+            consumer_name=f"{self.__class__.__name__} resource",
+        )
+
         self.service_providers = [
             NetRIDServiceProvider(
                 participant_id=s.participant_id,
