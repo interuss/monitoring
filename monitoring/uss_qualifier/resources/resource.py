@@ -70,8 +70,11 @@ def create_resources(
     while resources_created > 0:
         resources_created = 0
         for name, declaration in resource_declarations.items():
+            # Check if we've already tried to create this resource
             if name in resource_pool or name in could_not_create:
                 continue
+
+            # Check if we've already tried to create all dependencies
             unmet_dependencies = [
                 d
                 for d in declaration.dependencies.values()
@@ -79,28 +82,28 @@ def create_resources(
             ]
             if unmet_dependencies:
                 unmet_dependencies_by_resource[name] = unmet_dependencies
-            else:
-                uncreated = [
-                    d
-                    for d in declaration.dependencies.values()
-                    if d in could_not_create
-                ]
-                if uncreated:
-                    logger.warning(
-                        f"Could not create resource `{name}` because it depends on resources that could not be created: {', '.join(uncreated)}"
-                    )
-                    could_not_create.add(name)
-                else:
-                    try:
-                        resource_pool[name] = _make_resource(declaration, resource_pool)
-                        resources_created += 1
-                    except MissingResourceError as e:
-                        logger.warning(
-                            f"Could not create resource `{name}` because {e}"
-                        )
-                        if stop_when_not_created:
-                            raise e
-                        could_not_create.add(name)
+                continue  # Try again next loop iteration, hopefully with more dependencies met
+
+            # Check if this resource depends on any resources that could not be created
+            uncreated_dependencies = [
+                d for d in declaration.dependencies.values() if d in could_not_create
+            ]
+            if uncreated_dependencies:
+                logger.warning(
+                    f"Could not create resource `{name}` because it depends on resources that could not be created: {', '.join(uncreated_dependencies)}"
+                )
+                could_not_create.add(name)
+                continue
+
+            # All dependencies met; try to create resource
+            try:
+                resource_pool[name] = _make_resource(declaration, resource_pool)
+                resources_created += 1
+            except MissingResourceError as e:
+                logger.warning(f"Could not create resource `{name}` because {e}")
+                if stop_when_not_created:
+                    raise e
+                could_not_create.add(name)
 
     if len(resource_pool) + len(could_not_create) != len(resource_declarations):
         uncreated_resources = [
