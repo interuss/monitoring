@@ -36,6 +36,10 @@ v1:
           specification:
             # To avoid putting secrets in configuration files, the auth spec (including sensitive information) will be read from the AUTH_SPEC environment variable
             environment_variable_containing_auth_spec: AUTH_SPEC
+            scopes_authorized:
+              # InterUSS flight_planning v1 automated testing API
+              - interuss.flight_planning.direct_automated_test
+              - interuss.flight_planning.plan
 
         # Means by which uss_qualifier can discover which subscription ('sub' claim of its tokes) it is described by
         utm_client_identity:
@@ -60,6 +64,7 @@ v1:
           resource_type: resources.communications.AuthAdapterResource
           specification:
             environment_variable_containing_auth_spec: AUTH_SPEC_2
+            scopes_authorized: []
 
         # Set of USSs capable of being tested as flight planners
         flight_planners:
@@ -183,6 +188,7 @@ v1:
             requirement_collections:
               - requirement_sets:
                   - astm.f3548.v21.scd
+                  - astm.f3548.v21.dss_provider
         participant_requirements:
           uss1: scd
           uss2: scd

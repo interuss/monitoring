@@ -10,8 +10,8 @@ from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.uss_qualifier.action_generators.definitions import GeneratorTypeName
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import (
-    TestConfiguration,
     ParticipantID,
+    USSQualifierConfiguration,
 )
 from monitoring.uss_qualifier.fileio import FileReference
 from monitoring.uss_qualifier.reports.capability_definitions import (
@@ -732,7 +732,7 @@ class TestRunReport(ImplicitDict):
     environment_signature: str
     """Signature of the environmental inputs of the configuration not included in the baseline signature."""
 
-    configuration: TestConfiguration
+    configuration: USSQualifierConfiguration
     """Configuration used to run uss_qualifier"""
 
     report: TestSuiteActionReport

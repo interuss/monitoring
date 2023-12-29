@@ -237,3 +237,19 @@ class RIDVersion(str, Enum):
             return base_url + flights_path
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
+
+    def scope_dp(self) -> str:
+        if self == RIDVersion.f3411_19:
+            return v19.constants.Scope.Read
+        elif self == RIDVersion.f3411_22a:
+            return v22a.constants.Scope.DisplayProvider
+        else:
+            raise ValueError("Unsupported RID version '{}'".format(self))
+
+    def scope_sp(self) -> str:
+        if self == RIDVersion.f3411_19:
+            return v19.constants.Scope.Write
+        elif self == RIDVersion.f3411_22a:
+            return v22a.constants.Scope.ServiceProvider
+        else:
+            raise ValueError("Unsupported RID version '{}'".format(self))

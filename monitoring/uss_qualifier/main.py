@@ -74,7 +74,15 @@ def execute_test_run(whole_config: USSQualifierConfiguration):
     logger.info(f"Codebase version {codebase_version}, commit hash {commit_hash}")
 
     logger.info("Instantiating resources")
-    resources = create_resources(config.resources.resource_declarations)
+    stop_when_not_created = (
+        "execution" in config
+        and config.execution
+        and "stop_when_resource_not_created" in config.execution
+        and config.execution.stop_when_resource_not_created
+    )
+    resources = create_resources(
+        config.resources.resource_declarations, stop_when_not_created
+    )
 
     logger.info("Computing signatures of inputs")
     if config.non_baseline_inputs:
@@ -106,7 +114,7 @@ def execute_test_run(whole_config: USSQualifierConfiguration):
         commit_hash=commit_hash,
         baseline_signature=baseline_signature,
         environment_signature=environment_signature,
-        configuration=config,
+        configuration=whole_config,
         report=report,
     )
 
@@ -127,7 +135,7 @@ def run_config(
             for e in validation_errors:
                 logger.error("[{}]: {}", e.json_path, e.message)
             raise ValueError(
-                f"{len(validation_errors)} validation errors indicated above.  Hint: resolve the clearest error first and then rerun validation."
+                f"{len(validation_errors)} test configuration validation errors indicated above.  Hint: resolve the clearest error first and then rerun validation."
             )
 
     whole_config = ImplicitDict.parse(config_src, USSQualifierConfiguration)

@@ -1,10 +1,14 @@
 from typing import List, Iterable, Dict, Optional
 
 from implicitdict import ImplicitDict
+from uas_standards.interuss.automated_testing.scd.v1.constants import Scope as ScopeSCD
+from uas_standards.interuss.automated_testing.flight_planning.v1.constants import (
+    Scope as ScopeFlightPlanning,
+)
+
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.uss_qualifier.reports.report import ParticipantID
 from monitoring.uss_qualifier.resources.definitions import ResourceID
-
 from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
@@ -27,6 +31,32 @@ class FlightPlannerResource(Resource[FlightPlannerSpecification]):
         specification: FlightPlannerSpecification,
         auth_adapter: AuthAdapterResource,
     ):
+        if (
+            "scd_injection_base_url" in specification.flight_planner
+            and specification.flight_planner.scd_injection_base_url
+        ):
+            auth_adapter.assert_scopes_available(
+                scopes_required={
+                    ScopeSCD.Inject: "inject user flight planning commands to USSs under test",
+                },
+                consumer_name=f"{self.__class__.__name__} using legacy scd injection API",
+            )
+        elif (
+            "v1_base_url" in specification.flight_planner
+            and specification.flight_planner.v1_base_url
+        ):
+            auth_adapter.assert_scopes_available(
+                scopes_required={
+                    ScopeFlightPlanning.DirectAutomatedTest: "act as test director to instruct USSs under test to perform various test preparation activities related to flight planning testing",
+                    ScopeFlightPlanning.Plan: "act as user performing flight planning operations on USSs under test",
+                },
+                consumer_name=f"{self.__class__.__name__} using flight_planner v1 API",
+            )
+        else:
+            raise NotImplementedError(
+                "The means by which to interact with the flight planner is not currently supported in FlightPlannerResource (neither scd_injection_base_url nor v1_base_url were specified)"
+            )
+
         self.flight_planner = FlightPlanner(
             specification.flight_planner, auth_adapter.adapter
         )

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
@@ -6,11 +6,17 @@ from monitoring.uss_qualifier.resources.flight_planning import (
     FlightPlannersResource,
     FlightIntentsResource,
 )
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.test_step_fragments import (
+    remove_op_intent,
+)
 from monitoring.uss_qualifier.scenarios.flight_planning.prep_planners import (
     PrepareFlightPlanners as GenericPrepareFlightPlanners,
 )
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSResource,
+)
+from uas_standards.astm.f3548.v21.api import (
+    OperationalIntentReference,
 )
 
 
@@ -39,7 +45,8 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
 
     def run(self, context):
         self.begin_test_scenario(context)
-        self.begin_test_case("Preparation")
+
+        self.begin_test_case("Flight planners preparation")
 
         self.begin_test_step("Check for flight planning readiness")
         self._check_readiness()
@@ -50,13 +57,32 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
         self.end_test_step()
 
         self.begin_test_step("Clear area validation")
-        self._validate_clear_area()
+        remaining_op_intents = self._validate_clear_area(
+            "Area is clear of foreign op intents", ignore_self=True
+        )
         self.end_test_step()
 
         self.end_test_case()
+
+        if remaining_op_intents:
+            self.begin_test_case("uss_qualifier preparation")
+
+            self.begin_test_step("Remove uss_qualifier op intents")
+            self._remove_my_op_intents(remaining_op_intents)
+            self.end_test_step()
+
+            self.begin_test_step("Clear area validation")
+            self._validate_clear_area("Area is clear", ignore_self=False)
+            self.end_test_step()
+
+            self.end_test_case()
+
         self.end_test_scenario()
 
-    def _validate_clear_area(self):
+    def _validate_clear_area(
+        self, check_name: str, ignore_self: bool
+    ) -> List[OperationalIntentReference]:
+        found_intents = []
         for area in self.areas:
             with self.check("DSS responses", [self.dss.participant_id]) as check:
                 try:
@@ -73,7 +99,14 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
                         details="See query",
                         query_timestamps=[query.request.timestamp],
                     )
-            with self.check("Area is clear") as check:
+            found_intents.extend(op_intents)
+
+            with self.check(check_name) as check:
+                if ignore_self:
+                    uss_qualifier_sub = self.dss.client.auth_adapter.get_sub()
+                    op_intents = [
+                        oi for oi in op_intents if oi.manager != uss_qualifier_sub
+                    ]
                 if op_intents:
                     summary = f"{len(op_intents)} operational intent{'s' if len(op_intents) > 1 else ''} found in cleared area"
                     details = (
@@ -87,3 +120,15 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
                         details=details,
                         query_timestamps=[query.request.timestamp],
                     )
+
+        return found_intents
+
+    def _remove_my_op_intents(
+        self, my_op_intents: List[OperationalIntentReference]
+    ) -> None:
+        already_removed = set()
+        for oi_ref in my_op_intents:
+            if oi_ref.id in already_removed:
+                continue
+            remove_op_intent(self, self.dss, oi_ref.id, oi_ref.ovn)
+            already_removed.add(oi_ref.id)
