@@ -121,7 +121,7 @@ def mock_uss_interactions(
             for q in e.queries:
                 scenario.record_query(q)
             check.record_failed(
-                summary=f"Error from mock_uss when attempting to get interactions from_time {st}",
+                summary=f"Error from mock_uss when attempting to get interactions since {since}",
                 details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
