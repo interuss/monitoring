@@ -2,7 +2,9 @@
 
 ## Introduction
 
-The uss_qualifier tool in this folder automates verifying compliance to requirements and interoperability of multiple USS/USSPs.
+The uss_qualifier tool in this folder performs
+[automated testing](./automated_testing.md) to measure compliance to
+requirements, including interoperability of multiple USS/USSPs.
 
 ## Usage
 
