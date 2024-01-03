@@ -254,6 +254,14 @@ class QueryType(str, Enum):
         "interuss.automated_testing.flight_planning.v1.DeleteFlightPlan"
     )
 
+    # InterUSS RID observation interface
+    InterUSSRIDObservationV1GetDisplayData = (
+        "interuss.automated_testing.rid.v1.observation.getDisplayData"
+    )
+    InterUSSRIDObservationV1GetDetails = (
+        "interuss.automated_testing.rid.v1.observation.getDetails"
+    )
+
     def __str__(self):
         return self.value
 

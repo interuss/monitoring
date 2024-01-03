@@ -1,12 +1,14 @@
 from typing import Optional, List
 
 from implicitdict import ImplicitDict
+from uas_standards.interuss.automated_testing.versioning.constants import Scope
 
 from monitoring.monitorlib.clients.versioning.client import VersioningClient
 from monitoring.monitorlib.clients.versioning.client_interuss import (
     InterUSSVersioningClient,
 )
 from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.monitorlib.inspection import fullname
 from monitoring.uss_qualifier.reports.report import ParticipantID
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.resource import Resource
@@ -37,6 +39,12 @@ class VersionProvidersResource(Resource[VersionProvidersSpecification]):
         specification: VersionProvidersSpecification,
         auth_adapter: AuthAdapterResource,
     ):
+        auth_adapter.assert_scopes_available(
+            {
+                Scope.ReadSystemVersions: "read and record the version of each system under test",
+            },
+            fullname(type(self)),
+        )
         self.version_providers = []
         for instance in specification.instances:
             if "interuss" in instance and instance.interuss:

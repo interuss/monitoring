@@ -12,6 +12,7 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
 )
+from uas_standards.astm.f3548.v21.constants import Scope
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
@@ -81,7 +82,16 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
         super().__init__()
         self.tested_uss = tested_uss.flight_planner
         self.control_uss = control_uss.flight_planner
-        self.dss = dss.dss
+
+        scopes = {
+            Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities and retrieve operational intent details"
+        }
+        if dss.can_use_scope(Scope.ConformanceMonitoringForSituationalAwareness):
+            scopes[
+                Scope.ConformanceMonitoringForSituationalAwareness
+            ] = "query for telemetry for off-nominal operational intents"
+
+        self.dss = dss.get_instance(scopes)
 
         expected_flight_intents = [
             ExpectedFlightIntent(

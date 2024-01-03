@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import Volume4D, Volume3D, Polygon, LatLngPoint
+from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
     DSSInstancesResource,
@@ -32,11 +33,14 @@ class DSSInteroperability(TestScenario):
         all_dss_instances: DSSInstancesResource,
     ):
         super().__init__()
-        self._dss_primary = primary_dss_instance.dss
+        scopes = {
+            Scope.StrategicCoordination: "search for operational intent references to verify DSS is reachable"
+        }
+        self._dss_primary = primary_dss_instance.get_instance(scopes)
         self._dss_others = [
-            dss
+            dss.get_instance(scopes)
             for dss in all_dss_instances.dss_instances
-            if not dss.is_same_as(primary_dss_instance.dss)
+            if not dss.is_same_as(primary_dss_instance)
         ]
 
     def run(self, context: ExecutionContext):

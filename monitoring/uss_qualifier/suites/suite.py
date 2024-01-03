@@ -6,6 +6,7 @@ from datetime import datetime
 import json
 import re
 from typing import Dict, List, Optional, Union, Iterator
+from typing import Type
 
 import arrow
 
@@ -52,6 +53,7 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioCannotContinueError,
     TestRunCannotContinueError,
 )
+from monitoring.uss_qualifier.scenarios.scenario import get_scenario_type_by_name
 from monitoring.uss_qualifier.suites.definitions import (
     TestSuiteActionDeclaration,
     TestSuiteDefinition,
@@ -406,6 +408,31 @@ class ExecutionContext(object):
             if child.report is not None:
                 for q in child.report.queries():
                     yield q
+
+    def find_test_scenario_reports(
+        self, scenario_type: Type[TestScenario]
+    ) -> List[TestScenarioReport]:
+        """Find reports for all currently-completed instances of the specified test scenario type."""
+        return self._find_test_scenario_reports(scenario_type, self.top_frame)
+
+    def _find_test_scenario_reports(
+        self, scenario_type: Type[TestScenario], frame: ActionStackFrame
+    ) -> List[TestScenarioReport]:
+        results = []
+        if (
+            frame.report is not None
+            and "test_scenario" in frame.report
+            and frame.report.test_scenario is not None
+        ):
+            report_scenario_type = get_scenario_type_by_name(
+                frame.report.test_scenario.scenario_type
+            )
+            if issubclass(report_scenario_type, scenario_type):
+                results.append(frame.report.test_scenario)
+        for child in frame.children:
+            new_results = self._find_test_scenario_reports(scenario_type, child)
+            results.extend(new_results)
+        return results
 
     @property
     def stop_fast(self) -> bool:

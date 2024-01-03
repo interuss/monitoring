@@ -49,6 +49,7 @@ class RIDSystemObserver(object):
             url,
             scope=Scope.Observe,
             participant_id=self.participant_id,
+            query_type=QueryType.InterUSSRIDObservationV1GetDisplayData,
         )
         try:
             result = (
@@ -72,6 +73,7 @@ class RIDSystemObserver(object):
             f"/display_data/{flight_id}",
             scope=Scope.Observe,
             participant_id=self.participant_id,
+            query_type=QueryType.InterUSSRIDObservationV1GetDetails,
         )
         # Record query metadata for later use in the aggregate checks
         query.participant_id = self.participant_id

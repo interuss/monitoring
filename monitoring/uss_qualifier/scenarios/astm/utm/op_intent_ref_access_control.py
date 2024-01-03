@@ -2,6 +2,7 @@ from typing import List
 
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
+from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.prober.infrastructure import register_resource_type
@@ -57,19 +58,19 @@ class OpIntentReferenceAccessControl(TestScenario):
         id_generator: IDGeneratorResource,
     ):
         super().__init__()
-        self._dss = dss.dss
-        self._pid = [dss.dss.participant_id]
+        scopes = {
+            Scope.StrategicCoordination: "create and delete operational intent references"
+        }
+        self._dss = dss.get_instance(scopes)
+        self._pid = [self._dss.participant_id]
 
         self._oid_1 = id_generator.id_factory.make_id(self.OP_INTENT_1)
         self._oid_2 = id_generator.id_factory.make_id(self.OP_INTENT_2)
 
         if second_utm_auth is not None:
             # Build a second DSSWrapper identical to the first but with the other auth adapter
-            self._dss_separate_creds = DSSInstance(
-                participant_id=dss.dss.participant_id,
-                base_url=dss.dss.base_url,
-                has_private_address=dss.dss.has_private_address,
-                auth_adapter=second_utm_auth.adapter,
+            self._dss_separate_creds = self._dss.with_different_auth(
+                second_utm_auth, scopes
             )
 
         try:

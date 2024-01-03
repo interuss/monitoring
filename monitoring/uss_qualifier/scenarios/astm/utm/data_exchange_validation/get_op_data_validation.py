@@ -60,6 +60,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import OperationID
+from uas_standards.astm.f3548.v21.constants import Scope
 
 
 class GetOpResponseDataValidationByUSS(TestScenario):
@@ -82,7 +83,11 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.tested_uss_client = tested_uss.client
         self.mock_uss = mock_uss.mock_uss
         self.mock_uss_client = mock_uss.mock_uss.flight_planner
-        self.dss = dss.dss
+        self.dss = dss.get_instance(
+            {
+                Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities"
+            }
+        )
 
         if not flight_intents:
             msg = f"No FlightIntentsResource was provided as input to this test, it is assumed that the jurisdiction does not allow any same priority conflicts, execution of the scenario was stopped without failure"

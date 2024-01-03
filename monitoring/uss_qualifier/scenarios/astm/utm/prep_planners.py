@@ -18,6 +18,7 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
 )
+from uas_standards.astm.f3548.v21.constants import Scope
 
 
 class PrepareFlightPlanners(GenericPrepareFlightPlanners):
@@ -41,7 +42,11 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
             flight_intents3,
             flight_intents4,
         )
-        self.dss = dss.dss
+        self.dss = dss.get_instance(
+            {
+                Scope.StrategicCoordination: "search for operational intent references and remove ones under uss_qualifier management"
+            }
+        )
 
     def run(self, context):
         self.begin_test_scenario(context)

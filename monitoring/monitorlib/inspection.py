@@ -1,4 +1,5 @@
 import importlib
+import inspect
 import pkgutil
 from typing import Type
 
@@ -40,3 +41,7 @@ def fullname(class_type: Type) -> str:
         return module + "." + class_type.__qualname__
     else:
         return str(class_type)
+
+
+def calling_function_name(levels: int = 0) -> str:
+    return inspect.stack()[levels + 1].function
