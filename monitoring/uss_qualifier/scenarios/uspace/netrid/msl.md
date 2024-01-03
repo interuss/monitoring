@@ -41,7 +41,11 @@ If an appropriate test report cannot be found, this scenario will be discontinue
 
 #### ⚠️ Message contains MSL altitude check
 
-If the response message for the remote identification observation made by the virtual/automated authorised user does not contain the UAS's MSL altitude, the USSP will have failed to comply with **[uspace.article8.MSLAltitude](../../../requirements/uspace/article8.md)**.
+If a response message for the remote identification observation made by the virtual/automated authorised user does not contain the UAS's MSL altitude, the USSP will have failed to comply with **[uspace.article8.MSLAltitude](../../../requirements/uspace/article8.md)**.
+
+#### ⚠️ MSL altitude is reported using an acceptable datum check
+
+While the WGS84 ellipsoid is one approximation of sea level, it is not included as a recommended definition of mean sea level in the Guidance Material.  If the USSP reports MSL altitude relative to a datum not recommended in the Guidance Material, the USSP will have failed to comply with **[uspace.article8.MSLAltitude](../../../requirements/uspace/article8.md)** according to the Guidance Material.
 
 #### ⚠️ MSL altitude is correct check
 

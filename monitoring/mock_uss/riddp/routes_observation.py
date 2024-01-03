@@ -19,6 +19,10 @@ from uas_standards.interuss.automated_testing.rid.v1 import (
 )
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
+from uas_standards.interuss.automated_testing.rid.v1.observation import (
+    AltitudeReference,
+    MSLAltitude,
+)
 from . import clustering, database, utm_client
 from .behavior import DisplayProviderBehavior
 from .config import KEY_RID_VERSION
@@ -62,8 +66,8 @@ def _make_flight_observation(
         paths.append(current_path)
 
     p = flight.most_recent_position
-    msl_alt = p.alt - egm96_geoid_offset(s2sphere.LatLng.from_degrees(p.lat, p.lng))
-    # TODO: Return msl_alt in observation information
+    msl_alt_m = p.alt - egm96_geoid_offset(s2sphere.LatLng.from_degrees(p.lat, p.lng))
+    msl_alt = MSLAltitude(meters=msl_alt_m, reference_datum=AltitudeReference.EGM96)
     current_state = observation_api.CurrentState(
         timestamp=p.time.isoformat(),
         operational_status=flight.operational_status,
@@ -76,7 +80,11 @@ def _make_flight_observation(
     return observation_api.Flight(
         id=flight.id,
         most_recent_position=observation_api.Position(
-            lat=p.lat, lng=p.lng, alt=p.alt, height=h
+            lat=p.lat,
+            lng=p.lng,
+            alt=p.alt,
+            height=h,
+            msl_alt=msl_alt,
         ),
         recent_paths=[observation_api.Path(positions=path) for path in paths],
         current_state=current_state,
