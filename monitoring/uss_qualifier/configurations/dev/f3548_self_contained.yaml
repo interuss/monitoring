@@ -40,6 +40,9 @@ v1:
               # InterUSS flight_planning v1 automated testing API
               - interuss.flight_planning.direct_automated_test
               - interuss.flight_planning.plan
+              # ASTM F3548-21 USS emulation roles
+              - utm.strategic_coordination
+              - utm.availability_arbitration
 
         # Means by which uss_qualifier can discover which subscription ('sub' claim of its tokes) it is described by
         utm_client_identity:
@@ -58,13 +61,14 @@ v1:
           dependencies:
             client_identity: utm_client_identity
 
-        # A second auth adapter, for checks that require a second set of credentials for accessing the ecosystem.
+        # A second auth adapter, for DSS tests that require a second set of credentials for accessing the ecosystem.
         # Note that the 'sub' claim of the tokens obtained through this adepter MUST be different from the first auth adapter.
         second_utm_auth:
           resource_type: resources.communications.AuthAdapterResource
           specification:
             environment_variable_containing_auth_spec: AUTH_SPEC_2
-            scopes_authorized: []
+            scopes_authorized:
+              - utm.strategic_coordination
 
         # Set of USSs capable of being tested as flight planners
         flight_planners:

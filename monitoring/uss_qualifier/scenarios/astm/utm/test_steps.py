@@ -11,6 +11,7 @@ from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
     GetOperationalIntentDetailsResponse,
 )
+from uas_standards.astm.f3548.v21.constants import Scope
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     UasState,
     AirspaceUsageState,
@@ -174,7 +175,9 @@ class OpIntentValidator(object):
         if flight_intent.basic_information.uas_state in {
             UasState.OffNominal,
             UasState.Contingent,
-        }:
+        } and self._dss.can_use_scope(
+            Scope.ConformanceMonitoringForSituationalAwareness
+        ):
             self._check_op_intent_telemetry(oi_ref)
 
         self._scenario.end_test_step()

@@ -8,6 +8,7 @@ from uas_standards.astm.f3548.v21.api import (
     OperationalIntentState,
     OperationalIntentReference,
 )
+from uas_standards.astm.f3548.v21.constants import Scope
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightResponseResult,
 )
@@ -55,7 +56,12 @@ class DownUSS(TestScenario):
     ):
         super().__init__()
         self.tested_uss = tested_uss.flight_planner
-        self.dss = dss.dss
+        self.dss = dss.get_instance(
+            {
+                Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities and retrieve operational intent details",
+                Scope.AvailabilityArbitration: "declare virtual USS down in DSS",
+            }
+        )
 
         _flight_intents: Dict[str, FlightIntent] = {
             k: FlightIntent.from_flight_info_template(v)
