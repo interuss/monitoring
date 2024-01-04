@@ -22,7 +22,8 @@ These reports were generated during continuous integration for the most recent P
 ### [ASTM F3548-21 test configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/f3548_self_contained.yaml)
 
 * [Sequence view](./artifacts/uss_qualifier/reports/f3548/sequence)
-* [Tested requirements](./artifacts/uss_qualifier/reports/f3548/requirements)
+* [Tested requirements, Gate 1](./artifacts/uss_qualifier/reports/f3548/gate1)
+* [Tested requirements, Gate 3](./artifacts/uss_qualifier/reports/f3548/gate3)
 
 ### [ASTM F3411-22a test configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/netrid_v22a.yaml)
 
