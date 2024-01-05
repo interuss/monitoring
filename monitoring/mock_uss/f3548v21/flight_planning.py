@@ -11,6 +11,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
     FlightInfo,
 )
 from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.scd import priority_of
 from monitoring.uss_qualifier.resources.overrides import apply_overrides
 from uas_standards.astm.f3548.v21 import api as f3548_v21
 from uas_standards.astm.f3548.v21.constants import OiMaxVertices, OiMaxPlanHorizonDays
@@ -119,14 +120,16 @@ def check_for_disallowed_conflicts(
                 f"intersection with {op_intent.reference.id} not considered: intersection with a past version of this flight"
             )
             continue
-        if new_op_intent.details.priority > op_intent.details.priority:
+        new_priority = priority_of(new_op_intent.details)
+        old_priority = priority_of(op_intent.details)
+        if new_priority > old_priority:
             log(
                 f"intersection with {op_intent.reference.id} not considered: intersection with lower-priority operational intents"
             )
             continue
         if (
-            new_op_intent.details.priority == op_intent.details.priority
-            and locality.allows_same_priority_intersections(op_intent.details.priority)
+            new_priority == old_priority
+            and locality.allows_same_priority_intersections(old_priority)
         ):
             log(
                 f"intersection with {op_intent.reference.id} not considered: intersection with same-priority operational intents (if allowed)"
@@ -155,7 +158,7 @@ def check_for_disallowed_conflicts(
 
         if v1.intersects_vol4s(v2):
             raise PlanningError(
-                f"Requested flight (priority {new_op_intent.details.priority}) intersected {op_intent.reference.manager}'s operational intent {op_intent.reference.id} (priority {op_intent.details.priority})"
+                f"Requested flight (priority {new_priority}) intersected {op_intent.reference.manager}'s operational intent {op_intent.reference.id} (priority {old_priority})"
             )
 
 
@@ -267,7 +270,7 @@ def op_intent_from_flightrecord(
     details = f3548_v21.OperationalIntentDetails(
         volumes=flight.op_intent.details.volumes,
         off_nominal_volumes=flight.op_intent.details.off_nominal_volumes,
-        priority=flight.op_intent.details.priority,
+        priority=priority_of(flight.op_intent.details),
     )
     op_intent = f3548_v21.OperationalIntent(reference=ref, details=details)
     if flight.mod_op_sharing_behavior:
@@ -421,7 +424,7 @@ def check_op_intent(
         )
 
     # Check the priority is allowed in the locality
-    priority = new_flight.op_intent.details.priority
+    priority = priority_of(new_flight.op_intent.details)
     if (
         priority > locality.highest_priority()
         or priority <= locality.lowest_bound_priority()
