@@ -2,6 +2,7 @@ from datetime import timedelta
 from typing import Optional, List
 
 from monitoring.monitorlib.geotemporal import Volume4DCollection
+from monitoring.monitorlib.scd import priority_of
 from uas_standards.astm.f3548.v21.api import OperationalIntentDetails, Volume4D
 
 
@@ -16,10 +17,11 @@ def validate_op_intent_details(
     errors_text: List[str] = []
 
     # Check that the USS is providing matching priority
-    if op_intent_details.priority != expected_priority:
+    actual_priority = priority_of(op_intent_details)
+    if actual_priority != expected_priority:
         errors_text.append(
             "Priority specified by USS in operational intent details ({}) is different than the priority in the injected flight ({})".format(
-                op_intent_details.priority, expected_priority
+                actual_priority, expected_priority
             )
         )
 
