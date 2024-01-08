@@ -687,14 +687,6 @@ class RIDQuery(ImplicitDict):
         else:
             raise NotImplementedError(f"Cannot set participant_id")
 
-    def set_query_type(self, query_type: QueryType) -> None:
-        if self.v19_query is not None:
-            self.v19_query.query_type = query_type
-        elif self.v22a_query is not None:
-            self.v22a_query.query_type = query_type
-        else:
-            raise NotImplementedError(f"Cannot set query_type")
-
 
 class FetchedISA(RIDQuery):
     """Version-independent representation of an ISA read from the DSS."""
@@ -1035,7 +1027,7 @@ def uss_flights(
                 else "false",
             },
             scope=v19.constants.Scope.Read,
-            query_type=QueryType.F3411v19USSGetDisplayData,
+            query_type=QueryType.F3411v19USSSearchFlights,
             participant_id=participant_id,
         )
         return FetchedUSSFlights(v19_query=query)
@@ -1056,7 +1048,7 @@ def uss_flights(
             flights_url,
             params=params,
             scope=v22a.constants.Scope.DisplayProvider,
-            query_type=QueryType.F3411v22aUSSGetDisplayData,
+            query_type=QueryType.F3411v19USSSearchFlights,
             participant_id=participant_id,
         )
         return FetchedUSSFlights(v22a_query=query)

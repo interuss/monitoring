@@ -37,7 +37,6 @@ def inject_flights(
     test_scenario: TestScenario,
     flights_data_res: FlightDataResource,
     service_providers_res: NetRIDServiceProviders,
-    rid_version: RIDVersion,
 ) -> Tuple[List[InjectedFlight], List[InjectedTest]]:
     test_id = str(uuid.uuid4())
     test_flights = flights_data_res.get_test_flights()
@@ -55,7 +54,7 @@ def inject_flights(
         with test_scenario.check(
             "Successful injection", [target.participant_id]
         ) as check:
-            query = target.submit_test(p, test_id, rid_version)
+            query = target.submit_test(p, test_id)
             test_scenario.record_query(query)
 
             if query.status_code != 200:

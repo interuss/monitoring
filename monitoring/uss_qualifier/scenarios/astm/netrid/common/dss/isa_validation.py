@@ -247,17 +247,12 @@ class ISAValidation(GenericTestScenario):
                 url=create_isa_url,
                 scope=self.write_scope,
                 json=payload,
+                query_type=QueryType.dss_create_isa(self._dss.rid_version),
             )
             if self._dss.rid_version == RIDVersion.f3411_19:
                 rid_query = ChangedISA(v19_query=q)
-                rid_query.set_query_type(
-                    QueryType.F3411v19DSSCreateIdentificationServiceArea
-                )
             elif self._dss.rid_version == RIDVersion.f3411_22a:
                 rid_query = ChangedISA(v22a_query=q)
-                rid_query.set_query_type(
-                    QueryType.F3411v22aDSSCreateIdentificationServiceArea
-                )
             else:
                 raise ValueError(f"Unknown RID version: {self._dss.rid_version}")
 
@@ -287,17 +282,12 @@ class ISAValidation(GenericTestScenario):
                 url=create_isa_url,
                 scope=self.write_scope,
                 json=payload,
+                query_type=QueryType.dss_create_isa(self._dss.rid_version),
             )
             if self._dss.rid_version == RIDVersion.f3411_19:
                 rid_query = ChangedISA(v19_query=q)
-                rid_query.set_query_type(
-                    QueryType.F3411v19DSSCreateIdentificationServiceArea
-                )
             elif self._dss.rid_version == RIDVersion.f3411_22a:
                 rid_query = ChangedISA(v22a_query=q)
-                rid_query.set_query_type(
-                    QueryType.F3411v22aDSSCreateIdentificationServiceArea
-                )
             else:
                 raise ValueError(f"Unknown RID version: {self._dss.rid_version}")
 
@@ -324,17 +314,12 @@ class ISAValidation(GenericTestScenario):
                 url=create_isa_url,
                 scope=self.write_scope,
                 json=payload,
+                query_type=QueryType.dss_create_isa(self._dss.rid_version),
             )
             if self._dss.rid_version == RIDVersion.f3411_19:
                 rid_query = ChangedISA(v19_query=q)
-                rid_query.set_query_type(
-                    QueryType.F3411v19DSSCreateIdentificationServiceArea
-                )
             elif self._dss.rid_version == RIDVersion.f3411_22a:
                 rid_query = ChangedISA(v22a_query=q)
-                rid_query.set_query_type(
-                    QueryType.F3411v22aDSSCreateIdentificationServiceArea
-                )
             else:
                 raise ValueError(f"Unknown RID version: {self._dss.rid_version}")
 

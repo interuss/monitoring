@@ -42,9 +42,11 @@ SQUELCH_WARN_ON_QUERY_TYPE = [
     # Posting an ISA is done for notifications: we can't always know the participant ID
     QueryType.F3411v19USSPostIdentificationServiceArea,
     QueryType.F3411v22aUSSPostIdentificationServiceArea,
-    # When querying for display data and flight details, we don't always know the participant ID
-    QueryType.F3411v19USSGetDisplayData,
-    QueryType.F3411v22aUSSGetDisplayData,
+    # When querying for display data and searching flights and their details, we don't always know the participant ID
+    QueryType.InterUSSRIDObservationV1GetDisplayData,
+    QueryType.InterUSSRIDObservationV1GetDetails,
+    QueryType.F3411v19USSSearchFlights,
+    QueryType.F3411v22aUSSSearchFlights,
     QueryType.F3411v19USSGetFlightDetails,
     QueryType.F3411v22aUSSGetFlightDetails,
 ]

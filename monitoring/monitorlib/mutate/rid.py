@@ -534,8 +534,8 @@ def put_isa(
     isa_version: Optional[str] = None,
     participant_id: Optional[str] = None,
 ) -> ISAChange:
-    is_mutation = isa_version is None
-    mutation = "create" if is_mutation else "update"
+    is_creation = isa_version is None
+    mutation = "create" if is_creation else "update"
     body = build_isa_request_body(
         area_vertices,
         alt_lo,
@@ -549,7 +549,7 @@ def put_isa(
     if rid_version == RIDVersion.f3411_19:
         query_type = (
             QueryType.F3411v19DSSUpdateIdentificationServiceArea
-            if is_mutation
+            if is_creation
             else QueryType.F3411v19DSSCreateIdentificationServiceArea
         )
         dss_response = ChangedISA(
@@ -567,7 +567,7 @@ def put_isa(
     elif rid_version == RIDVersion.f3411_22a:
         query_type = (
             QueryType.F3411v22aDSSUpdateIdentificationServiceArea
-            if is_mutation
+            if is_creation
             else QueryType.F3411v22aDSSCreateIdentificationServiceArea
         )
         dss_response = ChangedISA(

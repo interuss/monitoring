@@ -60,9 +60,7 @@ class NetRIDServiceProvider(object):
         )
         self.local_debug = local_debug
 
-    def submit_test(
-        self, request: CreateTestParameters, test_id: str, rid_version: RIDVersion
-    ) -> fetch.Query:
+    def submit_test(self, request: CreateTestParameters, test_id: str) -> fetch.Query:
         return fetch.query_and_describe(
             self.injection_client,
             "PUT",
@@ -70,19 +68,17 @@ class NetRIDServiceProvider(object):
             json=request,
             scope=SCOPE_RID_QUALIFIER_INJECT,
             participant_id=self.participant_id,
-            query_type=fetch.QueryType.sp_create_test(rid_version),
+            query_type=fetch.QueryType.InterussRIDAutomatedTestingV1CreateTest,
         )
 
-    def delete_test(
-        self, test_id: str, version: str, rid_version: RIDVersion
-    ) -> fetch.Query:
+    def delete_test(self, test_id: str, version: str) -> fetch.Query:
         return fetch.query_and_describe(
             self.injection_client,
             "DELETE",
             url=f"/tests/{test_id}/{version}",
             scope=SCOPE_RID_QUALIFIER_INJECT,
             participant_id=self.participant_id,
-            query_type=fetch.QueryType.sp_delete_test(rid_version),
+            query_type=fetch.QueryType.InterussRIDAutomatedTestingV1DeleteTest,
         )
 
 

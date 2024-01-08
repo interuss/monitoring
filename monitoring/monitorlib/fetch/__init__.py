@@ -2,20 +2,19 @@ import datetime
 import json
 import os
 import uuid
-import jwt
-from typing import Dict, Optional, List, Union
-
 from enum import Enum
+from typing import Dict, Optional, List, Union
 from urllib.parse import urlparse
 
 import flask
-from loguru import logger
+import jwt
 import requests
 import urllib3
 import yaml
+from implicitdict import ImplicitDict, StringBasedDateTime
+from loguru import logger
 from yaml.representer import Representer
 
-from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
@@ -180,8 +179,8 @@ def describe_flask_response(resp: flask.Response, elapsed_s: float):
 
 
 class QueryType(str, Enum):
-
     # ASTM F3411-19 and F3411-22a (RID)
+    # DSS endpoints
     F3411v19DSSSearchIdentificationServiceAreas = (
         "astm.f3411.v19.dss.searchIdentificationServiceAreas"
     )
@@ -217,9 +216,6 @@ class QueryType(str, Enum):
         "astm.f3411.v22a.dss.deleteIdentificationServiceArea"
     )
 
-    F3411v19DSSSearchFlights = "astm.f3411.v19.dss.searchFlights"
-    F3411v22aDSSSearchFlights = "astm.f3411.v22a.dss.searchFlights"
-
     F3411v19DSSSearchSubscriptions = "astm.f3411.v19.dss.searchSubscriptions"
     F3411v22aDSSSearchSubscriptions = "astm.f3411.v22a.dss.searchSubscriptions"
 
@@ -235,6 +231,10 @@ class QueryType(str, Enum):
     F3411v19DSSDeleteSubscription = "astm.f3411.v19.dss.deleteSubscription"
     F3411v22aDSSDeleteSubscription = "astm.f3411.v22a.dss.deleteSubscription"
 
+    # USS endpoints
+    F3411v19USSSearchFlights = "astm.f3411.v19.uss.searchFlights"
+    F3411v22aUSSSearchFlights = "astm.f3411.v22a.uss.searchFlights"
+
     F3411v19USSPostIdentificationServiceArea = (
         "astm.f3411.v19.uss.postIdentificationServiceArea"
     )
@@ -242,19 +242,8 @@ class QueryType(str, Enum):
         "astm.f3411.v22a.uss.postIdentificationServiceArea"
     )
 
-    # Flight injection (test harness)
-
-    F3411v19USSCreateTest = "rid.f3411.v19.sp.createTest"
-    F3411v22aUSSCreateTest = "rid.f3411.v22a.sp.createTest"
-
-    F3411v19USSDeleteTest = "rid.f3411.v19.sp.deleteTest"
-    F3411v22aUSSDeleteTest = "rid.f3411.v22a.sp.deleteTest"
-
-    # RID flight details endpoint that a USS provides (!= DSS)
-    F3411v22aUSSGetDisplayData = "rid.f3411.v22a.sp.getDisplayData"
-    F3411v19USSGetDisplayData = "rid.f3411.v19.sp.getDisplayData"
-    F3411v22aUSSGetFlightDetails = "rid.f3411.v22a.sp.getDetails"
-    F3411v19USSGetFlightDetails = "rid.f3411.v19.sp.getDetails"
+    F3411v22aUSSGetFlightDetails = "astm.f3411.v22a.uss.getFlightDetails"
+    F3411v19USSGetFlightDetails = "astm.f3411.v19.uss.getFlightDetails"
 
     # ASTM F3548-21
     F3548v21DSSQueryOperationalIntentReferences = (
@@ -333,17 +322,17 @@ class QueryType(str, Enum):
         "interuss.automated_testing.rid.v1.observation.getDetails"
     )
 
+    # Flight injection (test harness)
+    InterussRIDAutomatedTestingV1CreateTest = (
+        "interuss.automated_testing.rid.v1.injection.createTest"
+    )
+
+    InterussRIDAutomatedTestingV1DeleteTest = (
+        "interuss.automated_testing.rid.v1.injection.deleteTest"
+    )
+
     def __str__(self):
         return self.value
-
-    @staticmethod
-    def flight_details(rid_version: RIDVersion):
-        if rid_version == RIDVersion.f3411_19:
-            return QueryType.F3411v19USSGetFlightDetails
-        elif rid_version == RIDVersion.f3411_22a:
-            return QueryType.F3411v22aUSSGetFlightDetails
-        else:
-            raise ValueError(f"Unsupported RID version: {rid_version}")
 
     @staticmethod
     def dss_get_isa(rid_version: RIDVersion):
@@ -378,24 +367,6 @@ class QueryType(str, Enum):
             return QueryType.F3411v19DSSDeleteIdentificationServiceArea
         elif rid_version == RIDVersion.f3411_22a:
             return QueryType.F3411v22aDSSDeleteIdentificationServiceArea
-        else:
-            raise ValueError(f"Unsupported RID version: {rid_version}")
-
-    @staticmethod
-    def sp_create_test(rid_version: RIDVersion):
-        if rid_version == RIDVersion.f3411_19:
-            return QueryType.F3411v19USSCreateTest
-        elif rid_version == RIDVersion.f3411_22a:
-            return QueryType.F3411v22aUSSCreateTest
-        else:
-            raise ValueError(f"Unsupported RID version: {rid_version}")
-
-    @staticmethod
-    def sp_delete_test(rid_version: RIDVersion):
-        if rid_version == RIDVersion.f3411_19:
-            return QueryType.F3411v19USSDeleteTest
-        elif rid_version == RIDVersion.f3411_22a:
-            return QueryType.F3411v22aUSSDeleteTest
         else:
             raise ValueError(f"Unsupported RID version: {rid_version}")
 

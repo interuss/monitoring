@@ -258,7 +258,7 @@ class RIDObservationEvaluator(object):
         if perform_observation:
             self._test_scenario.begin_test_step("Observer polling")
             for observer in observers:
-                (observation, query) = observer.observe_system(rect, self._rid_version)
+                (observation, query) = observer.observe_system(rect)
                 self._test_scenario.record_query(query)
                 self._evaluate_observation(
                     observer,
@@ -432,7 +432,7 @@ class RIDObservationEvaluator(object):
                     continue
 
                 details_obs, query = observer.observe_flight_details(
-                    mapping.observed_flight.id, self._rid_version
+                    mapping.observed_flight.id
                 )
 
                 self._test_scenario.record_query(query)

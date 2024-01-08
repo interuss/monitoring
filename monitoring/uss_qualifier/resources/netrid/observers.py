@@ -35,7 +35,7 @@ class RIDSystemObserver(object):
         self.local_debug = local_debug
 
     def observe_system(
-        self, rect: s2sphere.LatLngRect, rid_version: RIDVersion
+        self, rect: s2sphere.LatLngRect
     ) -> Tuple[Optional[observation_api.GetDisplayDataResponse], fetch.Query]:
         url = "/display_data?view={},{},{},{}".format(
             rect.lo().lat().degrees,
@@ -49,7 +49,7 @@ class RIDSystemObserver(object):
             url,
             scope=Scope.Observe,
             participant_id=self.participant_id,
-            query_type=QueryType.flight_details(rid_version),
+            query_type=QueryType.InterUSSRIDObservationV1GetDisplayData,
         )
         try:
             result = (
@@ -65,7 +65,7 @@ class RIDSystemObserver(object):
         return result, query
 
     def observe_flight_details(
-        self, flight_id: str, rid_version: RIDVersion
+        self, flight_id: str
     ) -> Tuple[Optional[observation_api.GetDetailsResponse], fetch.Query]:
         query = fetch.query_and_describe(
             self.session,
@@ -77,7 +77,6 @@ class RIDSystemObserver(object):
         )
         # Record query metadata for later use in the aggregate checks
         query.participant_id = self.participant_id
-        query.query_type = QueryType.flight_details(rid_version)
         try:
             result = (
                 ImplicitDict.parse(

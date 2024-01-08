@@ -210,10 +210,7 @@ class AggregateChecks(GenericTestScenario):
                 if (
                     query.status_code == 200
                     and query.has_field_with_value("query_type")
-                    and (
-                        query.query_type == QueryType.F3411v19USSGetFlightDetails
-                        or query.query_type == QueryType.F3411v22aUSSGetFlightDetails
-                    )
+                    and query.query_type == QueryType.InterUSSRIDObservationV1GetDetails
                 ):
                     relevant_queries.append(query)
 
@@ -257,8 +254,8 @@ class AggregateChecks(GenericTestScenario):
             for query in all_queries:
                 if query.has_field_with_value("query_type") and (
                     # TODO find a cleaner way than checking for version here
-                    query.query_type == QueryType.F3411v19USSGetDisplayData
-                    or query.query_type == QueryType.F3411v22aUSSGetDisplayData
+                    query.query_type == QueryType.F3411v19USSSearchFlights
+                    or query.query_type == QueryType.F3411v22aUSSSearchFlights
                 ):
                     relevant_queries.append(query)
 
