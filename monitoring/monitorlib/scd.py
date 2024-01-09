@@ -1,5 +1,6 @@
 from typing import Optional
 
+from uas_standards.astm.f3548.v21.api import OperationalIntentDetails
 from uas_standards.astm.f3548.v21.constants import Scope
 
 
@@ -28,3 +29,10 @@ class Subscription(dict):
     @property
     def version(self) -> Optional[str]:
         return self.get("version", None)
+
+
+def priority_of(details: OperationalIntentDetails) -> int:
+    priority = 0
+    if "priority" in details and details.priority:
+        priority = details.priority
+    return priority
