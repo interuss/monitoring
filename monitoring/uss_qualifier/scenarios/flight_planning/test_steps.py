@@ -108,7 +108,6 @@ def activate_flight_intent(
 
 def modify_planned_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: str,
@@ -122,7 +121,6 @@ def modify_planned_flight_intent(
     """
     expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    scenario.begin_test_step(test_step)
     resp, _, _ = submit_flight_intent(
         scenario,
         "Successful modification",
@@ -133,7 +131,6 @@ def modify_planned_flight_intent(
         flight_id,
     )
 
-    scenario.end_test_step()
     return resp
 
 
