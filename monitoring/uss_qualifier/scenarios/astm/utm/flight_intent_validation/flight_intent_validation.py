@@ -165,14 +165,13 @@ class FlightIntentValidation(TestScenario):
         self.end_test_scenario()
 
     def _attempt_invalid(self):
+        self.begin_test_step("Attempt to plan flight intent too far ahead of time")
         with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight intent too far ahead of time not planned",
             self._intents_extent,
         ) as validator:
-            self.begin_test_step("Attempt to plan flight intent too far ahead of time")
             submit_flight_intent(
                 self,
                 "Incorrectly planned",
@@ -181,38 +180,36 @@ class FlightIntentValidation(TestScenario):
                 self.tested_uss,
                 self.invalid_too_far_away.request,
             )
-            self.end_test_step()
 
             validator.expect_not_shared()
+        self.end_test_step()
 
     def _validate_ended_cancellation(self):
+        self.begin_test_step("Plan flight intent")
         with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
-            "Validate flight intent is non-discoverable",
             self._intents_extent,
-        ) as cancelled_validator:
-            with OpIntentValidator(
+        ) as planned_validator:
+            _, flight_id, _ = plan_flight_intent(
                 self,
                 self.tested_uss,
-                self.dss,
-                "Validate flight intent shared correctly",
-                self._intents_extent,
-            ) as planned_validator:
-                self.begin_test_step("Plan flight intent")
-                _, flight_id, _ = plan_flight_intent(
-                    self,
-                    self.tested_uss,
-                    self.valid_flight.request,
-                )
-                self.end_test_step()
-                planned_validator.expect_shared(self.valid_flight.request)
-
-            _ = delete_flight_intent(
-                self, "Cancel flight intent", self.tested_uss, flight_id
+                self.valid_flight.request,
             )
-            cancelled_validator.expect_not_shared()
+            oi_ref = planned_validator.expect_shared(self.valid_flight.request)
+        self.end_test_step()
+
+        self.begin_test_step("Remove flight intent")
+        with OpIntentValidator(
+            self,
+            self.tested_uss,
+            self.dss,
+            self._intents_extent,
+        ) as cancelled_validator:
+            _ = delete_flight_intent(self, self.tested_uss, flight_id)
+            cancelled_validator.expect_removed(oi_ref.id)
+        self.end_test_step()
 
     def _validate_precision_intersection(self):
         self.begin_test_step("Plan control flight intent")
@@ -223,14 +220,13 @@ class FlightIntentValidation(TestScenario):
         )
         self.end_test_step()
 
+        self.begin_test_step("Attempt to plan flight conflicting by a tiny overlap")
         with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
-            "Validate conflicting flight not planned",
             self._intents_extent,
         ) as validator:
-            self.begin_test_step("Attempt to plan flight conflicting by a tiny overlap")
             submit_flight_intent(
                 self,
                 "Incorrectly planned",
@@ -242,9 +238,9 @@ class FlightIntentValidation(TestScenario):
                 self.tested_uss,
                 self.valid_conflict_tiny_overlap.request,
             )
-            self.end_test_step()
 
             validator.expect_not_shared()
+        self.end_test_step()
 
     def cleanup(self):
         self.begin_cleanup()

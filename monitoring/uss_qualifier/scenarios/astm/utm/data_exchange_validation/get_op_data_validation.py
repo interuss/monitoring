@@ -167,45 +167,43 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_2 = self.flight_2.resolve(times)
 
+        self.begin_test_step("mock_uss plans flight 2")
         with OpIntentValidator(
             self,
             self.mock_uss_client,
             self.dss,
-            "Validate flight 2 sharing",
             self._intents_extent,
         ) as validator:
-            self.begin_test_step("mock_uss plans flight 2")
             flight_2_planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
                 self,
                 self.mock_uss_client,
                 flight_2,
             )
-            self.end_test_step()
 
             flight_2_oi_ref = validator.expect_shared(flight_2)
+        self.end_test_step()
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
 
+        self.begin_test_step("tested_uss plans flight 1")
         with OpIntentValidator(
             self,
             self.tested_uss_client,
             self.dss,
-            "Validate flight 1 sharing",
             self._intents_extent,
         ) as validator:
-            self.begin_test_step("tested_uss plans flight 1")
             flight_1_planning_time = Time(arrow.utcnow().datetime)
             plan_res, self.flight_1_id = plan_flight(
                 self,
                 self.tested_uss_client,
                 flight_1,
             )
-            self.end_test_step()
             validator.expect_shared(
                 flight_1,
             )
+        self.end_test_step()
 
         self.begin_test_step(
             "Check for notification to tested_uss due to subscription in flight 2 area"
@@ -281,16 +279,15 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         )
 
         additional_fields = {"behavior": behavior}
+        self.begin_test_step(
+            "mock_uss plans flight 2, sharing invalid operational intent data"
+        )
         with OpIntentValidator(
             self,
             self.mock_uss_client,
             self.dss,
-            "Validate flight 2 shared operational intent with invalid data",
             self._intents_extent,
         ) as validator:
-            self.begin_test_step(
-                "mock_uss plans flight 2, sharing invalid operational intent data"
-            )
             flight_2_planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
                 self,
@@ -298,31 +295,30 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 flight_info,
                 additional_fields,
             )
-            self.end_test_step()
             flight_2_oi_ref = validator.expect_shared_with_invalid_data(
                 flight_info,
                 validation_failure_type=OpIntentValidationFailureType.DataFormat,
                 invalid_fields=[modify_field1, modify_field2],
             )
+        self.end_test_step()
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1 = self.flight_1.resolve(times)
+        self.begin_test_step("tested_uss attempts to plan flight 1, expect failure")
         with OpIntentValidator(
             self,
             self.tested_uss_client,
             self.dss,
-            "Validate flight 1 not shared by tested_uss",
             self._intents_extent,
         ) as validator:
-            self.begin_test_step("tested_uss attempts to plan flight 1, expect failure")
             flight_1_planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_1_id = plan_flight_intent_expect_failed(
                 self,
                 self.tested_uss_client,
                 flight_1,
             )
-            self.end_test_step()
             validator.expect_not_shared()
+        self.end_test_step()
 
         self.begin_test_step(
             "Check for notification to tested_uss due to subscription in flight 2 area"

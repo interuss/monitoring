@@ -44,19 +44,23 @@ All flight intent data provided was complete and correct. It should have been pr
 to reject or accept the flight. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-### [Validate flight intent too far ahead of time not planned test step](../validate_not_shared_operational_intent.md)
+#### [Validate flight intent too far ahead of time not planned](../validate_not_shared_operational_intent.md)
 
 ## Validate transition to Ended state after cancellation test case
-### [Plan flight intent test step](../../../flight_planning/plan_flight_intent.md)
+### Plan flight intent test step
+
+#### [Plan](../../../flight_planning/plan_flight_intent.md)
 The valid flight intent should be successfully planned by the flight planner.
 
-### [Validate flight intent shared correctly test step](../validate_shared_operational_intent.md)
+#### [Validate flight intent shared correctly](../validate_shared_operational_intent.md)
 Validate that the flight intent was shared correctly and is discoverable.
 
-### [Cancel flight intent test step](../../../flight_planning/delete_flight_intent.md)
+### Remove flight intent test step
+
+#### [Cancel flight intent](../../../flight_planning/delete_flight_intent.md)
 The flight intent should be successfully transition to Ended state by the flight planner.
 
-### Validate flight intent is non-discoverable test step
+#### [Validate flight intent is non-discoverable](../validate_removed_operational_intent.md)
 
 #### DSS responses check
 
@@ -84,7 +88,7 @@ All flight intent data provided was complete and correct. It should have been pr
 to reject or accept the flight. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-### [Validate conflicting flight not planned test step](../validate_not_shared_operational_intent.md)
+#### [Validate conflicting flight not planned](../validate_not_shared_operational_intent.md)
 
 ## Cleanup
 ### Successful flight deletion check

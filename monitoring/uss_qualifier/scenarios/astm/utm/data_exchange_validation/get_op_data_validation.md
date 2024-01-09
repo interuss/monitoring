@@ -29,18 +29,22 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 
 ## Successfully plan flight near an existing flight test case
 
-### [mock_uss plans flight 2 test step](../../../flight_planning/plan_flight_intent.md)
+### mock_uss plans flight 2 test step
+
+#### [Plan](../../../flight_planning/plan_flight_intent.md)
+
 Flight 2 should be successfully planned by the control USS.
 
-### [Validate flight 2 sharing test step](../validate_shared_operational_intent.md)
-Validate that flight 2 is planned
+#### [Validate](../validate_shared_operational_intent.md)
 
-### [tested_uss plans flight 1 test step](../../../flight_planning/plan_flight_intent.md)
+### tested_uss plans flight 1 test step
+
+#### [Plan](../../../flight_planning/plan_flight_intent.md)
+
 The test driver attempts to plan flight 1 via the tested USS. It checks if any conflicts with flight 2
 which is of equal priority and came first.
 
-### [Validate flight 1 sharing test step](../validate_shared_operational_intent.md)
-Validate flight 1 is planned.
+#### [Validate](../validate_shared_operational_intent.md)
 
 ### Check for notification to tested_uss due to subscription in flight 2 area test step
 In the following test step, we want to assert that tested_uss must have retrieved operational intent details from
@@ -63,18 +67,27 @@ Teardown
 Teardown
 
 ## Flight planning prevented due to invalid data sharing test case
-### [mock_uss plans flight 2, sharing invalid operational intent data test step](../../../flight_planning/plan_flight_intent.md)
+
+### mock_uss plans flight 2, sharing invalid operational intent data test step
+
+#### [Plan](../../../flight_planning/plan_flight_intent.md)
+
 Flight 2 should be successfully planned by the mock_uss.
+
+#### [Validate](test_steps/validate_sharing_operational_intent_but_with_invalid_interuss_data.md)
+
 The mock_uss is instructed to share invalid data with other USS, for negative test.
 
-### [Validate flight 2 shared operational intent with invalid data test step](test_steps/validate_sharing_operational_intent_but_with_invalid_interuss_data.md)
-Validate that flight 2 is shared with invalid data as a modified behavior is injected by uss_qualifier for a negative test.
+### tested_uss attempts to plan flight 1, expect failure test step
 
-### [tested_uss attempts to plan flight 1, expect failure test step](test_steps/plan_flight_intent_expect_failed.md)
+#### [Plan](test_steps/plan_flight_intent_expect_failed.md)
+
 The test driver attempts to plan the flight 1 via the tested_uss. It checks if any conflicts with flight 2
 which is of equal priority and came first.
+The planning attempt should fail because tested_uss will be unable to obtain valid operational intent details for flight 2.
 
-### [Validate flight 1 not shared by tested_uss test step](../validate_not_shared_operational_intent.md)
+#### [Validate](../validate_not_shared_operational_intent.md)
+
 Validate flight 1 is not shared with DSS, as plan failed.
 
 ### Check for notification to tested_uss due to subscription in flight 2 area test step

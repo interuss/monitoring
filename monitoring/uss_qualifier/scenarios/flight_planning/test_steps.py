@@ -78,7 +78,6 @@ def plan_flight_intent(
 
 def activate_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: Optional[str] = None,
@@ -94,7 +93,6 @@ def activate_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    scenario.begin_test_step(test_step)
     resp, _, _ = submit_flight_intent(
         scenario,
         "Successful activation",
@@ -105,13 +103,11 @@ def activate_flight_intent(
         flight_id,
     )
 
-    scenario.end_test_step()
     return resp
 
 
 def modify_planned_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: str,
@@ -125,7 +121,6 @@ def modify_planned_flight_intent(
     """
     expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
 
-    scenario.begin_test_step(test_step)
     resp, _, _ = submit_flight_intent(
         scenario,
         "Successful modification",
@@ -136,13 +131,11 @@ def modify_planned_flight_intent(
         flight_id,
     )
 
-    scenario.end_test_step()
     return resp
 
 
 def modify_activated_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_intent: InjectFlightRequest,
     flight_id: str,
@@ -160,7 +153,6 @@ def modify_activated_flight_intent(
         flight_intent, OperationalIntentState.Activated, scenario
     )
 
-    scenario.begin_test_step(test_step)
     if preexisting_conflict:
         resp, flight_id, _ = submit_flight_intent(
             scenario,
@@ -212,7 +204,6 @@ def modify_activated_flight_intent(
             flight_id,
         )
 
-    scenario.end_test_step()
     return resp
 
 
@@ -290,7 +281,6 @@ def submit_flight_intent(
 
 def delete_flight_intent(
     scenario: TestScenarioType,
-    test_step: str,
     flight_planner: FlightPlanner,
     flight_id: str,
 ) -> DeleteFlightResponse:
@@ -303,7 +293,6 @@ def delete_flight_intent(
 
     Returns: The deletion response.
     """
-    scenario.begin_test_step(test_step)
     with scenario.check(
         "Successful deletion", [flight_planner.participant_id]
     ) as check:
@@ -322,7 +311,6 @@ def delete_flight_intent(
         notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
 
         if resp.result == DeleteFlightResponseResult.Closed:
-            scenario.end_test_step()
             return resp
         else:
             check.record_failed(

@@ -89,7 +89,7 @@ All flight intent data provided was complete and correct. It should have been pr
 to reject or accept Flight 2. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-### [Validate high-priority Flight 2 not shared test step](../validate_not_shared_operational_intent.md)
+#### [Validate high-priority Flight 2 not shared](../validate_not_shared_operational_intent.md)
 
 ### [Restore virtual USS availability at DSS test step](../set_uss_available.md)
 
@@ -126,7 +126,7 @@ All flight intent data provided was complete and correct. It should have been pr
 to reject or accept Flight 2. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-### [Validate high-priority Flight 2 not shared test step](../validate_not_shared_operational_intent.md)
+#### [Validate high-priority Flight 2 not shared](../validate_not_shared_operational_intent.md)
 
 ### [Restore virtual USS availability at DSS test step](../set_uss_available.md)
 
@@ -163,7 +163,7 @@ All flight intent data provided was complete and correct. It should have been pr
 to reject or accept Flight 2. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-### [Validate high-priority Flight 2 not shared test step](../validate_not_shared_operational_intent.md)
+#### [Validate high-priority Flight 2 not shared](../validate_not_shared_operational_intent.md)
 
 
 ## Cleanup
