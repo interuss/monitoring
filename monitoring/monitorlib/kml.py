@@ -1,5 +1,6 @@
+import math
 import re
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import s2sphere
 from pykml import parser
@@ -10,6 +11,9 @@ from monitoring.monitorlib.geo import (
     AltitudeDatum,
     DistanceUnits,
     egm96_geoid_offset,
+    Radius,
+    EARTH_CIRCUMFERENCE_M,
+    LatLngPoint,
 )
 from monitoring.monitorlib.geotemporal import Volume4D
 
@@ -136,13 +140,13 @@ def _altitude_mode_of(altitude: Altitude) -> str:
         )
 
 
-def _altitude_value_of(altitude: Altitude) -> float:
-    if altitude.units == DistanceUnits.M:
-        return altitude.value
-    elif altitude.units == DistanceUnits.FT:
-        return altitude.value * METERS_PER_FOOT
+def _distance_value_of(distance: Union[Altitude, Radius]) -> float:
+    if distance.units == DistanceUnits.M:
+        return distance.value
+    elif distance.units == DistanceUnits.FT:
+        return distance.value * METERS_PER_FOOT
     else:
-        raise NotImplementedError(f"Altitude units {altitude.units} not yet supported")
+        raise NotImplementedError(f"Distance units {distance.units} not yet supported")
 
 
 def make_placemark_from_volume(
@@ -151,7 +155,20 @@ def make_placemark_from_volume(
     style_url: Optional[str] = None,
     description: Optional[str] = None,
 ) -> kml.Placemark:
-    if "outline_polygon" not in v4.volume or not v4.volume.outline_polygon:
+    if "outline_polygon" in v4.volume and v4.volume.outline_polygon:
+        vertices = v4.volume.outline_polygon.vertices
+    elif "outline_circle" in v4.volume and v4.volume.outline_circle:
+        center = v4.volume.outline_circle.center
+        r = _distance_value_of(v4.volume.outline_circle.radius)
+        N_VERTICES = 32
+        vertices = [
+            center.offset(
+                r * math.sin(2 * math.pi * theta / N_VERTICES),
+                r * math.cos(2 * math.pi * theta / N_VERTICES),
+            )
+            for theta in range(0, N_VERTICES)
+        ]
+    else:
         raise NotImplementedError("Volume footprint type not supported")
 
     # Create placemark
@@ -176,7 +193,6 @@ def make_placemark_from_volume(
         placemark.append(timespan)
 
     # Create top and bottom of the volume
-    vertices = v4.volume.outline_polygon.vertices
     avg = s2sphere.LatLng.from_degrees(
         lat=sum(v.lat for v in vertices) / len(vertices),
         lng=sum(v.lng for v in vertices) / len(vertices),
@@ -185,12 +201,12 @@ def make_placemark_from_volume(
     lower_coords = []
     upper_coords = []
     alt_lo = (
-        _altitude_value_of(v4.volume.altitude_lower) - geoid_offset
+        _distance_value_of(v4.volume.altitude_lower) - geoid_offset
         if "altitude_lower" in v4.volume
         else 0
     )
     alt_hi = (
-        _altitude_value_of(v4.volume.altitude_upper) - geoid_offset
+        _distance_value_of(v4.volume.altitude_upper) - geoid_offset
         if "altitude_upper" in v4.volume
         else 0
     )

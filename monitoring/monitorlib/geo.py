@@ -89,6 +89,15 @@ class LatLngPoint(ImplicitDict):
             and abs(self.lng - other.lng) < COORD_TOLERANCE_DEG
         )
 
+    def offset(self, east_meters: float, north_meters: float) -> LatLngPoint:
+        dlat = 360 * north_meters / EARTH_CIRCUMFERENCE_M
+        dlng = (
+            360
+            * east_meters
+            / (EARTH_CIRCUMFERENCE_M * math.cos(math.radians(self.lat)))
+        )
+        return LatLngPoint(lat=self.lat + dlat, lng=self.lng + dlng)
+
 
 class Radius(ImplicitDict):
     value: float

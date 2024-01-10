@@ -470,7 +470,7 @@ def _generate_scenario_pages(
                 )
                 with open(kml_file, "w") as f:
                     f.write(make_scenario_kml(node.scenario))
-            except (ValueError, KeyError) as e:
+            except (ValueError, KeyError, NotImplementedError) as e:
                 logger.error(f"Error generating {kml_file}:\n" + stacktrace_string(e))
     else:
         for child in node.children:
