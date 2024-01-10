@@ -8,7 +8,7 @@ import s2sphere
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3411 import v19, v22a
 
-from monitoring.monitorlib.fetch import query_and_describe
+from monitoring.monitorlib.fetch import query_and_describe, QueryType
 from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.prober.infrastructure import register_resource_type
@@ -247,6 +247,7 @@ class ISAValidation(GenericTestScenario):
                 url=create_isa_url,
                 scope=self.write_scope,
                 json=payload,
+                query_type=QueryType.dss_create_isa(self._dss.rid_version),
             )
             if self._dss.rid_version == RIDVersion.f3411_19:
                 rid_query = ChangedISA(v19_query=q)
@@ -281,6 +282,7 @@ class ISAValidation(GenericTestScenario):
                 url=create_isa_url,
                 scope=self.write_scope,
                 json=payload,
+                query_type=QueryType.dss_create_isa(self._dss.rid_version),
             )
             if self._dss.rid_version == RIDVersion.f3411_19:
                 rid_query = ChangedISA(v19_query=q)
@@ -312,6 +314,7 @@ class ISAValidation(GenericTestScenario):
                 url=create_isa_url,
                 scope=self.write_scope,
                 json=payload,
+                query_type=QueryType.dss_create_isa(self._dss.rid_version),
             )
             if self._dss.rid_version == RIDVersion.f3411_19:
                 rid_query = ChangedISA(v19_query=q)

@@ -7,6 +7,7 @@ from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.rid.v1.injection import ChangeTestResponse
 
 from monitoring.monitorlib import geo
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing.injection_api import (
     TestFlight,
     CreateTestParameters,

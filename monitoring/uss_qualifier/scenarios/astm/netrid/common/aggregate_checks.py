@@ -161,6 +161,9 @@ class AggregateChecks(GenericTestScenario):
                 "unattributed-queries",
                 f"found unattributed queries: {unattr_queries}",
             )
+            logger.warning(
+                f"found unattributed queries: {unattr_queries}",
+            )
 
     def _inspect_participant_queries(
         self, participant_id: str, participant_queries: List[fetch.Query]
@@ -207,10 +210,7 @@ class AggregateChecks(GenericTestScenario):
                 if (
                     query.status_code == 200
                     and query.has_field_with_value("query_type")
-                    and (
-                        query.query_type == QueryType.F3411v19aFlightDetails
-                        or query.query_type == QueryType.F3411v22aFlightDetails
-                    )
+                    and query.query_type == QueryType.InterUSSRIDObservationV1GetDetails
                 ):
                     relevant_queries.append(query)
 
@@ -254,8 +254,8 @@ class AggregateChecks(GenericTestScenario):
             for query in all_queries:
                 if query.has_field_with_value("query_type") and (
                     # TODO find a cleaner way than checking for version here
-                    query.query_type == QueryType.F3411v19Flights
-                    or query.query_type == QueryType.F3411v22aFlights
+                    query.query_type == QueryType.F3411v19USSSearchFlights
+                    or query.query_type == QueryType.F3411v22aUSSSearchFlights
                 ):
                     relevant_queries.append(query)
 

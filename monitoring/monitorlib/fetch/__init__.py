@@ -2,20 +2,19 @@ import datetime
 import json
 import os
 import uuid
-import jwt
-from typing import Dict, Optional, List, Union
-
 from enum import Enum
+from typing import Dict, Optional, List, Union
 from urllib.parse import urlparse
 
 import flask
-from loguru import logger
+import jwt
 import requests
 import urllib3
 import yaml
+from implicitdict import ImplicitDict, StringBasedDateTime
+from loguru import logger
 from yaml.representer import Representer
 
-from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
@@ -180,10 +179,71 @@ def describe_flask_response(resp: flask.Response, elapsed_s: float):
 
 
 class QueryType(str, Enum):
-    F3411v22aFlights = "astm.f3411.v22a.sp.flights"
-    F3411v19Flights = "astm.f3411.v19.sp.flights"
-    F3411v22aFlightDetails = "astm.f3411.v22a.sp.flight_details"
-    F3411v19aFlightDetails = "astm.f3411.v19.sp.flight_details"
+    # ASTM F3411-19 and F3411-22a (RID)
+    # DSS endpoints
+    F3411v19DSSSearchIdentificationServiceAreas = (
+        "astm.f3411.v19.dss.searchIdentificationServiceAreas"
+    )
+    F3411v22aDSSSearchIdentificationServiceAreas = (
+        "astm.f3411.v22a.dss.searchIdentificationServiceAreas"
+    )
+
+    F3411v19DSSGetIdentificationServiceArea = (
+        "astm.f3411.v19.dss.getIdentificationServiceArea"
+    )
+    F3411v22aDSSGetIdentificationServiceArea = (
+        "astm.f3411.v22a.dss.getIdentificationServiceArea"
+    )
+
+    F3411v19DSSCreateIdentificationServiceArea = (
+        "astm.f3411.v19.dss.createIdentificationServiceArea"
+    )
+    F3411v22aDSSCreateIdentificationServiceArea = (
+        "astm.f3411.v22a.dss.createIdentificationServiceArea"
+    )
+
+    F3411v19DSSUpdateIdentificationServiceArea = (
+        "astm.f3411.v19.dss.updateIdentificationServiceArea"
+    )
+    F3411v22aDSSUpdateIdentificationServiceArea = (
+        "astm.f3411.v22a.dss.updateIdentificationServiceArea"
+    )
+
+    F3411v19DSSDeleteIdentificationServiceArea = (
+        "astm.f3411.v19.dss.deleteIdentificationServiceArea"
+    )
+    F3411v22aDSSDeleteIdentificationServiceArea = (
+        "astm.f3411.v22a.dss.deleteIdentificationServiceArea"
+    )
+
+    F3411v19DSSSearchSubscriptions = "astm.f3411.v19.dss.searchSubscriptions"
+    F3411v22aDSSSearchSubscriptions = "astm.f3411.v22a.dss.searchSubscriptions"
+
+    F3411v19DSSGetSubscription = "astm.f3411.v19.dss.getSubscription"
+    F3411v22aDSSGetSubscription = "astm.f3411.v22a.dss.getSubscription"
+
+    F3411v19DSSCreateSubscription = "astm.f3411.v19.dss.createSubscription"
+    F3411v22aDSSCreateSubscription = "astm.f3411.v22a.dss.createSubscription"
+
+    F3411v19DSSUpdateSubscription = "astm.f3411.v19.dss.updateSubscription"
+    F3411v22aDSSUpdateSubscription = "astm.f3411.v22a.dss.updateSubscription"
+
+    F3411v19DSSDeleteSubscription = "astm.f3411.v19.dss.deleteSubscription"
+    F3411v22aDSSDeleteSubscription = "astm.f3411.v22a.dss.deleteSubscription"
+
+    # USS endpoints
+    F3411v19USSSearchFlights = "astm.f3411.v19.uss.searchFlights"
+    F3411v22aUSSSearchFlights = "astm.f3411.v22a.uss.searchFlights"
+
+    F3411v19USSPostIdentificationServiceArea = (
+        "astm.f3411.v19.uss.postIdentificationServiceArea"
+    )
+    F3411v22aUSSPostIdentificationServiceArea = (
+        "astm.f3411.v22a.uss.postIdentificationServiceArea"
+    )
+
+    F3411v22aUSSGetFlightDetails = "astm.f3411.v22a.uss.getFlightDetails"
+    F3411v19USSGetFlightDetails = "astm.f3411.v19.uss.getFlightDetails"
 
     # ASTM F3548-21
     F3548v21DSSQueryOperationalIntentReferences = (
@@ -262,15 +322,51 @@ class QueryType(str, Enum):
         "interuss.automated_testing.rid.v1.observation.getDetails"
     )
 
+    # Flight injection (test harness)
+    InterussRIDAutomatedTestingV1CreateTest = (
+        "interuss.automated_testing.rid.v1.injection.createTest"
+    )
+
+    InterussRIDAutomatedTestingV1DeleteTest = (
+        "interuss.automated_testing.rid.v1.injection.deleteTest"
+    )
+
     def __str__(self):
         return self.value
 
     @staticmethod
-    def flight_details(rid_version: RIDVersion):
+    def dss_get_isa(rid_version: RIDVersion):
         if rid_version == RIDVersion.f3411_19:
-            return QueryType.F3411v19aFlightDetails
+            return QueryType.F3411v19DSSGetIdentificationServiceArea
         elif rid_version == RIDVersion.f3411_22a:
-            return QueryType.F3411v22aFlightDetails
+            return QueryType.F3411v22aDSSGetIdentificationServiceArea
+        else:
+            raise ValueError(f"Unsupported RID version: {rid_version}")
+
+    @staticmethod
+    def dss_create_isa(rid_version: RIDVersion):
+        if rid_version == RIDVersion.f3411_19:
+            return QueryType.F3411v19DSSCreateIdentificationServiceArea
+        elif rid_version == RIDVersion.f3411_22a:
+            return QueryType.F3411v22aDSSCreateIdentificationServiceArea
+        else:
+            raise ValueError(f"Unsupported RID version: {rid_version}")
+
+    @staticmethod
+    def dss_update_isa(rid_version: RIDVersion):
+        if rid_version == RIDVersion.f3411_19:
+            return QueryType.F3411v19DSSUpdateIdentificationServiceArea
+        elif rid_version == RIDVersion.f3411_22a:
+            return QueryType.F3411v22aDSSUpdateIdentificationServiceArea
+        else:
+            raise ValueError(f"Unsupported RID version: {rid_version}")
+
+    @staticmethod
+    def dss_delete_isa(rid_version: RIDVersion):
+        if rid_version == RIDVersion.f3411_19:
+            return QueryType.F3411v19DSSDeleteIdentificationServiceArea
+        elif rid_version == RIDVersion.f3411_22a:
+            return QueryType.F3411v22aDSSDeleteIdentificationServiceArea
         else:
             raise ValueError(f"Unsupported RID version: {rid_version}")
 

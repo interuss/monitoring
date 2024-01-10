@@ -5,6 +5,7 @@ from implicitdict import ImplicitDict
 import s2sphere
 from uas_standards import Operation
 
+from monitoring.monitorlib.fetch import QueryType
 from monitoring.monitorlib.fetch.rid import RIDQuery, Subscription, ISA
 from monitoring.monitorlib.rid import RIDVersion
 from uas_standards.astm.f3411 import v19, v22a
@@ -127,9 +128,11 @@ def upsert_subscription(
         if subscription_version is None:
             op = v19.api.OPERATIONS[v19.api.OperationID.CreateSubscription]
             url = op.path.format(id=subscription_id)
+            query_type = QueryType.F3411v19DSSCreateSubscription
         else:
             op = v19.api.OPERATIONS[v19.api.OperationID.UpdateSubscription]
             url = op.path.format(id=subscription_id, version=subscription_version)
+            query_type = QueryType.F3411v19DSSUpdateSubscription
         return ChangedSubscription(
             mutation=mutation,
             v19_query=fetch.query_and_describe(
@@ -139,6 +142,7 @@ def upsert_subscription(
                 json=body,
                 scope=v19.constants.Scope.Read,
                 participant_id=participant_id,
+                query_type=query_type,
             ),
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -155,9 +159,11 @@ def upsert_subscription(
         if subscription_version is None:
             op = v22a.api.OPERATIONS[v22a.api.OperationID.CreateSubscription]
             url = op.path.format(id=subscription_id)
+            query_type = QueryType.F3411v22aDSSCreateSubscription
         else:
             op = v22a.api.OPERATIONS[v22a.api.OperationID.UpdateSubscription]
             url = op.path.format(id=subscription_id, version=subscription_version)
+            query_type = QueryType.F3411v22aDSSUpdateSubscription
         return ChangedSubscription(
             mutation=mutation,
             v22a_query=fetch.query_and_describe(
@@ -167,6 +173,7 @@ def upsert_subscription(
                 json=body,
                 scope=v22a.constants.Scope.DisplayProvider,
                 participant_id=participant_id,
+                query_type=query_type,
             ),
         )
     else:
@@ -193,6 +200,7 @@ def delete_subscription(
                 url,
                 scope=v19.constants.Scope.Read,
                 participant_id=participant_id,
+                query_type=QueryType.F3411v19DSSDeleteSubscription,
             ),
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -206,6 +214,7 @@ def delete_subscription(
                 url,
                 scope=v22a.constants.Scope.DisplayProvider,
                 participant_id=participant_id,
+                query_type=QueryType.F3411v22aDSSDeleteSubscription,
             ),
         )
     else:
@@ -278,6 +287,7 @@ class SubscriberToNotify(ImplicitDict):
                     json=body,
                     scope=v19.constants.Scope.Write,
                     participant_id=participant_id,
+                    query_type=QueryType.F3411v19USSPostIdentificationServiceArea,
                 )
             )
         elif self.rid_version == RIDVersion.f3411_22a:
@@ -296,6 +306,7 @@ class SubscriberToNotify(ImplicitDict):
                     json=body,
                     scope=v22a.constants.Scope.ServiceProvider,
                     participant_id=participant_id,
+                    query_type=QueryType.F3411v22aUSSPostIdentificationServiceArea,
                 )
             )
         else:
@@ -523,7 +534,8 @@ def put_isa(
     isa_version: Optional[str] = None,
     participant_id: Optional[str] = None,
 ) -> ISAChange:
-    mutation = "create" if isa_version is None else "update"
+    is_creation = isa_version is None
+    mutation = "create" if is_creation else "update"
     body = build_isa_request_body(
         area_vertices,
         alt_lo,
@@ -535,6 +547,11 @@ def put_isa(
     )
     (op, url) = build_isa_url(rid_version, isa_id, isa_version)
     if rid_version == RIDVersion.f3411_19:
+        query_type = (
+            QueryType.F3411v19DSSUpdateIdentificationServiceArea
+            if is_creation
+            else QueryType.F3411v19DSSCreateIdentificationServiceArea
+        )
         dss_response = ChangedISA(
             mutation=mutation,
             v19_query=fetch.query_and_describe(
@@ -544,9 +561,15 @@ def put_isa(
                 json=body,
                 scope=v19.constants.Scope.Write,
                 participant_id=participant_id,
+                query_type=query_type,
             ),
         )
     elif rid_version == RIDVersion.f3411_22a:
+        query_type = (
+            QueryType.F3411v22aDSSUpdateIdentificationServiceArea
+            if is_creation
+            else QueryType.F3411v22aDSSCreateIdentificationServiceArea
+        )
         dss_response = ChangedISA(
             mutation=mutation,
             v22a_query=fetch.query_and_describe(
@@ -556,6 +579,7 @@ def put_isa(
                 json=body,
                 scope=v22a.constants.Scope.ServiceProvider,
                 participant_id=participant_id,
+                query_type=query_type,
             ),
         )
     else:
@@ -591,6 +615,7 @@ def delete_isa(
                 url,
                 scope=v19.constants.Scope.Write,
                 participant_id=participant_id,
+                query_type=QueryType.F3411v19DSSDeleteIdentificationServiceArea,
             ),
         )
     elif rid_version == RIDVersion.f3411_22a:
@@ -604,6 +629,7 @@ def delete_isa(
                 url,
                 scope=v22a.constants.Scope.ServiceProvider,
                 participant_id=participant_id,
+                query_type=QueryType.F3411v22aDSSDeleteIdentificationServiceArea,
             ),
         )
     else:

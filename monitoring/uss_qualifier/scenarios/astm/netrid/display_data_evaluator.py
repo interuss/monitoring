@@ -432,7 +432,7 @@ class RIDObservationEvaluator(object):
                     continue
 
                 details_obs, query = observer.observe_flight_details(
-                    mapping.observed_flight.id, self._rid_version
+                    mapping.observed_flight.id
                 )
 
                 self._test_scenario.record_query(query)

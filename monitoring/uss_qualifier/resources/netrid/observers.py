@@ -65,7 +65,7 @@ class RIDSystemObserver(object):
         return result, query
 
     def observe_flight_details(
-        self, flight_id: str, rid_version: RIDVersion
+        self, flight_id: str
     ) -> Tuple[Optional[observation_api.GetDetailsResponse], fetch.Query]:
         query = fetch.query_and_describe(
             self.session,
@@ -77,7 +77,6 @@ class RIDSystemObserver(object):
         )
         # Record query metadata for later use in the aggregate checks
         query.participant_id = self.participant_id
-        query.query_type = QueryType.flight_details(rid_version)
         try:
             result = (
                 ImplicitDict.parse(
