@@ -14,6 +14,7 @@ from monitoring.monitorlib.geo import (
 from monitoring.monitorlib.geotemporal import Volume4D
 
 KML_NAMESPACE = {"kml": "http://www.opengis.net/kml/2.2"}
+METERS_PER_FOOT = 0.3048
 
 
 def get_kml_root(kml_obj, from_string=False):
@@ -127,6 +128,8 @@ def get_kml_content(kml_file, from_string=False):
 def _altitude_mode_of(altitude: Altitude) -> str:
     if altitude.reference == AltitudeDatum.W84:
         return "absolute"
+    elif altitude.reference == AltitudeDatum.SFC:
+        return "relativeToGround"
     else:
         raise NotImplementedError(
             f"Altitude reference {altitude.reference} not yet supported"
@@ -136,6 +139,8 @@ def _altitude_mode_of(altitude: Altitude) -> str:
 def _altitude_value_of(altitude: Altitude) -> float:
     if altitude.units == DistanceUnits.M:
         return altitude.value
+    elif altitude.units == DistanceUnits.FT:
+        return altitude.value * METERS_PER_FOOT
     else:
         raise NotImplementedError(f"Altitude units {altitude.units} not yet supported")
 
@@ -179,36 +184,69 @@ def make_placemark_from_volume(
     geoid_offset = egm96_geoid_offset(avg)
     lower_coords = []
     upper_coords = []
-    alt_lo = _altitude_value_of(v4.volume.altitude_lower) - geoid_offset
-    alt_hi = _altitude_value_of(v4.volume.altitude_upper) - geoid_offset
+    alt_lo = (
+        _altitude_value_of(v4.volume.altitude_lower) - geoid_offset
+        if "altitude_lower" in v4.volume
+        else 0
+    )
+    alt_hi = (
+        _altitude_value_of(v4.volume.altitude_upper) - geoid_offset
+        if "altitude_upper" in v4.volume
+        else 0
+    )
     for vertex in vertices:
         lower_coords.append((vertex.lng, vertex.lat, alt_lo))
         upper_coords.append((vertex.lng, vertex.lat, alt_hi))
-    geo = kml.MultiGeometry(
-        kml.Polygon(
-            kml.altitudeMode(_altitude_mode_of(v4.volume.altitude_lower)),
-            kml.outerBoundaryIs(
-                kml.LinearRing(
-                    kml.coordinates(
-                        " ".join(",".join(str(v) for v in c) for c in lower_coords)
+    geo = kml.MultiGeometry()
+    make_sides = True
+    if "altitude_lower" in v4.volume:
+        geo.append(
+            kml.Polygon(
+                kml.altitudeMode(
+                    _altitude_mode_of(
+                        v4.volume.altitude_lower
+                        if "altitude_lower" in v4.volume
+                        else AltitudeDatum.SFC
                     )
-                )
-            ),
-        ),
-        kml.Polygon(
-            kml.altitudeMode(_altitude_mode_of(v4.volume.altitude_upper)),
-            kml.outerBoundaryIs(
-                kml.LinearRing(
-                    kml.coordinates(
-                        " ".join(",".join(str(v) for v in c) for c in upper_coords)
+                ),
+                kml.outerBoundaryIs(
+                    kml.LinearRing(
+                        kml.coordinates(
+                            " ".join(",".join(str(v) for v in c) for c in lower_coords)
+                        )
                     )
-                )
-            ),
-        ),
-    )
+                ),
+            )
+        )
+    else:
+        make_sides = False
+    if "altitude_upper" in v4.volume:
+        geo.append(
+            kml.Polygon(
+                kml.altitudeMode(
+                    _altitude_mode_of(
+                        v4.volume.altitude_upper
+                        if "altitude_upper" in v4.volume
+                        else AltitudeDatum.SFC
+                    )
+                ),
+                kml.outerBoundaryIs(
+                    kml.LinearRing(
+                        kml.coordinates(
+                            " ".join(",".join(str(v) for v in c) for c in upper_coords)
+                        )
+                    )
+                ),
+            )
+        )
+    else:
+        make_sides = False
 
     # We can only create the sides of the volume if the altitude references are the same
-    if v4.volume.altitude_lower.reference == v4.volume.altitude_upper.reference:
+    if (
+        make_sides
+        and v4.volume.altitude_lower.reference == v4.volume.altitude_upper.reference
+    ):
         indices = list(range(len(vertices)))
         for i1, i2 in zip(indices, indices[1:] + [0]):
             coords = [
@@ -256,5 +294,42 @@ def flight_planning_styles() -> List[kml.Style]:
             kml.LineStyle(kml.color("ff0000ff"), kml.width(5)),
             kml.PolyStyle(kml.color("8000ff00")),
             id="InUse_Contingent",
+        ),
+    ]
+
+
+def query_styles() -> List[kml.Style]:
+    """Provides KML styles for query areas."""
+    return [
+        kml.Style(
+            kml.LineStyle(kml.color("ffc0c000"), kml.width(3)),
+            kml.PolyStyle(kml.color("80ffffaa")),
+            id="QueryArea",
+        ),
+    ]
+
+
+def f3548v21_styles() -> List[kml.Style]:
+    """Provides KML styles according to F3548-21 operational intent states."""
+    return [
+        kml.Style(
+            kml.LineStyle(kml.color("ff00c000"), kml.width(3)),
+            kml.PolyStyle(kml.color("80808080")),
+            id="F3548v21Accepted",
+        ),
+        kml.Style(
+            kml.LineStyle(kml.color("ff00c000"), kml.width(3)),
+            kml.PolyStyle(kml.color("8000ff00")),
+            id="F3548v21Activated",
+        ),
+        kml.Style(
+            kml.LineStyle(kml.color("ff00ffff"), kml.width(5)),
+            kml.PolyStyle(kml.color("8000ff00")),
+            id="F3548v21Nonconforming",
+        ),
+        kml.Style(
+            kml.LineStyle(kml.color("ff0000ff"), kml.width(5)),
+            kml.PolyStyle(kml.color("8000ff00")),
+            id="F3548v21Contingent",
         ),
     ]

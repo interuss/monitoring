@@ -6,7 +6,6 @@ import os
 import sys
 
 import arrow
-from loguru import logger
 from lxml import etree
 from pykml.factory import KML_ElementMaker as kml
 from pykml.util import format_xml_with_cdata

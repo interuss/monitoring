@@ -8,7 +8,9 @@ from implicitdict import ImplicitDict
 from monitoring.uss_qualifier.configurations.configuration import ArtifactsConfiguration
 from monitoring.uss_qualifier.reports.documents import make_report_html
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
-from monitoring.uss_qualifier.reports.sequence_view import generate_sequence_view
+from monitoring.uss_qualifier.reports.sequence_view.generate import (
+    generate_sequence_view,
+)
 from monitoring.uss_qualifier.reports.templates import render_templates
 from monitoring.uss_qualifier.reports.tested_requirements import (
     generate_tested_requirements,
