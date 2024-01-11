@@ -19,18 +19,6 @@ SCOPE_AA = Scope.AvailabilityArbitration
 NO_OVN_PHRASES = {"", "Available from USS"}
 
 
-class Subscription(dict):
-    @property
-    def valid(self) -> bool:
-        if self.version is None:
-            return False
-        return True
-
-    @property
-    def version(self) -> Optional[str]:
-        return self.get("version", None)
-
-
 def priority_of(details: OperationalIntentDetails) -> int:
     priority = 0
     if "priority" in details and details.priority:

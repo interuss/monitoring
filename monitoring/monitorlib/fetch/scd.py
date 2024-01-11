@@ -3,9 +3,10 @@ from typing import Dict, List, Optional
 
 import s2sphere
 import yaml
+from implicitdict import ImplicitDict
+from uas_standards.astm.f3548.v21.api import Subscription
 from yaml.representer import Representer
 
-from implicitdict import ImplicitDict
 from monitoring.monitorlib import fetch, infrastructure, scd
 from monitoring.monitorlib.geo import Polygon
 from monitoring.monitorlib.geotemporal import Volume4D
@@ -378,20 +379,20 @@ class FetchedSubscription(fetch.Query):
             return ["Request to get Subscription failed ({})".format(self.status_code)]
         if self.json_result is None:
             return ["Request to get Subscription did not return valid JSON"]
-        if not self._subscription.valid:
+        if self.subscription is None:
             return ["Invalid Subscription data"]
         return []
 
     @property
-    def _subscription(self) -> scd.Subscription:
-        return scd.Subscription(self.json_result.get("subscription", {}))
-
-    @property
-    def subscription(self) -> Optional[scd.Subscription]:
-        if not self.success or self.status_code == 404:
+    def subscription(self) -> Optional[Subscription]:
+        try:
+            # We get a ValueError if .parse is fed a None,
+            # or if the JSON can't be parsed as a Subscription.
+            return ImplicitDict.parse(
+                self.json_result.get("subscription", None), Subscription
+            )
+        except ValueError:
             return None
-        else:
-            return self._subscription
 
 
 yaml.add_representer(FetchedSubscription, Representer.represent_dict)
