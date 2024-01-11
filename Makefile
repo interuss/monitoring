@@ -110,3 +110,9 @@ monitoring-tests: check-monitoring
 # This reproduces the entire continuous integration workflow (.github/workflows/ci.yml)
 .PHONY: presubmit
 presubmit: hygiene-tests monitoring-tests
+
+# For local development when restarts are frequently required (such as when testing changes on the DSS)
+.PHONY: restart-all
+restart-all: stop-uss-mocks down-locally start-locally start-uss-mocks
+
+
