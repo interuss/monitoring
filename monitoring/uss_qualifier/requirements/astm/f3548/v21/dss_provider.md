@@ -13,7 +13,9 @@ This file describes the set of ASTM F3548-21 requirements with which a USS provi
 * **astm.f3548.v21.DSS0010**
 * **astm.f3548.v21.DSS0015**
 * **astm.f3548.v21.DSS0020**
-* **astm.f3548.v21.DSS0100**
+* DSS0100
+  * **astm.f3548.v21.DSS0100,1**
+  * **astm.f3548.v21.DSS0100,2**
 * **astm.f3548.v21.DSS0200**
 * **astm.f3548.v21.DSS0205**
 * **astm.f3548.v21.DSS0210**
