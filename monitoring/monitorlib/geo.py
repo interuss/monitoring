@@ -446,6 +446,8 @@ def make_latlng_rect(area) -> s2sphere.LatLngRect:
         p1 = s2sphere.LatLng.from_degrees(lat_min, lng_min)
         p2 = s2sphere.LatLng.from_degrees(lat_max, lng_max)
         return s2sphere.LatLngRect.from_point_pair(p1, p2)
+    elif isinstance(area, Polygon):
+        return bounding_rect([(v.lat, v.lng) for v in area.vertices])
     else:
         raise NotImplementedError(
             f"make_latlng_rect does not support {type(area).__name__}"

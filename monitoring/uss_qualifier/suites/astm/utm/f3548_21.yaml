@@ -12,6 +12,8 @@ resources:
   second_utm_auth: resources.communications.AuthAdapterResource?
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
   id_generator: resources.interuss.IDGeneratorResource
+  uss_area: resources.USSAreaResource
+  problematically_big_area: resources.VerticesResource
 actions:
 - test_scenario:
     scenario_type: scenarios.astm.utm.PrepareFlightPlanners
@@ -31,6 +33,8 @@ actions:
       second_utm_auth: second_utm_auth?
       flight_intents: non_conflicting_flights
       id_generator: id_generator
+      uss_area: uss_area
+      problematically_big_area: problematically_big_area
     specification:
       action_to_repeat:
         test_suite:
@@ -41,6 +45,8 @@ actions:
             all_dss_instances: dss_instances
             flight_intents: flight_intents
             id_generator: id_generator
+            uss_area: uss_area
+            problematically_big_area: problematically_big_area
         on_failure: Continue
       dss_instances_source: dss_instances
       dss_instance_id: dss

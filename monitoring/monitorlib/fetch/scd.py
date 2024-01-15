@@ -5,9 +5,15 @@ import s2sphere
 import yaml
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import Subscription
+from uas_standards.astm.f3548.v21.api import (
+    Volume4D as SCDVolume4D,
+    OperationID,
+    OPERATIONS,
+)
 from yaml.representer import Representer
 
 from monitoring.monitorlib import fetch, infrastructure, scd
+from monitoring.monitorlib.fetch import QueryType
 from monitoring.monitorlib.geo import Polygon
 from monitoring.monitorlib.geotemporal import Volume4D
 
@@ -398,9 +404,71 @@ class FetchedSubscription(fetch.Query):
 yaml.add_representer(FetchedSubscription, Representer.represent_dict)
 
 
-def subscription(
-    utm_client: infrastructure.UTMClientSession, subscription_id: str
+class FetchedSubscriptions(fetch.Query):
+    @property
+    def success(self) -> bool:
+        return not self.errors
+
+    @property
+    def errors(self) -> List[str]:
+        if self.status_code == 404:
+            return []
+        if self.status_code != 200:
+            return ["Request to get Subscriptions failed ({})".format(self.status_code)]
+        if self.json_result is None:
+            return ["Request to get Subscriptions did not return valid JSON"]
+        return []
+
+    @property
+    def _subscriptions(self) -> List[Subscription]:
+        return [
+            ImplicitDict.parse(sub, Subscription)
+            for sub in self.json_result.get("subscriptions", [])
+        ]
+
+    @property
+    def subscriptions(self) -> Dict[str, Subscription]:
+        if not self.success or self.status_code == 404:
+            return {}
+        else:
+            return {sub.id: sub for sub in self._subscriptions}
+
+
+yaml.add_representer(FetchedSubscriptions, Representer.represent_dict)
+
+
+def get_subscription(
+    utm_client: infrastructure.UTMClientSession,
+    subscription_id: str,
+    participant_id: Optional[str] = None,
 ) -> FetchedSubscription:
-    url = "/dss/v1/subscriptions/{}".format(subscription_id)
-    result = fetch.query_and_describe(utm_client, "GET", url, scope=scd.SCOPE_SC)
-    return FetchedSubscription(result)
+    op = OPERATIONS[OperationID.GetSubscription]
+    return FetchedSubscription(
+        fetch.query_and_describe(
+            utm_client,
+            op.verb,
+            op.path.format(subscriptionid=subscription_id),
+            scope=scd.SCOPE_SC,
+        ),
+        query_type=QueryType.F3548v21DSSGetSubscription,
+        participant_id=participant_id,
+    )
+
+
+def search_subscriptions(
+    utm_client: infrastructure.UTMClientSession,
+    volume: SCDVolume4D,
+    participant_id: Optional[str] = None,
+) -> FetchedSubscriptions:
+    op = OPERATIONS[OperationID.QuerySubscriptions]
+    return FetchedSubscriptions(
+        fetch.query_and_describe(
+            utm_client,
+            op.verb,
+            op.path,
+            json={"area_of_interest": volume},
+            scope=scd.SCOPE_SC,
+        ),
+        query_type=QueryType.F3548v21DSSQuerySubscriptions,
+        participant_id=participant_id,
+    )

@@ -41,6 +41,23 @@ kentland_service_area:
     time_start: '2023-01-10T00:00:01.123456+00:00'
     time_end: '2023-01-10T01:00:01.123456+00:00'
 
+kentland_uss_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.USSAreaResource
+  specification:
+    base_url: https://uss_qualifier.test.utm/dummy_base_url
+    footprint:
+      - lat: 37.1853
+        lng: -80.6140
+      - lat: 37.2148
+        lng: -80.6140
+      - lat: 37.2148
+        lng: -80.5440
+      - lat: 37.1853
+        lng: -80.5440
+    altitude_min: 0
+    altitude_max: 3048
+
 au_problematically_big_area: # A huge (as in "too big") area for checks around area sizes
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
   resource_type: resources.VerticesResource
@@ -117,6 +134,36 @@ kml_storage_config:
     flight_record_collection_path: "./output/generate_rid_test_data/flight_data/test_data.usa.netrid.dcdemo_flights.json"
 
 # ===== Flight planning intents =====
+
+che_uss_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.USSAreaResource
+  specification:
+    base_url: https://uss_qualifier.test.utm/dummy_base_url
+    footprint:
+      - lat: 45.1853
+        lng: 7.6140
+      - lat: 45.1853
+        lng: 7.5440
+      - lat: 45.2148
+        lng: 7.5440
+      - lat: 45.2148
+        lng: 7.6140
+    altitude_min: 0
+    altitude_max: 3048
+
+che_problematically_big_area:
+  resource_type: resources.VerticesResource
+  specification:
+    vertices:
+      - lat: 45
+        lng: 7
+      - lat: 45
+        lng: 8
+      - lat: 46
+        lng: 8
+      - lat: 46
+        lng: 7
 
 che_invalid_flight_auth_flights:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
