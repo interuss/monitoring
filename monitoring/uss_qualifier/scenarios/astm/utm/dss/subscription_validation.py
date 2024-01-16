@@ -1,23 +1,20 @@
 from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
 
-import loguru
-import s2sphere
-from s2sphere import LatLngRect
-from uas_standards.astm.f3548.v21.api import Subscription
-from uas_standards.astm.f3548.v21.constants import Scope
+from uas_standards.astm.f3548.v21.constants import (
+    Scope,
+    DSSMaxSubscriptionDurationHours,
+)
 
-from monitoring.monitorlib.geo import Polygon, Volume3D
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstanceResource
-from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
-from monitoring.uss_qualifier.resources.uss_area import (
-    USSAreaResource,
-    USSAreaSpecification,
+from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
+    PlanningAreaResource,
+    PlanningAreaSpecification,
 )
+from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenario,
@@ -25,8 +22,14 @@ from monitoring.uss_qualifier.scenarios.scenario import (
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
-_24H_MIN_TOLERANCE_S = 23 * 3600 + 59 * 60  # 23 hours and 59 minutes
-_24H_MAX_TOLERANCE_S = 24 * 3600 + 1  # 24 hours sharp, plus a second
+_SECONDS_PER_HOUR = 60 * 60
+_DURATION_TOLERANCE_S = 1
+_24H_MIN_TOLERANCE_S = (
+    DSSMaxSubscriptionDurationHours * _SECONDS_PER_HOUR
+) - _DURATION_TOLERANCE_S
+_24H_MAX_TOLERANCE_S = (
+    DSSMaxSubscriptionDurationHours * _SECONDS_PER_HOUR
+) + _DURATION_TOLERANCE_S
 
 
 class SubscriptionValidation(TestScenario):
@@ -36,27 +39,32 @@ class SubscriptionValidation(TestScenario):
 
     SUB_TYPE = register_resource_type(378, "Subscription")
 
-    # Base identifier for the subscriptions that will be created
     _sub_id: str
+    """Base identifier for the subscriptions that will be created"""
 
-    _uss_area: USSAreaSpecification
+    _planning_area: PlanningAreaSpecification
 
-    _uss_area_volume4d: Volume4D
+    _planning_area_volume4d: Volume4D
 
-    # Base parameters used for subscription creation variations
-    _sub_generation_params: Dict[str, Any]
+    _sub_generation_kwargs: Dict[str, Any]
+    """
+        Parameters used to create subscriptions.
+        `subscription_id`: ID of F3548-21 subscription to create/modify.
+        `notify_for_op_intents`: True to receive notifications for operational intent activity.
+        `notify_for_constraints`: True to receive notifications for constraint activity.
+    """
 
     def __init__(
         self,
         dss: DSSInstanceResource,
         id_generator: IDGeneratorResource,
-        uss_area: USSAreaResource,
+        planning_area: PlanningAreaResource,
     ):
         """
         Args:
             dss: dss to test
             id_generator: will let us generate specific identifiers
-            uss_area: An Area to use for the tests. It should be an area for which the DSS is responsible,
+            planning_area: An Area to use for the tests. It should be an area for which the DSS is responsible,
                  but has no other requirements.
         """
         super().__init__()
@@ -65,16 +73,17 @@ class SubscriptionValidation(TestScenario):
         self._dss = dss.get_instance(scopes)
         self._pid = [self._dss.participant_id]
         self._sub_id = id_generator.id_factory.make_id(self.SUB_TYPE)
-        self._uss_area = uss_area.specification
+        self._planning_area = planning_area.specification
 
-        # Keep the footprint, no altitudes
-        self._uss_area_volume4d = Volume4D(
-            volume=Volume3D(outline_polygon=Polygon(vertices=self._uss_area.footprint))
+        # Build a ready-to-use 4D volume with no specified time for searching
+        # the currently active subscriptions
+        self._planning_area_volume4d = Volume4D(
+            volume=self._planning_area.volume,
         )
 
-        self._sub_generation_params = dict(
+        self._sub_generation_kwargs = dict(
             subscription_id=self._sub_id,
-            # One of these must be true for the subscription creation to be accepted
+            # This is a planning area without constraint processing
             notify_for_op_intents=True,
             notify_for_constraints=False,
         )
@@ -113,7 +122,7 @@ class SubscriptionValidation(TestScenario):
         test_step_fragments.cleanup_active_subs(
             self,
             self._dss,
-            self._uss_area_volume4d,
+            self._planning_area_volume4d,
         )
 
     def _create_too_long_subscription(self):
@@ -123,12 +132,13 @@ class SubscriptionValidation(TestScenario):
         """
 
         start_time = datetime.utcnow() - timedelta(minutes=1)
-        invalid_duration = timedelta(hours=24, minutes=10)
+        # This is 10 minutes too long
+        invalid_duration = timedelta(hours=DSSMaxSubscriptionDurationHours, minutes=10)
 
-        invalid_creation_params = self._uss_area.get_new_subscription_params(
+        invalid_creation_params = self._planning_area.get_new_subscription_params(
             start_time=start_time,
             duration=invalid_duration,
-            **self._sub_generation_params,
+            **self._sub_generation_kwargs,
         )
 
         # Try a direct creation
@@ -141,11 +151,11 @@ class SubscriptionValidation(TestScenario):
             else:
                 self._check_properly_truncated(check, creation_attempt)
 
-        valid_duration = timedelta(hours=24)
-        valid_creation_params = self._uss_area.get_new_subscription_params(
+        valid_duration = timedelta(hours=DSSMaxSubscriptionDurationHours)
+        valid_creation_params = self._planning_area.get_new_subscription_params(
             start_time=start_time,
             duration=valid_duration,
-            **self._sub_generation_params,
+            **self._sub_generation_kwargs,
         )
 
         # Try mutating a valid subscription

@@ -353,12 +353,13 @@ class DSSInstance(object):
             )
             return result.version, query
 
-    def search_subscriptions(
+    def query_subscriptions(
         self,
         volume: Volume4D,
     ) -> FetchedSubscriptions:
+        """Returns any subscription owned by the caller in the specified 4D volume."""
         self._uses_scope(Scope.StrategicCoordination)
-        return fetch.search_subscriptions(
+        return fetch.query_subscriptions(
             self.client,
             volume,
             self.participant_id,

@@ -22,7 +22,7 @@ v1:
           dss_instances: dss_instances
           mock_uss: mock_uss
           second_utm_auth: second_utm_auth
-          uss_area: uss_area
+          planning_area: planning_area
           problematically_big_area: problematically_big_area
 
     # This block defines all the resources available in the resource pool.
@@ -73,22 +73,30 @@ v1:
               - utm.strategic_coordination
 
         # Area that will be used for queries and resource creation that are geo-located
-        uss_area:
+        planning_area:
           $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-          resource_type: resources.USSAreaResource
+          resource_type: resources.astm.f3548.v21.PlanningAreaResource
           specification:
             base_url: https://uss_qualifier.test.utm/dummy_base_url
-            footprint:
-              - lat: 37.1853
-                lng: -80.6140
-              - lat: 37.2148
-                lng: -80.6140
-              - lat: 37.2148
-                lng: -80.5440
-              - lat: 37.1853
-                lng: -80.5440
-            altitude_min: 0
-            altitude_max: 3048
+            volume:
+              outline_polygon:
+                vertices:
+                  - lat: 37.1853
+                    lng: -80.6140
+                  - lat: 37.2148
+                    lng: -80.6140
+                  - lat: 37.2148
+                    lng: -80.5440
+                  - lat: 37.1853
+                    lng: -80.5440
+              altitude_lower:
+                value: 0
+                reference: W84
+                units: M
+              altitude_upper:
+                value: 3048
+                reference: W84
+                units: M
 
         # An area designed to be soo big as to be refused by systems queries with it.
         problematically_big_area:

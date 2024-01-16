@@ -21,8 +21,7 @@ resources:
   second_utm_auth: resources.communications.AuthAdapterResource?
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
-  uss_area: resources.USSAreaResource
-  problematically_big_area: resources.VerticesResource
+  planning_area: resources.astm.f3548.v21.PlanningAreaResource
 local_resources:
   system_identity:
     resource_type: resources.versioning.SystemIdentityResource
@@ -49,8 +48,7 @@ actions:
       dss_instances: scd_dss_instances
       id_generator: id_generator
       second_utm_auth: second_utm_auth?
-      uss_area: uss_area
-      problematically_big_area: problematically_big_area
+      planning_area: planning_area
   on_failure: Continue
 - test_suite:
     suite_type: suites.uspace.network_identification

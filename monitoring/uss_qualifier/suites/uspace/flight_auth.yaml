@@ -11,8 +11,7 @@ resources:
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   id_generator: resources.interuss.IDGeneratorResource
   second_utm_auth: resources.communications.AuthAdapterResource?
-  problematically_big_area: resources.VerticesResource
-  uss_area: resources.USSAreaResource
+  planning_area: resources.astm.f3548.v21.PlanningAreaResource
 actions:
 - test_suite:
     suite_type: suites.astm.utm.f3548_21
@@ -27,8 +26,7 @@ actions:
       dss_instances: dss_instances
       id_generator: id_generator
       second_utm_auth: second_utm_auth
-      uss_area: uss_area
-      problematically_big_area: problematically_big_area
+      planning_area: planning_area
   on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.flight_planning.PrepareFlightPlanners

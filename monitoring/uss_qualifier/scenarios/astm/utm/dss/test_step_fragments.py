@@ -75,7 +75,7 @@ def cleanup_active_subs(
 
     This function implements the test step fragment described in search_and_delete_active_subs.md.
     """
-    query = dss.search_subscriptions(volume)
+    query = dss.query_subscriptions(volume)
     scenario.record_query(query)
     with scenario.check(
         "Successful subscription search query", [dss.participant_id]

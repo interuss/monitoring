@@ -1,2 +1,4 @@
 from .vertices import VerticesResource
-from .uss_area import USSAreaResource
+from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
+    PlanningAreaResource,
+)

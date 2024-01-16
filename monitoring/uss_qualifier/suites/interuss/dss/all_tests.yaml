@@ -8,7 +8,7 @@ resources:
   id_generator: resources.interuss.IDGeneratorResource
 
   service_area: resources.netrid.ServiceAreaResource?
-  uss_area: resources.USSAreaResource?
+  planning_area: resources.astm.f3548.v21.PlanningAreaResource?
   problematically_big_area: resources.VerticesResource?
 
   second_utm_auth: resources.communications.AuthAdapterResource?
@@ -21,7 +21,7 @@ actions:
         second_utm_auth: second_utm_auth?
         flight_intents: flight_intents
         id_generator: id_generator
-        uss_area: uss_area
+        planning_area: planning_area
         problematically_big_area: problematically_big_area
       specification:
         action_to_repeat:
@@ -33,7 +33,7 @@ actions:
               all_dss_instances: dss_instances
               flight_intents: flight_intents
               id_generator: id_generator
-              uss_area: uss_area
+              planning_area: planning_area
               problematically_big_area: problematically_big_area
           on_failure: Continue
         dss_instances_source: dss_instances

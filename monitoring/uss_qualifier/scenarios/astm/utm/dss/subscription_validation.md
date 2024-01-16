@@ -14,9 +14,9 @@ Ensures that a DSS properly enforces limitations on created subscriptions
 
 [`IDGeneratorResource`](../../../../resources/interuss/id_generator.py) providing the Subscription ID for this scenario.
 
-### uss_area
+### planning_area
 
-[`USSAreaResource`](../../../../resources/uss_area.py) describes the 3D volume in which subscriptions will be created.
+[`PlanningAreaResource`](../../../../resources/astm/f3548/v21/planning_area.py) describes the 3D volume in which subscriptions will be created.
 
 ## Setup test case
 

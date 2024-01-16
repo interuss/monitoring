@@ -8,24 +8,18 @@ from monitoring.monitorlib.geo import LatLngPoint, make_latlng_rect, Volume3D, P
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
-class USSAreaSpecification(ImplicitDict):
+class PlanningAreaSpecification(ImplicitDict):
     """Specifies an area and USS related information to create test resources that require them."""
 
     base_url: str
     """Base URL for the USS
 
-    Note that this is the API base URL, not the flights or any other specific URL.
+    Note that this is the base URL for the F3548-21 USS API, not the flights or any other specific URL.
 
     This URL will probably not identify a real resource in tests."""
 
-    footprint: List[LatLngPoint]
-    """2D outline of service area"""
-
-    altitude_min: float = 0
-    """Lower altitude bound of service area, meters above WGS84 ellipsoid"""
-
-    altitude_max: float = 3048
-    """Upper altitude bound of service area, meters above WGS84 ellipsoid"""
+    volume: Volume3D
+    """3D volume of service area"""
 
     def get_new_subscription_params(
         self,
@@ -41,11 +35,13 @@ class USSAreaSpecification(ImplicitDict):
         """
         return dict(
             sub_id=subscription_id,
-            area_vertices=make_latlng_rect(
-                Volume3D(outline_polygon=Polygon(vertices=self.footprint))
-            ),
-            min_alt_m=self.altitude_min,
-            max_alt_m=self.altitude_max,
+            area_vertices=make_latlng_rect(self.volume),
+            min_alt_m=None
+            if self.volume.altitude_lower is None
+            else self.volume.altitude_lower_wgs84_m(),
+            max_alt_m=None
+            if self.volume.altitude_upper is None
+            else self.volume.altitude_upper_wgs84_m(),
             start_time=start_time,
             end_time=start_time + duration,
             base_url=self.base_url,
@@ -54,8 +50,8 @@ class USSAreaSpecification(ImplicitDict):
         )
 
 
-class USSAreaResource(Resource[USSAreaSpecification]):
-    specification: USSAreaSpecification
+class PlanningAreaResource(Resource[PlanningAreaSpecification]):
+    specification: PlanningAreaSpecification
 
-    def __init__(self, specification: USSAreaSpecification):
+    def __init__(self, specification: PlanningAreaSpecification):
         self.specification = specification

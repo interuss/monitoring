@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 import s2sphere
 import yaml
 from implicitdict import ImplicitDict
-from uas_standards.astm.f3548.v21.api import Subscription
+from uas_standards.astm.f3548.v21.api import Subscription, QuerySubscriptionParameters
 from uas_standards.astm.f3548.v21.api import (
     Volume4D as SCDVolume4D,
     OperationID,
@@ -417,6 +417,11 @@ class FetchedSubscriptions(fetch.Query):
             return ["Request to get Subscriptions failed ({})".format(self.status_code)]
         if self.json_result is None:
             return ["Request to get Subscriptions did not return valid JSON"]
+        try:
+            # Attempt to parse the subscriptions to make sure they are well-formed
+            _ = self._subscriptions
+        except ValueError:
+            return ["Incorrectly formatted subscriptions data"]
         return []
 
     @property
@@ -455,7 +460,7 @@ def get_subscription(
     )
 
 
-def search_subscriptions(
+def query_subscriptions(
     utm_client: infrastructure.UTMClientSession,
     volume: SCDVolume4D,
     participant_id: Optional[str] = None,
@@ -466,7 +471,7 @@ def search_subscriptions(
             utm_client,
             op.verb,
             op.path,
-            json={"area_of_interest": volume},
+            json=QuerySubscriptionParameters(area_of_interest=volume),
             scope=scd.SCOPE_SC,
         ),
         query_type=QueryType.F3548v21DSSQuerySubscriptions,

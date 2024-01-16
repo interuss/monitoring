@@ -406,6 +406,7 @@ def make_latlng_rect(area) -> s2sphere.LatLngRect:
         area: May be one of multiple types:
           str: Interpreted as rect "spec" with the form lat,lng,lat,lng
           Volume3D: Generic 3D volume
+          Polygon: Generic surface
 
     Returns:
         LatLngRect enclosing provided area.
