@@ -556,6 +556,8 @@ def test_mutate_sub2(ids, scd_api, scd_session, scd_session2):
     time_start = time_now - datetime.timedelta(minutes=1)
     time_end = time_now + datetime.timedelta(minutes=61)
 
+    global sub2_version
+
     # Create a good mutation request
     req = _make_op2_request()
     req["uss_base_url"] = URL_SUB2
@@ -633,6 +635,8 @@ def test_mutate_sub2(ids, scd_api, scd_session, scd_session2):
     # Make sure the Subscription is still retrievable specifically
     resp = scd_session2.get("/subscriptions/{}".format(ids(SUB2_TYPE)))
     assert resp.status_code == 200, resp.content
+    data = resp.json()
+    sub2_version = data["subscription"]["version"]
 
 
 # Delete Op1
