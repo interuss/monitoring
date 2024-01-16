@@ -3,6 +3,10 @@ from typing import List, Optional
 
 import s2sphere
 import yaml
+
+from implicitdict import ImplicitDict
+from uas_standards.astm.f3548.v21.api import Subscription
+
 from yaml.representer import Representer
 
 from monitoring.monitorlib import infrastructure, scd
@@ -33,13 +37,18 @@ class MutatedSubscription(fetch.Query):
             return ["Response returned an invalid Subscription"]
 
     @property
-    def subscription(self) -> Optional[scd.Subscription]:
+    def subscription(self) -> Optional[Subscription]:
         if self.json_result is None:
             return None
-        sub = self.json_result.get("subscription", None)
-        if not sub:
+        try:
+            # We get a ValueError if .parse is fed a None,
+            # or if the JSON can't be parsed as a Subscription.
+            return ImplicitDict.parse(
+                self.json_result.get("subscription", None),
+                Subscription,
+            )
+        except ValueError:
             return None
-        return scd.Subscription(sub)
 
 
 yaml.add_representer(MutatedSubscription, Representer.represent_dict)

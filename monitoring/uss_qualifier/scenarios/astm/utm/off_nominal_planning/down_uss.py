@@ -289,9 +289,7 @@ class DownUSS(TestScenario):
                 )
 
             for oi_ref in oi_refs:
-                if (
-                    oi_ref.ovn is not None
-                ):  # if the OVN is specified, this op intent belongs to our virtual USS
+                if oi_ref.manager == self.uss_qualifier_sub:
                     del_oi, _, del_query = self.dss.delete_op_intent(
                         oi_ref.id, oi_ref.ovn
                     )

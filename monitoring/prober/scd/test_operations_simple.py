@@ -218,12 +218,18 @@ def test_delete_implicit_sub(ids, scd_api, scd_session, scd_session2):
     assert resp.status_code == 200, resp.content
     operational_intent_reference = resp.json()["operational_intent_reference"]
     implicit_sub_id = operational_intent_reference["subscription_id"]
-    implicit_sub_version = operational_intent_reference["version"]
+
+    # We need to obtain the implicit subscription's version in order to properly attempt to delete it:
+    sub_resp = scd_session.get("/subscriptions/{}".format(implicit_sub_id))
+    assert sub_resp.status_code == 200, sub_resp.content
+    implicit_sub_version = sub_resp.json()["subscription"]["version"]
 
     resp = scd_session.delete(
         "/subscriptions/{}/{}".format(implicit_sub_id, implicit_sub_version)
     )
-    assert resp.status_code == 400, resp.content
+    # Expect 400 or 409 while we fix the logic in the DSS. Both this test and the DSS were handling things improperly:
+    # allow both the expected (409) and the technically correct but not-in-concordance-with-the-spec result (400)
+    assert resp.status_code in [400, 409], resp.content
 
 
 # Try (unsuccessfully) to delete Op1 from non-owning USS
@@ -550,6 +556,8 @@ def test_mutate_sub2(ids, scd_api, scd_session, scd_session2):
     time_start = time_now - datetime.timedelta(minutes=1)
     time_end = time_now + datetime.timedelta(minutes=61)
 
+    global sub2_version
+
     # Create a good mutation request
     req = _make_op2_request()
     req["uss_base_url"] = URL_SUB2
@@ -627,6 +635,8 @@ def test_mutate_sub2(ids, scd_api, scd_session, scd_session2):
     # Make sure the Subscription is still retrievable specifically
     resp = scd_session2.get("/subscriptions/{}".format(ids(SUB2_TYPE)))
     assert resp.status_code == 200, resp.content
+    data = resp.json()
+    sub2_version = data["subscription"]["version"]
 
 
 # Delete Op1
