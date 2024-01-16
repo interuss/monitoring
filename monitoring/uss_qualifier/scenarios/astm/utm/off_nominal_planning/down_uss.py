@@ -298,7 +298,7 @@ class DownUSS(TestScenario):
                     if del_oi is None:
                         check.record_failed(
                             summary=f"Failed to delete op intent {oi_ref.id} from DSS",
-                            severity=Severity.Medium,
+                            severity=Severity.High,
                             details=f"DSS responded code {del_query.status_code}; error message: {del_query.error_message}",
                             query_timestamps=[del_query.request.timestamp],
                         )
