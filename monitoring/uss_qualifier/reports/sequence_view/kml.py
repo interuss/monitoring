@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from types import NoneType
 from typing import Dict, List, Type, Optional, get_type_hints, Protocol
 
 from implicitdict import ImplicitDict
@@ -132,7 +131,7 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                             )
                         )
                         continue
-                if render_info.response_type is not NoneType:
+                if render_info.response_type is not type(None) and render_info.request_type:
                     try:
                         kwargs["resp"] = ImplicitDict.parse(
                             event.query.response.json,
