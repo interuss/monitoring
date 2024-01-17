@@ -150,7 +150,17 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                             )
                         )
                         continue
-                query_folder.extend(render_info.renderer(**kwargs))
+                try:
+                    query_folder.extend(render_info.renderer(**kwargs))
+                except TypeError as e:
+                    query_folder.append(
+                        kml.Folder(
+                            kml.name(
+                                f"Error rendering {render_info.renderer.__name__}"
+                            ),
+                            kml.description(stacktrace_string(e)),
+                        )
+                    )
     doc = kml.kml(
         kml.Document(
             *query_styles(), *f3548v21_styles(), *flight_planning_styles(), top_folder
