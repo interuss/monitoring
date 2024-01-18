@@ -215,9 +215,20 @@ class ParticipantVerificationStatus(str, Enum):
             return ""
 
 
+class ParticipantVerificationInfo(ImplicitDict):
+    status: ParticipantVerificationStatus
+    """Verification status of participant for the associated requirements set."""
+
+    system_version: Optional[str] = None
+    """The version of the participant's system that was tested, if this information was acquired during testing."""
+
+
 class RequirementsVerificationReport(ImplicitDict):
     test_run_information: TestRunInformation
-    participant_verifications: Dict[ParticipantID, ParticipantVerificationStatus]
+    """Information about the test run during which the participant_verifications were determined."""
+
+    participant_verifications: Dict[ParticipantID, ParticipantVerificationInfo]
+    """Information regarding verification of compliance for each participant."""
 
 
 def generate_tested_requirements(
@@ -277,8 +288,12 @@ def generate_tested_requirements(
             )
         _sort_breakdown(participant_breakdown)
         overall_status = _compute_overall_status(participant_breakdown)
-        verification_report.participant_verifications[participant_id] = overall_status
         system_version = _find_participant_system_version(report.report, participant_id)
+        verification_report.participant_verifications[
+            participant_id
+        ] = ParticipantVerificationInfo(
+            status=overall_status, system_version=system_version
+        )
         participant_file = os.path.join(output_path, f"{participant_id}.html")
         other_participants = ", ".join(
             p for p in participant_ids if p != participant_id
