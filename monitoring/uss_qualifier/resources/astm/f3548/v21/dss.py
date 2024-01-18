@@ -1,16 +1,13 @@
 from __future__ import annotations
-from enum import Enum
+
+import datetime
 import uuid
+from enum import Enum
 from typing import Tuple, List, Dict, Optional
-
 from urllib.parse import urlparse
-from implicitdict import ImplicitDict
 
-from monitoring.monitorlib import infrastructure, fetch
-from monitoring.monitorlib.fetch import QueryType
-from monitoring.monitorlib.inspection import calling_function_name, fullname
-from monitoring.uss_qualifier.resources.resource import Resource
-from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
+import s2sphere
+from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import (
     QueryOperationalIntentReferenceParameters,
     Volume4D,
@@ -35,6 +32,16 @@ from uas_standards.astm.f3548.v21.api import (
     VehicleTelemetry,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
+
+from monitoring.monitorlib import infrastructure, fetch
+from monitoring.monitorlib.fetch import QueryType, Query, query_and_describe
+from monitoring.monitorlib.fetch import scd as fetch
+from monitoring.monitorlib.fetch.scd import FetchedSubscription, FetchedSubscriptions
+from monitoring.monitorlib.inspection import calling_function_name, fullname
+from monitoring.monitorlib.mutate import scd as mutate
+from monitoring.monitorlib.mutate.scd import MutatedSubscription
+from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
+from monitoring.uss_qualifier.resources.resource import Resource
 
 # A base URL for a USS that is not expected to be ever called
 # Used in scenarios where we mimic the behavior of a USS and need to provide a base URL.
@@ -110,11 +117,11 @@ class DSSInstance(object):
 
     def find_op_intent(
         self, extent: Volume4D
-    ) -> Tuple[List[OperationalIntentReference], fetch.Query]:
+    ) -> Tuple[List[OperationalIntentReference], Query]:
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.QueryOperationalIntentReferences]
         req = QueryOperationalIntentReferenceParameters(area_of_interest=extent)
-        query = fetch.query_and_describe(
+        query = query_and_describe(
             self.client,
             op.verb,
             op.path,
@@ -134,13 +141,13 @@ class DSSInstance(object):
     def get_op_intent_reference(
         self,
         op_intent_id: str,
-    ) -> Tuple[OperationalIntentReference, fetch.Query]:
+    ) -> Tuple[OperationalIntentReference, Query]:
         """
         Retrieve an OP Intent from the DSS, using only its ID
         """
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.GetOperationalIntentReference]
-        query = fetch.query_and_describe(
+        query = query_and_describe(
             self.client,
             op.verb,
             op.path.format(entityid=op_intent_id),
@@ -160,7 +167,7 @@ class DSSInstance(object):
         self,
         op_intent_ref: OperationalIntentReference,
         uss_participant_id: Optional[str] = None,
-    ) -> Tuple[OperationalIntent, fetch.Query]:
+    ) -> Tuple[OperationalIntent, Query]:
         result, query = self.get_full_op_intent_without_validation(
             op_intent_ref,
             uss_participant_id,
@@ -177,7 +184,7 @@ class DSSInstance(object):
         self,
         op_intent_ref: OperationalIntentReference,
         uss_participant_id: Optional[str] = None,
-    ) -> Tuple[Dict, fetch.Query]:
+    ) -> Tuple[Dict, Query]:
         """
         GET OperationalIntent without validating, as invalid data expected for negative tests
 
@@ -186,7 +193,7 @@ class DSSInstance(object):
         """
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.GetOperationalIntentDetails]
-        query = fetch.query_and_describe(
+        query = query_and_describe(
             self.client,
             op.verb,
             f"{op_intent_ref.uss_base_url}{op.path.format(entityid=op_intent_ref.id)}",
@@ -204,10 +211,10 @@ class DSSInstance(object):
         self,
         op_intent_ref: OperationalIntentReference,
         uss_participant_id: Optional[str] = None,
-    ) -> Tuple[Optional[VehicleTelemetry], fetch.Query]:
+    ) -> Tuple[Optional[VehicleTelemetry], Query]:
         self._uses_scope(Scope.ConformanceMonitoringForSituationalAwareness)
         op = OPERATIONS[OperationID.GetOperationalIntentTelemetry]
-        query = fetch.query_and_describe(
+        query = query_and_describe(
             self.client,
             op.verb,
             f"{op_intent_ref.uss_base_url}{op.path.format(entityid=op_intent_ref.id)}",
@@ -235,7 +242,7 @@ class DSSInstance(object):
     ) -> Tuple[
         Optional[OperationalIntentReference],
         Optional[List[SubscriberToNotify]],
-        fetch.Query,
+        Query,
     ]:
         self._uses_scope(Scope.StrategicCoordination)
         oi_uuid = str(uuid.uuid4()) if id is None else id
@@ -255,7 +262,7 @@ class DSSInstance(object):
             uss_base_url=base_url,
             new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url),
         )
-        query = fetch.query_and_describe(
+        query = query_and_describe(
             self.client,
             op.verb,
             url,
@@ -281,11 +288,11 @@ class DSSInstance(object):
     ) -> Tuple[
         Optional[OperationalIntentReference],
         Optional[List[SubscriberToNotify]],
-        fetch.Query,
+        Query,
     ]:
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.DeleteOperationalIntentReference]
-        query = fetch.query_and_describe(
+        query = query_and_describe(
             self.client,
             op.verb,
             op.path.format(entityid=id, ovn=ovn),
@@ -311,7 +318,7 @@ class DSSInstance(object):
         uss_id: str,
         available: bool,
         version: str = "",
-    ) -> Tuple[Optional[str], fetch.Query]:
+    ) -> Tuple[Optional[str], Query]:
         """
         Returns:
             A tuple composed of
@@ -329,7 +336,7 @@ class DSSInstance(object):
             availability=availability,
         )
         op = OPERATIONS[OperationID.SetUssAvailability]
-        query = fetch.query_and_describe(
+        query = query_and_describe(
             self.client,
             op.verb,
             op.path.format(uss_id=uss_id),
@@ -345,6 +352,67 @@ class DSSInstance(object):
                 ImplicitDict.parse(query.response.json, UssAvailabilityStatusResponse)
             )
             return result.version, query
+
+    def query_subscriptions(
+        self,
+        volume: Volume4D,
+    ) -> FetchedSubscriptions:
+        """Returns any subscription owned by the caller in the specified 4D volume."""
+        self._uses_scope(Scope.StrategicCoordination)
+        return fetch.query_subscriptions(
+            self.client,
+            volume,
+            self.participant_id,
+        )
+
+    def upsert_subscription(
+        self,
+        area_vertices: s2sphere.LatLngRect,
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+        base_url: str,
+        sub_id: str,
+        notify_for_op_intents: bool,
+        notify_for_constraints: bool,
+        min_alt_m: float,
+        max_alt_m: float,
+        version: Optional[str] = None,
+    ) -> MutatedSubscription:
+        self._uses_scope(Scope.StrategicCoordination)
+        return mutate.upsert_subscription(
+            self.client,
+            area_vertices,
+            start_time,
+            end_time,
+            base_url,
+            sub_id,
+            notify_for_op_intents,
+            notify_for_constraints,
+            min_alt_m,
+            max_alt_m,
+            version,
+            self.participant_id,
+        )
+
+    def get_subscription(self, sub_id: str) -> FetchedSubscription:
+        """
+        Retrieve a subscription from the DSS, using only its ID
+        """
+        self._uses_scope(Scope.StrategicCoordination)
+        return fetch.get_subscription(
+            self.client,
+            sub_id,
+            self.participant_id,
+        )
+
+    def delete_subscription(self, sub_id: str, sub_version: str) -> MutatedSubscription:
+        self._uses_scope(Scope.StrategicCoordination)
+        return mutate.delete_subscription(
+            self.client,
+            sub_id,
+            sub_version,
+            self.participant_id,
+        )
 
 
 class DSSInstanceResource(Resource[DSSInstanceSpecification]):

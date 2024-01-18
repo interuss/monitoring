@@ -80,7 +80,7 @@ def subscribe_scd(
     base_url = webapp.config[config.KEY_BASE_URL]
     uss_base_url = f"{base_url}/tracer/f3548v21/{area_id}"
 
-    create_result = mutate.scd.put_subscription(
+    create_result = mutate.scd.upsert_subscription(
         scd_client,
         box,
         area.time_start.datetime,
@@ -127,7 +127,7 @@ def unsubscribe_rid(
 
 def unsubscribe_scd(subscription_id: str, scd_client: UTMClientSession) -> None:
     logger = context.tracer_logger
-    get_result = fetch.scd.subscription(scd_client, subscription_id)
+    get_result = fetch.scd.get_subscription(scd_client, subscription_id)
     logfile = logger.log_new(f"{SCD_SUBSCRIPTION_KEY}_get", get_result)
     if not get_result.success:
         raise SubscriptionManagementError(

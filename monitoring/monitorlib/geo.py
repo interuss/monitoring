@@ -415,6 +415,7 @@ def make_latlng_rect(area) -> s2sphere.LatLngRect:
         area: May be one of multiple types:
           str: Interpreted as rect "spec" with the form lat,lng,lat,lng
           Volume3D: Generic 3D volume
+          Polygon: Generic surface
 
     Returns:
         LatLngRect enclosing provided area.
@@ -455,6 +456,8 @@ def make_latlng_rect(area) -> s2sphere.LatLngRect:
         p1 = s2sphere.LatLng.from_degrees(lat_min, lng_min)
         p2 = s2sphere.LatLng.from_degrees(lat_max, lng_max)
         return s2sphere.LatLngRect.from_point_pair(p1, p2)
+    elif isinstance(area, Polygon):
+        return bounding_rect([(v.lat, v.lng) for v in area.vertices])
     else:
         raise NotImplementedError(
             f"make_latlng_rect does not support {type(area).__name__}"
