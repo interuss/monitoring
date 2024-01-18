@@ -56,22 +56,7 @@ Makes sure that the DSS is in a clean and expected state before running the test
 
 The setup will create two separate operational intent references: one for each set of the available credentials.
 
-### Ensure clean workspace test step
-
-#### 🛑 Operational intent references can be queried directly by their ID check
-
-If an existing operational intent reference cannot directly be queried by its ID, the DSS implementation is in violation of
-**[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**.
-
-#### 🛑 Operational intent references can be searched using valid credentials check
-
-A client with valid credentials should be allowed to search for operational intents in a given area.
-Otherwise, the DSS is not in compliance with **[astm.f3548.v21.DSS0005,2](../../../requirements/astm/f3548/v21.md)**.
-
-#### 🛑 Operational intent references can be deleted by their owner check
-
-If an existing operational intent cannot be deleted when providing the proper ID and OVN, the DSS implementation is in violation of
-**[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**.
+### [Ensure clean workspace](./dss/clean_workspace.md) test step
 
 #### ⚠️ Any existing operational intent reference has been removed check
 
@@ -125,14 +110,4 @@ in violation of **[astm.f3548.v21.OPIN0035](../../../requirements/astm/f3548/v21
 If an operational intent reference can be deleted by a client which did not create it, the DSS implementation is
 in violation of **[astm.f3548.v21.OPIN0035](../../../requirements/astm/f3548/v21.md)**.
 
-## Cleanup
-
-### 🛑 Operational intent references can be queried directly by their ID check
-
-If an existing operational intent cannot directly be queried by its ID, the DSS implementation is in violation of
-**[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**.
-
-### 🛑 Operational intent references can be deleted by their owner check
-
-If an existing operational intent cannot be deleted when providing the proper ID and OVN, the DSS implementation is in violation of
-**[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**.
+## [Cleanup](./dss/clean_workspace.md)
