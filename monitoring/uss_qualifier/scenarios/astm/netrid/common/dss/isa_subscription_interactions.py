@@ -111,6 +111,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 check=check,
                 expected_error_codes={200},
                 isa_version=None,
+                do_not_notify=self._isa.base_url,
                 **self._isa_params,
             )
 
@@ -166,6 +167,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 check=check,
                 expected_error_codes={200},
                 isa_version=created_isa.dss_query.isa.version,
+                do_not_notify=self._isa.base_url,
                 **isa_mutation_params,
             )
 
@@ -221,6 +223,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 expected_error_codes={200},
                 isa_id=mutated_isa.dss_query.isa.id,
                 isa_version=mutated_isa.dss_query.isa.version,
+                do_not_notify=self._isa.base_url,
             )
 
         # Check response to deletion of ISA
@@ -249,21 +252,23 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 )
 
         for subscriber_url, notification in deleted_isa.notifications.items():
-            # For checking the notifications, we ignore the request we made for the subscription that we created.
-            if self._isa.base_url not in subscriber_url:
-                pid = (
-                    notification.query.participant_id
-                    if "participant_id" in notification.query
-                    else None
-                )
-                with self.check("Notified subscriber", [pid] if pid else []) as check:
-                    if not notification.success:
-                        check.record_failed(
-                            "Could not notify ISA subscriber",
-                            Severity.Medium,
-                            f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
-                            query_timestamps=[notification.query.request.timestamp],
-                        )
+            if subscriber_url.startswith(self._isa.base_url):
+                # Do not attempt to notify ourselves
+                continue
+
+            pid = (
+                notification.query.participant_id
+                if "participant_id" in notification.query
+                else None
+            )
+            with self.check("Notified subscriber", [pid] if pid else []) as check:
+                if not notification.success:
+                    check.record_failed(
+                        "Could not notify ISA subscriber",
+                        Severity.Medium,
+                        f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
+                        query_timestamps=[notification.query.request.timestamp],
+                    )
 
         subs_after_deletion = subs_to_deleted_isa.get(
             created_subscription.subscription.id
@@ -313,6 +318,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 check=check,
                 expected_error_codes={200},
                 isa_version=None,
+                do_not_notify=self._isa.base_url,
                 **self._isa_params,
             )
 
@@ -377,6 +383,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 check=check,
                 expected_error_codes={200},
                 isa_version=created_isa.dss_query.isa.version,
+                do_not_notify=self._isa.base_url,
                 **mutation_params,
             )
 
@@ -434,6 +441,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 expected_error_codes={200},
                 isa_id=mutated_isa.dss_query.isa.id,
                 isa_version=mutated_isa.dss_query.isa.version,
+                do_not_notify=self._isa.base_url,
             )
 
         # Check response to deletion of ISA

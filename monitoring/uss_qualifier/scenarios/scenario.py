@@ -1,3 +1,4 @@
+import traceback
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
@@ -402,8 +403,13 @@ class GenericTestScenario(ABC):
         if (
             participant == "UNKNOWN" or query_type == "UNKNOWN"
         ) and query_type not in SQUELCH_WARN_ON_QUERY_TYPE:
+            location = (
+                traceback.format_list([traceback.extract_stack()[-2]])[0]
+                .split("\n")[0]
+                .strip()
+            )
             logger.warning(
-                f"Missing query metadata: {query.request['method']} {query.request['url']} has participant {participant} and type {query_type}"
+                f"Missing query metadata: {query.request['method']} {query.request['url']} has participant {participant} and type {query_type} at {location}"
             )
 
     def _get_check(self, name: str) -> TestCheckDocumentation:

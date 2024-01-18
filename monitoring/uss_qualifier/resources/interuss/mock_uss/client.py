@@ -12,7 +12,7 @@ from monitoring.monitorlib.clients.mock_uss.locality import (
     GetLocalityResponse,
     PutLocalityRequest,
 )
-from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.fetch import QueryError, QueryType
 from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession
 from monitoring.monitorlib.locality import LocalityCode
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
@@ -66,6 +66,7 @@ class MockUSSClient(object):
             "GET",
             "/configuration/locality",
             participant_id=self.participant_id,
+            query_type=QueryType.InterUSSMockUSSGetLocality,
         )
         if query.status_code != 200:
             return None, query
@@ -82,6 +83,7 @@ class MockUSSClient(object):
             "/configuration/locality",
             scope=MOCK_USS_CONFIG_SCOPE,
             participant_id=self.participant_id,
+            query_type=QueryType.InterUSSMockUSSSetLocality,
             json=PutLocalityRequest(locality_code=locality_code),
         )
 
@@ -102,7 +104,12 @@ class MockUSSClient(object):
         )
         logger.debug(f"Getting interactions from {from_time} : {url}")
         query = fetch.query_and_describe(
-            self.session, "GET", url, scope=SCOPE_SCD_QUALIFIER_INJECT
+            self.session,
+            "GET",
+            url,
+            scope=SCOPE_SCD_QUALIFIER_INJECT,
+            participant_id=self.participant_id,
+            query_type=QueryType.InterUSSMockUSSGetLogs,
         )
         if query.status_code != 200:
             raise QueryError(
