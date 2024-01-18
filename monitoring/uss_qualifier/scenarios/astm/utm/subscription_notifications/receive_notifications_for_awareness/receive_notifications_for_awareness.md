@@ -52,7 +52,7 @@ Flight 1 should be successfully activated by the control USS.
 
 ### mock_uss plans flight2 test step
 
-#### [Plan](../../../flight_planning/plan_flight_intent.md)
+#### [Plan](../../../../flight_planning/plan_flight_intent.md)
 
 The test driver plans flight2 via the mock uss.
 
@@ -79,11 +79,11 @@ The subscription will be modified to include the extended area, if it did not al
 
 ### mock_uss plans flight3 test step
 
-#### [Plan](../../../flight_planning/plan_flight_intent.md)
+#### [Plan](../../../../flight_planning/plan_flight_intent.md)
 
 The test driver plans flight3 via the mock uss. This intent intersects the extended part of flight1.
 
-#### [Validate flight3 sharing](../validate_shared_operational_intent.md)
+#### [Validate flight3 sharing](../../validate_shared_operational_intent.md)
 
 ### [Validate flight3 notification received by tested_uss test step](../test_steps/validate_notification_received.md)
 mock_uss notifies flight 3 to tested_uss, with flight1 subscription id.
@@ -107,11 +107,11 @@ If the USS indicates a conflict, this check will fail. If the USS indicates that
 
 ### mock_uss modifies flight2 test step
 
-#### [Modify](../../../flight_planning/modify_planned_flight_intent.md)
+#### [Modify](../../../../flight_planning/modify_planned_flight_intent.md)
 
 The test driver modifies flight2 altitude via the mock uss.
 
-#### [Validate flight2 sharing](../validate_shared_operational_intent.md)
+#### [Validate flight2 sharing](../../validate_shared_operational_intent.md)
 
 ### [Validate flight2 notification received by tested_uss test step](../test_steps/validate_notification_received.md)
 mock_uss notifies flight 2 to tested_uss, with flight1 subscription id.
@@ -136,11 +136,11 @@ If the USS indicates a conflict, this check will fail. If the USS indicates that
 
 ### mock_uss modifies flight2 test step
 
-#### [Modify](../../../flight_planning/modify_planned_flight_intent.md)
+#### [Modify](../../../../flight_planning/modify_planned_flight_intent.md)
 
 The test driver modifies flight2 altitude via the mock uss.
 
-#### [Validate flight2 sharing](../validate_shared_operational_intent.md)
+#### [Validate flight2 sharing](../../validate_shared_operational_intent.md)
 
 ### [Validate flight2 notification received by tested_uss test step](../test_steps/validate_notification_received.md)
 mock_uss notifies flight 2 to tested_uss, with flight1 subscription id.
@@ -148,4 +148,4 @@ mock_uss notifies flight 2 to tested_uss, with flight1 subscription id.
 ## Cleanup
 ### Successful flight deletion check
 This cleanup is for both - after testcase ends and after test scenario ends
-**[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../requirements/interuss/automated_testing/flight_planning.md)**
+**[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../../requirements/interuss/automated_testing/flight_planning.md)**
