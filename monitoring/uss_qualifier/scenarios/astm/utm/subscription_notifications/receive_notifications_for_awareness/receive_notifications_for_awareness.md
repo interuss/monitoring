@@ -6,7 +6,7 @@ when it submits an operational intent to DSS. This helps it to be notified of ne
 in the area, when its operational intent is in Activated, NonConforming and Contingent state. In this scenario,
 we will verify that USS under test creates a subscription to cover the operational intent area, and receives notifications from other USSes.
 
-- **[astm.f3548.v21.SCD0080](../../../../requirements/astm/f3548/v21.md)**
+- **[astm.f3548.v21.SCD0080](../../../../../requirements/astm/f3548/v21.md)**
 
 This scenario assumes that the area used in the scenario is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario).
 
