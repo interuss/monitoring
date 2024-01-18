@@ -148,4 +148,4 @@ mock_uss notifies flight 2 to tested_uss, with flight1 subscription id.
 ## Cleanup
 ### Successful flight deletion check
 This cleanup is for both - after testcase ends and after test scenario ends
-**[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../****../../../../requirements/interuss/automated_testing/flight_planning.md)**
+**[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../../requirements/interuss/automated_testing/flight_planning.md)**
