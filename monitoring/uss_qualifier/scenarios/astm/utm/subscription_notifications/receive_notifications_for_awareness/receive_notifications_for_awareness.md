@@ -56,7 +56,7 @@ Flight 1 should be successfully activated by the control USS.
 
 The test driver plans flight2 via the mock uss.
 
-#### [Validate flight2 sharing](../validate_shared_operational_intent.md)
+#### [Validate flight2 sharing](../../validate_shared_operational_intent.md)
 
 ### [Validate flight2 notification received by tested_uss test step](../test_steps/validate_notification_received.md)
 mock_uss notifies flight 2 to tested_uss, with flight1 subscription id.
@@ -148,4 +148,4 @@ mock_uss notifies flight 2 to tested_uss, with flight1 subscription id.
 ## Cleanup
 ### Successful flight deletion check
 This cleanup is for both - after testcase ends and after test scenario ends
-**[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../../requirements/interuss/automated_testing/flight_planning.md)**
+**[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../****../../../../requirements/interuss/automated_testing/flight_planning.md)**
