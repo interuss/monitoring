@@ -46,7 +46,7 @@ Flight 2 should be successfully planned by the control USS.
 ### Activate flight1 test step
 
 #### [Activate flight1](../../../../flight_planning/activate_flight_intent.md)
-Flight 1 should be successfully activated by the control USS.
+Flight 1 should be successfully activated by the tested USS.
 
 #### [Validate flight1 sharing](../../validate_shared_operational_intent.md)
 
