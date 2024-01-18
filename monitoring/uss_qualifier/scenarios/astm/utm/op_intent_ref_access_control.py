@@ -138,7 +138,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         (oi_ref, q) = self._dss.get_op_intent_reference(self._oid_1)
         self.record_query(q)
         with self.check(
-            "Operational intent references can be queried directly by their ID",
+            "Operational intent references can be queried by ID",
             self._pid,
         ) as check:
             # If the Op Intent does not exist, it's fine to run into a 404.
@@ -153,7 +153,7 @@ class OpIntentReferenceAccessControl(TestScenario):
             self.record_query(dq)
             if dq.response.status_code != 200:
                 with self.check(
-                    "Operational intent references can be deleted by their owner",
+                    "Operational intent references can be searched",
                     self._pid,
                 ) as check:
                     check.record_failed(
@@ -165,7 +165,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         (oi_ref, q) = self._dss_separate_creds.get_op_intent_reference(self._oid_2)
         self.record_query(q)
         with self.check(
-            "Operational intent references can be queried directly by their ID",
+            "Operational intent references can be queried by ID",
             self._pid,
         ) as check:
             if q.response.status_code not in [200, 404]:
@@ -195,7 +195,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         (op_intents_1, q) = self._dss.find_op_intent(self._intents_extent)
         self.record_query(q)
         with self.check(
-            "Operational intent references can be searched using valid credentials",
+            "Operational intent references can be searched for",
             self._pid,
         ) as check:
             if q.response.status_code != 200:
@@ -226,7 +226,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         )
         self.record_query(q)
         with self.check(
-            "Operational intent references can be searched using valid credentials",
+            "Operational intent references can be searched for",
             self._pid,
         ) as check:
             if q.response.status_code != 200:
@@ -279,7 +279,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         (stray_oir, q) = self._dss.find_op_intent(self._intents_extent)
         self.record_query(q)
         with self.check(
-            "Operational intent references can be searched using valid credentials",
+            "Operational intent references can be searched for",
             self._pid,
         ) as check:
             if q.response.status_code != 200:
