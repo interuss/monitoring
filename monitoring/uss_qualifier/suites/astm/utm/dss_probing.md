@@ -4,8 +4,9 @@
 
 ## [Actions](../../README.md#actions)
 
-1. Scenario: [ASTM F3548-21 UTM DSS Operational Intent Reference Access Control](../../../scenarios/astm/utm/op_intent_ref_access_control.md) ([`scenarios.astm.utm.OpIntentReferenceAccessControl`](../../../scenarios/astm/utm/op_intent_ref_access_control.py))
-2. Scenario: [ASTM F3548-21 UTM DSS interoperability](../../../scenarios/astm/utm/dss_interoperability.md) ([`scenarios.astm.utm.DSSInteroperability`](../../../scenarios/astm/utm/dss_interoperability.py))
+1. Scenario: [ASTM SCD DSS: Subscription Validation](../../../scenarios/astm/utm/dss/subscription_validation.md) ([`scenarios.astm.utm.dss.SubscriptionValidation`](../../../scenarios/astm/utm/dss/subscription_validation.py))
+2. Scenario: [ASTM F3548-21 UTM DSS Operational Intent Reference Access Control](../../../scenarios/astm/utm/op_intent_ref_access_control.md) ([`scenarios.astm.utm.OpIntentReferenceAccessControl`](../../../scenarios/astm/utm/op_intent_ref_access_control.py))
+3. Scenario: [ASTM F3548-21 UTM DSS interoperability](../../../scenarios/astm/utm/dss_interoperability.md) ([`scenarios.astm.utm.DSSInteroperability`](../../../scenarios/astm/utm/dss_interoperability.py))
 
 ## [Checked requirements](../../README.md#checked-requirements)
 
@@ -17,7 +18,7 @@
     <th><a href="../../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="4" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
+    <td rowspan="6" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0005,1</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a></td>
@@ -26,6 +27,16 @@
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0005,2</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0005,5</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0015</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0300</a></td>

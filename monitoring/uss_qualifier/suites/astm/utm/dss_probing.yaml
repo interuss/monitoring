@@ -5,7 +5,14 @@ resources:
   all_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   flight_intents: resources.flight_planning.FlightIntentsResource
   id_generator: resources.interuss.IDGeneratorResource
+  planning_area: resources.astm.f3548.v21.PlanningAreaResource
 actions:
+  - test_scenario:
+      scenario_type: scenarios.astm.utm.dss.SubscriptionValidation
+      resources:
+        dss: dss
+        id_generator: id_generator
+        planning_area: planning_area
   - test_scenario:
       scenario_type: scenarios.astm.utm.OpIntentReferenceAccessControl
       resources:

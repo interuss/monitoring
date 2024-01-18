@@ -1,0 +1,24 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/astm/f3548/v21/planning_area/PlanningAreaSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Specifies an area and USS related information to create test resources that require them.\n\nmonitoring.uss_qualifier.resources.astm.f3548.v21.planning_area.PlanningAreaSpecification, as defined in monitoring/uss_qualifier/resources/astm/f3548/v21/planning_area.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "base_url": {
+      "description": "Base URL for the USS\n\nNote that this is the base URL for the F3548-21 USS API, not the flights or any other specific URL.\n\nThis URL will probably not identify a real resource in tests.",
+      "type": "string"
+    },
+    "volume": {
+      "$ref": "../../../../../../monitorlib/geo/Volume3D.json",
+      "description": "3D volume of service area"
+    }
+  },
+  "required": [
+    "base_url",
+    "volume"
+  ],
+  "type": "object"
+}

@@ -1,5 +1,6 @@
 from typing import Optional
 
+from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import OperationalIntentDetails
 from uas_standards.astm.f3548.v21.constants import Scope
 
