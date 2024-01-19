@@ -2,6 +2,7 @@ from typing import Dict, Optional
 
 import arrow
 
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from uas_standards.astm.f3548.v21.api import (
@@ -286,15 +287,16 @@ class DownUSS(TestScenario):
 
             for oi_ref in oi_refs:
                 if oi_ref.manager == self.uss_qualifier_sub:
-                    del_oi, _, del_query = self.dss.delete_op_intent(
-                        oi_ref.id, oi_ref.ovn
-                    )
-                    self.record_query(del_query)
-
-                    if del_oi is None:
+                    try:
+                        del_oi, _, del_query = self.dss.delete_op_intent(
+                            oi_ref.id, oi_ref.ovn
+                        )
+                        self.record_query(del_query)
+                    except QueryError as e:
+                        self.record_queries(e.queries)
                         check.record_failed(
                             summary=f"Failed to delete op intent {oi_ref.id} from DSS",
-                            details=f"DSS responded code {del_query.status_code}; error message: {del_query.error_message}",
+                            details=f"DSS responded code {del_query.status_code}; error message: {del_query.error_message}; {e}",
                             query_timestamps=[del_query.request.timestamp],
                         )
 

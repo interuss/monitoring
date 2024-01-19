@@ -377,6 +377,10 @@ class GenericTestScenario(ABC):
         self._case_report.steps.append(self._step_report)
         self._phase = ScenarioPhase.RunningTestStep
 
+    def record_queries(self, queries: List[fetch.Query]) -> None:
+        for q in queries:
+            self.record_query(q)
+
     def record_query(self, query: fetch.Query) -> None:
         self._expect_phase({ScenarioPhase.RunningTestStep, ScenarioPhase.CleaningUp})
         if "queries" not in self._step_report:

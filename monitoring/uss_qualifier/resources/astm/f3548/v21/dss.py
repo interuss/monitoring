@@ -34,7 +34,7 @@ from uas_standards.astm.f3548.v21.api import (
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib import infrastructure, fetch
-from monitoring.monitorlib.fetch import QueryType, Query, query_and_describe
+from monitoring.monitorlib.fetch import QueryType, Query, query_and_describe, QueryError
 from monitoring.monitorlib.fetch import scd as fetch
 from monitoring.monitorlib.fetch.scd import FetchedSubscription, FetchedSubscriptions
 from monitoring.monitorlib.inspection import calling_function_name, fullname
@@ -285,11 +285,7 @@ class DSSInstance(object):
         self,
         id: str,
         ovn: str,
-    ) -> Tuple[
-        Optional[OperationalIntentReference],
-        Optional[List[SubscriberToNotify]],
-        Query,
-    ]:
+    ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query]:
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.DeleteOperationalIntentReference]
         query = query_and_describe(
@@ -301,17 +297,13 @@ class DSSInstance(object):
             scope=Scope.StrategicCoordination,
         )
         if query.status_code != 200:
-            return None, None, query
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to delete operational intent {id}",
+                query,
+            )
         else:
-            try:
-                result = ChangeOperationalIntentReferenceResponse(
-                    ImplicitDict.parse(
-                        query.response.json, ChangeOperationalIntentReferenceResponse
-                    )
-                )
-                return result.operational_intent_reference, result.subscribers, query
-            except ValueError as e:
-                return None, None, query
+            result = query.parse_json_result(ChangeOperationalIntentReferenceResponse)
+            return result.operational_intent_reference, result.subscribers, query
 
     def set_uss_availability(
         self,
