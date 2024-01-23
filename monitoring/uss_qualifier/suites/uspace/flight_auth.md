@@ -212,4 +212,10 @@
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a></td>
   </tr>
+  <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/versioning.md">versioning</a></td>
+    <td><a href="../../requirements/versioning.md">ReportSystemVersion</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/versioning/get_system_versions.md">Get system versions</a></td>
+  </tr>
 </table>
