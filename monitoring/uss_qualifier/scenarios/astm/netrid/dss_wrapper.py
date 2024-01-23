@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional, List, Set, Dict, Any
+from typing import Optional, List, Set, Dict, Any, Union
 
 import s2sphere
 from implicitdict import StringBasedDateTime
@@ -285,6 +285,7 @@ class DSSWrapper(object):
         uss_base_url: str,
         isa_id: str,
         isa_version: Optional[str] = None,
+        do_not_notify: Optional[Union[str, List[str]]] = None,
     ) -> ISAChange:
         mutated_isa = mutate.put_isa(
             area_vertices=area_vertices,
@@ -298,6 +299,7 @@ class DSSWrapper(object):
             rid_version=self._dss.rid_version,
             utm_client=self._dss.client,
             participant_id=self._dss.participant_id,
+            do_not_notify=do_not_notify,
         )
 
         for notification_query in mutated_isa.notifications.values():
@@ -324,6 +326,7 @@ class DSSWrapper(object):
         uss_base_url: str,
         isa_id: str,
         isa_version: Optional[str] = None,
+        do_not_notify: Optional[Union[str, List[str]]] = None,
     ) -> ISAChange:
         """Create or update an ISA at the DSS.
 
@@ -345,6 +348,7 @@ class DSSWrapper(object):
             rid_version=self._dss.rid_version,
             utm_client=self._dss.client,
             participant_id=self._dss.participant_id,
+            do_not_notify=do_not_notify,
         )
         self.handle_query_result(
             main_check, mutated_isa.dss_query, f"Failed to insert ISA {isa_id}"
@@ -392,6 +396,7 @@ class DSSWrapper(object):
         main_check: PendingCheck,
         isa_id: str,
         isa_version: str,
+        do_not_notify: Optional[Union[str, List[str]]] = None,
     ) -> ISAChange:
         """Delete an ISA at the DSS.
 
@@ -407,6 +412,7 @@ class DSSWrapper(object):
             rid_version=self._dss.rid_version,
             utm_client=self._dss.client,
             participant_id=self._dss.participant_id,
+            do_not_notify=do_not_notify,
         )
         self.handle_query_result(
             main_check, del_isa.dss_query, f"Failed to delete ISA {isa_id}"
@@ -490,6 +496,7 @@ class DSSWrapper(object):
         expected_error_codes: Set[int],
         isa_id: str,
         isa_version: str,
+        do_not_notify: Optional[Union[str, List[str]]] = None,
     ) -> ISAChange:
         """Attempt to delete an ISA at the DSS, and expect the specified HTTP response code.
 
@@ -504,6 +511,7 @@ class DSSWrapper(object):
             rid_version=self._dss.rid_version,
             utm_client=self._dss.client,
             participant_id=self._dss.participant_id,
+            do_not_notify=do_not_notify,
         )
 
         for notification_query in del_isa.notifications.values():
