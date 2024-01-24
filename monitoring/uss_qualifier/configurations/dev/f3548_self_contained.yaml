@@ -14,6 +14,7 @@ v1:
         # Mapping of <resource name in test suite> to <resource name in resource pool>
         resources:
           id_generator: id_generator
+          test_env_version_providers: test_env_version_providers
           flight_planners: flight_planners
           conflicting_flights: conflicting_flights
           invalid_flight_intents: invalid_flight_intents
@@ -42,6 +43,8 @@ v1:
               # InterUSS flight_planning v1 automated testing API
               - interuss.flight_planning.direct_automated_test
               - interuss.flight_planning.plan
+              # InterUSS versioning automated testing API
+              - interuss.versioning.read_system_versions
               # ASTM F3548-21 USS emulation roles
               - utm.strategic_coordination
               - utm.availability_arbitration
@@ -112,6 +115,20 @@ v1:
                 lng: -80
               - lat: 38
                 lng: -80
+
+        # Means by which to obtain the versions of participants' systems under test (in the test environment).
+        test_env_version_providers:
+          resource_type: resources.versioning.VersionProvidersResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            instances:
+              - participant_id: uss1
+                interuss:
+                  base_url: http://scdsc.uss1.localutm/versioning
+              - participant_id: uss2
+                interuss:
+                  base_url: http://scdsc.uss2.localutm/versioning
 
         # Set of USSs capable of being tested as flight planners
         flight_planners:
@@ -207,8 +224,10 @@ v1:
     # elements within this configuration to exclude from the configuration when computing the baseline signature.
     non_baseline_inputs:
       - v1.test_run.resources.resource_declarations.utm_auth
+      - v1.test_run.resources.resource_declarations.test_env_version_providers
       - v1.test_run.resources.resource_declarations.flight_planners
       - v1.test_run.resources.resource_declarations.dss
+      - v1.test_run.resources.resource_declarations.dss_instances
       - v1.test_run.resources.resource_declarations.mock_uss
 
     # How to execute a test run using this configuration

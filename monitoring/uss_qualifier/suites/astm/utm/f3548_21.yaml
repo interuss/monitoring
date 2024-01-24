@@ -1,5 +1,6 @@
 name: ASTM F3548-21
 resources:
+  test_env_version_providers: resources.versioning.VersionProvidersResource?
   flight_planners: resources.flight_planning.FlightPlannersResource
   dss: resources.astm.f3548.v21.DSSInstanceResource
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
@@ -13,7 +14,19 @@ resources:
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
   id_generator: resources.interuss.IDGeneratorResource
   planning_area: resources.astm.f3548.v21.PlanningAreaResource
+  system_identity: resources.versioning.SystemIdentityResource?
+local_resources:
+  system_identity:
+    resource_type: resources.versioning.SystemIdentityResource
+    specification:
+      system_identity: astm.f3548.v21
 actions:
+- test_scenario:
+    scenario_type: scenarios.versioning.GetSystemVersions
+    resources:
+      version_providers: test_env_version_providers?
+      system_identity: system_identity
+    on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.astm.utm.PrepareFlightPlanners
     resources:

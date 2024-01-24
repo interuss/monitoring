@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict
+from loguru import logger
+
 from monitoring.uss_qualifier.action_generators.definitions import (
     ActionGeneratorDefinition,
 )
@@ -16,7 +17,6 @@ from monitoring.uss_qualifier.reports.capability_definitions import (
 from monitoring.uss_qualifier.resources.definitions import (
     ResourceID,
     ResourceTypeName,
-    ResourceCollection,
     ResourceDeclaration,
 )
 from monitoring.uss_qualifier.scenarios.definitions import (
@@ -147,7 +147,7 @@ class TestSuiteDefinition(ImplicitDict):
     """Enumeration of the resources used by this test suite"""
 
     local_resources: Optional[Dict[ResourceID, ResourceDeclaration]]
-    """Declarations of resources originating in this test suite."""
+    """Declarations of resources originating in this test suite.  If a resource is defined in both `resources` and `local_resources`, the resource in `local_resources` will be ignored (`resources` overrides `local_resources`)."""
 
     actions: List[TestSuiteActionDeclaration]
     """The actions to take when running the test suite.  Components will be executed in order."""
@@ -162,8 +162,9 @@ class TestSuiteDefinition(ImplicitDict):
         if inherits_resources and local_resources:
             for k in self.resources:
                 if k in self.local_resources:
-                    raise ValueError(
-                        f"Resource '{k}' found in both `resources` and `local_resources`; resource IDs must be unique"
+                    self.local_resources.pop(k)
+                    logger.debug(
+                        f"Ignoring local resource `{k}` in favor of definition provided in `resources`"
                     )
 
     @staticmethod
