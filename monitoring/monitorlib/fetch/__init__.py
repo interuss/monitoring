@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import traceback
 import uuid
 from enum import Enum
 from typing import Dict, Optional, List, Union
@@ -331,6 +332,21 @@ class QueryType(str, Enum):
         "interuss.automated_testing.rid.v1.injection.deleteTest"
     )
 
+    # InterUSS mock_uss
+    InterUSSMockUSSGetLogs = "interuss.mock_uss.logging.interaction_logs"
+    InterUSSMockUSSGetLocality = "interuss.mock_uss.locality.locality_get"
+    InterUSSMockUSSSetLocality = "interuss.mock_uss.locality.locality_set"
+
+    # Deprecated InterUSS SCD injection API
+    InterUSSSCDInjectionV1GetStatus = "interuss.deprecated_scd_injection.v1.getStatus"
+    InterUSSSCDInjectionV1InjectFlight = (
+        "interuss.deprecated_scd_injection.v1.injectFlight"
+    )
+    InterUSSSCDInjectionV1DeleteFlight = (
+        "interuss.deprecated_scd_injection.v1.deleteFlight"
+    )
+    InterUSSSCDInjectionV1ClearArea = "interuss.deprecated_scd_injection.v1.clearArea"
+
     def __str__(self):
         return self.value
 
@@ -455,6 +471,7 @@ def query_and_describe(
     url: str,
     query_type: Optional[QueryType] = None,
     participant_id: Optional[str] = None,
+    expect_failure: bool = False,
     **kwargs,
 ) -> Query:
     """Attempt to perform a query, and then describe the results of that attempt.
@@ -468,6 +485,7 @@ def query_and_describe(
         url: URL to query.
         query_type: If specified, the known type of query that this is.
         participant_id: If specified, the participant identifier of the server being queried.
+        expect_failure: If true, do not print warning messages upon failures because they are expected.
         **kwargs: Any keyword arguments that should be applied to the <session>.request method when invoking it.
 
     Returns:
@@ -506,12 +524,24 @@ def query_and_describe(
                 participant_id=participant_id,
             )
         except (requests.Timeout, urllib3.exceptions.ReadTimeoutError) as e:
-            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with timeout {type(e).__name__}: {str(e)}"
-            logger.warning(failure_message)
+            location = (
+                traceback.format_list([traceback.extract_stack()[-2]])[0]
+                .split("\n")[0]
+                .strip()
+            )
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with timeout {type(e).__name__}: {str(e)}\nAt {location}"
+            if not expect_failure:
+                logger.warning(failure_message)
             failures.append(failure_message)
         except requests.RequestException as e:
-            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with non-retryable RequestException {type(e).__name__}: {str(e)}"
-            logger.warning(failure_message)
+            location = (
+                traceback.format_list([traceback.extract_stack()[-2]])[0]
+                .split("\n")[0]
+                .strip()
+            )
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with non-retryable RequestException {type(e).__name__}: {str(e)}\nAt {location}"
+            if not expect_failure:
+                logger.warning(failure_message)
             failures.append(failure_message)
 
             break
