@@ -71,6 +71,6 @@ class AuthAdapterResource(Resource[AuthAdapterSpecification]):
                 if isinstance(scope, Enum):
                     scope = scope.value
                 raise MissingResourceError(
-                    f"AuthAdapterResource provided to {consumer_name} is not declared (in its resource specification) as authorized to obtain scope `{scope}` which is required by {consumer_name} to {reason}.  Update `scopes_authorized` to include `{scope}` to resolve this message.  {len(self.scopes)} scopes declared as authorized for AuthAdapterResource: {', '.join(self.scopes)}",
+                    f"AuthAdapterResource provided to {consumer_name} is not declared (in its resource specification) as authorized to obtain scope `{scope}` which it requires to {reason}.  Update `scopes_authorized` to include `{scope}` to provide this authorization.  {len(self.scopes)} scopes currently declared as authorized for AuthAdapterResource: {', '.join(self.scopes)}",
                     "<unknown>",
                 )

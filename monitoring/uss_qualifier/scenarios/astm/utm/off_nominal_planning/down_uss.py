@@ -139,7 +139,6 @@ class DownUSS(TestScenario):
             if dummy_query.status_code != 200:
                 check.record_failed(
                     summary="Failed to query DSS",
-                    severity=Severity.High,
                     details=f"DSS responded code {dummy_query.status_code}; error message: {dummy_query.error_message}",
                     query_timestamps=[dummy_query.request.timestamp],
                 )
@@ -207,8 +206,7 @@ class DownUSS(TestScenario):
             if oi_ref is None:
                 check.record_failed(
                     f"Operational intent not successfully {msg_action_past}",
-                    Severity.High,
-                    f"DSS responded code {query.status_code}; error message: {query.error_message}",
+                    details=f"DSS responded code {query.status_code}; error message: {query.error_message}",
                     query_timestamps=[query.request.timestamp],
                 )
         self.end_test_step()
@@ -267,7 +265,6 @@ class DownUSS(TestScenario):
                     )
                     check.record_failed(
                         summary="Warning (not a failure): planning got rejected, USS may have been more conservative",
-                        severity=Severity.Low,
                         details=check_details,
                     )
                 validator.expect_not_shared()
@@ -283,7 +280,6 @@ class DownUSS(TestScenario):
             if find_query.status_code != 200:
                 check.record_failed(
                     summary=f"Failed to query operational intent references from DSS in {self._intents_extent} for cleanup",
-                    severity=Severity.High,
                     details=f"DSS responded code {find_query.status_code}; error message: {find_query.error_message}",
                     query_timestamps=[find_query.request.timestamp],
                 )
@@ -298,7 +294,6 @@ class DownUSS(TestScenario):
                     if del_oi is None:
                         check.record_failed(
                             summary=f"Failed to delete op intent {oi_ref.id} from DSS",
-                            severity=Severity.Medium,
                             details=f"DSS responded code {del_query.status_code}; error message: {del_query.error_message}",
                             query_timestamps=[del_query.request.timestamp],
                         )
@@ -317,7 +312,6 @@ class DownUSS(TestScenario):
             if availability_version is None:
                 check.record_failed(
                     summary=f"Availability of USS {self.uss_qualifier_sub} could not be set to available",
-                    severity=Severity.High,
                     details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
                     query_timestamps=[avail_query.request.timestamp],
                 )

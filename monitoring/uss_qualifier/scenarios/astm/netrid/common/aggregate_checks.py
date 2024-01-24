@@ -156,14 +156,11 @@ class AggregateChecks(GenericTestScenario):
             for query in self._queries
             if query.get("participant_id") is None
         ]
+        query_list = "\n".join("  * " + q for q in unattr_queries)
+        msg = f"Found unattributed queries:\n{query_list}"
         if len(unattr_queries) > 0:
-            self.record_note(
-                "unattributed-queries",
-                f"found unattributed queries: {unattr_queries}",
-            )
-            logger.warning(
-                f"found unattributed queries: {unattr_queries}",
-            )
+            self.record_note("unattributed-queries", msg)
+            logger.warning(msg)
 
     def _inspect_participant_queries(
         self, participant_id: str, participant_queries: List[fetch.Query]

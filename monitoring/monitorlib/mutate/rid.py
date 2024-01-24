@@ -533,6 +533,7 @@ def put_isa(
     utm_client: infrastructure.UTMClientSession,
     isa_version: Optional[str] = None,
     participant_id: Optional[str] = None,
+    do_not_notify: Optional[Union[str, List[str]]] = None,
 ) -> ISAChange:
     is_creation = isa_version is None
     mutation = "create" if is_creation else "update"
@@ -587,9 +588,14 @@ def put_isa(
 
     if dss_response.success:
         isa = dss_response.isa
+        if isinstance(do_not_notify, str):
+            do_not_notify = [do_not_notify]
+        elif do_not_notify is None:
+            do_not_notify = []
         notifications = {
             sub.url: sub.notify(isa.id, utm_client, isa)
             for sub in dss_response.subscribers
+            if not any(sub.url.startswith(base_url) for base_url in do_not_notify)
         }
     else:
         notifications = {}
@@ -603,6 +609,7 @@ def delete_isa(
     rid_version: RIDVersion,
     utm_client: infrastructure.UTMClientSession,
     participant_id: Optional[str] = None,
+    do_not_notify: Optional[Union[str, List[str]]] = None,
 ) -> ISAChange:
     if rid_version == RIDVersion.f3411_19:
         op = v19.api.OPERATIONS[v19.api.OperationID.DeleteIdentificationServiceArea]
@@ -637,8 +644,14 @@ def delete_isa(
 
     if dss_response.success:
         isa = dss_response.isa
+        if isinstance(do_not_notify, str):
+            do_not_notify = [do_not_notify]
+        elif do_not_notify is None:
+            do_not_notify = []
         notifications = {
-            sub.url: sub.notify(isa.id, utm_client) for sub in dss_response.subscribers
+            sub.url: sub.notify(isa.id, utm_client)
+            for sub in dss_response.subscribers
+            if not any(sub.url.startswith(base_url) for base_url in do_not_notify)
         }
     else:
         notifications = {}

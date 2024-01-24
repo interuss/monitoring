@@ -23,7 +23,7 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResult,
     FlightPlanStatus,
 )
-from monitoring.monitorlib.fetch import query_and_describe
+from monitoring.monitorlib.fetch import query_and_describe, QueryType
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -81,7 +81,13 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         op = scd_api.OPERATIONS[scd_api.OperationID.InjectFlight]
         url = op.path.format(flight_id=flight_id)
         query = query_and_describe(
-            self._session, op.verb, url, json=req, scope=self.SCD_SCOPE
+            self._session,
+            op.verb,
+            url,
+            json=req,
+            scope=self.SCD_SCOPE,
+            participant_id=self.participant_id,
+            query_type=QueryType.InterUSSSCDInjectionV1InjectFlight,
         )
         if query.status_code != 200 and query.status_code != 201:
             raise PlanningActivityError(
@@ -161,7 +167,14 @@ class SCDFlightPlannerClient(FlightPlannerClient):
     ) -> PlanningActivityResponse:
         op = scd_api.OPERATIONS[scd_api.OperationID.DeleteFlight]
         url = op.path.format(flight_id=flight_id)
-        query = query_and_describe(self._session, op.verb, url, scope=self.SCD_SCOPE)
+        query = query_and_describe(
+            self._session,
+            op.verb,
+            url,
+            scope=self.SCD_SCOPE,
+            participant_id=self.participant_id,
+            query_type=QueryType.InterUSSSCDInjectionV1DeleteFlight,
+        )
         if query.status_code != 200:
             raise PlanningActivityError(
                 f"Attempt to delete flight returned status {query.status_code} rather than 200 as expected",
@@ -204,7 +217,12 @@ class SCDFlightPlannerClient(FlightPlannerClient):
     def report_readiness(self) -> TestPreparationActivityResponse:
         op = scd_api.OPERATIONS[scd_api.OperationID.GetStatus]
         query = query_and_describe(
-            self._session, op.verb, op.path, scope=self.SCD_SCOPE
+            self._session,
+            op.verb,
+            op.path,
+            scope=self.SCD_SCOPE,
+            participant_id=self.participant_id,
+            query_type=QueryType.InterUSSSCDInjectionV1GetStatus,
         )
         if query.status_code != 200:
             raise PlanningActivityError(
@@ -238,7 +256,13 @@ class SCDFlightPlannerClient(FlightPlannerClient):
 
         op = scd_api.OPERATIONS[scd_api.OperationID.ClearArea]
         query = query_and_describe(
-            self._session, op.verb, op.path, json=req, scope=self.SCD_SCOPE
+            self._session,
+            op.verb,
+            op.path,
+            json=req,
+            scope=self.SCD_SCOPE,
+            participant_id=self.participant_id,
+            query_type=QueryType.InterUSSSCDInjectionV1ClearArea,
         )
         if query.status_code != 200:
             raise PlanningActivityError(
