@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Type, Optional, get_type_hints, Protocol
 
 from implicitdict import ImplicitDict
+from loguru import logger
 from lxml import etree
 from pykml.factory import KML_ElementMaker as kml
 from pykml.util import format_xml_with_cdata
@@ -122,11 +123,11 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                             render_info.request_type,
                         )
                     except ValueError as e:
+                        msg = f"Error parsing request into {render_info.request_type.__name__}"
+                        logger.warning(msg)
                         query_folder.append(
                             kml.Folder(
-                                kml.name(
-                                    f"Error parsing request into {render_info.request_type.__name__}"
-                                ),
+                                kml.name(msg),
                                 kml.description(stacktrace_string(e)),
                             )
                         )
@@ -141,11 +142,11 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                             render_info.response_type,
                         )
                     except ValueError as e:
+                        msg = f"Error parsing response into {render_info.response_type.__name__}"
+                        logger.warning(msg)
                         query_folder.append(
                             kml.Folder(
-                                kml.name(
-                                    f"Error parsing response into {render_info.response_type.__name__}"
-                                ),
+                                kml.name(msg),
                                 kml.description(stacktrace_string(e)),
                             )
                         )
@@ -153,11 +154,11 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                 try:
                     query_folder.extend(render_info.renderer(**kwargs))
                 except TypeError as e:
+                    msg = f"Error rendering {render_info.renderer.__name__}"
+                    logger.warning(msg)
                     query_folder.append(
                         kml.Folder(
-                            kml.name(
-                                f"Error rendering {render_info.renderer.__name__}"
-                            ),
+                            kml.name(msg),
                             kml.description(stacktrace_string(e)),
                         )
                     )

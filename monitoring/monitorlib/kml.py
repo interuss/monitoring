@@ -20,6 +20,15 @@ from monitoring.monitorlib.geotemporal import Volume4D
 KML_NAMESPACE = {"kml": "http://www.opengis.net/kml/2.2"}
 METERS_PER_FOOT = 0.3048
 
+# Hexadecimal colors
+GREEN = "ff00c000"
+YELLOW = "ff00ffff"
+RED = "ff0000ff"
+CYAN = "ffc0c000"
+TRANSLUCENT_GRAY = "80808080"
+TRANSLUCENT_GREEN = "8000ff00"
+TRANSLUCENT_LIGHT_CYAN = "80ffffaa"
+
 
 def get_kml_root(kml_obj, from_string=False):
     if from_string:
@@ -292,23 +301,23 @@ def flight_planning_styles() -> List[kml.Style]:
     """Provides KML styles with names in the form {FlightPlanState}_{AirspaceUsageState}."""
     return [
         kml.Style(
-            kml.LineStyle(kml.color("ff00c000"), kml.width(3)),
-            kml.PolyStyle(kml.color("80808080")),
+            kml.LineStyle(kml.color(GREEN), kml.width(3)),
+            kml.PolyStyle(kml.color(TRANSLUCENT_GRAY)),
             id="Planned_Nominal",
         ),
         kml.Style(
-            kml.LineStyle(kml.color("ff00c000"), kml.width(3)),
-            kml.PolyStyle(kml.color("8000ff00")),
+            kml.LineStyle(kml.color(GREEN), kml.width(3)),
+            kml.PolyStyle(kml.color(TRANSLUCENT_GREEN)),
             id="InUse_Nominal",
         ),
         kml.Style(
-            kml.LineStyle(kml.color("ff00ffff"), kml.width(5)),
-            kml.PolyStyle(kml.color("8000ff00")),
+            kml.LineStyle(kml.color(YELLOW), kml.width(5)),
+            kml.PolyStyle(kml.color(TRANSLUCENT_GREEN)),
             id="InUse_OffNominal",
         ),
         kml.Style(
-            kml.LineStyle(kml.color("ff0000ff"), kml.width(5)),
-            kml.PolyStyle(kml.color("8000ff00")),
+            kml.LineStyle(kml.color(RED), kml.width(5)),
+            kml.PolyStyle(kml.color(TRANSLUCENT_GREEN)),
             id="InUse_Contingent",
         ),
     ]
@@ -318,8 +327,8 @@ def query_styles() -> List[kml.Style]:
     """Provides KML styles for query areas."""
     return [
         kml.Style(
-            kml.LineStyle(kml.color("ffc0c000"), kml.width(3)),
-            kml.PolyStyle(kml.color("80ffffaa")),
+            kml.LineStyle(kml.color(CYAN), kml.width(3)),
+            kml.PolyStyle(kml.color(TRANSLUCENT_LIGHT_CYAN)),
             id="QueryArea",
         ),
     ]
@@ -329,23 +338,23 @@ def f3548v21_styles() -> List[kml.Style]:
     """Provides KML styles according to F3548-21 operational intent states."""
     return [
         kml.Style(
-            kml.LineStyle(kml.color("ff00c000"), kml.width(3)),
-            kml.PolyStyle(kml.color("80808080")),
+            kml.LineStyle(kml.color(GREEN), kml.width(3)),
+            kml.PolyStyle(kml.color(TRANSLUCENT_GRAY)),
             id="F3548v21Accepted",
         ),
         kml.Style(
-            kml.LineStyle(kml.color("ff00c000"), kml.width(3)),
-            kml.PolyStyle(kml.color("8000ff00")),
+            kml.LineStyle(kml.color(GREEN), kml.width(3)),
+            kml.PolyStyle(kml.color(TRANSLUCENT_GREEN)),
             id="F3548v21Activated",
         ),
         kml.Style(
-            kml.LineStyle(kml.color("ff00ffff"), kml.width(5)),
-            kml.PolyStyle(kml.color("8000ff00")),
+            kml.LineStyle(kml.color(YELLOW), kml.width(5)),
+            kml.PolyStyle(kml.color(TRANSLUCENT_GREEN)),
             id="F3548v21Nonconforming",
         ),
         kml.Style(
-            kml.LineStyle(kml.color("ff0000ff"), kml.width(5)),
-            kml.PolyStyle(kml.color("8000ff00")),
+            kml.LineStyle(kml.color(RED), kml.width(5)),
+            kml.PolyStyle(kml.color(TRANSLUCENT_GREEN)),
             id="F3548v21Contingent",
         ),
     ]
