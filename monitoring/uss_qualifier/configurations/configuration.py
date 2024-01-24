@@ -170,6 +170,9 @@ class SequenceViewConfiguration(ImplicitDict):
     redact_access_tokens: bool = True
     """When True, look for instances of "Authorization" keys in the report with values starting "Bearer " and redact the signature from those access tokens"""
 
+    render_kml: bool = True
+    """When True, visualize geographic data for each scenario as a KML file."""
+
 
 class ReportHTMLConfiguration(ImplicitDict):
     redact_access_tokens: bool = True
