@@ -1,6 +1,6 @@
 # Validate notification received test step fragment
 
-This step verifies that a tested_uss successfully received notification due to subscription, for a relevant intent from mock_uss instance.
+This step verifies that a USS successfully received a notification about a relevant operational intent from a mock USS instance.
 This is done by checking the interactions of that mock_uss instance.
 
 ## 🛑 MockUSS interactions request check
