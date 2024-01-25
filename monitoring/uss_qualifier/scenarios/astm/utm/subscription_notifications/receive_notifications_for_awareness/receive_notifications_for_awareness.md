@@ -1,4 +1,4 @@
-# USS Awareness of Relevant Operational Intent Changes When Managing Operational Intents test scenario
+# Awareness of relevant operational intents test scenario
 
 ## Description
 When a USS submits an operational intent to DSS, a subscription is associated with that operational intent in DSS.
