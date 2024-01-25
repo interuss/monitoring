@@ -7,8 +7,8 @@ This is done by checking the interactions of that mock_uss instance.
 **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
 
 ## ⚠️ Expect Notification received with expected subscription_id check
-As per **[astm.f3548.v21.SCD0080](../../../../../requirements/astm/f3548/v21.md)**, shall maintain awareness of relevant
-operational intents when its managed operation is in Activated, NonConforming or Contingent state.
+As per **[astm.f3548.v21.SCD0080](../../../../../requirements/astm/f3548/v21.md)**, USSes shall maintain awareness of operational intents
+relevant to their own ones when they are in the Activated, NonConforming or Contingent states.
 The tested_uss would have a subscription id for its operational intent. The tested_uss should successfully
 receive a notification of relevant intent sent by mock_uss based on the subscription id.
 
