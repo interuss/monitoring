@@ -16,22 +16,38 @@ This scenario assumes that the area used in the scenario is already clear of any
 
 ### flight_intents
 
-FlightIntentsResource provides flight_1_* variations with modification to extend its area and state.
-It also provides flight_2_* variations that do not intersect with flight_1_* , but their convex hulls intersect.
-There is an overlap of time and altitude of flight_1_* with flight_2_* .
-This makes the associated flights relevant to each other.
-flight_2* is modified in area or time range to trigger notifications.
-flight_2_area2 intersects with flight_1_extended_area_activated.
-There is an overlap of time and altitude of flight_2* with flight_1_*.
+FlightIntentsResource that provides the following flight intents:
 
 <table>
-<tr> <th>Flight Intent Id</th>	<th>Flight name in doc</th>  <th> State </th>	<th> Must be relevant, but not intersecting </th></tr>
-
-<tr> <td><code>flight_1_planned</code></td>	<td>Flight 1</td>  <td> Accepted </td>	<td> - </td></tr>
-<tr> <td><code>flight_1_activated</code></td>	<td>Flight 1</td>  <td> Activated </td>	<td> flight_2 </td></tr>
-<tr> <td><code>flight_2</code></td>	<td>Flight 2</td>  <td> Accepted </td>	<td> flight_1_* </td></tr>
-
+    <tr>
+        <th>Flight intent ID</th>
+        <th>Flight name</th>
+        <th>State</th><!-- TODO: Update with usage_state and uas_state when new flight planning API is adopted -->
+        <th>Must be relevant, but not intersecting</th>
+    </tr>
+    <tr>
+        <td><code>flight_1_planned</code></td>
+        <td rowspan="2">Flight 1</td>
+        <td>Accepted</td>
+        <td rowspan="2">Flight 2</td>
+    </tr>
+    <tr>
+        <td><code>flight_1_activated</code></td>
+        <td>Activated</td>
+    </tr>
+    <tr>
+        <td><code>flight_2_planned</code></td>
+        <td>Flight 2</td>
+        <td>Accepted</td>
+        <td>Flight 1</td>
+    </tr>
 </table>
+
+To reach a situation where Flight 1 and Flight 2 do not intersect but are relevant to each other:
+- their time ranges and altitudes do intersect;
+- their geometries do not intersect, but their convex hulls do.
+
+Because the scenario involves activation of intents, all activated intents must be active during the execution of the test scenario. Additionally, their end time must leave sufficient time for the execution of the test scenario. For the sake of simplicity, it is recommended to set the start and end times of all the intents to the same range.
 
 ### mock_uss
 
