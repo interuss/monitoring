@@ -5,7 +5,7 @@
 When a USS submits an operational intent to DSS, a subscription is associated with that operational intent in DSS.
 This subscription can be either an implicit or explicit subscription that covers the area of the operational intent.
 The subscription helps the USS to be notified of new or modified operations in the area, when its operational intent is in
-Activated, NonConforming and Contingent state. In this scenario, we will verify that USS under test has a subscription
+Activated, NonConforming and Contingent states. In this scenario, we will verify that USS under test has a subscription
 to cover the operational intent area, and receives relevant notifications from other USSes.
 
 - **[astm.f3548.v21.SCD0080](../../../../../requirements/astm/f3548/v21.md)**
