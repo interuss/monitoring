@@ -433,7 +433,7 @@ class Query(ImplicitDict):
         Returns:
              the parsed response (of type `parse_type`).
         Raises:
-            QueryError: if the parsing failed.
+            * QueryError: if the parsing failed.
         """
         try:
             return parse_type(ImplicitDict.parse(self.response.json, parse_type))
