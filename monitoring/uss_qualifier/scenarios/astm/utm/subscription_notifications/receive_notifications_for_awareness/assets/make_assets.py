@@ -20,8 +20,8 @@ outline = "#202020"
 accepted = "#808080"
 activated = "#00ff00"
 nonconforming = "#ffff00"
-flight1_points = [20,30, 20,200, 70,200, 140,120,  190,200, 250, 200, 250,30]
-flight2_points = [140,145, 30,265, 145,320, 215,265]
+flight1_points = [20, 30, 20, 200, 70, 200, 140, 120, 190, 200, 250, 200, 250, 30]
+flight2_points = [140, 145, 30, 265, 145, 320, 215, 265]
 
 
 common_elements = [
@@ -51,6 +51,7 @@ common_elements = [
     ),
 ]
 
+
 def make_flight1_activated_flight2_planned():
     elements = [
         svg.Polygon(
@@ -79,6 +80,5 @@ def make_flight1_activated_flight2_planned():
     with open(inspect.currentframe().f_code.co_name[len("make_") :] + ".svg", "w") as f:
         f.write(str(canvas))
 
+
 make_flight1_activated_flight2_planned()
-
-
