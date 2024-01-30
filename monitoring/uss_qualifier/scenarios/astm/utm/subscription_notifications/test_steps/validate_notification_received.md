@@ -9,7 +9,7 @@ Mock USS provides a GET endpoint to retrieve all the interactions between Mock U
 If there is any error retrieving these interactions, this check will fail.
 These interactions also include the notifications sent and received by Mock USS.
 
-## ⚠️ Expect Notification received with expected subscription_id check
+## ⚠️ Expect notification received by USS under test check
 As per **[astm.f3548.v21.SCD0080](../../../../../requirements/astm/f3548/v21.md)**, USSes shall maintain awareness of
 operational intents relevant to their own ones when they are in the Activated, NonConforming or Contingent states.
 In DSS, there is a subscription associated with an operational intent managed by a USS. A USS under test should successfully
