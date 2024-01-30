@@ -14,7 +14,7 @@ As per **[astm.f3548.v21.SCD0080](../../../../../requirements/astm/f3548/v21.md)
 operational intents relevant to their own ones when they are in the Activated, NonConforming or Contingent states.
 In DSS, there is a subscription associated with an operational intent managed by a USS. A USS under test should successfully
 receive a notification of relevant intent from Mock USS based on this subscription.
-This check will fail if USS under test does not respond with http status 204 to a notification attempt by Mock USS.
+This check will fail if USS under test does not respond with http status 204 to a valid notification attempt by Mock USS.
 
 ## ⚠️ Expect Notification received with expected subscription_id check
 The notification received by USS under test should include the expected subscription_id associated with its managed operation.
