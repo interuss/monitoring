@@ -1,6 +1,6 @@
 # Validate subscription test step fragment
 
-This test step fragment attempts to validate a subscription returned by the DSS after its creation or mutation.
+This test step fragment attempts to validate a single subscription returned by the DSS after its creation or mutation.
 
 The code for these checks lives in the [subscription_validator.py](./subscription_validator.py) class.
 
