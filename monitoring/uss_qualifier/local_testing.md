@@ -24,6 +24,11 @@ Note that this deployment will need to be restarted to incorporate any changes t
 
 To deploy the complete set of local mocks, first deploy local interoperability ecosystem infrastructure and then: `make start-uss-mocks`
 
+To start only a selection of mock uss servers, `COMPOSE_PROFILES` environment variable can be used. See [mock uss docker-compose.yaml file](../mock_uss/docker-compose.yaml) to
+find the available profiles.
+Example: `COMPOSE_PROFILES=scd,rid make start-uss-mocks` will start the containers in profiles scd and rid. If the variable is not provided, all containers will start.
+Note that all containers must start and therefore must contain the `''` profile.
+
 To determine the status of a complete set of local mocks, run `docker container ls` and inspect the results for the mock containers (see diagram above).  Or, bring the system to a known state by tearing down the complete set of local mocks and then redeploying it.
 
 To tear down the complete set of local mocks (or ensure it is completely torn down): `make stop-uss-mocks`
