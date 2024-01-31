@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    name: mockuss-pod
+    labels:
+        app: mockuss
+spec:
+    containers:
+        -   name: mockuss-server
+            image: interuss/monitoring:v0.3.0
+            ports:
+                -   containerPort: 8074
+            volumeMounts:
+                -   name: auth-volume
+                    mountPath: /auth
+                    readOnly: true
+            env:
+                -   name: MOCK_USS_DSS_URL
+                    value: https://dss.example.com <-- UPDATE
+                -   name: MOCK_USS_PUBLIC_KEY
+                    value: https://auth.example.com/jwks.json <-- UPDATE
+                -   name: MOCK_USS_TOKEN_AUDIENCE
+                    value: mockuss.example.com <-- UPDATE
+                -   name: MOCK_USS_BASE_URL
+                    value: https://mockuss.example.com <-- UPDATE
+                -   name: MOCK_USS_SERVICES
+                    value: scdsc,versioning,interaction_logging,flight_planning
+                -   name: MOCK_USS_INTERACTIONS_LOG_DIR
+                    value: /output/interaction_logs
+                -   name: MOCK_USS_PORT
+                    value: "8074"
+                -   name: MOCK_USS_AUTH_SPEC
+                    value: ServiceAccount(https://auth.example.com/oauth/token,/auth/mock_uss-creds.json) <-- UPDATE
+            command: ["/bin/sh", "-c"]
+            args:
+                - mkdir -p /output/interaction_logs && mock_uss/start.sh
+            readinessProbe:
+                httpGet:
+                    path: /status
+                    port: 8074
+    volumes:
+        -   name: auth-volume
+            secret:
+                secretName: mockuss-creds
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: mockuss-service
+spec:
+    selector:
+        app: mockuss
+    ports:
+        - name: http
+          protocol: TCP
+          port: 8074
+          targetPort: 8074
+    type: NodePort
+
+---
+# https://cloud.google.com/kubernetes-engine/docs/how-to/managed-certs
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+    name: managed-cert
+spec:
+    domains:
+        - mockuss.example.com <-- UPDATE
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: mockuss-ingress
+    annotations:
+        kubernetes.io/ingress.global-static-ip-name: mockuss-address
+        networking.gke.io/managed-certificates: managed-cert
+        ingressClassName: "gce"
+    labels:
+        app: mockuss
+spec:
+    defaultBackend:
+        service:
+            name: mockuss-service
+            port:
+                number: 8074
