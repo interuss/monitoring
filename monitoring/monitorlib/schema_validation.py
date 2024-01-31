@@ -53,6 +53,10 @@ class F3548_21(str, Enum):
     GetOperationalIntentDetailsResponse = (
         "components.schemas.GetOperationalIntentDetailsResponse"
     )
+    PutSubscriptionResponse = "components.schemas.PutSubscriptionResponse"
+    GetSubscriptionResponse = "components.schemas.GetSubscriptionResponse"
+    QuerySubscriptionsResponse = "components.schemas.QuerySubscriptionsResponse"
+    DeleteSubscriptionResponse = "components.schemas.DeleteSubscriptionResponse"
 
 
 _openapi_content_cache: Dict[str, dict] = {}
