@@ -16,6 +16,16 @@ In DSS, there is a subscription associated with an operational intent managed by
 receive a notification of relevant intent from Mock USS based on this subscription.
 This check will fail if USS under test does not respond with http status 204 to a valid notification attempt by Mock USS.
 
-## ⚠️ Expect Notification received with expected subscription_id check
-The notification received by USS under test should include the expected subscription_id associated with its managed operation.
-The check will fail if it does not include the expected subscription_id, as it shows the USS under test did not validate the subscription_id.
+## ⚠️ Expect notification received with expected subscription_id check
+
+There is an assumption here that DSS shared the correct subscriber information with Mock USS in response to planning or modifying its operational intent.
+
+As per **[interuss.mock_uss.hosted_instance.ASTMF3548Implementation](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**,
+Mock USS needs to implement astm.f3548.v21.SCD0085, and hence should send notification to USSes with correct subscription_id.
+The check will fail this requirement, if the notification to USS under test does not include the expected subscription_id.
+
+As per **[astm.f3548.v21.USS0105](../../../../../requirements/astm/f3548/v21.md)**, USS under test should validate that the notification
+received includes the subscription_id associated with its managed operation.
+The check will fail for this requirement, if for incorrect subscription_id USS under test, does not respond with http status 400.
+
+
