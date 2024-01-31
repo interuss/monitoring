@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
-from typing import Dict, Any, List
+from typing import Dict, List
 
 import loguru
-import s2sphere
-from s2sphere import LatLngRect
-from uas_standards.astm.f3548.v21.api import Subscription
+from uas_standards.astm.f3548.v21.api import Subscription, SubscriptionID
 from uas_standards.astm.f3548.v21.constants import Scope
 
+from monitoring.monitorlib import geo
 from monitoring.monitorlib.geo import Polygon, Volume3D
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
@@ -14,6 +13,9 @@ from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstanceResource
+from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
+    SubscriptionParams,
+)
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.scenario import (
@@ -22,6 +24,10 @@ from monitoring.uss_qualifier.scenarios.scenario import (
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 TIME_TOLERANCE_SEC = 1
+"""tolerance when comparing created vs returned timestamps"""
+
+LATITUDE_MUTATION_SHIFT = 0.001
+"""Amount of degrees by which the latitude will be shifted when subscriptions are mutated"""
 
 
 class SubscriptionSimple(TestScenario):
@@ -38,18 +44,18 @@ class SubscriptionSimple(TestScenario):
     SUB_TYPE = register_resource_type(377, "Subscription")
 
     # Base identifier for the subscriptions that will be created
-    _base_sub_id: str
+    _base_sub_id: SubscriptionID
 
-    _test_subscription_ids: List[str]
+    _test_subscription_ids: List[SubscriptionID]
 
     # Base parameters used for subscription creation variations
-    _sub_generation_kwargs: Dict[str, Any]
+    _sub_generation_params: SubscriptionParams
 
     # Effective parameters used for each subscription, indexed by subscription ID
-    _sub_kwargs_by_sub_id: Dict[str, Dict[str, Any]]
+    _sub_params_by_sub_id: Dict[SubscriptionID, SubscriptionParams]
 
     # Keep track of the latest subscription returned by the DSS
-    _current_subscriptions: Dict[str, Subscription]
+    _current_subscriptions: Dict[SubscriptionID, Subscription]
 
     # An area designed to be too big to be allowed to search by the DSS
     _problematically_big_area_vol: Polygon
@@ -88,7 +94,7 @@ class SubscriptionSimple(TestScenario):
             self._base_sub_id[:-1] + f"{i}" for i in range(4)
         ]
 
-        self._sub_generation_kwargs = self._planning_area.get_new_subscription_params(
+        self._sub_generation_params = self._planning_area.get_new_subscription_params(
             subscription_id="",  # subscription ID will need to be overwritten
             # Set this slightly in the past: we will update the subscriptions
             # to a later value that still needs to be roughly 'now' without getting into the future
@@ -142,7 +148,7 @@ class SubscriptionSimple(TestScenario):
         # Multiple runs of the scenario seem to rely on the same instance of it:
         # thus we need to reset the state of the scenario before running it.
         self._current_subscriptions = {}
-        self._sub_kwargs_by_sub_id = {}
+        self._sub_params_by_sub_id = {}
 
         self._ensure_clean_workspace_step()
 
@@ -185,30 +191,30 @@ class SubscriptionSimple(TestScenario):
         """
 
         # Create the subscription without start and end time
-        no_opt_params = self._sub_generation_kwargs.copy()
-        no_opt_params["sub_id"] = self._test_subscription_ids[0]
-        no_opt_params["start_time"] = None
-        no_opt_params["end_time"] = None
+        no_opt_params = self._sub_generation_params.copy()
+        no_opt_params.sub_id = self._test_subscription_ids[0]
+        no_opt_params.start_time = None
+        no_opt_params.end_time = None
         self._create_sub_with_params(no_opt_params)
 
         # Create the subscription with only end time set
-        no_start_param = self._sub_generation_kwargs.copy()
-        no_start_param["sub_id"] = self._test_subscription_ids[1]
-        no_start_param["start_time"] = None
+        no_start_param = self._sub_generation_params.copy()
+        no_start_param.sub_id = self._test_subscription_ids[1]
+        no_start_param.start_time = None
         self._create_sub_with_params(no_start_param)
 
         # Create the subscription with only start time set
-        no_end_param = self._sub_generation_kwargs.copy()
-        no_end_param["sub_id"] = self._test_subscription_ids[2]
-        no_end_param["end_time"] = None
+        no_end_param = self._sub_generation_params.copy()
+        no_end_param.sub_id = self._test_subscription_ids[2]
+        no_end_param.end_time = None
         self._create_sub_with_params(no_end_param)
 
         # Create the subscription with all parameters set:
-        all_set_params = self._sub_generation_kwargs.copy()
-        all_set_params["sub_id"] = self._test_subscription_ids[3]
+        all_set_params = self._sub_generation_params.copy()
+        all_set_params.sub_id = self._test_subscription_ids[3]
         self._create_sub_with_params(all_set_params)
 
-    def _create_sub_with_params(self, creation_params: Dict[str, Any]):
+    def _create_sub_with_params(self, creation_params: SubscriptionParams):
         # TODO validate overall object structure with the openAPI validators.
         #  we may want to move the entire validation/comparison logic to a 'SubscriptionValidator',
         #  similarly to how the ISAValidator works for RID v1/v2.
@@ -229,7 +235,7 @@ class SubscriptionSimple(TestScenario):
 
         # Check that what we get back is valid and corresponds to what we want to create
         self._compare_upsert_resp_with_params(
-            creation_params["sub_id"], newly_created, creation_params, False
+            creation_params.sub_id, newly_created, creation_params, False
         )
 
         # Check that the notification index is 0 for a newly created subscription.
@@ -248,17 +254,15 @@ class SubscriptionSimple(TestScenario):
                 )
 
         # Store the subscription
-        self._current_subscriptions[
-            creation_params["sub_id"]
-        ] = newly_created.subscription
+        self._current_subscriptions[creation_params.sub_id] = newly_created.subscription
         # Store the parameters we used for that subscription
-        self._sub_kwargs_by_sub_id[creation_params["sub_id"]] = creation_params
+        self._sub_params_by_sub_id[creation_params.sub_id] = creation_params
 
     def _compare_upsert_resp_with_params(
         self,
         sub_id: str,
         creation_resp_under_test: MutatedSubscription,
-        creation_params: Dict[str, Any],
+        creation_params: SubscriptionParams,
         was_mutated: bool,
     ):
         """
@@ -294,17 +298,17 @@ class SubscriptionSimple(TestScenario):
         """Mutate all existing subscriptions by adding 10 seconds to their start and end times"""
 
         for sub_id, sub in self._current_subscriptions.items():
-            orig_params = self._sub_kwargs_by_sub_id[sub_id].copy()
-            new_params = dict(
+            orig_params = self._sub_params_by_sub_id[sub_id].copy()
+            new_params = SubscriptionParams(
                 sub_id=sub_id,
-                area_vertices=orig_params["area_vertices"],
-                min_alt_m=orig_params["min_alt_m"],
-                max_alt_m=orig_params["max_alt_m"],
+                area_vertices=orig_params.area_vertices,
+                min_alt_m=orig_params.min_alt_m,
+                max_alt_m=orig_params.max_alt_m,
                 start_time=sub.time_start.value.datetime + timedelta(seconds=10),
                 end_time=sub.time_end.value.datetime + timedelta(seconds=10),
-                base_url=orig_params["base_url"],
-                notify_for_op_intents=orig_params["notify_for_op_intents"],
-                notify_for_constraints=orig_params["notify_for_constraints"],
+                base_url=orig_params.base_url,
+                notify_for_op_intents=orig_params.notify_for_op_intents,
+                notify_for_constraints=orig_params.notify_for_constraints,
             )
             mutated_sub_response = self._dss.upsert_subscription(
                 version=sub.version,
@@ -326,26 +330,32 @@ class SubscriptionSimple(TestScenario):
             # Store the version of the subscription
             self._current_subscriptions[sub_id] = mutated_sub_response.subscription
             # Update the parameters we used for that subscription
-            self._sub_kwargs_by_sub_id[sub_id] = new_params
+            self._sub_params_by_sub_id[sub_id] = new_params
 
     def _test_mutate_subscriptions_change_area(self):
         """
         Mutate all existing subscriptions by updating their footprint.
         """
         for sub_id, sub in self._current_subscriptions.items():
+
+            new_params = self._sub_params_by_sub_id[sub_id].copy()
+
+            # Shift all previous vertices west by 0.001 degrees
+            new_params.area_vertices = geo.shift_rect_lng(
+                new_params.area_vertices, LATITUDE_MUTATION_SHIFT
+            )
+            mutated_sub_response = self._dss.upsert_subscription(
+                version=sub.version,
+                **new_params,
+            )
+            self.record_query(mutated_sub_response)
             with self.check("Subscription can be mutated", self._pid) as check:
-                new_params = self._sub_kwargs_by_sub_id[sub_id].copy()
-
-                # Shift all previous vertices west by 0.001 degrees
-                new_params["area_vertices"] = _shift_rect_lng(
-                    new_params["area_vertices"], 0.001
-                )
-
-                mutated_sub_response = self._dss.upsert_subscription(
-                    version=sub.version,
-                    **new_params,
-                )
-                self.record_query(mutated_sub_response)
+                if not mutated_sub_response.success:
+                    check.record_failed(
+                        "Subscription mutation failed",
+                        details=f"Subscription mutation failed with status code {mutated_sub_response.status_code}",
+                        query_timestamps=[mutated_sub_response.request.timestamp],
+                    )
 
             # Check that what we get back is valid and corresponds to what we want to create
             self._compare_upsert_resp_with_params(
@@ -354,16 +364,22 @@ class SubscriptionSimple(TestScenario):
             # Store the version of the subscription
             self._current_subscriptions[sub_id] = mutated_sub_response.subscription
             # Update the parameters we used for that subscription
-            self._sub_kwargs_by_sub_id[sub_id] = new_params
+            self._sub_params_by_sub_id[sub_id] = new_params
 
     def _test_get_sub(self):
         """Retrieves the previously created Subscription by their ID and ensures that
         the data obtained in the response is correct."""
 
-        for sub_id, sub_params in self._sub_kwargs_by_sub_id.items():
+        for sub_id, sub_params in self._sub_params_by_sub_id.items():
+            fetched_sub = self._dss.get_subscription(sub_id)
+            self.record_query(fetched_sub)
             with self.check("Get Subscription by ID", self._pid) as check:
-                fetched_sub = self._dss.get_subscription(sub_id)
-                self.record_query(fetched_sub)
+                if not fetched_sub.success:
+                    check.record_failed(
+                        "Get subscription by ID failed",
+                        details=f"Get subscription by ID failed with status code {fetched_sub.status_code}",
+                        query_timestamps=[fetched_sub.request.timestamp],
+                    )
 
             # Make sure the subscription corresponds to what we requested
             self._validate_subscription_and_notif_index(
@@ -375,22 +391,22 @@ class SubscriptionSimple(TestScenario):
             )
 
     def _test_valid_search_sub(self):
-        """Search for the created subscription by using the configured ISA's footprint. This is expected to work"""
+        """Search for the created subscription by using the configured planning area's footprint. This is expected to work"""
 
         subs_in_area = self._dss.query_subscriptions(self._planning_area_volume4d)
         self.record_query(subs_in_area)
         with self.check(
-            "Search for all subscriptions in ISA area",
+            "Search for all subscriptions in planning area",
             self._pid,
         ) as check:
             if subs_in_area.status_code != 200:
                 check.record_failed(
-                    "Search for subscriptions in ISA area failed",
-                    details=f"Search for subscriptions in ISA area failed with status code {subs_in_area.status_code}",
+                    "Search for subscriptions in planning area failed",
+                    details=f"Search for subscriptions in planning area failed with status code {subs_in_area.status_code}",
                     query_timestamps=[subs_in_area.request.timestamp],
                 )
 
-        for sub_id, sub_params in self._sub_kwargs_by_sub_id.items():
+        for sub_id, sub_params in self._sub_params_by_sub_id.items():
             with self.check(
                 "Created Subscription is in search results",
                 self._pid,
@@ -476,7 +492,7 @@ class SubscriptionSimple(TestScenario):
             self._validate_subscription_and_notif_index(
                 sub_id,
                 deleted_sub.subscription,
-                self._sub_kwargs_by_sub_id[sub_id],
+                self._sub_params_by_sub_id[sub_id],
                 False,
                 [deleted_sub.request.timestamp],
             )
@@ -485,7 +501,7 @@ class SubscriptionSimple(TestScenario):
 
     def _test_get_deleted_sub(self):
         """Try to retrieve the deleted subscription by its ID."""
-        for sub_id in self._sub_kwargs_by_sub_id.keys():
+        for sub_id in self._sub_params_by_sub_id.keys():
             not_found_sub = self._dss.get_subscription(sub_id)
             self.record_query(not_found_sub)
             with self.check(
@@ -505,13 +521,13 @@ class SubscriptionSimple(TestScenario):
         subs_in_area = self._dss.query_subscriptions(self._planning_area_volume4d)
         self.record_query(subs_in_area)
         with self.check(
-            "Search for all subscriptions in ISA area",
+            "Search for all subscriptions in planning area",
             self._pid,
         ) as check:
             if subs_in_area.status_code != 200:
                 check.record_failed(
-                    "Search for subscriptions in ISA area failed",
-                    details=f"Search for subscriptions in ISA area failed with status code {subs_in_area.status_code}",
+                    "Search for subscriptions in planning area failed",
+                    details=f"Search for subscriptions in planning area failed with status code {subs_in_area.status_code}",
                     query_timestamps=[subs_in_area.request.timestamp],
                 )
 
@@ -519,7 +535,7 @@ class SubscriptionSimple(TestScenario):
             "Deleted subscription should not be present in search results",
             self._pid,
         ) as check:
-            for sub_id in self._sub_kwargs_by_sub_id.keys():
+            for sub_id in self._sub_params_by_sub_id.keys():
                 if sub_id in subs_in_area.subscriptions:
                     check.record_failed(
                         "A deleted subscription is still present in search results",
@@ -532,7 +548,7 @@ class SubscriptionSimple(TestScenario):
         self,
         sub_id: str,
         sub_under_test: Subscription,
-        creation_params: Dict[str, Any],
+        creation_params: SubscriptionParams,
         was_mutated: bool,
         query_timestamps: List[datetime],
     ):
@@ -563,7 +579,7 @@ class SubscriptionSimple(TestScenario):
         self,
         sub_id: str,
         sub_under_test: Subscription,
-        creation_params: Dict[str, Any],
+        creation_params: SubscriptionParams,
         was_mutated: bool,
         query_timestamps: List[datetime],
     ):
@@ -577,8 +593,8 @@ class SubscriptionSimple(TestScenario):
             was_mutated: true if the resulting subscription is the result of a mutation or deletion
         """
 
-        expect_start_time = creation_params["start_time"]
-        expect_end_time = creation_params["end_time"]
+        expect_start_time = creation_params.start_time
+        expect_end_time = creation_params.end_time
 
         with self.check("Returned subscription has an ID", self._pid) as check:
             if not sub_under_test.id:
@@ -596,15 +612,19 @@ class SubscriptionSimple(TestScenario):
                     query_timestamps=query_timestamps,
                 )
 
-        with self.check("Returned subscription has an ISA URL", self._pid) as check:
+        with self.check(
+            "Returned subscription has an USS base URL", self._pid
+        ) as check:
             if not sub_under_test.uss_base_url:
                 check.record_failed(
-                    "Returned subscription had no ISA URL",
-                    details="A subscription is expected to have an ISA URL",
+                    "Returned subscription had no USS base URL",
+                    details="A subscription is expected to have an USS base URL",
                     query_timestamps=query_timestamps,
                 )
 
-        with self.check("Returned ISA URL has correct base URL", self._pid) as check:
+        with self.check(
+            "Returned USS base URL has correct base URL", self._pid
+        ) as check:
             if sub_under_test.uss_base_url != self._planning_area.base_url:
                 check.record_failed(
                     "Returned USS Base URL does not match provided one",
@@ -676,7 +696,7 @@ class SubscriptionSimple(TestScenario):
             ) as check:
                 if (
                     sub_under_test.version
-                    == self._current_subscriptions[sub_under_test.id]
+                    == self._current_subscriptions[sub_under_test.id].version
                 ):
                     check.record_failed(
                         "Returned subscription version was not updated",
@@ -716,11 +736,11 @@ class SubscriptionSimple(TestScenario):
         ) as check:
             if (
                 sub_under_test.notify_for_operational_intents
-                != creation_params["notify_for_op_intents"]
+                != creation_params.notify_for_op_intents
             ):
                 check.record_failed(
                     "Returned subscription has notify_for_operational_intents set to a different value than requested",
-                    details=f"Requested: {creation_params['notify_for_op_intents']}, Returned: {sub_under_test.notify_for_operational_intents}",
+                    details=f"Requested: {creation_params.notify_for_op_intents}, Returned: {sub_under_test.notify_for_operational_intents}",
                     query_timestamps=query_timestamps,
                 )
 
@@ -730,11 +750,11 @@ class SubscriptionSimple(TestScenario):
         ) as check:
             if (
                 sub_under_test.notify_for_constraints
-                != creation_params["notify_for_constraints"]
+                != creation_params.notify_for_constraints
             ):
                 check.record_failed(
                     "Returned subscription has notify_for_constraints set to a different value than requested",
-                    details=f"Requested: {creation_params['notify_for_constraints']}, Returned: {sub_under_test.notify_for_constraints}",
+                    details=f"Requested: {creation_params.notify_for_constraints}, Returned: {sub_under_test.notify_for_constraints}",
                     query_timestamps=query_timestamps,
                 )
 
@@ -742,15 +762,3 @@ class SubscriptionSimple(TestScenario):
         self.begin_cleanup()
         self._ensure_test_sub_ids_do_not_exist()
         self.end_cleanup()
-
-
-def _shift_rect_lng(rect: LatLngRect, shift: float) -> LatLngRect:
-    """Shift a rect's longitude by the given amount of degrees"""
-    return LatLngRect(
-        s2sphere.LatLng.from_degrees(
-            rect.lat_lo().degrees + shift, rect.lng_lo().degrees + shift
-        ),
-        s2sphere.LatLng.from_degrees(
-            rect.lat_hi().degrees + shift, rect.lng_hi().degrees + shift
-        ),
-    )

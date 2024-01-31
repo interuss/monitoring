@@ -19,13 +19,13 @@ The notification index of a newly created subscription must be 0, otherwise the 
 
 If the notification index of the subscription is less than 0, the DSS fails to properly implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-## 🛑 Returned subscription has an ISA URL check
+## 🛑 Returned subscription has an USS base URL check
 
-If the returned subscription has no ISA URL defined, **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)** is not respected.
+If the returned subscription has no USS base URL defined, **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)** is not respected.
 
-## 🛑 Returned ISA URL has correct base URL check
+## 🛑 Returned USS base URL has correct base URL check
 
-The returned ISA URL must be prefixed with the USS base URL that was provided at subscription creation, otherwise the DSS is in violation of **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+The returned USS base URL must be prefixed with the USS base URL that was provided at subscription creation, otherwise the DSS is in violation of **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
 ## 🛑 Returned subscription has a start time check
 

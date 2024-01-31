@@ -60,7 +60,7 @@ Query and search for the created subscription in various ways
 
 If the freshly created subscription cannot be queried using its ID, the DSS is failing to meet **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-#### 🛑 Search for all subscriptions in ISA area check
+#### 🛑 Search for all subscriptions in planning area check
 
 If the DSS fails to let us search in the area for which the subscription was just created, it is failing to meet **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
@@ -124,7 +124,7 @@ Attempt to query and search for the deleted subscription in various ways
 
 If the DSS provides a successful reply to a direct query for the deleted subscription, it is in violation of **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-#### 🛑 Search for all subscriptions in ISA area check
+#### 🛑 Search for all subscriptions in planning area check
 
 If the DSS fails to let us search in the area for which the subscription was just created, it is failing to meet **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
