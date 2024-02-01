@@ -3,7 +3,7 @@ import socket
 from typing import List
 from urllib.parse import urlparse
 
-from monitoring.uss_qualifier.resources import PlanningAreaResource
+from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import Volume4D, Volume3D, Polygon, LatLngPoint
 from uas_standards.astm.f3548.v21.constants import Scope

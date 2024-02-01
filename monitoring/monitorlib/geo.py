@@ -464,6 +464,18 @@ def make_latlng_rect(area) -> s2sphere.LatLngRect:
         )
 
 
+def shift_rect_lng(rect: s2sphere.LatLngRect, shift: float) -> s2sphere.LatLngRect:
+    """Shift a rect's longitude by the given amount of degrees"""
+    return s2sphere.LatLngRect(
+        s2sphere.LatLng.from_degrees(
+            rect.lat_lo().degrees + shift, rect.lng_lo().degrees + shift
+        ),
+        s2sphere.LatLng.from_degrees(
+            rect.lat_hi().degrees + shift, rect.lng_hi().degrees + shift
+        ),
+    )
+
+
 def validate_lat(lat: Union[str, float]) -> float:
     lat = float(lat)
     if lat < -90 or lat > 90:
