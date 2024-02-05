@@ -128,13 +128,18 @@ def register_resource_type(code: int, description: str) -> ResourceType:
 
 
 class IDFactory(object):
-    """Creates UUIDv4-formatted IDs encoding the kind of ID and owner.
+    """Creates UUIDv4 (as described in RFC4122) formatted IDs encoding the kind of ID and owner.
 
-    Format: 0000XXXX-YYYY-4ZYY-YYYY-YYYYYYYY0000
+    Format: 0000XXXX-YYYY-4ZYY-8YYY-YYYYYYYY0000
+
+    Note that a UUID V4 needs to conform to the following regexp, which is why we
+    set the first digit of the fourth group to 8.
+
+    ^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-4[0-9a-fA-F]{3}\\-[8-b][0-9a-fA-F]{3}\\-[0-9a-fA-F]{12}$
 
     XXXX encodes the kind of ID according to id_codes.
     YYYYYYYYYYYYYYYYY encodes the owner/creator of the resource having the ID and
-    consists of 12 characters encoded as 6-bit groups.
+    consists of 11 characters encoded as 6-bit groups.
     Z is reserved and currently set to 0.
     """
 
@@ -145,12 +150,12 @@ class IDFactory(object):
 
     def make_id(self, resource_type: ResourceType):
         """Make a test ID with the specified resource type code"""
-        return "0000{x}-{y1}-40{y2}-{y3}-{y4}0000".format(
+        return "0000{x}-{y1}-40{y2}-8{y3}-{y4}0000".format(
             x=utils.encode_resource_type_code(resource_type),
             y1=self.owner_id[0:4],
             y2=self.owner_id[4:6],
-            y3=self.owner_id[6:10],
-            y4=self.owner_id[10:18],
+            y3=self.owner_id[6:9],
+            y4=self.owner_id[9:17],
         )
 
     @classmethod
