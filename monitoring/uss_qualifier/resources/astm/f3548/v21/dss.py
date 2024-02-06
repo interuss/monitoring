@@ -212,6 +212,13 @@ class DSSInstance(object):
         op_intent_ref: OperationalIntentReference,
         uss_participant_id: Optional[str] = None,
     ) -> Tuple[Optional[VehicleTelemetry], Query]:
+        """
+        Get telemetry of an operational intent.
+        Returns:
+            VehicleTelemetry if available, None otherwise
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
+        """
         self._uses_scope(Scope.ConformanceMonitoringForSituationalAwareness)
         op = OPERATIONS[OperationID.GetOperationalIntentTelemetry]
         query = query_and_describe(
@@ -222,14 +229,16 @@ class DSSInstance(object):
             uss_participant_id,
             scope=Scope.ConformanceMonitoringForSituationalAwareness,
         )
-        if query.status_code == 200:
-            result: GetOperationalIntentTelemetryResponse = ImplicitDict.parse(
-                query.response.json, GetOperationalIntentTelemetryResponse
-            )
-            telemetry = result.telemetry if "telemetry" in result else None
-            return telemetry, query
-        else:
+        if query.status_code == 412:
             return None, query
+        elif query.status_code != 200:
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to retrieval operational intent telemetry for {op_intent_ref.id}",
+                query,
+            )
+        else:
+            result = query.parse_json_result(GetOperationalIntentTelemetryResponse)
+            return result.telemetry, query
 
     def put_op_intent(
         self,

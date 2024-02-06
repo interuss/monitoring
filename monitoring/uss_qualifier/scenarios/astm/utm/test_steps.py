@@ -442,20 +442,21 @@ class OpIntentValidator(object):
                 )
 
     def _check_op_intent_telemetry(self, oi_ref: OperationalIntentReference):
-        oi_tel, oi_tel_query = self._dss.get_op_intent_telemetry(
-            oi_ref, self._flight_planner.participant_id
-        )
-        self._scenario.record_query(oi_tel_query)
-
         with self._scenario.check(
             "Operational intent telemetry retrievable",
             [self._flight_planner.participant_id],
         ) as check:
-            if oi_tel_query.status_code not in {200, 412}:
+            try:
+                oi_tel, oi_tel_query = self._dss.get_op_intent_telemetry(
+                    oi_ref, self._flight_planner.participant_id
+                )
+                self._scenario.record_query(oi_tel_query)
+            except fetch.QueryError as e:
+                self._scenario.record_queries(e.queries)
+                oi_tel_query = e.queries[0]
                 check.record_failed(
                     summary="Operational intent telemetry could not be retrieved from USS",
-                    severity=Severity.High,
-                    details=f"Received status code {oi_tel_query.status_code} from {self._flight_planner.participant_id} when querying for telemetry of operational intent {oi_ref.id}",
+                    details=f"Received status code {oi_tel_query.status_code} from {self._flight_planner.participant_id} when querying for telemetry of operational intent {oi_ref.id}; {e}",
                     query_timestamps=[oi_tel_query.request.timestamp],
                 )
 
