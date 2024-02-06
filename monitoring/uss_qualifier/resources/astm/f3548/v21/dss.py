@@ -144,6 +144,8 @@ class DSSInstance(object):
     ) -> Tuple[OperationalIntentReference, Query]:
         """
         Retrieve an OP Intent from the DSS, using only its ID
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
         """
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.GetOperationalIntentReference]
@@ -156,12 +158,13 @@ class DSSInstance(object):
             scope=Scope.StrategicCoordination,
         )
         if query.status_code != 200:
-            result = None
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to retrieve operational intent reference {op_intent_id}",
+                query,
+            )
         else:
-            result = ImplicitDict.parse(
-                query.response.json, GetOperationalIntentReferenceResponse
-            ).operational_intent_reference
-        return result, query
+            result = query.parse_json_result(GetOperationalIntentReferenceResponse)
+            return result.operational_intent_reference, query
 
     def get_full_op_intent(
         self,
@@ -286,6 +289,11 @@ class DSSInstance(object):
         id: str,
         ovn: str,
     ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query]:
+        """
+        Delete an operational intent.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
+        """
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.DeleteOperationalIntentReference]
         query = query_and_describe(
