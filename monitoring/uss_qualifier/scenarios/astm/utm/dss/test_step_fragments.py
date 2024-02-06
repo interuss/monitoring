@@ -26,6 +26,7 @@ def remove_op_intent(
             scenario.record_query(query)
         except fetch.QueryError as e:
             scenario.record_queries(e.queries)
+            query = e.queries[0]
             check.record_failed(
                 summary=f"Could not remove op intent reference {oi_id}",
                 details=f"When attempting to remove op intent reference {oi_id} from the DSS, received {query.status_code}; {e}",

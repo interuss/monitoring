@@ -286,6 +286,11 @@ class DSSInstance(object):
         id: str,
         ovn: str,
     ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query]:
+        """
+        Delete an operational intent.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
+        """
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.DeleteOperationalIntentReference]
         query = query_and_describe(
