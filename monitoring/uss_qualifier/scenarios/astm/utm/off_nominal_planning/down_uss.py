@@ -135,12 +135,16 @@ class DownUSS(TestScenario):
     def _setup(self):
 
         self.begin_test_step("Resolve USS ID of virtual USS")
-        _, dummy_query = self.dss.find_op_intent(self._intents_extent)
         with self.check("Successful dummy query", [self.dss.participant_id]) as check:
-            if dummy_query.status_code != 200:
+            try:
+                _, dummy_query = self.dss.find_op_intent(self._intents_extent)
+                self.record_query(dummy_query)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                dummy_query = e.queries[0]
                 check.record_failed(
                     summary="Failed to query DSS",
-                    details=f"DSS responded code {dummy_query.status_code}; error message: {dummy_query.error_message}",
+                    details=f"DSS responded code {dummy_query.status_code}; error message: {dummy_query.error_message}; {e}",
                     query_timestamps=[dummy_query.request.timestamp],
                 )
         self.uss_qualifier_sub = self.dss.client.auth_adapter.get_sub()
@@ -272,16 +276,19 @@ class DownUSS(TestScenario):
         self.end_test_step()
 
     def _clear_op_intents(self):
-        oi_refs, find_query = self.dss.find_op_intent(self._intents_extent)
-        self.record_query(find_query)
 
         with self.check(
             "Successful operational intents cleanup", [self.dss.participant_id]
         ) as check:
-            if find_query.status_code != 200:
+            try:
+                oi_refs, find_query = self.dss.find_op_intent(self._intents_extent)
+                self.record_query(find_query)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                find_query = e.queries[0]
                 check.record_failed(
                     summary=f"Failed to query operational intent references from DSS in {self._intents_extent} for cleanup",
-                    details=f"DSS responded code {find_query.status_code}; error message: {find_query.error_message}",
+                    details=f"DSS responded code {find_query.status_code}; error message: {find_query.error_message}; {e}",
                     query_timestamps=[find_query.request.timestamp],
                 )
 
