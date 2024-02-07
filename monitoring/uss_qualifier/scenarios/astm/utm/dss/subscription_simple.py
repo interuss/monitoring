@@ -26,8 +26,8 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 TIME_TOLERANCE_SEC = 1
 """tolerance when comparing created vs returned timestamps"""
 
-LATITUDE_MUTATION_SHIFT = 0.001
-"""Amount of degrees by which the latitude will be shifted when subscriptions are mutated"""
+LONGITUDE_MUTATION_SHIFT = 0.001
+"""Amount of degrees by which the longitude will be shifted when subscriptions are mutated"""
 
 
 class SubscriptionSimple(TestScenario):
@@ -342,7 +342,7 @@ class SubscriptionSimple(TestScenario):
 
             # Shift all previous vertices west by 0.001 degrees
             new_params.area_vertices = geo.shift_rect_lng(
-                new_params.area_vertices, LATITUDE_MUTATION_SHIFT
+                new_params.area_vertices, LONGITUDE_MUTATION_SHIFT
             )
             mutated_sub_response = self._dss.upsert_subscription(
                 version=sub.version,
