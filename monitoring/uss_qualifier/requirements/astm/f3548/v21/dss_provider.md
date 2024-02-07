@@ -18,12 +18,29 @@ This file describes the set of ASTM F3548-21 requirements with which a USS provi
   * **astm.f3548.v21.DSS0100,2**
 * **astm.f3548.v21.DSS0200**
 * **astm.f3548.v21.DSS0205**
-* **astm.f3548.v21.DSS0210**
 * **astm.f3548.v21.DSS0215**
 * **astm.f3548.v21.DSS0300**
 
 ## Data Synchronization Requirements
 
+* **astm.f3548.v21.DSS0210,1a**
+* **astm.f3548.v21.DSS0210,1b**
+* **astm.f3548.v21.DSS0210,1c**
+* **astm.f3548.v21.DSS0210,1d**
+* **astm.f3548.v21.DSS0210,1e**
+* **astm.f3548.v21.DSS0210,1f**
+* **astm.f3548.v21.DSS0210,1g**
+* **astm.f3548.v21.DSS0210,1h**
+* **astm.f3548.v21.DSS0210,1i**
+* **astm.f3548.v21.DSS0210,2a**
+* **astm.f3548.v21.DSS0210,2b**
+* **astm.f3548.v21.DSS0210,2c**
+* **astm.f3548.v21.DSS0210,2d**
+* **astm.f3548.v21.DSS0210,2e**
+* **astm.f3548.v21.DSS0210,2f**
+* **astm.f3548.v21.DSS0210,3a**
+* **astm.f3548.v21.DSS0210,3b**
+* **astm.f3548.v21.DSS0210,3c**
 * **astm.f3548.v21.DSS0210,A2-7-2,1a**
 * **astm.f3548.v21.DSS0210,A2-7-2,1b**
 * **astm.f3548.v21.DSS0210,A2-7-2,1c**
