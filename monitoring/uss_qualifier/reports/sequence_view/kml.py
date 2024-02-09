@@ -134,7 +134,7 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                         continue
                 if (
                     render_info.response_type is not type(None)
-                    and render_info.request_type
+                    and render_info.response_type
                 ):
                     try:
                         kwargs["resp"] = ImplicitDict.parse(

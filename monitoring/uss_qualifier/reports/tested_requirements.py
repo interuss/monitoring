@@ -363,9 +363,13 @@ def _find_participant_system_version(
             if version is not None:
                 return version
     elif test_scenario:
-        if report.test_scenario.scenario_type in (
-            "scenarios.versioning.get_system_versions.GetSystemVersions",
-            "scenarios.versioning.GetSystemVersions",
+        if (
+            report.test_scenario.scenario_type
+            in (
+                "scenarios.versioning.get_system_versions.GetSystemVersions",
+                "scenarios.versioning.GetSystemVersions",
+            )
+            and "notes" in report.test_scenario
         ):
             if participant_id in report.test_scenario.notes:
                 system_identity, version = report.test_scenario.notes[
