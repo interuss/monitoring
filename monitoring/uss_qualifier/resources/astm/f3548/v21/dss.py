@@ -333,12 +333,15 @@ class DSSInstance(object):
         uss_id: str,
         available: bool,
         version: str = "",
-    ) -> Tuple[Optional[str], Query]:
+    ) -> Tuple[str, Query]:
         """
+        Set USS availability.
         Returns:
             A tuple composed of
-            1) the new version of the USS availability, or None if the query failed;
+            1) the new version of the USS availability;
             2) the query.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
         """
         self._uses_scope(Scope.AvailabilityArbitration)
         if available:
@@ -361,11 +364,12 @@ class DSSInstance(object):
             json=req,
         )
         if query.status_code != 200:
-            return None, query
-        else:
-            result = UssAvailabilityStatusResponse(
-                ImplicitDict.parse(query.response.json, UssAvailabilityStatusResponse)
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to set USS availability of {uss_id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
             )
+        else:
+            result = query.parse_json_result(UssAvailabilityStatusResponse)
             return result.version, query
 
     def query_subscriptions(

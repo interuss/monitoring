@@ -637,18 +637,21 @@ def set_uss_available(
     Returns:
         The new version of the USS availability.
     """
-    availability_version, avail_query = dss.set_uss_availability(
-        uss_sub,
-        True,
-    )
-    scenario.record_query(avail_query)
     with scenario.check(
         "USS availability successfully set to 'Available'", [dss.participant_id]
     ) as check:
-        if availability_version is None:
+        try:
+            availability_version, avail_query = dss.set_uss_availability(
+                uss_sub,
+                True,
+            )
+            scenario.record_query(avail_query)
+        except QueryError as e:
+            scenario.record_queries(e.queries)
+            avail_query = e.queries[0]
             check.record_failed(
                 summary=f"Availability of USS {uss_sub} could not be set to available",
-                details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
+                details=f"DSS responded code {avail_query.status_code}; {e}",
                 query_timestamps=[avail_query.request.timestamp],
             )
     return availability_version
@@ -666,18 +669,21 @@ def set_uss_down(
     Returns:
         The new version of the USS availability.
     """
-    availability_version, avail_query = dss.set_uss_availability(
-        uss_sub,
-        False,
-    )
-    scenario.record_query(avail_query)
     with scenario.check(
         "USS availability successfully set to 'Down'", [dss.participant_id]
     ) as check:
-        if availability_version is None:
+        try:
+            availability_version, avail_query = dss.set_uss_availability(
+                uss_sub,
+                False,
+            )
+            scenario.record_query(avail_query)
+        except QueryError as e:
+            scenario.record_queries(e.queries)
+            avail_query = e.queries[0]
             check.record_failed(
                 summary=f"Availability of USS {uss_sub} could not be set to down",
-                details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
+                details=f"DSS responded code {avail_query.status_code}; {e}",
                 query_timestamps=[avail_query.request.timestamp],
             )
     return availability_version
