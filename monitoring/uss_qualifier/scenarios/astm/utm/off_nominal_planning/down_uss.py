@@ -193,25 +193,28 @@ class DownUSS(TestScenario):
             raise ValueError(f"Invalid state {target_state}")
 
         self.begin_test_step(f"Virtual USS {msg_action} conflicting operational intent")
-        oi_ref, _, query = self.dss.put_op_intent(
-            Volume4DCollection.from_interuss_scd_api(
-                conflicting_intent.request.operational_intent.volumes
-            ).to_f3548v21(),
-            key,
-            target_state,
-            "https://fake.uss/down",
-            oi_id,
-            oi_ovn,
-        )
-        self.record_query(query)
         with self.check(
             f"Operational intent successfully {msg_action_past}",
             [self.dss.participant_id],
         ) as check:
-            if oi_ref is None:
+            try:
+                oi_ref, _, query = self.dss.put_op_intent(
+                    Volume4DCollection.from_interuss_scd_api(
+                        conflicting_intent.request.operational_intent.volumes
+                    ).to_f3548v21(),
+                    key,
+                    target_state,
+                    "https://fake.uss/down",
+                    oi_id,
+                    oi_ovn,
+                )
+                self.record_query(query)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                query = e.queries[0]
                 check.record_failed(
                     f"Operational intent not successfully {msg_action_past}",
-                    details=f"DSS responded code {query.status_code}; error message: {query.error_message}",
+                    details=f"DSS responded code {query.status_code}; {e}",
                     query_timestamps=[query.request.timestamp],
                 )
         self.end_test_step()

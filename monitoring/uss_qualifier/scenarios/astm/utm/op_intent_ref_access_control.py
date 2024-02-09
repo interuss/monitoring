@@ -341,41 +341,46 @@ class OpIntentReferenceAccessControl(TestScenario):
         return True
 
     def _create_op_intents(self):
-        (self._current_ref_1, subscribers1, q1) = self._dss.put_op_intent(
-            id=self._oid_1,
-            extents=self._volumes1.to_f3548v21(),
-            key=[],
-            state=OperationalIntentState.Accepted,
-            base_url=DUMMY_USS_BASE_URL,
-        )
-        self.record_query(q1)
-
         with self.check(
             "Can create an operational intent with valid credentials", self._pid
         ) as check:
-            if q1.response.status_code != 201:
+            try:
+                (self._current_ref_1, subscribers1, q1) = self._dss.put_op_intent(
+                    oi_id=self._oid_1,
+                    extents=self._volumes1.to_f3548v21(),
+                    key=[],
+                    state=OperationalIntentState.Accepted,
+                    base_url=DUMMY_USS_BASE_URL,
+                )
+                self.record_query(q1)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q1 = e.queries[0]
                 check.record_failed(
                     f"Could not create operational intent using main credentials",
-                    details=f"DSS responded with {q1.response.status_code} to attempt to create OI {self._oid_1}",
+                    details=f"DSS responded with {q1.response.status_code} to attempt to create OI {self._oid_1}; {e}",
                     query_timestamps=[q1.request.timestamp],
                 )
 
-        (
-            self._current_ref_2,
-            subscribers2,
-            q2,
-        ) = self._dss_separate_creds.put_op_intent(
-            id=self._oid_2,
-            extents=self._volumes2.to_f3548v21(),
-            key=[self._current_ref_1.ovn],
-            state=OperationalIntentState.Accepted,
-            base_url=DUMMY_USS_BASE_URL,
-        )
-        self.record_query(q2)
         with self.check(
             "Can create an operational intent with valid credentials", self._pid
         ) as check:
-            if q2.response.status_code != 201:
+            try:
+                (
+                    self._current_ref_2,
+                    subscribers2,
+                    q2,
+                ) = self._dss_separate_creds.put_op_intent(
+                    oi_id=self._oid_2,
+                    extents=self._volumes2.to_f3548v21(),
+                    key=[self._current_ref_1.ovn],
+                    state=OperationalIntentState.Accepted,
+                    base_url=DUMMY_USS_BASE_URL,
+                )
+                self.record_query(q2)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q2 = e.queries[0]
                 check.record_failed(
                     f"Could not create operational intent using second credentials",
                     details=f"DSS responded with {q2.response.status_code} to attempt to create OI {self._oid_2}",
@@ -400,46 +405,65 @@ class OpIntentReferenceAccessControl(TestScenario):
                 )
 
     def _check_mutation_on_non_owned_intent_fails(self):
-        # Attempt to update the state of the intent created with the main credentials using the second credentials
-        (ref, notif, q) = self._dss_separate_creds.put_op_intent(
-            id=self._oid_1,
-            extents=self._volumes1.to_f3548v21(),
-            key=[self._current_ref_2.ovn],
-            state=OperationalIntentState.Accepted,
-            base_url=self._current_ref_1.uss_base_url,
-            ovn=self._current_ref_1.ovn,
-        )
-        self.record_query(q)
         with self.check(
             "Non-owning credentials cannot modify operational intent",
             self._pid,
         ) as check:
-            if q.response.status_code != 403:
+            try:
+                # Attempt to update the state of the intent created with the main credentials using the second credentials
+                (ref, notif, q) = self._dss_separate_creds.put_op_intent(
+                    oi_id=self._oid_1,
+                    extents=self._volumes1.to_f3548v21(),
+                    key=[self._current_ref_2.ovn],
+                    state=OperationalIntentState.Accepted,
+                    base_url=self._current_ref_1.uss_base_url,
+                    ovn=self._current_ref_1.ovn,
+                )
+                self.record_query(q)
                 check.record_failed(
-                    f"Could update operational intent using second credentials",
+                    "Could update operational intent using second credentials",
                     details=f"DSS responded with {q.response.status_code} to attempt to update OI {self._oid_1}",
                     query_timestamps=[q.request.timestamp],
                 )
-        # Attempt to update the base_url of the intent created with the main credentials using the second credentials
-        (ref, notif, q) = self._dss_separate_creds.put_op_intent(
-            id=self._oid_1,
-            extents=self._volumes1.to_f3548v21(),
-            key=[self._current_ref_2.ovn],
-            state=self._current_ref_1.state,
-            base_url="https://another-url.uss/down",
-            ovn=self._current_ref_1.ovn,
-        )
-        self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
+                if q.response.status_code != 403:
+                    check.record_failed(
+                        "Attempt to update operational intent using second credentials failed with an unexpected status code (expected 403)",
+                        details=f"DSS responded with {q.response.status_code} to attempt to update OI {self._oid_1}; {e}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+
         with self.check(
             "Non-owning credentials cannot modify operational intent",
             self._pid,
         ) as check:
-            if q.response.status_code != 403:
+            try:
+                # Attempt to update the base_url of the intent created with the main credentials using the second credentials
+                (ref, notif, q) = self._dss_separate_creds.put_op_intent(
+                    oi_id=self._oid_1,
+                    extents=self._volumes1.to_f3548v21(),
+                    key=[self._current_ref_2.ovn],
+                    state=self._current_ref_1.state,
+                    base_url="https://another-url.uss/down",
+                    ovn=self._current_ref_1.ovn,
+                )
+                self.record_query(q)
                 check.record_failed(
-                    f"Could update operational intent using second credentials",
+                    "Could update operational intent using second credentials",
                     details=f"DSS responded with {q.response.status_code} to attempt to update OI {self._oid_1}",
                     query_timestamps=[q.request.timestamp],
                 )
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
+                if q.response.status_code != 403:
+                    check.record_failed(
+                        "Attempt to update operational intent using second credentials failed with an unexpected status code (expected 403)",
+                        details=f"DSS responded with {q.response.status_code} to attempt to update OI {self._oid_1}; {e}",
+                        query_timestamps=[q.request.timestamp],
+                    )
 
         # Try to delete
         with self.check(
