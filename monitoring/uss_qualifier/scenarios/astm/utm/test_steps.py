@@ -16,6 +16,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
     UasState,
     AirspaceUsageState,
 )
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
@@ -71,9 +72,20 @@ class OpIntentValidator(object):
         self._orig_oi_ref: Optional[OperationalIntentReference] = orig_oi_ref
 
     def __enter__(self) -> OpIntentValidator:
-        self._before_oi_refs, self._before_query = self._dss.find_op_intent(
-            self._extent
-        )
+        with self._scenario.check("DSS responses", [self._dss.participant_id]) as check:
+            try:
+                self._before_oi_refs, self._before_query = self._dss.find_op_intent(
+                    self._extent
+                )
+                self._scenario.record_query(self._before_query)
+            except QueryError as e:
+                self._scenario.record_queries(e.queries)
+                self._before_query = e.queries[0]
+                check.record_failed(
+                    summary="Failed to query DSS for operational intent references before planning request",
+                    details=f"Received status code {self._before_query.status_code} from the DSS; {e}",
+                    query_timestamps=[self._before_query.request.timestamp],
+                )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -89,7 +101,21 @@ class OpIntentValidator(object):
         return found[0] if len(found) != 0 else None
 
     def _begin_step_fragment(self):
-        self._after_oi_refs, self._after_query = self._dss.find_op_intent(self._extent)
+        with self._scenario.check("DSS responses", [self._dss.participant_id]) as check:
+            try:
+                self._after_oi_refs, self._after_query = self._dss.find_op_intent(
+                    self._extent
+                )
+                self._scenario.record_query(self._after_query)
+            except QueryError as e:
+                self._scenario.record_queries(e.queries)
+                self._after_query = e.queries[0]
+                check.record_failed(
+                    summary="Failed to query DSS for operational intent references after planning request",
+                    details=f"Received status code {self._after_query.status_code} from the DSS; {e}",
+                    query_timestamps=[self._after_query.request.timestamp],
+                )
+
         oi_ids_delta = {oi_ref.id for oi_ref in self._after_oi_refs} - {
             oi_ref.id for oi_ref in self._before_oi_refs
         }
@@ -102,25 +128,6 @@ class OpIntentValidator(object):
             )
         if len(oi_ids_delta) == 1:
             self._new_oi_ref = self._find_after_oi(oi_ids_delta.pop())
-
-        self._scenario.record_query(self._before_query)
-        self._scenario.record_query(self._after_query)
-
-        with self._scenario.check("DSS responses", [self._dss.participant_id]) as check:
-            if self._before_query.status_code != 200:
-                check.record_failed(
-                    summary="Failed to query DSS for operational intent references before planning request",
-                    severity=Severity.High,
-                    details=f"Received status code {self._before_query.status_code} from the DSS",
-                    query_timestamps=[self._before_query.request.timestamp],
-                )
-            if self._after_query.status_code != 200:
-                check.record_failed(
-                    summary="Failed to query DSS for operational intent references after planning request",
-                    severity=Severity.High,
-                    details=f"Received status code {self._after_query.status_code} from the DSS",
-                    query_timestamps=[self._after_query.request.timestamp],
-                )
 
     def expect_removed(self, oi_id: EntityID) -> None:
         """Validate that a specific operational intent reference was removed from the DSS.

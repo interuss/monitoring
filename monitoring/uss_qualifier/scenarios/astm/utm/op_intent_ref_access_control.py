@@ -198,17 +198,21 @@ class OpIntentReferenceAccessControl(TestScenario):
 
     def _attempt_to_delete_remaining_op_intents(self):
         """Search for op intents and attempt to delete them using the main credentials"""
-        # Also check for any potential other op_intents and delete them
-        (op_intents_1, q) = self._dss.find_op_intent(self._intents_extent)
-        self.record_query(q)
+
         with self.check(
             "Operational intent references can be searched for",
             self._pid,
         ) as check:
-            if q.response.status_code != 200:
+            try:
+                # Also check for any potential other op_intents and delete them
+                (op_intents_1, q) = self._dss.find_op_intent(self._intents_extent)
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
                 check.record_failed(
                     f"Could not search operational intent references using main credentials",
-                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs",
+                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs; {e}",
                     query_timestamps=[q.request.timestamp],
                 )
 
@@ -232,18 +236,21 @@ class OpIntentReferenceAccessControl(TestScenario):
                             query_timestamps=[dq.request.timestamp],
                         )
 
-        (op_intents_2, q) = self._dss_separate_creds.find_op_intent(
-            self._intents_extent
-        )
-        self.record_query(q)
         with self.check(
             "Operational intent references can be searched for",
             self._pid,
         ) as check:
-            if q.response.status_code != 200:
+            try:
+                (op_intents_2, q) = self._dss_separate_creds.find_op_intent(
+                    self._intents_extent
+                )
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
                 check.record_failed(
                     f"Could not search operational intent references using second credentials",
-                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs",
+                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs; {e}",
                     query_timestamps=[q.request.timestamp],
                 )
 
@@ -288,17 +295,20 @@ class OpIntentReferenceAccessControl(TestScenario):
         # Search and attempt deleting what may be found through search
         self._attempt_to_delete_remaining_op_intents()
 
-        # We can't delete anything that would be left.
-        (stray_oir, q) = self._dss.find_op_intent(self._intents_extent)
-        self.record_query(q)
         with self.check(
             "Operational intent references can be searched for",
             self._pid,
         ) as check:
-            if q.response.status_code != 200:
+            try:
+                # We can't delete anything that would be left.
+                (stray_oir, q) = self._dss.find_op_intent(self._intents_extent)
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
                 check.record_failed(
                     f"Could not search operational intent references using main credentials",
-                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs",
+                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs; {e}",
                     query_timestamps=[q.request.timestamp],
                 )
 

@@ -118,6 +118,11 @@ class DSSInstance(object):
     def find_op_intent(
         self, extent: Volume4D
     ) -> Tuple[List[OperationalIntentReference], Query]:
+        """
+        Find operational intents overlapping with a given volume 4D.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
+        """
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.QueryOperationalIntentReferences]
         req = QueryOperationalIntentReferenceParameters(area_of_interest=extent)
@@ -131,12 +136,13 @@ class DSSInstance(object):
             json=req,
         )
         if query.status_code != 200:
-            result = None
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to find operational intents in {extent}",
+                query,
+            )
         else:
-            result = ImplicitDict.parse(
-                query.response.json, QueryOperationalIntentReferenceResponse
-            ).operational_intent_references
-        return result, query
+            result = query.parse_json_result(QueryOperationalIntentReferenceResponse)
+            return result.operational_intent_references, query
 
     def get_op_intent_reference(
         self,
