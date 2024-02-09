@@ -166,6 +166,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                     self.record_query(dq)
                 except QueryError as e:
                     self.record_queries(e.queries)
+                    dq = e.queries[0]
                     check.record_failed(
                         f"Could not delete operational intent using main credentials",
                         details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_1}; {e}",
@@ -201,6 +202,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                     self.record_query(dq)
                 except QueryError as e:
                     self.record_queries(e.queries)
+                    dq = e.queries[0]
                     check.record_failed(
                         f"Could not delete operational intent using second credentials",
                         details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_2}; {e}",
@@ -241,6 +243,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                         self.record_query(dq)
                     except QueryError as e:
                         self.record_queries(e.queries)
+                        dq = e.queries[0]
                         check.record_failed(
                             f"Could not delete operational intent using main credentials",
                             details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}; {e}",
@@ -282,6 +285,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                         self.record_query(dq)
                     except QueryError as e:
                         self.record_queries(e.queries)
+                        dq = e.queries[0]
                         check.record_failed(
                             f"Could not delete operational intent using second credentials",
                             details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}; {e}",

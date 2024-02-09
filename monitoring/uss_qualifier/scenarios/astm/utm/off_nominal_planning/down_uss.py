@@ -301,6 +301,7 @@ class DownUSS(TestScenario):
                         self.record_query(del_query)
                     except QueryError as e:
                         self.record_queries(e.queries)
+                        del_query = e.queries[0]
                         check.record_failed(
                             summary=f"Failed to delete op intent {oi_ref.id} from DSS",
                             details=f"DSS responded code {del_query.status_code}; error message: {del_query.error_message}; {e}",
