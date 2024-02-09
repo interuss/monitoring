@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import uuid
 from enum import Enum
-from typing import Tuple, List, Dict, Optional
+from typing import Tuple, List, Dict, Optional, Set
 from urllib.parse import urlparse
 
 import s2sphere
@@ -137,7 +137,7 @@ class DSSInstance(object):
         )
         if query.status_code != 200:
             raise QueryError(
-                f"Received code {query.status_code} when attempting to find operational intents in {extent}",
+                f"Received code {query.status_code} when attempting to find operational intents in {extent}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
                 query,
             )
         else:
@@ -165,7 +165,7 @@ class DSSInstance(object):
         )
         if query.status_code != 200:
             raise QueryError(
-                f"Received code {query.status_code} when attempting to retrieve operational intent reference {op_intent_id}",
+                f"Received code {query.status_code} when attempting to retrieve operational intent reference {op_intent_id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
                 query,
             )
         else:
@@ -227,7 +227,7 @@ class DSSInstance(object):
             return None, query
         elif query.status_code != 200:
             raise QueryError(
-                f"Received code {query.status_code} when attempting to retrieval operational intent telemetry for {op_intent_ref.id}",
+                f"Received code {query.status_code} when attempting to retrieval operational intent telemetry for {op_intent_ref.id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
                 query,
             )
         else:
@@ -311,7 +311,7 @@ class DSSInstance(object):
         )
         if query.status_code != 200:
             raise QueryError(
-                f"Received code {query.status_code} when attempting to delete operational intent {id}",
+                f"Received code {query.status_code} when attempting to delete operational intent {id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
                 query,
             )
         else:
