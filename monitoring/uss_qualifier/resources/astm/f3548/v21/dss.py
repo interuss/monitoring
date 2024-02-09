@@ -240,16 +240,20 @@ class DSSInstance(object):
         key: List[EntityOVN],
         state: OperationalIntentState,
         base_url: UssBaseURL,
-        id: Optional[str] = None,
+        oi_id: Optional[str] = None,
         ovn: Optional[str] = None,
-    ) -> Tuple[
-        Optional[OperationalIntentReference],
-        Optional[List[SubscriberToNotify]],
-        Query,
-    ]:
+    ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query,]:
+        """
+        Create or update an operational intent.
+        Returns:
+             the operational intent reference created or updated, the subscribers to notify, the query
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200 or 201, or if the parsing of the response failed.
+        """
         self._uses_scope(Scope.StrategicCoordination)
-        oi_uuid = str(uuid.uuid4()) if id is None else id
-        if ovn is None:
+        oi_uuid = str(uuid.uuid4()) if oi_id is None else oi_id
+        create = ovn is None
+        if create:
             op = OPERATIONS[OperationID.CreateOperationalIntentReference]
             url = op.path.format(entityid=oi_uuid)
             query_type = QueryType.F3548v21DSSCreateOperationalIntentReference
@@ -274,15 +278,16 @@ class DSSInstance(object):
             scope=Scope.StrategicCoordination,
             json=req,
         )
-        if query.status_code != 200 and query.status_code != 201:
-            return None, None, query
-        else:
-            result = ChangeOperationalIntentReferenceResponse(
-                ImplicitDict.parse(
-                    query.response.json, ChangeOperationalIntentReferenceResponse
-                )
-            )
+        if (create and query.status_code == 201) or (
+            not create and query.status_code == 200
+        ):
+            result = query.parse_json_result(ChangeOperationalIntentReferenceResponse)
             return result.operational_intent_reference, result.subscribers, query
+        else:
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to {'create' if create else 'update'} operational intent with ID {oi_uuid}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
 
     def delete_op_intent(
         self,
