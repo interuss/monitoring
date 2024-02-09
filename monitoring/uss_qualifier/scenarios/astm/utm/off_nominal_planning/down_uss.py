@@ -317,15 +317,18 @@ class DownUSS(TestScenario):
         with self.check(
             "Availability of virtual USS restored", [self.dss.participant_id]
         ) as check:
-            availability_version, avail_query = self.dss.set_uss_availability(
-                self.uss_qualifier_sub,
-                True,
-            )
-            self.record_query(avail_query)
-            if availability_version is None:
+            try:
+                availability_version, avail_query = self.dss.set_uss_availability(
+                    self.uss_qualifier_sub,
+                    True,
+                )
+                self.record_query(avail_query)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                avail_query = e.queries[0]
                 check.record_failed(
                     summary=f"Availability of USS {self.uss_qualifier_sub} could not be set to available",
-                    details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
+                    details=f"DSS responded code {avail_query.status_code}; {e}",
                     query_timestamps=[avail_query.request.timestamp],
                 )
 
