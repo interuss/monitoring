@@ -10,6 +10,7 @@ from uas_standards.astm.f3548.v21.api import (
     Volume4D,
     OperationalIntentReference,
     GetOperationalIntentDetailsResponse,
+    EntityID,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
@@ -237,12 +238,25 @@ class OpIntentValidator(object):
         if oi_ref is None:
             return None
 
-        goidr_json, oi_full_query = self._dss.get_full_op_intent_without_validation(
-            oi_ref, self._flight_planner.participant_id
-        )
-
-        self._scenario.record_query(oi_full_query)
-        self._operational_intent_retrievable_check(oi_full_query, oi_ref.id)
+        with self._scenario.check(
+            "Operational intent details retrievable",
+            [self._flight_planner.participant_id],
+        ) as check:
+            try:
+                goidr_json, oi_full_query = self._dss.get_full_op_intent(
+                    oi_ref, self._flight_planner.participant_id
+                )
+                self._scenario.record_query(oi_full_query)
+            except QueryError as e:
+                self._scenario.record_queries(e.queries)
+                oi_full_query = e.queries[0]
+                if oi_full_query.status_code != 200:
+                    # fail only if details could not be retrieved, as validation failures are acceptable here
+                    check.record_failed(
+                        summary="Operational intent details could not be retrieved from USS",
+                        details=f"Received status code {oi_full_query.status_code} from {self._flight_planner.participant_id} when querying for details of operational intent {oi_ref.id}; {e}",
+                        query_timestamps=[oi_full_query.request.timestamp],
+                    )
 
         validation_failures = self._evaluate_op_intent_validation(oi_full_query)
         expected_validation_failure_found = self._expected_validation_failure_found(
@@ -263,21 +277,6 @@ class OpIntentValidator(object):
                 )
 
         return oi_ref
-
-    def _operational_intent_retrievable_check(
-        self, oi_full_query: fetch.Query, ref_id: str
-    ):
-        with self._scenario.check(
-            "Operational intent details retrievable",
-            [self._flight_planner.participant_id],
-        ) as check:
-            if oi_full_query.status_code != 200:
-                check.record_failed(
-                    summary="Operational intent details could not be retrieved from USS",
-                    severity=Severity.High,
-                    details=f"Received status code {oi_full_query.status_code} from {self._flight_planner.participant_id} when querying for details of operational intent {ref_id}",
-                    query_timestamps=[oi_full_query.request.timestamp],
-                )
 
     def _operational_intent_shared_check(
         self,
@@ -365,11 +364,23 @@ class OpIntentValidator(object):
     def _check_op_intent_details(
         self, flight_intent: FlightInfo, oi_ref: OperationalIntentReference
     ):
-        oi_full, oi_full_query = self._dss.get_full_op_intent(
-            oi_ref, self._flight_planner.participant_id
-        )
-        self._scenario.record_query(oi_full_query)
-        self._operational_intent_retrievable_check(oi_full_query, oi_ref.id)
+        with self._scenario.check(
+            "Operational intent details retrievable",
+            [self._flight_planner.participant_id],
+        ) as check:
+            try:
+                oi_full, oi_full_query = self._dss.get_full_op_intent(
+                    oi_ref, self._flight_planner.participant_id
+                )
+                self._scenario.record_query(oi_full_query)
+            except QueryError as e:
+                self._scenario.record_queries(e.queries)
+                oi_full_query = e.queries[0]
+                check.record_failed(
+                    summary="Operational intent details could not be retrieved from USS",
+                    details=f"Received status code {oi_full_query.status_code} from {self._flight_planner.participant_id} when querying for details of operational intent {oi_ref.id}; {e}",
+                    query_timestamps=[oi_full_query.request.timestamp],
+                )
 
         validation_failures = self._evaluate_op_intent_validation(oi_full_query)
         with self._scenario.check(

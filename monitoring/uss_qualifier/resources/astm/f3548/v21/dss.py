@@ -177,28 +177,10 @@ class DSSInstance(object):
         op_intent_ref: OperationalIntentReference,
         uss_participant_id: Optional[str] = None,
     ) -> Tuple[OperationalIntent, Query]:
-        result, query = self.get_full_op_intent_without_validation(
-            op_intent_ref,
-            uss_participant_id,
-        )
-        if query.status_code != 200:
-            result = None
-        else:
-            result = ImplicitDict.parse(
-                query.response.json, GetOperationalIntentDetailsResponse
-            ).operational_intent
-        return result, query
-
-    def get_full_op_intent_without_validation(
-        self,
-        op_intent_ref: OperationalIntentReference,
-        uss_participant_id: Optional[str] = None,
-    ) -> Tuple[Dict, Query]:
         """
-        GET OperationalIntent without validating, as invalid data expected for negative tests
-
-        Returns:
-            returns the response json when query is successful
+        Retrieve a full operational intent from its managing USS.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
         """
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.GetOperationalIntentDetails]
@@ -210,11 +192,14 @@ class DSSInstance(object):
             uss_participant_id,
             scope=Scope.StrategicCoordination,
         )
-        result = None
-        if query.status_code == 200:
-            result = query.response.json
-
-        return result, query
+        if query.status_code != 200:
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to retrieve operational intent details for {op_intent_ref.id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
+        else:
+            result = query.parse_json_result(GetOperationalIntentDetailsResponse)
+            return result.operational_intent, query
 
     def get_op_intent_telemetry(
         self,
