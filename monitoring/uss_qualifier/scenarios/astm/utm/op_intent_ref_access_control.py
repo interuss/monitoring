@@ -136,19 +136,24 @@ class OpIntentReferenceAccessControl(TestScenario):
         self.end_test_scenario()
 
     def _clean_known_op_intents_ids(self):
-        (oi_ref, q) = self._dss.get_op_intent_reference(self._oid_1)
-        self.record_query(q)
+
         with self.check(
             "Operational intent references can be queried by ID",
             self._pid,
         ) as check:
-            # If the Op Intent does not exist, it's fine to run into a 404.
-            if q.response.status_code not in [200, 404]:
-                check.record_failed(
-                    f"Could not access operational intent using main credentials",
-                    details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_1}",
-                    query_timestamps=[q.request.timestamp],
-                )
+            try:
+                (oi_ref, q) = self._dss.get_op_intent_reference(self._oid_1)
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
+                # If the Op Intent does not exist, it's fine to run into a 404.
+                if q.response.status_code != 404:
+                    check.record_failed(
+                        f"Could not access operational intent using main credentials",
+                        details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_1}; {e}",
+                        query_timestamps=[q.request.timestamp],
+                    )
         if q.response.status_code != 404:
             with self.check(
                 "Operational intent references can be searched for",
@@ -167,18 +172,24 @@ class OpIntentReferenceAccessControl(TestScenario):
                         query_timestamps=[dq.request.timestamp],
                     )
 
-        (oi_ref, q) = self._dss_separate_creds.get_op_intent_reference(self._oid_2)
-        self.record_query(q)
         with self.check(
             "Operational intent references can be queried by ID",
             self._pid,
         ) as check:
-            if q.response.status_code not in [200, 404]:
-                check.record_failed(
-                    f"Could not access operational intent using second credentials",
-                    details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_2}",
-                    query_timestamps=[q.request.timestamp],
+            try:
+                (oi_ref, q) = self._dss_separate_creds.get_op_intent_reference(
+                    self._oid_2
                 )
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
+                if q.response.status_code != 404:
+                    check.record_failed(
+                        f"Could not access operational intent using second credentials",
+                        details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_2}; {e}",
+                        query_timestamps=[q.request.timestamp],
+                    )
         if q.response.status_code != 404:
             with self.check(
                 "Operational intent references can be deleted by their owner", self._pid
@@ -451,19 +462,21 @@ class OpIntentReferenceAccessControl(TestScenario):
                         query_timestamps=[dq.request.timestamp],
                     )
 
-        # Query again to confirm that the op intent has not been modified in any way:
-        (op_1_current, qcheck) = self._dss.get_op_intent_reference(self._oid_1)
-        self.record_query(qcheck)
-
         with self.check(
             "Operational intent references can be queried directly by their ID",
             self._pid,
         ) as check:
-            if qcheck.response.status_code != 200:
+            try:
+                # Query again to confirm that the op intent has not been modified in any way:
+                (op_1_current, qcheck) = self._dss.get_op_intent_reference(self._oid_1)
+                self.record_query(qcheck)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                qcheck = e.queries[0]
                 check.record_failed(
                     f"Could not access operational intent using main credentials",
                     details=f"DSS responded with {qcheck.response.status_code} to attempt to access OI {self._oid_1} "
-                    f"while this OI should have been available.",
+                    f"while this OI should have been available; {e}",
                     query_timestamps=[qcheck.request.timestamp],
                 )
 
