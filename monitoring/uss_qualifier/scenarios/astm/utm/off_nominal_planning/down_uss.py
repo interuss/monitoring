@@ -144,7 +144,7 @@ class DownUSS(TestScenario):
                 dummy_query = e.queries[0]
                 check.record_failed(
                     summary="Failed to query DSS",
-                    details=f"DSS responded code {dummy_query.status_code}; error message: {dummy_query.error_message}; {e}",
+                    details=f"DSS responded code {dummy_query.status_code}; {e}",
                     query_timestamps=[dummy_query.request.timestamp],
                 )
         self.uss_qualifier_sub = self.dss.client.auth_adapter.get_sub()
@@ -288,7 +288,7 @@ class DownUSS(TestScenario):
                 find_query = e.queries[0]
                 check.record_failed(
                     summary=f"Failed to query operational intent references from DSS in {self._intents_extent} for cleanup",
-                    details=f"DSS responded code {find_query.status_code}; error message: {find_query.error_message}; {e}",
+                    details=f"DSS responded code {find_query.status_code}; {e}",
                     query_timestamps=[find_query.request.timestamp],
                 )
 
@@ -304,7 +304,7 @@ class DownUSS(TestScenario):
                         del_query = e.queries[0]
                         check.record_failed(
                             summary=f"Failed to delete op intent {oi_ref.id} from DSS",
-                            details=f"DSS responded code {del_query.status_code}; error message: {del_query.error_message}; {e}",
+                            details=f"DSS responded code {del_query.status_code}; {e}",
                             query_timestamps=[del_query.request.timestamp],
                         )
 
