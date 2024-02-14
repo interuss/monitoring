@@ -86,7 +86,7 @@ def expect_tested_uss_receives_notification_from_mock_uss(
             )
 
     with scenario.check(
-        "Tested USS rejects invalid notification"[tested_uss_participant_id]
+        "Tested USS rejects invalid notification", [tested_uss_participant_id]
     ) as check:
         if interactions and not notification_with_subscr_id_sent and resp_status != 400:
             check.record_failed(
