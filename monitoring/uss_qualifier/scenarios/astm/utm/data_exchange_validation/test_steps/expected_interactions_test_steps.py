@@ -14,15 +14,13 @@ from monitoring.monitorlib.clients.mock_uss.interactions import Interaction
 from monitoring.monitorlib.clients.mock_uss.interactions import QueryDirection
 from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch import QueryError, Query
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.constants import (
     MaxTimeToWaitForSubscriptionNotificationSeconds as max_wait_time,
+    Wait_Interval_Seconds as wait_interval,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
-# Interval to wait for checking notification received
-WAIT_INTERVAL_SECONDS = 1
 
 
 def expect_mock_uss_receives_op_intent_notification(
@@ -55,7 +53,7 @@ def expect_mock_uss_receives_op_intent_notification(
         dt = (wait_until - arrow.utcnow().datetime).total_seconds()
         if dt > 0:
             sleep(
-                min(dt, WAIT_INTERVAL_SECONDS),
+                min(dt, wait_interval),
                 "the expected notification was not found yet",
             )
 
@@ -112,7 +110,7 @@ def mock_uss_interactions(
     """Determine if mock_uss recorded an interaction for the specified operation in the specified direction."""
 
     with scenario.check(
-        "MockUSS interactions request", [mock_uss.participant_id]
+        "Mock USS interactions logs retrievable", [mock_uss.participant_id]
     ) as check:
         try:
             interactions, query = mock_uss.get_interactions(since)

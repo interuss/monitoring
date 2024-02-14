@@ -1,5 +1,6 @@
 import arrow
 from implicitdict import StringBasedDateTime, ImplicitDict
+from monitoring.monitorlib.delay import sleep
 
 from typing import Callable, List, Tuple
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
@@ -10,6 +11,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_s
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.constants import (
     MaxTimeToWaitForSubscriptionNotificationSeconds as max_wait_time,
+    Wait_Interval_Seconds as wait_interval,
 )
 from monitoring.monitorlib.clients.mock_uss.interactions import Interaction
 from monitoring.monitorlib.clients.mock_uss.interactions import QueryDirection
@@ -22,20 +24,20 @@ from uas_standards.astm.f3548.v21.api import (
 def expect_tested_uss_receives_notification_from_mock_uss(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
-    st: StringBasedDateTime,
+    interactions_since_time: datetime,
     op_intent_ref_id: str,
     subscription_id: str,
-    tested_uss_domain: str,
+    tested_uss_base_url: str,
     tested_uss_participant_id: str,
     plan_request_time: datetime,
 ):
     """
     This step checks if expected notification was received by tested_uss from mock_uss
     Args:
-        st: the earliest time a notification may have been sent
+        interactions_since_time: the earliest time a notification may have been sent
         op_intent_ref_id: expected operational_intent_id in the notification
         subscription_id: expected subscription_id in the notification
-        tested_uss_domain: url domain of tested_uss to which the notification should be sent
+        tested_uss_base_url: base_url of tested_uss to which the notification should be sent
         tested_uss_participant_id: participant_id of the tested_uss receiving the notification
         plan_request_time: timestamp of the mock_uss flight plan query that would lead to sending notification
     """
@@ -47,11 +49,19 @@ def expect_tested_uss_receives_notification_from_mock_uss(
             mock_uss=mock_uss,
             op_id=OperationID.NotifyOperationalIntentDetailsChanged,
             direction=QueryDirection.Outgoing,
-            since=st,
-            is_applicable=is_notification_sent_to_url_with_op_intent_id(
-                op_intent_ref_id, tested_uss_domain
+            since=StringBasedDateTime(interactions_since_time),
+            is_applicable=_is_notification_sent_to_url_with_op_intent_id(
+                op_intent_ref_id, tested_uss_base_url
             ),
         )
+        if interactions:
+            break
+        dt = (wait_until - arrow.utcnow().datetime).total_seconds()
+        if dt > 0:
+            sleep(
+                min(dt, wait_interval),
+                "the expected notification was not found yet",
+            )
 
     #  Check if a notification exists with expected subscription_id, in the interactions
     (
@@ -75,20 +85,20 @@ def expect_tested_uss_receives_notification_from_mock_uss(
                 query_timestamps=[plan_request_time, query.request.timestamp],
             )
 
-    with scenario.check(
-        "Tested USS receives valid notification", [tested_uss_participant_id]
-    ) as check:
-        if notification_with_subscr_id_sent and resp_status != 200:
+    if notification_with_subscr_id_sent and resp_status != 204:
+        with scenario.check(
+            "Tested USS receives valid notification", [tested_uss_participant_id]
+        ) as check:
             check.record_failed(
                 summary=f"Valid notification not accepted by tested_uss.",
                 details=f"Valid notification by mock_uss not accepted by tested_uss. Tested_uss should have responded with status 200.",
                 query_timestamps=[plan_request_time, query.request.timestamp],
             )
 
-    with scenario.check(
-        "Tested USS rejects invalid notification", [tested_uss_participant_id]
-    ) as check:
-        if interactions and not notification_with_subscr_id_sent and resp_status != 400:
+    if interactions and not notification_with_subscr_id_sent and resp_status != 400:
+        with scenario.check(
+            "Tested USS rejects invalid notification", [tested_uss_participant_id]
+        ) as check:
             check.record_failed(
                 summary=f"Invalid notification should be rejected",
                 details=f"Invalid notification containing incorrect subscription_id should be rejected by tested_uss, with response status 400.",
@@ -96,16 +106,16 @@ def expect_tested_uss_receives_notification_from_mock_uss(
             )
 
 
-def is_notification_sent_to_url_with_op_intent_id(
+def _is_notification_sent_to_url_with_op_intent_id(
     op_intent_id: str,
-    url_domain: str,
+    base_url: str,
 ) -> Callable[[Interaction], bool]:
     """
     Returns an `is_applicable` function that detects if the request in an interaction is sent to the given url and with given op_intent_id
 
     Args:
         op_intent_id: The operational_intent id that needs to be notified
-        url_domain: The url domain to which the notification request needs to be sent
+        base_url: The url domain to which the notification request needs to be sent
 
     """
 
@@ -114,7 +124,7 @@ def is_notification_sent_to_url_with_op_intent_id(
             return (
                 interaction.query.request.json.get("operational_intent_id", None)
                 == op_intent_id
-            ) and (url_domain in interaction.query.request.url_hostname)
+            ) and (base_url in interaction.query.request.url_hostname)
         return False
 
     return is_applicable()
