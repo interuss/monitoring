@@ -22,7 +22,6 @@ from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_s
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 
-
 def expect_mock_uss_receives_op_intent_notification(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
