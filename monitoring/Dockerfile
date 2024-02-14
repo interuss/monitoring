@@ -35,7 +35,8 @@ WORKDIR /app/monitoring
 # Additional preparations for uss_qualifier/webapp
 RUN mkdir -p /app/uss-host-files
 
-HEALTHCHECK CMD sh /app/health_check.sh
+HEALTHCHECK --start-interval=5s --start-period=1m --timeout=5s --interval=1m \
+  CMD sh /app/health_check.sh
 
 ENV PYTHONPATH /app
 ARG version
