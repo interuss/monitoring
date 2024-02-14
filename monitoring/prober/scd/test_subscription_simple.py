@@ -9,6 +9,7 @@
   - make sure Subscription can't be found by ID
   - make sure Subscription can't be found by search
 """
+# MIGRATION NOTE: has been migrated to uss_qualifier under subscription_simple
 
 import datetime
 

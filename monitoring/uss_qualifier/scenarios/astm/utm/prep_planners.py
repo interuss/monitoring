@@ -1,5 +1,6 @@
 from typing import Optional, List
 
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
@@ -92,16 +93,13 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
             with self.check("DSS responses", [self.dss.participant_id]) as check:
                 try:
                     op_intents, query = self.dss.find_op_intent(area.to_f3548v21())
-                except ValueError as e:
-                    check.record_failed(
-                        summary="Error parsing DSS response",
-                        details=str(e),
-                    )
-                self.record_query(query)
-                if op_intents is None:
+                    self.record_query(query)
+                except QueryError as e:
+                    self.record_queries(e.queries)
+                    query = e.queries[0]
                     check.record_failed(
                         summary="Error querying DSS for operational intents",
-                        details="See query",
+                        details=f"See query; {e}",
                         query_timestamps=[query.request.timestamp],
                     )
             found_intents.extend(op_intents)
