@@ -4,7 +4,7 @@ import os
 import traceback
 import uuid
 from enum import Enum
-from typing import Dict, Optional, List, Union
+from typing import Dict, Optional, List, Union, TypeVar, Type
 from urllib.parse import urlparse
 
 import flask
@@ -387,6 +387,9 @@ class QueryType(str, Enum):
             raise ValueError(f"Unsupported RID version: {rid_version}")
 
 
+ResponseType = TypeVar("ResponseType", bound=ImplicitDict)
+
+
 class Query(ImplicitDict):
     request: RequestDescription
     response: ResponseDescription
@@ -421,6 +424,24 @@ class Query(ImplicitDict):
                 token, algorithms="RS256", options={"verify_signature": False}
             )
             return payload["sub"]
+
+    def parse_json_result(self, parse_type: Type[ResponseType]) -> ResponseType:
+        """Parses the JSON result into the specified type.
+
+        Args:
+            parse_type: ImplicitDict type to parse into.
+        Returns:
+             the parsed response (of type `parse_type`).
+        Raises:
+            * QueryError: if the parsing failed.
+        """
+        try:
+            return parse_type(ImplicitDict.parse(self.response.json, parse_type))
+        except (ValueError, TypeError, KeyError) as e:
+            raise QueryError(
+                f"Parsing JSON response into type {parse_type.__name__} failed with exception {type(e).__name__}: {e}",
+                self,
+            )
 
 
 class QueryError(RuntimeError):

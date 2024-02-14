@@ -4,6 +4,7 @@ from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from uas_standards.astm.f3548.v21.constants import Scope
 
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
@@ -135,104 +136,135 @@ class OpIntentReferenceAccessControl(TestScenario):
         self.end_test_scenario()
 
     def _clean_known_op_intents_ids(self):
-        (oi_ref, q) = self._dss.get_op_intent_reference(self._oid_1)
-        self.record_query(q)
+
         with self.check(
             "Operational intent references can be queried by ID",
             self._pid,
         ) as check:
-            # If the Op Intent does not exist, it's fine to run into a 404.
-            if q.response.status_code not in [200, 404]:
-                check.record_failed(
-                    f"Could not access operational intent using main credentials",
-                    details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_1}",
-                    query_timestamps=[q.request.timestamp],
-                )
+            try:
+                (oi_ref, q) = self._dss.get_op_intent_reference(self._oid_1)
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
+                # If the Op Intent does not exist, it's fine to run into a 404.
+                if q.response.status_code != 404:
+                    check.record_failed(
+                        f"Could not access operational intent using main credentials",
+                        details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_1}; {e}",
+                        query_timestamps=[q.request.timestamp],
+                    )
         if q.response.status_code != 404:
-            (_, notifs, dq) = self._dss.delete_op_intent(self._oid_1, oi_ref.ovn)
-            self.record_query(dq)
-            if dq.response.status_code != 200:
-                with self.check(
-                    "Operational intent references can be searched",
-                    self._pid,
-                ) as check:
+            with self.check(
+                "Operational intent references can be searched for",
+                self._pid,
+            ) as check:
+                try:
+                    (_, notifs, dq) = self._dss.delete_op_intent(
+                        self._oid_1, oi_ref.ovn
+                    )
+                    self.record_query(dq)
+                except QueryError as e:
+                    self.record_queries(e.queries)
+                    dq = e.queries[0]
                     check.record_failed(
                         f"Could not delete operational intent using main credentials",
-                        details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_1}",
+                        details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_1}; {e}",
                         query_timestamps=[dq.request.timestamp],
                     )
 
-        (oi_ref, q) = self._dss_separate_creds.get_op_intent_reference(self._oid_2)
-        self.record_query(q)
         with self.check(
             "Operational intent references can be queried by ID",
             self._pid,
         ) as check:
-            if q.response.status_code not in [200, 404]:
-                check.record_failed(
-                    f"Could not access operational intent using second credentials",
-                    details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_2}",
-                    query_timestamps=[q.request.timestamp],
+            try:
+                (oi_ref, q) = self._dss_separate_creds.get_op_intent_reference(
+                    self._oid_2
                 )
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
+                if q.response.status_code != 404:
+                    check.record_failed(
+                        f"Could not access operational intent using second credentials",
+                        details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_2}; {e}",
+                        query_timestamps=[q.request.timestamp],
+                    )
         if q.response.status_code != 404:
-            (_, notifs, dq) = self._dss_separate_creds.delete_op_intent(
-                self._oid_2, oi_ref.ovn
-            )
-            self.record_query(dq)
             with self.check(
                 "Operational intent references can be deleted by their owner", self._pid
             ) as check:
-                if dq.response.status_code != 200:
+                try:
+                    (_, notifs, dq) = self._dss_separate_creds.delete_op_intent(
+                        self._oid_2, oi_ref.ovn
+                    )
+                    self.record_query(dq)
+                except QueryError as e:
+                    self.record_queries(e.queries)
+                    dq = e.queries[0]
                     check.record_failed(
                         f"Could not delete operational intent using second credentials",
-                        details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_2}",
+                        details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_2}; {e}",
                         query_timestamps=[dq.request.timestamp],
                     )
 
     def _attempt_to_delete_remaining_op_intents(self):
         """Search for op intents and attempt to delete them using the main credentials"""
-        # Also check for any potential other op_intents and delete them
-        (op_intents_1, q) = self._dss.find_op_intent(self._intents_extent)
-        self.record_query(q)
+
         with self.check(
             "Operational intent references can be searched for",
             self._pid,
         ) as check:
-            if q.response.status_code != 200:
+            try:
+                # Also check for any potential other op_intents and delete them
+                (op_intents_1, q) = self._dss.find_op_intent(self._intents_extent)
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
                 check.record_failed(
                     f"Could not search operational intent references using main credentials",
-                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs",
+                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs; {e}",
                     query_timestamps=[q.request.timestamp],
                 )
 
         for op_intent in op_intents_1:
             # We look for an op_intent where the uss_qualifier is the manager;
             if op_intent.manager == self._dss.client.auth_adapter.get_sub():
-                (_, _, dq) = self._dss.delete_op_intent(op_intent.id, op_intent.ovn)
-                self.record_query(dq)
                 with self.check(
                     "Operational intent references can be deleted by their owner",
                     self._pid,
                 ) as check:
-                    if dq.response.status_code != 200:
+                    try:
+                        (_, _, dq) = self._dss.delete_op_intent(
+                            op_intent.id, op_intent.ovn
+                        )
+                        self.record_query(dq)
+                    except QueryError as e:
+                        self.record_queries(e.queries)
+                        dq = e.queries[0]
                         check.record_failed(
                             f"Could not delete operational intent using main credentials",
-                            details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}",
+                            details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}; {e}",
                             query_timestamps=[dq.request.timestamp],
                         )
 
-        (op_intents_2, q) = self._dss_separate_creds.find_op_intent(
-            self._intents_extent
-        )
-        self.record_query(q)
         with self.check(
             "Operational intent references can be searched for",
             self._pid,
         ) as check:
-            if q.response.status_code != 200:
+            try:
+                (op_intents_2, q) = self._dss_separate_creds.find_op_intent(
+                    self._intents_extent
+                )
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
                 check.record_failed(
                     f"Could not search operational intent references using second credentials",
-                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs",
+                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs; {e}",
                     query_timestamps=[q.request.timestamp],
                 )
 
@@ -242,18 +274,21 @@ class OpIntentReferenceAccessControl(TestScenario):
                 op_intent.manager
                 == self._dss_separate_creds.client.auth_adapter.get_sub()
             ):
-                (_, _, dq) = self._dss_separate_creds.delete_op_intent(
-                    op_intent.id, op_intent.ovn
-                )
-                self.record_query(dq)
                 with self.check(
                     "Operational intent references can be deleted by their owner",
                     self._pid,
                 ) as check:
-                    if dq.response.status_code != 200:
+                    try:
+                        (_, _, dq) = self._dss_separate_creds.delete_op_intent(
+                            op_intent.id, op_intent.ovn
+                        )
+                        self.record_query(dq)
+                    except QueryError as e:
+                        self.record_queries(e.queries)
+                        dq = e.queries[0]
                         check.record_failed(
                             f"Could not delete operational intent using second credentials",
-                            details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}",
+                            details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}; {e}",
                             query_timestamps=[dq.request.timestamp],
                         )
 
@@ -275,17 +310,20 @@ class OpIntentReferenceAccessControl(TestScenario):
         # Search and attempt deleting what may be found through search
         self._attempt_to_delete_remaining_op_intents()
 
-        # We can't delete anything that would be left.
-        (stray_oir, q) = self._dss.find_op_intent(self._intents_extent)
-        self.record_query(q)
         with self.check(
             "Operational intent references can be searched for",
             self._pid,
         ) as check:
-            if q.response.status_code != 200:
+            try:
+                # We can't delete anything that would be left.
+                (stray_oir, q) = self._dss.find_op_intent(self._intents_extent)
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
                 check.record_failed(
                     f"Could not search operational intent references using main credentials",
-                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs",
+                    details=f"DSS responded with {q.response.status_code} to attempt to search OIs; {e}",
                     query_timestamps=[q.request.timestamp],
                 )
 
@@ -303,41 +341,46 @@ class OpIntentReferenceAccessControl(TestScenario):
         return True
 
     def _create_op_intents(self):
-        (self._current_ref_1, subscribers1, q1) = self._dss.put_op_intent(
-            id=self._oid_1,
-            extents=self._volumes1.to_f3548v21(),
-            key=[],
-            state=OperationalIntentState.Accepted,
-            base_url=DUMMY_USS_BASE_URL,
-        )
-        self.record_query(q1)
-
         with self.check(
             "Can create an operational intent with valid credentials", self._pid
         ) as check:
-            if q1.response.status_code != 201:
+            try:
+                (self._current_ref_1, subscribers1, q1) = self._dss.put_op_intent(
+                    oi_id=self._oid_1,
+                    extents=self._volumes1.to_f3548v21(),
+                    key=[],
+                    state=OperationalIntentState.Accepted,
+                    base_url=DUMMY_USS_BASE_URL,
+                )
+                self.record_query(q1)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q1 = e.queries[0]
                 check.record_failed(
                     f"Could not create operational intent using main credentials",
-                    details=f"DSS responded with {q1.response.status_code} to attempt to create OI {self._oid_1}",
+                    details=f"DSS responded with {q1.response.status_code} to attempt to create OI {self._oid_1}; {e}",
                     query_timestamps=[q1.request.timestamp],
                 )
 
-        (
-            self._current_ref_2,
-            subscribers2,
-            q2,
-        ) = self._dss_separate_creds.put_op_intent(
-            id=self._oid_2,
-            extents=self._volumes2.to_f3548v21(),
-            key=[self._current_ref_1.ovn],
-            state=OperationalIntentState.Accepted,
-            base_url=DUMMY_USS_BASE_URL,
-        )
-        self.record_query(q2)
         with self.check(
             "Can create an operational intent with valid credentials", self._pid
         ) as check:
-            if q2.response.status_code != 201:
+            try:
+                (
+                    self._current_ref_2,
+                    subscribers2,
+                    q2,
+                ) = self._dss_separate_creds.put_op_intent(
+                    oi_id=self._oid_2,
+                    extents=self._volumes2.to_f3548v21(),
+                    key=[self._current_ref_1.ovn],
+                    state=OperationalIntentState.Accepted,
+                    base_url=DUMMY_USS_BASE_URL,
+                )
+                self.record_query(q2)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q2 = e.queries[0]
                 check.record_failed(
                     f"Could not create operational intent using second credentials",
                     details=f"DSS responded with {q2.response.status_code} to attempt to create OI {self._oid_2}",
@@ -362,76 +405,106 @@ class OpIntentReferenceAccessControl(TestScenario):
                 )
 
     def _check_mutation_on_non_owned_intent_fails(self):
-        # Attempt to update the state of the intent created with the main credentials using the second credentials
-        (ref, notif, q) = self._dss_separate_creds.put_op_intent(
-            id=self._oid_1,
-            extents=self._volumes1.to_f3548v21(),
-            key=[self._current_ref_2.ovn],
-            state=OperationalIntentState.Accepted,
-            base_url=self._current_ref_1.uss_base_url,
-            ovn=self._current_ref_1.ovn,
-        )
-        self.record_query(q)
         with self.check(
             "Non-owning credentials cannot modify operational intent",
             self._pid,
         ) as check:
-            if q.response.status_code != 403:
+            try:
+                # Attempt to update the state of the intent created with the main credentials using the second credentials
+                (ref, notif, q) = self._dss_separate_creds.put_op_intent(
+                    oi_id=self._oid_1,
+                    extents=self._volumes1.to_f3548v21(),
+                    key=[self._current_ref_2.ovn],
+                    state=OperationalIntentState.Accepted,
+                    base_url=self._current_ref_1.uss_base_url,
+                    ovn=self._current_ref_1.ovn,
+                )
+                self.record_query(q)
                 check.record_failed(
-                    f"Could update operational intent using second credentials",
+                    "Could update operational intent using second credentials",
                     details=f"DSS responded with {q.response.status_code} to attempt to update OI {self._oid_1}",
                     query_timestamps=[q.request.timestamp],
                 )
-        # Attempt to update the base_url of the intent created with the main credentials using the second credentials
-        (ref, notif, q) = self._dss_separate_creds.put_op_intent(
-            id=self._oid_1,
-            extents=self._volumes1.to_f3548v21(),
-            key=[self._current_ref_2.ovn],
-            state=self._current_ref_1.state,
-            base_url="https://another-url.uss/down",
-            ovn=self._current_ref_1.ovn,
-        )
-        self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
+                if q.response.status_code != 403:
+                    check.record_failed(
+                        "Attempt to update operational intent using second credentials failed with an unexpected status code (expected 403)",
+                        details=f"DSS responded with {q.response.status_code} to attempt to update OI {self._oid_1}; {e}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+
         with self.check(
             "Non-owning credentials cannot modify operational intent",
             self._pid,
         ) as check:
-            if q.response.status_code != 403:
+            try:
+                # Attempt to update the base_url of the intent created with the main credentials using the second credentials
+                (ref, notif, q) = self._dss_separate_creds.put_op_intent(
+                    oi_id=self._oid_1,
+                    extents=self._volumes1.to_f3548v21(),
+                    key=[self._current_ref_2.ovn],
+                    state=self._current_ref_1.state,
+                    base_url="https://another-url.uss/down",
+                    ovn=self._current_ref_1.ovn,
+                )
+                self.record_query(q)
                 check.record_failed(
-                    f"Could update operational intent using second credentials",
+                    "Could update operational intent using second credentials",
                     details=f"DSS responded with {q.response.status_code} to attempt to update OI {self._oid_1}",
                     query_timestamps=[q.request.timestamp],
                 )
+            except QueryError as e:
+                self.record_queries(e.queries)
+                q = e.queries[0]
+                if q.response.status_code != 403:
+                    check.record_failed(
+                        "Attempt to update operational intent using second credentials failed with an unexpected status code (expected 403)",
+                        details=f"DSS responded with {q.response.status_code} to attempt to update OI {self._oid_1}; {e}",
+                        query_timestamps=[q.request.timestamp],
+                    )
 
         # Try to delete
-        (_, _, dq) = self._dss_separate_creds.delete_op_intent(
-            self._oid_1, self._current_ref_1.ovn
-        )
-        self.record_query(dq)
         with self.check(
             "Non-owning credentials cannot delete operational intent",
             self._pid,
         ) as check:
-            if dq.response.status_code != 403:
+            try:
+                (_, _, dq) = self._dss_separate_creds.delete_op_intent(
+                    self._oid_1, self._current_ref_1.ovn
+                )
+                self.record_query(dq)
                 check.record_failed(
                     f"Could delete operational intent using second credentials",
                     details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_1}",
                     query_timestamps=[dq.request.timestamp],
                 )
-
-        # Query again to confirm that the op intent has not been modified in any way:
-        (op_1_current, qcheck) = self._dss.get_op_intent_reference(self._oid_1)
-        self.record_query(qcheck)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                dq = e.queries[0]
+                if dq.response.status_code != 403:
+                    check.record_failed(
+                        "DSS did not fail with expected status code 403",
+                        details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_1}; {e}",
+                        query_timestamps=[dq.request.timestamp],
+                    )
 
         with self.check(
             "Operational intent references can be queried directly by their ID",
             self._pid,
         ) as check:
-            if qcheck.response.status_code != 200:
+            try:
+                # Query again to confirm that the op intent has not been modified in any way:
+                (op_1_current, qcheck) = self._dss.get_op_intent_reference(self._oid_1)
+                self.record_query(qcheck)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                qcheck = e.queries[0]
                 check.record_failed(
                     f"Could not access operational intent using main credentials",
                     details=f"DSS responded with {qcheck.response.status_code} to attempt to access OI {self._oid_1} "
-                    f"while this OI should have been available.",
+                    f"while this OI should have been available; {e}",
                     query_timestamps=[qcheck.request.timestamp],
                 )
 

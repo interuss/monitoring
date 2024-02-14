@@ -6,7 +6,15 @@ resources:
   flight_intents: resources.flight_planning.FlightIntentsResource
   id_generator: resources.interuss.IDGeneratorResource
   planning_area: resources.astm.f3548.v21.PlanningAreaResource
+  problematically_big_area: resources.VerticesResource
 actions:
+  - test_scenario:
+      scenario_type: scenarios.astm.utm.dss.SubscriptionSimple
+      resources:
+        dss: dss
+        id_generator: id_generator
+        planning_area: planning_area
+        problematically_big_area: problematically_big_area
   - test_scenario:
       scenario_type: scenarios.astm.utm.dss.SubscriptionValidation
       resources:

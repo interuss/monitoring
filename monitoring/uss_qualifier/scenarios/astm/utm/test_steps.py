@@ -10,12 +10,14 @@ from uas_standards.astm.f3548.v21.api import (
     Volume4D,
     OperationalIntentReference,
     GetOperationalIntentDetailsResponse,
+    EntityID,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     UasState,
     AirspaceUsageState,
 )
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
@@ -71,9 +73,20 @@ class OpIntentValidator(object):
         self._orig_oi_ref: Optional[OperationalIntentReference] = orig_oi_ref
 
     def __enter__(self) -> OpIntentValidator:
-        self._before_oi_refs, self._before_query = self._dss.find_op_intent(
-            self._extent
-        )
+        with self._scenario.check("DSS responses", [self._dss.participant_id]) as check:
+            try:
+                self._before_oi_refs, self._before_query = self._dss.find_op_intent(
+                    self._extent
+                )
+                self._scenario.record_query(self._before_query)
+            except QueryError as e:
+                self._scenario.record_queries(e.queries)
+                self._before_query = e.queries[0]
+                check.record_failed(
+                    summary="Failed to query DSS for operational intent references before planning request",
+                    details=f"Received status code {self._before_query.status_code} from the DSS; {e}",
+                    query_timestamps=[self._before_query.request.timestamp],
+                )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -89,7 +102,21 @@ class OpIntentValidator(object):
         return found[0] if len(found) != 0 else None
 
     def _begin_step_fragment(self):
-        self._after_oi_refs, self._after_query = self._dss.find_op_intent(self._extent)
+        with self._scenario.check("DSS responses", [self._dss.participant_id]) as check:
+            try:
+                self._after_oi_refs, self._after_query = self._dss.find_op_intent(
+                    self._extent
+                )
+                self._scenario.record_query(self._after_query)
+            except QueryError as e:
+                self._scenario.record_queries(e.queries)
+                self._after_query = e.queries[0]
+                check.record_failed(
+                    summary="Failed to query DSS for operational intent references after planning request",
+                    details=f"Received status code {self._after_query.status_code} from the DSS; {e}",
+                    query_timestamps=[self._after_query.request.timestamp],
+                )
+
         oi_ids_delta = {oi_ref.id for oi_ref in self._after_oi_refs} - {
             oi_ref.id for oi_ref in self._before_oi_refs
         }
@@ -102,25 +129,6 @@ class OpIntentValidator(object):
             )
         if len(oi_ids_delta) == 1:
             self._new_oi_ref = self._find_after_oi(oi_ids_delta.pop())
-
-        self._scenario.record_query(self._before_query)
-        self._scenario.record_query(self._after_query)
-
-        with self._scenario.check("DSS responses", [self._dss.participant_id]) as check:
-            if self._before_query.status_code != 200:
-                check.record_failed(
-                    summary="Failed to query DSS for operational intent references before planning request",
-                    severity=Severity.High,
-                    details=f"Received status code {self._before_query.status_code} from the DSS",
-                    query_timestamps=[self._before_query.request.timestamp],
-                )
-            if self._after_query.status_code != 200:
-                check.record_failed(
-                    summary="Failed to query DSS for operational intent references after planning request",
-                    severity=Severity.High,
-                    details=f"Received status code {self._after_query.status_code} from the DSS",
-                    query_timestamps=[self._after_query.request.timestamp],
-                )
 
     def expect_removed(self, oi_id: EntityID) -> None:
         """Validate that a specific operational intent reference was removed from the DSS.
@@ -230,12 +238,25 @@ class OpIntentValidator(object):
         if oi_ref is None:
             return None
 
-        goidr_json, oi_full_query = self._dss.get_full_op_intent_without_validation(
-            oi_ref, self._flight_planner.participant_id
-        )
-
-        self._scenario.record_query(oi_full_query)
-        self._operational_intent_retrievable_check(oi_full_query, oi_ref.id)
+        with self._scenario.check(
+            "Operational intent details retrievable",
+            [self._flight_planner.participant_id],
+        ) as check:
+            try:
+                goidr_json, oi_full_query = self._dss.get_full_op_intent(
+                    oi_ref, self._flight_planner.participant_id
+                )
+                self._scenario.record_query(oi_full_query)
+            except QueryError as e:
+                self._scenario.record_queries(e.queries)
+                oi_full_query = e.queries[0]
+                if oi_full_query.status_code != 200:
+                    # fail only if details could not be retrieved, as validation failures are acceptable here
+                    check.record_failed(
+                        summary="Operational intent details could not be retrieved from USS",
+                        details=f"Received status code {oi_full_query.status_code} from {self._flight_planner.participant_id} when querying for details of operational intent {oi_ref.id}; {e}",
+                        query_timestamps=[oi_full_query.request.timestamp],
+                    )
 
         validation_failures = self._evaluate_op_intent_validation(oi_full_query)
         expected_validation_failure_found = self._expected_validation_failure_found(
@@ -256,21 +277,6 @@ class OpIntentValidator(object):
                 )
 
         return oi_ref
-
-    def _operational_intent_retrievable_check(
-        self, oi_full_query: fetch.Query, ref_id: str
-    ):
-        with self._scenario.check(
-            "Operational intent details retrievable",
-            [self._flight_planner.participant_id],
-        ) as check:
-            if oi_full_query.status_code != 200:
-                check.record_failed(
-                    summary="Operational intent details could not be retrieved from USS",
-                    severity=Severity.High,
-                    details=f"Received status code {oi_full_query.status_code} from {self._flight_planner.participant_id} when querying for details of operational intent {ref_id}",
-                    query_timestamps=[oi_full_query.request.timestamp],
-                )
 
     def _operational_intent_shared_check(
         self,
@@ -358,11 +364,23 @@ class OpIntentValidator(object):
     def _check_op_intent_details(
         self, flight_intent: FlightInfo, oi_ref: OperationalIntentReference
     ):
-        oi_full, oi_full_query = self._dss.get_full_op_intent(
-            oi_ref, self._flight_planner.participant_id
-        )
-        self._scenario.record_query(oi_full_query)
-        self._operational_intent_retrievable_check(oi_full_query, oi_ref.id)
+        with self._scenario.check(
+            "Operational intent details retrievable",
+            [self._flight_planner.participant_id],
+        ) as check:
+            try:
+                oi_full, oi_full_query = self._dss.get_full_op_intent(
+                    oi_ref, self._flight_planner.participant_id
+                )
+                self._scenario.record_query(oi_full_query)
+            except QueryError as e:
+                self._scenario.record_queries(e.queries)
+                oi_full_query = e.queries[0]
+                check.record_failed(
+                    summary="Operational intent details could not be retrieved from USS",
+                    details=f"Received status code {oi_full_query.status_code} from {self._flight_planner.participant_id} when querying for details of operational intent {oi_ref.id}; {e}",
+                    query_timestamps=[oi_full_query.request.timestamp],
+                )
 
         validation_failures = self._evaluate_op_intent_validation(oi_full_query)
         with self._scenario.check(
@@ -442,20 +460,21 @@ class OpIntentValidator(object):
                 )
 
     def _check_op_intent_telemetry(self, oi_ref: OperationalIntentReference):
-        oi_tel, oi_tel_query = self._dss.get_op_intent_telemetry(
-            oi_ref, self._flight_planner.participant_id
-        )
-        self._scenario.record_query(oi_tel_query)
-
         with self._scenario.check(
             "Operational intent telemetry retrievable",
             [self._flight_planner.participant_id],
         ) as check:
-            if oi_tel_query.status_code not in {200, 412}:
+            try:
+                oi_tel, oi_tel_query = self._dss.get_op_intent_telemetry(
+                    oi_ref, self._flight_planner.participant_id
+                )
+                self._scenario.record_query(oi_tel_query)
+            except fetch.QueryError as e:
+                self._scenario.record_queries(e.queries)
+                oi_tel_query = e.queries[0]
                 check.record_failed(
                     summary="Operational intent telemetry could not be retrieved from USS",
-                    severity=Severity.High,
-                    details=f"Received status code {oi_tel_query.status_code} from {self._flight_planner.participant_id} when querying for telemetry of operational intent {oi_ref.id}",
+                    details=f"Received status code {oi_tel_query.status_code} from {self._flight_planner.participant_id} when querying for telemetry of operational intent {oi_ref.id}; {e}",
                     query_timestamps=[oi_tel_query.request.timestamp],
                 )
 
@@ -629,18 +648,21 @@ def set_uss_available(
     Returns:
         The new version of the USS availability.
     """
-    availability_version, avail_query = dss.set_uss_availability(
-        uss_sub,
-        True,
-    )
-    scenario.record_query(avail_query)
     with scenario.check(
         "USS availability successfully set to 'Available'", [dss.participant_id]
     ) as check:
-        if availability_version is None:
+        try:
+            availability_version, avail_query = dss.set_uss_availability(
+                uss_sub,
+                True,
+            )
+            scenario.record_query(avail_query)
+        except QueryError as e:
+            scenario.record_queries(e.queries)
+            avail_query = e.queries[0]
             check.record_failed(
                 summary=f"Availability of USS {uss_sub} could not be set to available",
-                details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
+                details=f"DSS responded code {avail_query.status_code}; {e}",
                 query_timestamps=[avail_query.request.timestamp],
             )
     return availability_version
@@ -658,18 +680,21 @@ def set_uss_down(
     Returns:
         The new version of the USS availability.
     """
-    availability_version, avail_query = dss.set_uss_availability(
-        uss_sub,
-        False,
-    )
-    scenario.record_query(avail_query)
     with scenario.check(
         "USS availability successfully set to 'Down'", [dss.participant_id]
     ) as check:
-        if availability_version is None:
+        try:
+            availability_version, avail_query = dss.set_uss_availability(
+                uss_sub,
+                False,
+            )
+            scenario.record_query(avail_query)
+        except QueryError as e:
+            scenario.record_queries(e.queries)
+            avail_query = e.queries[0]
             check.record_failed(
                 summary=f"Availability of USS {uss_sub} could not be set to down",
-                details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
+                details=f"DSS responded code {avail_query.status_code}; {e}",
                 query_timestamps=[avail_query.request.timestamp],
             )
     return availability_version

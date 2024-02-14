@@ -22,6 +22,7 @@ resources:
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
   planning_area: resources.astm.f3548.v21.PlanningAreaResource
+  problematically_big_area: resources.VerticesResource
 local_resources:
   system_identity:
     resource_type: resources.versioning.SystemIdentityResource
@@ -50,6 +51,7 @@ actions:
       id_generator: id_generator
       second_utm_auth: second_utm_auth?
       planning_area: planning_area
+      problematically_big_area: problematically_big_area
       system_identity: system_identity
   on_failure: Continue
 - test_suite:

@@ -415,12 +415,17 @@ def submit_flight(
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
     """
+    if expected_results.intersection(failed_checks.keys()):
+        raise ValueError(
+            f"expected and unexpected results overlap: {expected_results.intersection(failed_checks.keys())}"
+        )
 
     with scenario.check(success_check, [flight_planner.participant_id]) as check:
         try:
             resp, query, flight_id = request_flight(
                 flight_planner, flight_info, flight_id, additional_fields
             )
+            result = (resp.activity_result, resp.flight_plan_status)
         except QueryError as e:
             for q in e.queries:
                 scenario.record_query(q)
@@ -430,7 +435,12 @@ def submit_flight(
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
         scenario.record_query(query)
-        notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
+        check_details = (
+            f'{flight_planner.participant_id} indicated {result} rather than the expected {" or ".join([f"({expected_result[0]}, {expected_result[1]})" for expected_result in expected_results])}'
+            + f' with notes "{resp.notes}"'
+            if "notes" in resp and resp.notes
+            else " with no notes"
+        )
 
         for unexpected_result, failed_test_check in failed_checks.items():
             check_name = failed_test_check
@@ -440,23 +450,19 @@ def submit_flight(
             ) as specific_failed_check:
                 if resp.activity_result == unexpected_result:
                     specific_failed_check.record_failed(
-                        summary=f"Flight unexpectedly {resp.activity_result}",
-                        details=f'{flight_planner.participant_id} indicated {resp.activity_result} rather than the expected {" or ".join(r[0] for r in expected_results)}{notes_suffix}',
+                        summary=f"Flight unexpectedly {result}",
+                        details=check_details,
                         query_timestamps=[query.request.timestamp],
                     )
 
-        if (resp.activity_result, resp.flight_plan_status) in expected_results:
-            return resp, flight_id
-        else:
+        if result not in expected_results:
             check.record_failed(
-                summary=f"Flight planning activity outcome was not expected",
-                details=f'{flight_planner.participant_id} indicated {resp.activity_result} with flight plan status {resp.flight_plan_status} rather than the expected {" or ".join([f"({expected_result[0]}, {expected_result[1]})" for expected_result in expected_results])}{notes_suffix}',
+                summary=f"Flight unexpectedly {result}",
+                details=check_details,
                 query_timestamps=[query.request.timestamp],
             )
 
-    raise RuntimeError(
-        "Error with submission of flight intent, but a High Severity issue didn't interrupt execution"
-    )
+    return resp, flight_id
 
 
 def request_flight(

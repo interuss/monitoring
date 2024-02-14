@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import uuid
 from enum import Enum
-from typing import Tuple, List, Dict, Optional
+from typing import Tuple, List, Dict, Optional, Set
 from urllib.parse import urlparse
 
 import s2sphere
@@ -34,7 +34,7 @@ from uas_standards.astm.f3548.v21.api import (
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib import infrastructure, fetch
-from monitoring.monitorlib.fetch import QueryType, Query, query_and_describe
+from monitoring.monitorlib.fetch import QueryType, Query, query_and_describe, QueryError
 from monitoring.monitorlib.fetch import scd as fetch
 from monitoring.monitorlib.fetch.scd import FetchedSubscription, FetchedSubscriptions
 from monitoring.monitorlib.inspection import calling_function_name, fullname
@@ -118,6 +118,11 @@ class DSSInstance(object):
     def find_op_intent(
         self, extent: Volume4D
     ) -> Tuple[List[OperationalIntentReference], Query]:
+        """
+        Find operational intents overlapping with a given volume 4D.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
+        """
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.QueryOperationalIntentReferences]
         req = QueryOperationalIntentReferenceParameters(area_of_interest=extent)
@@ -131,12 +136,13 @@ class DSSInstance(object):
             json=req,
         )
         if query.status_code != 200:
-            result = None
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to find operational intents in {extent}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
         else:
-            result = ImplicitDict.parse(
-                query.response.json, QueryOperationalIntentReferenceResponse
-            ).operational_intent_references
-        return result, query
+            result = query.parse_json_result(QueryOperationalIntentReferenceResponse)
+            return result.operational_intent_references, query
 
     def get_op_intent_reference(
         self,
@@ -144,6 +150,8 @@ class DSSInstance(object):
     ) -> Tuple[OperationalIntentReference, Query]:
         """
         Retrieve an OP Intent from the DSS, using only its ID
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
         """
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.GetOperationalIntentReference]
@@ -156,40 +164,23 @@ class DSSInstance(object):
             scope=Scope.StrategicCoordination,
         )
         if query.status_code != 200:
-            result = None
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to retrieve operational intent reference {op_intent_id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
         else:
-            result = ImplicitDict.parse(
-                query.response.json, GetOperationalIntentReferenceResponse
-            ).operational_intent_reference
-        return result, query
+            result = query.parse_json_result(GetOperationalIntentReferenceResponse)
+            return result.operational_intent_reference, query
 
     def get_full_op_intent(
         self,
         op_intent_ref: OperationalIntentReference,
         uss_participant_id: Optional[str] = None,
     ) -> Tuple[OperationalIntent, Query]:
-        result, query = self.get_full_op_intent_without_validation(
-            op_intent_ref,
-            uss_participant_id,
-        )
-        if query.status_code != 200:
-            result = None
-        else:
-            result = ImplicitDict.parse(
-                query.response.json, GetOperationalIntentDetailsResponse
-            ).operational_intent
-        return result, query
-
-    def get_full_op_intent_without_validation(
-        self,
-        op_intent_ref: OperationalIntentReference,
-        uss_participant_id: Optional[str] = None,
-    ) -> Tuple[Dict, Query]:
         """
-        GET OperationalIntent without validating, as invalid data expected for negative tests
-
-        Returns:
-            returns the response json when query is successful
+        Retrieve a full operational intent from its managing USS.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
         """
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.GetOperationalIntentDetails]
@@ -201,17 +192,27 @@ class DSSInstance(object):
             uss_participant_id,
             scope=Scope.StrategicCoordination,
         )
-        result = None
-        if query.status_code == 200:
-            result = query.response.json
-
-        return result, query
+        if query.status_code != 200:
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to retrieve operational intent details for {op_intent_ref.id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
+        else:
+            result = query.parse_json_result(GetOperationalIntentDetailsResponse)
+            return result.operational_intent, query
 
     def get_op_intent_telemetry(
         self,
         op_intent_ref: OperationalIntentReference,
         uss_participant_id: Optional[str] = None,
     ) -> Tuple[Optional[VehicleTelemetry], Query]:
+        """
+        Get telemetry of an operational intent.
+        Returns:
+            VehicleTelemetry if available, None otherwise
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
+        """
         self._uses_scope(Scope.ConformanceMonitoringForSituationalAwareness)
         op = OPERATIONS[OperationID.GetOperationalIntentTelemetry]
         query = query_and_describe(
@@ -222,14 +223,16 @@ class DSSInstance(object):
             uss_participant_id,
             scope=Scope.ConformanceMonitoringForSituationalAwareness,
         )
-        if query.status_code == 200:
-            result: GetOperationalIntentTelemetryResponse = ImplicitDict.parse(
-                query.response.json, GetOperationalIntentTelemetryResponse
-            )
-            telemetry = result.telemetry if "telemetry" in result else None
-            return telemetry, query
-        else:
+        if query.status_code == 412:
             return None, query
+        elif query.status_code != 200:
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to retrieval operational intent telemetry for {op_intent_ref.id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
+        else:
+            result = query.parse_json_result(GetOperationalIntentTelemetryResponse)
+            return result.telemetry, query
 
     def put_op_intent(
         self,
@@ -237,16 +240,20 @@ class DSSInstance(object):
         key: List[EntityOVN],
         state: OperationalIntentState,
         base_url: UssBaseURL,
-        id: Optional[str] = None,
+        oi_id: Optional[str] = None,
         ovn: Optional[str] = None,
-    ) -> Tuple[
-        Optional[OperationalIntentReference],
-        Optional[List[SubscriberToNotify]],
-        Query,
-    ]:
+    ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query,]:
+        """
+        Create or update an operational intent.
+        Returns:
+             the operational intent reference created or updated, the subscribers to notify, the query
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200 or 201, or if the parsing of the response failed.
+        """
         self._uses_scope(Scope.StrategicCoordination)
-        oi_uuid = str(uuid.uuid4()) if id is None else id
-        if ovn is None:
+        oi_uuid = str(uuid.uuid4()) if oi_id is None else oi_id
+        create = ovn is None
+        if create:
             op = OPERATIONS[OperationID.CreateOperationalIntentReference]
             url = op.path.format(entityid=oi_uuid)
             query_type = QueryType.F3548v21DSSCreateOperationalIntentReference
@@ -271,25 +278,27 @@ class DSSInstance(object):
             scope=Scope.StrategicCoordination,
             json=req,
         )
-        if query.status_code != 200 and query.status_code != 201:
-            return None, None, query
-        else:
-            result = ChangeOperationalIntentReferenceResponse(
-                ImplicitDict.parse(
-                    query.response.json, ChangeOperationalIntentReferenceResponse
-                )
-            )
+        if (create and query.status_code == 201) or (
+            not create and query.status_code == 200
+        ):
+            result = query.parse_json_result(ChangeOperationalIntentReferenceResponse)
             return result.operational_intent_reference, result.subscribers, query
+        else:
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to {'create' if create else 'update'} operational intent with ID {oi_uuid}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
 
     def delete_op_intent(
         self,
         id: str,
         ovn: str,
-    ) -> Tuple[
-        Optional[OperationalIntentReference],
-        Optional[List[SubscriberToNotify]],
-        Query,
-    ]:
+    ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query]:
+        """
+        Delete an operational intent.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
+        """
         self._uses_scope(Scope.StrategicCoordination)
         op = OPERATIONS[OperationID.DeleteOperationalIntentReference]
         query = query_and_describe(
@@ -301,29 +310,28 @@ class DSSInstance(object):
             scope=Scope.StrategicCoordination,
         )
         if query.status_code != 200:
-            return None, None, query
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to delete operational intent {id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
         else:
-            try:
-                result = ChangeOperationalIntentReferenceResponse(
-                    ImplicitDict.parse(
-                        query.response.json, ChangeOperationalIntentReferenceResponse
-                    )
-                )
-                return result.operational_intent_reference, result.subscribers, query
-            except ValueError as e:
-                return None, None, query
+            result = query.parse_json_result(ChangeOperationalIntentReferenceResponse)
+            return result.operational_intent_reference, result.subscribers, query
 
     def set_uss_availability(
         self,
         uss_id: str,
         available: bool,
         version: str = "",
-    ) -> Tuple[Optional[str], Query]:
+    ) -> Tuple[str, Query]:
         """
+        Set USS availability.
         Returns:
             A tuple composed of
-            1) the new version of the USS availability, or None if the query failed;
+            1) the new version of the USS availability;
             2) the query.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
         """
         self._uses_scope(Scope.AvailabilityArbitration)
         if available:
@@ -346,11 +354,12 @@ class DSSInstance(object):
             json=req,
         )
         if query.status_code != 200:
-            return None, query
-        else:
-            result = UssAvailabilityStatusResponse(
-                ImplicitDict.parse(query.response.json, UssAvailabilityStatusResponse)
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to set USS availability of {uss_id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
             )
+        else:
+            result = query.parse_json_result(UssAvailabilityStatusResponse)
             return result.version, query
 
     def query_subscriptions(

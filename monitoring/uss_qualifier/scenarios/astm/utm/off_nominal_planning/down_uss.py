@@ -2,6 +2,7 @@ from typing import Dict, Optional
 
 import arrow
 
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from uas_standards.astm.f3548.v21.api import (
@@ -134,12 +135,16 @@ class DownUSS(TestScenario):
     def _setup(self):
 
         self.begin_test_step("Resolve USS ID of virtual USS")
-        _, dummy_query = self.dss.find_op_intent(self._intents_extent)
         with self.check("Successful dummy query", [self.dss.participant_id]) as check:
-            if dummy_query.status_code != 200:
+            try:
+                _, dummy_query = self.dss.find_op_intent(self._intents_extent)
+                self.record_query(dummy_query)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                dummy_query = e.queries[0]
                 check.record_failed(
                     summary="Failed to query DSS",
-                    details=f"DSS responded code {dummy_query.status_code}; error message: {dummy_query.error_message}",
+                    details=f"DSS responded code {dummy_query.status_code}; {e}",
                     query_timestamps=[dummy_query.request.timestamp],
                 )
         self.uss_qualifier_sub = self.dss.client.auth_adapter.get_sub()
@@ -188,25 +193,28 @@ class DownUSS(TestScenario):
             raise ValueError(f"Invalid state {target_state}")
 
         self.begin_test_step(f"Virtual USS {msg_action} conflicting operational intent")
-        oi_ref, _, query = self.dss.put_op_intent(
-            Volume4DCollection.from_interuss_scd_api(
-                conflicting_intent.request.operational_intent.volumes
-            ).to_f3548v21(),
-            key,
-            target_state,
-            "https://fake.uss/down",
-            oi_id,
-            oi_ovn,
-        )
-        self.record_query(query)
         with self.check(
             f"Operational intent successfully {msg_action_past}",
             [self.dss.participant_id],
         ) as check:
-            if oi_ref is None:
+            try:
+                oi_ref, _, query = self.dss.put_op_intent(
+                    Volume4DCollection.from_interuss_scd_api(
+                        conflicting_intent.request.operational_intent.volumes
+                    ).to_f3548v21(),
+                    key,
+                    target_state,
+                    "https://fake.uss/down",
+                    oi_id,
+                    oi_ovn,
+                )
+                self.record_query(query)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                query = e.queries[0]
                 check.record_failed(
                     f"Operational intent not successfully {msg_action_past}",
-                    details=f"DSS responded code {query.status_code}; error message: {query.error_message}",
+                    details=f"DSS responded code {query.status_code}; {e}",
                     query_timestamps=[query.request.timestamp],
                 )
         self.end_test_step()
@@ -271,30 +279,35 @@ class DownUSS(TestScenario):
         self.end_test_step()
 
     def _clear_op_intents(self):
-        oi_refs, find_query = self.dss.find_op_intent(self._intents_extent)
-        self.record_query(find_query)
 
         with self.check(
             "Successful operational intents cleanup", [self.dss.participant_id]
         ) as check:
-            if find_query.status_code != 200:
+            try:
+                oi_refs, find_query = self.dss.find_op_intent(self._intents_extent)
+                self.record_query(find_query)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                find_query = e.queries[0]
                 check.record_failed(
                     summary=f"Failed to query operational intent references from DSS in {self._intents_extent} for cleanup",
-                    details=f"DSS responded code {find_query.status_code}; error message: {find_query.error_message}",
+                    details=f"DSS responded code {find_query.status_code}; {e}",
                     query_timestamps=[find_query.request.timestamp],
                 )
 
             for oi_ref in oi_refs:
                 if oi_ref.manager == self.uss_qualifier_sub:
-                    del_oi, _, del_query = self.dss.delete_op_intent(
-                        oi_ref.id, oi_ref.ovn
-                    )
-                    self.record_query(del_query)
-
-                    if del_oi is None:
+                    try:
+                        del_oi, _, del_query = self.dss.delete_op_intent(
+                            oi_ref.id, oi_ref.ovn
+                        )
+                        self.record_query(del_query)
+                    except QueryError as e:
+                        self.record_queries(e.queries)
+                        del_query = e.queries[0]
                         check.record_failed(
                             summary=f"Failed to delete op intent {oi_ref.id} from DSS",
-                            details=f"DSS responded code {del_query.status_code}; error message: {del_query.error_message}",
+                            details=f"DSS responded code {del_query.status_code}; {e}",
                             query_timestamps=[del_query.request.timestamp],
                         )
 
@@ -304,15 +317,18 @@ class DownUSS(TestScenario):
         with self.check(
             "Availability of virtual USS restored", [self.dss.participant_id]
         ) as check:
-            availability_version, avail_query = self.dss.set_uss_availability(
-                self.uss_qualifier_sub,
-                True,
-            )
-            self.record_query(avail_query)
-            if availability_version is None:
+            try:
+                availability_version, avail_query = self.dss.set_uss_availability(
+                    self.uss_qualifier_sub,
+                    True,
+                )
+                self.record_query(avail_query)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                avail_query = e.queries[0]
                 check.record_failed(
                     summary=f"Availability of USS {self.uss_qualifier_sub} could not be set to available",
-                    details=f"DSS responded code {avail_query.status_code}; error message: {avail_query.error_message}",
+                    details=f"DSS responded code {avail_query.status_code}; {e}",
                     query_timestamps=[avail_query.request.timestamp],
                 )
 
