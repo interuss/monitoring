@@ -121,8 +121,8 @@ fact, been
 met (["specificity"](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)).
 Because automated tests are expected to be treated by regulators as gating items
 which disallow participants from doing certain things (such as update their
-production systems) upon failure (since "test failure" is presumed to indicate "
-failure to meet requirements"), very high specificity is the most important
+production systems) upon failure (since "test failure" is presumed to indicate
+"failure to meet requirements"), very high specificity is the most important
 characteristic of this kind of test: compliant participants should not be
 indicated as non-compliant.
 
