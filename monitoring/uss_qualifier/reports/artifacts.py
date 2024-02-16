@@ -12,7 +12,7 @@ from monitoring.uss_qualifier.reports.sequence_view.generate import (
     generate_sequence_view,
 )
 from monitoring.uss_qualifier.reports.templates import render_templates
-from monitoring.uss_qualifier.reports.tested_requirements import (
+from monitoring.uss_qualifier.reports.tested_requirements.generate import (
     generate_tested_requirements,
 )
 
