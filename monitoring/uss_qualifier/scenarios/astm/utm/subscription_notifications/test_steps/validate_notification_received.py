@@ -34,7 +34,9 @@ def expect_tested_uss_receives_notification_from_mock_uss(
     plan_request_time: datetime,
 ):
     """
-    This step checks if expected notification was received by tested_uss from mock_uss
+    This step checks if expected notification was received by tested_uss from mock_uss.
+    As it could take time for the notification to be sent, this function will poll for the notifications,
+    till a max time is reached.
     Args:
         interactions_since_time: the earliest time a notification may have been sent
         op_intent_ref_id: expected operational_intent_id in the notification
