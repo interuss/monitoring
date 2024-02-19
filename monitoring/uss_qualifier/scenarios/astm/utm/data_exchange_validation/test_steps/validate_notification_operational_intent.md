@@ -16,7 +16,7 @@ a very high (e.g., 99 percent per test) confidence of non-compliance. We can mak
 about the distribution of the delays. If we assume that the notification delays have a normal distribution
 with 95 percentile at 5 seconds, then with the standard deviation of 3.04, we get the 99 percentile at 7.07 seconds.
 Hence, for test cases that check notification sent for an operational intent, we will wait for notifications till threshold
-[MaxTimeToWaitForSubscriptionNotificationSeconds](./constants.py)  (rounding to 7 seconds).
+[MaxTimeToWaitForSubscriptionNotificationSeconds](./wait.py)  (rounding to 7 seconds).
 
 #### Note
 As per **[astm.f3548.v21.SCD0085](../../../../../requirements/astm/f3548/v21.md)**, MaxRespondToSubscriptionNotification

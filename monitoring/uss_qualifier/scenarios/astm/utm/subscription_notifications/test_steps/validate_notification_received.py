@@ -1,7 +1,7 @@
 import arrow
 from implicitdict import StringBasedDateTime, ImplicitDict
 from monitoring.monitorlib.delay import sleep
-
+from loguru import logger
 from typing import Callable, List, Tuple
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
@@ -9,12 +9,14 @@ from datetime import datetime, timedelta
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
     mock_uss_interactions,
 )
-from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.constants import (
-    MaxTimeToWaitForSubscriptionNotificationSeconds as max_wait_time,
-    Wait_Interval_Seconds as wait_interval,
+from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.wait import (
+    wait_in_intervals,
 )
-from monitoring.monitorlib.clients.mock_uss.interactions import Interaction
-from monitoring.monitorlib.clients.mock_uss.interactions import QueryDirection
+from monitoring.monitorlib.clients.mock_uss.interactions import (
+    Interaction,
+    QueryDirection,
+)
+from monitoring.monitorlib.fetch import QueryType
 from uas_standards.astm.f3548.v21.api import (
     OperationID,
     PutOperationalIntentDetailsParameters,
@@ -42,26 +44,17 @@ def expect_tested_uss_receives_notification_from_mock_uss(
         plan_request_time: timestamp of the mock_uss flight plan query that would lead to sending notification
     """
 
-    wait_until = arrow.utcnow().datetime + timedelta(seconds=max_wait_time)
-    while arrow.utcnow().datetime < wait_until:
-        interactions, query = mock_uss_interactions(
-            scenario=scenario,
-            mock_uss=mock_uss,
-            op_id=OperationID.NotifyOperationalIntentDetailsChanged,
-            direction=QueryDirection.Outgoing,
-            since=StringBasedDateTime(interactions_since_time),
-            is_applicable=_is_notification_sent_to_url_with_op_intent_id(
-                op_intent_ref_id, tested_uss_base_url
-            ),
-        )
-        if interactions:
-            break
-        dt = (wait_until - arrow.utcnow().datetime).total_seconds()
-        if dt > 0:
-            sleep(
-                min(dt, wait_interval),
-                "the expected notification was not found yet",
-            )
+    # Check for Mock USS interactions (with notifications) in intervals till max wait time reached
+    interactions, query = wait_in_intervals(mock_uss_interactions)(
+        scenario=scenario,
+        mock_uss=mock_uss,
+        op_id=OperationID.NotifyOperationalIntentDetailsChanged,
+        direction=QueryDirection.Outgoing,
+        since=StringBasedDateTime(interactions_since_time),
+        is_applicable=_is_notification_sent_to_url_with_op_intent_id(
+            op_intent_ref_id, tested_uss_base_url
+        ),
+    )
 
     #  Check if a notification exists with expected subscription_id, in the interactions
     (
@@ -80,8 +73,8 @@ def expect_tested_uss_receives_notification_from_mock_uss(
             )
         if interactions and not notification_with_subscr_id_sent:
             check.record_failed(
-                summary=f"Notification sent with invalid subscriptions by mock_uss",
-                details=f"Notification sent to tested_uss with pre-existing relevant operational intent, did not contain the expected subscription_id.",
+                summary=f"Invalid notification sent by mock_uss",
+                details=f"Invalid notification sent by mock_uss to tested_uss - invalid format or missing subscription_id ({subscription_id}), of the operational intent owned by tested_uss .",
                 query_timestamps=[plan_request_time, query.request.timestamp],
             )
 
@@ -144,10 +137,20 @@ def _check_notification_exists_with_subscription_id(
     exists: bool = False
     status: int = 999
     for interaction in interactions:
-        try:
-            notification = ImplicitDict.parse(
-                interaction.query.request.json, PutOperationalIntentDetailsParameters
-            )
+        if (
+            interaction.query.query_type
+            == QueryType.F3548v21USSNotifyOperationalIntentDetailsChanged
+        ):
+            try:
+                notification = ImplicitDict.parse(
+                    interaction.query.request.json,
+                    PutOperationalIntentDetailsParameters,
+                )
+            except (ValueError, TypeError, KeyError) as e:
+                logger.debug(
+                    f"Parsing mock_uss notification to type PutOperationalIntentDetailsParameters failed - {e}"
+                )
+                return False, interaction.query.response.status_code
             subscriptions = notification.subscriptions
             for subscription in subscriptions:
                 if subscription.subscription_id == subscription_id:
@@ -155,7 +158,5 @@ def _check_notification_exists_with_subscription_id(
                 else:
                     exists = False
                     status = interaction.query.response.status_code
-        except Exception:
-            pass
 
     return exists, status

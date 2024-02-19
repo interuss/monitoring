@@ -6,7 +6,6 @@ from typing import Callable, Dict, List, Tuple, Optional
 
 import arrow
 from implicitdict import StringBasedDateTime
-from loguru import logger
 from uas_standards.astm.f3548.v21 import api
 from uas_standards.astm.f3548.v21.api import OperationID, EntityID
 
@@ -15,9 +14,9 @@ from monitoring.monitorlib.clients.mock_uss.interactions import QueryDirection
 from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch import QueryError, Query
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
-from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.constants import (
+from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.wait import (
+    wait_in_intervals,
     MaxTimeToWaitForSubscriptionNotificationSeconds as max_wait_time,
-    Wait_Interval_Seconds as wait_interval,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
@@ -38,23 +37,13 @@ def expect_mock_uss_receives_op_intent_notification(
     """
 
     # Check for 'notification found' will be done periodically by waiting for a duration till max_wait_time
-    wait_until = arrow.utcnow().datetime + timedelta(seconds=max_wait_time)
-    while arrow.utcnow().datetime < wait_until:
-        found, query = mock_uss_interactions(
-            scenario=scenario,
-            mock_uss=mock_uss,
-            op_id=OperationID.NotifyOperationalIntentDetailsChanged,
-            direction=QueryDirection.Incoming,
-            since=st,
-        )
-        if found:
-            break
-        dt = (wait_until - arrow.utcnow().datetime).total_seconds()
-        if dt > 0:
-            sleep(
-                min(dt, wait_interval),
-                "the expected notification was not found yet",
-            )
+    found, query = wait_in_intervals(mock_uss_interactions)(
+        scenario=scenario,
+        mock_uss=mock_uss,
+        op_id=OperationID.NotifyOperationalIntentDetailsChanged,
+        direction=QueryDirection.Incoming,
+        since=st,
+    )
 
     with scenario.check("Expect Notification sent", [participant_id]) as check:
         if not found:

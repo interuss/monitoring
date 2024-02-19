@@ -17,4 +17,4 @@ However, this duration is from time start - Receipt of subscription notification
 In this check we use time start when the test driver asked the USS to plan the failed flight.
 When checking notification not sent, we should wait for the same duration that is used for when checking notification sent.
 [Expect Notification sent](./validate_notification_operational_intent.md).
-So, we plan to use [MaxTimeToWaitForSubscriptionNotificationSeconds](./constants.py) (7 seconds).
+So, we plan to use [MaxTimeToWaitForSubscriptionNotificationSeconds](./wait.py) (7 seconds).
