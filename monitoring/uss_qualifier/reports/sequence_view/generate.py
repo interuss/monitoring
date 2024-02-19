@@ -44,7 +44,7 @@ from monitoring.uss_qualifier.reports.sequence_view.summary_types import (
     TestedStep,
     TestedCase,
 )
-from monitoring.uss_qualifier.reports.tested_requirements import (
+from monitoring.uss_qualifier.reports.tested_requirements.generate import (
     compute_test_run_information,
 )
 from monitoring.uss_qualifier.scenarios.documentation.parsing import (
