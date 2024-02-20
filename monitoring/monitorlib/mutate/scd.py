@@ -4,7 +4,12 @@ from typing import List, Optional
 import s2sphere
 import yaml
 from implicitdict import ImplicitDict
-from uas_standards.astm.f3548.v21.api import OPERATIONS, OperationID, Subscription
+from uas_standards.astm.f3548.v21.api import (
+    OPERATIONS,
+    OperationID,
+    Subscription,
+    PutSubscriptionParameters,
+)
 from yaml.representer import Representer
 
 from monitoring.monitorlib import fetch
@@ -74,18 +79,16 @@ def upsert_subscription(
         path = op.path.format(subscriptionid=subscription_id, version=version)
         query_type = QueryType.F3548v21DSSUpdateSubscription
 
-    body = {
-        "extents": Volume4D.from_values(
-            start_time,
-            end_time,
-            min_alt_m,
-            max_alt_m,
-            polygon=Polygon.from_latlng_rect(latlngrect=area),
-        ).to_f3548v21(),
-        "uss_base_url": base_url,
-        "notify_for_operational_intents": notify_for_op_intents,
-        "notify_for_constraints": notify_for_constraints,
-    }
+    body = build_upsert_subscription_params(
+        area_vertices=area,
+        start_time=start_time,
+        end_time=end_time,
+        base_url=base_url,
+        notify_for_op_intents=notify_for_op_intents,
+        notify_for_constraints=notify_for_constraints,
+        min_alt_m=min_alt_m,
+        max_alt_m=max_alt_m,
+    )
 
     result = MutatedSubscription(
         fetch.query_and_describe(
@@ -100,6 +103,30 @@ def upsert_subscription(
     )
     result.mutation = "create" if is_creation else "update"
     return result
+
+
+def build_upsert_subscription_params(
+    area_vertices: s2sphere.LatLngRect,
+    start_time: datetime.datetime,
+    end_time: datetime.datetime,
+    base_url: str,
+    notify_for_op_intents: bool,
+    notify_for_constraints: bool,
+    min_alt_m: float,
+    max_alt_m: float,
+) -> PutSubscriptionParameters:
+    return PutSubscriptionParameters(
+        extents=Volume4D.from_values(
+            start_time,
+            end_time,
+            min_alt_m,
+            max_alt_m,
+            polygon=Polygon.from_latlng_rect(latlngrect=area_vertices),
+        ).to_f3548v21(),
+        uss_base_url=base_url,
+        notify_for_operational_intents=notify_for_op_intents,
+        notify_for_constraints=notify_for_constraints,
+    )
 
 
 def delete_subscription(

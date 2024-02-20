@@ -68,16 +68,18 @@ class PlanningAreaSpecification(ImplicitDict):
         uss_base_url: UssBaseURL,
         time_start: datetime.datetime,
         time_end: datetime.datetime,
-        subscription_id: Optional[EntityID] = None,
+        subscription_id: Optional[EntityID],
         implicit_sub_base_url: Optional[UssBaseURL] = None,
         implicit_sub_for_constraints: Optional[bool] = None,
     ) -> PutOperationalIntentReferenceParameters:
         """
         Builds a PutOperationalIntentReferenceParameters object that can be used against the DSS OIR API.
+
         The extents contained in these parameters contain a single 4DVolume, which may not be entirely realistic,
         but is sufficient in situations where the content of the OIR is irrelevant as long as it is valid, such
         as for testing authentication or parameter validation.
-        Note that this method allows building inconsistent parameters.
+
+        Note that this method allows building inconsistent parameters:
         """
         return PutOperationalIntentReferenceParameters(
             extents=[
