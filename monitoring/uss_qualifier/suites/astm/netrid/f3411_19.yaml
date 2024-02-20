@@ -5,6 +5,7 @@ resources:
   observers: resources.netrid.NetRIDObserversResource
   evaluation_configuration: resources.netrid.EvaluationConfigurationResource
   dss_instances: resources.astm.f3411.DSSInstancesResource
+  dss_crdb_cluster: resources.interuss.crdb.CockroachDBClusterResource?
   utm_client_identity: resources.communications.ClientIdentityResource
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
@@ -14,6 +15,7 @@ actions:
       generator_type: action_generators.astm.f3411.ForEachDSS
       resources:
         dss_instances: dss_instances
+        dss_crdb_cluster: dss_crdb_cluster?
         utm_client_identity: utm_client_identity
         id_generator: id_generator
         service_area: service_area
@@ -25,6 +27,7 @@ actions:
             resources:
               dss: dss
               all_dss_instances: dss_instances
+              dss_crdb_cluster: dss_crdb_cluster?
               utm_client_identity: utm_client_identity
               id_generator: id_generator
               isa: service_area

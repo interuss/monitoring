@@ -212,6 +212,17 @@ scd_dss_instances:
         base_url: http://localhost:8082
         has_private_address: true
 
+# ===== DSS CockroachDB nodes =====
+
+dss_crdb_cluster:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.interuss.crdb.CockroachDBClusterResource
+  specification:
+    nodes:
+      - participant_id: uss1
+        host: localhost
+        port: 26257
+
 # ===== mock_uss instances =====
 
 mock_uss_instance_uss1:

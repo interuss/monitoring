@@ -77,12 +77,12 @@
   </tr>
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0110</a></td>
-    <td>TODO</td>
+    <td>Implemented</td>
     <td><a href="../../../../scenarios/astm/netrid/v19/dss/crdb_access.md">ASTM NetRID DSS: Direct CRDB access</a></td>
   </tr>
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v19.md">DSS0120</a></td>
-    <td>TODO</td>
+    <td>Implemented</td>
     <td><a href="../../../../scenarios/astm/netrid/v19/dss/crdb_access.md">ASTM NetRID DSS: Direct CRDB access</a></td>
   </tr>
   <tr>

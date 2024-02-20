@@ -3,37 +3,44 @@
 ## Overview
 
 Attempt to directly access the CockroachDB (CRDB) nodes intercommunicating to form the DSS Airspace Representation for the DSS instances under test, for the purpose of determining compliance to certain DSS interoperability requirements.
+The psycopg library is used to attempt connections to the nodes
 
-Note that none of this scenario is implemented yet.
+This scenario aims at validating the following requirements:
+- **[astm.f3411.v19.DSS0110](../../../../../requirements/astm/f3411/v19.md)**
+- **[astm.f3411.v19.DSS0120](../../../../../requirements/astm/f3411/v19.md)**
 
 ## Resources
+### crdb_cluster
+CockroachDBClusterResource that provides access to a set of CockroachDB nodes constituting the DSS instances under test.
 
-## Future resources
+## Setup test case
+### Validate nodes are reachable test step
+Attempt connection with nodes of the cluster to validate that they are reachable.
+To do so, this step attempts a connection to each node without strictly requiring an encrypted connection and forcing the use of a password authentication with a dummy password.
+As such we expect the node to respond with a failed password authentication.
 
-### crdb_nodes
-
-Set of CockroachDB nodes constituting the DSS instances under test.
-
-TODO: Create this resource
+#### 🛑 Node is reachable check
+This check succeeds if the node can be reached and that the password authentication attempted by the USS qualifier is rejected.
+It fails in all other cases.
 
 ## Verify security interoperability test case
+### Attempt to connect in insecure mode test step
+Attempt connection with nodes of the cluster in insecure mode.
+It is expected that the connection attempts are rejected due to the fact that all nodes are running in secure mode.
 
-### Attempt unauthorized access test step
+#### ⚠️ Node runs in secure mode check
+This check succeeds if the node rejects the insecure connection attempt by the USS qualifier because it is in secure mode.
+It fails in all other cases.
 
-In this test step, uss_qualifier attempts to connect to each CRDB node in insecure mode.
+If it is in insecure mode, it means that the node does not authenticate incoming connection attempt as it should per **[astm.f3411.v19.DSS0110](../../../../../requirements/astm/f3411/v19.md)**.
+If it is in insecure mode, it means that the node does not encrypt its communications as it should per **[astm.f3411.v19.DSS0120](../../../../../requirements/astm/f3411/v19.md)**.
 
-#### CRDB node in insecure mode check
+### Attempt to connect with legacy encryption protocol test step
+Attempt connection with nodes of the cluster forcing the use of legacy encryption protocols, namely between TLSv1 and TLSv1.1.
+It is expected that the connection attempts are rejected due to the fact that all nodes enforce the use of TLSv1.2 as minimum version.
 
-If connection to a CRDB node in insecure mode succeeds, the USS will have failed to authenticate clients per **[astm.f3411.v19.DSS0110](../../../../../requirements/astm/f3411/v19.md)**.
+#### ⚠️ Node rejects legacy encryption protocols check
+This check succeeds if the node rejects the connection attempt by the USS qualifier because the TLS version in use is below TLSv1.2.
+It fails in all other cases.
 
-TODO: Implement this step and check
-
-### Verify encryption test step
-
-This step verifies the use of TLS for every CRDB node specified.
-
-#### TLS in use check
-
-If a CRDB node does not have TLS in use, the test will have failed to verify the encryption requirement **[astm.f3411.v19.DSS0120](../../../../../requirements/astm/f3411/v19.md)**.
-
-TODO: Implement this step and check
+If it accepts the connection attempt, it means that the node accepts insecure encryption protocols, as it should not per **[astm.f3411.v19.DSS0120](../../../../../requirements/astm/f3411/v19.md)**.
