@@ -5,8 +5,7 @@ from monitoring.monitorlib.clients.mock_uss.interactions import (
     Interaction,
     Query,
 )
-from typing import List, Tuple
-from loguru import logger
+from typing import List, Tuple, Callable
 
 MaxTimeToWaitForSubscriptionNotificationSeconds = 7
 """
@@ -20,11 +19,14 @@ WaitIntervalSeconds = 1
 """Time interval to wait between two calls to get interactions from Mock USS"""
 
 
-def wait_in_intervals(func):
-    # Returns a function that returns a Tuple[List[Interaction], Query].
-    # Given function func must also return Tuple[List[Interaction], Query].
-    # This wrapper calls the given function in intervals till desired interactions (of notifications) are returned,
-    # or till the max wait time is reached.
+def wait_in_intervals(func) -> Callable[..., Tuple[List[Interaction], Query]]:
+    """
+    This wrapper calls the given function in intervals till desired interactions (of notifications) are returned,
+    or till the max wait time is reached.
+    Args:
+        func: Given function func must also return Tuple[List[Interaction], Query]
+
+    """
 
     def wrapper(*args, **kwargs) -> Tuple[List[Interaction], Query]:
         wait_until = arrow.utcnow().datetime + timedelta(
