@@ -6,6 +6,7 @@ from uas_standards.astm.f3548.v21.constants import (
 )
 
 from monitoring.monitorlib.auth import InvalidTokenSignatureAuth
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.prober.infrastructure import register_resource_type
@@ -17,6 +18,9 @@ from monitoring.uss_qualifier.resources.interuss.id_generator import IDGenerator
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.generic import (
     GenericAuthValidator,
+)
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.oir_api_validator import (
+    OperationalIntentRefAuthValidator,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.sub_api_validator import (
     SubscriptionAuthValidator,
@@ -37,7 +41,7 @@ class AuthenticationValidation(TestScenario):
     """
 
     SUB_TYPE = register_resource_type(
-        380, "Subscription, Operational Entity Id, Constraint"
+        382, "Subscription, Operational Entity Id, Constraint"
     )
 
     # Reuse the same ID for every type of entity.
@@ -132,6 +136,19 @@ class AuthenticationValidation(TestScenario):
             test_missing_scope=self._test_missing_scope,
         )
 
+        self._oir_validator = OperationalIntentRefAuthValidator(
+            scenario=self,
+            generic_validator=generic_validator,
+            dss=self._dss,
+            test_id=self._test_id,
+            planning_area=self._planning_area,
+            planning_area_volume4d=self._planning_area_volume4d,
+            no_auth_session=self._no_auth_session,
+            invalid_token_session=self._invalid_token_session,
+            test_wrong_scope=self._wrong_scope,
+            test_missing_scope=self._test_missing_scope,
+        )
+
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
         self._setup_case()
@@ -152,6 +169,11 @@ class AuthenticationValidation(TestScenario):
 
         self.begin_test_step("Subscription endpoints authentication")
         self._sub_validator.verify_sub_endpoints_authentication()
+
+        self.end_test_step()
+
+        self.begin_test_step("Operational intents endpoints authentication")
+        self._oir_validator.verify_oir_endpoints_authentication()
         self.end_test_step()
 
         self.end_test_case()
@@ -173,6 +195,44 @@ class AuthenticationValidation(TestScenario):
         self.end_test_step()
 
     def _ensure_test_entities_dont_exist(self):
+
+        # Drop OIR's first: subscriptions may be tied to them and can't be deleted
+        # as long as they exist
+        # TODO cleanly move this into the test fragments once the relevant PRs (notably #535) are merged
+        with self.check(
+            "Operational intent references can be queried by ID", self._pid
+        ) as check:
+            try:
+                oir, q = self._dss.get_op_intent_reference(self._test_id)
+                self.record_query(q)
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                if qe.queries[0].response.status_code == 404:
+                    return  # All is good
+                else:
+                    query = qe.queries[0]
+                    check.record_failed(
+                        summary=f"Could not query OIR {self._test_id}",
+                        details=f"When attempting to query OIR {self._test_id} from the DSS, received {query.response.status_code}: {qe.msg}",
+                        query_timestamps=[query.request.timestamp],
+                    )
+
+        with self.check(
+            "Operational intent references can be deleted by their owner", self._pid
+        ):
+            try:
+                oir, subs, q = self._dss.delete_op_intent(oir.id, oir.ovn)
+                self.record_query(q)
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                query = qe.queries[0]
+                check.record_failed(
+                    summary=f"Could not remove op intent reference {self._test_id}",
+                    details=f"When attempting to remove op intent reference {self._test_id} from the DSS, received {query.status_code}: {qe.msg}",
+                    query_timestamps=[query.request.timestamp],
+                )
+                self._dss.delete_op_intent(oir.id, oir.ovn)
+
         test_step_fragments.cleanup_sub(self, self._dss, self._test_id)
 
     def _ensure_no_active_subs_exist(self):
