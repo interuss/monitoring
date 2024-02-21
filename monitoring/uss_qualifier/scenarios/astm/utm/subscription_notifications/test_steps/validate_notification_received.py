@@ -174,4 +174,4 @@ def _check_notification_sent_with_subscription_id_and_response(
             else:
                 status = interaction.query.response.status_code
 
-    return False , status
+    return False, status
