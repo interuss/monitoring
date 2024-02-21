@@ -1,11 +1,8 @@
-import arrow
 from implicitdict import StringBasedDateTime, ImplicitDict
-from monitoring.monitorlib.delay import sleep
-from loguru import logger
 from typing import Callable, List, Tuple
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
-from datetime import datetime, timedelta
+from datetime import datetime
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
     mock_uss_interactions,
 )
@@ -16,7 +13,9 @@ from monitoring.monitorlib.clients.mock_uss.interactions import (
     Interaction,
     QueryDirection,
 )
-from monitoring.monitorlib.fetch import QueryType
+from monitoring.monitorlib.fetch import (
+    QueryType,
+)
 from uas_standards.astm.f3548.v21.api import (
     OperationID,
     PutOperationalIntentDetailsParameters,
@@ -47,56 +46,66 @@ def expect_tested_uss_receives_notification_from_mock_uss(
     """
 
     # Check for Mock USS interactions (with notifications) in intervals till max wait time reached
-    interactions, query = wait_in_intervals(mock_uss_interactions)(
-        scenario=scenario,
-        mock_uss=mock_uss,
-        op_id=OperationID.NotifyOperationalIntentDetailsChanged,
-        direction=QueryDirection.Outgoing,
-        since=StringBasedDateTime(interactions_since_time),
-        is_applicable=_is_notification_sent_to_url_with_op_intent_id(
-            op_intent_ref_id, tested_uss_base_url
-        ),
-    )
-
-    #  Check if a notification exists with expected subscription_id, in the interactions
-    (
-        notification_with_subscr_id_sent,
-        resp_status,
-    ) = _check_notification_exists_with_subscription_id(interactions, subscription_id)
 
     with scenario.check(
         "Mock USS sends valid notification", mock_uss.participant_id
     ) as check:
-        if not interactions:
+        try:
+            interactions, query = wait_in_intervals(mock_uss_interactions)(
+                scenario=scenario,
+                mock_uss=mock_uss,
+                op_id=OperationID.NotifyOperationalIntentDetailsChanged,
+                direction=QueryDirection.Outgoing,
+                since=StringBasedDateTime(interactions_since_time),
+                is_applicable=_is_notification_sent_to_url_with_op_intent_id(
+                    op_intent_ref_id, tested_uss_base_url
+                ),
+            )
+        except ValueError as e:
             check.record_failed(
-                summary=f"No notification sent to tested_uss",
-                details=f"Notification to tested_uss with pre-existing relevant operational intent not sent even though DSS instructed mock_uss to notify due to subscription.",
+                summary=f"Invalid notification sent by mock_uss to tested_uss",
+                details=f"Notification to tested_uss sent in invalid format. {str(e)}\n\nStack trace:\n{e.stacktrace}",
                 query_timestamps=[plan_request_time, query.request.timestamp],
             )
-        if interactions and not notification_with_subscr_id_sent:
+        if not interactions:
             check.record_failed(
-                summary=f"Invalid notification sent by mock_uss",
-                details=f"Invalid notification sent by mock_uss to tested_uss - invalid format or missing subscription_id ({subscription_id}), of the operational intent owned by tested_uss .",
+                summary=f"No notification sent by mock_uss to tested_uss",
+                details=f"Notification to tested_uss with pre-existing relevant operational intent not sent, even though DSS instructed mock_uss to notify due to subscription.",
                 query_timestamps=[plan_request_time, query.request.timestamp],
             )
 
-    if notification_with_subscr_id_sent and resp_status != 204:
+        #  Check if a notification with expected subscription_id exists in the interactions
+        (
+            is_subscr_id_in_notification,
+            resp_status,
+        ) = _check_notification_sent_with_subscription_id_and_response(
+            interactions, subscription_id
+        )
+
+        if interactions and not is_subscr_id_in_notification:
+            check.record_failed(
+                summary=f"Invalid notification sent by mock_uss",
+                details=f"Notification to tested_uss missing the subscription_id ({subscription_id}), of the operational intent owned by tested_uss .",
+                query_timestamps=[plan_request_time, query.request.timestamp],
+            )
+
+    if is_subscr_id_in_notification and resp_status != 204:
         with scenario.check(
             "Tested USS receives valid notification", [tested_uss_participant_id]
         ) as check:
             check.record_failed(
                 summary=f"Valid notification not accepted by tested_uss.",
-                details=f"Valid notification by mock_uss not accepted by tested_uss. Tested_uss should have responded with status 200.",
+                details=f"Valid notification by mock_uss not accepted by tested_uss. Tested_uss responded with response status {resp_status} instead of 204.",
                 query_timestamps=[plan_request_time, query.request.timestamp],
             )
 
-    if interactions and not notification_with_subscr_id_sent and resp_status != 400:
+    if interactions and not is_subscr_id_in_notification and resp_status != 400:
         with scenario.check(
             "Tested USS rejects invalid notification", [tested_uss_participant_id]
         ) as check:
             check.record_failed(
                 summary=f"Invalid notification should be rejected",
-                details=f"Invalid notification containing incorrect subscription_id should be rejected by tested_uss, with response status 400.",
+                details=f"Invalid notification containing incorrect subscription_id should be rejected by tested_uss. Tested_uss responded with response status {resp_status} instead of 400.",
                 query_timestamps=[plan_request_time, query.request.timestamp],
             )
 
@@ -116,49 +125,53 @@ def _is_notification_sent_to_url_with_op_intent_id(
 
     def is_applicable(interaction: Interaction) -> bool:
         if "json" in interaction.query.request and interaction.query.request.json:
-            return (
-                interaction.query.request.json.get("operational_intent_id", None)
-                == op_intent_id
-            ) and (base_url in interaction.query.request.url_hostname)
+            if (
+                interaction.query.query_type
+                == QueryType.F3548v21USSNotifyOperationalIntentDetailsChanged
+            ):
+                try:
+                    notification = ImplicitDict.parse(
+                        interaction.query.request.json,
+                        PutOperationalIntentDetailsParameters,
+                    )
+                except (ValueError, TypeError, KeyError) as e:
+                    raise ValueError(
+                        f"Parsing mock_uss notification to type PutOperationalIntentDetailsParameters failed - {e}"
+                    )
+            return (notification.operational_intent_id == op_intent_id) and (
+                base_url in interaction.query.request.url_hostname
+            )
         return False
 
     return is_applicable()
 
 
-def _check_notification_exists_with_subscription_id(
+def _check_notification_sent_with_subscription_id_and_response(
     interactions: List[Interaction], subscription_id: str
-) -> Tuple[bool, int]:
+) -> Tuple[bool, bool, int]:
     """
-    Check if notifications with subscription_id is found in the given interactions
+    This function checks if a notification with subscription_id is found in the given interactions,
+
+    interactions: It is assumed that the interactions passed are notifications in valid format
+    subscription_id: The subscription_id that should trigger the notification
 
     Returns:
-        exists: True if a notification with subscription_id is found, else False
+        notification_with_subscr_id_found: True if a notification with subscription_id is found, else False
         status: Response status code for a notification
 
     """
-    exists: bool = False
     status: int = 999
     for interaction in interactions:
-        if (
-            interaction.query.query_type
-            == QueryType.F3548v21USSNotifyOperationalIntentDetailsChanged
-        ):
-            try:
-                notification = ImplicitDict.parse(
-                    interaction.query.request.json,
-                    PutOperationalIntentDetailsParameters,
-                )
-            except (ValueError, TypeError, KeyError) as e:
-                logger.debug(
-                    f"Parsing mock_uss notification to type PutOperationalIntentDetailsParameters failed - {e}"
-                )
-                return False, interaction.query.response.status_code
-            subscriptions = notification.subscriptions
-            for subscription in subscriptions:
-                if subscription.subscription_id == subscription_id:
-                    return True, interaction.query.response.status_code
-                else:
-                    exists = False
-                    status = interaction.query.response.status_code
+        notification = ImplicitDict.parse(
+            interaction.query.request.json,
+            PutOperationalIntentDetailsParameters,
+        )
 
-    return exists, status
+        subscriptions = notification.subscriptions
+        for subscription in subscriptions:
+            if subscription.subscription_id == subscription_id:
+                return True, interaction.query.response.status_code
+            else:
+                status = interaction.query.response.status_code
+
+    return False , status
