@@ -24,7 +24,7 @@ def wait_in_intervals(func) -> Callable[..., Tuple[List[Interaction], Query]]:
     This wrapper calls the given function in intervals till desired interactions (of notifications) are returned,
     or till the max wait time is reached.
     Args:
-        func: Given function func must also return Tuple[List[Interaction], Query]
+        func: Given function func must also return Tuple[List[Interaction], Query].
 
     """
 
