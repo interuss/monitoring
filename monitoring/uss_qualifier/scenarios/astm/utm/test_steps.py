@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 from enum import Enum
 from typing import List, Optional, Union, Set
 from implicitdict import ImplicitDict
@@ -12,7 +13,10 @@ from uas_standards.astm.f3548.v21.api import (
     GetOperationalIntentDetailsResponse,
     EntityID,
 )
-from uas_standards.astm.f3548.v21.constants import Scope
+from uas_standards.astm.f3548.v21.constants import (
+    Scope,
+    TimeSyncMaxDifferentialSeconds,
+)
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     UasState,
     AirspaceUsageState,
@@ -172,7 +176,6 @@ class OpIntentValidator(object):
             if self._new_oi_ref is not None:
                 check.record_failed(
                     summary="Operational intent reference was incorrectly shared with DSS",
-                    severity=Severity.High,
                     details=f"USS {self._flight_planner.participant_id} was not supposed to share an operational intent with the DSS, but the new operational intent with ID {self._new_oi_ref.id} was found",
                     query_timestamps=[self._after_query.request.timestamp],
                 )
@@ -271,7 +274,6 @@ class OpIntentValidator(object):
             if not expected_validation_failure_found:
                 check.record_failed(
                     summary="This negative test case requires specific invalid data shared with other USS in Operational intent details ",
-                    severity=Severity.High,
                     details=f"Data shared by Mock USS with other USSes did not have the specified invalid data, as expected for test case.",
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
@@ -294,7 +296,6 @@ class OpIntentValidator(object):
                     if not skip_if_not_found:
                         check.record_failed(
                             summary="Operational intent reference not found in DSS",
-                            severity=Severity.High,
                             details=f"USS {self._flight_planner.participant_id} was supposed to have shared a new operational intent with the DSS, but no matching operational intent references were found in the DSS in the area of the flight intent",
                             query_timestamps=[self._after_query.request.timestamp],
                         )
@@ -327,7 +328,6 @@ class OpIntentValidator(object):
                             ) as active_flight_check:
                                 active_flight_check.record_failed(
                                     summary="Operational intent reference for active flight not found in DSS",
-                                    severity=Severity.High,
                                     details=f"USS {self._flight_planner.participant_id} was supposed to have shared with the DSS an updated operational intent by modifying it, but no matching operational intent references were found in the DSS in the area of the flight intent",
                                     query_timestamps=[
                                         self._after_query.request.timestamp
@@ -336,7 +336,6 @@ class OpIntentValidator(object):
                         else:
                             check.record_failed(
                                 summary="Operational intent reference not found in DSS",
-                                severity=Severity.High,
                                 details=f"USS {self._flight_planner.participant_id} was supposed to have shared with the DSS an updated operational intent by modifying it, but no matching operational intent references were found in the DSS in the area of the flight intent",
                                 query_timestamps=[self._after_query.request.timestamp],
                             )
@@ -353,7 +352,6 @@ class OpIntentValidator(object):
                 if self._find_after_oi(self._orig_oi_ref.id) is not None:
                     check.record_failed(
                         summary="Operational intent reference found duplicated in DSS",
-                        severity=Severity.High,
                         details=f"USS {self._flight_planner.participant_id} was supposed to have shared with the DSS an updated operational intent by replacing it, but it ended up duplicating the operational intent in the DSS",
                         query_timestamps=[self._after_query.request.timestamp],
                     )
@@ -398,7 +396,6 @@ class OpIntentValidator(object):
                 errors = data_format_fail.errors
                 check.record_failed(
                     summary="Operational intent details response failed schema validation",
-                    severity=Severity.Medium,
                     details="The response received from querying operational intent details failed validation against the required OpenAPI schema:\n"
                     + "\n".join(
                         f"At {e.json_path} in the response: {e.message}" for e in errors
@@ -417,7 +414,6 @@ class OpIntentValidator(object):
             if error_text:
                 check.record_failed(
                     summary="Operational intent details do not match user flight intent",
-                    severity=Severity.High,
                     details=error_text,
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
@@ -436,7 +432,6 @@ class OpIntentValidator(object):
             if off_nom_vol_fail:
                 check.record_failed(
                     summary="Accepted or Activated operational intents are not allowed off-nominal volumes",
-                    severity=Severity.Medium,
                     details=off_nom_vol_fail.error_text,
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
@@ -454,10 +449,24 @@ class OpIntentValidator(object):
             if vertices_fail:
                 check.record_failed(
                     summary="Too many vertices",
-                    severity=Severity.Medium,
                     details=vertices_fail.error_text,
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
+
+        with self._scenario.check(
+            "Volume end time is in the past", [self._flight_planner.participant_id]
+        ) as check:
+            before_time = self._before_query.response.reported
+            for vol in oi_full.details.volumes + oi_full.details.off_nominal_volumes:
+                if (
+                    vol.time_end.value.datetime - before_time.datetime
+                    < datetime.timedelta(seconds=TimeSyncMaxDifferentialSeconds)
+                ):
+                    check.record_failed(
+                        summary="Operational intent was created or updated with a volume end time in the past",
+                        details=f"Operational intent {oi_full.reference.id} has a volume with end time ({vol.time_end.value}) which is before the change was made (right after {before_time}), accounting for the maximum allowed differential of {TimeSyncMaxDifferentialSeconds} seconds",
+                        query_timestamps=[oi_full_query.request.timestamp],
+                    )
 
     def _check_op_intent_telemetry(self, oi_ref: OperationalIntentReference):
         with self._scenario.check(

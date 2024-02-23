@@ -37,6 +37,15 @@ If the operational intent details reported by the USS do not match the user's fl
 
 **[astm.f3548.v21.OPIN0020](../../../requirements/astm/f3548/v21.md)**
 
+## ⚠️ Volume end time is in the past check
+
+This check fails if the operational intent shared by the USS has a volume with an end time that is in the past, accounting for the maximum allowed differential of `TimeSyncMaxDifferentialSeconds`=5 seconds.
+
+This could be caused by one of the following scenarios:
+- the USS does not implement properly the interface _getOperationalIntentDetails_ as required by **[astm.f3548.v21.USS0105](../../../requirements/astm/f3548/v21.md)**, which specifies that _The end time may not be in the past_; or
+- the USS did not synchronize its time within `TimeSyncMaxDifferentialSeconds`=5 seconds of an industry-recognized time source as required by **[astm.f3548.v21.GEN0100](../../../requirements/astm/f3548/v21.md)**; or
+- the USS did not use the synchronized time for the operational intent timestamps, as required by **[astm.f3548.v21.GEN0105](../../../requirements/astm/f3548/v21.md)**.
+
 ## 🛑 Operational intent telemetry retrievable check
 
 If the operational intent is in an off-nominal state and that its telemetry cannot be retrieved from the USS, this check will fail per **[astm.f3548.v21.SCD0100](../../../requirements/astm/f3548/v21.md)**.
