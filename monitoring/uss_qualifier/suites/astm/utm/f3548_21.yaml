@@ -13,6 +13,7 @@ resources:
   nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   priority_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   second_utm_auth: resources.communications.AuthAdapterResource?
+  utm_client_identity: resources.communications.ClientIdentityResource
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
   id_generator: resources.interuss.IDGeneratorResource
   planning_area: resources.astm.f3548.v21.PlanningAreaResource
@@ -47,6 +48,7 @@ actions:
       dss_instances: dss_instances
       dss_crdb_cluster: dss_crdb_cluster?
       second_utm_auth: second_utm_auth?
+      utm_client_identity: utm_client_identity
       flight_intents: non_conflicting_flights
       id_generator: id_generator
       planning_area: planning_area
@@ -58,6 +60,7 @@ actions:
           resources:
             dss: dss
             second_utm_auth: second_utm_auth?
+            utm_client_identity: utm_client_identity
             all_dss_instances: dss_instances
             dss_crdb_cluster: dss_crdb_cluster?
             flight_intents: flight_intents

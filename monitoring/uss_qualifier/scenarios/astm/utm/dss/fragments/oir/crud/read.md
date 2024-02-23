@@ -12,6 +12,13 @@ The response to a successful get operational intent reference query is expected 
 
 If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,1](../../../../../../../requirements/astm/f3548/v21.md)**.
 
+## 🛑 Get operational intent reference response content is correct check
+
+A successful operational intent reference creation query is expected to return a body, the content of which reflects an operational intent reference that was created earlier.
+If the content of the response does not correspond to what was requested, the DSS is failing to implement **[astm.f3548.v21.DSS0005,1](../../../../../../../requirements/astm/f3548/v21.md)**.
+
+This check will usually be performing a series of sub-checks from the [validate](../validate) fragments.
+
 ## 🛑 Successful operational intent reference search query check
 
 If the DSS fails to let us search in the area for which the OIR was created, it is failing to meet **[astm.f3548.v21.DSS0005,1](../../../../../../../requirements/astm/f3548/v21.md)**.

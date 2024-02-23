@@ -11,7 +11,7 @@ from uas_standards.astm.f3548.v21.api import (
     ImplicitSubscriptionParameters,
 )
 
-from monitoring.monitorlib.geo import make_latlng_rect, Volume3D
+from monitoring.monitorlib.geo import LatLngPoint, make_latlng_rect, Volume3D, Polygon
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.resources.astm.f3548.v21.subscription_params import (

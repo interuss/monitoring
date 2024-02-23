@@ -20,7 +20,8 @@ def remove_op_intent(
     This function implements the test step fragment described in remove_op_intent.md.
     """
     with scenario.check(
-        "Operational intent reference removed", dss.participant_id
+        "Operational intent references can be deleted by their owner",
+        dss.participant_id,
     ) as check:
         try:
             removed_ref, subscribers_to_notify, query = dss.delete_op_intent(oi_id, ovn)
@@ -35,6 +36,30 @@ def remove_op_intent(
             )
 
     # TODO: Attempt to notify subscribers
+
+
+def cleanup_op_intent(
+    scenario: TestScenarioType, dss: DSSInstance, oi_id: EntityID
+) -> None:
+    """Remove the specified operational intent reference from the DSS, if it exists."""
+
+    with scenario.check(
+        "Operational intent references can be queried by ID", [dss.participant_id]
+    ) as check:
+        try:
+            oir, q = dss.get_op_intent_reference(oi_id)
+        except fetch.QueryError as e:
+            scenario.record_queries(e.queries)
+            if e.cause_status_code != 404:
+                check.record_failed(
+                    summary="OIR Get query returned code different from 200 or 404",
+                    details=e.msg,
+                    query_timestamps=e.query_timestamps,
+                )
+            else:
+                return
+
+    remove_op_intent(scenario, dss, oi_id, oir.ovn)
 
 
 def cleanup_sub(
@@ -65,7 +90,7 @@ def cleanup_sub(
         if deleted_sub.status_code != 200:
             check.record_failed(
                 summary=f"Could not delete subscription {sub_id}",
-                details=f"When attempting to delete subscription {sub_id} from the DSS, received {deleted_sub.status_code}",
+                details=f"When attempting to delete subscription {sub_id} from the DSS, received status {deleted_sub.status_code}: {deleted_sub.response.json}",
                 query_timestamps=[deleted_sub.request.timestamp],
             )
 
