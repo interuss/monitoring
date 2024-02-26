@@ -38,15 +38,20 @@ This test step creates multiple subscriptions with different combinations of the
 
 All subscriptions are left on the DSS when this step ends, as they are expected to be present for the subsequent step.
 
-#### 🛑 Create subscription check
+#### 🛑 Create subscription query succeeds check
 
-As per **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**, the DSS API must allow callers to create a subscription with either one or both of the
-start and end time missing, provided all the required parameters are valid.
+If the query to create a subscription with valid parameters is not successful, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-#### 🛑 Response to subscription creation contains a subscription check
+#### 🛑 Create subscription response is correct check
 
-As per **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**, upon creation of a subscription,
-the newly created subscription must be part of its response.
+A successful subscription creation query is expected to return a well-defined body, the content of which reflects the created subscription.
+If the format and content of the response are not conforming, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ Create subscription response format conforms to spec check
+
+The response to a successful subscription creation query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
+
+If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Validate subscription](./validate_subscription.md)
 
@@ -56,13 +61,35 @@ Verify that the subscription returned by the DSS after its creation is properly 
 
 Query and search for the created subscription in various ways
 
-#### 🛑 Get Subscription by ID check
+#### 🛑 Get subscription query succeeds check
 
-If the freshly created subscription cannot be queried using its ID, the DSS is failing to meet **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+If the query to get an existing subscription fails, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-#### 🛑 Search for all subscriptions in planning area check
+#### 🛑 Get subscription response is correct check
 
-If the DSS fails to let us search in the area for which the subscription was just created, it is failing to meet **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+A successful get subscription query is expected to return a well-defined body, the content of which reflects the created subscription.
+If the format and content of the response are not conforming, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ Get subscription response format conforms to spec check
+
+The response to a successful get subscription query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
+
+If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Search for all subscriptions in planning area query succeeds check
+
+If the search query for the area for which the subscription was just created fails, it is failing to meet **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Search for all subscriptions in planning area response is correct check
+
+A successful search query is expected to return a well-defined body, the content of which reflects the created subscription as well as any other subscription in the area.
+If the format and content of the response are not conforming, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ Search subscriptions response format conforms to spec check
+
+The response to a successful subscription search query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
+
+If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
 #### 🛑 Created Subscription is in search results check
 
@@ -81,14 +108,20 @@ Verify that the subscription returned by the DSS via the search is correctly for
 This test step mutates the previously created subscription to verify that the DSS reacts properly: notably, it checks that the subscription version is updated,
 including for changes that are not directly visible, such as changing the subscription's footprint.
 
-#### 🛑 Subscription can be mutated check
+#### 🛑 Mutate subscription query succeeds check
 
-If a subscription cannot be modified with a valid set of parameters, the DSS is failing to meet **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+If the query to mutate a subscription with valid parameters is not successful, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-#### 🛑 Response to subscription mutation contains a subscription check
+#### 🛑 Mutate subscription response is correct check
 
-As per **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**, upon creation of a subscription,
-the newly created subscription must be part of its response.
+A successful subscription mutation query is expected to return a well-defined body, the content of which reflects the newly defined subscription.
+If the format and content of the response are not conforming, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ Mutate subscription response format conforms to spec check
+
+The response to a successful subscription mutation query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
+
+If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Validate subscription](./validate_subscription.md)
 
@@ -108,6 +141,21 @@ An attempt to delete a subscription without providing a version should fail, oth
 
 An attempt to delete a subscription while providing an incorrect version should fail, otherwise the DSS is in violation of **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
+#### 🛑 Delete subscription query succeeds check
+
+If the query to delete an existing subscription fails, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Delete subscription response is correct check
+
+A successful delete subscription query is expected to return a well-defined body, the content of which reflects the content of the subscription before deletion.
+If the format and content of the response are not conforming, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ Delete subscription response format conforms to spec check
+
+The response to a successful delete subscription query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
+
+If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+
 #### 🛑 Subscription can be deleted check
 
 An attempt to delete a subscription when the correct version is provided should succeed, otherwise the DSS is in violation of **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
@@ -124,7 +172,7 @@ Attempt to query and search for the deleted subscription in various ways
 
 If the DSS provides a successful reply to a direct query for the deleted subscription, it is in violation of **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-#### 🛑 Search for all subscriptions in planning area check
+#### 🛑 Search for all subscriptions in planning area query succeeds check
 
 If the DSS fails to let us search in the area for which the subscription was just created, it is failing to meet **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 

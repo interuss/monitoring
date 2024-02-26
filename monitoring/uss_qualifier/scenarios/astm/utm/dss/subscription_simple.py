@@ -18,6 +18,9 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
 )
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.subscription_validator import (
+    SubscriptionValidator,
+)
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenario,
 )
@@ -215,16 +218,13 @@ class SubscriptionSimple(TestScenario):
         self._create_sub_with_params(all_set_params)
 
     def _create_sub_with_params(self, creation_params: SubscriptionParams):
-        # TODO validate overall object structure with the openAPI validators.
-        #  we may want to move the entire validation/comparison logic to a 'SubscriptionValidator',
-        #  similarly to how the ISAValidator works for RID v1/v2.
 
         newly_created = self._dss.upsert_subscription(
             **creation_params,
         )
         self.record_query(newly_created)
 
-        with self.check("Create subscription", self._pid) as check:
+        with self.check("Create subscription query succeeds", self._pid) as check:
             if not newly_created.success:
                 loguru.logger.debug(f"Failed query: {newly_created.response.json}")
                 check.record_failed(
@@ -233,25 +233,13 @@ class SubscriptionSimple(TestScenario):
                     query_timestamps=[newly_created.request.timestamp],
                 )
 
-        # Check that what we get back is valid and corresponds to what we want to create
-        self._compare_upsert_resp_with_params(
-            creation_params.sub_id, newly_created, creation_params, False
-        )
-
-        # Check that the notification index is 0 for a newly created subscription.
-        # Should the notification field be missing, we assume it will have defaulted to 0 on the DSS's side.
-        with self.check(
-            "Returned notification index is 0 if present",
-            self._pid,
-        ) as check:
-            notif_index = newly_created.subscription.notification_index
-            if notif_index is not None and notif_index != 0:
-                check.record_failed(
-                    f"Returned notification index was {notif_index} instead of 0",
-                    details="A subscription is expected to have a notification index of 0 when it is created"
-                    f"Parameters used: {creation_params}",
-                    query_timestamps=[newly_created.request.timestamp],
-                )
+        with self.check("Create subscription response is correct", self._pid) as check:
+            SubscriptionValidator(
+                check,
+                self,
+                self._pid,
+                creation_params,
+            ).validate_created_subscription(creation_params.sub_id, newly_created)
 
         # Store the subscription
         self._current_subscriptions[creation_params.sub_id] = newly_created.subscription
@@ -315,7 +303,7 @@ class SubscriptionSimple(TestScenario):
                 **new_params,
             )
             self.record_query(mutated_sub_response)
-            with self.check("Subscription can be mutated", self._pid) as check:
+            with self.check("Mutate subscription query succeeds", self._pid) as check:
                 if mutated_sub_response.status_code != 200:
                     check.record_failed(
                         "Subscription mutation failed",
@@ -323,11 +311,19 @@ class SubscriptionSimple(TestScenario):
                         query_timestamps=[mutated_sub_response.request.timestamp],
                     )
 
-            # Check that what we get back is valid and corresponds to what we want to create
-            self._compare_upsert_resp_with_params(
-                sub_id, mutated_sub_response, new_params, was_mutated=True
-            )
-            # Store the version of the subscription
+            with self.check(
+                "Mutate subscription response is correct", self._pid
+            ) as check:
+                SubscriptionValidator(
+                    check, self, self._pid, new_params
+                ).validate_mutated_subscription(
+                    sub_id,
+                    mutated_sub_response,
+                    self._current_subscriptions[sub_id].version,
+                    False,
+                )
+
+            # Store the subscription
             self._current_subscriptions[sub_id] = mutated_sub_response.subscription
             # Update the parameters we used for that subscription
             self._sub_params_by_sub_id[sub_id] = new_params
@@ -349,7 +345,7 @@ class SubscriptionSimple(TestScenario):
                 **new_params,
             )
             self.record_query(mutated_sub_response)
-            with self.check("Subscription can be mutated", self._pid) as check:
+            with self.check("Mutate subscription query succeeds", self._pid) as check:
                 if not mutated_sub_response.success:
                     check.record_failed(
                         "Subscription mutation failed",
@@ -357,11 +353,19 @@ class SubscriptionSimple(TestScenario):
                         query_timestamps=[mutated_sub_response.request.timestamp],
                     )
 
-            # Check that what we get back is valid and corresponds to what we want to create
-            self._compare_upsert_resp_with_params(
-                sub_id, mutated_sub_response, new_params, was_mutated=True
-            )
-            # Store the version of the subscription
+            with self.check(
+                "Mutate subscription response is correct", self._pid
+            ) as check:
+                SubscriptionValidator(
+                    check, self, self._pid, new_params
+                ).validate_mutated_subscription(
+                    sub_id,
+                    mutated_sub_response,
+                    self._current_subscriptions[sub_id].version,
+                    False,
+                )
+
+            # Store the subscription
             self._current_subscriptions[sub_id] = mutated_sub_response.subscription
             # Update the parameters we used for that subscription
             self._sub_params_by_sub_id[sub_id] = new_params
@@ -373,7 +377,7 @@ class SubscriptionSimple(TestScenario):
         for sub_id, sub_params in self._sub_params_by_sub_id.items():
             fetched_sub = self._dss.get_subscription(sub_id)
             self.record_query(fetched_sub)
-            with self.check("Get Subscription by ID", self._pid) as check:
+            with self.check("Get subscription query succeeds", self._pid) as check:
                 if not fetched_sub.success:
                     check.record_failed(
                         "Get subscription by ID failed",
@@ -381,14 +385,15 @@ class SubscriptionSimple(TestScenario):
                         query_timestamps=[fetched_sub.request.timestamp],
                     )
 
-            # Make sure the subscription corresponds to what we requested
-            self._validate_subscription_and_notif_index(
-                sub_id,
-                fetched_sub.subscription,
-                sub_params,
-                False,
-                [fetched_sub.request.timestamp],
-            )
+            with self.check("Get subscription response is correct", self._pid) as check:
+                SubscriptionValidator(
+                    check, self, self._pid, sub_params
+                ).validate_fetched_subscription(
+                    sub_id,
+                    fetched_sub,
+                    self._current_subscriptions[sub_id].version,
+                    False,
+                )
 
     def _test_valid_search_sub(self):
         """Search for the created subscription by using the configured planning area's footprint. This is expected to work"""
@@ -396,7 +401,7 @@ class SubscriptionSimple(TestScenario):
         subs_in_area = self._dss.query_subscriptions(self._planning_area_volume4d)
         self.record_query(subs_in_area)
         with self.check(
-            "Search for all subscriptions in planning area",
+            "Search for all subscriptions in planning area query succeeds",
             self._pid,
         ) as check:
             if subs_in_area.status_code != 200:
@@ -408,24 +413,17 @@ class SubscriptionSimple(TestScenario):
 
         for sub_id, sub_params in self._sub_params_by_sub_id.items():
             with self.check(
-                "Created Subscription is in search results",
+                "Search for all subscriptions in planning area response is correct",
                 self._pid,
             ) as check:
-                if sub_id not in subs_in_area.subscriptions:
-                    check.record_failed(
-                        "Created subscription is not present in search results",
-                        details=f"The subscription {sub_id} was expected to be found in the search results, but these only contained the following subscriptions: {subs_in_area.subscriptions.keys()}",
-                        query_timestamps=[subs_in_area.request.timestamp],
-                    )
-
-            # Make sure the returned subscription corresponds to what we created
-            self._validate_subscription_and_notif_index(
-                sub_id,
-                subs_in_area.subscriptions[sub_id],
-                sub_params,
-                False,
-                [subs_in_area.request.timestamp],
-            )
+                SubscriptionValidator(
+                    check, self, self._pid, sub_params
+                ).validate_searched_subscription(
+                    sub_id,
+                    subs_in_area,
+                    self._current_subscriptions[sub_id].version,
+                    False,
+                )
 
     def _test_huge_area_search_sub(self):
         """Checks that too big search areas are rejected"""
@@ -481,21 +479,25 @@ class SubscriptionSimple(TestScenario):
                 sub_id=sub_id, sub_version=sub.version
             )
             self.record_query(deleted_sub)
-            with self.check("Subscription can be deleted", self._pid) as check:
-                if deleted_sub.status_code != 200:
+            with self.check("Delete subscription query succeeds", self._pid) as check:
+                if not deleted_sub.success:
                     check.record_failed(
                         "Subscription deletion failed",
                         details=f"Subscription deletion failed with status code {deleted_sub.status_code}",
                         query_timestamps=[deleted_sub.request.timestamp],
                     )
-            # Make sure the returned subscription corresponds to what we created
-            self._validate_subscription_and_notif_index(
-                sub_id,
-                deleted_sub.subscription,
-                self._sub_params_by_sub_id[sub_id],
-                False,
-                [deleted_sub.request.timestamp],
-            )
+
+            with self.check(
+                "Delete subscription response is correct", self._pid
+            ) as check:
+                SubscriptionValidator(
+                    check, self, self._pid, self._sub_params_by_sub_id[sub_id]
+                ).validate_deleted_subscription(
+                    sub_id,
+                    deleted_sub,
+                    self._current_subscriptions[sub_id].version,
+                    False,
+                )
 
         self._current_subscriptions = {}
 
@@ -521,10 +523,10 @@ class SubscriptionSimple(TestScenario):
         subs_in_area = self._dss.query_subscriptions(self._planning_area_volume4d)
         self.record_query(subs_in_area)
         with self.check(
-            "Search for all subscriptions in planning area",
+            "Search for all subscriptions in planning area query succeeds",
             self._pid,
         ) as check:
-            if subs_in_area.status_code != 200:
+            if not subs_in_area.success:
                 check.record_failed(
                     "Search for subscriptions in planning area failed",
                     details=f"Search for subscriptions in planning area failed with status code {subs_in_area.status_code}",
