@@ -53,6 +53,9 @@ class DSSInstanceSpecification(ImplicitDict):
     participant_id: str
     """ID of the USS responsible for this DSS instance"""
 
+    user_participant_ids: Optional[List[str]]
+    """IDs of any participants using this DSS instance, apart from the USS responsible for this DSS instance."""
+
     base_url: str
     """Base URL for the DSS instance according to the ASTM F3548-21 API"""
 
@@ -69,6 +72,7 @@ class DSSInstanceSpecification(ImplicitDict):
 
 class DSSInstance(object):
     participant_id: str
+    user_participant_ids: List[str]
     base_url: str
     has_private_address: bool = False
     client: infrastructure.UTMClientSession
@@ -77,12 +81,14 @@ class DSSInstance(object):
     def __init__(
         self,
         participant_id: str,
+        user_participant_ids: List[str],
         base_url: str,
         has_private_address: Optional[bool],
         auth_adapter: infrastructure.AuthAdapter,
         scopes_authorized: List[str],
     ):
         self.participant_id = participant_id
+        self.user_participant_ids = user_participant_ids
         self.base_url = base_url
         if has_private_address is not None:
             self.has_private_address = has_private_address
@@ -109,6 +115,7 @@ class DSSInstance(object):
         )
         return DSSInstance(
             participant_id=self.participant_id,
+            user_participant_ids=self.user_participant_ids,
             base_url=self.base_url,
             has_private_address=self.has_private_address,
             auth_adapter=auth_adapter.adapter,
@@ -464,6 +471,10 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
         )
         return DSSInstance(
             self._specification.participant_id,
+            self._specification.user_participant_ids
+            if "user_participant_ids" in self._specification
+            and self._specification.user_participant_ids
+            else [],
             self._specification.base_url,
             self._specification.get("has_private_address"),
             self._auth_adapter.adapter,
