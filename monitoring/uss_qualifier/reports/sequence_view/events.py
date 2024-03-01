@@ -255,7 +255,7 @@ def compute_tested_scenario(
     if (
         "end_time" in report
         and report.end_time
-        and report.end_time.datetime > latest_step_time
+        and (latest_step_time is None or report.end_time.datetime > latest_step_time)
     ):
         latest_step_time = report.end_time.datetime
 
