@@ -8,7 +8,7 @@ from typing import List, Union, Dict, Set, Optional
 from implicitdict import ImplicitDict, StringBasedDateTime
 
 from monitoring.monitorlib.inspection import import_submodules
-from monitoring.monitorlib.versioning import repo_url_of
+from monitoring.monitorlib.versioning import repo_url_of, get_code_version
 from monitoring.uss_qualifier import scenarios, suites, action_generators
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
     PotentialGeneratedAction,
@@ -308,6 +308,7 @@ def generate_tested_requirements(
                     overall_status=overall_status,
                     system_version=system_version,
                     ParticipantVerificationStatus=ParticipantVerificationStatus,
+                    codebase_version=get_code_version(),
                 )
             )
 
