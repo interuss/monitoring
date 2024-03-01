@@ -37,6 +37,9 @@ class OpIntentReferenceAccessControl(TestScenario):
     _dss: DSSInstance
     _pid: List[str]
 
+    # Participant IDs of users using this DSS instance
+    _uids: List[str]
+
     # The same DSS, available via a separate auth adapter
     _dss_separate_creds: DSSInstance
 
@@ -64,6 +67,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         }
         self._dss = dss.get_instance(scopes)
         self._pid = [self._dss.participant_id]
+        self._uids = self._dss.user_participant_ids
 
         self._oid_1 = id_generator.id_factory.make_id(self.OP_INTENT_1)
         self._oid_2 = id_generator.id_factory.make_id(self.OP_INTENT_2)
@@ -407,7 +411,7 @@ class OpIntentReferenceAccessControl(TestScenario):
     def _check_mutation_on_non_owned_intent_fails(self):
         with self.check(
             "Non-owning credentials cannot modify operational intent",
-            self._pid,
+            self._pid + self._uids,
         ) as check:
             try:
                 # Attempt to update the state of the intent created with the main credentials using the second credentials
@@ -437,7 +441,7 @@ class OpIntentReferenceAccessControl(TestScenario):
 
         with self.check(
             "Non-owning credentials cannot modify operational intent",
-            self._pid,
+            self._pid + self._uids,
         ) as check:
             try:
                 # Attempt to update the base_url of the intent created with the main credentials using the second credentials
@@ -468,7 +472,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         # Try to delete
         with self.check(
             "Non-owning credentials cannot delete operational intent",
-            self._pid,
+            self._pid + self._uids,
         ) as check:
             try:
                 (_, _, dq) = self._dss_separate_creds.delete_op_intent(
@@ -510,7 +514,7 @@ class OpIntentReferenceAccessControl(TestScenario):
 
         with self.check(
             "Non-owning credentials cannot modify operational intent",
-            self._pid,
+            self._pid + self._uids,
         ) as check:
             if op_1_current != self._current_ref_1:
                 check.record_failed(
