@@ -114,12 +114,12 @@ class AggregateChecks(TestScenario):
                 if p95 > constants.MaxRespondToOIDetailsRequestSeconds:
                     check.record_failed(
                         summary=f"95th percentile of durations for operational intent details requests to USS is higher than threshold",
-                        details=f"threshold: {constants.MaxRespondToOIDetailsRequestSeconds}s, 95th percentile: {p95}s",
+                        details=f"threshold: {constants.MaxRespondToOIDetailsRequestSeconds}s, 95th percentile: {p95:.3g}s",
                     )
 
             self.record_note(
                 f"{participant}/{QueryType.F3548v21USSGetOperationalIntentDetails}",
-                f"checked performances on {len(durations)} queries, 95th percentile: {p95}s",
+                f"checked performances on {len(durations)} queries, 95th percentile: {p95:.3g}s",
             )
 
     def _confirm_test_harness_queries_work(self):
