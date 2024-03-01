@@ -8,23 +8,23 @@ Verifies that all subscription CRUD operations performed on a single DSS instanc
 
 ### dss
 
-[`DSSInstanceResource`](../../../../resources/astm/f3548/v21/dss.py) the DSS instance through which entities are created, modified and deleted.
+[`DSSInstanceResource`](../../../../../resources/astm/f3548/v21/dss.py) the DSS instance through which entities are created, modified and deleted.
 
 ### other_instances
 
-[`DSSInstancesResource`](../../../../resources/astm/f3548/v21/dss.py) pointing to the DSS instances used to confirm that entities are properly propagated.
+[`DSSInstancesResource`](../../../../../resources/astm/f3548/v21/dss.py) pointing to the DSS instances used to confirm that entities are properly propagated.
 
 ### id_generator
 
-[`IDGeneratorResource`](../../../../resources/interuss/id_generator.py) providing the Subscription ID for this scenario.
+[`IDGeneratorResource`](../../../../../resources/interuss/id_generator.py) providing the Subscription ID for this scenario.
 
 ### planning_area
 
-[`PlanningAreaResource`](../../../../resources/astm/f3548/v21/planning_area.py) describes the 3D volume in which subscriptions will be created.
+[`PlanningAreaResource`](../../../../../resources/astm/f3548/v21/planning_area.py) describes the 3D volume in which subscriptions will be created.
 
 ## Setup test case
 
-### [Ensure clean workspace test step](clean_workspace.md)
+### [Ensure clean workspace test step](../clean_workspace.md)
 
 This step ensures that no subscription with the known test ID exists in the DSS.
 
@@ -40,11 +40,11 @@ This test step creates multiple subscriptions with different combinations of the
 
 All subscriptions are left on the DSS when this step ends, as they are expected to be present for the subsequent step.
 
-#### [Create subscription](fragments/subscription_crud.md)
+#### [Create subscription](../fragments/subscription_crud.md)
 
 Verify that a subscription can be created on the primary DSS.
 
-#### [Validate subscription](./validate_subscription.md)
+#### [Validate subscription](../fragments/subscription_validate.md)
 
 Verify that the subscription returned by the DSS under test is properly formatted and contains the expected content.
 
@@ -56,17 +56,17 @@ Query the created subscription at every DSS provided in `dss_instances`.
 
 When queried for a subscription that was created via another DSS, a DSS instance is expected to provide a valid subscription.
 
-If it does not, it might be in violation of **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+If it does not, it might be in violation of **[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**.
 
-#### [Subscription is synchronized](./fragments/subscription_sync.md)
+#### [Subscription is synchronized](../fragments/subscription_sync.md)
 
 Confirm that the subscription that was just created is properly synchronized across all DSS instances.
 
-#### [Get subscription](fragments/subscription_crud.md)
+#### [Get subscription](../fragments/subscription_crud.md)
 
 Confirms that each DSS provides access to the created subscription,
 
-#### [Validate subscription](./validate_subscription.md)
+#### [Validate subscription](../fragments/subscription_validate.md)
 
 Verify that the subscription returned by every DSS is correctly formatted and corresponds to what was created earlier.
 
@@ -75,11 +75,11 @@ Verify that the subscription returned by every DSS is correctly formatted and co
 This test step mutates the previously created subscription to verify that the DSS reacts properly: notably, it checks that the subscription version is updated,
 including for changes that are not directly visible, such as changing the subscription's footprint.
 
-#### [Update subscription](fragments/subscription_crud.md)
+#### [Update subscription](../fragments/subscription_crud.md)
 
 Confirm that the subscription can be mutated.
 
-#### [Validate subscription](./validate_subscription.md)
+#### [Validate subscription](../fragments/subscription_validate.md)
 
 Verify that the subscription returned by the DSS is properly formatted and contains the correct content.
 
@@ -91,17 +91,17 @@ Query the updated subscription at every DSS provided in `dss_instances`.
 
 When queried for a subscription that was mutated via another DSS, a DSS instance is expected to provide a valid subscription.
 
-If it does not, it might be in violation of **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+If it does not, it might be in violation of **[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**.
 
-#### [Subscription is synchronized](./fragments/subscription_sync.md)
+#### [Subscription is synchronized](../fragments/subscription_sync.md)
 
 Confirm that the subscription that was just mutated is properly synchronized across all DSS instances.
 
-#### [Get subscription](fragments/subscription_crud.md)
+#### [Get subscription](../fragments/subscription_crud.md)
 
 Confirms that the subscription that was just mutated can be retrieved from any DSS.
 
-#### [Validate subscription](./validate_subscription.md)
+#### [Validate subscription](../fragments/subscription_validate.md)
 
 Verify that the subscription returned by every DSS is correctly formatted and corresponds to what was mutated earlier.
 
@@ -111,11 +111,11 @@ Attempt to delete the subscription in various ways and ensure that the DSS react
 
 This also checks that the subscription data returned by a successful deletion is correct.
 
-#### [Delete subscription](fragments/subscription_crud.md)
+#### [Delete subscription](../fragments/subscription_crud.md)
 
 Confirms that a subscription can be deleted.
 
-#### [Validate subscription](./validate_subscription.md)
+#### [Validate subscription](../fragments/subscription_validate.md)
 
 Verify that the subscription returned by the DSS via the deletion is properly formatted and contains the correct content.
 
@@ -126,6 +126,6 @@ Attempt to query and search for the deleted subscription in various ways
 #### 🛑 Secondary DSS should not return the deleted subscription check
 
 If a DSS returns a subscription that was previously successfully deleted from the primary DSS,
-either one of the primary DSS or the DSS that returned the subscription is in violation of **[astm.f3548.v21.DSS0210,1a](../../../../requirements/astm/f3548/v21.md)**.
+either one of the primary DSS or the DSS that returned the subscription is in violation of **[astm.f3548.v21.DSS0210,1a](../../../../../requirements/astm/f3548/v21.md)**.
 
-## [Cleanup](./clean_workspace.md)
+## [Cleanup](../clean_workspace.md)

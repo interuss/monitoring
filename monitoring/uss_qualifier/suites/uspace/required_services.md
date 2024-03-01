@@ -457,17 +457,17 @@
     <td rowspan="37" style="vertical-align:top;"><a href="../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0005,1</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/prep_planners.md">ASTM F3548 flight planners preparation</a><br><a href="../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a><br><a href="../../scenarios/astm/utm/dss/subscription_simple.md">ASTM SCD DSS: Subscription Simple</a><br><a href="../../scenarios/astm/utm/dss/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a><br><a href="../../scenarios/astm/utm/off_nominal_planning/down_uss.md">Off-Nominal planning: down USS</a><br><a href="../../scenarios/astm/utm/off_nominal_planning/down_uss_equal_priority_not_permitted.md">Off-Nominal planning: down USS with equal priority conflicts not permitted</a></td>
+    <td><a href="../../scenarios/astm/utm/prep_planners.md">ASTM F3548 flight planners preparation</a><br><a href="../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a><br><a href="../../scenarios/astm/utm/dss/subscription_simple.md">ASTM SCD DSS: Subscription Simple</a><br><a href="../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a><br><a href="../../scenarios/astm/utm/off_nominal_planning/down_uss.md">Off-Nominal planning: down USS</a><br><a href="../../scenarios/astm/utm/off_nominal_planning/down_uss_equal_priority_not_permitted.md">Off-Nominal planning: down USS with equal priority conflicts not permitted</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0005,2</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/prep_planners.md">ASTM F3548 flight planners preparation</a><br><a href="../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a><br><a href="../../scenarios/astm/utm/dss/subscription_simple.md">ASTM SCD DSS: Subscription Simple</a><br><a href="../../scenarios/astm/utm/dss/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a><br><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/off_nominal_planning/down_uss.md">Off-Nominal planning: down USS</a><br><a href="../../scenarios/astm/utm/off_nominal_planning/down_uss_equal_priority_not_permitted.md">Off-Nominal planning: down USS with equal priority conflicts not permitted</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/prep_planners.md">ASTM F3548 flight planners preparation</a><br><a href="../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a><br><a href="../../scenarios/astm/utm/dss/subscription_simple.md">ASTM SCD DSS: Subscription Simple</a><br><a href="../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a><br><a href="../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a><br><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/off_nominal_planning/down_uss.md">Off-Nominal planning: down USS</a><br><a href="../../scenarios/astm/utm/off_nominal_planning/down_uss_equal_priority_not_permitted.md">Off-Nominal planning: down USS with equal priority conflicts not permitted</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0005,5</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a><br><a href="../../scenarios/astm/utm/dss/subscription_simple.md">ASTM SCD DSS: Subscription Simple</a><br><a href="../../scenarios/astm/utm/dss/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a></td>
+    <td><a href="../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a><br><a href="../../scenarios/astm/utm/dss/subscription_simple.md">ASTM SCD DSS: Subscription Simple</a><br><a href="../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0015</a></td>
@@ -482,37 +482,37 @@
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0210,1a</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/dss/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
+    <td><a href="../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0210,1c</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/dss/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
+    <td><a href="../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0210,1e</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/dss/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
+    <td><a href="../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0210,1f</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/dss/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
+    <td><a href="../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0210,1g</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/dss/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
+    <td><a href="../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0210,1h</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/dss/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
+    <td><a href="../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0210,1i</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/dss/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
+    <td><a href="../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0300</a></td>
