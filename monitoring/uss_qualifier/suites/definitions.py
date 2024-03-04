@@ -155,18 +155,6 @@ class TestSuiteDefinition(ImplicitDict):
     participant_verifiable_capabilities: Optional[List[ParticipantCapabilityDefinition]]
     """Definitions of capabilities verified by this test suite for individual participants."""
 
-    def __init__(self, *args, **kwargs):
-        super(TestSuiteDefinition, self).__init__(*args, **kwargs)
-        inherits_resources = "resources" in self and self.resources
-        local_resources = "local_resources" in self and self.local_resources
-        if inherits_resources and local_resources:
-            for k in self.resources:
-                if k in self.local_resources:
-                    self.local_resources.pop(k)
-                    logger.debug(
-                        f"Ignoring local resource `{k}` in favor of definition provided in `resources`"
-                    )
-
     @staticmethod
     def load_from_declaration(
         declaration: TestSuiteDeclaration,

@@ -178,7 +178,7 @@ class ActionNode(ImplicitDict):
 
 @dataclass
 class Indexer(object):
-    scenario_index: int = 1
+    index: int = 1
 
 
 @dataclass

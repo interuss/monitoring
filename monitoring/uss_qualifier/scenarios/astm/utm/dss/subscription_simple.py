@@ -18,7 +18,7 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
 )
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
-from monitoring.uss_qualifier.scenarios.astm.utm.dss.subscription_validator import (
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators.subscription_validator import (
     SubscriptionValidator,
 )
 from monitoring.uss_qualifier.scenarios.scenario import (

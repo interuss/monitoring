@@ -243,7 +243,12 @@ class TestSuite(object):
         if "local_resources" in self.definition and self.definition.local_resources:
             local_resources = create_resources(self.definition.local_resources)
             for local_resource_id, resource in local_resources.items():
-                self.local_resources[local_resource_id] = resource
+                if local_resource_id not in self.local_resources:
+                    self.local_resources[local_resource_id] = resource
+                else:
+                    logger.debug(
+                        f"Overriding local resource {local_resource_id} in test suite {declaration.suite_type} with externally-provided resource"
+                    )
 
         for resource_id, resource_type in self.definition.resources.items():
             is_optional = resource_type.endswith("?")
