@@ -7,6 +7,7 @@ from implicitdict import ImplicitDict
 from loguru import logger
 
 from monitoring.monitorlib.errors import stacktrace_string
+from monitoring.monitorlib.versioning import get_code_version
 from monitoring.uss_qualifier.action_generators.action_generator import (
     action_generator_type_from_name,
 )
@@ -318,5 +319,6 @@ def generate_sequence_view(
                 UNATTRIBUTED_PARTICIPANT=UNATTRIBUTED_PARTICIPANT,
                 len=len,
                 Severity=Severity,
+                codebase_version=get_code_version(),
             )
         )
