@@ -23,8 +23,8 @@ As per **[astm.f3548.v21.SCD0080](../../../../../requirements/astm/f3548/v21.md)
 operational intents relevant to their own ones when they are in the Activated, NonConforming or Contingent states.
 In DSS, there is a subscription associated with an operational intent managed by a USS. A tested USS should successfully
 receive a notification of relevant intent from Mock USS based on this subscription.
-The check will be done if valid notification is sent by Mock USS, which is determined in in
- **[Mock USS sends valid notification check](#⚠️-mock-uss-sends-valid-notification-check)** above.
+The check will be done if valid notification is sent by Mock USS, which is determined in
+[Mock USS sends valid notification check](#⚠️-mock-uss-sends-valid-notification-check) above.
 This check will fail if tested USS does not respond with http status 204 to a valid notification attempt by Mock USS.
 
 ## ⚠️ Tested USS rejects invalid notification check
@@ -32,7 +32,7 @@ This check will fail if tested USS does not respond with http status 204 to a va
 As per **[astm.f3548.v21.USS0105](../../../../../requirements/astm/f3548/v21.md)**, Tested USS should validate that the notification
 received includes the subscription_id associated with its managed operation.
 The check will be done if invalid notification is sent by Mock USS, which is determined in
- **[Mock USS sends valid notification check](#⚠️-mock-uss-sends-valid-notification-check)** above.
+[Mock USS sends valid notification check](#⚠️-mock-uss-sends-valid-notification-check) above.
 This check will fail if tested USS does not respond with http status 400 for an invalid notification attempt by Mock USS.
 
 

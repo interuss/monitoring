@@ -70,7 +70,7 @@ def expect_tested_uss_receives_notification_from_mock_uss(
         if not interactions:
             check.record_failed(
                 summary=f"No notification sent by mock_uss to tested_uss",
-                details=f"Notification to tested_uss with pre-existing relevant operational intent not sent, even though DSS instructed mock_uss to notify due to subscription.",
+                details=f"Notification not sent for intent id {op_intent_ref_id} to tested_uss url {tested_uss_base_url}, even though DSS instructed mock_uss to notify tested_uss based on subscription associated with its relevant operational intent.",
                 query_timestamps=[plan_request_time, query.request.timestamp],
             )
 
@@ -139,11 +139,11 @@ def _is_notification_sent_to_url_with_op_intent_id(
                         f"Parsing mock_uss notification to type PutOperationalIntentDetailsParameters failed - {e}"
                     )
             return (notification.operational_intent_id == op_intent_id) and (
-                base_url in interaction.query.request.url_hostname
+                base_url in interaction.query.request.url
             )
         return False
 
-    return is_applicable()
+    return is_applicable
 
 
 def _check_notification_sent_with_subscription_id_and_response(

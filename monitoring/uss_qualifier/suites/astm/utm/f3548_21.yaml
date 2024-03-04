@@ -156,6 +156,27 @@ actions:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
       flight_planners: flight_planners
+      non_conflicting_flights: non_conflicting_flights
+      dss: dss
+      mock_uss: mock_uss
+    specification:
+      action_to_repeat:
+        test_scenario:
+          scenario_type: scenarios.astm.utm.subscription_notifications.ReceiveNotificationsForAwareness
+          resources:
+            tested_uss: tested_uss
+            mock_uss: mock_uss
+            dss: dss
+            flight_intents: non_conflicting_flights
+        on_failure: Continue
+      flight_planners_source: flight_planners
+      roles:
+        - tested_uss
+  on_failure: Continue
+- action_generator:
+    generator_type: action_generators.flight_planning.FlightPlannerCombinations
+    resources:
+      flight_planners: flight_planners
       nominal_planning_selector: nominal_planning_selector?
       conflicting_flights: conflicting_flights
       dss: dss

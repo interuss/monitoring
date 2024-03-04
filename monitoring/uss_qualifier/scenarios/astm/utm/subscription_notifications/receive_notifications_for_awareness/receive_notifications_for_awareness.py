@@ -1,12 +1,15 @@
 from typing import Optional, Dict
 
+from loguru import logger
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
 )
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.monitorlib.temporal import TimeDuringTest
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent import FlightIntent
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
+    FlightIntent,
+)
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
     ExpectedFlightIntent,
     validate_flight_intent_templates,
@@ -24,7 +27,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
 )
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
-    MockUSSResource
+    MockUSSResource,
 )
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
@@ -38,7 +41,6 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights_fp_client,
     plan_flight,
     activate_flight,
-    delete_flight,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     OpIntentValidator,
@@ -46,6 +48,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
 from monitoring.uss_qualifier.scenarios.astm.utm.subscription_notifications.test_steps.validate_notification_received import (
     expect_tested_uss_receives_notification_from_mock_uss,
 )
+
 
 class ReceiveNotificationsForAwareness(TestScenario):
     flight_1_planned: FlightInfoTemplate
@@ -92,7 +95,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
                 uas_state=UasState.Nominal,
             ),
             ExpectedFlightIntent(
-                "flight_2",
+                "flight_2_planned",
                 "Flight 2",
                 must_not_conflict_with=["Flight 1"],
                 f3548v21_priority_equal_to=["Flight 1"],
@@ -131,51 +134,58 @@ class ReceiveNotificationsForAwareness(TestScenario):
             f"{self.tested_uss_client.participant_id}",
         )
         self.record_note(
-            "Control USS",
+            "Mock USS",
             f"{self.mock_uss_client.participant_id}",
         )
-        self.begin_test_case("Successfully receive relevant operation notification in Activated state")
+        self.begin_test_case(
+            "Activated operational intent receives notification of relevant intent"
+        )
         self._receive_notification_successfully_when_activated_test_case(times)
         self.end_test_case()
 
         self.end_test_scenario()
 
-    def _receive_notification_successfully_when_activated_test_case(self, times: Dict[TimeDuringTest, Time]):
+    def _receive_notification_successfully_when_activated_test_case(
+        self, times: Dict[TimeDuringTest, Time]
+    ):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_1_planned = self.flight_1_planned.resolve(times)
         flight_1_activated = self.flight_1_activated.resolve(times)
-        flight_2_planned = self.flight_2_planned
+        flight_2_planned = self.flight_2_planned.resolve(times)
 
         self.begin_test_step("Tested_uss plans and activates Flight 1")
         with OpIntentValidator(
             self,
-            self.mock_uss_client,
+            self.tested_uss_client,
             self.dss,
             self._intents_extent,
         ) as validator:
             _, self.flight_1_id = plan_flight(
                 self,
-                self.mock_uss_client,
+                self.tested_uss_client,
                 flight_1_planned,
             )
             flight_1_oi_ref = validator.expect_shared(flight_1_planned)
 
         with OpIntentValidator(
             self,
-            self.mock_uss_client,
+            self.tested_uss_client,
             self.dss,
             self._intents_extent,
+            flight_1_oi_ref,
         ) as validator:
             _, self.flight_1_id = activate_flight(
                 self,
-                self.mock_uss_client,
+                self.tested_uss_client,
                 flight_1_activated,
+                self.flight_1_id,
             )
             flight_1_oi_ref = validator.expect_shared(flight_1_activated)
+
         self.end_test_step()
         subscription_id = flight_1_oi_ref.subscription_id
 
-        self.begin_test_step(self, "Mock_uss plans Flight 2")
+        self.begin_test_step("Mock_uss plans Flight 2")
         with OpIntentValidator(
             self,
             self.mock_uss_client,
@@ -189,9 +199,10 @@ class ReceiveNotificationsForAwareness(TestScenario):
                 flight_2_planned,
             )
             flight_2_oi_ref = validator.expect_shared(flight_2_planned)
+
         self.end_test_step()
 
-        self.begin_test_step(self, "Validate Flight 2 notification received by tested_uss")
+        self.begin_test_step("Validate Flight 2 notification received by tested_uss")
         expect_tested_uss_receives_notification_from_mock_uss(
             self,
             self.mock_uss,
@@ -206,4 +217,5 @@ class ReceiveNotificationsForAwareness(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
+        cleanup_flights_fp_client(self, (self.mock_uss_client, self.tested_uss_client))
         self.end_cleanup()

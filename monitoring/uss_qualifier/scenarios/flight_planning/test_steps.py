@@ -395,6 +395,34 @@ def plan_flight(
     )
 
 
+def activate_flight(
+    scenario: TestScenarioType,
+    flight_planner: FlightPlannerClient,
+    flight_info: FlightInfo,
+    flight_id: Optional[str] = None,
+    additional_fields: Optional[dict] = None,
+) -> Tuple[PlanningActivityResponse, Optional[str]]:
+    """Activate a flight intent that should result in success.
+
+    This function implements the test step fragment described in
+    activate_flight_intent.md.
+
+    Returns:
+      * The injection response.
+      * The ID of the injected flight if it is returned, None otherwise.
+    """
+    return submit_flight(
+        scenario=scenario,
+        success_check="Successful activation",
+        expected_results={(PlanningActivityResult.Completed, FlightPlanStatus.OkToFly)},
+        failed_checks={PlanningActivityResult.Failed: "Failure"},
+        flight_planner=flight_planner,
+        flight_info=flight_info,
+        flight_id=flight_id,
+        additional_fields=additional_fields,
+    )
+
+
 def submit_flight(
     scenario: TestScenarioType,
     success_check: str,
