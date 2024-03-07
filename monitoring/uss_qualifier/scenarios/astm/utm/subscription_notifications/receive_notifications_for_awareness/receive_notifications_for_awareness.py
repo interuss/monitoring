@@ -1,6 +1,5 @@
 from typing import Optional, Dict
 
-from loguru import logger
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
@@ -82,7 +81,6 @@ class ReceiveNotificationsForAwareness(TestScenario):
                 "flight_1_planned",
                 "Flight 1",
                 must_not_conflict_with=["Flight 2"],
-                f3548v21_priority_equal_to=["Flight 2"],
                 usage_state=AirspaceUsageState.Planned,
                 uas_state=UasState.Nominal,
             ),
@@ -90,7 +88,6 @@ class ReceiveNotificationsForAwareness(TestScenario):
                 "flight_1_activated",
                 "Flight 1",
                 must_not_conflict_with=["Flight 2"],
-                f3548v21_priority_equal_to=["Flight 2"],
                 usage_state=AirspaceUsageState.InUse,
                 uas_state=UasState.Nominal,
             ),
@@ -98,7 +95,6 @@ class ReceiveNotificationsForAwareness(TestScenario):
                 "flight_2_planned",
                 "Flight 2",
                 must_not_conflict_with=["Flight 1"],
-                f3548v21_priority_equal_to=["Flight 1"],
                 usage_state=AirspaceUsageState.Planned,
                 uas_state=UasState.Nominal,
             ),
