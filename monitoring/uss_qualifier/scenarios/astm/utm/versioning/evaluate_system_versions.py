@@ -31,11 +31,7 @@ class EvaluateSystemVersions(TestScenario):
     ):
         super(EvaluateSystemVersions, self).__init__()
         self._test_env_version_providers = test_env_version_providers.version_providers
-        self._prod_env_version_providers = (
-            prod_env_version_providers.version_providers
-            if prod_env_version_providers
-            else []
-        )
+        self._prod_env_version_providers = prod_env_version_providers.version_providers
         self._system_identity = system_identity.system_identity
 
     def run(self, context: ExecutionContext):
