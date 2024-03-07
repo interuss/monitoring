@@ -41,3 +41,13 @@ either one of the instances at which the subscription was created or the one tha
 
 If the subscription returned by a DSS to which the subscription was synchronized to does not contain the expected notification count,
 either one of the instances at which the subscription was created or the one that was queried, may be failing to implement **[astm.f3548.v21.DSS0210,1i](../../../../../../requirements/astm/f3548/v21.md)**.
+
+## 🛑 Secondary DSS returns the subscription in searches for area that contains it check
+
+The secondary DSS should be aware of the subscription's area: when a search query is issued for an area that encompasses the created subscription,
+the secondary DSS should return the subscription in its search results. Otherwise, it is in violation of **[astm.f3548.v21.DSS0210,1d](../../../../../../requirements/astm/f3548/v21.md)**.
+
+## 🛑 Secondary DSS does not return the subscription in searches not encompassing the general area of the subscription check
+
+The secondary DSS should be aware of the subscription's area: when a search query is issued for an area not in the vicinity of the created subscription,
+the secondary DSS should not return it in its search results. Otherwise, it is in violation of **[astm.f3548.v21.DSS0210,1d](../../../../../../requirements/astm/f3548/v21.md)**.

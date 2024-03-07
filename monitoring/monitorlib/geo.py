@@ -122,6 +122,14 @@ class Polygon(ImplicitDict):
         )
 
     @staticmethod
+    def from_latlng_coords(coords: List[LatLng]) -> Polygon:
+        return Polygon(
+            vertices=[
+                LatLngPoint(lat=p.lat().degrees, lng=p.lng().degrees) for p in coords
+            ]
+        )
+
+    @staticmethod
     def from_latlng_rect(latlngrect: s2sphere.LatLngRect) -> Polygon:
         return Polygon(
             vertices=[
@@ -651,3 +659,53 @@ def generate_slight_overlap_area(in_points: List[LatLng]) -> List[LatLng]:
     )
 
     return [overlap_corner, same_lat_point, opposite_corner, same_lng_point]
+
+
+def generate_area_in_vicinity(
+    in_points: List[LatLng], relative_distance: float
+) -> List[LatLng]:
+    """
+    Takes a list of LatLng points and returns a list of LatLng points that represents
+    a non-contiguous area in the vicinity of the input.
+
+    The returned polygon is built as such:
+     - draw a line from the center of the input polygon to the first point of the input polygon
+     - continue on the line for a distance equal to 'relative_distance' multiplied by the distance between the center and the first point
+     - from this point, draw a square in the direction opposite of the center of the input polygon
+
+    The square will have a size comparable to half of the input polygon's diameter.
+    """
+    starting_point = in_points[0]  # our starting point
+
+    # Compute the center of mass of the input polygon
+    center = LatLng.from_degrees(
+        sum([point.lat().degrees for point in in_points]) / len(in_points),
+        sum([point.lng().degrees for point in in_points]) / len(in_points),
+    )
+
+    # Compute the distance between the center and the starting point, as a 2D vector
+    delta_lat = center.lat().degrees - starting_point.lat().degrees
+    delta_lng = center.lng().degrees - starting_point.lng().degrees
+
+    # Multiply the vector by the relative distance
+    distance_lat = delta_lat * relative_distance
+    distance_lng = delta_lng * relative_distance
+
+    closest_corner = LatLng.from_degrees(
+        starting_point.lat().degrees - distance_lat,
+        starting_point.lng().degrees - distance_lng,
+    )
+
+    same_lat_point = LatLng.from_degrees(
+        closest_corner.lat().degrees, closest_corner.lng().degrees - delta_lng
+    )
+    same_lng_point = LatLng.from_degrees(
+        closest_corner.lat().degrees - delta_lat, closest_corner.lng().degrees
+    )
+
+    opposite_corner = LatLng.from_degrees(
+        closest_corner.lat().degrees - delta_lat,
+        closest_corner.lng().degrees - delta_lng,
+    )
+
+    return [closest_corner, same_lat_point, opposite_corner, same_lng_point]
