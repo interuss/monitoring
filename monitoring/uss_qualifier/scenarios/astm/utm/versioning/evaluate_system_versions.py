@@ -104,7 +104,10 @@ class EvaluateSystemVersions(TestScenario):
         matched_participants = []
         for participant_id in test_env_versions:
             if participant_id not in prod_env_versions:
-                # Participant didn't provide a means of determining the version of their production system
+                self.record_note(
+                    f"{participant_id} prod system",
+                    f"The production version of {participant_id}'s system could not be determined (perhaps because of means of determining the production version was not provided)'",
+                )
                 continue
             if (
                 test_env_versions[participant_id].version
