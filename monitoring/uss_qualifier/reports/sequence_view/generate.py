@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import math
 import os
-import html
-from typing import List, Dict, Iterator
+from typing import List, Iterator
 
 from implicitdict import ImplicitDict
 from loguru import logger
 
 from monitoring.monitorlib.errors import stacktrace_string
+from monitoring.monitorlib.versioning import get_code_version
 from monitoring.uss_qualifier.action_generators.action_generator import (
     action_generator_type_from_name,
 )
@@ -22,18 +21,15 @@ from monitoring.uss_qualifier.reports import jinja_env
 from monitoring.uss_qualifier.reports.report import (
     TestRunReport,
     TestSuiteActionReport,
-    TestScenarioReport,
     Severity,
     SkippedActionReport,
 )
+from monitoring.uss_qualifier.reports.sequence_view.events import (
+    compute_tested_scenario,
+)
 from monitoring.uss_qualifier.reports.sequence_view.kml import make_scenario_kml
 from monitoring.uss_qualifier.reports.sequence_view.summary_types import (
-    TestedScenario,
     Indexer,
-    Event,
-    NoteEvent,
-    Epoch,
-    TestedParticipant,
     ActionNode,
     ActionNodeType,
     SkippedAction,
@@ -41,8 +37,6 @@ from monitoring.uss_qualifier.reports.sequence_view.summary_types import (
     SuiteCell,
     EpochType,
     EventType,
-    TestedStep,
-    TestedCase,
 )
 from monitoring.uss_qualifier.reports.tested_requirements.generate import (
     compute_test_run_information,
@@ -54,220 +48,6 @@ from monitoring.uss_qualifier.suites.definitions import ActionType, TestSuiteDef
 
 
 UNATTRIBUTED_PARTICIPANT = "unattributed"
-
-
-def _compute_tested_scenario(
-    report: TestScenarioReport, indexer: Indexer
-) -> TestedScenario:
-    epochs = []
-    all_events = []
-    event_index = 1
-
-    def append_notes(new_notes):
-        nonlocal event_index, all_events
-        events = []
-        for k, v in new_notes.items():
-            events.append(
-                Event(
-                    note=NoteEvent(
-                        key=html.escape(k),
-                        message=html.escape(v.message),
-                        timestamp=v.timestamp.datetime,
-                    ),
-                    event_index=event_index,
-                )
-            )
-            all_events.append(events[-1])
-            event_index += 1
-        events.sort(key=lambda e: e.timestamp)
-        epochs.append(Epoch(events=events))
-
-    # Add any notes that occurred before the first test step
-    if "notes" in report and report.notes:
-        if len(report.cases) >= 1 and len(report.cases[0].steps) >= 1:
-            first_step_start = report.cases[0].steps[0].start_time.datetime
-            pre_notes = {
-                k: v
-                for k, v in report.notes.items()
-                if v.timestamp.datetime < first_step_start
-            }
-        else:
-            pre_notes = report.notes
-        if pre_notes:
-            append_notes(pre_notes)
-
-    scenario_participants: Dict[ParticipantID, TestedParticipant] = {}
-
-    latest_step_time = None
-    for case in report.cases:
-        steps = []
-        last_step = None
-        for step in case.steps:
-            if "notes" in report and report.notes:
-                # Add events (notes) that happened in between the previous step and this one
-                if last_step is not None:
-                    inter_notes = {
-                        k: v
-                        for k, v in report.notes.items()
-                        if last_step.end_time.datetime
-                        < v.timestamp.datetime
-                        < step.start_time.datetime
-                    }
-                    if inter_notes:
-                        append_notes(inter_notes)
-                else:
-                    last_step = step
-
-            # Enumerate the events of this step
-            events = []
-            for passed_check in step.passed_checks:
-                events.append(Event(passed_check=passed_check))
-                all_events.append(events[-1])
-                participants = (
-                    passed_check.participants
-                    if passed_check.participants
-                    else [UNATTRIBUTED_PARTICIPANT]
-                )
-                for pid in participants:
-                    p = scenario_participants.get(pid, TestedParticipant())
-                    p.has_successes = True
-                    scenario_participants[pid] = p
-            if "queries" in step and step.queries:
-                for query in step.queries:
-                    events.append(Event(query=query))
-                    all_events.append(events[-1])
-                    participant_id = (
-                        query.participant_id
-                        if "participant_id" in query and query.participant_id
-                        else UNATTRIBUTED_PARTICIPANT
-                    )
-                    p = scenario_participants.get(participant_id, TestedParticipant())
-                    p.has_queries = True
-                    scenario_participants[participant_id] = p
-
-            for failed_check in step.failed_checks:
-                query_events = []
-                if (
-                    "query_report_timestamps" in failed_check
-                    and failed_check.query_report_timestamps
-                ):
-                    for query_timestamp in failed_check.query_report_timestamps:
-                        found = False
-                        for e in all_events:
-                            if (
-                                e.type == EventType.Query
-                                and e.query.request.initiated_at == query_timestamp
-                            ):
-                                query_events.append(e)
-                                found = True
-                                break
-                        if not found:
-                            query_events.append(query_timestamp)
-                events.append(
-                    Event(failed_check=failed_check, query_events=query_events)
-                )
-                all_events.append(events[-1])
-                participants = (
-                    failed_check.participants
-                    if failed_check.participants
-                    else [UNATTRIBUTED_PARTICIPANT]
-                )
-                for pid in participants:
-                    p = scenario_participants.get(pid, TestedParticipant())
-                    if failed_check.severity == Severity.Low:
-                        p.has_infos = True
-                    else:
-                        p.has_failures = True
-                    scenario_participants[pid] = p
-            if "notes" in report and report.notes:
-                for key, note in report.notes.items():
-                    if step.start_time.datetime <= note.timestamp.datetime:
-                        if (
-                            "end_time" not in step
-                            or note.timestamp.datetime <= step.end_time.datetime
-                        ):
-                            events.append(
-                                Event(
-                                    note=NoteEvent(
-                                        key=html.escape(key),
-                                        message=html.escape(note.message),
-                                        timestamp=note.timestamp.datetime,
-                                    )
-                                )
-                            )
-                            all_events.append(events[-1])
-
-            # Sort this step's events by time
-            events.sort(key=lambda e: e.timestamp)
-
-            # Label this step's events with event_index
-            for e in events:
-                e.event_index = event_index
-                event_index += 1
-
-            # Look for the latest time something happened
-            for e in events:
-                if latest_step_time is None or e.timestamp > latest_step_time:
-                    latest_step_time = e.timestamp
-            if "end_time" in step and step.end_time:
-                if (
-                    latest_step_time is None
-                    or step.end_time.datetime > latest_step_time
-                ):
-                    latest_step_time = step.end_time.datetime
-
-            # Add this step
-            steps.append(
-                TestedStep(
-                    name=step.name,
-                    url=step.documentation_url,
-                    events=events,
-                )
-            )
-        epochs.append(
-            Epoch(
-                case=TestedCase(name=case.name, url=case.documentation_url, steps=steps)
-            )
-        )
-
-    # Add any notes that occurred after the last test step
-    if "notes" in report and report.notes:
-        if len(report.cases) >= 1 and len(report.cases[0].steps) >= 1:
-            post_notes = {
-                k: v
-                for k, v in report.notes.items()
-                if v.timestamp.datetime > latest_step_time
-            }
-        else:
-            post_notes = {}
-        if post_notes:
-            latest_step_time = max(v.timestamp.datetime for v in post_notes.values())
-            append_notes(post_notes)
-
-    if "end_time" in report and report.end_time:
-        latest_step_time = report.end_time.datetime
-
-    if latest_step_time is not None:
-        dt_s = round((latest_step_time - report.start_time.datetime).total_seconds())
-    else:
-        dt_s = 0
-    dt_m = math.floor(dt_s / 60)
-    dt_s -= dt_m * 60
-    padding = "0" if dt_s < 10 else ""
-    duration = f"{dt_m}:{padding}{dt_s}"
-
-    scenario = TestedScenario(
-        type=report.scenario_type,
-        name=report.name,
-        url=report.documentation_url,
-        duration=duration,
-        epochs=epochs,
-        scenario_index=indexer.scenario_index,
-        participants=scenario_participants,
-        execution_error=report.execution_error if "execution_error" in report else None,
-    )
-    indexer.scenario_index += 1
-    return scenario
 
 
 def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
@@ -340,7 +120,7 @@ def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Act
             name=report.test_scenario.name,
             node_type=ActionNodeType.Scenario,
             children=[],
-            scenario=_compute_tested_scenario(report.test_scenario, indexer),
+            scenario=compute_tested_scenario(report.test_scenario, indexer),
         )
     elif is_test_suite:
         children = [_compute_action_node(a, indexer) for a in report.test_suite.actions]
@@ -539,5 +319,6 @@ def generate_sequence_view(
                 UNATTRIBUTED_PARTICIPANT=UNATTRIBUTED_PARTICIPANT,
                 len=len,
                 Severity=Severity,
+                codebase_version=get_code_version(),
             )
         )

@@ -203,6 +203,9 @@ v1:
             specification:
               dss_instances:
                 - participant_id: uss1
+                  user_participant_ids:
+                    # Participants using a DSS instance they do not provide should be listed as users of that DSS (so that they can take credit for USS requirements enforced by the DSS)
+                    - mock_uss  # mock_uss uses this DSS instance; it does not provide its own instance
                   base_url: http://dss.uss1.localutm
                   has_private_address: true
                 - participant_id: uss2

@@ -36,7 +36,7 @@ def _default_params(duration: datetime.timedelta) -> Dict:
         alt_hi=400,
         start_time=now,
         end_time=now + duration,
-        uss_base_url="https://example.com",
+        uss_base_url="https://example.interuss.org",
     )
 
 
@@ -268,7 +268,7 @@ class DSSInteroperability(GenericTestScenario):
                     )
 
     def step3(self):
-        """Can retrieve specific Subscription emplaced in primary DSS
+        """Can retrieve specific Subscription created in primary DSS
         from all DSSs."""
 
         sub_1_0 = self._context["sub_1_0"]
@@ -544,6 +544,9 @@ class DSSInteroperability(GenericTestScenario):
             mutated_isa = self._dss_primary.put_isa(
                 check,
                 isa_id=isa_2.uuid,
+                do_not_notify=list(
+                    all_sub_2_ids
+                ),  # Do not attempt to notify our own subscriptions
                 **_default_params(datetime.timedelta(minutes=10)),
             )
             isa_2.version = mutated_isa.dss_query.isa.version
@@ -572,7 +575,12 @@ class DSSInteroperability(GenericTestScenario):
             "ISA[P] deleted with proper response", [self._dss_primary.participant_id]
         ) as check:
             del_isa = self._dss_primary.del_isa(
-                check, isa_id=isa_2.uuid, isa_version=isa_2.version
+                check,
+                isa_id=isa_2.uuid,
+                isa_version=isa_2.version,
+                do_not_notify=list(
+                    all_sub_2_ids
+                ),  # Do not attempt to notify our own subscriptions
             )
 
         with self.check(
@@ -594,7 +602,7 @@ class DSSInteroperability(GenericTestScenario):
 
         sleep(
             SHORT_WAIT_SEC,
-            "ISA needs to expire so we can check it doesn't trigger notifications",
+            "Subscriptions needs to expire so we can check they don't trigger notifications",
         )
 
         isa_3 = self._new_isa("isa_3")

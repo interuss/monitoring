@@ -244,17 +244,21 @@ def test_delete_op1_by_uss2(ids, scd_api, scd_session, scd_session2):
     assert resp.status_code == 403, resp.content
 
 
-# Try to create Op2 without specifying a valid Subscription
+# Try to create Op2 when omitting the required OVNs
 # Preconditions: Operation Op1 created by scd_session user
 # Mutations: None
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
-def test_create_op2_no_sub(ids, scd_api, scd_session, scd_session2):
+def test_create_op2_no_ovn(ids, scd_api, scd_session, scd_session2):
     req = _make_op2_request()
     resp = scd_session2.put(
         "/operational_intent_references/{}".format(ids(OP2_TYPE)), json=req
     )
-    assert resp.status_code == 400, resp.content
+    # Accepting both 400 and 409:
+    #  - dss v0.11.0-rc1 does not allow OIRs in state ACCEPTED without sub or implicit sub parameters and returns a 400
+    #  - the next DSS release (that also needs to pass these prober tests) does not require the subscription parameters
+    #    but will fail nonetheless because of OP1's missing OVN, and return a 409.
+    assert resp.status_code in [400, 409], resp.content
 
 
 # Create a Subscription we can use for Op2

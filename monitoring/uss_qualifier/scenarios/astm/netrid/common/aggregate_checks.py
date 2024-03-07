@@ -229,19 +229,19 @@ class AggregateChecks(GenericTestScenario):
                     check.record_failed(
                         summary=f"95th percentile of durations for DP display_data details queries is higher than threshold",
                         severity=Severity.Medium,
-                        details=f"threshold: {self._rid_version.dp_details_resp_percentile95_s}s, 95th percentile: {p95}s",
+                        details=f"threshold: {self._rid_version.dp_details_resp_percentile95_s}s, 95th percentile: {p95:.3g}s",
                     )
                 if p99 > self._rid_version.dp_details_resp_percentile99_s:
                     check.record_failed(
                         summary=f"99th percentile of durations for DP display_data details queries is higher than threshold",
                         severity=Severity.Medium,
-                        details=f"threshold: {self._rid_version.dp_details_resp_percentile99_s}s, 99th percentile: {p99}s",
+                        details=f"threshold: {self._rid_version.dp_details_resp_percentile99_s}s, 99th percentile: {p99:.3g}s",
                     )
 
             self.record_note(
                 f"{participant}/display_data/<flight_id>",
                 f"{participant}/display_data/<flight_id> stats computed on {len(durations)} queries "
-                f"95th percentile: {p95}s, 99th percentile: {p99}s",
+                f"95th percentile: {p95:.3g}s, 99th percentile: {p99:.3g}s",
             )
 
     def _sp_flights_area_times_step(self):
@@ -271,21 +271,21 @@ class AggregateChecks(GenericTestScenario):
             with self.check("95th percentile response time", [participant]) as check:
                 if p95 > self._rid_version.sp_data_resp_percentile95_s:
                     check.record_failed(
-                        summary=f"95th percentile of /flights?view requests is {p95} s",
+                        summary=f"95th percentile of /flights?view requests is {p95:.3g} s",
                         severity=Severity.Medium,
-                        details=f"expected less than {self._rid_version.sp_data_resp_percentile95_s} s, was {p95}",
+                        details=f"expected less than {self._rid_version.sp_data_resp_percentile95_s} s, was {p95:.3g}",
                     )
             with self.check("99th percentile response time", [participant]) as check:
                 if p99 > self._rid_version.sp_data_resp_percentile99_s:
                     check.record_failed(
-                        summary=f"99th percentile of /flights?view requests is {p99} s",
+                        summary=f"99th percentile of /flights?view requests is {p99:.3g} s",
                         severity=Severity.Medium,
-                        details=f"expected less than {self._rid_version.sp_data_resp_percentile99_s} s, was {p99}",
+                        details=f"expected less than {self._rid_version.sp_data_resp_percentile99_s} s, was {p99:.3g}",
                     )
 
             self.record_note(
                 f"{participant}/flights",
-                f"percentiles on {len(relevant_queries)} relevant queries: 95th: {p95}; 99th: {p99}",
+                f"percentiles on {len(relevant_queries)} relevant queries: 95th: {p95:.3g}; 99th: {p99:.3g}",
             )
 
     def _dp_display_data_times_step(self):
@@ -331,13 +331,13 @@ class AggregateChecks(GenericTestScenario):
                     check.record_failed(
                         summary=f"95th percentile of durations for initial DP display_data queries is higher than threshold",
                         severity=Severity.Medium,
-                        details=f"threshold: {self._rid_version.dp_init_resp_percentile95_s}, 95th percentile: {init_95th}",
+                        details=f"threshold: {self._rid_version.dp_init_resp_percentile95_s}, 95th percentile: {init_95th:.3g}",
                     )
                 if init_99th > self._rid_version.dp_init_resp_percentile99_s:
                     check.record_failed(
                         summary=f"99th percentile of durations for initial DP display_data queries is higher than threshold",
                         severity=Severity.Medium,
-                        details=f"threshold: {self._rid_version.dp_init_resp_percentile99_s}, 99th percentile: {init_99th}",
+                        details=f"threshold: {self._rid_version.dp_init_resp_percentile99_s}, 99th percentile: {init_99th:.3g}",
                     )
 
             with self.check(
@@ -347,18 +347,18 @@ class AggregateChecks(GenericTestScenario):
                     check.record_failed(
                         summary=f"95th percentile of durations for subsequent DP display_data queries is higher than threshold",
                         severity=Severity.Medium,
-                        details=f"threshold: {self._rid_version.dp_data_resp_percentile95_s}, 95th percentile: {subsequent_95th}",
+                        details=f"threshold: {self._rid_version.dp_data_resp_percentile95_s}, 95th percentile: {subsequent_95th:.3g}",
                     )
                 if subsequent_99th > self._rid_version.dp_data_resp_percentile99_s:
                     check.record_failed(
                         summary=f"99th percentile of durations for subsequent DP display_data queries is higher than threshold",
                         severity=Severity.Medium,
-                        details=f"threshold: {self._rid_version.dp_data_resp_percentile99_s}, 95th percentile: {subsequent_99th}",
+                        details=f"threshold: {self._rid_version.dp_data_resp_percentile99_s}, 95th percentile: {subsequent_99th:.3g}",
                     )
 
             self.record_note(
                 f"{participant}/display_data",
-                f"percentiles on {len(relevant_queries)} relevant queries ({len(relevant_queries_by_url)} different URLs, {len(init_durations)} initial queries, {len(subsequent_durations)} subsequent queries): init 95th: {init_95th}; init 99th: {init_99th}; subsequent 95th: {subsequent_95th}; subsequent 99th: {subsequent_99th}",
+                f"percentiles on {len(relevant_queries)} relevant queries ({len(relevant_queries_by_url)} different URLs, {len(init_durations)} initial queries, {len(subsequent_durations)} subsequent queries): init 95th: {init_95th:.3g}; init 99th: {init_99th:.3g}; subsequent 95th: {subsequent_95th:.3g}; subsequent 99th: {subsequent_99th:.3g}",
             )
 
             self.record_note(
