@@ -1,6 +1,10 @@
 import inspect
 import os
 from typing import Any, Optional, Callable
+
+# Because mock_uss uses gevent, we need to monkey-patch before anything else is loaded
+# https://www.gevent.org/intro.html#monkey-patching
+from gevent import monkey; monkey.patch_all()
 from loguru import logger
 
 from monitoring.mock_uss.server import MockUSS
