@@ -142,4 +142,12 @@ v1:
           uss2: uspace
     sequence_view: {}
   validation:
-    $ref: ./library/validation.yaml#/normal_test
+    criteria:
+      - $ref: ./library/validation.yaml#/execution_error_none
+      - $ref: ./library/validation.yaml#/failed_check_severity_max_low
+      - applicability:
+          skipped_actions: {}
+        pass_condition:
+          elements:
+            count:
+              equal_to: 4 # 4 CRDBAccess scenarios are skipped

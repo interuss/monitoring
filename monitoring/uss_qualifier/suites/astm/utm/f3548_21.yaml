@@ -5,6 +5,7 @@ resources:
   flight_planners: resources.flight_planning.FlightPlannersResource
   dss: resources.astm.f3548.v21.DSSInstanceResource
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
+  dss_crdb_cluster: resources.interuss.crdb.CockroachDBClusterResource?
   conflicting_flights: resources.flight_planning.FlightIntentsResource
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource?
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
@@ -44,6 +45,7 @@ actions:
     generator_type: action_generators.astm.f3548.ForEachDSS
     resources:
       dss_instances: dss_instances
+      dss_crdb_cluster: dss_crdb_cluster?
       second_utm_auth: second_utm_auth?
       flight_intents: non_conflicting_flights
       id_generator: id_generator
@@ -57,6 +59,7 @@ actions:
             dss: dss
             second_utm_auth: second_utm_auth?
             all_dss_instances: dss_instances
+            dss_crdb_cluster: dss_crdb_cluster?
             flight_intents: flight_intents
             id_generator: id_generator
             planning_area: planning_area

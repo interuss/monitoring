@@ -9,6 +9,7 @@
 3. Scenario: [ASTM F3548-21 UTM DSS Operational Intent Reference Access Control](../../../scenarios/astm/utm/op_intent_ref_access_control.md) ([`scenarios.astm.utm.OpIntentReferenceAccessControl`](../../../scenarios/astm/utm/op_intent_ref_access_control.py))
 4. Scenario: [ASTM F3548-21 UTM DSS interoperability](../../../scenarios/astm/utm/dss_interoperability.md) ([`scenarios.astm.utm.DSSInteroperability`](../../../scenarios/astm/utm/dss_interoperability.py))
 5. Scenario: [ASTM SCD DSS: Subscription Synchronization](../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md) ([`scenarios.astm.utm.dss.synchronization.SubscriptionSynchronization`](../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.py))
+6. Scenario: [ASTM UTM DSS: Direct CRDB access](../../../scenarios/astm/utm/dss/crdb_access.md) ([`scenarios.astm.utm.dss.CRDBAccess`](../../../scenarios/astm/utm/dss/crdb_access.py))
 
 ## [Checked requirements](../../README.md#checked-requirements)
 
@@ -20,7 +21,7 @@
     <th><a href="../../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="13" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
+    <td rowspan="15" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0005,1</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a><br><a href="../../../scenarios/astm/utm/dss/subscription_simple.md">ASTM SCD DSS: Subscription Simple</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a></td>
@@ -39,6 +40,16 @@
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0015</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0200</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/crdb_access.md">ASTM UTM DSS: Direct CRDB access</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0205</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/crdb_access.md">ASTM UTM DSS: Direct CRDB access</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,1a</a></td>

@@ -12,6 +12,7 @@ resources:
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
   scd_dss: resources.astm.f3548.v21.DSSInstanceResource
   scd_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
+  dss_crdb_cluster: resources.interuss.crdb.CockroachDBClusterResource?
 
   flights_data: resources.netrid.FlightDataResource
   service_providers: resources.netrid.NetRIDServiceProviders?
@@ -50,6 +51,7 @@ actions:
       mock_uss: mock_uss
       dss: scd_dss
       dss_instances: scd_dss_instances
+      dss_crdb_cluster: dss_crdb_cluster?
       id_generator: id_generator
       second_utm_auth: second_utm_auth?
       planning_area: planning_area
@@ -64,6 +66,7 @@ actions:
       observers: observers
       evaluation_configuration: evaluation_configuration
       dss_instances: netrid_dss_instances?
+      dss_crdb_cluster: dss_crdb_cluster?
       utm_client_identity: utm_client_identity
       id_generator: id_generator
       service_area: service_area

@@ -1,22 +1,31 @@
+execution_error_none:
+  applicability:
+    test_scenarios: { }
+  pass_condition:
+    each_element:
+      has_execution_error: false
+
+failed_check_severity_max_low:
+  applicability:
+    failed_checks:
+      has_severity:
+        higher_than: Low
+  pass_condition:
+    elements:
+      count:
+        equal_to: 0
+
+skipped_action_none:
+  applicability:
+    skipped_actions: {}
+  pass_condition:
+    elements:
+      count:
+        equal_to: 0
+
 normal_test:
   $content_schema: monitoring/uss_qualifier/reports/validation/report_validation/ValidationConfiguration.json
   criteria:
-    - applicability:
-        test_scenarios: {}
-      pass_condition:
-        each_element:
-          has_execution_error: false
-    - applicability:
-        failed_checks:
-          has_severity:
-            higher_than: Low
-      pass_condition:
-        elements:
-          count:
-            equal_to: 0
-    - applicability:
-        skipped_actions: {}
-      pass_condition:
-        elements:
-          count:
-            equal_to: 0
+    - $ref: '#/execution_error_none'
+    - $ref: '#/failed_check_severity_max_low'
+    - $ref: '#/skipped_action_none'
