@@ -3,7 +3,7 @@
 ## Overview
 
 Attempt to directly access the CockroachDB (CRDB) nodes intercommunicating to form the DSS Airspace Representation for the DSS instances under test, for the purpose of determining compliance to certain DSS interoperability requirements.
-The psycopg library is used to attempt connections to the nodes
+The psycopg library is used to attempt standard PostgreSQL connections to the nodes as it is the most straightforward way of connecting directly to the CockroachDB nodes while controlling the connection parameters (such as for encryption).
 
 This scenario aims at validating the following requirements:
 - **[astm.f3548.v21.DSS0200](../../../../requirements/astm/f3548/v21.md)**
