@@ -1,6 +1,7 @@
 name: ASTM F3548-21
 resources:
   test_env_version_providers: resources.versioning.VersionProvidersResource?
+  prod_env_version_providers: resources.versioning.VersionProvidersResource?
   flight_planners: resources.flight_planning.FlightPlannersResource
   dss: resources.astm.f3548.v21.DSSInstanceResource
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
@@ -26,7 +27,7 @@ actions:
 - test_scenario:
     scenario_type: scenarios.versioning.GetSystemVersions
     resources:
-      version_providers: test_env_version_providers?
+      version_providers: test_env_version_providers
       system_identity: system_identity
     on_failure: Continue
 - test_scenario:
@@ -197,6 +198,13 @@ actions:
       roles:
         - uss1
   on_failure: Continue
+- test_scenario:
+    scenario_type: scenarios.astm.utm.versioning.evaluate_system_versions.EvaluateSystemVersions
+    resources:
+      test_env_version_providers: test_env_version_providers
+      prod_env_version_providers: prod_env_version_providers
+      system_identity: system_identity
+    on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.astm.utm.AggregateChecks
     resources:

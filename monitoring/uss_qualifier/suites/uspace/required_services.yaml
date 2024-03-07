@@ -1,6 +1,7 @@
 name: U-space required services
 resources:
   test_env_version_providers: resources.versioning.VersionProvidersResource?
+  prod_env_version_providers: resources.versioning.VersionProvidersResource?
 
   conflicting_flights: resources.flight_planning.FlightIntentsResource
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
@@ -40,6 +41,7 @@ actions:
     suite_type: suites.uspace.flight_auth
     resources:
       test_env_version_providers: test_env_version_providers?
+      prod_env_version_providers: prod_env_version_providers?
       conflicting_flights: conflicting_flights
       priority_preemption_flights: priority_preemption_flights
       invalid_flight_intents: invalid_flight_intents
