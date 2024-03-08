@@ -15,6 +15,7 @@ v1:
         resources:
           id_generator: id_generator
           test_env_version_providers: test_env_version_providers
+          prod_env_version_providers: prod_env_version_providers
           flight_planners: flight_planners
           conflicting_flights: conflicting_flights
           invalid_flight_intents: invalid_flight_intents
@@ -118,6 +119,20 @@ v1:
 
         # Means by which to obtain the versions of participants' systems under test (in the test environment).
         test_env_version_providers:
+          resource_type: resources.versioning.VersionProvidersResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            instances:
+              - participant_id: uss1
+                interuss:
+                  base_url: http://scdsc.uss1.localutm/versioning
+              - participant_id: uss2
+                interuss:
+                  base_url: http://scdsc.uss2.localutm/versioning
+
+        # Means by which to obtain the versions of participants' production systems (in a real test, these would be different URLs than test_env_version_providers above).
+        prod_env_version_providers:
           resource_type: resources.versioning.VersionProvidersResource
           dependencies:
             auth_adapter: utm_auth

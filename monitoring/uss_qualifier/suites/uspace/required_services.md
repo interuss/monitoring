@@ -535,6 +535,11 @@
     <td><a href="../../scenarios/astm/utm/aggregate_checks.md">ASTM F3548 UTM aggregate checks</a></td>
   </tr>
   <tr>
+    <td><a href="../../requirements/astm/f3548/v21.md">GEN0305</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/utm/versioning/evaluate_system_versions.md">ASTM F3548-21 evaluate system versions</a></td>
+  </tr>
+  <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">GEN0310</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/utm/prep_planners.md">ASTM F3548 flight planners preparation</a></td>
@@ -750,6 +755,6 @@
     <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/versioning.md">versioning</a></td>
     <td><a href="../../requirements/versioning.md">ReportSystemVersion</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/versioning/get_system_versions.md">Get system versions</a></td>
+    <td><a href="../../scenarios/astm/utm/versioning/evaluate_system_versions.md">ASTM F3548-21 evaluate system versions</a><br><a href="../../scenarios/versioning/get_system_versions.md">Get system versions</a></td>
   </tr>
 </table>
