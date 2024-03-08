@@ -53,7 +53,7 @@ The response to a successful subscription creation query is expected to conform 
 
 If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-#### [Validate subscription](fragments/subscription_validate.md)
+#### [Validate subscription](fragments/sub/validate/correctness.md)
 
 Verify that the subscription returned by the DSS after its creation is properly formatted and has the right content.
 
@@ -99,9 +99,13 @@ If the created subscription is not returned in a search that covers the area it 
 
 In accordance with **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**, the DSS should not allow searches for areas that are too big.
 
-#### [Validate subscription](fragments/subscription_validate.md)
+#### [Validate subscription](fragments/sub/validate/correctness.md)
 
 Verify that the subscription returned by the DSS via the search is correctly formatted and corresponds to what was created earlier.
+
+#### [Validate version field](fragments/sub/validate/non_mutated.md)
+
+Verify that the version field is as expected.
 
 ### Mutate Subscription test step
 
@@ -123,9 +127,13 @@ The response to a successful subscription mutation query is expected to conform 
 
 If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-#### [Validate subscription](fragments/subscription_validate.md)
+#### [Validate subscription](fragments/sub/validate/correctness.md)
 
 Verify that the subscription returned by the DSS via the mutation is properly formatted and contains the correct content.
+
+#### [Validate version field](fragments/sub/validate/mutated.md)
+
+Verify that the version field has been mutated.
 
 ### Delete Subscription test step
 
@@ -160,9 +168,13 @@ If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../
 
 An attempt to delete a subscription when the correct version is provided should succeed, otherwise the DSS is in violation of **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-#### [Validate subscription](fragments/subscription_validate.md)
+#### [Validate subscription](fragments/sub/validate/correctness.md)
 
 Verify that the subscription returned by the DSS via the deletion is properly formatted and contains the correct content.
+
+#### [Validate version field](fragments/sub/validate/non_mutated.md)
+
+Verify that the version field is as expected.
 
 ### Query Deleted Subscription test step
 
