@@ -2,6 +2,7 @@ from typing import Optional
 
 import loguru
 
+from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
 from monitoring.monitorlib import fetch
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
@@ -92,3 +93,52 @@ def cleanup_active_subs(
 
     for sub_id in query.subscriptions.keys():
         cleanup_sub(scenario, dss, sub_id)
+
+
+def cleanup_active_oirs(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    volume: Volume4D,
+    manager_identity: str,
+) -> None:
+    with scenario.check(
+        "Operational intent references can be searched for", [dss.participant_id]
+    ) as check:
+        try:
+            oirs, query = dss.find_op_intent(volume)
+        except QueryError as qe:
+            scenario.record_queries(qe.queries)
+            check.record_failed(
+                summary="Failed to query operational intent references",
+                details=f"Failed to query operational intent references: got response code {qe.queries[0].status_code}",
+                query_timestamps=[qe.queries[0].request.timestamp],
+            )
+            return
+
+        for oir in oirs:
+            if oir.manager == manager_identity:
+                remove_op_intent(scenario, dss, oir.id, oir.ovn)
+
+
+def cleanup_op_intent(
+    scenario: TestScenarioType, dss: DSSInstance, oi_id: EntityID
+) -> None:
+    """Remove the specified operational intent reference from the DSS, if it exists."""
+
+    with scenario.check(
+        "Operational intent references can be queried by ID", [dss.participant_id]
+    ) as check:
+        try:
+            oir, q = dss.get_op_intent_reference(oi_id)
+        except fetch.QueryError as e:
+            scenario.record_queries(e.queries)
+            if e.cause_status_code != 404:
+                check.record_failed(
+                    summary="OIR Get query returned code different from 200 or 404",
+                    details=e.msg,
+                    query_timestamps=e.query_timestamps,
+                )
+            else:
+                return
+
+    remove_op_intent(scenario, dss, oi_id, oir.ovn)
