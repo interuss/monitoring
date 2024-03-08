@@ -445,11 +445,19 @@ class Query(ImplicitDict):
 
 
 class QueryError(RuntimeError):
-    """Error encountered when interacting with a server in the UTM ecosystem."""
+    """Error encountered when interacting with a server in the UTM ecosystem.
+    This error will usually wrap one query that failed and that caused the error,
+    and may be accompanied by additional queries for context."""
 
     queries: List[Query]
 
     def __init__(self, msg: str, queries: Optional[Union[Query, List[Query]]] = None):
+        """
+        Args:
+            msg: description of the error
+            queries: 0, one or multiple queries related to the error. If multiple queries are provided,
+            the first one in the list should be the main cause of the error.
+        """
         super(QueryError, self).__init__(msg)
         self.msg = msg
         if queries is None:
@@ -458,6 +466,26 @@ class QueryError(RuntimeError):
             self.queries = [queries]
         else:
             self.queries = queries
+
+    @property
+    def cause_status_code(self) -> int:
+        """Returns the status code of the query that caused this error,
+        or 999 if this error contains no queries."""
+        if len(self.queries) == 0:
+            return 999
+        return self.queries[0].status_code
+
+    @property
+    def query_timestamps(self) -> List[datetime.datetime]:
+        """Returns the timestamps of all queries present in this QueryError."""
+        return [q.request.timestamp for q in self.queries]
+
+    @property
+    def cause(self) -> Optional[Query]:
+        """Returns the query that caused this error."""
+        if len(self.queries) == 0:
+            return None
+        return self.queries[0]
 
     @property
     def stacktrace(self) -> str:
