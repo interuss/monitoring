@@ -458,7 +458,8 @@ def test_mutate_op1_bad_key(ids, scd_api, scd_session, scd_session2):
     )
     assert resp.status_code == 409, resp.content
     missing_ops, _, _ = _parse_conflicts(resp.json())
-    assert ids(OP1_TYPE) in missing_ops
+    # We're mutating OP1, so OP2 should be missing
+    # (OVN of the OIR being updted is not required)
     assert ids(OP2_TYPE) in missing_ops
 
     req["key"] = [op1_ovn]
@@ -470,15 +471,6 @@ def test_mutate_op1_bad_key(ids, scd_api, scd_session, scd_session2):
     assert ids(OP2_TYPE) in missing_ops
     assert not (op2_ovn in ovns)
     assert not (op1_ovn in ovns)
-
-    req["key"] = [op2_ovn]
-    resp = scd_session.put(
-        "/operational_intent_references/{}/{}".format(ids(OP1_TYPE), op1_ovn), json=req
-    )
-    assert resp.status_code == 409, resp.content
-    missing_ops, _, ovns = _parse_conflicts(resp.json())
-    assert ids(OP1_TYPE) in missing_ops
-    assert not (op2_ovn in ovns)
 
 
 # Successfully mutate Op1
