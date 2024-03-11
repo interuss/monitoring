@@ -15,6 +15,7 @@ resources:
   second_utm_auth: resources.communications.AuthAdapterResource?
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
   id_generator: resources.interuss.IDGeneratorResource
+  utm_client_identity: resources.communications.ClientIdentityResource
   planning_area: resources.astm.f3548.v21.PlanningAreaResource
   problematically_big_area: resources.VerticesResource
   system_identity: resources.versioning.SystemIdentityResource?
@@ -49,6 +50,7 @@ actions:
       second_utm_auth: second_utm_auth?
       flight_intents: non_conflicting_flights
       id_generator: id_generator
+      utm_client_identity: utm_client_identity
       planning_area: planning_area
       problematically_big_area: problematically_big_area
     specification:
@@ -62,6 +64,7 @@ actions:
             dss_crdb_cluster: dss_crdb_cluster?
             flight_intents: flight_intents
             id_generator: id_generator
+            utm_client_identity: utm_client_identity
             planning_area: planning_area
             problematically_big_area: problematically_big_area
         on_failure: Continue
