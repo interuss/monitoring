@@ -89,25 +89,27 @@ def expect_tested_uss_receives_notification_from_mock_uss(
                 query_timestamps=[plan_request_time, query.request.timestamp],
             )
 
-    if is_subscr_id_in_notification and resp_status != 204:
+    if is_subscr_id_in_notification:
         with scenario.check(
             "Tested USS receives valid notification", [tested_uss_participant_id]
         ) as check:
-            check.record_failed(
-                summary=f"Valid notification not accepted by tested_uss.",
-                details=f"Valid notification by mock_uss not accepted by tested_uss. Tested_uss responded with response status {resp_status} instead of 204.",
-                query_timestamps=[plan_request_time, query.request.timestamp],
-            )
+            if resp_status != 204:
+                check.record_failed(
+                    summary=f"Valid notification not accepted by tested_uss.",
+                    details=f"Valid notification by mock_uss not accepted by tested_uss. Tested_uss responded with response status {resp_status} instead of 204.",
+                    query_timestamps=[plan_request_time, query.request.timestamp],
+                )
 
-    if interactions and not is_subscr_id_in_notification and resp_status != 400:
+    if interactions and not is_subscr_id_in_notification:
         with scenario.check(
             "Tested USS rejects invalid notification", [tested_uss_participant_id]
         ) as check:
-            check.record_failed(
-                summary=f"Invalid notification should be rejected",
-                details=f"Invalid notification containing incorrect subscription_id should be rejected by tested_uss. Tested_uss responded with response status {resp_status} instead of 400.",
-                query_timestamps=[plan_request_time, query.request.timestamp],
-            )
+            if resp_status != 400:
+                check.record_failed(
+                    summary=f"Invalid notification should be rejected",
+                    details=f"Invalid notification containing incorrect subscription_id should be rejected by tested_uss. Tested_uss responded with response status {resp_status} instead of 400.",
+                    query_timestamps=[plan_request_time, query.request.timestamp],
+                )
 
 
 def _is_notification_sent_to_url_with_op_intent_id(
