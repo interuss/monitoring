@@ -5,6 +5,8 @@ import loguru
 from uas_standards.astm.f3548.v21.api import Subscription, SubscriptionID
 from uas_standards.astm.f3548.v21.constants import Scope
 
+from monitoring.monitorlib import geo
+from monitoring.monitorlib.geo import Volume3D
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
 from monitoring.prober.infrastructure import register_resource_type
@@ -91,6 +93,26 @@ class SubscriptionSynchronization(TestScenario):
         # the currently active subscriptions
         self._planning_area_volume4d = Volume4D(
             volume=self._planning_area.volume,
+        )
+
+        # Get a list of vertices enclosing the area
+        enclosing_area = geo.get_latlngrect_vertices(
+            geo.make_latlng_rect(self._planning_area_volume4d.volume)
+        )
+
+        self._enclosing_sub_area_volume4d = Volume4D(
+            volume=Volume3D(
+                outline_polygon=geo.Polygon.from_latlng_coords(enclosing_area)
+            )
+        )
+
+        # Get a list of vertices outside the subscription's area
+        outside_area = geo.generate_area_in_vicinity(enclosing_area, 2)
+
+        self._outside_sub_area_volume4d = Volume4D(
+            volume=Volume3D(
+                outline_polygon=geo.Polygon.from_latlng_coords(outside_area)
+            )
         )
 
         self._sub_params = self._planning_area.get_new_subscription_params(
@@ -204,20 +226,91 @@ class SubscriptionSynchronization(TestScenario):
 
     def _query_secondaries_and_compare(self, expected_sub_params: SubscriptionParams):
         for secondary_dss in self._dss_read_instances:
-            self._validate_sub_from_secondary(
+            self._validate_get_sub_from_secondary(
                 secondary_dss=secondary_dss,
                 expected_sub_params=expected_sub_params,
                 involved_participants=list(
                     {self._primary_pid, secondary_dss.participant_id}
                 ),
             )
+            self._validate_sub_area_from_secondary(
+                secondary_dss=secondary_dss,
+                expected_sub_id=expected_sub_params.sub_id,
+                involved_participants=list(
+                    {self._primary_pid, secondary_dss.participant_id}
+                ),
+            )
 
-    def _validate_sub_from_secondary(
+    def _validate_sub_area_from_secondary(
+        self,
+        secondary_dss: DSSInstance,
+        expected_sub_id: str,
+        involved_participants: List[str],
+    ):
+        """Checks that the secondary DSS is also aware of the proper subscription's area:
+        - searching for the subscription's area should yield the subscription
+        - searching outside the subscription's area should not yield the subscription"""
+
+        # Query the subscriptions inside the enclosing area
+        sub_included = secondary_dss.query_subscriptions(
+            self._enclosing_sub_area_volume4d.to_f3548v21()
+        )
+
+        with self.check(
+            "Successful subscription search query", secondary_dss.participant_id
+        ) as check:
+            if sub_included.status_code != 200:
+                check.record_failed(
+                    "Subscription search query failed",
+                    details=f"Subscription search query failed with status code {sub_included.status_code}",
+                    query_timestamps=[sub_included.request.timestamp],
+                )
+
+        with self.check(
+            "Secondary DSS returns the subscription in searches for area that contains it",
+            involved_participants,
+        ) as check:
+            if expected_sub_id not in sub_included.subscriptions:
+                check.record_failed(
+                    "Secondary DSS did not return the subscription",
+                    details=f"Secondary DSS did not return the subscription {expected_sub_id} "
+                    f"although the search volume covered the subscription's area",
+                    query_timestamps=[sub_included.request.timestamp],
+                )
+
+        sub_not_included = secondary_dss.query_subscriptions(
+            self._outside_sub_area_volume4d.to_f3548v21()
+        )
+
+        with self.check(
+            "Successful subscription search query", secondary_dss.participant_id
+        ) as check:
+            if sub_not_included.status_code != 200:
+                check.record_failed(
+                    summary="Subscription search query failed",
+                    details=f"Subscription search query failed with status code {sub_included.status_code}",
+                    query_timestamps=[sub_included.request.timestamp],
+                )
+
+        with self.check(
+            "Secondary DSS does not return the subscription in searches not encompassing the general area of the subscription",
+            involved_participants,
+        ) as check:
+            if expected_sub_id in sub_not_included.subscriptions:
+                check.record_failed(
+                    summary="Secondary DSS returned the subscription",
+                    details=f"Secondary DSS returned the subscription {expected_sub_id} "
+                    f"although the search volume did not cover the subscription's general area",
+                    query_timestamps=[sub_not_included.request.timestamp],
+                )
+
+    def _validate_get_sub_from_secondary(
         self,
         secondary_dss: DSSInstance,
         expected_sub_params: SubscriptionParams,
         involved_participants: List[str],
     ):
+        """Fetches the subscription from the secondary DSS and validates it."""
         with self.check(
             "Subscription can be found at every DSS",
             involved_participants,
