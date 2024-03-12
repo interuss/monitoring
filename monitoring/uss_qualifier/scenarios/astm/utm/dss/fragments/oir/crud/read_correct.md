@@ -2,9 +2,9 @@
 
 This test step fragment validates that operational intent references can be read
 
-## 🛑 Get operational intent reference by ID check
+## [Read query succeeds](./read_query.md)
 
-If an operational intent reference cannot be queried using its ID, the DSS is failing to meet **[astm.f3548.v21.DSS0005,1](../../../../../../../requirements/astm/f3548/v21.md)**.
+Check query succeeds.
 
 ## 🛑 Get operational intent reference response format conforms to spec check
 
