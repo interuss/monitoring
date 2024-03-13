@@ -11,6 +11,7 @@ from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
     GetOperationalIntentDetailsResponse,
     EntityID,
+    ExchangeRecord,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
@@ -698,3 +699,42 @@ def set_uss_down(
                 query_timestamps=[avail_query.request.timestamp],
             )
     return availability_version
+
+
+def make_report(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    exchange: ExchangeRecord,
+) -> str:
+    """Make a DSS report.
+
+    This function implements the test step fragment described in make_dss_report.md.
+
+    Returns:
+        The report ID.
+    """
+    with scenario.check(
+        "DSS report successfully submitted", [dss.participant_id]
+    ) as check:
+        try:
+            report_id, report_query = dss.make_report(exchange)
+            scenario.record_query(report_query)
+        except QueryError as e:
+            scenario.record_queries(e.queries)
+            report_query = e.cause
+            check.record_failed(
+                summary="DSS report could not be submitted",
+                details=f"DSS responded code {report_query.status_code}; {e}",
+                query_timestamps=[report_query.request.timestamp],
+            )
+
+    with scenario.check(
+        "DSS returned a valid report ID", [dss.participant_id]
+    ) as check:
+        if report_id is None or len(report_id) == 0:
+            check.record_failed(
+                summary="Submitted DSS report returned no or empty ID",
+                details=f"DSS responded code {report_query.status_code} but with no ID for the report",
+                query_timestamps=[report_query.request.timestamp],
+            )
+    return report_id
