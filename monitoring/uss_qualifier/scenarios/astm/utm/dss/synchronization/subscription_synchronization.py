@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 import loguru
 from uas_standards.astm.f3548.v21.api import Subscription, SubscriptionID
@@ -35,11 +35,9 @@ class SubscriptionSynchronization(TestScenario):
     A scenario that checks if multiple DSS instances properly synchronize
     created, updated or deleted entities between them.
 
-    Not in the scope of the first version of this:
+    Not in the scope of the current version:
      - access rights (making sure only the manager of the subscription can mutate it)
-     - control of the area synchronization (by doing area searches against the secondaries)
-     - mutation of a subscription on a secondary DSS when it was created on the primary
-     - deletion of a subscription on a secondary DSS when it was created on the primary
+
     """
 
     SUB_TYPE = register_resource_type(379, "Subscription")
@@ -51,11 +49,17 @@ class SubscriptionSynchronization(TestScenario):
     # Base identifier for the subscriptions that will be created
     _sub_id: SubscriptionID
 
+    # Extra sub IDs for testing only deletions
+    _ids_for_deletion: List[SubscriptionID]
+
     # Base parameters used for subscription creation
     _sub_params: SubscriptionParams
 
     # Keep track of the current subscription state
     _current_subscription = Optional[Subscription]
+
+    # For the secondary deletion test
+    _subs_for_deletion: Dict[SubscriptionID, Subscription]
 
     def __init__(
         self,
@@ -70,7 +74,6 @@ class SubscriptionSynchronization(TestScenario):
             id_generator: will let us generate specific identifiers
             planning_area: An Area to use for the tests. It should be an area for which the DSS is responsible,
                  but has no other requirements.
-            problematically_big_area: An area that is too big to be searched for on the DSS
         """
         super().__init__()
         scopes_primary = {
@@ -87,6 +90,17 @@ class SubscriptionSynchronization(TestScenario):
         ]
 
         self._sub_id = id_generator.id_factory.make_id(self.SUB_TYPE)
+
+        # For every secondary DSS, have an extra sub ID for testing deletion at each DSS
+        # TODO confirm that we can have as many SCD subscriptions as we want (RID limits them to 10 per area)
+        # TODO IDGenerators may encode the subject/identity of the participant being tested into the ID,
+        #  therefore we may want to consider having a separate generator per DSS instance,
+        #  or at least one per participant
+        self._ids_for_deletion = [
+            f"{self._sub_id[:-3]}{i:03d}"
+            for i in range(1, len(self._dss_read_instances) + 1)
+        ]
+
         self._planning_area = planning_area.specification
 
         # Build a ready-to-use 4D volume with no specified time for searching
@@ -140,27 +154,35 @@ class SubscriptionSynchronization(TestScenario):
         self.begin_test_case("Subscription Synchronization")
 
         self.begin_test_step("Create subscription validation")
-        self._create_sub_with_params(self._sub_params)
+        self._step_create_subscriptions()
         self.end_test_step()
 
         self.begin_test_step("Query newly created subscription")
         self._query_secondaries_and_compare(self._sub_params)
         self.end_test_step()
 
-        self.begin_test_step("Mutate subscription")
-        self._test_mutate_subscriptions_shift_time()
+        self.begin_test_step("Mutate subscription broadcast")
+        self._step_mutate_subscriptions_broadcast_shift_time()
         self.end_test_step()
 
         self.begin_test_step("Query updated subscription")
         self._query_secondaries_and_compare(self._sub_params)
         self.end_test_step()
 
-        self.begin_test_step("Delete subscription")
-        self._test_delete_sub()
+        self.begin_test_step("Mutate subscription on secondaries")
+        self._step_mutate_subscriptions_secondaries_shift_time()
+        self.end_test_step()
+
+        self.begin_test_step("Delete subscription on primary")
+        self._step_delete_sub()
         self.end_test_step()
 
         self.begin_test_step("Query deleted subscription")
-        self._test_get_deleted_sub()
+        self._step_get_deleted_sub()
+        self.end_test_step()
+
+        self.begin_test_step("Delete subscriptions on secondaries")
+        self._step_delete_subscriptions_on_secondaries()
         self.end_test_step()
 
         self.end_test_case()
@@ -171,6 +193,8 @@ class SubscriptionSynchronization(TestScenario):
         # Multiple runs of the scenario seem to rely on the same instance of it:
         # thus we need to reset the state of the scenario before running it.
         self._current_subscription = None
+        self._subs_for_deletion = {}
+        self._subs_for_deletion_params = {}
         self._ensure_clean_workspace_step()
         self.end_test_case()
 
@@ -184,6 +208,8 @@ class SubscriptionSynchronization(TestScenario):
 
     def _ensure_test_sub_ids_do_not_exist(self):
         test_step_fragments.cleanup_sub(self, self._dss, self._sub_id)
+        for sub_id in self._ids_for_deletion:
+            test_step_fragments.cleanup_sub(self, self._dss, sub_id)
 
     def _ensure_no_active_subs_exist(self):
         test_step_fragments.cleanup_active_subs(
@@ -192,7 +218,21 @@ class SubscriptionSynchronization(TestScenario):
             self._planning_area_volume4d,
         )
 
-    def _create_sub_with_params(self, creation_params: SubscriptionParams):
+    def _step_create_subscriptions(self):
+        # Create the 'main' test subscription:
+        self._current_subscription = self._create_sub_with_params(self._sub_params)
+
+        # Create the extra subscriptions for testing deletion on secondaries at the end of the scenario
+        for sub_id in self._ids_for_deletion:
+            params = self._sub_params.copy()
+            params.sub_id = sub_id
+            extra_sub = self._create_sub_with_params(params)
+            self._subs_for_deletion[sub_id] = extra_sub
+            self._subs_for_deletion_params[sub_id] = params
+
+    def _create_sub_with_params(
+        self, creation_params: SubscriptionParams
+    ) -> Subscription:
 
         # TODO migrate to the try/except pattern for queries
         newly_created = self._dss.upsert_subscription(
@@ -221,8 +261,7 @@ class SubscriptionSynchronization(TestScenario):
                 creation_params,
             ).validate_created_subscription(creation_params.sub_id, newly_created)
 
-        # Store the subscription
-        self._current_subscription = newly_created.subscription
+        return newly_created.subscription
 
     def _query_secondaries_and_compare(self, expected_sub_params: SubscriptionParams):
         for secondary_dss in self._dss_read_instances:
@@ -508,28 +547,27 @@ class SubscriptionSynchronization(TestScenario):
                 is_implicit=False,
             )
 
-    def _test_mutate_subscriptions_shift_time(self):
-        """Mutate the subscription by adding 10 seconds to its start and end times"""
-
-        op = self._sub_params
-        sub = self._current_subscription
-        new_params = SubscriptionParams(
-            sub_id=self._sub_id,
-            area_vertices=op.area_vertices,
-            min_alt_m=op.min_alt_m,
-            max_alt_m=op.max_alt_m,
-            start_time=sub.time_start.value.datetime + timedelta(seconds=10),
-            end_time=sub.time_end.value.datetime + timedelta(seconds=10),
-            base_url=op.base_url,
-            notify_for_op_intents=op.notify_for_op_intents,
-            notify_for_constraints=op.notify_for_constraints,
+    def _mutate_subscription_with_dss(
+        self,
+        dss_instance: DSSInstance,
+        new_params: SubscriptionParams,
+        is_primary: bool,
+    ):
+        """
+        Mutate the subscription on the given DSS instance using the given parameters.
+        Also updates the internal state of the scenario to reflect the new subscription.
+        """
+        check = (
+            "Subscription can be mutated"
+            if is_primary
+            else "Subscription can be mutated on secondary DSS"
         )
-        mutated_sub_response = self._dss.upsert_subscription(
-            version=sub.version,
-            **new_params,
-        )
-        self.record_query(mutated_sub_response)
-        with self.check("Subscription can be mutated", [self._primary_pid]) as check:
+        with self.check(check, [self._primary_pid]) as check:
+            mutated_sub_response = dss_instance.upsert_subscription(
+                version=self._current_subscription.version,
+                **new_params,
+            )
+            self.record_query(mutated_sub_response)
             if mutated_sub_response.status_code != 200:
                 check.record_failed(
                     "Subscription mutation failed",
@@ -546,45 +584,127 @@ class SubscriptionSynchronization(TestScenario):
         # Update the parameters we used for that subscription
         self._sub_params = new_params
 
-    def _test_delete_sub(self):
-        deleted_sub = self._dss.delete_subscription(
-            sub_id=self._sub_id, sub_version=self._current_subscription.version
-        )
-        self.record_query(deleted_sub)
-        with self.check("Subscription can be deleted", [self._primary_pid]) as check:
+    def _step_mutate_subscriptions_broadcast_shift_time(self):
+        """Mutate the subscription on the primary DSS by adding 10 seconds to its start and end times"""
+
+        sp = self._sub_params
+        new_params = sp.shift_time(timedelta(seconds=10))
+        self._mutate_subscription_with_dss(self._dss, new_params, is_primary=True)
+
+    def _step_mutate_subscriptions_secondaries_shift_time(self):
+        """Mutate the subscription on every secondary DSS by adding 10 seconds to its start and end times,
+        then checking on every DSS that the response is valid and corresponds to the expected parameters."""
+
+        for secondary_dss in self._dss_read_instances:
+            # Mutate the subscription on the secondary DSS
+            self._mutate_subscription_with_dss(
+                secondary_dss,
+                self._sub_params.shift_time(timedelta(seconds=10)),
+                is_primary=False,
+            )
+            # Check that the mutation was propagated to every DSS:
+            self._query_secondaries_and_compare(self._sub_params)
+
+    def _delete_sub_from_dss(
+        self,
+        dss_instance: DSSInstance,
+        sub_id: str,
+        version: str,
+        expected_params: SubscriptionParams,
+    ) -> bool:
+        """
+        Delete the subscription on the given DSS instance using the given parameters.
+        Returns True if the subscription was successfully deleted, False otherwise.
+        """
+        with self.check(
+            "Subscription can be deleted", [dss_instance.participant_id]
+        ) as check:
+            deleted_sub = dss_instance.delete_subscription(sub_id, version)
+            self.record_query(deleted_sub)
             if deleted_sub.status_code != 200:
                 check.record_failed(
                     "Subscription deletion failed",
                     details=f"Subscription deletion failed with status code {deleted_sub.status_code}",
                     query_timestamps=[deleted_sub.request.timestamp],
                 )
+                return False
 
         with self.check(
-            "Delete subscription response format conforms to spec", [self._primary_pid]
+            "Delete subscription response format conforms to spec",
+            [dss_instance.participant_id],
         ) as check:
             SubscriptionValidator(
                 check,
                 self,
-                [self._primary_pid],
-                self._sub_params,
+                [dss_instance.participant_id],
+                expected_params,
             ).validate_deleted_subscription(
-                expected_sub_id=self._sub_id,
+                expected_sub_id=sub_id,
                 deleted_subscription=deleted_sub,
-                expected_version=self._current_subscription.version,
+                expected_version=version,
                 is_implicit=False,
             )
 
-        self._current_subscription = None
+        return True
 
-    def _test_get_deleted_sub(self):
+    def _step_delete_sub(self):
+        if self._delete_sub_from_dss(
+            self._dss,
+            self._sub_id,
+            self._current_subscription.version,
+            self._sub_params,
+        ):
+            self._current_subscription = None
+
+    def _step_delete_subscriptions_on_secondaries(self):
+        # Pair a sub ID to delete together with a secondary DSS
+        for sub_id, secondary_dss in zip(
+            self._ids_for_deletion, self._dss_read_instances
+        ):
+            # Delete the subscription on the secondary DSS
+            if not self._delete_sub_from_dss(
+                secondary_dss,
+                sub_id,
+                self._subs_for_deletion[sub_id].version,
+                self._subs_for_deletion_params[sub_id],
+            ):
+                # If the deletion failed but the scenario has not terminated, we end this step here.
+                return
+            # Check that the primary knows about the deletion:
+            self._confirm_dss_has_no_sub(
+                self._dss, sub_id, secondary_dss.participant_id
+            )
+            # Check that the deletion was propagated to every DSS:
+            self._confirm_no_secondary_has_sub(sub_id, secondary_dss.participant_id)
+
+    def _step_get_deleted_sub(self):
+        self._confirm_no_secondary_has_sub(self._sub_id, self._dss.participant_id)
+
+    def _confirm_no_secondary_has_sub(
+        self, sub_id: str, deleted_on_participant_id: str
+    ):
+        """Confirm that no secondary DSS has the subscription.
+        deleted_on_participant_id specifies the participant_id of the DSS where the subscription was deleted."""
         for secondary_dss in self._dss_read_instances:
-            self._confirm_secondary_has_no_sub(secondary_dss)
+            self._confirm_dss_has_no_sub(
+                secondary_dss, sub_id, deleted_on_participant_id
+            )
 
-    def _confirm_secondary_has_no_sub(self, secondary_dss: DSSInstance):
-        fetched_sub = secondary_dss.get_subscription(self._sub_id)
+    def _confirm_dss_has_no_sub(
+        self,
+        dss_instance: DSSInstance,
+        sub_id: str,
+        other_participant_id: Optional[str],
+    ):
+        """Confirm that a DSS has no subscription.
+        other_participant_id may be specified if a failed check may be caused by it."""
+        participants = [dss_instance.participant_id]
+        if other_participant_id:
+            participants.append(other_participant_id)
+        fetched_sub = dss_instance.get_subscription(sub_id)
         with self.check(
-            "Secondary DSS should not return the deleted subscription",
-            [secondary_dss.participant_id, self._primary_pid],
+            "DSS should not return the deleted subscription",
+            participants,
         ) as check:
             if fetched_sub.status_code != 404:
                 check.record_failed(

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 from typing import List, Optional, Self
 
@@ -71,4 +73,20 @@ class SubscriptionParams(ImplicitDict):
             notify_for_constraints=self.notify_for_constraints,
             min_alt_m=self.min_alt_m,
             max_alt_m=self.max_alt_m,
+        )
+
+    def shift_time(self, shift: datetime.timedelta) -> SubscriptionParams:
+        """
+        Returns a new SubscriptionParams object with the start and end times shifted by the given timedelta.
+        """
+        return SubscriptionParams(
+            sub_id=self.sub_id,
+            area_vertices=self.area_vertices,
+            min_alt_m=self.min_alt_m,
+            max_alt_m=self.max_alt_m,
+            start_time=self.start_time + shift,
+            end_time=self.end_time + shift,
+            base_url=self.base_url,
+            notify_for_op_intents=self.notify_for_op_intents,
+            notify_for_constraints=self.notify_for_constraints,
         )

@@ -51,7 +51,7 @@ def cleanup_sub(
         if existing_sub.status_code not in [200, 404]:
             check.record_failed(
                 summary=f"Could not query subscription {sub_id}",
-                details=f"When attempting to query subscription {sub_id} from the DSS, received {existing_sub.status_code}",
+                details=f"When attempting to query subscription {sub_id} from the DSS, received {existing_sub.status_code}: {existing_sub.error_message}",
                 query_timestamps=[existing_sub.request.timestamp],
             )
 
