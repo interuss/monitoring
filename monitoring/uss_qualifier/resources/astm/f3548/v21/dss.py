@@ -303,8 +303,15 @@ class DSSInstance(object):
             result = query.parse_json_result(ChangeOperationalIntentReferenceResponse)
             return result.operational_intent_reference, result.subscribers, query
         else:
+            err_msg = query.error_message if query.error_message is not None else ""
+            if (
+                query.status_code == 409
+                and "missing_operational_intents" in query.response.json
+            ):
+                err_msg += f" (missing_operational_intents: {query.response.json['missing_operational_intents']})"
+
             raise QueryError(
-                f"Received code {query.status_code} when attempting to {'create' if create else 'update'} operational intent with ID {oi_uuid}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                f"Received code {query.status_code} when attempting to {'create' if create else 'update'} operational intent with ID {oi_uuid}; error message: `{err_msg}`",
                 query,
             )
 

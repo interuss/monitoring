@@ -1,11 +1,13 @@
 # Create operational intent reference test step fragment
 
-This test step fragment validates that operational intent references can be created
+This test step fragment validates that:
+ - a query to create an operational intent reference with valid parameters succeeds
+ - the response to the query conforms to the OpenAPI specification
+ - the content of the response reflects the created operational intent reference
 
-## 🛑 Create operational intent reference query succeeds check
+## [Query Success](./create_query.md)
 
-As per **[astm.f3548.v21.DSS0005,1](../../../../../../../requirements/astm/f3548/v21.md)**, the DSS API must allow callers to create an operational intent reference with either one or both of the
-start and end time missing, provided all the required parameters are valid.
+Check query succeeds
 
 ## [Response Format](./create_format.md)
 
