@@ -23,6 +23,8 @@ nonconforming = "#ffff00"
 flight1_points = [20, 30, 20, 200, 70, 200, 140, 120, 190, 200, 250, 200, 250, 30]
 flight2_points = [140, 145, 30, 265, 145, 320, 215, 265]
 
+flight1m_points = [20, 30, 20, 200, 245, 200, 300, 120, 350, 200, 375, 200, 375, 30]
+flight2m_points = [300, 145, 220, 265, 320, 320, 370, 265]
 
 common_elements = [
     svg.Style(
@@ -81,4 +83,34 @@ def make_flight1_activated_flight2_planned():
         f.write(str(canvas))
 
 
+def make_flight1_modified_flight2_modified():
+    elements = [
+        svg.Polygon(
+            points=flight1m_points,
+            stroke=outline,
+            fill=activated,
+            fill_opacity=0.4,
+            stroke_width=8,
+        ),
+        svg.Text(x=100, y=120, class_=["heavy"], text="Flight 1"),
+        svg.Polygon(
+            points=flight2m_points,
+            stroke=outline,
+            fill=nonconforming,
+            fill_opacity=0.4,
+            stroke_width=8,
+        ),
+        svg.Text(x=235, y=267, class_=["heavy"], text="Flight 2"),
+    ]
+
+    canvas = svg.SVG(
+        width=400,
+        height=350,
+        elements=common_elements + elements,
+    )
+    with open(inspect.currentframe().f_code.co_name[len("make_") :] + ".svg", "w") as f:
+        f.write(str(canvas))
+
+
 make_flight1_activated_flight2_planned()
+make_flight1_modified_flight2_modified()

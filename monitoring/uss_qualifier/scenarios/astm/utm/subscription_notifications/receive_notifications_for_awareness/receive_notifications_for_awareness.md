@@ -27,19 +27,43 @@ FlightIntentsResource that provides the following flight intents:
     </tr>
     <tr>
         <td><code>flight_1_planned</code></td>
-        <td rowspan="2">Flight 1</td>
+        <td rowspan="5">Flight 1</td>
         <td>Accepted</td>
-        <td rowspan="2">Flight 2</td>
+        <td rowspan="5">Flight 2</td>
     </tr>
     <tr>
         <td><code>flight_1_activated</code></td>
         <td>Activated</td>
     </tr>
     <tr>
+        <td><code>flight_1_activated_mod_area</code></td>
+        <td> Activated </td>
+    </tr>
+    <tr>
+        <td><code>flight_1_nc</code></td>
+        <td> NonConforming </td>
+    </tr>
+    <tr>
+        <td><code>flight_1_contingent</code></td>
+        <td> Contingent </td>
+    </tr>
+    <tr>
         <td><code>flight_2_planned</code></td>
-        <td>Flight 2</td>
+        <td rowspan="4">Flight 2</td>
         <td>Accepted</td>
-        <td>Flight 1</td>
+        <td rowspan="4">Flight 1</td>
+    </tr>
+    <tr>
+        <td><code>flight_2_planned_mod_area</code></td>
+        <td>Accepted</td>
+    </tr>
+    <tr>
+        <td><code>flight_2_planned_time_range_a</code></td>
+        <td>Accepted</td>
+    </tr>
+    <tr>
+        <td><code>flight_2_planned_time_range_b</code></td>
+        <td>Accepted</td>
     </tr>
 </table>
 
@@ -99,14 +123,23 @@ Check a notification was received by tested_uss for Flight 2, with Flight 1's su
 
 ## Modify Activated operational intent area and receive notification of relevant intent test case
 
+![Test case summary illustration](./assets/flight1_modified_flight2_modified.svg)
+
+This test case verifies the subscription covers the extended area
+after the flight modification, and relevant notifications in the
+extended area are received as well.
+
 ### ToDo
 
 ## Declare Operational intent non-conforming and receive notification of relevant intent test case
+
+This test case verifies that relevant notifications are received through subscription of an operational intent in NonConforming state.
 
 ### ToDo
 
 ## Declare Operational intent contingent and receive notification of relevant intent test case
 
+This test case verifies that relevant notifications are received through subscription of an operational intent in Contingent state.
 ### ToDo
 
 ## Cleanup
