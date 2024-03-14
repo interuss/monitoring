@@ -22,6 +22,36 @@ Verifies that all subscription CRUD operations performed on a single DSS instanc
 
 [`PlanningAreaResource`](../../../../../resources/astm/f3548/v21/planning_area.py) describes the 3D volume in which subscriptions will be created.
 
+### second_utm_auth
+
+A `resources.communications.AuthAdapterResource` containing a second set of valid credentials for interacting with the DSS.
+
+This second set of credentials is required to validate that the DSS properly synchronizes the manager of a subscription to other DSS instances.
+
+The participant under test is responsible for providing this second set of credentials along the primary ones used in most other scenarios.
+
+#### Credential requirements
+
+In general, these test credentials may be in all points equal to the ones used by the `AuthAdapterResource` that is
+provided to the `dss` resources above, except for the value contained in the `sub` claim of the token.
+
+For the purpose of this scenario, these credentials must be allowed to create, modify and delete subscriptions on the DSS,
+as well as querying them.
+
+Note that most checks in this scenario will work if the second set of credentials is not provided.
+
+##### Required scope
+
+For the purpose of this scenario, the `second_utm_auth` resource must provide access to a token with at least the following scope:
+
+* `utm.strategic_coordination`
+
+##### Separate subscription
+
+Note that the subscription (or 'sub' claim, not to be confused with an SCD DSS subscription) of the token that will be obtained for this resource
+MUST be different from the one of the `dss` resources mentioned above:
+this will be verified at runtime, and the depending checks will not be run if this is not the case.
+
 ## Setup test case
 
 ### [Ensure clean workspace test step](../clean_workspace.md)
@@ -140,6 +170,25 @@ Confirms that the subscription that was just mutated can be retrieved from any D
 Verify that the subscription returned by the DSS is properly formatted and contains the correct content.
 
 #### [Validate version is updated by mutation](../fragments/sub/validate/mutated.md)
+
+### Verify manager synchronization test step
+
+Checks that the manager of a subscription is properly synchronized across all DSS instances.
+
+This is done by means of using a separate set of credentials to create a subscription on the primary DSS,
+and then verifying that the main credentials are not able to mutate this subscription via one of the secondary DSS instances
+
+#### [Create subscription](../fragments/sub/crud/create.md)
+
+Verify that a subscription can be created on the primary DSS.
+
+#### 🛑 Subscription deletion with different non-managing credentials on secondary DSS fails check
+
+If the subscription can be deleted by a client which did not create it, via a DSS instance to which the subscription was synced
+following its creation on the primary DSS, either one of the primary DSS or the DSS that accepted the deletion failed to properly broadcast, respectively take into account, the manage of the subscription,
+and therefore violates **[astm.f3548.v21.DSS0210,1b](../../../../../requirements/astm/f3548/v21.md)**.
+
+### Delete subscription test step
 
 Verify that the version of the subscription returned by the DSS the subscription was mutated through has been updated.
 
