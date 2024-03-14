@@ -1,10 +1,19 @@
 import datetime
-from typing import List, Dict, Any, Optional, Self
+from typing import List, Optional
 
-from implicitdict import ImplicitDict, StringBasedDateTime
-from uas_standards.astm.f3548.v21.api import Volume4D
+from implicitdict import ImplicitDict
+from uas_standards.astm.f3548.v21.api import (
+    EntityOVN,
+    OperationalIntentState,
+    UssBaseURL,
+    EntityID,
+    PutOperationalIntentReferenceParameters,
+    ImplicitSubscriptionParameters,
+)
 
-from monitoring.monitorlib.geo import LatLngPoint, make_latlng_rect, Volume3D, Polygon
+from monitoring.monitorlib.geo import make_latlng_rect, Volume3D
+from monitoring.monitorlib.geotemporal import Volume4D
+from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.resources.astm.f3548.v21.subscription_params import (
     SubscriptionParams,
 )
@@ -50,6 +59,44 @@ class PlanningAreaSpecification(ImplicitDict):
             base_url=self.base_url,
             notify_for_op_intents=notify_for_op_intents,
             notify_for_constraints=notify_for_constraints,
+        )
+
+    def get_new_operational_intent_ref_params(
+        self,
+        key: List[EntityOVN],
+        state: OperationalIntentState,
+        uss_base_url: UssBaseURL,
+        time_start: datetime.datetime,
+        time_end: datetime.datetime,
+        subscription_id: Optional[EntityID] = None,
+        implicit_sub_base_url: Optional[UssBaseURL] = None,
+        implicit_sub_for_constraints: Optional[bool] = None,
+    ) -> PutOperationalIntentReferenceParameters:
+        """
+        Builds a PutOperationalIntentReferenceParameters object that can be used against the DSS OIR API.
+        The extents contained in these parameters contain a single 4DVolume, which may not be entirely realistic,
+        but is sufficient in situations where the content of the OIR is irrelevant as long as it is valid, such
+        as for testing authentication or parameter validation.
+        Note that this method allows building inconsistent parameters.
+        """
+        return PutOperationalIntentReferenceParameters(
+            extents=[
+                Volume4D(
+                    volume=self.volume,
+                    time_start=Time(time_start),
+                    time_end=Time(time_end),
+                ).to_f3548v21()
+            ],
+            key=key,
+            state=state,
+            uss_base_url=uss_base_url,
+            subscription_id=subscription_id,
+            new_subscription=ImplicitSubscriptionParameters(
+                uss_base_url=implicit_sub_base_url,
+                notify_for_constraints=implicit_sub_for_constraints,
+            )
+            if implicit_sub_base_url
+            else None,
         )
 
 
