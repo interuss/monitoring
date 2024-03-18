@@ -21,7 +21,7 @@
     <th><a href="../../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="16" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
+    <td rowspan="18" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0005,1</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a><br><a href="../../../scenarios/astm/utm/dss/subscription_simple.md">ASTM SCD DSS: Subscription Simple</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a></td>
@@ -40,6 +40,11 @@
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0015</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0020</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0200</a></td>
@@ -88,6 +93,11 @@
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,1i</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0215</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
   </tr>
