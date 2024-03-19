@@ -106,11 +106,15 @@ class DSSInstance(object):
                     f"{fullname(type(self))} client called {calling_function_name(1)} which requires the use of the scope `{scope}`, but this DSSInstance is only authorized to perform actions with the scopes {' or '.join(self._scopes_authorized)}"
                 )
 
-    def _uses_any_scope(self, *scopes: str) -> None:
-        if not any([scope in self._scopes_authorized for scope in scopes]):
-            raise ValueError(
-                f"{fullname(type(self))} client called {calling_function_name(1)} which requires the use of any of the scopes `{', '.join(scopes)}`, but this DSSInstance is only authorized to perform actions with the scopes {' or '.join(self._scopes_authorized)}"
-            )
+    def _uses_any_scope(self, *scopes: str) -> str:
+        """Validates that at least a required scope is authorized for a request.
+        Additionally, returns a valid scope that may be used for the request."""
+        for scope in scopes:
+            if scope in self._scopes_authorized:
+                return scope
+        raise ValueError(
+            f"{fullname(type(self))} client called {calling_function_name(1)} which requires the use of any of the scopes `{', '.join(scopes)}`, but this DSSInstance is only authorized to perform actions with the scopes {' or '.join(self._scopes_authorized)}"
+        )
 
     def can_use_scope(self, scope: str) -> bool:
         return scope in self._scopes_authorized
@@ -390,7 +394,7 @@ class DSSInstance(object):
         Raises:
             * QueryError: if request failed, if HTTP status code is different than 201, or if the parsing of the response failed.
         """
-        self._uses_any_scope(
+        use_scope = self._uses_any_scope(
             Scope.ConstraintManagement,
             Scope.ConstraintProcessing,
             Scope.StrategicCoordination,
@@ -406,9 +410,7 @@ class DSSInstance(object):
             op.path,
             QueryType.F3548v21DSSMakeDssReport,
             self.participant_id,
-            scope=next(
-                iter(self._scopes_authorized)
-            ),  # any scope is valid for this endpoint
+            scope=use_scope,
             json=req,
         )
 
