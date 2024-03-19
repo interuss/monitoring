@@ -17,6 +17,7 @@ FlightIntentsResource that provides the following flight intents:
 - `valid_flight`: a valid operational intent upon which other invalid ones are derived, in `Accepted` state
   - `valid_activated`: state mutation `Activated`
   - `invalid_too_far_away`: reference time mutation: reference time pulled back so that it is like the operational intent is attempted to be planned more than OiMaxPlanHorizon = 30 days ahead of time
+  - `invalid_recently_ended`: end time that is within 5 to 10 seconds in the past, relative to TimeOfEvaluation
   - `valid_conflict_tiny_overlap`: volumes mutation: has a volume that overlaps with `valid_op_intent` just above IntersectionMinimumPrecision = 1cm in a way that must result as a conflict
 
 Because the scenario involves activation of intents, all activated intents must be active during the execution of the
@@ -45,6 +46,25 @@ to reject or accept the flight. If the USS indicates that the injection attempt 
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
 #### [Validate flight intent too far ahead of time not planned](../validate_not_shared_operational_intent.md)
+
+### Attempt to plan recently ended flight intent test step
+The user flight intent that the test driver attempts to plan has a reference time that has recently ended by just slightly more than `TimeSyncMaxDifferentialSeconds`=5 seconds.
+As such, if the USS synchronizes its time correctly, the planning attempt should be rejected.
+
+#### 🛑 Incorrectly planned check
+If the USS successfully plans the flight or otherwise fails to indicate a rejection, it means that it failed to validate
+that the intent provided was in the past. Therefore, this check will fail if the USS indicates success in creating the
+flight from the user flight intent, per one of the following requirements:
+- the USS does not implement properly the interface _getOperationalIntentDetails_ as required by **[astm.f3548.v21.USS0105](../../../../requirements/astm/f3548/v21.md)**, which specifies that _The end time may not be in the past_; or
+- the USS did not synchronize its time within `TimeSyncMaxDifferentialSeconds`=5 seconds of an industry-recognized time source as required by **[astm.f3548.v21.GEN0100](../../../../requirements/astm/f3548/v21.md)**; or
+- the USS did not use the synchronized time for the operational intent timestamps, as required by **[astm.f3548.v21.GEN0105](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Failure check
+All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
+to reject or accept the flight. If the USS indicates that the injection attempt failed, this check will fail per
+**[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
+
+#### [Validate recently ended flight intent not planned](../validate_not_shared_operational_intent.md)
 
 ## Validate transition to Ended state after cancellation test case
 ### Plan flight intent test step
