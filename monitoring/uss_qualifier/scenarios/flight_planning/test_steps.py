@@ -465,9 +465,11 @@ def submit_flight(
         scenario.record_query(query)
         check_details = (
             f'{flight_planner.participant_id} indicated {result} rather than the expected {" or ".join([f"({expected_result[0]}, {expected_result[1]})" for expected_result in expected_results])}'
-            + f' with notes "{resp.notes}"'
-            if "notes" in resp and resp.notes
-            else " with no notes"
+            + (
+                f' with notes "{resp.notes}"'
+                if "notes" in resp and resp.notes
+                else " with no notes"
+            )
         )
 
         for unexpected_result, failed_test_check in failed_checks.items():
