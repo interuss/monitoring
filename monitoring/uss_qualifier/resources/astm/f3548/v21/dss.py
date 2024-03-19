@@ -510,6 +510,9 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     def can_use_scope(self, scope: str) -> bool:
         return scope in self._auth_adapter.scopes
 
+    def get_authorized_scopes(self) -> Set[str]:
+        return self._auth_adapter.scopes.copy()
+
     def get_instance(self, scopes_required: Dict[str, str]) -> DSSInstance:
         """Get a client object ready to be used.
 

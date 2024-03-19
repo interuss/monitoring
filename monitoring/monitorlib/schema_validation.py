@@ -50,6 +50,7 @@ class F3411_22a(str, Enum):
 
 class F3548_21(str, Enum):
     OpenAPIPath = "interfaces/astm-utm/Protocol/utm.yaml"
+    ErrorResponse = "components.schemas.ErrorResponse"
     GetOperationalIntentDetailsResponse = (
         "components.schemas.GetOperationalIntentDetailsResponse"
     )

@@ -1,9 +1,12 @@
 import datetime
 from typing import List, Optional, Self
 
+import s2sphere
 from implicitdict import ImplicitDict
+from uas_standards.astm.f3548.v21.api import PutSubscriptionParameters
 
 from monitoring.monitorlib.geo import LatLngPoint
+from monitoring.monitorlib.mutate import scd as mutate
 
 
 class SubscriptionParams(ImplicitDict):
@@ -44,3 +47,28 @@ class SubscriptionParams(ImplicitDict):
 
     def copy(self) -> Self:
         return SubscriptionParams(super().copy())
+
+    def to_upsert_subscription_params(
+        self, area: s2sphere.LatLngRect
+    ) -> PutSubscriptionParameters:
+        """
+        Prepares the subscription parameters to be used in the body of an HTTP request
+        to create or update a subscription on the DSS in the SCD context.
+
+        Args:
+            area: area to include in the subscription parameters
+
+        Returns:
+            A dict to be passed as the request body when calling the subscription creation or update API.
+
+        """
+        return mutate.build_upsert_subscription_params(
+            area_vertices=area,
+            start_time=self.start_time,
+            end_time=self.end_time,
+            base_url=self.base_url,
+            notify_for_op_intents=self.notify_for_op_intents,
+            notify_for_constraints=self.notify_for_constraints,
+            min_alt_m=self.min_alt_m,
+            max_alt_m=self.max_alt_m,
+        )
