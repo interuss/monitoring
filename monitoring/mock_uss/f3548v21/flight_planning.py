@@ -81,6 +81,16 @@ def validate_request(op_intent: f3548_v21.OperationalIntent) -> None:
                 f"Operational intent is activated but has no volume currently active (now: {now})"
             )
 
+    # Validate intent is not (entirely) in the past
+    now = arrow.utcnow().datetime
+    volumes = Volume4DCollection.from_interuss_scd_api(
+        op_intent.details.volumes + op_intent.details.off_nominal_volumes
+    )
+    if volumes.time_end.datetime < now:
+        raise PlanningError(
+            f"Operational intent is in the past (time_end: {volumes.time_end.datetime}; now: {now})"
+        )
+
 
 def check_for_disallowed_conflicts(
     new_op_intent: f3548_v21.OperationalIntent,
