@@ -731,7 +731,7 @@ def make_report(
     with scenario.check(
         "DSS returned a valid report ID", [dss.participant_id]
     ) as check:
-        if report_id is None or len(report_id) == 0:
+        if not report_id:
             check.record_failed(
                 summary="Submitted DSS report returned no or empty ID",
                 details=f"DSS responded code {report_query.status_code} but with no ID for the report",
