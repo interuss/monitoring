@@ -59,28 +59,32 @@ class AuthenticationValidation(TestScenario):
                  but has no other requirements.
         """
         super().__init__()
+        # This is the proper scope for interactions with the DSS in this scenario
         scopes = {Scope.StrategicCoordination: "create and delete subscriptions"}
-        # Note: .get_instance needs to be called before .get_authorized_scopes to
-        # guarantee that the returned scopes are available for use.
-        self._dss = dss.get_instance(scopes)
 
         # For the 'wrong' scope we pick anything from the available scopes that isn't the SCD or empty scope:
         available_scopes = dss.get_authorized_scopes()
         available_scopes.discard(Scope.StrategicCoordination)
         available_scopes.discard("")
 
-        self._wrong_scope = (
-            random.choice(list(available_scopes)) if available_scopes else None
-        )
-        if self._wrong_scope:
+        if len(available_scopes) > 0:
+            # Sort the scopes to obtain a deterministic order, pick the first one
+            available_scopes = sorted(available_scopes)
+            self._wrong_scope = available_scopes[0]
             scopes[
                 self._wrong_scope
             ] = "Attempt to query subscriptions with wrong scope"
+        else:
+            self._wrong_scope = None
 
         self._test_missing_scope = False
         if dss.can_use_scope(""):
             scopes[""] = "Attempt to query subscriptions with missing scope"
             self._test_missing_scope = True
+
+        # Note: .get_instance should be called once we know every scope we will need,
+        #  in order to guarantee that they are indeed available.
+        self._dss = dss.get_instance(scopes)
 
         self._pid = [self._dss.participant_id]
         self._test_id = id_generator.id_factory.make_id(self.SUB_TYPE)
