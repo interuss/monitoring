@@ -451,7 +451,7 @@ class SubscriptionSynchronization(TestScenario):
 
         with self.check(
             "Subscription returned by a secondary DSS is valid and correct",
-            [secondary_dss.participant_id],
+            [secondary_dss.participant_id, self._primary_pid],
         ) as check:
             # Do a full validation of the subscription as a sanity check
             SubscriptionValidator(
@@ -584,7 +584,7 @@ class SubscriptionSynchronization(TestScenario):
         fetched_sub = secondary_dss.get_subscription(self._sub_id)
         with self.check(
             "Secondary DSS should not return the deleted subscription",
-            [secondary_dss.participant_id],
+            [secondary_dss.participant_id, self._primary_pid],
         ) as check:
             if fetched_sub.status_code != 404:
                 check.record_failed(

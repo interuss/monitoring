@@ -99,7 +99,12 @@ Query the updated subscription at every DSS provided in `dss_instances`.
 
 When queried for a subscription that was mutated via another DSS, a DSS instance is expected to provide a valid subscription.
 
-If it does not, it might be in violation of **[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**.
+If it does not, either one of the primary DSS or the DSS that returned the subscription is in violation of one of the following requirements:
+
+**[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**, if the API is not working as described by the OpenAPI specification;
+**[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)**, if the DSS through which the subscription was mutated is returning API calls to the client before having updated its underlying distributed storage.
+
+As a result, the DSS pool under test is failing to meet **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
@@ -142,6 +147,11 @@ Attempt to query and search for the deleted subscription in various ways
 #### 🛑 Secondary DSS should not return the deleted subscription check
 
 If a DSS returns a subscription that was previously successfully deleted from the primary DSS,
-either one of the primary DSS or the DSS that returned the subscription is in violation of **[astm.f3548.v21.DSS0210,1a](../../../../../requirements/astm/f3548/v21.md)**.
+either one of the primary DSS or the DSS that returned the subscription is in violation of one of the following requirements:
+
+**[astm.f3548.v21.DSS0210,1a](../../../../../requirements/astm/f3548/v21.md)**, if the API is not working as described by the OpenAPI specification;
+**[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)**, if the DSS through which the subscription was deleted is returning API calls to the client before having updated its underlying distributed storage.
+
+As a result, the DSS pool under test is failing to meet **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
 
 ## [Cleanup](../clean_workspace.md)
