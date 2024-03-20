@@ -208,7 +208,7 @@ class SubscriptionSynchronization(TestScenario):
                 "Skipping manager synchronization check: no extra credentials provided",
             )
 
-        self._step_mutate_subscriptions_secondaries_shift_time()
+        self._repeat_steps_mutate_subscriptions_secondaries_shift_time()
 
         self.begin_test_step("Delete subscription on primary")
         self._step_delete_sub()
@@ -687,7 +687,7 @@ class SubscriptionSynchronization(TestScenario):
         new_params = sp.shift_time(timedelta(seconds=10))
         self._mutate_subscription_with_dss(self._dss, new_params, is_primary=True)
 
-    def _step_mutate_subscriptions_secondaries_shift_time(self):
+    def _repeat_steps_mutate_subscriptions_secondaries_shift_time(self):
         """Mutate the subscription on every secondary DSS by adding 10 seconds to its start and end times,
         then checking on every DSS that the response is valid and corresponds to the expected parameters."""
 

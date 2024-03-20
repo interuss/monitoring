@@ -28,15 +28,12 @@ A `resources.communications.AuthAdapterResource` containing a second set of vali
 
 This second set of credentials is required to validate that the DSS properly synchronizes the manager of a subscription to other DSS instances.
 
-The participant under test is responsible for providing this second set of credentials along the primary ones used in most other scenarios.
+The test designer should provide this second set of credentials when full testing of manager synchronization behavior is desired.
 
 #### Credential requirements
 
 In general, these test credentials may be in all points equal to the ones used by the `AuthAdapterResource` that is
 provided to the `dss` resources above, except for the value contained in the `sub` claim of the token.
-
-For the purpose of this scenario, these credentials must be allowed to create, modify and delete subscriptions on the DSS,
-as well as querying them.
 
 Note that most checks in this scenario will work if the second set of credentials is not provided.
 
@@ -46,7 +43,7 @@ For the purpose of this scenario, the `second_utm_auth` resource must provide ac
 
 * `utm.strategic_coordination`
 
-##### Separate subscription
+##### Separate subject
 
 Note that the subject (or 'sub' claim) of the token that will be obtained for this resource
 MUST be different from the one of the `dss` resources mentioned above:
@@ -56,7 +53,7 @@ this will be verified at runtime, and the depending checks will not be run if th
 
 ### [Ensure clean workspace test step](../clean_workspace.md)
 
-This step ensures that no subscriptions with the known test IDs exists in the DSS.
+This step ensures that no subscriptions with the known test IDs exist in the DSS.
 
 This includes the main test subscription used in this test, as well as the extra subscription
 used for testing the `manager` field sync, if the test is configured to test for it.
@@ -274,7 +271,7 @@ As a result, the DSS pool under test is failing to meet **[astm.f3548.v21.DSS002
 
 ## [Cleanup](../clean_workspace.md)
 
-This step ensures that no subscriptions with the known test IDs exists in the DSS.
+This step ensures that no subscriptions with the known test IDs remain in the DSS by deleting them at this point if they do exist.
 
 This includes the main test subscription used in this test, as well as the extra subscription
 used for testing the `manager` field sync, if the test is configured to test for it.
