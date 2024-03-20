@@ -487,7 +487,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0100,2</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/dss/availability_arbitration.md">ASTM SCD DSS: Availability Arbitration</a></td>
+    <td><a href="../../scenarios/astm/utm/dss/report.md">ASTM SCD DSS: Report</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0200</a></td>

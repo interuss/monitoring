@@ -11,7 +11,7 @@
 5. Scenario: [ASTM F3548-21 UTM DSS interoperability](../../../scenarios/astm/utm/dss_interoperability.md) ([`scenarios.astm.utm.DSSInteroperability`](../../../scenarios/astm/utm/dss_interoperability.py))
 6. Scenario: [ASTM SCD DSS: Subscription Synchronization](../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md) ([`scenarios.astm.utm.dss.synchronization.SubscriptionSynchronization`](../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.py))
 7. Scenario: [ASTM UTM DSS: Direct CRDB access](../../../scenarios/astm/utm/dss/crdb_access.md) ([`scenarios.astm.utm.dss.CRDBAccess`](../../../scenarios/astm/utm/dss/crdb_access.py))
-8. Scenario: [ASTM SCD DSS: Availability Arbitration](../../../scenarios/astm/utm/dss/availability_arbitration.md) ([`scenarios.astm.utm.dss.AvailabilityArbitration`](../../../scenarios/astm/utm/dss/availability_arbitration.py))
+8. Scenario: [ASTM SCD DSS: Report](../../../scenarios/astm/utm/dss/report.md) ([`scenarios.astm.utm.dss.Report`](../../../scenarios/astm/utm/dss/report.py))
 
 ## [Checked requirements](../../README.md#checked-requirements)
 
@@ -51,7 +51,7 @@
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0100,2</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/availability_arbitration.md">ASTM SCD DSS: Availability Arbitration</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/report.md">ASTM SCD DSS: Report</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0200</a></td>
