@@ -462,6 +462,84 @@ def activate_flight(
     )
 
 
+def declare_flight_nonconforming(
+    scenario: TestScenarioType,
+    flight_planner: FlightPlannerClient,
+    flight_info: FlightInfo,
+    flight_id: str,
+    additional_fields: Optional[dict] = None,
+) -> PlanningActivityResponse:
+    """Declare a flight intent non-conforming. Note that if the USS does not support the CMSA role, it may indicate that
+     the operation is not supported. In this case the check is skipped.
+
+    This function implements the test step fragment described in
+    declare_flight_nonconforming.md.
+
+    Returns the injection response.
+    """
+    expect_flight_intent_state(
+        flight_info,
+        (
+            BasicFlightPlanInformationUsageState.InUse,
+            BasicFlightPlanInformationUasState.OffNominal,
+        ),
+        scenario,
+    )
+
+    return submit_flight(
+        scenario=scenario,
+        success_check="Successfully declare flight non-conforming",
+        expected_results={
+            (PlanningActivityResult.Completed, FlightPlanStatus.OffNominal)
+        },
+        failed_checks={PlanningActivityResult.Failed: "Failure"},
+        flight_planner=flight_planner,
+        flight_info=flight_info,
+        flight_id=flight_id,
+        additional_fields=additional_fields,
+        skip_if_not_supported=True,
+    )[0]
+
+
+def declare_flight_contingent(
+    scenario: TestScenarioType,
+    flight_planner: FlightPlannerClient,
+    flight_info: FlightInfo,
+    flight_id: str,
+    additional_fields: Optional[dict] = None,
+) -> PlanningActivityResponse:
+    """Declare a flight intent contingent. Note that if the USS does not support the CMSA role, it may indicate that
+     the operation is not supported. In this case the check is skipped.
+
+    This function implements the test step fragment described in
+    declare_flight_contingent.md.
+
+    Returns the injection response.
+    """
+    expect_flight_intent_state(
+        flight_info,
+        (
+            BasicFlightPlanInformationUsageState.InUse,
+            BasicFlightPlanInformationUasState.Contingent,
+        ),
+        scenario,
+    )
+
+    return submit_flight(
+        scenario=scenario,
+        success_check="Successfully declare flight contingent",
+        expected_results={
+            (PlanningActivityResult.Completed, FlightPlanStatus.OffNominal)
+        },
+        failed_checks={PlanningActivityResult.Failed: "Failure"},
+        flight_planner=flight_planner,
+        flight_info=flight_info,
+        flight_id=flight_id,
+        additional_fields=additional_fields,
+        skip_if_not_supported=True,
+    )[0]
+
+
 def submit_flight(
     scenario: TestScenarioType,
     success_check: str,
