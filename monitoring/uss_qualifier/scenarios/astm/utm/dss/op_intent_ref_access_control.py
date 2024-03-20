@@ -197,7 +197,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                     )
         if q.response.status_code != 404:
             with self.check(
-                "Operational intent references can be deleted by their owner", self._pid
+                "Operational intent references removed", self._pid
             ) as check:
                 try:
                     (_, notifs, dq) = self._dss_separate_creds.delete_op_intent(
@@ -237,7 +237,7 @@ class OpIntentReferenceAccessControl(TestScenario):
             # We look for an op_intent where the uss_qualifier is the manager;
             if op_intent.manager == self._dss.client.auth_adapter.get_sub():
                 with self.check(
-                    "Operational intent references can be deleted by their owner",
+                    "Operational intent references removed",
                     self._pid,
                 ) as check:
                     try:
@@ -279,7 +279,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 == self._dss_separate_creds.client.auth_adapter.get_sub()
             ):
                 with self.check(
-                    "Operational intent references can be deleted by their owner",
+                    "Operational intent references removed",
                     self._pid,
                 ) as check:
                     try:

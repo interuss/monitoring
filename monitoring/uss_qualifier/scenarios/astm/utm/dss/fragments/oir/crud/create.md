@@ -7,11 +7,9 @@ This test step fragment validates that operational intent references can be crea
 As per **[astm.f3548.v21.DSS0005,1](../../../../../../../requirements/astm/f3548/v21.md)**, the DSS API must allow callers to create an operational intent reference with either one or both of the
 start and end time missing, provided all the required parameters are valid.
 
-## 🛑 Create operational intent reference response format conforms to spec check
+## [Response Format](./create_format.md)
 
-The response to a successful operational intent reference creation query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
-
-If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,1](../../../../../../../requirements/astm/f3548/v21.md)**.
+Check response format
 
 ## 🛑 Create operational intent reference response content is correct check
 

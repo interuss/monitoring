@@ -205,6 +205,10 @@ it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../require
 If the DSS does not allow the creation of an operational intent when valid credentials are presented,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../requirements/astm/f3548/v21.md)**.
 
+#### [Create response format](../fragments/oir/crud/create_format.md)
+
+Check response format of a creation request.
+
 #### 🛑 Get operational intent reference with missing credentials check
 
 If the DSS under test allows the fetching of an operational intent without any credentials being presented,
@@ -254,6 +258,10 @@ it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../require
 
 If the DSS does not allow the mutation of an operational intent when valid credentials are presented,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### [Mutate response format](../fragments/oir/crud/update_format.md)
+
+Check response format of a mutation.
 
 #### 🛑 Delete operational intent reference with missing credentials check
 

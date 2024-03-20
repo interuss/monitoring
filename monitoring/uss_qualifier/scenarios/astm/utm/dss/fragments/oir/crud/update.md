@@ -6,11 +6,9 @@ This test step fragment validates that operational intent references can be upda
 
 As per **[astm.f3548.v21.DSS0005,1](../../../../../../../requirements/astm/f3548/v21.md)**, the DSS API must allow callers to mutate an operational intent reference.
 
-## 🛑 Mutate operational intent reference response format conforms to spec check
+## [Response Format](./update_format.md)
 
-The response to a successful operational intent reference mutation query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
-
-If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,1](../../../../../../../requirements/astm/f3548/v21.md)**.
+Check response format
 
 ## 🛑 Mutate operational intent reference response content is correct check
 

@@ -1,4 +1,3 @@
-import random
 from datetime import datetime, timedelta
 
 from uas_standards.astm.f3548.v21.constants import (
@@ -6,7 +5,6 @@ from uas_standards.astm.f3548.v21.constants import (
 )
 
 from monitoring.monitorlib.auth import InvalidTokenSignatureAuth
-from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.prober.infrastructure import register_resource_type
@@ -41,7 +39,7 @@ class AuthenticationValidation(TestScenario):
     """
 
     SUB_TYPE = register_resource_type(
-        382, "Subscription, Operational Entity Id, Constraint"
+        380, "Subscription, Operational Entity Id, Constraint"
     )
 
     # Reuse the same ID for every type of entity.
@@ -198,41 +196,7 @@ class AuthenticationValidation(TestScenario):
 
         # Drop OIR's first: subscriptions may be tied to them and can't be deleted
         # as long as they exist
-        # TODO cleanly move this into the test fragments once the relevant PRs (notably #535) are merged
-        with self.check(
-            "Operational intent references can be queried by ID", self._pid
-        ) as check:
-            try:
-                oir, q = self._dss.get_op_intent_reference(self._test_id)
-                self.record_query(q)
-            except QueryError as qe:
-                self.record_queries(qe.queries)
-                if qe.queries[0].response.status_code == 404:
-                    return  # All is good
-                else:
-                    query = qe.queries[0]
-                    check.record_failed(
-                        summary=f"Could not query OIR {self._test_id}",
-                        details=f"When attempting to query OIR {self._test_id} from the DSS, received {query.response.status_code}: {qe.msg}",
-                        query_timestamps=[query.request.timestamp],
-                    )
-
-        with self.check(
-            "Operational intent references can be deleted by their owner", self._pid
-        ):
-            try:
-                oir, subs, q = self._dss.delete_op_intent(oir.id, oir.ovn)
-                self.record_query(q)
-            except QueryError as qe:
-                self.record_queries(qe.queries)
-                query = qe.queries[0]
-                check.record_failed(
-                    summary=f"Could not remove op intent reference {self._test_id}",
-                    details=f"When attempting to remove op intent reference {self._test_id} from the DSS, received {query.status_code}: {qe.msg}",
-                    query_timestamps=[query.request.timestamp],
-                )
-                self._dss.delete_op_intent(oir.id, oir.ovn)
-
+        test_step_fragments.cleanup_op_intent(self, self._dss, self._test_id)
         test_step_fragments.cleanup_sub(self, self._dss, self._test_id)
 
     def _ensure_no_active_subs_exist(self):

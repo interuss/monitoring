@@ -12,7 +12,7 @@ If an existing operational intent reference cannot directly be queried by its ID
 A client with valid credentials should be allowed to search for operational intents in a given area.
 Otherwise, the DSS is not in compliance with **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
 
-## 🛑 Operational intent references can be deleted by their owner check
+## 🛑 Operational intent references removed check
 
 If an existing operational intent cannot be deleted when providing the proper ID and OVN, the DSS implementation is in violation of
 **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.

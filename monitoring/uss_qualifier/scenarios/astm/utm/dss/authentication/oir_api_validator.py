@@ -136,7 +136,7 @@ class OperationalIntentRefAuthValidator:
             ) as check:
                 if no_scope_q.status_code != 401:
                     check.record_failed(
-                        summary=f"Expected 403, got {no_scope_q.status_code}",
+                        summary=f"Expected 401, got {no_scope_q.status_code}",
                         query_timestamps=[no_scope_q.request.timestamp],
                     )
                 self._sanity_check_oir_not_created(check, no_scope_q)
@@ -171,9 +171,19 @@ class OperationalIntentRefAuthValidator:
                     query_timestamps=[valid_q.request.timestamp],
                 )
 
-            oir_resp = ImplicitDict.parse(
-                valid_q.response.json, ChangeOperationalIntentReferenceResponse
-            )
+        with self._scenario.check(
+            "Create operational intent reference response format conforms to spec"
+        ) as check:
+            try:
+                oir_resp = ImplicitDict.parse(
+                    valid_q.response.json, ChangeOperationalIntentReferenceResponse
+                )
+            except ValueError as e:
+                check.record_failed(
+                    summary="Could not parse the response body",
+                    details=f"Failed to parse the response body as a ChangeOperationalIntentReferenceResponse: {e}",
+                    query_timestamps=[valid_q.request.timestamp],
+                )
 
         # Save the current OIR
         self._current_oir = oir_resp.operational_intent_reference
@@ -220,7 +230,7 @@ class OperationalIntentRefAuthValidator:
             ) as check:
                 if query_missing_scope.status_code != 401:
                     check.record_failed(
-                        summary=f"Expected 403, got {query_missing_scope.status_code}",
+                        summary=f"Expected 401, got {query_missing_scope.status_code}",
                         query_timestamps=[query_missing_scope.request.timestamp],
                     )
 
@@ -332,13 +342,24 @@ class OperationalIntentRefAuthValidator:
             if valid_q.status_code != 200:
                 check.record_failed(
                     summary=f"Expected 200, got {valid_q.status_code}",
-                    details=f"Mutation is expected to have succeeded, but got status {valid_q.status_code} with body {valid_q.response.json} instead",
+                    details=f"Mutation is expected to have succeeded, but got status {valid_q.status_code} with error {valid_q.error_message} instead",
                     query_timestamps=[valid_q.request.timestamp],
                 )
 
-        parsed_oir = ImplicitDict.parse(
-            valid_q.response.json, ChangeOperationalIntentReferenceResponse
-        )
+        with self._scenario.check(
+            "Mutate operational intent reference response format conforms to spec"
+        ) as check:
+            try:
+                parsed_oir = ImplicitDict.parse(
+                    valid_q.response.json, ChangeOperationalIntentReferenceResponse
+                )
+            except ValueError as e:
+                check.record_failed(
+                    summary="Could not parse the response body",
+                    details=f"Failed to parse the response body as a ChangeOperationalIntentReferenceResponse: {e}",
+                    query_timestamps=[valid_q.request.timestamp],
+                )
+
         self._current_oir = parsed_oir.operational_intent_reference
 
     def _verify_oir_deletion(self):
@@ -455,7 +476,7 @@ class OperationalIntentRefAuthValidator:
             ) as check:
                 if no_scope_q.status_code != 401:
                     check.record_failed(
-                        summary=f"Expected 403, got {no_scope_q.status_code}",
+                        summary=f"Expected 401, got {no_scope_q.status_code}",
                         query_timestamps=[no_scope_q.request.timestamp],
                     )
 
@@ -493,11 +514,8 @@ class OperationalIntentRefAuthValidator:
             _, sanity_check = self._dss.get_op_intent_reference(self._test_id)
             self._scenario.record_query(sanity_check)
         except QueryError as qe:
-            for q in qe.queries:
-                self._scenario.record_query(q)
-            if qe.queries[0].response.status_code == 404:
-                pass  # All is good
-            else:
+            self._scenario.record_queries(qe.queries)
+            if qe.queries[0].response.status_code != 404:
                 check.record_failed(
                     summary="OIR was created by an unauthorized request.",
                     details="The Operational Intent Reference should not have been created, as the creation attempt was not authenticated.",
@@ -523,17 +541,17 @@ class OperationalIntentRefAuthValidator:
             ):
                 check.record_failed(
                     summary="OIR was updated by an unauthorized request.",
-                    details="The Operational Intent Reference should not have been updated, as the update attempt was not authenticated.",
+                    details=f"The Operational Intent Reference with id {self._test_id} should not have been updated, as the update attempt was not authenticated.",
                     query_timestamps=[
                         creation_q.request.timestamp,
                         sanity_check.request.timestamp,
                     ],
                 )
         except QueryError as qe:
-            for q in qe.queries:
-                self._scenario.record_query(q)
+            self._scenario.record_queries(qe.queries)
             check.record_failed(
                 summary="Could not fetch OIR to confirm it has not been mutated",
+                details=f"The Operational Intent Reference with id {self._test_id} could not be fetched to confirm it has not been mutated: {qe}",
                 query_timestamps=[
                     creation_q.request.timestamp,
                     qe.queries[0].request.timestamp,
