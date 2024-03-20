@@ -434,6 +434,11 @@
     <td><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
   </tr>
   <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0100,2</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/report.md">ASTM SCD DSS: Report</a></td>
+  </tr>
+  <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0200</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/dss/crdb_access.md">ASTM UTM DSS: Direct CRDB access</a></td>

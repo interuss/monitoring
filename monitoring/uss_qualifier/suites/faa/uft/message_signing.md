@@ -49,6 +49,11 @@
     <td><a href="../../../scenarios/astm/utm/off_nominal_planning/down_uss.md">Off-Nominal planning: down USS</a><br><a href="../../../scenarios/astm/utm/off_nominal_planning/down_uss_equal_priority_not_permitted.md">Off-Nominal planning: down USS with equal priority conflicts not permitted</a></td>
   </tr>
   <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0100,2</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/report.md">ASTM SCD DSS: Report</a></td>
+  </tr>
+  <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0200</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/dss/crdb_access.md">ASTM UTM DSS: Direct CRDB access</a></td>
