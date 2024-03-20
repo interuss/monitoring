@@ -56,7 +56,7 @@ Makes sure that the DSS is in a clean and expected state before running the test
 
 The setup will create two separate operational intent references: one for each set of the available credentials.
 
-### [Ensure clean workspace](./dss/clean_workspace.md) test step
+### [Ensure clean workspace](clean_workspace.md) test step
 
 #### ⚠️ Any existing operational intent reference has been removed check
 
@@ -79,7 +79,7 @@ To verify that the second credentials are valid, it will also create an operatio
 #### 🛑 Can create an operational intent with valid credentials check
 
 If the DSS does not allow the creation of operation intents when the required parameters and credentials are provided,
-it is in violation of **[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**.
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 #### 🛑 Passed sets of credentials are different check
 
@@ -98,16 +98,16 @@ using the credentials provided in the `second_utm_auth` resource, and expect all
 #### 🛑 Operational intent references can be queried directly by their ID check
 
 If an existing operational intent cannot directly be queried by its ID, the DSS implementation is in violation of
-**[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**.
+**[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 #### 🛑 Non-owning credentials cannot modify operational intent check
 
 If an operational intent reference can be modified by a client which did not create it, the DSS implementation is
-in violation of **[astm.f3548.v21.OPIN0035](../../../requirements/astm/f3548/v21.md)**.
+in violation of **[astm.f3548.v21.OPIN0035](../../../../requirements/astm/f3548/v21.md)**.
 
 #### 🛑 Non-owning credentials cannot delete operational intent check
 
 If an operational intent reference can be deleted by a client which did not create it, the DSS implementation is
-in violation of **[astm.f3548.v21.OPIN0035](../../../requirements/astm/f3548/v21.md)**.
+in violation of **[astm.f3548.v21.OPIN0035](../../../../requirements/astm/f3548/v21.md)**.
 
-## [Cleanup](./dss/clean_workspace.md)
+## [Cleanup](clean_workspace.md)
