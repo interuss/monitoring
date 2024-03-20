@@ -1,6 +1,10 @@
 from typing import Optional, Tuple
 
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
+from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
+    BasicFlightPlanInformationUsageState,
+    BasicFlightPlanInformationUasState,
+)
 
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
@@ -29,7 +33,14 @@ def plan_priority_conflict_flight_intent(
 
     Returns: The injection response.
     """
-    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
+    expect_flight_intent_state(
+        flight_intent,
+        (
+            BasicFlightPlanInformationUsageState.Planned,
+            BasicFlightPlanInformationUasState.Nominal,
+        ),
+        scenario,
+    )
 
     resp, _, _ = submit_flight_intent(
         scenario,
@@ -59,7 +70,14 @@ def modify_planned_priority_conflict_flight_intent(
 
     Returns: The injection response.
     """
-    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
+    expect_flight_intent_state(
+        flight_intent,
+        (
+            BasicFlightPlanInformationUsageState.Planned,
+            BasicFlightPlanInformationUasState.Nominal,
+        ),
+        scenario,
+    )
 
     resp, _, _ = submit_flight_intent(
         scenario,
@@ -91,7 +109,12 @@ def activate_priority_conflict_flight_intent(
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario
+        flight_intent,
+        (
+            BasicFlightPlanInformationUsageState.InUse,
+            BasicFlightPlanInformationUasState.Nominal,
+        ),
+        scenario,
     )
 
     resp, _, _ = submit_flight_intent(
@@ -124,7 +147,12 @@ def modify_activated_priority_conflict_flight_intent(
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario
+        flight_intent,
+        (
+            BasicFlightPlanInformationUsageState.InUse,
+            BasicFlightPlanInformationUasState.Nominal,
+        ),
+        scenario,
     )
 
     resp, _, _ = submit_flight_intent(
@@ -155,7 +183,14 @@ def plan_conflict_flight_intent(
 
     Returns: The injection response.
     """
-    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
+    expect_flight_intent_state(
+        flight_intent,
+        (
+            BasicFlightPlanInformationUsageState.Planned,
+            BasicFlightPlanInformationUasState.Nominal,
+        ),
+        scenario,
+    )
 
     resp, _, _ = submit_flight_intent(
         scenario,
@@ -185,7 +220,14 @@ def modify_planned_conflict_flight_intent(
 
     Returns: The injection response.
     """
-    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
+    expect_flight_intent_state(
+        flight_intent,
+        (
+            BasicFlightPlanInformationUsageState.Planned,
+            BasicFlightPlanInformationUasState.Nominal,
+        ),
+        scenario,
+    )
 
     resp, _, _ = submit_flight_intent(
         scenario,
@@ -217,7 +259,12 @@ def activate_conflict_flight_intent(
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario
+        flight_intent,
+        (
+            BasicFlightPlanInformationUsageState.InUse,
+            BasicFlightPlanInformationUasState.Nominal,
+        ),
+        scenario,
     )
 
     resp, _, _ = submit_flight_intent(
@@ -250,7 +297,12 @@ def modify_activated_conflict_flight_intent(
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario
+        flight_intent,
+        (
+            BasicFlightPlanInformationUsageState.InUse,
+            BasicFlightPlanInformationUasState.Nominal,
+        ),
+        scenario,
     )
 
     resp, _, _ = submit_flight_intent(
@@ -285,7 +337,14 @@ def plan_permitted_conflict_flight_intent(
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
     """
-    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
+    expect_flight_intent_state(
+        flight_intent,
+        (
+            BasicFlightPlanInformationUsageState.Planned,
+            BasicFlightPlanInformationUasState.Nominal,
+        ),
+        scenario,
+    )
 
     resp, flight_id, _ = submit_flight_intent(
         scenario,
@@ -314,7 +373,14 @@ def modify_planned_permitted_conflict_flight_intent(
 
     Returns: The injection response.
     """
-    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
+    expect_flight_intent_state(
+        flight_intent,
+        (
+            BasicFlightPlanInformationUsageState.Planned,
+            BasicFlightPlanInformationUasState.Nominal,
+        ),
+        scenario,
+    )
 
     resp, _, _ = submit_flight_intent(
         scenario,
@@ -345,7 +411,12 @@ def activate_permitted_conflict_flight_intent(
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario
+        flight_intent,
+        (
+            BasicFlightPlanInformationUsageState.InUse,
+            BasicFlightPlanInformationUasState.Nominal,
+        ),
+        scenario,
     )
 
     resp, _, _ = submit_flight_intent(
@@ -377,7 +448,12 @@ def modify_activated_permitted_conflict_flight_intent(
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario
+        flight_intent,
+        (
+            BasicFlightPlanInformationUsageState.InUse,
+            BasicFlightPlanInformationUasState.Nominal,
+        ),
+        scenario,
     )
 
     resp, _, _ = submit_flight_intent(
