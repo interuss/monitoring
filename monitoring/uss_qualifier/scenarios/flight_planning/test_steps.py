@@ -432,10 +432,12 @@ def submit_flight(
     flight_info: FlightInfo,
     flight_id: Optional[str] = None,
     additional_fields: Optional[dict] = None,
+    skip_if_not_supported: bool = False,
 ) -> Tuple[PlanningActivityResponse, Optional[str]]:
     """Submit a flight intent with an expected result.
     A check fail is considered by default of high severity and as such will raise an ScenarioCannotContinueError.
     The severity of each failed check may be overridden if needed.
+    If skip_if_not_supported=True and the USS responds that the operation is not supported, the check is skipped without failing.
 
     This function does not directly implement a test step.
 
@@ -453,16 +455,23 @@ def submit_flight(
             resp, query, flight_id = request_flight(
                 flight_planner, flight_info, flight_id, additional_fields
             )
-            result = (resp.activity_result, resp.flight_plan_status)
+            scenario.record_query(query)
         except QueryError as e:
-            for q in e.queries:
-                scenario.record_query(q)
+            scenario.record_queries(e.queries)
             check.record_failed(
                 summary=f"Error from {flight_planner.participant_id} when attempting to submit a flight intent (flight ID: {flight_id})",
                 details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
-        scenario.record_query(query)
+
+        if (
+            skip_if_not_supported
+            and resp.activity_result == PlanningActivityResult.NotSupported
+        ):
+            check.skip()
+            return resp, None
+
+        result = (resp.activity_result, resp.flight_plan_status)
         check_details = (
             f'{flight_planner.participant_id} indicated {result} rather than the expected {" or ".join([f"({expected_result[0]}, {expected_result[1]})" for expected_result in expected_results])}'
             + (
