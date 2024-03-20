@@ -52,11 +52,6 @@ Verify that the subscription returned by the DSS under test is properly formatte
 
 Query the created subscription at every DSS provided in `dss_instances`.
 
-#### 🛑 Subscription returned by a secondary DSS is valid and correct check
-
-When queried for a subscription that was created via another DSS, a DSS instance is expected to provide a valid subscription.
-
-If it does not, it might be in violation of **[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
@@ -94,17 +89,6 @@ Verify that the version of the subscription returned by the DSS has been updated
 ### Query updated subscription test step
 
 Query the updated subscription at every DSS provided in `dss_instances`.
-
-#### 🛑 Subscription returned by a secondary DSS is valid and correct check
-
-When queried for a subscription that was mutated via another DSS, a DSS instance is expected to provide a valid subscription.
-
-If it does not, either one of the primary DSS or the DSS that returned the subscription is in violation of one of the following requirements:
-
-**[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**, if the API is not working as described by the OpenAPI specification;
-**[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)**, if the DSS through which the subscription was mutated is returning API calls to the client before having updated its underlying distributed storage.
-
-As a result, the DSS pool under test is failing to meet **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
