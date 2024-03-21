@@ -14,6 +14,9 @@ from uas_standards.astm.f3548.v21.api import (
 
 from monitoring.monitorlib import schema_validation, fetch
 from monitoring.monitorlib.schema_validation import F3548_21
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators import (
+    fail_with_schema_errors,
+)
 from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenario
 
 TIME_TOLERANCE_SEC = 1
@@ -288,7 +291,7 @@ class OIRValidator:
                 oir_query.response.json,
             )
             if errors:
-                _fail_with_schema_errors(check, errors, t_dss)
+                fail_with_schema_errors(check, errors, t_dss)
                 return False
 
         return True
@@ -375,7 +378,7 @@ class OIRValidator:
                 fetched_oir.response.json,
             )
             if errors:
-                _fail_with_schema_errors(check, errors, t_dss)
+                fail_with_schema_errors(check, errors, t_dss)
 
         parsed_resp = fetched_oir.parse_json_result(
             GetOperationalIntentReferenceResponse
@@ -455,7 +458,7 @@ class OIRValidator:
                 search_response.response.json,
             )
             if errors:
-                _fail_with_schema_errors(check, errors, t_dss)
+                fail_with_schema_errors(check, errors, t_dss)
 
     def validate_deleted_oir(
         self,
@@ -478,7 +481,7 @@ class OIRValidator:
                 deleted_oir.response.json,
             )
             if errors:
-                _fail_with_schema_errors(check, errors, t_dss)
+                fail_with_schema_errors(check, errors, t_dss)
 
         oir_resp = deleted_oir.parse_json_result(
             ChangeOperationalIntentReferenceResponse
@@ -494,23 +497,3 @@ class OIRValidator:
             previous_version=None,
             expected_version=expected_version,
         )
-
-
-def _fail_with_schema_errors(
-    check: PendingCheck,
-    errors: List[schema_validation.ValidationError],
-    t_dss: datetime,
-) -> None:
-    """
-    Fail the passed check with the passed schema validation errors.
-    Note:
-        The main check IS NOT failed:
-        The main check pertains to the CONTENT of the response but not its FORMAT.
-    """
-    details = "\n".join(f"[{e.json_path}] {e.message}" for e in errors)
-    check.record_failed(
-        summary="Response format was invalid",
-        details="Found the following schema validation errors in the DSS response:\n"
-        + details,
-        query_timestamps=[t_dss],
-    )
