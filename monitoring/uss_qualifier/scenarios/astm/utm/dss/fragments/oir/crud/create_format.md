@@ -1,4 +1,4 @@
-# Update operational intent reference response format test step fragment
+# Create operational intent reference response format test step fragment
 
 This test step fragment validates that an operational intent references creation returns a body in the correct format.
 

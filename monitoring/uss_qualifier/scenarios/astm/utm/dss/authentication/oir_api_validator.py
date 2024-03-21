@@ -312,7 +312,7 @@ class OperationalIntentRefAuthValidator:
             ) as check:
                 if no_scope_q.status_code != 401:
                     check.record_failed(
-                        summary=f"Expected 403, got {no_scope_q.status_code}",
+                        summary=f"Expected 401, got {no_scope_q.status_code}",
                         query_timestamps=[no_scope_q.request.timestamp],
                     )
                 self._sanity_check_oir_not_updated(check, no_scope_q)
@@ -400,7 +400,7 @@ class OperationalIntentRefAuthValidator:
             ) as check:
                 if no_scope_q.status_code != 401:
                     check.record_failed(
-                        summary=f"Expected 403, got {no_scope_q.status_code}",
+                        summary=f"Expected 401, got {no_scope_q.status_code}",
                         query_timestamps=[no_scope_q.request.timestamp],
                     )
             self._gen_val.verify_4xx_response(no_scope_q)
