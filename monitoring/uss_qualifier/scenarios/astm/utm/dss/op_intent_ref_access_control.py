@@ -196,9 +196,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                         query_timestamps=[q.request.timestamp],
                     )
         if q.response.status_code != 404:
-            with self.check(
-                "Operational intent references removed", self._pid
-            ) as check:
+            with self.check("Operational intent reference removed", self._pid) as check:
                 try:
                     (_, notifs, dq) = self._dss_separate_creds.delete_op_intent(
                         self._oid_2, oi_ref.ovn
@@ -237,7 +235,7 @@ class OpIntentReferenceAccessControl(TestScenario):
             # We look for an op_intent where the uss_qualifier is the manager;
             if op_intent.manager == self._dss.client.auth_adapter.get_sub():
                 with self.check(
-                    "Operational intent references removed",
+                    "Operational intent reference removed",
                     self._pid,
                 ) as check:
                     try:
@@ -279,7 +277,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 == self._dss_separate_creds.client.auth_adapter.get_sub()
             ):
                 with self.check(
-                    "Operational intent references removed",
+                    "Operational intent reference removed",
                     self._pid,
                 ) as check:
                     try:
