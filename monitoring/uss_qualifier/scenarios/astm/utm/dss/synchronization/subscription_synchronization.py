@@ -5,10 +5,11 @@ import loguru
 from uas_standards.astm.f3548.v21.api import Subscription, SubscriptionID
 from uas_standards.astm.f3548.v21.constants import Scope
 
-from monitoring.monitorlib import geo
+from monitoring.monitorlib import geo, schema_validation
 from monitoring.monitorlib.geo import Volume3D
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
+from monitoring.monitorlib.schema_validation import F3548_21
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -21,6 +22,9 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
 )
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators import (
+    fail_with_schema_errors,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators.subscription_validator import (
     SubscriptionValidator,
 )
@@ -252,7 +256,7 @@ class SubscriptionSynchronization(TestScenario):
                 )
 
         with self.check(
-            "Create subscription response is correct", [self._primary_pid]
+            "Create subscription response content is correct", [self._primary_pid]
         ) as check:
             SubscriptionValidator(
                 check,
@@ -488,22 +492,18 @@ class SubscriptionSynchronization(TestScenario):
                     query_timestamps=[fetched_sub.request.timestamp],
                 )
 
+        # Finally, validate the response schema
         with self.check(
-            "Subscription returned by a secondary DSS is valid and correct",
-            [secondary_dss.participant_id, self._primary_pid],
+            "Get subscription response format conforms to spec",
+            secondary_dss.participant_id,
         ) as check:
-            # Do a full validation of the subscription as a sanity check
-            SubscriptionValidator(
-                check,
-                self,
-                [secondary_dss.participant_id],
-                expected_sub_params,
-            ).validate_fetched_subscription(
-                expected_sub_id=expected_sub_params.sub_id,
-                fetched_sub=fetched_sub,
-                expected_version=self._current_subscription.version,
-                is_implicit=False,
+            errors = schema_validation.validate(
+                F3548_21.OpenAPIPath,
+                F3548_21.GetSubscriptionResponse,
+                fetched_sub.response.json,
             )
+            if errors:
+                fail_with_schema_errors(check, errors, fetched_sub.request.timestamp)
 
     def _compare_upsert_resp_with_params(
         self,
@@ -516,25 +516,19 @@ class SubscriptionSynchronization(TestScenario):
         Verify that the response of the server is conforming to the spec and the parameters we used in the request.
         """
         check_name = (
-            "Response to subscription mutation contains a subscription"
+            "Mutate subscription response content is correct"
             if was_mutated
-            else "Response to subscription creation contains a subscription"
+            else "Create subscription response content is correct"
         )
-        with self.check(
-            check_name,
-            [self._primary_pid],
-        ) as check:
+
+        with self.check(check_name, [self._primary_pid]) as check:
             if not creation_resp_under_test.subscription:
                 check.record_failed(
                     "Response to subscription creation did not contain a subscription",
-                    details="A subscription is expected to be returned in the response to a subscription creation request."
+                    details=f"A subscription is expected to be returned in the response. "
                     f"Parameters used: {creation_params}",
                     query_timestamps=[creation_resp_under_test.request.timestamp],
                 )
-
-        with self.check(
-            "Mutate subscription response format conforms to spec", [self._primary_pid]
-        ) as check:
             SubscriptionValidator(
                 check,
                 self,
@@ -630,7 +624,7 @@ class SubscriptionSynchronization(TestScenario):
                 return False
 
         with self.check(
-            "Delete subscription response format conforms to spec",
+            "Delete subscription response content is correct",
             [dss_instance.participant_id],
         ) as check:
             SubscriptionValidator(
