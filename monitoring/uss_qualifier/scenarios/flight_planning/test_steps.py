@@ -1,5 +1,11 @@
 import inspect
 from typing import Optional, Tuple, Iterable, Set, Dict, Union
+
+from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
+    BasicFlightPlanInformationUsageState,
+    BasicFlightPlanInformationUasState,
+)
+
 from monitoring.monitorlib.clients.flight_planning.client import PlanningActivityError
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
@@ -34,16 +40,24 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 
 def expect_flight_intent_state(
-    flight_intent: InjectFlightRequest,
-    expected_state: OperationalIntentState,
+    flight_intent: Union[InjectFlightRequest, FlightInfo],
+    expected_usage_state: BasicFlightPlanInformationUsageState,
+    expected_uas_state: BasicFlightPlanInformationUasState,
     scenario: TestScenarioType,
 ) -> None:
     """Confirm that provided flight intent test data has the expected state or raise a ValueError."""
-    if flight_intent.operational_intent.state != expected_state:
-        function_name = str(inspect.stack()[1][3])
-        test_step = scenario.current_step_name()
+    if isinstance(flight_intent, InjectFlightRequest):
+        flight_intent = FlightInfo.from_scd_inject_flight_request(flight_intent)
+
+    function_name = str(inspect.stack()[1][3])
+    test_step = scenario.current_step_name()
+    if flight_intent.basic_information.usage_state != expected_usage_state:
         raise ValueError(
-            f"Error in test data: operational intent state for {function_name} during test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `{expected_state}`, but got `{flight_intent.operational_intent.state}` instead"
+            f"Error in test data: usage state for {function_name} during test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `{expected_usage_state}`, but got `{flight_intent.basic_information.usage_state}` instead"
+        )
+    if flight_intent.basic_information.uas_state != expected_uas_state:
+        raise ValueError(
+            f"Error in test data: UAS state for {function_name} during test step '{test_step}' in scenario '{scenario.documentation.name}' is expected to be `{expected_uas_state}`, but got `{flight_intent.basic_information.uas_state}` instead"
         )
 
 
@@ -62,7 +76,12 @@ def plan_flight_intent(
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
     """
-    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
+    expect_flight_intent_state(
+        flight_intent,
+        BasicFlightPlanInformationUsageState.Planned,
+        BasicFlightPlanInformationUasState.Nominal,
+        scenario,
+    )
 
     resp, flight_id, advisories = submit_flight_intent(
         scenario,
@@ -90,7 +109,10 @@ def activate_flight_intent(
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario
+        flight_intent,
+        BasicFlightPlanInformationUsageState.InUse,
+        BasicFlightPlanInformationUasState.Nominal,
+        scenario,
     )
 
     resp, _, _ = submit_flight_intent(
@@ -119,7 +141,12 @@ def modify_planned_flight_intent(
 
     Returns: The injection response.
     """
-    expect_flight_intent_state(flight_intent, OperationalIntentState.Accepted, scenario)
+    expect_flight_intent_state(
+        flight_intent,
+        BasicFlightPlanInformationUsageState.Planned,
+        BasicFlightPlanInformationUasState.Nominal,
+        scenario,
+    )
 
     resp, _, _ = submit_flight_intent(
         scenario,
@@ -150,7 +177,10 @@ def modify_activated_flight_intent(
     Returns: The injection response.
     """
     expect_flight_intent_state(
-        flight_intent, OperationalIntentState.Activated, scenario
+        flight_intent,
+        BasicFlightPlanInformationUsageState.InUse,
+        BasicFlightPlanInformationUasState.Nominal,
+        scenario,
     )
 
     if preexisting_conflict:
