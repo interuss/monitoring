@@ -35,10 +35,8 @@ def plan_priority_conflict_flight_intent(
     """
     expect_flight_intent_state(
         flight_intent,
-        (
-            BasicFlightPlanInformationUsageState.Planned,
-            BasicFlightPlanInformationUasState.Nominal,
-        ),
+        BasicFlightPlanInformationUsageState.Planned,
+        BasicFlightPlanInformationUasState.Nominal,
         scenario,
     )
 
@@ -72,10 +70,8 @@ def modify_planned_priority_conflict_flight_intent(
     """
     expect_flight_intent_state(
         flight_intent,
-        (
-            BasicFlightPlanInformationUsageState.Planned,
-            BasicFlightPlanInformationUasState.Nominal,
-        ),
+        BasicFlightPlanInformationUsageState.Planned,
+        BasicFlightPlanInformationUasState.Nominal,
         scenario,
     )
 
@@ -110,10 +106,8 @@ def activate_priority_conflict_flight_intent(
     """
     expect_flight_intent_state(
         flight_intent,
-        (
-            BasicFlightPlanInformationUsageState.InUse,
-            BasicFlightPlanInformationUasState.Nominal,
-        ),
+        BasicFlightPlanInformationUsageState.InUse,
+        BasicFlightPlanInformationUasState.Nominal,
         scenario,
     )
 
@@ -148,10 +142,8 @@ def modify_activated_priority_conflict_flight_intent(
     """
     expect_flight_intent_state(
         flight_intent,
-        (
-            BasicFlightPlanInformationUsageState.InUse,
-            BasicFlightPlanInformationUasState.Nominal,
-        ),
+        BasicFlightPlanInformationUsageState.InUse,
+        BasicFlightPlanInformationUasState.Nominal,
         scenario,
     )
 
@@ -185,10 +177,8 @@ def plan_conflict_flight_intent(
     """
     expect_flight_intent_state(
         flight_intent,
-        (
-            BasicFlightPlanInformationUsageState.Planned,
-            BasicFlightPlanInformationUasState.Nominal,
-        ),
+        BasicFlightPlanInformationUsageState.Planned,
+        BasicFlightPlanInformationUasState.Nominal,
         scenario,
     )
 
@@ -222,10 +212,8 @@ def modify_planned_conflict_flight_intent(
     """
     expect_flight_intent_state(
         flight_intent,
-        (
-            BasicFlightPlanInformationUsageState.Planned,
-            BasicFlightPlanInformationUasState.Nominal,
-        ),
+        BasicFlightPlanInformationUsageState.Planned,
+        BasicFlightPlanInformationUasState.Nominal,
         scenario,
     )
 
@@ -260,10 +248,8 @@ def activate_conflict_flight_intent(
     """
     expect_flight_intent_state(
         flight_intent,
-        (
-            BasicFlightPlanInformationUsageState.InUse,
-            BasicFlightPlanInformationUasState.Nominal,
-        ),
+        BasicFlightPlanInformationUsageState.InUse,
+        BasicFlightPlanInformationUasState.Nominal,
         scenario,
     )
 
@@ -298,10 +284,8 @@ def modify_activated_conflict_flight_intent(
     """
     expect_flight_intent_state(
         flight_intent,
-        (
-            BasicFlightPlanInformationUsageState.InUse,
-            BasicFlightPlanInformationUasState.Nominal,
-        ),
+        BasicFlightPlanInformationUsageState.InUse,
+        BasicFlightPlanInformationUasState.Nominal,
         scenario,
     )
 
@@ -339,10 +323,8 @@ def plan_permitted_conflict_flight_intent(
     """
     expect_flight_intent_state(
         flight_intent,
-        (
-            BasicFlightPlanInformationUsageState.Planned,
-            BasicFlightPlanInformationUasState.Nominal,
-        ),
+        BasicFlightPlanInformationUsageState.Planned,
+        BasicFlightPlanInformationUasState.Nominal,
         scenario,
     )
 
@@ -375,10 +357,8 @@ def modify_planned_permitted_conflict_flight_intent(
     """
     expect_flight_intent_state(
         flight_intent,
-        (
-            BasicFlightPlanInformationUsageState.Planned,
-            BasicFlightPlanInformationUasState.Nominal,
-        ),
+        BasicFlightPlanInformationUsageState.Planned,
+        BasicFlightPlanInformationUasState.Nominal,
         scenario,
     )
 
@@ -412,10 +392,8 @@ def activate_permitted_conflict_flight_intent(
     """
     expect_flight_intent_state(
         flight_intent,
-        (
-            BasicFlightPlanInformationUsageState.InUse,
-            BasicFlightPlanInformationUasState.Nominal,
-        ),
+        BasicFlightPlanInformationUsageState.InUse,
+        BasicFlightPlanInformationUasState.Nominal,
         scenario,
     )
 
@@ -449,10 +427,8 @@ def modify_activated_permitted_conflict_flight_intent(
     """
     expect_flight_intent_state(
         flight_intent,
-        (
-            BasicFlightPlanInformationUsageState.InUse,
-            BasicFlightPlanInformationUasState.Nominal,
-        ),
+        BasicFlightPlanInformationUsageState.InUse,
+        BasicFlightPlanInformationUasState.Nominal,
         scenario,
     )
 
