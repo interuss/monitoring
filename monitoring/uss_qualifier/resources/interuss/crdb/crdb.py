@@ -84,6 +84,7 @@ class CockroachDBNode(object):
         return crdb.connect(
             host=self.host,
             port=self.port,
+            user="dummy",
             **kwargs,
         )
 
