@@ -1,4 +1,3 @@
-import random
 from datetime import datetime, timedelta
 
 from uas_standards.astm.f3548.v21.constants import (
@@ -17,6 +16,9 @@ from monitoring.uss_qualifier.resources.interuss.id_generator import IDGenerator
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.generic import (
     GenericAuthValidator,
+)
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.oir_api_validator import (
+    OperationalIntentRefAuthValidator,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.sub_api_validator import (
     SubscriptionAuthValidator,
@@ -132,6 +134,19 @@ class AuthenticationValidation(TestScenario):
             test_missing_scope=self._test_missing_scope,
         )
 
+        self._oir_validator = OperationalIntentRefAuthValidator(
+            scenario=self,
+            generic_validator=generic_validator,
+            dss=self._dss,
+            test_id=self._test_id,
+            planning_area=self._planning_area,
+            planning_area_volume4d=self._planning_area_volume4d,
+            no_auth_session=self._no_auth_session,
+            invalid_token_session=self._invalid_token_session,
+            test_wrong_scope=self._wrong_scope,
+            test_missing_scope=self._test_missing_scope,
+        )
+
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
         self._setup_case()
@@ -152,6 +167,11 @@ class AuthenticationValidation(TestScenario):
 
         self.begin_test_step("Subscription endpoints authentication")
         self._sub_validator.verify_sub_endpoints_authentication()
+
+        self.end_test_step()
+
+        self.begin_test_step("Operational intents endpoints authentication")
+        self._oir_validator.verify_oir_endpoints_authentication()
         self.end_test_step()
 
         self.end_test_case()
@@ -173,6 +193,10 @@ class AuthenticationValidation(TestScenario):
         self.end_test_step()
 
     def _ensure_test_entities_dont_exist(self):
+
+        # Drop OIR's first: subscriptions may be tied to them and can't be deleted
+        # as long as they exist
+        test_step_fragments.cleanup_op_intent(self, self._dss, self._test_id)
         test_step_fragments.cleanup_sub(self, self._dss, self._test_id)
 
     def _ensure_no_active_subs_exist(self):

@@ -10,6 +10,9 @@ from monitoring.monitorlib.schema_validation import F3548_21
 from monitoring.uss_qualifier.resources.astm.f3548.v21.subscription_params import (
     SubscriptionParams,
 )
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators import (
+    fail_with_schema_errors,
+)
 from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenario
 
 TIME_TOLERANCE_SEC = 1
@@ -69,23 +72,6 @@ class SubscriptionValidator:
             summary=f"Invalid subscription returned by the DSS: {summary}",
             details=details,
             query_timestamps=[t_dss],
-        )
-
-    def _fail_with_schema_errors(
-        self,
-        check: PendingCheck,
-        errors: List[schema_validation.ValidationError],
-        t_dss: datetime,
-    ) -> None:
-        """Fail the passed check with the passed schema validation errors, and fail
-        the main check with the passed details."""
-        details = "\n".join(f"[{e.json_path}] {e.message}" for e in errors)
-        self._fail_sub_check(
-            check,
-            summary="Response format was invalid",
-            details="Found the following schema validation errors in the DSS response:\n"
-            + details,
-            t_dss=t_dss,
         )
 
     def _validate_sub(
@@ -304,7 +290,7 @@ class SubscriptionValidator:
                 new_sub.response.json,
             )
             if errors:
-                self._fail_with_schema_errors(check, errors, t_dss)
+                fail_with_schema_errors(check, errors, t_dss)
 
     def validate_created_subscription(
         self, expected_sub_id: SubscriptionID, new_sub: MutatedSubscription
@@ -407,7 +393,7 @@ class SubscriptionValidator:
                 fetched_sub.response.json,
             )
             if errors:
-                self._fail_with_schema_errors(check, errors, t_dss)
+                fail_with_schema_errors(check, errors, t_dss)
 
         # Validate the subscription itself
         self._validate_sub(
@@ -482,7 +468,7 @@ class SubscriptionValidator:
                 searched_subscriptions.response.json,
             )
             if errors:
-                self._fail_with_schema_errors(check, errors, t_dss)
+                fail_with_schema_errors(check, errors, t_dss)
 
     def validate_deleted_subscription(
         self,
@@ -509,7 +495,7 @@ class SubscriptionValidator:
                 deleted_subscription.response.json,
             )
             if errors:
-                self._fail_with_schema_errors(check, errors, t_dss)
+                fail_with_schema_errors(check, errors, t_dss)
 
         # Validate the subscription itself
         self._validate_sub(
