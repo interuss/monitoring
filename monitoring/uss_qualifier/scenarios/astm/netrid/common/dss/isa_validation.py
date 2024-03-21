@@ -49,9 +49,6 @@ class ISAValidation(GenericTestScenario):
         self._isa_version: Optional[str] = None
         self._isa = isa.specification
 
-        now = arrow.utcnow().datetime
-        self._isa_start_time = self._isa.shifted_time_start(now)
-        self._isa_end_time = self._isa.shifted_time_end(now)
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
 
         self._huge_area = [
@@ -72,6 +69,8 @@ class ISAValidation(GenericTestScenario):
             ValueError(f"Unsupported RID version '{self._dss.rid_version}'")
 
     def run(self, context: ExecutionContext):
+        self._shift_isa_time()
+
         self.begin_test_scenario(context)
 
         self._setup_case()
@@ -92,6 +91,11 @@ class ISAValidation(GenericTestScenario):
         self.end_test_step()
         self.end_test_case()
         self.end_test_scenario()
+
+    def _shift_isa_time(self):
+        now = arrow.utcnow().datetime
+        self._isa_start_time = self._isa.shifted_time_start(now)
+        self._isa_end_time = self._isa.shifted_time_end(now)
 
     def _setup_case(self):
         self.begin_test_case("Setup")

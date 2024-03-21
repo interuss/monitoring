@@ -67,10 +67,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
         self._isa_versions: Dict[str, str] = {}
         self._isa = isa.specification
-
-        now = arrow.utcnow().datetime
-        self._isa_start_time = self._isa.shifted_time_start(now)
-        self._isa_end_time = self._isa.shifted_time_end(now)
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
 
         # Note that when the test scenario ends prematurely, we may end up with an unclosed session.
@@ -86,14 +82,16 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         # we could improve the test by having unique parameters per ISA
         self._isa_params = dict(
             area_vertices=self._isa_area,
-            start_time=self._isa_start_time,
-            end_time=self._isa_end_time,
+            start_time=None,
+            end_time=None,
             uss_base_url=self._isa.base_url,
             alt_lo=self._isa.altitude_min,
             alt_hi=self._isa.altitude_max,
         )
 
     def run(self, context: ExecutionContext):
+        self._shift_isa_time()
+
         self.begin_test_scenario(context)
 
         self.begin_test_case("Setup")
@@ -130,6 +128,11 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
         self.end_test_case()
         self.end_test_scenario()
+
+    def _shift_isa_time(self):
+        now = arrow.utcnow().datetime
+        self._isa_params["start_time"] = self._isa.shifted_time_start(now)
+        self._isa_params["end_time"] = self._isa.shifted_time_end(now)
 
     def _delete_isas_if_exists(self):
         """Delete test ISAs if they exist. Done sequentially."""

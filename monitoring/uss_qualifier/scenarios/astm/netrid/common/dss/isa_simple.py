@@ -39,16 +39,14 @@ class ISASimple(GenericTestScenario):
         self._isa_id = id_generator.id_factory.make_id(ISASimple.ISA_TYPE)
         self._isa_version: Optional[str] = None
         self._isa = isa.specification
-
-        now = arrow.utcnow().datetime
-        self._isa_start_time = self._isa.shifted_time_start(now)
-        self._isa_end_time = self._isa.shifted_time_end(now)
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
         self._huge_area = [
             v.as_s2sphere() for v in problematically_big_area.specification.vertices
         ]
 
     def run(self, context: ExecutionContext):
+        self._shift_isa_time()
+
         self.begin_test_scenario(context)
 
         self._setup_case()
@@ -57,6 +55,11 @@ class ISASimple(GenericTestScenario):
         self._delete_isa_case()
 
         self.end_test_scenario()
+
+    def _shift_isa_time(self):
+        now = arrow.utcnow().datetime
+        self._isa_start_time = self._isa.shifted_time_start(now)
+        self._isa_end_time = self._isa.shifted_time_end(now)
 
     def _setup_case(self):
         self.begin_test_case("Setup")

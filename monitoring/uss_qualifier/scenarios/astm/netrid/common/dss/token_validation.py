@@ -48,9 +48,6 @@ class TokenValidation(GenericTestScenario):
         self._isa_version: Optional[str] = None
         self._isa = isa.specification
 
-        now = arrow.utcnow().datetime
-        self._isa_start_time = self._isa.shifted_time_start(now)
-        self._isa_end_time = self._isa.shifted_time_end(now)
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
 
         # correctly formed and signed using an unrecognized private key
@@ -65,6 +62,8 @@ class TokenValidation(GenericTestScenario):
         )
 
     def run(self, context: ExecutionContext):
+        self._shift_isa_time()
+
         self.begin_test_scenario(context)
 
         self.begin_test_case("Setup")
@@ -88,6 +87,11 @@ class TokenValidation(GenericTestScenario):
         self.end_test_case()
 
         self.end_test_scenario()
+
+    def _shift_isa_time(self):
+        now = arrow.utcnow().datetime
+        self._isa_start_time = self._isa.shifted_time_start(now)
+        self._isa_end_time = self._isa.shifted_time_end(now)
 
     def _wrong_auth_put(self):
         # Try to create an ISA with a read scope
