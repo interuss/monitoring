@@ -173,6 +173,146 @@ it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../require
 If the DSS does not allow searching for subscriptions when valid credentials are presented,
 it is in violation of **[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**.
 
+### Operational intents endpoints authentication test step
+
+#### 🛑 Unauthorized requests return the proper error message body check
+
+If the DSS under test does not return a proper error message body when an unauthorized request is received,
+it fails to properly implement the OpenAPI specification that is part of **[astm.f3548.v21.DSS0005,1](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Create operational intent reference with missing credentials check
+
+If the DSS under test allows the creation of an operational intent without any credentials being presented,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Create operational intent reference with invalid credentials check
+
+If the DSS under test allows the creation of an operational intent with credentials that are well-formed but invalid,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Create operational intent reference with missing scope check
+
+If the DSS under test allows the creation of an operational intent with valid credentials but a missing scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Create operational intent reference with incorrect scope check
+
+If the DSS under test allows the creation of an operational intent with valid credentials but an incorrect scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Create operational intent reference with valid credentials check
+
+If the DSS does not allow the creation of an operational intent when valid credentials are presented,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### [Create response format](../fragments/oir/crud/create_format.md)
+
+Check response format of a creation request.
+
+#### 🛑 Get operational intent reference with missing credentials check
+
+If the DSS under test allows the fetching of an operational intent without any credentials being presented,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Get operational intent reference with invalid credentials check
+
+If the DSS under test allows the fetching of an operational intent with credentials that are well-formed but invalid,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Get operational intent reference with missing scope check
+
+If the DSS under test allows the fetching of an operational intent with valid credentials but a missing scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Get operational intent reference with incorrect scope check
+
+If the DSS under test allows the fetching of an operational intent with valid credentials but an incorrect scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Get operational intent reference with valid credentials check
+
+If the DSS does not allow fetching an operational intent when valid credentials are presented,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Mutate operational intent reference with missing credentials check
+
+If the DSS under test allows the mutation of an operational intent without any credentials being presented,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Mutate operational intent reference with invalid credentials check
+
+If the DSS under test allows the mutation of an operational intent with credentials that are well-formed but invalid,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Mutate operational intent reference with missing scope check
+
+If the DSS under test allows the mutation of an operational intent with valid credentials but a missing scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Mutate operational intent reference with incorrect scope check
+
+If the DSS under test allows the mutation of an operational intent with valid credentials but an incorrect scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Mutate operational intent reference with valid credentials check
+
+If the DSS does not allow the mutation of an operational intent when valid credentials are presented,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### [Mutate response format](../fragments/oir/crud/update_format.md)
+
+Check response format of a mutation.
+
+#### 🛑 Delete operational intent reference with missing credentials check
+
+If the DSS under test allows the deletion of an operational intent without any credentials being presented,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Delete operational intent reference with invalid credentials check
+
+If the DSS under test allows the deletion of an operational intent with credentials that are well-formed but invalid,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Delete operational intent reference with missing scope check
+
+If the DSS under test allows the deletion of an operational intent with valid credentials but a missing scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Delete operational intent reference with incorrect scope check
+
+If the DSS under test allows the deletion of an operational intent with valid credentials but an incorrect scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Delete operational intent reference with valid credentials check
+
+If the DSS does not allow the deletion of an operational intent when valid credentials are presented,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Search operational intent references with missing credentials check
+
+If the DSS under test allows searching for operational intents without any credentials being presented,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Search operational intent references with invalid credentials check
+
+If the DSS under test allows searching for operational intents with credentials that are well-formed but invalid,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Search operational intent references with missing scope check
+
+If the DSS under test allows searching for operational intents with valid credentials but a missing scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Search operational intent references with incorrect scope check
+
+If the DSS under test allows searching for operational intents with valid credentials but an incorrect scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Search operational intent references with valid credentials check
+
+If the DSS does not allow searching for operational intents when valid credentials are presented,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../requirements/astm/f3548/v21.md)**.
+
 ## [Cleanup](../clean_workspace.md)
 
 The cleanup phase of this test scenario removes the subscription with the known test ID if it has not been removed before.
