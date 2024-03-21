@@ -59,6 +59,17 @@ class F3548_21(str, Enum):
     QuerySubscriptionsResponse = "components.schemas.QuerySubscriptionsResponse"
     DeleteSubscriptionResponse = "components.schemas.DeleteSubscriptionResponse"
 
+    ChangeOperationalIntentReferenceResponse = (
+        "components.schemas.ChangeOperationalIntentReferenceResponse"
+    )
+    GetOperationalIntentReferenceResponse = (
+        "components.schemas.GetOperationalIntentReferenceResponse"
+    )
+    QueryOperationalIntentReferenceResponse = (
+        "components.schemas.QueryOperationalIntentReferenceResponse"
+    )
+    AirspaceConflictResponse = "components.schemas.AirspaceConflictResponse"
+
 
 _openapi_content_cache: Dict[str, dict] = {}
 
