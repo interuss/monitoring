@@ -65,7 +65,7 @@ def cleanup_sub(
         if deleted_sub.status_code != 200:
             check.record_failed(
                 summary=f"Could not delete subscription {sub_id}",
-                details=f"When attempting to delete subscription {sub_id} from the DSS, received {deleted_sub.status_code}",
+                details=f"When attempting to delete subscription {sub_id} from the DSS, received {deleted_sub.status_code} with body {deleted_sub.error_message}",
                 query_timestamps=[deleted_sub.request.timestamp],
             )
 
