@@ -20,6 +20,7 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
 from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
     SubscriptionParams,
 )
+from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators import (
@@ -45,8 +46,14 @@ class SubscriptionSynchronization(TestScenario):
     """
 
     SUB_TYPE = register_resource_type(379, "Subscription")
+    ACL_SUB_TYPE = register_resource_type(
+        381, "Subscription with different credentials"
+    )
 
     _dss: DSSInstance
+
+    # Separate DSS client for testing manager synchronization
+    _dss_separate_creds: Optional[DSSInstance]
 
     _dss_read_instances: List[DSSInstance]
 
@@ -55,6 +62,11 @@ class SubscriptionSynchronization(TestScenario):
 
     # Extra sub IDs for testing only deletions
     _ids_for_deletion: List[SubscriptionID]
+
+    # Extra sub id for testing manager sync
+    _acl_sub_id: SubscriptionID
+    # The extra subscription for testing manager sync
+    _current_acl_sub: Subscription
 
     # Base parameters used for subscription creation
     _sub_params: SubscriptionParams
@@ -71,6 +83,7 @@ class SubscriptionSynchronization(TestScenario):
         other_instances: DSSInstancesResource,
         id_generator: IDGeneratorResource,
         planning_area: PlanningAreaResource,
+        second_utm_auth: Optional[AuthAdapterResource] = None,
     ):
         """
         Args:
@@ -105,6 +118,7 @@ class SubscriptionSynchronization(TestScenario):
             for i in range(1, len(self._dss_read_instances) + 1)
         ]
 
+        self._acl_sub_id = id_generator.id_factory.make_id(self.ACL_SUB_TYPE)
         self._planning_area = planning_area.specification
 
         # Build a ready-to-use 4D volume with no specified time for searching
@@ -144,6 +158,14 @@ class SubscriptionSynchronization(TestScenario):
             notify_for_constraints=False,
         )
 
+        if second_utm_auth is not None:
+            # Build a second DSSWrapper identical to the first but with the other auth adapter
+            self._dss_separate_creds = self._dss.with_different_auth(
+                second_utm_auth, scopes_primary
+            )
+        else:
+            self._dss_separate_creds = None
+
     def run(self, context: ExecutionContext):
 
         # Check that we actually have at least one other DSS to test against:
@@ -154,7 +176,7 @@ class SubscriptionSynchronization(TestScenario):
             return
 
         self.begin_test_scenario(context)
-        self._setup_case()
+        self._step_setup_case()
         self.begin_test_case("Subscription Synchronization")
 
         self.begin_test_step("Create subscription validation")
@@ -162,7 +184,7 @@ class SubscriptionSynchronization(TestScenario):
         self.end_test_step()
 
         self.begin_test_step("Query newly created subscription")
-        self._query_secondaries_and_compare(self._sub_params)
+        self._step_query_secondaries_and_compare(self._sub_params)
         self.end_test_step()
 
         self.begin_test_step("Mutate subscription broadcast")
@@ -170,12 +192,23 @@ class SubscriptionSynchronization(TestScenario):
         self.end_test_step()
 
         self.begin_test_step("Query updated subscription")
-        self._query_secondaries_and_compare(self._sub_params)
+        self._step_query_secondaries_and_compare(self._sub_params)
         self.end_test_step()
 
-        self.begin_test_step("Mutate subscription on secondaries")
-        self._step_mutate_subscriptions_secondaries_shift_time()
-        self.end_test_step()
+        if self._dss_separate_creds:
+            self.begin_test_step("Create subscription with different credentials")
+            self._step_create_sub_separate_creds()
+            self.end_test_step()
+            self.begin_test_step("Verify manager synchronization")
+            self._step_test_delete_sub_with_separate_creds()
+            self.end_test_step()
+        else:
+            self.record_note(
+                "manager_check",
+                "Skipping manager synchronization check: no extra credentials provided",
+            )
+
+        self._repeat_steps_mutate_subscriptions_secondaries_shift_time()
 
         self.begin_test_step("Delete subscription on primary")
         self._step_delete_sub()
@@ -192,7 +225,7 @@ class SubscriptionSynchronization(TestScenario):
         self.end_test_case()
         self.end_test_scenario()
 
-    def _setup_case(self):
+    def _step_setup_case(self):
         self.begin_test_case("Setup")
         # Multiple runs of the scenario seem to rely on the same instance of it:
         # thus we need to reset the state of the scenario before running it.
@@ -214,6 +247,10 @@ class SubscriptionSynchronization(TestScenario):
         test_step_fragments.cleanup_sub(self, self._dss, self._sub_id)
         for sub_id in self._ids_for_deletion:
             test_step_fragments.cleanup_sub(self, self._dss, sub_id)
+        if self._dss_separate_creds:
+            test_step_fragments.cleanup_sub(
+                self, self._dss_separate_creds, self._acl_sub_id
+            )
 
     def _ensure_no_active_subs_exist(self):
         test_step_fragments.cleanup_active_subs(
@@ -267,7 +304,9 @@ class SubscriptionSynchronization(TestScenario):
 
         return newly_created.subscription
 
-    def _query_secondaries_and_compare(self, expected_sub_params: SubscriptionParams):
+    def _step_query_secondaries_and_compare(
+        self, expected_sub_params: SubscriptionParams
+    ):
         for secondary_dss in self._dss_read_instances:
             self._validate_get_sub_from_secondary(
                 secondary_dss=secondary_dss,
@@ -578,6 +617,69 @@ class SubscriptionSynchronization(TestScenario):
         # Update the parameters we used for that subscription
         self._sub_params = new_params
 
+    def _step_create_sub_separate_creds(self):
+        """Create a subscription on the main DSS with the separate credentials"""
+        params = self._sub_params.copy()
+        params.sub_id = self._acl_sub_id
+        with self.check(
+            "Create subscription query succeeds", [self._primary_pid]
+        ) as check:
+            acl_sub = self._dss_separate_creds.upsert_subscription(
+                **params,
+            )
+            self.record_query(acl_sub)
+            if not acl_sub.success:
+                check.record_failed(
+                    "Subscription creation with separate credentials failed",
+                    details=f"Subscription creation failed with status code {acl_sub.status_code} when attempted "
+                    f"with separate credentials: {acl_sub.error_message}",
+                    query_timestamps=[acl_sub.request.timestamp],
+                )
+            self._current_acl_sub = acl_sub.subscription
+
+    def _step_test_delete_sub_with_separate_creds(self):
+        """Check we can't delete the subscription created with separate credentials with the main credentials.
+        This is to confirm that the manager of the subscription is properly synced.
+        Note that if the separate credentials are for the same subject as the main one, the checks are skipped.
+        """
+
+        if not self._credentials_are_different():
+            self.record_note(
+                "manager_check",
+                "Skipping manager synchronization check: "
+                "separate credentials have the same subscriber as the main ones.",
+            )
+            return
+
+        # For each secondary dss, try to delete the subscription using the main credentials:
+        for secondary_dss in self._dss_read_instances:
+            deleted_sub = secondary_dss.delete_subscription(
+                sub_id=self._acl_sub_id, sub_version=self._current_acl_sub.version
+            )
+            self.record_query(deleted_sub)
+            with self.check(
+                "Subscription deletion with different non-managing credentials on secondary DSS fails",
+                [secondary_dss.participant_id],
+            ) as check:
+                if deleted_sub.status_code != 403:
+                    check.record_failed(
+                        "Subscription deletion with main credentials did not fail",
+                        details=f"Subscription deletion with main credentials did not fail with the expected "
+                        f"status code of 403; instead returned {deleted_sub.status_code}",
+                        query_timestamps=[deleted_sub.request.timestamp],
+                    )
+
+    def _credentials_are_different(self):
+        """
+        Checks the auth adapters for the subscription (jwt 'sub' field) they used and returns False if they are the same.
+        Note that both adapters need to have been used at least once before this check can be performed,
+        otherwise they have no token available.
+        """
+        return (
+            self._dss_separate_creds.client.auth_adapter.get_sub()
+            != self._dss.client.auth_adapter.get_sub()
+        )
+
     def _step_mutate_subscriptions_broadcast_shift_time(self):
         """Mutate the subscription on the primary DSS by adding 10 seconds to its start and end times"""
 
@@ -585,19 +687,23 @@ class SubscriptionSynchronization(TestScenario):
         new_params = sp.shift_time(timedelta(seconds=10))
         self._mutate_subscription_with_dss(self._dss, new_params, is_primary=True)
 
-    def _step_mutate_subscriptions_secondaries_shift_time(self):
+    def _repeat_steps_mutate_subscriptions_secondaries_shift_time(self):
         """Mutate the subscription on every secondary DSS by adding 10 seconds to its start and end times,
         then checking on every DSS that the response is valid and corresponds to the expected parameters."""
 
         for secondary_dss in self._dss_read_instances:
             # Mutate the subscription on the secondary DSS
+            self.begin_test_step("Mutate subscription on secondaries")
             self._mutate_subscription_with_dss(
                 secondary_dss,
                 self._sub_params.shift_time(timedelta(seconds=10)),
                 is_primary=False,
             )
+            self.end_test_step()
+            self.begin_test_step("Verify mutation on all secondaries")
             # Check that the mutation was propagated to every DSS:
-            self._query_secondaries_and_compare(self._sub_params)
+            self._step_query_secondaries_and_compare(self._sub_params)
+            self.end_test_step()
 
     def _delete_sub_from_dss(
         self,
