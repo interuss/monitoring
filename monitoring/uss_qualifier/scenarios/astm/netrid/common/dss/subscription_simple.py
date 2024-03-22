@@ -80,14 +80,6 @@ class SubscriptionSimple(GenericTestScenario):
             self._base_sub_id[:-1] + f"{i}" for i in range(4)
         ]
 
-        self._default_creation_params = self._isa.get_new_subscription_params(
-            sub_id="",  # subscription ID will need to be overwritten
-            # Set this slightly in the past: we will update the subscriptions
-            # to a later value that still needs to be roughly 'now' without getting into the future
-            start_time=datetime.now().astimezone() - timedelta(seconds=10),
-            duration=timedelta(minutes=10),
-        )
-
         self._problematically_big_area = [
             vertex.as_s2sphere()
             for vertex in problematically_big_area.specification.vertices
@@ -96,6 +88,8 @@ class SubscriptionSimple(GenericTestScenario):
         self._client_identity = client_identity
 
     def run(self, context: ExecutionContext):
+        self._initialize_creation_params()
+
         self.begin_test_scenario(context)
         self._setup_case()
         self.begin_test_case("Subscription Simple")
@@ -128,6 +122,15 @@ class SubscriptionSimple(GenericTestScenario):
 
         self.end_test_case()
         self.end_test_scenario()
+
+    def _initialize_creation_params(self):
+        self._default_creation_params = self._isa.get_new_subscription_params(
+            sub_id="",  # subscription ID will need to be overwritten
+            # Set this slightly in the past: we will update the subscriptions
+            # to a later value that still needs to be roughly 'now' without getting into the future
+            start_time=datetime.now().astimezone() - timedelta(seconds=10),
+            duration=timedelta(minutes=10),
+        )
 
     def _setup_case(self):
         self.begin_test_case("Setup")
@@ -608,7 +611,7 @@ class SubscriptionSimple(GenericTestScenario):
         with self.check(
             "Returned subscription owner is correct", [self._dss_wrapper.participant_id]
         ) as check:
-            client_sub = self._client_identity.subscriber()
+            client_sub = self._client_identity.subject()
             if sub_under_test.owner != client_sub:
                 check.record_failed(
                     "Returned subscription owner does not match provided one",

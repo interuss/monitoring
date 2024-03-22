@@ -701,7 +701,7 @@ def set_uss_down(
     return availability_version
 
 
-def make_report(
+def make_dss_report(
     scenario: TestScenarioType,
     dss: DSSInstance,
     exchange: ExchangeRecord,

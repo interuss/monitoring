@@ -196,9 +196,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                         query_timestamps=[q.request.timestamp],
                     )
         if q.response.status_code != 404:
-            with self.check(
-                "Operational intent references can be deleted by their owner", self._pid
-            ) as check:
+            with self.check("Operational intent reference removed", self._pid) as check:
                 try:
                     (_, notifs, dq) = self._dss_separate_creds.delete_op_intent(
                         self._oid_2, oi_ref.ovn
@@ -237,7 +235,7 @@ class OpIntentReferenceAccessControl(TestScenario):
             # We look for an op_intent where the uss_qualifier is the manager;
             if op_intent.manager == self._dss.client.auth_adapter.get_sub():
                 with self.check(
-                    "Operational intent references can be deleted by their owner",
+                    "Operational intent reference removed",
                     self._pid,
                 ) as check:
                     try:
@@ -279,7 +277,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 == self._dss_separate_creds.client.auth_adapter.get_sub()
             ):
                 with self.check(
-                    "Operational intent references can be deleted by their owner",
+                    "Operational intent reference removed",
                     self._pid,
                 ) as check:
                     try:
@@ -353,7 +351,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                     oi_id=self._oid_1,
                     extents=self._volumes1.to_f3548v21(),
                     key=[],
-                    state=OperationalIntentState.Accepted,
+                    state=self._flight1_planned.request.operational_intent.state,
                     base_url=DUMMY_USS_BASE_URL,
                 )
                 self.record_query(q1)
@@ -378,7 +376,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                     oi_id=self._oid_2,
                     extents=self._volumes2.to_f3548v21(),
                     key=[self._current_ref_1.ovn],
-                    state=OperationalIntentState.Accepted,
+                    state=self._flight2_planned.request.operational_intent.state,
                     base_url=DUMMY_USS_BASE_URL,
                 )
                 self.record_query(q2)
@@ -414,13 +412,13 @@ class OpIntentReferenceAccessControl(TestScenario):
             self._pid + self._uids,
         ) as check:
             try:
-                # Attempt to update the state of the intent created with the main credentials using the second credentials
+                # Attempt to update the uss_base_url of the intent created with the main credentials using the second credentials
                 (ref, notif, q) = self._dss_separate_creds.put_op_intent(
                     oi_id=self._oid_1,
                     extents=self._volumes1.to_f3548v21(),
                     key=[self._current_ref_2.ovn],
-                    state=OperationalIntentState.Accepted,
-                    base_url=self._current_ref_1.uss_base_url,
+                    state=self._flight1_planned.request.operational_intent.state,
+                    base_url=self._current_ref_1.uss_base_url + "/mutated",
                     ovn=self._current_ref_1.ovn,
                 )
                 self.record_query(q)

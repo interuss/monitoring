@@ -1,13 +1,13 @@
 import os.path
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import List, Dict, Type, TypeVar
+from typing import List, Dict, Type
 
 import bc_jsonpath_ng
 import jsonschema.validators
 import yaml
-
 from implicitdict import ImplicitDict
 from implicitdict.jsonschema import SchemaVars, make_json_schema
 
@@ -58,6 +58,17 @@ class F3548_21(str, Enum):
     GetSubscriptionResponse = "components.schemas.GetSubscriptionResponse"
     QuerySubscriptionsResponse = "components.schemas.QuerySubscriptionsResponse"
     DeleteSubscriptionResponse = "components.schemas.DeleteSubscriptionResponse"
+
+    ChangeOperationalIntentReferenceResponse = (
+        "components.schemas.ChangeOperationalIntentReferenceResponse"
+    )
+    GetOperationalIntentReferenceResponse = (
+        "components.schemas.GetOperationalIntentReferenceResponse"
+    )
+    QueryOperationalIntentReferenceResponse = (
+        "components.schemas.QueryOperationalIntentReferenceResponse"
+    )
+    AirspaceConflictResponse = "components.schemas.AirspaceConflictResponse"
 
 
 _openapi_content_cache: Dict[str, dict] = {}

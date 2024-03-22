@@ -40,10 +40,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
 
         self._isa_version: Optional[str] = None
         self._isa = isa.specification
-
-        now = arrow.utcnow().datetime
-        self._isa_start_time = self._isa.shifted_time_start(now)
-        self._isa_end_time = self._isa.shifted_time_end(now)
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
         self._slight_overlap_area = geo.generate_slight_overlap_area(self._isa_area)
 
@@ -51,21 +47,23 @@ class ISASubscriptionInteractions(GenericTestScenario):
             area_vertices=self._isa_area,
             alt_lo=self._isa.altitude_min,
             alt_hi=self._isa.altitude_max,
-            start_time=self._isa_start_time,
-            end_time=self._isa_end_time,
+            start_time=None,
+            end_time=None,
             uss_base_url=self._isa.base_url,
             isa_id=self._isa_id,
         )
         self._sub_params = dict(
             alt_lo=self._isa.altitude_min,
             alt_hi=self._isa.altitude_max,
-            start_time=self._isa_start_time,
-            end_time=self._isa_end_time,
+            start_time=None,
+            end_time=None,
             uss_base_url=self._isa.base_url,
             sub_id=self._sub_id,
         )
 
     def run(self, context: ExecutionContext):
+        self._shift_resources_time_relative_to_now()
+
         self.begin_test_scenario(context)
 
         self._setup_case()
@@ -95,6 +93,13 @@ class ISASubscriptionInteractions(GenericTestScenario):
 
         self.end_test_case()
         self.end_test_scenario()
+
+    def _shift_resources_time_relative_to_now(self):
+        now = arrow.utcnow().datetime
+        self._isa_params["start_time"] = self._isa.shifted_time_start(now)
+        self._isa_params["end_time"] = self._isa.shifted_time_end(now)
+        self._sub_params["start_time"] = self._isa.shifted_time_start(now)
+        self._sub_params["end_time"] = self._isa.shifted_time_end(now)
 
     def _new_subscription_in_isa_step(self):
         """

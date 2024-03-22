@@ -27,6 +27,6 @@ class IDGeneratorResource(Resource[IDGeneratorSpecification]):
     def id_factory(self) -> IDFactory:
         # Not thread safe, but the consequences here are acceptable
         if self._id_factory is None:
-            self._id_factory = IDFactory(self._client_identity.subscriber())
+            self._id_factory = IDFactory(self._client_identity.subject())
 
         return self._id_factory

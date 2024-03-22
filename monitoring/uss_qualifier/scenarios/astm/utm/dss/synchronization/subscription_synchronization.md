@@ -52,11 +52,6 @@ Verify that the subscription returned by the DSS under test is properly formatte
 
 Query the created subscription at every DSS provided in `dss_instances`.
 
-#### 🛑 Subscription returned by a secondary DSS is valid and correct check
-
-When queried for a subscription that was created via another DSS, a DSS instance is expected to provide a valid subscription.
-
-If it does not, it might be in violation of **[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
@@ -74,10 +69,10 @@ Verify that the subscription returned by every DSS is correctly formatted and co
 
 Verify that the version of the subscription returned by every DSS is as expected.
 
-### Mutate subscription test step
+### Mutate subscription broadcast test step
 
-This test step mutates the previously created subscription to verify that the DSS reacts properly: notably, it checks that the subscription version is updated,
-including for changes that are not directly visible, such as changing the subscription's footprint.
+This test step mutates the previously created subscription, by accessing the primary DSS, to verify that the update is propagated to all other DSSes.
+Notably, it checks that the subscription version is updated, including for changes that are not directly visible, such as changing the subscription's footprint.
 
 #### [Update subscription](../fragments/sub/crud/update.md)
 
@@ -95,17 +90,6 @@ Verify that the version of the subscription returned by the DSS has been updated
 
 Query the updated subscription at every DSS provided in `dss_instances`.
 
-#### 🛑 Subscription returned by a secondary DSS is valid and correct check
-
-When queried for a subscription that was mutated via another DSS, a DSS instance is expected to provide a valid subscription.
-
-If it does not, either one of the primary DSS or the DSS that returned the subscription is in violation of one of the following requirements:
-
-**[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**, if the API is not working as described by the OpenAPI specification;
-**[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)**, if the DSS through which the subscription was mutated is returning API calls to the client before having updated its underlying distributed storage.
-
-As a result, the DSS pool under test is failing to meet **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
-
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
 Confirm that the subscription that was just mutated is properly synchronized across all DSS instances.
@@ -122,9 +106,51 @@ Verify that the subscription returned by every DSS is correctly formatted and co
 
 Verify that the version of the subscription returned by every DSS is as expected.
 
-### Delete subscription test step
+### Mutate subscription on secondaries test step
 
-Attempt to delete the subscription in various ways and ensure that the DSS reacts properly.
+This test step attempts to mutate the subscription on every secondary DSS instance (that is, instances through which the subscription has not been created) to confirm that such mutations are properly propagated to every DSS.
+
+#### 🛑 Subscription can be mutated on secondary DSS check
+
+If the secondary DSS does not allow the subscription to be mutated, either the secondary DSS or the primary DSS are in violation of one or both of the following requirements:
+
+**[astm.f3548.v21.DSS0210,1b](../../../../../requirements/astm/f3548/v21.md)**, if the `manager` of the subscription fails to be taken into account (either because the primary DSS did not propagated it, or because the secondary failed to consider it);
+**[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**, if the secondary DSS fails to properly implement the API to mutate subscriptions.
+
+#### 🛑 Subscription returned by a secondary DSS is valid and correct check
+
+When queried for a subscription that was created via another DSS, a DSS instance is expected to provide a valid subscription.
+
+If it does not, it might be in violation of **[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### [Update subscription](../fragments/sub/crud/update.md)
+
+Confirm that the secondary DSS handles the update properly.
+
+#### [Subscription is synchronized](../fragments/sub/sync.md)
+
+Confirm that the subscription that was just mutated is properly synchronized across all DSS instances.
+
+#### [Get subscription](../fragments/sub/crud/read.md)
+
+Confirms that the subscription that was just mutated can be retrieved from any DSS, and that it has the expected content.
+
+#### [Validate subscription](../fragments/sub/validate/correctness.md)
+
+Verify that the subscription returned by the DSS is properly formatted and contains the correct content.
+
+#### [Validate version is updated by mutation](../fragments/sub/validate/mutated.md)
+
+Verify that the version of the subscription returned by the DSS the subscription was mutated through has been updated.
+
+#### [Validate new version is synced](../fragments/sub/validate/non_mutated.md)
+
+Verify that the new version of the subscription has been propagated.
+
+### Delete subscription on primary test step
+
+Attempt to delete the subscription that was created on the primary DSS through the primary DSS in various ways,
+and ensure that the DSS reacts properly.
 
 This also checks that the subscription data returned by a successful deletion is correct.
 
@@ -144,7 +170,33 @@ Verify that the version of the subscription returned by the DSS is as expected
 
 Attempt to query and search for the deleted subscription in various ways
 
-#### 🛑 Secondary DSS should not return the deleted subscription check
+#### 🛑 DSS should not return the deleted subscription check
+
+If a DSS returns a subscription that was previously successfully deleted from the primary DSS,
+either one of the primary DSS or the DSS that returned the subscription is in violation of one of the following requirements:
+
+**[astm.f3548.v21.DSS0210,1a](../../../../../requirements/astm/f3548/v21.md)**, if the API is not working as described by the OpenAPI specification;
+**[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)**, if the DSS through which the subscription was deleted is returning API calls to the client before having updated its underlying distributed storage.
+
+As a result, the DSS pool under test is failing to meet **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
+
+### Delete subscriptions on secondaries test step
+
+Attempt to delete subscriptions that were created through the primary DSS via the secondary DSS instances.
+
+#### [Delete subscription](../fragments/sub/crud/delete.md)
+
+Confirms that a subscription can be deleted from a secondary DSS
+
+#### [Validate subscription](../fragments/sub/validate/correctness.md)
+
+Verify that the subscription returned by the DSS via the deletion is properly formatted and contains the correct content.
+
+#### [Validate version](../fragments/sub/validate/non_mutated.md)
+
+Verify that the version of the subscription returned by the DSS is as expected
+
+#### 🛑 DSS should not return the deleted subscription check
 
 If a DSS returns a subscription that was previously successfully deleted from the primary DSS,
 either one of the primary DSS or the DSS that returned the subscription is in violation of one of the following requirements:
