@@ -1,5 +1,7 @@
 from typing import Optional, Dict
 
+from uas_standards.astm.f3548.v21.api import OperationalIntentReference
+
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
@@ -40,6 +42,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights_fp_client,
     plan_flight,
     activate_flight,
+    modify_planned_flight,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     OpIntentValidator,
@@ -52,12 +55,18 @@ from monitoring.uss_qualifier.scenarios.astm.utm.subscription_notifications.test
 class ReceiveNotificationsForAwareness(TestScenario):
     flight_1_planned: FlightInfoTemplate
     flight_2_planned: FlightInfoTemplate
+    flight_2_planned_modified: FlightInfoTemplate
     flight_1_activated: FlightInfoTemplate
 
     tested_uss_client: FlightPlannerClient
     mock_uss: MockUSSClient
     mock_uss_client: FlightPlannerClient
     dss: DSSInstance
+
+    flight_1_id: str
+    flight_1_oi_ref: OperationalIntentReference
+    flight_2_id: str
+    flight_2_oi_ref: OperationalIntentReference
 
     def __init__(
         self,
@@ -93,6 +102,13 @@ class ReceiveNotificationsForAwareness(TestScenario):
             ),
             ExpectedFlightIntent(
                 "flight_2_planned",
+                "Flight 2",
+                must_not_conflict_with=["Flight 1"],
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "flight_2_planned_modified",
                 "Flight 2",
                 must_not_conflict_with=["Flight 1"],
                 usage_state=AirspaceUsageState.Planned,
@@ -139,6 +155,12 @@ class ReceiveNotificationsForAwareness(TestScenario):
         self._receive_notification_successfully_when_activated_test_case(times)
         self.end_test_case()
 
+        self.begin_test_case(
+            "Modify Activated operational intent area and receive notification of relevant intent"
+        )
+        self._receive_notification_successfully_when_activated_modified_test_case(times)
+        self.end_test_case()
+
         self.end_test_scenario()
 
     def _receive_notification_successfully_when_activated_test_case(
@@ -161,14 +183,14 @@ class ReceiveNotificationsForAwareness(TestScenario):
                 self.tested_uss_client,
                 flight_1_planned,
             )
-            flight_1_oi_ref = validator.expect_shared(flight_1_planned)
+            self.flight_1_oi_ref = validator.expect_shared(flight_1_planned)
 
         with OpIntentValidator(
             self,
             self.tested_uss_client,
             self.dss,
             self._intents_extent,
-            flight_1_oi_ref,
+            self.flight_1_oi_ref,
         ) as validator:
             _, self.flight_1_id = activate_flight(
                 self,
@@ -176,10 +198,9 @@ class ReceiveNotificationsForAwareness(TestScenario):
                 flight_1_activated,
                 self.flight_1_id,
             )
-            flight_1_oi_ref = validator.expect_shared(flight_1_activated)
+            self.flight_1_oi_ref = validator.expect_shared(flight_1_activated)
 
         self.end_test_step()
-        subscription_id = flight_1_oi_ref.subscription_id
 
         self.begin_test_step("Mock_uss plans Flight 2")
         with OpIntentValidator(
@@ -188,13 +209,13 @@ class ReceiveNotificationsForAwareness(TestScenario):
             self.dss,
             self._intents_extent,
         ) as validator:
-            flight_2_planning_time = Time(arrow.utcnow().datetime)
+            flight_2_planning_time = arrow.utcnow().datetime
             _, self.flight_2_id = plan_flight(
                 self,
                 self.mock_uss_client,
                 flight_2_planned,
             )
-            flight_2_oi_ref = validator.expect_shared(flight_2_planned)
+            self.flight_2_oi_ref = validator.expect_shared(flight_2_planned)
 
         self.end_test_step()
 
@@ -203,11 +224,49 @@ class ReceiveNotificationsForAwareness(TestScenario):
             self,
             self.mock_uss,
             flight_2_planning_time,
-            flight_2_oi_ref.id,
-            subscription_id,
-            flight_1_oi_ref.uss_base_url,
+            self.flight_2_oi_ref.id,
+            self.flight_1_oi_ref.subscription_id,
+            self.flight_1_oi_ref.uss_base_url,
             self.tested_uss_client.participant_id,
             flight_2_planning_time,
+        )
+        self.end_test_step()
+
+    def _receive_notification_successfully_when_activated_modified_test_case(
+        self, times: Dict[TimeDuringTest, Time]
+    ):
+        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        flight_2_planned_modified = self.flight_2_planned_modified.resolve(times)
+
+        self.begin_test_step("Mock_uss modifies planned Flight 2")
+        with OpIntentValidator(
+            self,
+            self.mock_uss_client,
+            self.dss,
+            self._intents_extent,
+            self.flight_2_oi_ref,
+        ) as validator:
+            flight_2_modif_time = arrow.utcnow().datetime
+            modify_planned_flight(
+                self,
+                self.mock_uss_client,
+                flight_2_planned_modified,
+                self.flight_2_id,
+            )
+            self.flight_2_oi_ref = validator.expect_shared(flight_2_planned_modified)
+
+        self.end_test_step()
+
+        self.begin_test_step("Validate Flight 2 notification received by tested_uss")
+        expect_tested_uss_receives_notification_from_mock_uss(
+            self,
+            self.mock_uss,
+            flight_2_modif_time,
+            self.flight_2_oi_ref.id,
+            self.flight_1_oi_ref.subscription_id,
+            self.flight_1_oi_ref.uss_base_url,
+            self.tested_uss_client.participant_id,
+            flight_2_modif_time,
         )
         self.end_test_step()
 

@@ -425,6 +425,39 @@ def plan_flight(
     )
 
 
+def modify_planned_flight(
+    scenario: TestScenarioType,
+    flight_planner: FlightPlannerClient,
+    flight_info: FlightInfo,
+    flight_id: str,
+    additional_fields: Optional[dict] = None,
+) -> PlanningActivityResponse:
+    """Modify a planned flight intent that should result in success.
+
+    This function implements the test step described in
+    modify_planned_flight_intent.md.
+
+    Returns: The injection response.
+    """
+    expect_flight_intent_state(
+        flight_info,
+        BasicFlightPlanInformationUsageState.Planned,
+        BasicFlightPlanInformationUasState.Nominal,
+        scenario,
+    )
+
+    return submit_flight(
+        scenario=scenario,
+        success_check="Successful modification",
+        expected_results={(PlanningActivityResult.Completed, FlightPlanStatus.Planned)},
+        failed_checks={PlanningActivityResult.Failed: "Failure"},
+        flight_planner=flight_planner,
+        flight_info=flight_info,
+        flight_id=flight_id,
+        additional_fields=additional_fields,
+    )[0]
+
+
 def activate_flight(
     scenario: TestScenarioType,
     flight_planner: FlightPlannerClient,
