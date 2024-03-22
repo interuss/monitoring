@@ -91,6 +91,10 @@ Confirm that the subscription that was just created is properly synchronized acr
 
 Confirms that each DSS provides access to the created subscription,
 
+#### [Search subscription](../fragments/sub/crud/search.md)
+
+Confirms that each DSS returns the created subscription when searched for.
+
 #### [Validate subscription](../fragments/sub/validate/correctness.md)
 
 Verify that the subscription returned by every DSS is correctly formatted and corresponds to what was created earlier.
@@ -127,6 +131,10 @@ Confirm that the subscription that was just mutated is properly synchronized acr
 #### [Get subscription](../fragments/sub/crud/read.md)
 
 Confirms that the subscription that was just mutated can be retrieved from any DSS.
+
+#### [Search subscription](../fragments/sub/crud/search.md)
+
+Confirms that the subscription that was just mutated can be searched for from any DSS.
 
 #### [Validate subscription](../fragments/sub/validate/correctness.md)
 
@@ -180,6 +188,10 @@ Confirm that the subscription that was just mutated is properly synchronized acr
 #### [Get subscription](../fragments/sub/crud/read.md)
 
 Confirms that the subscription that was just mutated can be retrieved from any DSS, and that it has the expected content.
+
+#### [Search subscription](../fragments/sub/crud/search.md)
+
+Confirms that the subscription that was just mutated can be searched for from any DSS, and that it has the expected content.
 
 #### [Validate subscription](../fragments/sub/validate/correctness.md)
 
