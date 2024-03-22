@@ -608,7 +608,7 @@ class SubscriptionSimple(GenericTestScenario):
         with self.check(
             "Returned subscription owner is correct", [self._dss_wrapper.participant_id]
         ) as check:
-            client_sub = self._client_identity.subscriber()
+            client_sub = self._client_identity.subject()
             if sub_under_test.owner != client_sub:
                 check.record_failed(
                     "Returned subscription owner does not match provided one",
