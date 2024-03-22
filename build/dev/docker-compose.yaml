@@ -20,7 +20,7 @@ services:
       - dss_internal_network
 
   rid_bootstrapper:
-    image: interuss/dss:v0.12.0-rc1
+    image: interuss/dss:v0.12.0
     volumes:
       - dss_component_coordination:/var/dss_component_coordination
       - $PWD/startup:/startup:ro
@@ -31,7 +31,7 @@ services:
       - dss_internal_network
 
   scd_bootstrapper:
-    image: interuss/dss:v0.12.0-rc1
+    image: interuss/dss:v0.12.0
     volumes:
       - dss_component_coordination:/var/dss_component_coordination
       - $PWD/startup:/startup:ro
@@ -43,7 +43,7 @@ services:
 
   dss:
     hostname: dss.uss1.localutm
-    image: interuss/dss:v0.12.0-rc1
+    image: interuss/dss:v0.12.0
     volumes:
       - $PWD/../test-certs:/var/test-certs:ro
       - dss_component_coordination:/var/dss_component_coordination
