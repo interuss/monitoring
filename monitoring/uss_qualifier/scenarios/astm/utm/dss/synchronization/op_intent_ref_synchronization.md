@@ -53,13 +53,13 @@ Verify that the operational intent reference returned by the DSS under test is p
 
 Query the created operational intent at every DSS provided in `dss_instances`.
 
-#### [OIR is synchronized](../fragments/oir/sync.md)
-
-Confirm that the operational intent reference that was just created is properly synchronized across all DSS instances.
-
 #### [Get OIR](../fragments/oir/crud/read.md)
 
 Confirms that each DSS provides access to the created operational intent reference,
+
+#### [OIR is synchronized](../fragments/oir/sync.md)
+
+Confirm that the operational intent reference that was just created is properly synchronized across all DSS instances.
 
 #### [OIR Content is correct](../fragments/oir/validate/correctness.md)
 

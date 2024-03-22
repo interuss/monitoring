@@ -13,7 +13,7 @@ from uas_standards.astm.f3548.v21.api import (
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4D
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -30,6 +30,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators.oir_validator im
 )
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenario,
+    ScenarioCannotContinueError,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
@@ -46,7 +47,9 @@ class OIRSynchronization(TestScenario):
      - deletion of an entity on a secondary DSS when it was created on the primary
     """
 
-    SUB_TYPE = register_resource_type(385, "Operational Intent Reference")
+    SUB_TYPE = register_resource_type(
+        385, "Operational Intent Reference for synchronization checks"
+    )
 
     _dss: DSSInstance
 
@@ -96,7 +99,7 @@ class OIRSynchronization(TestScenario):
         ]
 
         self._oir_id = id_generator.id_factory.make_id(self.SUB_TYPE)
-        self._expected_manager = client_identity.subscriber()
+        self._expected_manager = client_identity.subject()
         self._planning_area = planning_area.specification
 
         # Build a ready-to-use 4D volume with no specified time for searching
@@ -120,10 +123,9 @@ class OIRSynchronization(TestScenario):
 
         # Check that we actually have at least one other DSS to test against:
         if not self._dss_read_instances:
-            loguru.logger.warning(
-                "Skipping EntitySynchronization test: no other DSS instances to test against"
+            raise ScenarioCannotContinueError(
+                "Cannot run OIRSynchronization scenario: no other DSS instances to test against"
             )
-            return
 
         self.begin_test_scenario(context)
         self._setup_case()
@@ -273,15 +275,17 @@ class OIRSynchronization(TestScenario):
                     query_timestamps=[q.request.timestamp],
                 )
 
+        expected_volume_collection = Volume4DCollection.from_interuss_scd_api(
+            expected_oir_params.extents
+        )
+        expected_end = expected_volume_collection.time_end.datetime
+        expected_start = expected_volume_collection.time_start.datetime
         with self.check(
             "Propagated operational intent reference contains the correct start time",
             involved_participants,
         ) as check:
-            expected_start = expected_oir_params.extents[0].time_start
             if (
-                abs(
-                    oir.time_start.value.datetime - expected_start.value.datetime
-                ).total_seconds()
+                abs(oir.time_start.value.datetime - expected_start).total_seconds()
                 > TIME_TOLERANCE_SEC
             ):
                 check.record_failed(
@@ -294,11 +298,8 @@ class OIRSynchronization(TestScenario):
             "Propagated operational intent reference contains the correct end time",
             involved_participants,
         ) as check:
-            expected_end = expected_oir_params.extents[-1].time_end
             if (
-                abs(
-                    oir.time_end.value.datetime - expected_end.value.datetime
-                ).total_seconds()
+                abs(oir.time_end.value.datetime - expected_end).total_seconds()
                 > TIME_TOLERANCE_SEC
             ):
                 check.record_failed(
