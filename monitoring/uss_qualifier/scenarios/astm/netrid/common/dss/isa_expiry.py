@@ -43,7 +43,7 @@ class ISAExpiry(GenericTestScenario):
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
 
     def run(self, context: ExecutionContext):
-        self._shift_isa_time()
+        self._shift_isa_time_relative_to_now()
 
         self.begin_test_scenario(context)
 
@@ -58,7 +58,7 @@ class ISAExpiry(GenericTestScenario):
         self.end_test_case()
         self.end_test_scenario()
 
-    def _shift_isa_time(self):
+    def _shift_isa_time_relative_to_now(self):
         now = arrow.utcnow().datetime
         self._isa_start_time = self._isa.shifted_time_start(now)
         self._isa_end_time = self._isa.shifted_time_end(now)

@@ -62,7 +62,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
         )
 
     def run(self, context: ExecutionContext):
-        self._shift_isa_time()
+        self._shift_resources_time_relative_to_now()
 
         self.begin_test_scenario(context)
 
@@ -94,7 +94,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
         self.end_test_case()
         self.end_test_scenario()
 
-    def _shift_isa_time(self):
+    def _shift_resources_time_relative_to_now(self):
         now = arrow.utcnow().datetime
         self._isa_params["start_time"] = self._isa.shifted_time_start(now)
         self._isa_params["end_time"] = self._isa.shifted_time_end(now)
