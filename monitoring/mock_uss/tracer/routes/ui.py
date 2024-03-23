@@ -1,5 +1,8 @@
+import datetime
 import glob
+import io
 import os
+import zipfile
 
 import arrow
 import flask
@@ -18,7 +21,7 @@ import monitoring.monitorlib.fetch.rid
 import monitoring.monitorlib.fetch.scd
 
 
-@webapp.route("/tracer/logs")
+@webapp.route("/tracer/logs", methods=["GET"])
 @ui_auth.login_required
 def tracer_list_logs():
     logger.debug(f"Handling tracer_list_logs from {os.getpid()}")
@@ -33,11 +36,53 @@ def tracer_list_logs():
         if os.path.exists(os.path.join(context.tracer_logger.log_path, kml)):
             kmls[log] = kml
     response = flask.make_response(
-        flask.render_template("tracer/logs.html", logs=logs, kmls=kmls)
+        flask.render_template(
+            "tracer/logs.html",
+            logs=logs,
+            kmls=kmls,
+            username=ui_auth.current_user().username,
+        )
     )
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     return response
+
+
+@webapp.route("/tracer/logs.zip")
+@ui_auth.login_required(role="admin")
+def tracer_download_logs():
+    logs = [
+        log
+        for log in reversed(sorted(os.listdir(context.tracer_logger.log_path)))
+        if log.endswith(".yaml")
+    ]
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
+        for log in logs:
+            with open(os.path.join(context.tracer_logger.log_path, log), "r") as f:
+                zip_file.writestr(log, f.read())
+    zip_name = f"logs_{datetime.datetime.utcnow().isoformat().split('.')[0]}.zip"
+    return flask.Response(
+        zip_buffer.getvalue(),
+        mimetype="application/zip",
+        headers={"Content-Disposition": f"attachment;filename={zip_name}"},
+    )
+
+
+@webapp.route("/tracer/logs", methods=["DELETE"])
+@ui_auth.login_required(role="admin")
+def tracer_clear_logs():
+    if db.value.observation_areas:
+        return "Logs cannot be cleared while any observation areas exist", 400
+
+    files = [
+        f
+        for f in reversed(sorted(os.listdir(context.tracer_logger.log_path)))
+        if f.endswith(".yaml") or f.endswith(".kml")
+    ]
+    for f in files:
+        os.remove(os.path.join(context.tracer_logger.log_path, f))
+    return f"{len(files)} log files cleared successfully", 200
 
 
 def _redact_and_augment_log(obj):
@@ -99,6 +144,7 @@ def tracer_logs(log):
         "tracer/log.html",
         log=_redact_and_augment_log(obj),
         title=logfile,
+        username=ui_auth.current_user().username,
     )
 
 
@@ -168,6 +214,7 @@ def tracer_observation_area_ui(observation_area_id: str):
         alt_lo=alt_lo,
         alt_hi=alt_hi,
         now=StringBasedDateTime(arrow.utcnow().datetime),
+        username=ui_auth.current_user().username,
     )
 
 
@@ -206,4 +253,5 @@ def tracer_observation_areas_ui():
     return flask.render_template(
         "tracer/observation_areas_ui.html",
         title="Observation Areas UI",
+        username=ui_auth.current_user().username,
     )

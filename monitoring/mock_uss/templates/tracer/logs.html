@@ -12,4 +12,32 @@
     </li>
   {% endfor %}
 </ul>
+<p>
+  <a href="{{ url_for('tracer_download_logs') }}">Download logs</a>
+</p>
+<script>
+function clearAllLogs() {
+  let random_chars = (Math.random() + 1).toString(36).slice(2, 7);
+  let response = prompt("Are you sure you want to delete all log files?  Enter " + random_chars + " below to confirm.");
+  if (response == random_chars) {
+    let xhr = new XMLHttpRequest();
+    let url = "{{ url_for('tracer_clear_logs') }}";
+    xhr.open("DELETE", url);
+    xhr.onreadystatechange = function () {
+        if (this.readyState == XMLHttpRequest.DONE) {
+            if (this.status == 200) {
+                location.reload();
+            } else {
+                alert("Error clearing logs (see also network log in debugger):\n" + this.response);
+            }
+        }
+    }
+    xhr.send();
+  }
+  return false;
+}
+</script>
+<p>
+  <a href="#" onclick="clearAllLogs()">Clear logs</a>
+</p>
 {% endblock %}
