@@ -8,12 +8,15 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation
     validate_flight_intent_templates,
     ExpectedFlightIntent,
 )
+from monitoring.uss_qualifier.scenarios.astm.utm.clear_area_validation import (
+    validate_clear_area,
+)
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
-from monitoring.monitorlib.geotemporal import Volume4DCollection
+from monitoring.monitorlib.geotemporal import Volume4DCollection, Volume4D
 
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
@@ -191,6 +194,17 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             "Control USS",
             f"{self.control_uss.config.participant_id}",
         )
+
+        self.begin_test_case("Prerequisites check")
+        self.begin_test_step("Verify area is clear")
+        validate_clear_area(
+            self,
+            self.dss,
+            [Volume4D.from_f3548v21(self._intents_extent)],
+            ignore_self=True,
+        )
+        self.end_test_step()
+        self.end_test_case()
 
         self.begin_test_case("Attempt to plan flight into conflict")
         _ = self._attempt_plan_flight_conflict()
