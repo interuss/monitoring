@@ -127,7 +127,6 @@ def _parse_test_step(
         linked_step_fragment = _get_linked_test_step_fragment(
             values[0].children[0].dest, doc_filename
         )
-        url = linked_step_fragment.url
         checks = linked_step_fragment.checks.copy()
 
     c = 1
@@ -145,7 +144,6 @@ def _parse_test_step(
                 linked_step_fragment = _get_linked_test_step_fragment(
                     values[c].children[0].dest, doc_filename
                 )
-                url = linked_step_fragment.url
                 checks.extend(linked_step_fragment.checks.copy())
                 c += dc
             else:
