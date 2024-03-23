@@ -60,7 +60,7 @@
     Polling: {{ area.f3548.poll }}
   </p>
   <p>
-    Subscription: {{ area.f3548.subscription_id }}
+    Subscription: {{ area.f3548.subscription_id if "subscription_id" in area.f3548 else "N/A" }}
   </p>
   <p>
     Monitor operational intents: {{ area.f3548.monitor_op_intents }}

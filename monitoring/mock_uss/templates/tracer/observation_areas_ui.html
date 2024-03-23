@@ -40,8 +40,8 @@ function makeObservationAreaRequest() {
 
     let ridVersion = document.getElementById("rid_version").value;
     if (ridVersion != "None") {
-        let pollRID = document.getElementById("poll_f3411").value;
-        let subscribeRID = document.getElementById("subscribe_f3411").value;
+        let pollRID = document.getElementById("poll_f3411").checked;
+        let subscribeRID = document.getElementById("subscribe_f3411").checked;
         obsArea["f3411"] = {
             "rid_version": ridVersion,
             "poll": pollRID,
@@ -51,10 +51,10 @@ function makeObservationAreaRequest() {
 
     let scdVersion = document.getElementById("scd_version").value;
     if (scdVersion != "None") {
-        let pollF3548 = document.getElementById("poll_f3548").value;
-        let subscribeF3548 = document.getElementById("subscribe_f3548").value;
-        let opIntents = document.getElementById("op_intents").value;
-        let constraints = document.getElementById("constraints").value;
+        let pollF3548 = document.getElementById("poll_f3548").checked;
+        let subscribeF3548 = document.getElementById("subscribe_f3548").checked;
+        let opIntents = document.getElementById("op_intents").checked;
+        let constraints = document.getElementById("constraints").checked;
         obsArea["f3548"] = {
             "poll": pollF3548,
             "subscribe": subscribeF3548,

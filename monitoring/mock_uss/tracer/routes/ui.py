@@ -11,6 +11,7 @@ from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.database import db
 from monitoring.mock_uss.tracer.observation_areas import ObservationArea
+from monitoring.mock_uss.tracer.ui_auth import ui_auth
 from monitoring.monitorlib import fetch, geo, infrastructure
 from monitoring.monitorlib.fetch import summarize
 import monitoring.monitorlib.fetch.rid
@@ -18,6 +19,7 @@ import monitoring.monitorlib.fetch.scd
 
 
 @webapp.route("/tracer/logs")
+@ui_auth.login_required
 def tracer_list_logs():
     logger.debug(f"Handling tracer_list_logs from {os.getpid()}")
     logs = [
@@ -59,6 +61,7 @@ def _redact_and_augment_log(obj):
 
 
 @webapp.route("/tracer/logs/<log>")
+@ui_auth.login_required
 def tracer_logs(log):
     logger.debug(f"Handling tracer_logs from {os.getpid()}")
     logfile = os.path.join(context.tracer_logger.log_path, log)
@@ -100,6 +103,7 @@ def tracer_logs(log):
 
 
 @webapp.route("/tracer/kml/now.kml")
+@ui_auth.login_required
 def tracer_kml_now():
     logger.debug(f"Handling tracer_kml_now from {os.getpid()}")
     all_kmls = glob.glob(os.path.join(context.tracer_logger.log_path, "kml", "*.kml"))
@@ -115,6 +119,7 @@ def tracer_kml_now():
 
 
 @webapp.route("/tracer/kml/<kml>")
+@ui_auth.login_required
 def tracer_kmls(kml):
     logger.debug(f"Handling tracer_kmls from {os.getpid()}")
     kmlfile = os.path.join(context.tracer_logger.log_path, "kml", kml)
@@ -137,6 +142,7 @@ def _get_validated_obs_area(observation_area_id: str) -> ObservationArea:
 
 
 @webapp.route("/tracer/observation_areas/<observation_area_id>/ui", methods=["GET"])
+@ui_auth.login_required(role="admin")
 def tracer_observation_area_ui(observation_area_id: str):
     logger.debug(f"Handling tracer_observation_area_ui from {os.getpid()}")
     area = _get_validated_obs_area(observation_area_id)
@@ -169,6 +175,7 @@ def tracer_observation_area_ui(observation_area_id: str):
     "/tracer/observation_areas/<observation_area_id>/rid_poll_requests",
     methods=["POST"],
 )
+@ui_auth.login_required(role="admin")
 def tracer_rid_request_poll(observation_area_id: str):
     logger.debug(f"Handling tracer_rid_request_poll from {os.getpid()}")
     area = _get_validated_obs_area(observation_area_id)
@@ -194,6 +201,7 @@ def tracer_rid_request_poll(observation_area_id: str):
 
 
 @webapp.route("/tracer/observation_areas/ui", methods=["GET"])
+@ui_auth.login_required
 def tracer_observation_areas_ui():
     return flask.render_template(
         "tracer/observation_areas_ui.html",
