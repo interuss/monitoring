@@ -44,6 +44,16 @@ def _length_of_section(values, start_of_section: int) -> int:
     return c - start_of_section - 1
 
 
+def _requirements_in(values) -> List[RequirementID]:
+    reqs = []
+    for v in values:
+        if isinstance(v, marko.inline.StrongEmphasis):
+            reqs.append(RequirementID(text_of(v)))
+        elif hasattr(v, "children") and not isinstance(v.children, str):
+            reqs.extend(_requirements_in(v.children))
+    return reqs
+
+
 def _parse_test_check(
     values, doc_filename: str, anchors: Dict[Any, str]
 ) -> TestCheckDocumentation:
@@ -51,16 +61,11 @@ def _parse_test_check(
     url = repo_url_of(doc_filename + anchors[values[0]])
     has_todo = False
 
-    reqs: List[str] = []
-    c = 1
-    while c < len(values):
-        if isinstance(values[c], marko.block.Paragraph):
-            if "TODO:" in text_of(values[c]):
+    reqs = _requirements_in(values[1:])
+    for v in values[1:]:
+        if isinstance(v, marko.block.Paragraph):
+            if "TODO:" in text_of(v):
                 has_todo = True
-            for child in values[c].children:
-                if isinstance(child, marko.inline.StrongEmphasis):
-                    reqs.append(RequirementID(text_of(child)))
-        c += 1
 
     severity = None
     for s in Severity:
