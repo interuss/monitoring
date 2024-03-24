@@ -96,11 +96,7 @@ def delete_observation_area(area: ObservationArea) -> ObservationArea:
                 rid_client=rid_client,
             )
 
-    if (
-        area.f3548 is not None
-        and "subscription_id" in area.f3548
-        and area.f3548.subscription_id
-    ):
+    if area.f3548 is not None and area.f3548.subscription_id:
         scd_client = context.get_client(area.f3548.auth_spec, area.f3548.dss_base_url)
         unsubscribe_scd(
             subscription_id=area.f3548.subscription_id, scd_client=scd_client

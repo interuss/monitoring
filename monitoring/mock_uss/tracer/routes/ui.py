@@ -41,6 +41,7 @@ def tracer_list_logs():
             logs=logs,
             kmls=kmls,
             username=ui_auth.current_user().username,
+            is_admin=ui_auth.current_user().is_admin(),
         )
     )
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"

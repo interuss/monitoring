@@ -25,6 +25,9 @@ class User(object):
     password_hash: str
     roles: List[str]
 
+    def is_admin(self) -> bool:
+        return "admin" in self.roles
+
 
 def _get_users() -> List[User]:
     users = []
