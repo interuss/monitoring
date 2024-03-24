@@ -1,5 +1,5 @@
-import copy
 import datetime
+import json
 import os
 from typing import Dict
 
@@ -31,7 +31,7 @@ class Logger(object):
         logname = "{}.yaml".format(basename)
         fullname = os.path.join(self.log_path, logname)
 
-        dump = copy.deepcopy(content)
+        dump = json.loads(json.dumps(content))
         dump["object_type"] = type(content).__name__
         with open(fullname, "w") as f:
             f.write(yaml.dump(dump, indent=2))

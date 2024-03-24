@@ -47,7 +47,7 @@ class F3548ObservationArea(ImplicitDict):
     poll: bool
     """This area observes by periodically polling for information."""
 
-    subscription_id: Optional[str]
+    subscription_id: Optional[str] = None
     """The F3548 subscription ID established to provide observation via notifications."""
 
 
