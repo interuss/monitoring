@@ -139,6 +139,14 @@ class OIRSynchronization(TestScenario):
         self._query_secondaries_and_compare(self._oir_params)
         self.end_test_step()
 
+        self.begin_test_step("Mutate OIR")
+        self._test_mutate_oir_shift_time()
+        self.end_test_step()
+
+        self.begin_test_step("Query updated OIR")
+        self._query_secondaries_and_compare(self._oir_params)
+        self.end_test_step()
+
         self.end_test_case()
         self.end_test_scenario()
 
@@ -325,6 +333,81 @@ class OIRSynchronization(TestScenario):
                 expected_version=self._current_oir.version,
                 expected_ovn=self._current_oir.ovn,
             )
+
+    def _test_mutate_oir_shift_time(self):
+        """Mutate the OIR by adding 10 seconds to its start and end times.
+        This is achieved by updating the first and last element of the extents.
+        """
+        op = self._oir_params
+
+        new_extents = self._shift_extents(op.extents, timedelta(seconds=10))
+
+        new_params = PutOperationalIntentReferenceParameters(
+            extents=new_extents,
+            key=op.key + [self._current_oir.ovn],
+            state=op.state,
+            uss_base_url=op.uss_base_url,
+            subscription_id=op.subscription_id if "subscription_id" in op else None,
+            new_subscription=op.new_subscription if "new_subscription" in op else None,
+        )
+
+        with self.check(
+            "Mutate operational intent reference query succeeds", [self._primary_pid]
+        ) as check:
+            try:
+                oir, subs, q = self._dss.put_op_intent(
+                    extents=new_extents,
+                    key=new_params.key,
+                    state=new_params.state,
+                    base_url=new_params.uss_base_url,
+                    oi_id=self._oir_id,
+                    ovn=self._current_oir.ovn,
+                )
+                self.record_query(q)
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                check.record_failed(
+                    summary="Operational intent reference mutation failed",
+                    details=qe.msg,
+                    query_timestamps=qe.query_timestamps,
+                )
+                return
+
+        with self.check(
+            "Mutate operational intent reference response content is correct",
+            [self._primary_pid],
+        ) as check:
+            OIRValidator(
+                main_check=check,
+                scenario=self,
+                expected_manager=self._expected_manager,
+                participant_id=[self._primary_pid],
+                oir_params=new_params,
+            ).validate_mutated_oir(
+                expected_oir_id=self._oir_id,
+                mutated_oir=q,
+                previous_ovn=self._current_oir.ovn,
+                previous_version=self._current_oir.version,
+            )
+
+        self._oir_params = new_params
+        self._current_oir = oir
+
+    def _shift_extents(
+        self, extents: List[api.Volume4D], delta: timedelta
+    ) -> List[api.Volume4D]:
+        return [
+            api.Volume4D(
+                volume=ext.volume,
+                time_start=api.Time(
+                    value=StringBasedDateTime(ext.time_start.value.datetime + delta)
+                ),
+                time_end=api.Time(
+                    value=StringBasedDateTime(ext.time_end.value.datetime + delta)
+                ),
+            )
+            for ext in extents
+        ]
 
     def cleanup(self):
         self.begin_cleanup()
