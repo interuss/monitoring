@@ -274,6 +274,31 @@ class SubscriptionInteractions(TestScenario):
                         query_timestamps=[r.request.timestamp],
                     )
 
+            for other_dss in {self._dss, *self._secondary_instances} - {dss}:
+                other_dss_sub = other_dss.get_subscription(sub_id)
+                with self.check(
+                    "Get Subscription by ID",
+                    other_dss.participant_id,
+                ) as check:
+                    if not other_dss_sub.success:
+                        check.record_failed(
+                            summary="Get subscription query failed",
+                            details=f"Failed to retrieved a subscription from DSS with code {other_dss_sub.status_code}: {other_dss_sub.error_message}",
+                            query_timestamps=[other_dss_sub.request.timestamp],
+                        )
+
+                with self.check(
+                    "Subscription may be retrieved from all other DSS instances",
+                    [dss.participant_id, other_dss.participant_id],
+                ) as check:
+                    # status may have been 404
+                    if other_dss_sub.status_code != 200:
+                        check.record_failed(
+                            summary="Subscription created on a DSS instance was not found on another instance",
+                            details=f"Subscription {sub_id} created on DSS instance {dss.participant_id} was not found on DSS instance {other_dss.participant_id} (error message: {other_dss_sub.error_message}).",
+                            query_timestamps=[other_dss_sub.request.timestamp],
+                        )
+
             self.end_test_step()
 
     def _put_op_intent(
