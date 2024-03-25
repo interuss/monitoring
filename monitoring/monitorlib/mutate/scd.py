@@ -9,6 +9,7 @@ from uas_standards.astm.f3548.v21.api import (
     OperationID,
     Subscription,
     PutSubscriptionParameters,
+    OperationalIntentReference,
 )
 from yaml.representer import Representer
 
@@ -50,6 +51,22 @@ class MutatedSubscription(fetch.Query):
             )
         except ValueError:
             return None
+
+    @property
+    def operational_intent_references(self) -> List[OperationalIntentReference]:
+        if self.json_result is None:
+            return []
+        try:
+            if "operational_intent_references" not in self.json_result:
+                return []
+            oirs_json = self.json_result["operational_intent_references"]
+            if not isinstance(oirs_json, list):
+                return []
+            return [
+                ImplicitDict.parse(oir, OperationalIntentReference) for oir in oirs_json
+            ]
+        except ValueError:
+            return []
 
 
 yaml.add_representer(MutatedSubscription, Representer.represent_dict)

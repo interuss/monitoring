@@ -79,4 +79,34 @@ If the DSS omits any of the implicit subscriptions belonging to an OIR previousl
 any of the DSSes at which an earlier OIR was created, or the DSS at which the current OIR has been created,
 are in violation of **[astm.f3548.v21.DSS0210,A2-7-2,4b](../../../../requirements/astm/f3548/v21.md)**.
 
+## Subscription creation returns relevant OIRs test case
+
+This test case checks that, when a newly created subscription intersects with an existing OIR and that the subscription is intended for operational intent references,
+the DSS includes the relevant OIRs in the response to the creation.
+
+### Create a subscription at every DSS in sequence test step
+
+This test step will create a new subscription at every DSS, in sequence, each time verifying that the DSS
+returns any OIRs that intersect with the newly created subscription.
+
+Note that this step is run once for each involved DSS (that is, once for the primary DSS and once for every secondary DSS)
+
+#### [Create subscription on a DSS instance](./fragments/sub/crud/create_query.md)
+
+Check that the subscription creation succeeds.
+
+#### 🛑 DSS response contains the expected OIRs check
+
+The response from a DSS to a valid subscription creation request is expected to contain any relevant OIRs for the subscription's extents if the subscription had the `notify_for_op_intents` flag set to `true`.
+
+If the DSS omits the intersecting OIR, it fails to comply with **[astm.f3548.v21.DSS0210,A2-7-2,4a](../../../../requirements/astm/f3548/v21.md)**.
+
+#### [Get subscription query from all other DSS instances succeeds](./fragments/sub/crud/read_query.md)
+
+#### 🛑 Subscription may be retrieved from all other DSS instances check
+
+The subscription created on a DSS instance must be retrievable from all other DSS instances.
+
+If the subscription does not exist on one of the other DSS instances, one of the instances fails to comply with **[astm.f3548.v21.DSS0210,A2-7-2,4a](../../../../requirements/astm/f3548/v21.md)**.
+
 ## [Cleanup](./clean_workspace.md)

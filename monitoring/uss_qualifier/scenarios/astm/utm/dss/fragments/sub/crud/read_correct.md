@@ -2,9 +2,9 @@
 
 This test step fragment validates that subscriptions can be read.
 
-## 🛑 Get Subscription by ID check
+## [Read query succeeds](./read_query.md)
 
-If a subscription cannot be queried using its ID, the DSS is failing to meet **[astm.f3548.v21.DSS0005,5](../../../../../../../requirements/astm/f3548/v21.md)**.
+Check query succeeds.
 
 ## 🛑 Get subscription response format conforms to spec check
 

@@ -12,10 +12,9 @@ from uas_standards.astm.f3548.v21.api import (
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
-from monitoring.monitorlib.delay import sleep
+from monitoring.monitorlib import fetch
 from monitoring.monitorlib.fetch import QueryError, Query
 from monitoring.monitorlib.geotemporal import Volume4D
-from monitoring.monitorlib.mutate.scd import MutatedSubscription
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -31,7 +30,6 @@ from monitoring.uss_qualifier.resources.interuss.id_generator import IDGenerator
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenario,
-    PendingCheck,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
@@ -44,14 +42,19 @@ class SubscriptionInteractions(TestScenario):
     A scenario that tests interactions between subscriptions and entities across a DSS cluster.
     """
 
-    SUB_TYPES = [
-        register_resource_type(386, "First Subscription"),
-        register_resource_type(387, "Second Subscription"),
+    BG_SUB_TYPES = [
+        register_resource_type(386, "Background subscription 1"),
+        register_resource_type(387, "Background subscription 2"),
     ]
-    OIR_TYPE = register_resource_type(388, "Operational Intent References")
+    PER_DSS_OIR_TYPE = register_resource_type(
+        388, "Multiple Operational Intent References"
+    )
+    PER_DSS_SUB_TYPE = register_resource_type(389, "Multiple Subscriptions")
 
-    _sub_ids: List[SubscriptionID]
+    _background_sub_ids: List[SubscriptionID]
+
     _oir_ids: List[EntityID]
+    _sub_ids: List[SubscriptionID]
 
     _current_subs: Dict[SubscriptionID, Subscription]
     _current_oirs: Dict[EntityID, OperationalIntentReference]
@@ -92,15 +95,21 @@ class SubscriptionInteractions(TestScenario):
             dss.get_instance(scopes) for dss in other_instances.dss_instances
         ]
 
-        # Prepare the two subscription ids:
-        self._sub_ids = [
-            id_generator.id_factory.make_id(sub_type) for sub_type in self.SUB_TYPES
+        # Prepare the two background subscription ids:
+        self._background_sub_ids = [
+            id_generator.id_factory.make_id(sub_type) for sub_type in self.BG_SUB_TYPES
         ]
 
         # Prepare one OIR id for each DSS we will interact with (one for the main and one for each secondary)
-        base_oir_id = id_generator.id_factory.make_id(self.OIR_TYPE)
+        base_oir_id = id_generator.id_factory.make_id(self.PER_DSS_OIR_TYPE)
         self._oir_ids = [
             f"{base_oir_id[:-3]}{i:03d}"
+            for i in range(len(self._secondary_instances) + 1)
+        ]
+        # Prepare one subscription id for each DSS we will interact with (one for the main and one for each secondary)
+        base_sub_id = id_generator.id_factory.make_id(self.PER_DSS_SUB_TYPE)
+        self._sub_ids = [
+            f"{base_sub_id[:-3]}{i:03d}"
             for i in range(len(self._secondary_instances) + 1)
         ]
 
@@ -115,6 +124,10 @@ class SubscriptionInteractions(TestScenario):
         self._steps_create_oirs_at_each_dss()
         self.end_test_case()
 
+        self.begin_test_case("Subscription creation returns relevant OIRs")
+        self._steps_create_subs_at_each_dss()
+        self.end_test_case()
+
         self.end_test_scenario()
 
     def _step_create_background_subs(self):
@@ -125,7 +138,7 @@ class SubscriptionInteractions(TestScenario):
         self.begin_test_step("Create first background subscription")
 
         sub_now_params = self._planning_area.get_new_subscription_params(
-            subscription_id=self._sub_ids[0],
+            subscription_id=self._background_sub_ids[0],
             start_time=self._sub_1_start,
             duration=self._sub_1_end - self._sub_1_start,
             # This is a planning area without constraint processing
@@ -133,7 +146,7 @@ class SubscriptionInteractions(TestScenario):
             notify_for_constraints=False,
         )
 
-        sub_now = self._create_sub_with_params(sub_now_params)
+        sub_now, _, _ = self._create_sub_with_params(sub_now_params)
         self._current_subs[sub_now_params.sub_id] = sub_now
         self.end_test_step()
 
@@ -141,7 +154,7 @@ class SubscriptionInteractions(TestScenario):
         self.begin_test_step("Create second background subscription")
 
         sub_later_params = self._planning_area.get_new_subscription_params(
-            subscription_id=self._sub_ids[1],
+            subscription_id=self._background_sub_ids[1],
             start_time=self._sub_2_start,
             duration=self._sub_2_end - self._sub_2_start,
             # This is a planning area without constraint processing
@@ -149,7 +162,7 @@ class SubscriptionInteractions(TestScenario):
             notify_for_constraints=False,
         )
 
-        sub_later = self._create_sub_with_params(sub_later_params)
+        sub_later, _, _ = self._create_sub_with_params(sub_later_params)
         self._current_subs[sub_later_params.sub_id] = sub_later
         self.end_test_step()
 
@@ -185,10 +198,10 @@ class SubscriptionInteractions(TestScenario):
                 "DSS response contains the expected background subscription",
                 dss.participant_id,
             ) as check:
-                if self._sub_ids[0] not in notification_ids:
+                if self._background_sub_ids[0] not in notification_ids:
                     check.record_failed(
                         summary="DSS did not return the intersecting background subscription",
-                        details=f"Expected subscription {self._sub_ids[0]} (first background subscription) in the"
+                        details=f"Expected subscription {self._background_sub_ids[0]} (first background subscription) in the"
                         f" list of subscriptions to notify, but got {notification_ids}",
                         query_timestamps=[q.request.timestamp],
                     )
@@ -197,10 +210,10 @@ class SubscriptionInteractions(TestScenario):
                 "DSS does not return non-intersecting background subscription",
                 dss.participant_id,
             ) as check:
-                if self._sub_ids[1] in notification_ids:
+                if self._background_sub_ids[1] in notification_ids:
                     check.record_failed(
                         summary="DSS returned the non-intersecting background subscription",
-                        details=f"Expected subscription {self._sub_ids[1]} (second background subscription) to not be in the"
+                        details=f"Expected subscription {self._background_sub_ids[1]} (second background subscription) to not be in the"
                         f" list of subscriptions to notify, but got {notification_ids}",
                         query_timestamps=[q.request.timestamp],
                     )
@@ -221,6 +234,71 @@ class SubscriptionInteractions(TestScenario):
 
             existing_oir = oir
             self._current_oirs[oir_id] = oir
+            self.end_test_step()
+
+    def _steps_create_subs_at_each_dss(self):
+        """Creates a subscription at each DSS instance"""
+
+        # The new subscriptions use the same parameters as the first background subscription
+        common_params = self._planning_area.get_new_subscription_params(
+            subscription_id="",
+            start_time=self._sub_1_start,
+            duration=self._sub_1_end - self._sub_1_start,
+            notify_for_op_intents=True,
+            notify_for_constraints=False,
+        )
+
+        # All previously created OIRs are relevant to each subscription
+        expected_oir_ids = set(self._oir_ids)
+
+        for i, dss in enumerate([self._dss] + self._secondary_instances):
+            self.begin_test_step("Create a subscription at every DSS in sequence")
+
+            sub_id = self._sub_ids[i]
+            common_params.sub_id = sub_id
+            sub, oirs, r = self._create_sub_with_params(common_params)
+            self._current_subs[sub_id] = sub
+
+            returned_oir_ids = set(oir.id for oir in oirs)
+
+            with self.check(
+                "DSS response contains the expected OIRs",
+                dss.participant_id,
+            ) as check:
+                if not expected_oir_ids.issubset(returned_oir_ids):
+                    missing_oirs = expected_oir_ids - returned_oir_ids
+                    check.record_failed(
+                        summary="DSS did not return the expected OIRs",
+                        details=f"Expected OIRs {expected_oir_ids} in the list of OIRs to notify, but got {returned_oir_ids}. "
+                        f"Missing: {missing_oirs}",
+                        query_timestamps=[r.request.timestamp],
+                    )
+
+            for other_dss in {self._dss, *self._secondary_instances} - {dss}:
+                other_dss_sub = other_dss.get_subscription(sub_id)
+                with self.check(
+                    "Get Subscription by ID",
+                    other_dss.participant_id,
+                ) as check:
+                    if not other_dss_sub.success:
+                        check.record_failed(
+                            summary="Get subscription query failed",
+                            details=f"Failed to retrieved a subscription from DSS with code {other_dss_sub.status_code}: {other_dss_sub.error_message}",
+                            query_timestamps=[other_dss_sub.request.timestamp],
+                        )
+
+                with self.check(
+                    "Subscription may be retrieved from all other DSS instances",
+                    [dss.participant_id, other_dss.participant_id],
+                ) as check:
+                    # status may have been 404
+                    if other_dss_sub.status_code != 200:
+                        check.record_failed(
+                            summary="Subscription created on a DSS instance was not found on another instance",
+                            details=f"Subscription {sub_id} created on DSS instance {dss.participant_id} was not found on DSS instance {other_dss.participant_id} (error message: {other_dss_sub.error_message}).",
+                            query_timestamps=[other_dss_sub.request.timestamp],
+                        )
+
             self.end_test_step()
 
     def _put_op_intent(
@@ -253,7 +331,9 @@ class SubscriptionInteractions(TestScenario):
 
         return oir, subs, q
 
-    def _create_sub_with_params(self, params: SubscriptionParams) -> Subscription:
+    def _create_sub_with_params(
+        self, params: SubscriptionParams
+    ) -> Tuple[Subscription, List[OperationalIntentReference], fetch.Query]:
         """Create a subscription with the given parameters via the primary DSS instance"""
         with self.check("Create subscription query succeeds") as check:
             r = self._dss.upsert_subscription(**params)
@@ -263,7 +343,7 @@ class SubscriptionInteractions(TestScenario):
                     details=f"Failed to create a subscription on primary DSS with code {r.status_code}: {r.error_message}",
                     query_timestamps=[r.request.timestamp],
                 )
-        return r.subscription
+        return r.subscription, r.operational_intent_references, r
 
     def _setup_case(self):
         self.begin_test_case("Setup")
@@ -305,7 +385,7 @@ class SubscriptionInteractions(TestScenario):
             self._dss,
             extents,
         )
-        for sub_id in self._sub_ids:
+        for sub_id in self._background_sub_ids:
             test_step_fragments.cleanup_sub(self, self._dss, sub_id)
 
     def cleanup(self):

@@ -87,7 +87,7 @@ Query the created subscription at every DSS provided in `dss_instances`.
 
 Confirm that the subscription that was just created is properly synchronized across all DSS instances.
 
-#### [Get subscription](../fragments/sub/crud/read.md)
+#### [Get subscription](../fragments/sub/crud/read_correct.md)
 
 Confirms that each DSS provides access to the created subscription,
 
@@ -128,7 +128,7 @@ Query the updated subscription at every DSS provided in `dss_instances`.
 
 Confirm that the subscription that was just mutated is properly synchronized across all DSS instances.
 
-#### [Get subscription](../fragments/sub/crud/read.md)
+#### [Get subscription](../fragments/sub/crud/read_correct.md)
 
 Confirms that the subscription that was just mutated can be retrieved from any DSS.
 
@@ -185,7 +185,7 @@ Note that this step is repeated for every secondary DSS instance.
 
 Confirm that the subscription that was just mutated is properly synchronized across all DSS instances.
 
-#### [Get subscription](../fragments/sub/crud/read.md)
+#### [Get subscription](../fragments/sub/crud/read_correct.md)
 
 Confirms that the subscription that was just mutated can be retrieved from any DSS, and that it has the expected content.
 
