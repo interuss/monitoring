@@ -2,6 +2,8 @@ import re
 
 from pykml import parser
 
+from monitoring.monitorlib.kml import KML_NAMESPACE
+
 
 def get_kml_root(kml_obj, from_string=False):
     if from_string:
