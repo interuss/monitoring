@@ -41,7 +41,7 @@ It then goes on to mutate and delete it, each time confirming that all other DSS
 
 ### Create OIR validation test step
 
-#### [Create OIR](../fragments/oir/crud/create.md)
+#### [Create OIR](../fragments/oir/crud/create_correct.md)
 
 Verify that an operational intent reference can be created on the primary DSS.
 
@@ -64,6 +64,43 @@ Confirm that the operational intent reference that was just created is properly 
 #### [OIR Content is correct](../fragments/oir/validate/correctness.md)
 
 Verify that the operational intent reference returned by every DSS is correctly formatted and corresponds to what was created earlier.
+
+#### [OIR Versions are correct](../fragments/oir/validate/non_mutated.md)
+
+Verify that the operational intent reference's version fields are as expected.
+
+### Mutate OIR test step
+
+This test step mutates the previously created operational intent reference to verify that the DSS reacts properly: notably, it checks that the operational intent reference version is updated,
+including for changes that are not directly visible, such as changing the operational intent reference's footprint.
+
+#### [Update OIR](../fragments/oir/crud/update.md)
+
+Confirm that the operational intent reference can be mutated.
+
+#### [Validate OIR](../fragments/oir/validate/correctness.md)
+
+Verify that the operational intent reference returned by the DSS is properly formatted and contains the correct content.
+
+#### [OIR Versions are correct](../fragments/oir/validate/mutated.md)
+
+Verify that the operational intent reference's version fields have been updated.
+
+### Query updated OIR test step
+
+Query the updated operational intent reference at every DSS provided in `dss_instances`.
+
+#### [OIR is synchronized](../fragments/oir/sync.md)
+
+Confirm that the operational intent reference that was just mutated is properly synchronized across all DSS instances.
+
+#### [Get OIR](../fragments/oir/crud/read.md)
+
+Confirms that the operational intent reference that was just mutated can be retrieved from any DSS.
+
+#### [Validate OIR](../fragments/oir/validate/correctness.md)
+
+Verify that the operational intent reference returned by every DSS is correctly formatted and corresponds to what was mutated earlier.
 
 #### [OIR Versions are correct](../fragments/oir/validate/non_mutated.md)
 

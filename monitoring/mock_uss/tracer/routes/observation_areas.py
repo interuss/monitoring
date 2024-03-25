@@ -25,6 +25,7 @@ from monitoring.mock_uss.tracer.observation_areas import (
     F3411ObservationArea,
 )
 from monitoring.mock_uss.tracer.tracer_poll import TASK_POLL_OBSERVATION_AREAS
+from monitoring.mock_uss.tracer.ui_auth import ui_auth
 from monitoring.monitorlib import fetch
 import monitoring.monitorlib.fetch.rid
 from monitoring.monitorlib.geo import Volume3D
@@ -32,6 +33,7 @@ from monitoring.monitorlib.geotemporal import Volume4D
 
 
 @webapp.route("/tracer/observation_areas", methods=["GET"])
+@ui_auth.login_required
 def tracer_list_observation_areas() -> Tuple[str, int]:
     with db as tx:
         result = ListObservationAreasResponse(
@@ -41,6 +43,7 @@ def tracer_list_observation_areas() -> Tuple[str, int]:
 
 
 @webapp.route("/tracer/observation_areas/<area_id>", methods=["PUT"])
+@ui_auth.login_required(role="admin")
 def tracer_upsert_observation_area(area_id: str) -> Tuple[str, int]:
     try:
         req_body = flask.request.json
@@ -80,6 +83,7 @@ def tracer_upsert_observation_area(area_id: str) -> Tuple[str, int]:
 
 
 @webapp.route("/tracer/observation_areas/<area_id>", methods=["DELETE"])
+@ui_auth.login_required(role="admin")
 def tracer_delete_observation_area(area_id: str) -> Tuple[str, int]:
     with db as tx:
         if area_id not in tx.observation_areas:
@@ -96,6 +100,7 @@ def tracer_delete_observation_area(area_id: str) -> Tuple[str, int]:
 
 
 @webapp.route("/tracer/observation_areas/import_requests", methods=["POST"])
+@ui_auth.login_required(role="admin")
 def tracer_import_observation_areas() -> Tuple[str, int]:
     try:
         req_body = flask.request.json

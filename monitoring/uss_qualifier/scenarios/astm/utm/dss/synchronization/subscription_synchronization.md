@@ -70,7 +70,7 @@ This test step creates multiple subscriptions with different combinations of the
 
 All subscriptions are left on the DSS when this step ends, as they are expected to be present for the subsequent step.
 
-#### [Create subscription](../fragments/sub/crud/create.md)
+#### [Create subscription](../fragments/sub/crud/create_correct.md)
 
 Verify that a subscription can be created on the primary DSS.
 
@@ -206,7 +206,7 @@ Verify that when we are reading the subscription without mutating it, the versio
 If the second set of credentials is provided, this test step will create a subscription using these credentials,
 in order to prepare the next step that checks manager synchronization.
 
-#### [Create subscription](../fragments/sub/crud/create.md)
+#### [Create subscription](../fragments/sub/crud/create_query.md)
 
 Verify that a subscription can be created on the primary DSS using the separate set of credentials.
 

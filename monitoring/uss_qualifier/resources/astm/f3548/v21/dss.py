@@ -32,6 +32,7 @@ from uas_standards.astm.f3548.v21.api import (
     VehicleTelemetry,
     ExchangeRecord,
     ErrorReport,
+    AirspaceConflictResponse,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -302,9 +303,16 @@ class DSSInstance(object):
         ):
             result = query.parse_json_result(ChangeOperationalIntentReferenceResponse)
             return result.operational_intent_reference, result.subscribers, query
-        else:
+        elif query.status_code == 409:
+            result = query.parse_json_result(AirspaceConflictResponse)
             raise QueryError(
-                f"Received code {query.status_code} when attempting to {'create' if create else 'update'} operational intent with ID {oi_uuid}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                f"Received code 409 when attempting to {'create' if create else 'update'} operational intent with ID {oi_uuid}; error message: `{result.message}`; missing operational intent IDs: {[oi.id for oi in result.missing_operational_intents]}",
+                query,
+            )
+        else:
+            err_msg = query.error_message if query.error_message is not None else ""
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to {'create' if create else 'update'} operational intent with ID {oi_uuid}; error message: `{err_msg}`",
                 query,
             )
 
