@@ -209,18 +209,15 @@ def modify_activated_flight_intent(
                 resp.result == InjectFlightResponseResult.Rejected
                 or resp.result == InjectFlightResponseResult.ConflictWithFlight
             ):
-                check_details = (
-                    f"{flight_planner.participant_id} indicated {resp.result}"
-                )
-                check_details += (
-                    f' with notes "{resp.notes}"'
-                    if "notes" in resp and resp.notes
-                    else " with no notes"
-                )
+                msg = f"{flight_planner.participant_id} indicated {resp.result}"
+                if "notes" in resp and resp.notes:
+                    msg += f' with notes "{resp.notes}"'
+                else:
+                    msg += " with no notes"
                 check.record_failed(
                     summary="Warning (not a failure): modification got rejected but a pre-existing conflict was present",
                     severity=Severity.Low,
-                    details=check_details,
+                    details=msg,
                 )
 
     else:
@@ -278,18 +275,17 @@ def submit_flight_intent(
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
         scenario.record_query(query)
-        check_details = (
-            f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}'
-            + f' with notes "{resp.notes}"'
-            if "notes" in resp and resp.notes
-            else " with no notes"
-        )
+        msg = f'{flight_planner.participant_id} indicated {resp.result} rather than the expected {" or ".join(expected_results)}'
+        if "notes" in resp and resp.notes:
+            msg += f' with notes "{resp.notes}"'
+        else:
+            msg += " with no notes"
 
         if resp.result not in expected_results:
             check.record_failed(
                 summary=f"Flight unexpectedly {resp.result}",
                 severity=Severity.High,
-                details=check_details,
+                details=msg,
                 query_timestamps=[query.request.timestamp],
             )
 
@@ -302,7 +298,7 @@ def submit_flight_intent(
                 check.record_failed(
                     summary=f"Flight unexpectedly {resp.result}",
                     severity=Severity.High,
-                    details=check_details,
+                    details=msg,
                     query_timestamps=[query.request.timestamp],
                 )
 
@@ -535,14 +531,11 @@ def submit_flight(
             return resp, None
 
         result = (resp.activity_result, resp.flight_plan_status)
-        check_details = (
-            f'{flight_planner.participant_id} indicated {result} rather than the expected {" or ".join([f"({expected_result[0]}, {expected_result[1]})" for expected_result in expected_results])}'
-            + (
-                f' with notes "{resp.notes}"'
-                if "notes" in resp and resp.notes
-                else " with no notes"
-            )
-        )
+        msg = f'{flight_planner.participant_id} indicated {result} rather than the expected {" or ".join([f"({expected_result[0]}, {expected_result[1]})" for expected_result in expected_results])}'
+        if "notes" in resp and resp.notes:
+            msg += f' with notes "{resp.notes}"'
+        else:
+            msg += " with no notes"
 
         for unexpected_result, failed_test_check in failed_checks.items():
             check_name = failed_test_check
@@ -553,14 +546,14 @@ def submit_flight(
                 if resp.activity_result == unexpected_result:
                     specific_failed_check.record_failed(
                         summary=f"Flight unexpectedly {result}",
-                        details=check_details,
+                        details=msg,
                         query_timestamps=[query.request.timestamp],
                     )
 
         if result not in expected_results:
             check.record_failed(
                 summary=f"Flight unexpectedly {result}",
-                details=check_details,
+                details=msg,
                 query_timestamps=[query.request.timestamp],
             )
 

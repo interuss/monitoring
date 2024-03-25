@@ -13,6 +13,7 @@ import yaml
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.database import db
+from monitoring.mock_uss.tracer.log_types import PollFlights, TracerLogEntry
 from monitoring.mock_uss.tracer.observation_areas import ObservationArea
 from monitoring.mock_uss.tracer.ui_auth import ui_auth
 from monitoring.monitorlib import fetch, geo, infrastructure
@@ -120,26 +121,11 @@ def tracer_logs(log):
     else:
         obj = {"entries": objs}
 
-    object_type = obj.get("object_type", None)
-    if object_type == fetch.rid.FetchedISAs.__name__:
-        obj = {
-            "summary": summarize.isas(ImplicitDict.parse(obj, fetch.rid.FetchedISAs)),
-            "details": obj,
-        }
-    elif object_type == fetch.scd.FetchedEntities.__name__:
-        obj = {
-            "summary": summarize.entities(
-                ImplicitDict.parse(obj, fetch.scd.FetchedEntities)
-            ),
-            "details": obj,
-        }
-    elif object_type == fetch.rid.FetchedFlights.__name__:
-        obj = {
-            "summary": summarize.flights(
-                ImplicitDict.parse(obj, fetch.rid.FetchedFlights)
-            ),
-            "details": obj,
-        }
+    object_type_name = obj.get("object_type", None)
+    object_type = TracerLogEntry.entry_type(object_type_name)
+    if object_type:
+        parsed: TracerLogEntry = ImplicitDict.parse(obj, object_type)
+        obj = parsed.human_info()
 
     return flask.render_template(
         "tracer/log.html",
@@ -236,14 +222,14 @@ def tracer_rid_request_poll(observation_area_id: str):
     rid_client = context.get_client(area.f3411.auth_spec, area.f3411.dss_base_url)
     flights_result = fetch.rid.all_flights(
         geo.make_latlng_rect(area.area.volume),
-        flask.request.form.get("include_recent_positions"),
-        flask.request.form.get("get_details"),
+        flask.request.form.get("include_recent_positions", type=bool),
+        flask.request.form.get("get_details", type=bool),
         area.f3411.rid_version,
         rid_client,
-        enhanced_details=flask.request.form.get("enhanced_details"),
+        enhanced_details=flask.request.form.get("enhanced_details", type=bool),
     )
     log_name = context.tracer_logger.log_new(
-        "clientrequest_pollflights", flights_result
+        PollFlights(observation_area_id=observation_area_id, poll=flights_result)
     )
     return flask.redirect(flask.url_for("tracer_logs", log=log_name))
 
