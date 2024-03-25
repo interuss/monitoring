@@ -60,19 +60,9 @@ All USSs are requested to remove all flights from the area under test.
 
 **[interuss.automated_testing.flight_planning.ClearArea](../../../requirements/interuss/automated_testing/flight_planning.md)**
 
-### Clear area validation test step
+### [Clear area validation test step](clear_area_validation.md)
 
-uss_qualifier verifies with the DSS that there are no operational intents remaining in the area
-
-#### 🛑 DSS responses check
-
-If the DSS fails to reply to a query concerning operational intent references in a given area, or fails to allow the deletion of
-an operational intent from its own creator, it is in violation of **[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**
-or **[astm.f3548.v21.DSS0005,2](../../../requirements/astm/f3548/v21.md)**, and this check will fail.
-
-#### 🛑 Area is clear of foreign op intents check
-
-If operational intents from foreign (non-uss_qualifier) users remain in the 4D area(s) following the preceding area clearing, then the current state of the test environment is not suitable to conduct tests so this check will fail.
+This step examines whether any operational intents remain.  If any foreign (other than uss_qualifier-owned) operational intents remain, then this step's checks will fail.  If any uss_qualifier-owned operational intents remain, the checks for this step do not fail but instead we proceed to the next test case.  If the area is clear, we skip the next test case.
 
 ## uss_qualifier preparation test case
 
@@ -84,15 +74,6 @@ In addition to foreign flight planners, uss_qualifier may have left operational 
 
 The operational intent references managed by uss_qualifier discovered in the previous test case are removed.
 
-### Clear area validation test step
+### [Clear area validation test step](clear_area_validation.md)
 
-uss_qualifier verifies with the DSS that there are no operational intents remaining in the area.
-
-#### 🛑 DSS responses check
-
-If the DSS fails to reply to a query concerning operational intent references in a given area, it is in violation of **[astm.f3548.v21.DSS0005,1](../../../requirements/astm/f3548/v21.md)**
-or **[astm.f3548.v21.DSS0005,2](../../../requirements/astm/f3548/v21.md)**, and this check will fail.
-
-#### 🛑 Area is clear check
-
-If any operational intents remain in the 4D area(s) following the preceding area clearing, then the current state of the test environment is not suitable to conduct tests so this check will fail.
+After removing the operational intents of all flight planning participants previously, and just having attempted to remove uss_qualifier-owned operational intents, the area should now be fully clear.

@@ -98,6 +98,12 @@ CMSA role in order to transition to the `Nonconforming` state in order to create
 DSSInstanceResource that provides access to a DSS instance where flight creation/sharing can be verified.
 
 
+## Prerequisites check test case
+
+### [Verify area is clear test step](../../clear_area_validation.md)
+
+While this scenario assumes that the area used is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario) in order to avoid a large number of area-clearing operations, the scenario will not proceed correctly if the area was left in a dirty state following a previous scenario that was supposed to leave the area clear.  This test step verifies that the area is clear.
+
 ## Attempt to plan flight into conflict test case
 ![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict.svg)
 

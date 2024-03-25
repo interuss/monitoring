@@ -7,6 +7,9 @@ from monitoring.uss_qualifier.resources.flight_planning import (
     FlightPlannersResource,
     FlightIntentsResource,
 )
+from monitoring.uss_qualifier.scenarios.astm.utm.clear_area_validation import (
+    validate_clear_area,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.test_step_fragments import (
     remove_op_intent,
 )
@@ -63,8 +66,11 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
         self.end_test_step()
 
         self.begin_test_step("Clear area validation")
-        remaining_op_intents = self._validate_clear_area(
-            "Area is clear of foreign op intents", ignore_self=True
+        remaining_op_intents = validate_clear_area(
+            self,
+            self.dss,
+            self.areas,
+            ignore_self=True,
         )
         self.end_test_step()
 
@@ -78,53 +84,12 @@ class PrepareFlightPlanners(GenericPrepareFlightPlanners):
             self.end_test_step()
 
             self.begin_test_step("Clear area validation")
-            self._validate_clear_area("Area is clear", ignore_self=False)
+            validate_clear_area(self, self.dss, self.areas, ignore_self=False)
             self.end_test_step()
 
             self.end_test_case()
 
         self.end_test_scenario()
-
-    def _validate_clear_area(
-        self, check_name: str, ignore_self: bool
-    ) -> List[OperationalIntentReference]:
-        found_intents = []
-        for area in self.areas:
-            with self.check("DSS responses", [self.dss.participant_id]) as check:
-                try:
-                    op_intents, query = self.dss.find_op_intent(area.to_f3548v21())
-                    self.record_query(query)
-                except QueryError as e:
-                    self.record_queries(e.queries)
-                    query = e.queries[0]
-                    check.record_failed(
-                        summary="Error querying DSS for operational intents",
-                        details=f"See query; {e}",
-                        query_timestamps=[query.request.timestamp],
-                    )
-            found_intents.extend(op_intents)
-
-            with self.check(check_name) as check:
-                if ignore_self:
-                    uss_qualifier_sub = self.dss.client.auth_adapter.get_sub()
-                    op_intents = [
-                        oi for oi in op_intents if oi.manager != uss_qualifier_sub
-                    ]
-                if op_intents:
-                    summary = f"{len(op_intents)} operational intent{'s' if len(op_intents) > 1 else ''} found in cleared area"
-                    details = (
-                        "The following operational intents were observed even after clearing the area:\n"
-                        + "\n".join(
-                            f"* {oi.id} managed by {oi.manager}" for oi in op_intents
-                        )
-                    )
-                    check.record_failed(
-                        summary=summary,
-                        details=details,
-                        query_timestamps=[query.request.timestamp],
-                    )
-
-        return found_intents
 
     def _remove_my_op_intents(
         self, my_op_intents: List[OperationalIntentReference]
