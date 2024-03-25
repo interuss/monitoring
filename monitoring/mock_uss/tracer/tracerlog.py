@@ -1,10 +1,10 @@
 import datetime
 import json
 import os
-from typing import Dict
 
 import yaml
 
+from monitoring.mock_uss.tracer.log_types import TracerLogEntry
 from monitoring.monitorlib import infrastructure
 
 
@@ -23,10 +23,10 @@ class Logger(object):
             body = {"t0": t0.isoformat(), "t1": t1.isoformat(), "code": code}
             f.write(yaml.dump(body, explicit_start=True))
 
-    def log_new(self, code: str, content: Dict) -> str:
+    def log_new(self, content: TracerLogEntry) -> str:
         n = len(os.listdir(self.log_path))
         basename = "{:06d}_{}_{}".format(
-            n, datetime.datetime.now().strftime("%H%M%S_%f"), code
+            n, datetime.datetime.now().strftime("%H%M%S_%f"), content.prefix_code()
         )
         logname = "{}.yaml".format(basename)
         fullname = os.path.join(self.log_path, logname)
