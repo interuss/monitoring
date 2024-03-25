@@ -45,8 +45,8 @@ class SubscriptionInteractions(TestScenario):
     """
 
     SUB_TYPES = [
-        register_resource_type(386, "Subscription"),
-        register_resource_type(387, "Subscription"),
+        register_resource_type(386, "First Subscription"),
+        register_resource_type(387, "Second Subscription"),
     ]
     OIR_TYPE = register_resource_type(388, "Operational Intent References")
 
@@ -82,7 +82,7 @@ class SubscriptionInteractions(TestScenario):
         """
         super().__init__()
         scopes = {
-            Scope.StrategicCoordination: "create and delete subscriptions and entities"
+            Scope.StrategicCoordination: "create and delete subscriptions and operational intents"
         }
         self._dss = dss.get_instance(scopes)
         self._pid = [self._dss.participant_id]
@@ -104,14 +104,6 @@ class SubscriptionInteractions(TestScenario):
             for i in range(len(self._secondary_instances) + 1)
         ]
 
-        # First subscription from now to 20 minutes in the future
-        self._sub_1_start = datetime.utcnow()
-        self._sub_1_end = self._sub_1_start + timedelta(minutes=20)
-
-        # Second subscription starts 20 minutes after the first ends and lasts for 1 hour
-        self._sub_2_start = self._sub_1_end + timedelta(minutes=20)
-        self._sub_2_end = self._sub_2_start + timedelta(hours=1)
-
         self._manager = utm_client_identity.subject()
 
     def run(self, context: ExecutionContext):
@@ -119,10 +111,7 @@ class SubscriptionInteractions(TestScenario):
         self._setup_case()
 
         self.begin_test_case("OIR creation triggers relevant notifications")
-        self.begin_test_step("Create background subscriptions")
         self._step_create_background_subs()
-        self.end_test_step()
-
         self._steps_create_oirs_at_each_dss()
         self.end_test_case()
 
@@ -133,6 +122,8 @@ class SubscriptionInteractions(TestScenario):
         and one that starts one hour after the first ends"""
 
         # Create the first subscription
+        self.begin_test_step("Create first background subscription")
+
         sub_now_params = self._planning_area.get_new_subscription_params(
             subscription_id=self._sub_ids[0],
             start_time=self._sub_1_start,
@@ -144,8 +135,11 @@ class SubscriptionInteractions(TestScenario):
 
         sub_now = self._create_sub_with_params(sub_now_params)
         self._current_subs[sub_now_params.sub_id] = sub_now
+        self.end_test_step()
 
         # Create the second subscription, that starts later
+        self.begin_test_step("Create second background subscription")
+
         sub_later_params = self._planning_area.get_new_subscription_params(
             subscription_id=self._sub_ids[1],
             start_time=self._sub_2_start,
@@ -157,6 +151,7 @@ class SubscriptionInteractions(TestScenario):
 
         sub_later = self._create_sub_with_params(sub_later_params)
         self._current_subs[sub_later_params.sub_id] = sub_later
+        self.end_test_step()
 
     def _steps_create_oirs_at_each_dss(self):
         """Creates an OIR at each DSS instance"""
@@ -272,6 +267,14 @@ class SubscriptionInteractions(TestScenario):
 
     def _setup_case(self):
         self.begin_test_case("Setup")
+
+        # First subscription from now to 20 minutes in the future
+        self._sub_1_start = datetime.utcnow()
+        self._sub_1_end = self._sub_1_start + timedelta(minutes=20)
+
+        # Second subscription starts 20 minutes after the first ends and lasts for 1 hour
+        self._sub_2_start = self._sub_1_end + timedelta(minutes=20)
+        self._sub_2_end = self._sub_2_start + timedelta(hours=1)
 
         # Multiple runs of the scenario seem to rely on the same instance:
         # thus we need to reset the state of the scenario before running it.

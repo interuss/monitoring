@@ -37,9 +37,13 @@ This step ensures that no subscriptions and OIRs with the known test IDs exists 
 This test case verifies that newly created OIRs will receive the relevant subscriptions to notify from the DSS instance,
 regardless of which instance was used to create the entity.
 
-### [Create background subscriptions test step](./fragments/sub/crud/create_query.md)
+### [Create first background subscription test step](./fragments/sub/crud/create_query.md)
 
-Sets up two subscriptions that cover the planning area at different times, and which will be used as part of the interaction tests.
+Sets up the first subscription that cover the planning area from 'now' to 20 minutes in the future, and which will be used as part of the interaction tests.
+
+### [Create second background subscription test step](./fragments/sub/crud/create_query.md)
+
+Sets up the second subscription that cover the planning area from 20 minutes after the first starts and that lasts for 1 hour, and which will be used as part of the interaction tests.
 
 ### Create an OIR at every DSS in sequence test step
 
@@ -74,7 +78,5 @@ This includes any implicit subscription previously created on the DSS as part of
 If the DSS omits any of the implicit subscriptions belonging to an OIR previously created on another DSS (which are designed to all intersect),
 any of the DSSes at which an earlier OIR was created, or the DSS at which the current OIR has been created,
 are in violation of **[astm.f3548.v21.DSS0210,A2-7-2,4b](../../../../requirements/astm/f3548/v21.md)**.
-
-More specifically, they are breaking the above requirement by failing one or both of the following requirements:
 
 ## [Cleanup](./clean_workspace.md)
