@@ -41,7 +41,7 @@ It then goes on to mutate and delete it, each time confirming that all other DSS
 
 ### Create OIR validation test step
 
-#### [Create OIR](../fragments/oir/crud/create.md)
+#### [Create OIR](../fragments/oir/crud/create_correct.md)
 
 Verify that an operational intent reference can be created on the primary DSS.
 

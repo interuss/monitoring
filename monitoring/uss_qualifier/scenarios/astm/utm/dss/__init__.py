@@ -5,3 +5,4 @@ from .op_intent_ref_access_control import OpIntentReferenceAccessControl
 from .dss_interoperability import DSSInteroperability
 from .report import Report
 from .op_intent_ref_key_validation import OIRKeyValidation
+from .subscription_interactions import SubscriptionInteractions
