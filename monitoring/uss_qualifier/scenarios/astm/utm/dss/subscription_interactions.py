@@ -110,7 +110,7 @@ class SubscriptionInteractions(TestScenario):
         self._setup_case()
 
         self.begin_test_case(
-            "OIR creation and modification triggers relevant notifications"
+            "OIR creation and modification trigger relevant notifications"
         )
         self._step_create_background_sub()
         self._steps_create_oirs_at_each_dss()
