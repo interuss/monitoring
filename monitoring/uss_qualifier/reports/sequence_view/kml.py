@@ -7,7 +7,16 @@ from lxml import etree
 from pykml.factory import KML_ElementMaker as kml
 from pykml.util import format_xml_with_cdata
 
-from monitoring.monitorlib.scd import priority_of
+from monitoring.monitorlib.kml.f3548v21 import (
+    f3548v21_styles,
+    full_op_intent,
+    op_intent_refs_query,
+)
+from monitoring.monitorlib.kml.flight_planning import (
+    flight_planning_styles,
+    upsert_flight_plan,
+)
+from monitoring.monitorlib.kml.generation import query_styles
 from monitoring.uss_qualifier.reports.sequence_view.summary_types import TestedScenario
 from uas_standards.astm.f3548.v21.api import (
     QueryOperationalIntentReferenceParameters,
@@ -17,13 +26,6 @@ from uas_standards.astm.f3548.v21.api import (
 
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.fetch import QueryType, Query
-from monitoring.monitorlib.geotemporal import Volume4D
-from monitoring.monitorlib.kml import (
-    make_placemark_from_volume,
-    query_styles,
-    f3548v21_styles,
-    flight_planning_styles,
-)
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     UpsertFlightPlanRequest,
     UpsertFlightPlanResponse,
@@ -153,9 +155,8 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                         continue
                 try:
                     query_folder.extend(render_info.renderer(**kwargs))
-                except TypeError as e:
+                except (TypeError, KeyError, ValueError) as e:
                     msg = f"Error rendering {render_info.renderer.__name__}"
-                    logger.warning(msg)
                     query_folder.append(
                         kml.Folder(
                             kml.name(msg),
@@ -175,72 +176,16 @@ def render_query_op_intent_references(
     req: QueryOperationalIntentReferenceParameters,
     resp: QueryOperationalIntentReferenceResponse,
 ):
-    if "area_of_interest" not in req or not req.area_of_interest:
-        return [
-            kml.Folder(kml.name("Error: area_of_interest not specified in request"))
-        ]
-    v4 = Volume4D.from_f3548v21(req.area_of_interest)
-    items = "".join(
-        f"<li>{oi.manager}'s {oi.state.value} {oi.id}[{oi.version}]</li>"
-        for oi in resp.operational_intent_references
-    )
-    description = (
-        f"<ul>{items}</ul>" if items else "(no operational intent references found)"
-    )
-    return [
-        make_placemark_from_volume(
-            v4, name="area_of_interest", style_url="#QueryArea", description=description
-        )
-    ]
+    return [op_intent_refs_query(req, resp)]
 
 
 @query_kml_renderer(QueryType.F3548v21USSGetOperationalIntentDetails)
 def render_get_op_intent_details(resp: GetOperationalIntentDetailsResponse):
-    ref = resp.operational_intent.reference
-    name = f"{ref.manager}'s P{priority_of(resp.operational_intent.details)} {ref.state.value} {ref.id}[{ref.version}] @ {ref.ovn}"
-    folder = kml.Folder(kml.name(name))
-    if "volumes" in resp.operational_intent.details:
-        for i, v4_f3548 in enumerate(resp.operational_intent.details.volumes):
-            v4 = Volume4D.from_f3548v21(v4_f3548)
-            folder.append(
-                make_placemark_from_volume(
-                    v4,
-                    name=f"Nominal volume {i}",
-                    style_url=f"#F3548v21{resp.operational_intent.reference.state.value}",
-                )
-            )
-    if "off_nominal_volumes" in resp.operational_intent.details:
-        for i, v4_f3548 in enumerate(
-            resp.operational_intent.details.off_nominal_volumes
-        ):
-            v4 = Volume4D.from_f3548v21(v4_f3548)
-            folder.append(
-                make_placemark_from_volume(
-                    v4,
-                    name=f"Off-nominal volume {i}",
-                    style_url=f"#F3548v21{resp.operational_intent.reference.state.value}",
-                )
-            )
-    return [folder]
+    return [full_op_intent(resp.operational_intent)]
 
 
 @query_kml_renderer(QueryType.InterUSSFlightPlanningV1UpsertFlightPlan)
 def render_flight_planning_upsert_flight_plan(
     req: UpsertFlightPlanRequest, resp: UpsertFlightPlanResponse
 ):
-    folder = kml.Folder(
-        kml.name(
-            f"Activity {resp.planning_result.value}, flight {resp.flight_plan_status.value}"
-        )
-    )
-    basic_info = req.flight_plan.basic_information
-    for i, v4_flight_planning in enumerate(basic_info.area):
-        v4 = Volume4D.from_flight_planning_api(v4_flight_planning)
-        folder.append(
-            make_placemark_from_volume(
-                v4,
-                name=f"Volume {i}",
-                style_url=f"#{basic_info.usage_state.value}_{basic_info.uas_state.value}",
-            )
-        )
-    return [folder]
+    return [upsert_flight_plan(req, resp)]

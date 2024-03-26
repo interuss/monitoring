@@ -265,15 +265,14 @@ class DownUSS(TestScenario):
                 with self.check(
                     "Rejected planning", [self.tested_uss.participant_id]
                 ) as check:
-                    check_details = (
-                        f"{self.tested_uss.participant_id} indicated {resp.result}"
-                        + f' with notes "{resp.notes}"'
-                        if "notes" in resp and resp.notes
-                        else " with no notes"
-                    )
+                    msg = f"{self.tested_uss.participant_id} indicated {resp.result}"
+                    if "notes" in resp and resp.notes:
+                        msg += f' with notes "{resp.notes}"'
+                    else:
+                        msg += " with no notes"
                     check.record_failed(
                         summary="Warning (not a failure): planning got rejected, USS may have been more conservative",
-                        details=check_details,
+                        details=msg,
                     )
                 validator.expect_not_shared()
         self.end_test_step()

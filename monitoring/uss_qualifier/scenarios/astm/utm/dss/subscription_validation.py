@@ -69,6 +69,7 @@ class SubscriptionValidation(TestScenario):
         """
         super().__init__()
         scopes = {Scope.StrategicCoordination: "create and delete subscriptions"}
+
         # This is an UTMClientSession
         self._dss = dss.get_instance(scopes)
         self._pid = [self._dss.participant_id]

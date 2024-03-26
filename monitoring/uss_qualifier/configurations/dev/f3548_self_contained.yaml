@@ -14,6 +14,7 @@ v1:
         # Mapping of <resource name in test suite> to <resource name in resource pool>
         resources:
           id_generator: id_generator
+          utm_client_identity: utm_client_identity
           test_env_version_providers: test_env_version_providers
           prod_env_version_providers: prod_env_version_providers
           flight_planners: flight_planners
@@ -24,8 +25,10 @@ v1:
           dss_instances: dss_instances
           mock_uss: mock_uss
           second_utm_auth: second_utm_auth
+          utm_client_identity: utm_client_identity
           planning_area: planning_area
           problematically_big_area: problematically_big_area
+          utm_client_identity: utm_client_identity
 
     # This block defines all the resources available in the resource pool.
     # Presumably all resources defined below would be used either
@@ -49,6 +52,9 @@ v1:
               # ASTM F3548-21 USS emulation roles
               - utm.strategic_coordination
               - utm.availability_arbitration
+              # For authentication test purposes.
+              # Remove if the authentication provider pointed to by AUTH_SPEC does not support it.
+              - ""
 
         # Means by which uss_qualifier can discover which subscription ('sub' claim of its tokes) it is described by
         utm_client_identity:

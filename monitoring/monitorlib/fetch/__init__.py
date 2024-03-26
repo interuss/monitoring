@@ -47,12 +47,19 @@ class RequestDescription(ImplicitDict):
 
     @property
     def timestamp(self) -> datetime.datetime:
+        if self.outgoing:
+            return self.initiated_at.datetime
+        else:
+            return self.received_at.datetime
+
+    @property
+    def outgoing(self) -> bool:
         if "initiated_at" in self:
             # This was an outgoing request
-            return self.initiated_at.datetime
+            return True
         elif "received_at" in self:
             # This was an incoming request
-            return self.received_at.datetime
+            return False
         else:
             raise KeyError(
                 "RequestDescription missing both initiated_at and received_at"
@@ -61,6 +68,13 @@ class RequestDescription(ImplicitDict):
     @property
     def url_hostname(self) -> str:
         return urlparse(self.url).hostname
+
+    @property
+    def content(self) -> Optional[str]:
+        if self.json is not None:
+            return json.dumps(self.json)
+        else:
+            return self.body
 
 
 yaml.add_representer(RequestDescription, Representer.represent_dict)

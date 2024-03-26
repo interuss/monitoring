@@ -33,12 +33,13 @@ class DSSInstanceSpecification(ImplicitDict):
 
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
-        if (
-            not self.has_field_with_value("local_debug")
-            and self.has_field_with_value("has_private_address")
-            and self.get("has_private_address")
-        ):
-            self.local_debug = True
+        if not self.has_field_with_value("local_debug"):
+            if self.has_field_with_value("has_private_address") and self.get(
+                "has_private_address"
+            ):
+                self.local_debug = True
+            else:
+                self.local_debug = False
         try:
             urlparse(self.base_url)
         except ValueError:

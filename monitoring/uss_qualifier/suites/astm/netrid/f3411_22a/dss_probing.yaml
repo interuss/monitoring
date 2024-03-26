@@ -61,7 +61,8 @@ actions:
         isa: isa
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.dss.CRDBAccess
-      crdb_cluster: dss_crdb_cluster
+      resources:
+        crdb_cluster: dss_crdb_cluster
       on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.dss.HeavyTrafficConcurrent

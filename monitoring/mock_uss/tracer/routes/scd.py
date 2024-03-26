@@ -6,9 +6,13 @@ from loguru import logger
 from termcolor import colored
 
 from monitoring.mock_uss import webapp
+from monitoring.mock_uss.tracer import context
+from monitoring.mock_uss.tracer.log_types import (
+    OperationalIntentNotification,
+    ConstraintNotification,
+)
+from monitoring.mock_uss.tracer.template import _print_time_range
 from monitoring.monitorlib import fetch, infrastructure
-from . import context
-from ..template import _print_time_range
 
 RESULT = ("", 204)
 
@@ -21,8 +25,11 @@ def tracer_scd_v21_operation_notification(observation_area_id: str) -> Tuple[str
     """Implements SCD Operation notification receiver."""
     logger.debug(f"Handling tracer_scd_v21_operation_notification from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
-    req["endpoint"] = "operational_intents"
-    log_name = context.tracer_logger.log_new("notify_op", req)
+    log_name = context.tracer_logger.log_new(
+        OperationalIntentNotification(
+            observation_area_id=observation_area_id, request=req
+        )
+    )
 
     claims = req.token
     owner = claims.get("sub", "<No owner in token>")
@@ -83,8 +90,9 @@ def tracer_scd_v21_constraint_notification(observation_area_id: str) -> Tuple[st
     """Implements SCD Constraint notification receiver."""
     logger.debug(f"Handling tracer_scd_v21_constraint_notification from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
-    req["endpoint"] = "constraints"
-    log_name = context.tracer_logger.log_new("notify_constraint", req)
+    log_name = context.tracer_logger.log_new(
+        ConstraintNotification(observation_area_id=observation_area_id, request=req)
+    )
 
     claims = infrastructure.get_token_claims({k: v for k, v in flask.request.headers})
     owner = claims.get("sub", "<No owner in token>")

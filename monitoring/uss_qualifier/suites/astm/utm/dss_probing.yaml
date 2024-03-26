@@ -1,6 +1,7 @@
 name: DSS testing for ASTM NetRID F3548-21
 resources:
   dss: resources.astm.f3548.v21.DSSInstanceResource
+  utm_client_identity: resources.communications.ClientIdentityResource
   second_utm_auth: resources.communications.AuthAdapterResource?
   all_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_crdb_cluster: resources.interuss.crdb.CockroachDBClusterResource?
@@ -9,6 +10,35 @@ resources:
   planning_area: resources.astm.f3548.v21.PlanningAreaResource
   problematically_big_area: resources.VerticesResource
 actions:
+  - test_scenario:
+      scenario_type: scenarios.astm.utm.dss.SubscriptionInteractions
+      resources:
+        dss: dss
+        other_instances: all_dss_instances
+        id_generator: id_generator
+        planning_area: planning_area
+        utm_client_identity: utm_client_identity
+  - test_scenario:
+      scenario_type: scenarios.astm.utm.dss.OIRKeyValidation
+      resources:
+        dss: dss
+        id_generator: id_generator
+        client_identity: utm_client_identity
+        planning_area: planning_area
+  - test_scenario:
+      scenario_type: scenarios.astm.utm.dss.synchronization.OIRSynchronization
+      resources:
+        dss: dss
+        other_instances: all_dss_instances
+        id_generator: id_generator
+        planning_area: planning_area
+        client_identity: utm_client_identity
+  - test_scenario:
+      scenario_type: scenarios.astm.utm.dss.authentication.AuthenticationValidation
+      resources:
+        dss: dss
+        id_generator: id_generator
+        planning_area: planning_area
   - test_scenario:
       scenario_type: scenarios.astm.utm.dss.SubscriptionSimple
       resources:
@@ -23,14 +53,14 @@ actions:
         id_generator: id_generator
         planning_area: planning_area
   - test_scenario:
-      scenario_type: scenarios.astm.utm.OpIntentReferenceAccessControl
+      scenario_type: scenarios.astm.utm.dss.OpIntentReferenceAccessControl
       resources:
         dss: dss
         second_utm_auth: second_utm_auth
         flight_intents: flight_intents
         id_generator: id_generator
   - test_scenario:
-      scenario_type: scenarios.astm.utm.DSSInteroperability
+      scenario_type: scenarios.astm.utm.dss.DSSInteroperability
       resources:
         primary_dss_instance: dss
         all_dss_instances: all_dss_instances
@@ -42,7 +72,12 @@ actions:
         other_instances: all_dss_instances
         id_generator: id_generator
         planning_area: planning_area
+        second_utm_auth: second_utm_auth
   - test_scenario:
       scenario_type: scenarios.astm.utm.dss.CRDBAccess
       resources:
         crdb_cluster: dss_crdb_cluster
+  - test_scenario:
+      scenario_type: scenarios.astm.utm.dss.Report
+      resources:
+        dss: dss

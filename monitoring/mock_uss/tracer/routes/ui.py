@@ -1,5 +1,8 @@
+import datetime
 import glob
+import io
 import os
+import zipfile
 
 import arrow
 import flask
@@ -10,14 +13,17 @@ import yaml
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.database import db
+from monitoring.mock_uss.tracer.log_types import PollFlights, TracerLogEntry
 from monitoring.mock_uss.tracer.observation_areas import ObservationArea
+from monitoring.mock_uss.tracer.ui_auth import ui_auth
 from monitoring.monitorlib import fetch, geo, infrastructure
 from monitoring.monitorlib.fetch import summarize
 import monitoring.monitorlib.fetch.rid
 import monitoring.monitorlib.fetch.scd
 
 
-@webapp.route("/tracer/logs")
+@webapp.route("/tracer/logs", methods=["GET"])
+@ui_auth.login_required
 def tracer_list_logs():
     logger.debug(f"Handling tracer_list_logs from {os.getpid()}")
     logs = [
@@ -31,11 +37,54 @@ def tracer_list_logs():
         if os.path.exists(os.path.join(context.tracer_logger.log_path, kml)):
             kmls[log] = kml
     response = flask.make_response(
-        flask.render_template("tracer/logs.html", logs=logs, kmls=kmls)
+        flask.render_template(
+            "tracer/logs.html",
+            logs=logs,
+            kmls=kmls,
+            username=ui_auth.current_user().username,
+            is_admin=ui_auth.current_user().is_admin(),
+        )
     )
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     return response
+
+
+@webapp.route("/tracer/logs.zip")
+@ui_auth.login_required(role="admin")
+def tracer_download_logs():
+    logs = [
+        log
+        for log in reversed(sorted(os.listdir(context.tracer_logger.log_path)))
+        if log.endswith(".yaml")
+    ]
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
+        for log in logs:
+            with open(os.path.join(context.tracer_logger.log_path, log), "r") as f:
+                zip_file.writestr(log, f.read())
+    zip_name = f"logs_{datetime.datetime.utcnow().isoformat().split('.')[0]}.zip"
+    return flask.Response(
+        zip_buffer.getvalue(),
+        mimetype="application/zip",
+        headers={"Content-Disposition": f"attachment;filename={zip_name}"},
+    )
+
+
+@webapp.route("/tracer/logs", methods=["DELETE"])
+@ui_auth.login_required(role="admin")
+def tracer_clear_logs():
+    if db.value.observation_areas:
+        return "Logs cannot be cleared while any observation areas exist", 400
+
+    files = [
+        f
+        for f in reversed(sorted(os.listdir(context.tracer_logger.log_path)))
+        if f.endswith(".yaml") or f.endswith(".kml")
+    ]
+    for f in files:
+        os.remove(os.path.join(context.tracer_logger.log_path, f))
+    return f"{len(files)} log files cleared successfully", 200
 
 
 def _redact_and_augment_log(obj):
@@ -59,6 +108,7 @@ def _redact_and_augment_log(obj):
 
 
 @webapp.route("/tracer/logs/<log>")
+@ui_auth.login_required
 def tracer_logs(log):
     logger.debug(f"Handling tracer_logs from {os.getpid()}")
     logfile = os.path.join(context.tracer_logger.log_path, log)
@@ -71,35 +121,22 @@ def tracer_logs(log):
     else:
         obj = {"entries": objs}
 
-    object_type = obj.get("object_type", None)
-    if object_type == fetch.rid.FetchedISAs.__name__:
-        obj = {
-            "summary": summarize.isas(ImplicitDict.parse(obj, fetch.rid.FetchedISAs)),
-            "details": obj,
-        }
-    elif object_type == fetch.scd.FetchedEntities.__name__:
-        obj = {
-            "summary": summarize.entities(
-                ImplicitDict.parse(obj, fetch.scd.FetchedEntities)
-            ),
-            "details": obj,
-        }
-    elif object_type == fetch.rid.FetchedFlights.__name__:
-        obj = {
-            "summary": summarize.flights(
-                ImplicitDict.parse(obj, fetch.rid.FetchedFlights)
-            ),
-            "details": obj,
-        }
+    object_type_name = obj.get("object_type", None)
+    object_type = TracerLogEntry.entry_type(object_type_name)
+    if object_type:
+        parsed: TracerLogEntry = ImplicitDict.parse(obj, object_type)
+        obj = parsed.human_info()
 
     return flask.render_template(
         "tracer/log.html",
         log=_redact_and_augment_log(obj),
         title=logfile,
+        username=ui_auth.current_user().username,
     )
 
 
 @webapp.route("/tracer/kml/now.kml")
+@ui_auth.login_required
 def tracer_kml_now():
     logger.debug(f"Handling tracer_kml_now from {os.getpid()}")
     all_kmls = glob.glob(os.path.join(context.tracer_logger.log_path, "kml", "*.kml"))
@@ -115,6 +152,7 @@ def tracer_kml_now():
 
 
 @webapp.route("/tracer/kml/<kml>")
+@ui_auth.login_required
 def tracer_kmls(kml):
     logger.debug(f"Handling tracer_kmls from {os.getpid()}")
     kmlfile = os.path.join(context.tracer_logger.log_path, "kml", kml)
@@ -137,6 +175,7 @@ def _get_validated_obs_area(observation_area_id: str) -> ObservationArea:
 
 
 @webapp.route("/tracer/observation_areas/<observation_area_id>/ui", methods=["GET"])
+@ui_auth.login_required(role="admin")
 def tracer_observation_area_ui(observation_area_id: str):
     logger.debug(f"Handling tracer_observation_area_ui from {os.getpid()}")
     area = _get_validated_obs_area(observation_area_id)
@@ -162,6 +201,7 @@ def tracer_observation_area_ui(observation_area_id: str):
         alt_lo=alt_lo,
         alt_hi=alt_hi,
         now=StringBasedDateTime(arrow.utcnow().datetime),
+        username=ui_auth.current_user().username,
     )
 
 
@@ -169,6 +209,7 @@ def tracer_observation_area_ui(observation_area_id: str):
     "/tracer/observation_areas/<observation_area_id>/rid_poll_requests",
     methods=["POST"],
 )
+@ui_auth.login_required(role="admin")
 def tracer_rid_request_poll(observation_area_id: str):
     logger.debug(f"Handling tracer_rid_request_poll from {os.getpid()}")
     area = _get_validated_obs_area(observation_area_id)
@@ -181,21 +222,23 @@ def tracer_rid_request_poll(observation_area_id: str):
     rid_client = context.get_client(area.f3411.auth_spec, area.f3411.dss_base_url)
     flights_result = fetch.rid.all_flights(
         geo.make_latlng_rect(area.area.volume),
-        flask.request.form.get("include_recent_positions"),
-        flask.request.form.get("get_details"),
+        flask.request.form.get("include_recent_positions", type=bool),
+        flask.request.form.get("get_details", type=bool),
         area.f3411.rid_version,
         rid_client,
-        enhanced_details=flask.request.form.get("enhanced_details"),
+        enhanced_details=flask.request.form.get("enhanced_details", type=bool),
     )
     log_name = context.tracer_logger.log_new(
-        "clientrequest_pollflights", flights_result
+        PollFlights(observation_area_id=observation_area_id, poll=flights_result)
     )
     return flask.redirect(flask.url_for("tracer_logs", log=log_name))
 
 
 @webapp.route("/tracer/observation_areas/ui", methods=["GET"])
+@ui_auth.login_required
 def tracer_observation_areas_ui():
     return flask.render_template(
         "tracer/observation_areas_ui.html",
         title="Observation Areas UI",
+        username=ui_auth.current_user().username,
     )

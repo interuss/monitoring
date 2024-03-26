@@ -11,7 +11,7 @@ from shapely.geometry import LineString, Point, Polygon
 
 from implicitdict import StringBasedDateTime
 from monitoring.monitorlib.geo import flatten, unflatten
-from monitoring.monitorlib import kml
+from monitoring.monitorlib.kml.parsing import get_polygon_speed, get_kml_content
 from monitoring.uss_qualifier.resources.netrid.flight_data import (
     FullFlightRecord,
     FlightRecordCollection,
@@ -298,7 +298,7 @@ def get_interpolated_value(point, polygons, all_possible_values, round_value=Fal
 
 
 def get_speeds_from_speed_polygons(speed_polygons):
-    return [kml.get_polygon_speed(n) for n in list(speed_polygons)]
+    return [get_polygon_speed(n) for n in list(speed_polygons)]
 
 
 def get_flight_state_coordinates(flight_details):
@@ -363,7 +363,7 @@ def get_flight_state_coordinates(flight_details):
 def get_flight_records(
     kml_content, reference_time, random_seed
 ) -> FlightRecordCollection:
-    kml_content = kml.get_kml_content(kml_content.encode("utf-8"), True)
+    kml_content = get_kml_content(kml_content.encode("utf-8"), True)
     flight_records = []
     for flight_name, flight_details in kml_content.items():
         flight_description = flight_details["description"]

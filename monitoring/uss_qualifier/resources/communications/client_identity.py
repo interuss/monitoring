@@ -18,10 +18,10 @@ class ClientIdentitySpecification(ImplicitDict):
     """
 
     whoami_audience: str
-    """Audience to request for the access token used to determine subscriber identity."""
+    """Audience to request for the access token used to determine the subject."""
 
     whoami_scope: str
-    """Scope to request for the access token used to determine subscribe identity.  Must be a scope that the client is
+    """Scope to request for the access token used to determine the subject.  Must be a scope that the client is
     authorized to obtain."""
 
 
@@ -40,9 +40,9 @@ class ClientIdentityResource(Resource[ClientIdentitySpecification]):
         # Keep the adapter: we will only use it later at the moment it is required
         self._adapter = auth_adapter.adapter
 
-    def subscriber(self) -> str:
+    def subject(self) -> str:
         """
-        Return the subscriber identity as determined by the adapter:
+        Return the subject corresponding to this ClientIdentityResource as determined by the adapter:
         this will usually only trigger a token request if no token had been requested yet by the auth adapter.
 
         This is a function and not a field, to possibly profit from a token that would have been requested earlier
@@ -63,7 +63,7 @@ class ClientIdentityResource(Resource[ClientIdentitySpecification]):
             # Confirm we have a `sub` field available: if we don't, we bail
             if sub is None:
                 raise ValueError(
-                    f"subscriber is None, meaning `sub` claim was not found in payload of token, "
+                    f"subject is None, meaning `sub` claim was not found in payload of token, "
                     f"using {type(self._adapter).__name__} requesting {self.specification.whoami_scope} scope "
                     f"for {self.specification.whoami_audience} audience: {headers['Authorization'][len('Bearer: '):]}"
                 )

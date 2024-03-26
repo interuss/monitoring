@@ -11,6 +11,7 @@ from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
     GetOperationalIntentDetailsResponse,
     EntityID,
+    ExchangeRecord,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
@@ -294,7 +295,6 @@ class OpIntentValidator(object):
                     if not skip_if_not_found:
                         check.record_failed(
                             summary="Operational intent reference not found in DSS",
-                            severity=Severity.High,
                             details=f"USS {self._flight_planner.participant_id} was supposed to have shared a new operational intent with the DSS, but no matching operational intent references were found in the DSS in the area of the flight intent",
                             query_timestamps=[self._after_query.request.timestamp],
                         )
@@ -312,40 +312,38 @@ class OpIntentValidator(object):
                 # different appropriate check. Exception made if skip_if_not_found=True and op intent was deleted: step
                 # is skipped.
                 modified_oi_ref = self._find_after_oi(self._orig_oi_ref.id)
-                if modified_oi_ref is None:
-                    if not skip_if_not_found:
-                        if (
-                            flight_intent.basic_information.uas_state
-                            == UasState.Nominal
-                        ) and (
-                            flight_intent.basic_information.usage_state
-                            == AirspaceUsageState.InUse
-                        ):
-                            with self._scenario.check(
-                                "Operational intent for active flight not deleted",
-                                [self._flight_planner.participant_id],
-                            ) as active_flight_check:
-                                active_flight_check.record_failed(
-                                    summary="Operational intent reference for active flight not found in DSS",
-                                    severity=Severity.High,
-                                    details=f"USS {self._flight_planner.participant_id} was supposed to have shared with the DSS an updated operational intent by modifying it, but no matching operational intent references were found in the DSS in the area of the flight intent",
-                                    query_timestamps=[
-                                        self._after_query.request.timestamp
-                                    ],
-                                )
-                        else:
-                            check.record_failed(
-                                summary="Operational intent reference not found in DSS",
-                                severity=Severity.High,
+
+                # skip check if skip_if_not_found=True and op intent was deleted
+                if modified_oi_ref is None and skip_if_not_found:
+                    self._scenario.record_note(
+                        f"{self._flight_planner.participant_id} no op intent",
+                        f"Operational intent reference with ID {self._orig_oi_ref.id} not found in DSS for test step '{self._scenario.current_step_name()}'.",
+                    )
+                    check.skip()
+                    return None
+
+                # check flight was not deleted if it is active
+                if (flight_intent.basic_information.uas_state == UasState.Nominal) and (
+                    flight_intent.basic_information.usage_state
+                    == AirspaceUsageState.InUse
+                ):
+                    with self._scenario.check(
+                        "Operational intent for active flight not deleted",
+                        [self._flight_planner.participant_id],
+                    ) as active_flight_check:
+                        if modified_oi_ref is None:
+                            active_flight_check.record_failed(
+                                summary="Operational intent reference for active flight not found in DSS",
                                 details=f"USS {self._flight_planner.participant_id} was supposed to have shared with the DSS an updated operational intent by modifying it, but no matching operational intent references were found in the DSS in the area of the flight intent",
                                 query_timestamps=[self._after_query.request.timestamp],
                             )
-                    else:
-                        self._scenario.record_note(
-                            f"{self._flight_planner.participant_id} no op intent",
-                            f"Operational intent reference with ID {self._orig_oi_ref.id} not found in DSS for test step '{self._scenario.current_step_name()}'.",
-                        )
-                        return None
+
+                if modified_oi_ref is None:
+                    check.record_failed(
+                        summary="Operational intent reference not found in DSS",
+                        details=f"USS {self._flight_planner.participant_id} was supposed to have shared with the DSS an updated operational intent by modifying it, but no matching operational intent references were found in the DSS in the area of the flight intent",
+                        query_timestamps=[self._after_query.request.timestamp],
+                    )
                 oi_ref = modified_oi_ref
 
             else:
@@ -353,7 +351,6 @@ class OpIntentValidator(object):
                 if self._find_after_oi(self._orig_oi_ref.id) is not None:
                     check.record_failed(
                         summary="Operational intent reference found duplicated in DSS",
-                        severity=Severity.High,
                         details=f"USS {self._flight_planner.participant_id} was supposed to have shared with the DSS an updated operational intent by replacing it, but it ended up duplicating the operational intent in the DSS",
                         query_timestamps=[self._after_query.request.timestamp],
                     )
@@ -698,3 +695,42 @@ def set_uss_down(
                 query_timestamps=[avail_query.request.timestamp],
             )
     return availability_version
+
+
+def make_dss_report(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    exchange: ExchangeRecord,
+) -> str:
+    """Make a DSS report.
+
+    This function implements the test step fragment described in make_dss_report.md.
+
+    Returns:
+        The report ID.
+    """
+    with scenario.check(
+        "DSS report successfully submitted", [dss.participant_id]
+    ) as check:
+        try:
+            report_id, report_query = dss.make_report(exchange)
+            scenario.record_query(report_query)
+        except QueryError as e:
+            scenario.record_queries(e.queries)
+            report_query = e.cause
+            check.record_failed(
+                summary="DSS report could not be submitted",
+                details=f"DSS responded code {report_query.status_code}; {e}",
+                query_timestamps=[report_query.request.timestamp],
+            )
+
+    with scenario.check(
+        "DSS returned a valid report ID", [dss.participant_id]
+    ) as check:
+        if not report_id:
+            check.record_failed(
+                summary="Submitted DSS report returned no or empty ID",
+                details=f"DSS responded code {report_query.status_code} but with no ID for the report",
+                query_timestamps=[report_query.request.timestamp],
+            )
+    return report_id

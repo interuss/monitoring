@@ -30,6 +30,9 @@ from uas_standards.astm.f3548.v21.api import (
     OperationID,
     GetOperationalIntentTelemetryResponse,
     VehicleTelemetry,
+    ExchangeRecord,
+    ErrorReport,
+    AirspaceConflictResponse,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -103,6 +106,16 @@ class DSSInstance(object):
                 raise ValueError(
                     f"{fullname(type(self))} client called {calling_function_name(1)} which requires the use of the scope `{scope}`, but this DSSInstance is only authorized to perform actions with the scopes {' or '.join(self._scopes_authorized)}"
                 )
+
+    def _uses_any_scope(self, *scopes: str) -> str:
+        """Validates that at least a required scope is authorized for a request.
+        Additionally, returns a valid scope that may be used for the request."""
+        for scope in scopes:
+            if scope in self._scopes_authorized:
+                return scope
+        raise ValueError(
+            f"{fullname(type(self))} client called {calling_function_name(1)} which requires the use of any of the scopes `{', '.join(scopes)}`, but this DSSInstance is only authorized to perform actions with the scopes {' or '.join(self._scopes_authorized)}"
+        )
 
     def can_use_scope(self, scope: str) -> bool:
         return scope in self._scopes_authorized
@@ -290,9 +303,16 @@ class DSSInstance(object):
         ):
             result = query.parse_json_result(ChangeOperationalIntentReferenceResponse)
             return result.operational_intent_reference, result.subscribers, query
-        else:
+        elif query.status_code == 409:
+            result = query.parse_json_result(AirspaceConflictResponse)
             raise QueryError(
-                f"Received code {query.status_code} when attempting to {'create' if create else 'update'} operational intent with ID {oi_uuid}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                f"Received code 409 when attempting to {'create' if create else 'update'} operational intent with ID {oi_uuid}; error message: `{result.message}`; missing operational intent IDs: {[oi.id for oi in result.missing_operational_intents]}",
+                query,
+            )
+        else:
+            err_msg = query.error_message if query.error_message is not None else ""
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to {'create' if create else 'update'} operational intent with ID {oi_uuid}; error message: `{err_msg}`",
                 query,
             )
 
@@ -368,6 +388,58 @@ class DSSInstance(object):
         else:
             result = query.parse_json_result(UssAvailabilityStatusResponse)
             return result.version, query
+
+    def make_report(
+        self,
+        exchange: ExchangeRecord,
+    ) -> Tuple[Optional[str], Query]:
+        """
+        Make a DSS report.
+        Returns:
+            A tuple composed of
+            1) the report ID;
+            2) the query.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 201, or if the parsing of the response failed.
+        """
+        use_scope = self._uses_any_scope(
+            Scope.ConstraintManagement,
+            Scope.ConstraintProcessing,
+            Scope.StrategicCoordination,
+            Scope.ConformanceMonitoringForSituationalAwareness,
+            Scope.AvailabilityArbitration,
+        )
+
+        req = ErrorReport(exchange=exchange)
+        op = OPERATIONS[OperationID.MakeDssReport]
+        query = query_and_describe(
+            self.client,
+            op.verb,
+            op.path,
+            QueryType.F3548v21DSSMakeDssReport,
+            self.participant_id,
+            scope=use_scope,
+            json=req,
+        )
+
+        # TODO: this is a temporary hack: the endpoint is currently not implemented in the DSS, as such we expect the
+        #  DSS to respond with a 400 and a specific error message. This must be updated once this endpoint is actually
+        #  implemented in the DSS.
+        # if query.status_code != 201:
+        #     raise QueryError(
+        #         f"Received code {query.status_code} when attempting to make DSS report{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+        #         query,
+        #     )
+        # else:
+        #     result = query.parse_json_result(ErrorReport)
+        #     return result.report_id, query
+        if query.status_code != 400 or "Not yet implemented" not in query.error_message:
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to make DSS report{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
+        else:
+            return "dummy_report_id", query
 
     def query_subscriptions(
         self,
@@ -445,6 +517,9 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
 
     def can_use_scope(self, scope: str) -> bool:
         return scope in self._auth_adapter.scopes
+
+    def get_authorized_scopes(self) -> Set[str]:
+        return self._auth_adapter.scopes.copy()
 
     def get_instance(self, scopes_required: Dict[str, str]) -> DSSInstance:
         """Get a client object ready to be used.

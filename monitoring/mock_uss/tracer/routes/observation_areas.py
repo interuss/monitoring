@@ -1,7 +1,7 @@
 import os
 import uuid
 from datetime import datetime
-from typing import Tuple, List
+from typing import Tuple, List, Union
 
 import flask
 import s2sphere
@@ -11,6 +11,10 @@ from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.database import db
+from monitoring.mock_uss.tracer.log_types import (
+    ObservationAreaImportError,
+    TracerShutdown,
+)
 from monitoring.mock_uss.tracer.observation_area_operations import (
     redact_observation_area,
     delete_observation_area,
@@ -25,6 +29,7 @@ from monitoring.mock_uss.tracer.observation_areas import (
     F3411ObservationArea,
 )
 from monitoring.mock_uss.tracer.tracer_poll import TASK_POLL_OBSERVATION_AREAS
+from monitoring.mock_uss.tracer.ui_auth import ui_auth
 from monitoring.monitorlib import fetch
 import monitoring.monitorlib.fetch.rid
 from monitoring.monitorlib.geo import Volume3D
@@ -32,7 +37,8 @@ from monitoring.monitorlib.geotemporal import Volume4D
 
 
 @webapp.route("/tracer/observation_areas", methods=["GET"])
-def tracer_list_observation_areas() -> Tuple[str, int]:
+@ui_auth.login_required
+def tracer_list_observation_areas() -> flask.Response:
     with db as tx:
         result = ListObservationAreasResponse(
             areas=[redact_observation_area(a) for a in tx.observation_areas.values()]
@@ -41,7 +47,10 @@ def tracer_list_observation_areas() -> Tuple[str, int]:
 
 
 @webapp.route("/tracer/observation_areas/<area_id>", methods=["PUT"])
-def tracer_upsert_observation_area(area_id: str) -> Tuple[str, int]:
+@ui_auth.login_required(role="admin")
+def tracer_upsert_observation_area(
+    area_id: str,
+) -> Union[Tuple[str, int], flask.Response]:
     try:
         req_body = flask.request.json
         if req_body is None:
@@ -80,7 +89,10 @@ def tracer_upsert_observation_area(area_id: str) -> Tuple[str, int]:
 
 
 @webapp.route("/tracer/observation_areas/<area_id>", methods=["DELETE"])
-def tracer_delete_observation_area(area_id: str) -> Tuple[str, int]:
+@ui_auth.login_required(role="admin")
+def tracer_delete_observation_area(
+    area_id: str,
+) -> Union[Tuple[str, int], flask.Response]:
     with db as tx:
         if area_id not in tx.observation_areas:
             return "Specified observation area not in system", 404
@@ -96,7 +108,8 @@ def tracer_delete_observation_area(area_id: str) -> Tuple[str, int]:
 
 
 @webapp.route("/tracer/observation_areas/import_requests", methods=["POST"])
-def tracer_import_observation_areas() -> Tuple[str, int]:
+@ui_auth.login_required(role="admin")
+def tracer_import_observation_areas() -> Union[Tuple[str, int], flask.Response]:
     try:
         req_body = flask.request.json
         if req_body is None:
@@ -136,7 +149,7 @@ def tracer_import_observation_areas() -> Tuple[str, int]:
         )
         if not rid_subscriptions.success:
             context.tracer_logger.log_new(
-                "import_observation_areas_rid_error", rid_subscriptions
+                ObservationAreaImportError(rid_subscriptions=rid_subscriptions)
             )
             return (
                 f"Could not retrieve F3411 subscriptions (code {rid_subscriptions.status_code})",
@@ -214,8 +227,5 @@ def _shutdown():
     logger.info("Observation areas cleanup complete.")
 
     context.tracer_logger.log_new(
-        "tracer_stop",
-        {
-            "timestamp": datetime.utcnow(),
-        },
+        TracerShutdown(timestamp=StringBasedDateTime(datetime.utcnow()))
     )

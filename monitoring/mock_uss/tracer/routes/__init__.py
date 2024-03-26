@@ -6,8 +6,9 @@ from loguru import logger
 from termcolor import colored
 
 from monitoring.mock_uss import webapp
+from monitoring.mock_uss.tracer import context
+from monitoring.mock_uss.tracer.log_types import BadRoute
 from monitoring.monitorlib import fetch, versioning
-from .. import context
 
 
 @webapp.route("/tracer/status")
@@ -26,8 +27,7 @@ from monitoring.mock_uss.tracer.routes import observation_areas
 def tracer_catch_all(u_path) -> Tuple[str, int]:
     logger.debug(f"Handling tracer_catch_all from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
-    req["endpoint"] = "catch_all"
-    log_name = context.tracer_logger.log_new("uss_badroute", req)
+    log_name = context.tracer_logger.log_new(BadRoute(request=req))
 
     claims = req.token
     owner = claims.get("sub", "<No owner in token>")

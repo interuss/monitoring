@@ -37,9 +37,12 @@ FlightIntentsResource that provides the following flight intents:
     </tr>
     <tr>
         <td><code>flight_2_planned</code></td>
-        <td>Flight 2</td>
-        <td>Accepted</td>
-        <td>Flight 1</td>
+        <td rowspan="2">Flight 2</td>
+        <td rowspan="2">Accepted</td>
+        <td rowspan="2">Flight 1</td>
+    </tr>
+    <tr>
+        <td><code>flight_2_planned_modified</code></td>
     </tr>
 </table>
 
@@ -65,7 +68,7 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 
 ![Test case summary illustration](./assets/flight1_activated_flight2_planned.svg)
 
-This test case verifies that relevant notifications are received through subscription of an operational intent in Activated state.
+This test case verifies that relevant notifications for new operational intents are received through subscription of an operational intent in Activated state.
 
 ### Tested_uss plans and activates Flight 1 test step
 
@@ -99,7 +102,20 @@ Check a notification was received by tested_uss for Flight 2, with Flight 1's su
 
 ## Modify Activated operational intent area and receive notification of relevant intent test case
 
-### ToDo
+This test case verifies that relevant notifications for modified operational intents are received through subscription of an operational intent in Activated state.
+
+### Mock_uss modifies planned Flight 2 test step
+
+#### [Modify Flight 2](../../../../flight_planning/modify_planned_flight_intent.md)
+
+The test driver successfully modifies planned Flight 2 via the mock uss, as there is still no conflict with Flight 1.
+However, because they are relevant to each other mock_uss will send Flight 2 notification to tested_uss.
+
+#### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
+
+### [Validate Flight 2 notification received by tested_uss test step](../test_steps/validate_notification_received.md)
+
+Check a notification was received by tested_uss for Flight 2, with Flight 1's subscription_id, after modification of the flight.
 
 ## Declare Operational intent non-conforming and receive notification of relevant intent test case
 

@@ -10,6 +10,12 @@ from monitoring.mock_uss.tracer.config import (
     KEY_TRACER_KML_SERVER,
     KEY_TRACER_KML_FOLDER,
 )
+from monitoring.mock_uss.tracer.log_types import (
+    PollOperationalIntents,
+    PollConstraints,
+    PollISAs,
+    PollStart,
+)
 from monitoring.mock_uss.tracer.observation_areas import (
     ObservationAreaID,
     ObservationArea,
@@ -71,7 +77,7 @@ def _log_poll_start(logger):
             KEY_TRACER_KML_FOLDER: webapp.config[KEY_TRACER_KML_FOLDER],
             "code_version": versioning.get_code_version(),
         }
-        logger.log_new("poll_start", config)
+        logger.log_new(PollStart(config=config))
 
 
 @webapp.periodic_task(TASK_POLL_OBSERVATION_AREAS)
@@ -99,7 +105,6 @@ def poll_isas(area: ObservationArea, logger: tracerlog.Logger) -> None:
     rid_client = context.get_client(area.f3411.auth_spec, area.f3411.dss_base_url)
     box = get_latlngrect_vertices(make_latlng_rect(area.area.volume))
 
-    log_name = "poll_isas"
     t0 = datetime.datetime.utcnow()
     result = fetch.rid.isas(
         box,
@@ -125,13 +130,14 @@ def poll_isas(area: ObservationArea, logger: tracerlog.Logger) -> None:
             tx.need_line_break = True
         need_line_break = tx.need_line_break
 
+    log_entry = PollISAs(poll=result)
     if log_new:
-        logger.log_new(log_name, result)
+        logger.log_new(log_entry)
         if need_line_break:
             print()
         print(diff.isa_diff_text(last_result, result))
     else:
-        logger.log_same(t0, t1, log_name)
+        logger.log_same(t0, t1, log_entry.prefix_code())
         print_no_newline(".")
 
 
@@ -139,7 +145,6 @@ def poll_ops(
     area: ObservationArea, scd_client: UTMClientSession, logger: tracerlog.Logger
 ) -> None:
     box = make_latlng_rect(area.area.volume)
-    log_name = "poll_ops"
     t0 = datetime.datetime.utcnow()
     if "operational_intents" not in context.scd_cache:
         context.scd_cache["operational_intents"]: Dict[
@@ -168,13 +173,14 @@ def poll_ops(
             tx.need_line_break = True
         need_line_break = tx.need_line_break
 
+    log_entry = PollOperationalIntents(poll=result)
     if log_new:
-        logger.log_new(log_name, result)
+        logger.log_new(log_entry)
         if need_line_break:
             print()
         print(diff.entity_diff_text(last_result, result))
     else:
-        logger.log_same(t0, t1, log_name)
+        logger.log_same(t0, t1, log_entry.prefix_code())
         print_no_newline(".")
 
 
@@ -182,7 +188,6 @@ def poll_constraints(
     area: ObservationArea, scd_client: UTMClientSession, logger: tracerlog.Logger
 ) -> None:
     box = make_latlng_rect(area.area.volume)
-    log_name = "poll_constraints"
     t0 = datetime.datetime.utcnow()
     if "constraints" not in context.scd_cache:
         context.scd_cache["constraints"]: Dict[str, fetch.scd.FetchedEntity] = {}
@@ -207,11 +212,12 @@ def poll_constraints(
             tx.need_line_break = True
         need_line_break = tx.need_line_break
 
+    log_entry = PollConstraints(poll=result)
     if log_new:
-        logger.log_new(log_name, result)
+        logger.log_new(log_entry)
         if need_line_break:
             print()
         print(diff.entity_diff_text(last_result, result))
     else:
-        logger.log_same(t0, t1, log_name)
+        logger.log_same(t0, t1, log_entry.prefix_code())
         print_no_newline(".")

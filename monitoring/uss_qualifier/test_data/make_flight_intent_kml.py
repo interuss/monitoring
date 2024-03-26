@@ -12,7 +12,8 @@ from pykml.util import format_xml_with_cdata
 import yaml
 
 from implicitdict import ImplicitDict
-from monitoring.monitorlib.kml import make_placemark_from_volume, flight_planning_styles
+from monitoring.monitorlib.kml.flight_planning import flight_planning_styles
+from monitoring.monitorlib.kml.generation import make_placemark_from_volume
 from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.fileio import load_dict_with_references, resolve_filename
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (

@@ -5,7 +5,7 @@ This diagnostic capability monitors UTM traffic in a specified area.  This
 includes, when requested, remote ID Identification Service Areas, strategic
 deconfliction Operational Intents, and Constraints.  This tool records data in a
 way not allowed in a standards-compliant production system, so should not be run
-on a production system.
+in a production environment.
 
 ## Polling
 Polling periodically queries the DSS regarding the objects of interest and notes
@@ -39,10 +39,4 @@ Visit /tracer/logs to see a list of log entries recorded by tracer while the
 current session has been running.
 
 ## Invocation
-From the repository root:
-
-```shell script
-./monitoring/mock_uss/run_locally_tracer.sh
-```
-
-See that script for parameters that can be adjusted for a deployed system.
+An instance of tracer-enabled mock_uss is brought up as part of the [local deployment](../README.md#local-deployment).  It can also be deployed [with Google Cloud Platform](../deployment/gcp) when configured appropriately.

@@ -5,6 +5,12 @@ import yaml
 from yaml.representer import Representer
 
 from monitoring.mock_uss.tracer import context
+from monitoring.mock_uss.tracer.log_types import (
+    RIDSubscribe,
+    SCDSubscribe,
+    RIDUnsubscribe,
+    SCDUnsubscribe,
+)
 from monitoring.mock_uss.tracer.observation_areas import ObservationAreaID
 from monitoring.monitorlib import fetch
 import monitoring.monitorlib.fetch.rid
@@ -19,11 +25,6 @@ from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
 
 yaml.add_representer(StringBasedDateTime, Representer.represent_str)
-
-RID_SUBSCRIPTION_ID_CODE = "tracer RID Subscription"
-SCD_SUBSCRIPTION_ID_CODE = "tracer SCD Subscription"
-RID_SUBSCRIPTION_KEY = "subscription_rid"
-SCD_SUBSCRIPTION_KEY = "subscription_scd"
 
 
 class SubscriptionManagementError(RuntimeError):
@@ -61,7 +62,7 @@ def subscribe_rid(
         rid_version=rid_version,
         utm_client=rid_client,
     )
-    logger.log_new(f"{RID_SUBSCRIPTION_KEY}_create", create_result)
+    logger.log_new(RIDSubscribe(changed_subscription=create_result))
     if not create_result.success:
         raise SubscriptionManagementError("Could not create RID Subscription")
     return subscription_id
@@ -92,7 +93,7 @@ def subscribe_scd(
         area.volume.altitude_lower_wgs84_m(0),
         area.volume.altitude_upper_wgs84_m(3048),
     )
-    logfile = logger.log_new(f"{SCD_SUBSCRIPTION_KEY}_create", create_result)
+    logfile = logger.log_new(SCDSubscribe(changed_subscription=create_result))
     if not create_result.success:
         raise SubscriptionManagementError(
             "Could not create new SCD Subscription -> {}".format(logfile)
@@ -105,8 +106,8 @@ def unsubscribe_rid(
 ) -> None:
     logger = context.tracer_logger
     existing_result = fetch.rid.subscription(subscription_id, rid_version, rid_client)
-    logfile = logger.log_new(f"{RID_SUBSCRIPTION_KEY}_get", existing_result)
     if existing_result.status_code != 404 and not existing_result.success:
+        logfile = logger.log_new(RIDUnsubscribe(existing_subscription=existing_result))
         raise SubscriptionManagementError(
             "Could not query existing RID Subscription -> {}".format(logfile)
         )
@@ -118,7 +119,11 @@ def unsubscribe_rid(
             rid_version=rid_version,
             utm_client=rid_client,
         )
-        logfile = logger.log_new(f"{RID_SUBSCRIPTION_KEY}_del", del_result)
+        logfile = logger.log_new(
+            RIDUnsubscribe(
+                existing_subscription=existing_result, deleted_subscription=del_result
+            )
+        )
         if not del_result.success:
             raise SubscriptionManagementError(
                 "Could not delete existing RID Subscription -> {}".format(logfile)
@@ -128,8 +133,8 @@ def unsubscribe_rid(
 def unsubscribe_scd(subscription_id: str, scd_client: UTMClientSession) -> None:
     logger = context.tracer_logger
     get_result = fetch.scd.get_subscription(scd_client, subscription_id)
-    logfile = logger.log_new(f"{SCD_SUBSCRIPTION_KEY}_get", get_result)
     if not get_result.success:
+        logfile = logger.log_new(SCDUnsubscribe(existing_subscription=get_result))
         raise SubscriptionManagementError(
             "Could not query existing SCD Subscription -> {}".format(logfile)
         )
@@ -140,7 +145,11 @@ def unsubscribe_scd(subscription_id: str, scd_client: UTMClientSession) -> None:
             subscription_id,
             get_result.subscription.version,
         )
-        logfile = logger.log_new(f"{SCD_SUBSCRIPTION_KEY}_del", del_result)
+        logfile = logger.log_new(
+            SCDUnsubscribe(
+                existing_subscription=get_result, deleted_subscription=del_result
+            )
+        )
         if not del_result.success:
             raise SubscriptionManagementError(
                 "Could not delete existing SCD Subscription -> {}".format(logfile)

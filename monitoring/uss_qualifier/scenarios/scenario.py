@@ -170,6 +170,9 @@ class PendingCheck(object):
         )
         self._step_report.passed_checks.append(passed_check)
 
+    def skip(self) -> None:
+        self._outcome_recorded = True
+
 
 def get_scenario_type_by_name(scenario_type_name: TestScenarioTypeName) -> Type:
     inspection.import_submodules(scenarios_module)

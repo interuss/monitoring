@@ -238,7 +238,11 @@ class MockUSS(flask.Flask):
                     with db as tx:
                         periodic_task = tx.periodic_tasks[task_to_execute]
                         periodic_task.executing = False
-                        if periodic_task.period.timedelta.total_seconds() == 0:
+                        if (
+                            "period" in periodic_task
+                            and periodic_task.period
+                            and periodic_task.period.timedelta.total_seconds() == 0
+                        ):
                             periodic_task.last_execution_time = StringBasedDateTime(
                                 arrow.utcnow().datetime
                             )
