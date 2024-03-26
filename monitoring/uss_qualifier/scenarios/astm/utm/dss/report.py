@@ -47,12 +47,13 @@ class Report(TestScenario):
                 op.path.format(entityid="dummy_op_intent_id"),
                 QueryType.F3548v21DSSGetOperationalIntentReference,
                 "dummy_dss",
-                True
+                True,
             )
             if not query.response.code:
-              return scd_lib.make_exchange_record(
-                  query, "this is a dummy record created by the USS qualifier. This failure is expected."
-              )
+                return scd_lib.make_exchange_record(
+                    query,
+                    "this is a dummy record created by the USS qualifier. This failure is expected.",
+                )
 
             # we are not supposed to reach this state
             raise RuntimeError(
