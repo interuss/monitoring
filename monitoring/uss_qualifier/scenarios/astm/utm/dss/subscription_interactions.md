@@ -68,6 +68,34 @@ If the DSS omits any of the implicit subscriptions belonging to an OIR previousl
 any of the DSSes at which an earlier OIR was created, or the DSS at which the current OIR has been created,
 are in violation of **[astm.f3548.v21.DSS0210,A2-7-2,4b](../../../../requirements/astm/f3548/v21.md)**.
 
+### Modify an OIR at every DSS in sequence test step
+
+This test step will modify the previously created operational intent reference and assorted subscription at every DSS, in sequence, each time verifying that the DSS
+requires notifications for any previously established subscription that intersects with the modified OIR.
+
+Note that this step is run once for each involved DSS (that is, once for the primary DSS and once for every secondary DSS)
+
+#### [Modify OIR](./fragments/oir/crud/update_query.md)
+
+Check that the OIR modification query succeeds
+
+#### 🛑 DSS response contains the expected background subscription check
+
+The response from a DSS to a valid OIR modification request is expected to contain any relevant subscription for the OIR's extents.
+This includes the subscription created earlier, as it is designed to intersect with the OIRs being modified.
+
+If the DSS omits the intersecting subscription, it fails to implement **[astm.f3548.v21.DSS0210,A2-7-2,4c](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 DSS returns the implicit subscriptions from intersecting OIRs check
+
+The response from a DSS to a valid OIR modification request is expected to contain any relevant subscription for the OIR's extents.
+This includes any implicit subscription previously created on the DSS as part of a previously created OIR.
+
+If the DSS omits any of the implicit subscriptions belonging to an OIR previously created over time range A on another DSS (which are designed to all intersect),
+any of the DSSes at which an earlier OIR was created, or the DSS at which the current OIR has been modified,
+are in violation of **[astm.f3548.v21.DSS0210,A2-7-2,4c](../../../../requirements/astm/f3548/v21.md)**.
+
+
 ## Subscription creation returns relevant OIRs test case
 
 This test case checks that, when a newly created subscription intersects with an existing OIR and that the subscription is intended for operational intent references,
