@@ -130,10 +130,10 @@ v1:
             auth_adapter: utm_auth
           specification:
             instances:
-              - participant_id: uss1
+              - participant_id: uss1_core
                 interuss:
                   base_url: http://scdsc.uss1.localutm/versioning
-              - participant_id: uss2
+              - participant_id: uss2_core
                 interuss:
                   base_url: http://scdsc.uss2.localutm/versioning
 
@@ -144,10 +144,10 @@ v1:
             auth_adapter: utm_auth
           specification:
             instances:
-              - participant_id: uss1
+              - participant_id: uss1_core
                 interuss:
                   base_url: http://scdsc.uss1.localutm/versioning
-              - participant_id: uss2
+              - participant_id: uss2_core
                 interuss:
                   base_url: http://scdsc.uss2.localutm/versioning
 
@@ -159,10 +159,10 @@ v1:
           specification:
             flight_planners:
               # uss1 is the mock_uss directly exposing flight planning functionality
-              - participant_id: uss1
+              - participant_id: uss1_core
                 v1_base_url: http://scdsc.uss1.localutm/flight_planning/v1
               # uss2 is another mock_uss directly exposing flight planning functionality
-              - participant_id: uss2
+              - participant_id: uss2_core
                 v1_base_url: http://scdsc.uss2.localutm/flight_planning/v1
 
         # Details of conflicting flights (used in nominal planning scenario)
@@ -214,7 +214,7 @@ v1:
             auth_adapter: utm_auth
           specification:
             # A USS that hosts a DSS instance is also a participant in the test, even if they don't fulfill any other roles
-            participant_id: uss1
+            participant_id: uss1_dss
             base_url: http://dss.uss1.localutm
 
         dss_instances:
@@ -223,13 +223,13 @@ v1:
                 auth_adapter: utm_auth
             specification:
               dss_instances:
-                - participant_id: uss1
+                - participant_id: uss1_dss
                   user_participant_ids:
                     # Participants using a DSS instance they do not provide should be listed as users of that DSS (so that they can take credit for USS requirements enforced by the DSS)
                     - mock_uss  # mock_uss uses this DSS instance; it does not provide its own instance
                   base_url: http://dss.uss1.localutm
                   has_private_address: true
-                - participant_id: uss2
+                - participant_id: uss2_dss
                   base_url: http://dss.uss2.localutm
                   has_private_address: true
 
@@ -273,6 +273,13 @@ v1:
     # Write out a human-readable reports of the F3548-21 requirements tested
     tested_requirements:
       - report_name: gate1
+        aggregate_participants:
+          uss1:
+            - uss1_core
+            - uss1_dss
+          uss2:
+            - uss2_core
+            - uss2_dss
         requirement_collections:
           scd_no_dss:
             requirements:
@@ -298,6 +305,13 @@ v1:
           uss1: scd_no_dss
           uss2: scd_no_dss
       - report_name: gate3
+        aggregate_participants:
+          uss1:
+            - uss1_core
+            - uss1_dss
+          uss2:
+            - uss2_core
+            - uss2_dss
         requirement_collections:
           scd_and_dss:
             requirements:
@@ -345,9 +359,6 @@ v1:
               - astm.f3548.v21.DSS0210,2d
               - astm.f3548.v21.DSS0210,2e
               - astm.f3548.v21.DSS0210,2f
-              - astm.f3548.v21.DSS0210,3a
-              - astm.f3548.v21.DSS0210,3b
-              - astm.f3548.v21.DSS0210,3c
               - astm.f3548.v21.DSS0210,A2-7-2,1a
               - astm.f3548.v21.DSS0210,A2-7-2,1b
               - astm.f3548.v21.DSS0210,A2-7-2,1c

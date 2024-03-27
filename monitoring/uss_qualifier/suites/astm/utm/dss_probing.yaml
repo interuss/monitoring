@@ -11,6 +11,14 @@ resources:
   problematically_big_area: resources.VerticesResource
 actions:
   - test_scenario:
+      scenario_type: scenarios.astm.utm.dss.SubscriptionInteractionsDeletion
+      resources:
+        dss: dss
+        other_instances: all_dss_instances
+        id_generator: id_generator
+        planning_area: planning_area
+        utm_client_identity: utm_client_identity
+  - test_scenario:
       scenario_type: scenarios.astm.utm.dss.SubscriptionInteractions
       resources:
         dss: dss

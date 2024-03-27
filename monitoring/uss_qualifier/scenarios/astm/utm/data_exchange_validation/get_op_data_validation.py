@@ -7,6 +7,10 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
+from monitoring.monitorlib.clients.flight_planning.planning import (
+    PlanningActivityResult,
+    FlightPlanStatus,
+)
 from monitoring.monitorlib.clients.mock_uss.interactions import QueryDirection
 from monitoring.monitorlib.temporal import TimeDuringTest
 import arrow
@@ -33,9 +37,6 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
     MockUSSResource,
 )
-from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.invalid_op_test_steps import (
-    plan_flight_intent_expect_failed,
-)
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     OpIntentValidator,
     OpIntentValidationFailureType,
@@ -57,6 +58,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights_fp_client,
     plan_flight,
     delete_flight,
+    submit_flight,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import OperationID
@@ -147,10 +149,6 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.record_note(
             "Tested USS",
             f"{self.tested_uss_client.participant_id}",
-        )
-        self.record_note(
-            "Control USS",
-            f"{self.mock_uss_client.participant_id}",
         )
 
         self.begin_test_case("Successfully plan flight near an existing flight")
@@ -312,8 +310,14 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self._intents_extent,
         ) as validator:
             flight_1_planning_time = Time(arrow.utcnow().datetime)
-            _, self.flight_1_id = plan_flight_intent_expect_failed(
+            _, self.flight_1_id = submit_flight(
                 self,
+                "Plan should fail",
+                {
+                    (PlanningActivityResult.Failed, FlightPlanStatus.NotPlanned),
+                    (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned),
+                },
+                {},
                 self.tested_uss_client,
                 flight_1,
             )

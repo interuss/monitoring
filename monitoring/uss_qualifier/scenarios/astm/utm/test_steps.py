@@ -91,12 +91,7 @@ class OpIntentValidator(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type is not None:
-            self._scenario.record_note(
-                self._flight_planner.participant_id,
-                f"Exception occurred during OpIntentValidator ({exc_type}: {exc_val}).",
-            )
-            raise exc_val
+        pass
 
     def _find_after_oi(self, oi_id: str) -> Optional[OperationalIntentReference]:
         found = [oi_ref for oi_ref in self._after_oi_refs if oi_ref.id == oi_id]

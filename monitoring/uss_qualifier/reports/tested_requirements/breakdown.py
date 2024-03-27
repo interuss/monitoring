@@ -1,4 +1,4 @@
-from typing import Union, Set, Optional, Tuple, List
+from typing import Union, Set, Optional, Tuple, List, Iterable
 
 from implicitdict import ImplicitDict
 
@@ -46,20 +46,20 @@ from monitoring.uss_qualifier.suites.definitions import (
 def make_breakdown(
     report: TestRunReport,
     participant_reqs: Optional[Set[RequirementID]],
-    participant_id: ParticipantID,
+    participant_ids: Iterable[ParticipantID],
 ) -> TestedBreakdown:
-    """Break down a report into requirements tested for the specified participant.
+    """Break down a report into requirements tested for the specified participants.
 
     Args:
         report: Report to break down.
-        participant_reqs: Set of requirements to report for this participant.  If None, defaults to everything.
-        participant_id: ID of participant for which the breakdown is being computed.
+        participant_reqs: Set of requirements to report for these participants.  If None, defaults to everything.
+        participant_ids: IDs of participants for which the breakdown is being computed.
 
-    Returns: TestedBreakdown for participant for report.
+    Returns: TestedBreakdown for participants for report.
     """
     participant_breakdown = TestedBreakdown(packages=[])
     _populate_breakdown_with_action_report(
-        participant_breakdown, report.report, participant_id, participant_reqs
+        participant_breakdown, report.report, participant_ids, participant_reqs
     )
     _populate_breakdown_with_action_declaration(
         participant_breakdown, report.configuration.v1.test_run.action, participant_reqs
@@ -97,23 +97,23 @@ def _populate_breakdown_with_req_set(
 def _populate_breakdown_with_action_report(
     breakdown: TestedBreakdown,
     action: TestSuiteActionReport,
-    participant_id: ParticipantID,
+    participant_ids: Iterable[ParticipantID],
     req_set: Optional[Set[RequirementID]],
 ) -> None:
     test_suite, test_scenario, action_generator = action.get_applicable_report()
     if test_scenario:
         return _populate_breakdown_with_scenario_report(
-            breakdown, action.test_scenario, participant_id, req_set
+            breakdown, action.test_scenario, participant_ids, req_set
         )
     elif test_suite:
         for subaction in action.test_suite.actions:
             _populate_breakdown_with_action_report(
-                breakdown, subaction, participant_id, req_set
+                breakdown, subaction, participant_ids, req_set
             )
     elif action_generator:
         for subaction in action.action_generator.actions:
             _populate_breakdown_with_action_report(
-                breakdown, subaction, participant_id, req_set
+                breakdown, subaction, participant_ids, req_set
             )
     else:
         pass  # Skipped action
@@ -122,7 +122,7 @@ def _populate_breakdown_with_action_report(
 def _populate_breakdown_with_scenario_report(
     breakdown: TestedBreakdown,
     scenario_report: TestScenarioReport,
-    participant_id: ParticipantID,
+    participant_ids: Iterable[ParticipantID],
     req_set: Optional[Set[RequirementID]],
 ) -> None:
     scenario_type_name = scenario_report.scenario_type
@@ -135,7 +135,7 @@ def _populate_breakdown_with_scenario_report(
 
     for case, step in steps:
         for check in step.passed_checks + step.failed_checks:
-            if participant_id not in check.participants:
+            if not any(pid in check.participants for pid in participant_ids):
                 continue
             for req_id in check.requirements:
                 if req_set is not None and req_id not in req_set:
