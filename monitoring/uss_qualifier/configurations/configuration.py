@@ -160,10 +160,21 @@ class TestedRequirementsConfiguration(ImplicitDict):
     ]
     """Definition of requirement collections specific to production of this artifact."""
 
+    aggregate_participants: Optional[Dict[ParticipantID, List[ParticipantID]]]
+    """If specified, a list of 'aggregate participants', each of which is composed of multiple test participants.
+
+    If specified, these aggregate participants are the preferred subject for `participant_requirements`.
+    """
+
     participant_requirements: Optional[
-        Dict[ParticipantID, TestedRequirementsCollectionIdentifier]
+        Dict[ParticipantID, Optional[TestedRequirementsCollectionIdentifier]]
     ]
-    """If a requirement collection is specified for a participant, only the requirements in the specified collection will be listed on that participant's report."""
+    """If a requirement collection is specified for a participant, only the requirements in the specified collection will be listed on that participant's report.
+
+    If a requirement collection is specified as None/null for a participant, all potentially-testable requirements will be included.
+
+    If a participant is not listed, no report will be generated for them.
+    """
 
 
 class SequenceViewConfiguration(ImplicitDict):
