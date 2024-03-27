@@ -106,4 +106,31 @@ Verify that the operational intent reference returned by every DSS is correctly 
 
 Verify that the operational intent reference's version fields are as expected.
 
+### Delete OIR test step
+
+Attempt to delete the operational intent reference in various ways and ensure that the DSS reacts properly.
+
+This also checks that the operational intent reference data returned by a successful deletion is correct.
+
+#### [Delete OIR](../fragments/oir/crud/delete.md)
+
+Confirms that an operational intent reference can be deleted.
+
+#### [Validate OIR](../fragments/oir/validate/correctness.md)
+
+Verify that the operational intent reference returned by the DSS via the deletion is properly formatted and contains the correct content.
+
+#### [OIR Versions are correct](../fragments/oir/validate/non_mutated.md)
+
+Verify that the operational intent reference's version fields are as expected.
+
+### Query deleted OIR test step
+
+Attempt to query and search for the deleted operational intent reference in various ways
+
+#### 🛑 Secondary DSS should not return the deleted operational intent reference check
+
+If a DSS returns an operational intent reference that was previously successfully deleted from the primary DSS,
+either one of the primary DSS or the DSS that returned the operational intent reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**.
+
 ## [Cleanup](../clean_workspace.md)
