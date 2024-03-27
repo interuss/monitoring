@@ -164,6 +164,7 @@ class SubscriptionInteractions(TestScenario):
             _notif_ids: set[str],
             _query_timestamp: datetime,
         ):
+            # TODO: the participants of this check should be only the subscription owner and the DSS that returned the subscription
             with self.check(
                 "DSS returns the implicit subscriptions from intersecting OIRs",
                 _participants,
@@ -221,6 +222,56 @@ class SubscriptionInteractions(TestScenario):
             )
             _implicit_subs_check(
                 possible_culprits, notification_ids, q.request.timestamp
+            )
+
+            self._current_oirs[oir_id] = oir
+        self.end_test_step()
+
+        self.begin_test_step("Modify an OIR at every DSS in sequence")
+        for i, dss in enumerate([self._dss] + self._secondary_instances):
+            oir_id = self._oir_ids[i]
+            oir = self._planning_area.get_new_operational_intent_ref_params(
+                key=[current_oir.ovn for current_oir in self._current_oirs.values()],
+                state=OperationalIntentState.Accepted,
+                uss_base_url="https://example.interuss.org/oir_base_url_bis",  # dummy modification of the OIR
+                time_start=datetime.utcnow(),
+                time_end=self._time_send + timedelta(minutes=10),
+                subscription_id=self._current_oirs[oir_id].subscription_id,
+            )
+
+            with self.check(
+                "Mutate operational intent reference query succeeds",
+                [dss.participant_id],
+            ) as check:
+                try:
+                    oir, subs, q = dss.put_op_intent(
+                        extents=oir.extents,
+                        key=oir.key,
+                        state=oir.state,
+                        base_url=oir.uss_base_url,
+                        oi_id=oir_id,
+                        ovn=self._current_oirs[oir_id].ovn,
+                        subscription_id=oir.subscription_id,
+                    )
+                    self.record_query(q)
+                except QueryError as qe:
+                    self.record_queries(qe.queries)
+                    check.record_failed(
+                        summary="Failed to mutate operational intent reference",
+                        details=f"Failed to mutate operational intent reference: {qe}",
+                        query_timestamps=qe.query_timestamps,
+                    )
+
+            notification_ids = to_sub_ids(subs)
+
+            _expected_subs_check(
+                dss.participant_id, notification_ids, q.request.timestamp
+            )
+            _implicit_subs_check(
+                [self._dss.participant_id]
+                + [sec_dss.participant_id for sec_dss in self._secondary_instances],
+                notification_ids,
+                q.request.timestamp,
             )
 
             self._current_oirs[oir_id] = oir
