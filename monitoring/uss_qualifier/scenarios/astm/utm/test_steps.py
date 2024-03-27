@@ -90,6 +90,9 @@ class OpIntentValidator(object):
                 )
         return self
 
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
     def _find_after_oi(self, oi_id: str) -> Optional[OperationalIntentReference]:
         found = [oi_ref for oi_ref in self._after_oi_refs if oi_ref.id == oi_id]
         return found[0] if len(found) != 0 else None
