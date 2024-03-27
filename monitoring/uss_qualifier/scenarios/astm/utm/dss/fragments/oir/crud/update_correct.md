@@ -2,9 +2,9 @@
 
 This test step fragment validates that operational intent references can be updated.
 
-## 🛑 Mutate operational intent reference query succeeds check
+## [Update query succeeds](./update_query.md)
 
-As per **[astm.f3548.v21.DSS0005,1](../../../../../../../requirements/astm/f3548/v21.md)**, the DSS API must allow callers to mutate an operational intent reference.
+Check query succeeds.
 
 ## [Response Format](./update_format.md)
 

@@ -2,9 +2,9 @@
 
 This test step fragment validates that subscriptions can be deleted.
 
-## 🛑 Subscription can be deleted check
+## [Delete query succeeds](./delete_query.md)
 
-An attempt to delete a subscription when the correct version is provided should succeed, otherwise the DSS is in violation of **[astm.f3548.v21.DSS0005,5](../../../../../../../requirements/astm/f3548/v21.md)**.
+Check query succeeds.
 
 ## 🛑 Delete subscription response format conforms to spec check
 

@@ -262,6 +262,7 @@ class DSSInstance(object):
         base_url: UssBaseURL,
         oi_id: Optional[str] = None,
         ovn: Optional[str] = None,
+        subscription_id: Optional[str] = None,
     ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query,]:
         """
         Create or update an operational intent.
@@ -287,7 +288,10 @@ class DSSInstance(object):
             key=key,
             state=state,
             uss_base_url=base_url,
-            new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url),
+            subscription_id=subscription_id,
+            new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url)
+            if subscription_id is None
+            else None,
         )
         query = query_and_describe(
             self.client,
@@ -422,24 +426,14 @@ class DSSInstance(object):
             json=req,
         )
 
-        # TODO: this is a temporary hack: the endpoint is currently not implemented in the DSS, as such we expect the
-        #  DSS to respond with a 400 and a specific error message. This must be updated once this endpoint is actually
-        #  implemented in the DSS.
-        # if query.status_code != 201:
-        #     raise QueryError(
-        #         f"Received code {query.status_code} when attempting to make DSS report{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
-        #         query,
-        #     )
-        # else:
-        #     result = query.parse_json_result(ErrorReport)
-        #     return result.report_id, query
-        if query.status_code != 400 or "Not yet implemented" not in query.error_message:
+        if query.status_code != 201:
             raise QueryError(
                 f"Received code {query.status_code} when attempting to make DSS report{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
                 query,
             )
         else:
-            return "dummy_report_id", query
+            result = query.parse_json_result(ErrorReport)
+            return result.report_id, query
 
     def query_subscriptions(
         self,

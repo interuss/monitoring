@@ -229,7 +229,7 @@ and ensure that the DSS reacts properly.
 
 This also checks that the subscription data returned by a successful deletion is correct.
 
-#### [Delete subscription](../fragments/sub/crud/delete.md)
+#### [Delete subscription](../fragments/sub/crud/delete_correct.md)
 
 Confirms that a subscription can be deleted.
 
@@ -259,7 +259,7 @@ As a result, the DSS pool under test is failing to meet **[astm.f3548.v21.DSS002
 
 Attempt to delete subscriptions that were created through the primary DSS via the secondary DSS instances.
 
-#### [Delete subscription](../fragments/sub/crud/delete.md)
+#### [Delete subscription](../fragments/sub/crud/delete_correct.md)
 
 Confirms that a subscription can be deleted from a secondary DSS
 

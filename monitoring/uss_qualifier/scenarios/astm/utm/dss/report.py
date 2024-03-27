@@ -40,23 +40,24 @@ class Report(TestScenario):
 
     def _dss_report_case(self):
         def gen_record() -> ExchangeRecord:
-            try:
-                op = OPERATIONS[OperationID.GetOperationalIntentReference]
-                query_and_describe(
-                    infrastructure.UTMClientSession("https://dummy.interuss.org"),
-                    op.verb,
-                    op.path.format(entityid="dummy_op_intent_id"),
-                    QueryType.F3548v21DSSGetOperationalIntentReference,
-                    "dummy_dss",
-                )
-            except QueryError as qe:
+            op = OPERATIONS[OperationID.GetOperationalIntentReference]
+            query = query_and_describe(
+                infrastructure.UTMClientSession("https://dummy.interuss.org"),
+                op.verb,
+                op.path.format(entityid="dummy_op_intent_id"),
+                QueryType.F3548v21DSSGetOperationalIntentReference,
+                "dummy_dss",
+                True,
+            )
+            if not query.response.code:
                 return scd_lib.make_exchange_record(
-                    qe.cause, "this is a dummy record created by the USS qualifier"
+                    query,
+                    "this is a dummy record created by the USS qualifier. This failure is expected.",
                 )
 
             # we are not supposed to reach this state
-            raise ScenarioCannotContinueError(
-                "illegal state: getOperationalIntentReference to a dummy DSS did not raise a QueryError"
+            raise RuntimeError(
+                "illegal state: getOperationalIntentReference to a dummy DSS shall not have succeeded"
             )
 
         self.begin_test_step("Make valid DSS report")

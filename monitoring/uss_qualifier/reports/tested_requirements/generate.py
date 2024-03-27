@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, Set
+from typing import Dict, Set, Optional
 
 from monitoring.monitorlib.inspection import import_submodules
 from monitoring.monitorlib.versioning import get_code_version
@@ -23,7 +23,8 @@ from monitoring.uss_qualifier.reports.tested_requirements.data_types import (
 from monitoring.uss_qualifier.reports.tested_requirements.summaries import (
     compute_test_run_information,
     compute_overall_status,
-    find_participant_system_version,
+    find_participant_system_versions,
+    get_system_version,
 )
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.requirements.documentation import (
@@ -43,14 +44,14 @@ def generate_tested_requirements(
             for k, v in config.requirement_collections.items()
         }
 
-    participant_req_collections: Dict[ParticipantID, Set[RequirementID]] = {}
+    participant_req_collections: Dict[ParticipantID, Optional[Set[RequirementID]]] = {}
     if "participant_requirements" in config and config.participant_requirements:
         for k, v in config.participant_requirements.items():
-            if v not in req_collections:
+            if v and v not in req_collections:
                 raise ValueError(
                     f"Participant {k}'s requirement collection {v} is not defined in `requirement_collections` of TestedRequirementsConfiguration"
                 )
-            participant_req_collections[k] = req_collections[v]
+            participant_req_collections[k] = req_collections[v] if v else None
 
     import_submodules(scenarios)
     import_submodules(suites)
@@ -61,11 +62,12 @@ def generate_tested_requirements(
     os.makedirs(output_path, exist_ok=True)
     index_file = os.path.join(output_path, "index.html")
 
-    participant_ids = list(report.report.participant_ids())
-    participant_ids.sort()
+    all_participant_ids = list(report.report.participant_ids())
+    reported_participant_ids = list(participant_req_collections)
+    reported_participant_ids.sort()
     template = jinja_env.get_template("tested_requirements/test_run_report.html")
     with open(index_file, "w") as f:
-        f.write(template.render(participant_ids=participant_ids))
+        f.write(template.render(participant_ids=reported_participant_ids))
 
     verification_report = RequirementsVerificationReport(
         test_run_information=test_run, participant_verifications={}
@@ -73,11 +75,20 @@ def generate_tested_requirements(
     template = jinja_env.get_template(
         "tested_requirements/participant_tested_requirements.html"
     )
-    for participant_id in participant_ids:
-        req_set = participant_req_collections.get(participant_id, None)
-        participant_breakdown = make_breakdown(report, req_set, participant_id)
+    for participant_id, req_set in participant_req_collections.items():
+        if (
+            "aggregate_participants" in config
+            and config.aggregate_participants
+            and participant_id in config.aggregate_participants
+        ):
+            matching_participants = config.aggregate_participants[participant_id]
+        else:
+            matching_participants = [participant_id]
+        participant_breakdown = make_breakdown(report, req_set, matching_participants)
         overall_status = compute_overall_status(participant_breakdown)
-        system_version = find_participant_system_version(report.report, participant_id)
+        system_version = get_system_version(
+            find_participant_system_versions(report.report, matching_participants)
+        )
         verification_report.participant_verifications[
             participant_id
         ] = ParticipantVerificationInfo(
@@ -85,7 +96,7 @@ def generate_tested_requirements(
         )
         participant_file = os.path.join(output_path, f"{participant_id}.html")
         other_participants = ", ".join(
-            p for p in participant_ids if p != participant_id
+            p for p in all_participant_ids if p not in matching_participants
         )
         with open(participant_file, "w") as f:
             f.write(

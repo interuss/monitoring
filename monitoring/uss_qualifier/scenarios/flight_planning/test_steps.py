@@ -530,29 +530,26 @@ def submit_flight(
             check.skip()
             return resp, None
 
-        result = (resp.activity_result, resp.flight_plan_status)
-        msg = f'{flight_planner.participant_id} indicated {result} rather than the expected {" or ".join([f"({expected_result[0]}, {expected_result[1]})" for expected_result in expected_results])}'
+        msg = f'{flight_planner.participant_id} indicated flight planning activity {resp.activity_result} leaving flight plan {resp.flight_plan_status} rather than the expected {" or ".join([f"(Activity {expected_result[0]}, flight plan {expected_result[1]})" for expected_result in expected_results])}'
         if "notes" in resp and resp.notes:
             msg += f' with notes "{resp.notes}"'
         else:
             msg += " with no notes"
 
-        for unexpected_result, failed_test_check in failed_checks.items():
-            check_name = failed_test_check
-
+        for unexpected_result, check_name in failed_checks.items():
             with scenario.check(
                 check_name, [flight_planner.participant_id]
             ) as specific_failed_check:
                 if resp.activity_result == unexpected_result:
                     specific_failed_check.record_failed(
-                        summary=f"Flight unexpectedly {result}",
+                        summary=f"Flight planning activity {resp.activity_result} leaving flight plan {resp.flight_plan_status}",
                         details=msg,
                         query_timestamps=[query.request.timestamp],
                     )
 
-        if result not in expected_results:
+        if (resp.activity_result, resp.flight_plan_status) not in expected_results:
             check.record_failed(
-                summary=f"Flight unexpectedly {result}",
+                summary=f"Flight planning activity unexpectedly {resp.activity_result} leaving flight plan {resp.flight_plan_status}",
                 details=msg,
                 query_timestamps=[query.request.timestamp],
             )

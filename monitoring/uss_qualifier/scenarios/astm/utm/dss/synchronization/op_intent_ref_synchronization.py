@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-import loguru
 from implicitdict import StringBasedDateTime
 from uas_standards.astm.f3548.v21 import api
 from uas_standards.astm.f3548.v21.api import (
@@ -145,6 +144,14 @@ class OIRSynchronization(TestScenario):
 
         self.begin_test_step("Query updated OIR")
         self._query_secondaries_and_compare(self._oir_params)
+        self.end_test_step()
+
+        self.begin_test_step("Delete OIR")
+        self._test_delete_sub()
+        self.end_test_step()
+
+        self.begin_test_step("Query deleted OIR")
+        self._test_get_deleted_oir()
         self.end_test_step()
 
         self.end_test_case()
@@ -338,17 +345,19 @@ class OIRSynchronization(TestScenario):
         """Mutate the OIR by adding 10 seconds to its start and end times.
         This is achieved by updating the first and last element of the extents.
         """
-        op = self._oir_params
 
-        new_extents = self._shift_extents(op.extents, timedelta(seconds=10))
+        new_extents = (
+            Volume4DCollection.from_f3548v21(self._oir_params.extents)
+            .offset_times(timedelta(seconds=10))
+            .to_f3548v21()
+        )
 
-        new_params = PutOperationalIntentReferenceParameters(
+        self._oir_params = PutOperationalIntentReferenceParameters(
             extents=new_extents,
-            key=op.key + [self._current_oir.ovn],
-            state=op.state,
-            uss_base_url=op.uss_base_url,
-            subscription_id=op.subscription_id if "subscription_id" in op else None,
-            new_subscription=op.new_subscription if "new_subscription" in op else None,
+            key=self._oir_params.key + [self._current_oir.ovn],
+            state=self._oir_params.state,
+            uss_base_url=self._oir_params.uss_base_url,
+            subscription_id=self._current_oir.subscription_id,
         )
 
         with self.check(
@@ -356,12 +365,13 @@ class OIRSynchronization(TestScenario):
         ) as check:
             try:
                 oir, subs, q = self._dss.put_op_intent(
-                    extents=new_extents,
-                    key=new_params.key,
-                    state=new_params.state,
-                    base_url=new_params.uss_base_url,
+                    extents=self._oir_params.extents,
+                    key=self._oir_params.key,
+                    state=self._oir_params.state,
+                    base_url=self._oir_params.uss_base_url,
                     oi_id=self._oir_id,
                     ovn=self._current_oir.ovn,
+                    subscription_id=self._oir_params.subscription_id,
                 )
                 self.record_query(q)
             except QueryError as qe:
@@ -371,7 +381,6 @@ class OIRSynchronization(TestScenario):
                     details=qe.msg,
                     query_timestamps=qe.query_timestamps,
                 )
-                return
 
         with self.check(
             "Mutate operational intent reference response content is correct",
@@ -382,7 +391,7 @@ class OIRSynchronization(TestScenario):
                 scenario=self,
                 expected_manager=self._expected_manager,
                 participant_id=[self._primary_pid],
-                oir_params=new_params,
+                oir_params=self._oir_params,
             ).validate_mutated_oir(
                 expected_oir_id=self._oir_id,
                 mutated_oir=q,
@@ -390,24 +399,67 @@ class OIRSynchronization(TestScenario):
                 previous_version=self._current_oir.version,
             )
 
-        self._oir_params = new_params
         self._current_oir = oir
 
-    def _shift_extents(
-        self, extents: List[api.Volume4D], delta: timedelta
-    ) -> List[api.Volume4D]:
-        return [
-            api.Volume4D(
-                volume=ext.volume,
-                time_start=api.Time(
-                    value=StringBasedDateTime(ext.time_start.value.datetime + delta)
-                ),
-                time_end=api.Time(
-                    value=StringBasedDateTime(ext.time_end.value.datetime + delta)
-                ),
+    def _test_delete_sub(self):
+        with self.check(
+            "Delete operational intent reference query succeeds", [self._primary_pid]
+        ) as check:
+            try:
+                oir, subs, q = self._dss.delete_op_intent(
+                    self._oir_id, self._current_oir.ovn
+                )
+                self.record_query(q)
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                check.record_failed(
+                    summary="Operational intent reference deletion on primary DSS failed",
+                    details=qe.msg,
+                    query_timestamps=qe.query_timestamps,
+                )
+
+        with self.check(
+            "Delete operational intent reference response content is correct",
+            [self._primary_pid],
+        ) as check:
+            OIRValidator(
+                main_check=check,
+                scenario=self,
+                expected_manager=self._expected_manager,
+                participant_id=[self._primary_pid],
+                oir_params=self._oir_params,
+            ).validate_deleted_oir(
+                expected_oir_id=self._oir_id,
+                deleted_oir=q,
+                expected_ovn=self._current_oir.ovn,
+                expected_version=self._current_oir.version,
             )
-            for ext in extents
-        ]
+
+        self._current_oir = None
+
+    def _test_get_deleted_oir(self):
+        for secondary_dss in self._dss_read_instances:
+            self._confirm_secondary_has_no_oir(secondary_dss)
+
+    def _confirm_secondary_has_no_oir(self, secondary_dss: DSSInstance):
+        with self.check(
+            "Secondary DSS should not return the deleted operational intent reference",
+            [secondary_dss.participant_id],
+        ) as check:
+            try:
+                oir, q = secondary_dss.get_op_intent_reference(self._oir_id)
+                self.record_query(q)
+                status = q.status_code
+                q_ts = [q.request.timestamp]
+            except QueryError as qe:
+                status = qe.cause_status_code
+                q_ts = qe.query_timestamps[-1]
+            if status != 404:
+                check.record_failed(
+                    "Secondary DSS still has the deleted operational intent reference",
+                    details=f"Expected 404, received {status}",
+                    query_timestamps=q_ts,
+                )
 
     def cleanup(self):
         self.begin_cleanup()

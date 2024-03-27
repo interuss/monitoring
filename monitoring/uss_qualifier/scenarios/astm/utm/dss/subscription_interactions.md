@@ -32,18 +32,14 @@ Create and mutate subscriptions as well as entities, and verify that the DSS han
 
 This step ensures that no subscriptions and OIRs with the known test IDs exists in the DSS deployment.
 
-## OIR creation triggers relevant notifications test case
+## OIR creation and modification trigger relevant notifications test case
 
-This test case verifies that newly created OIRs will receive the relevant subscriptions to notify from the DSS instance,
+This test case verifies that newly created or modified OIRs will receive the relevant subscriptions to notify from the DSS instance,
 regardless of which instance was used to create the entity.
 
-### [Create first background subscription test step](./fragments/sub/crud/create_query.md)
+### [Create background subscription test step](./fragments/sub/crud/create_query.md)
 
-Sets up the first subscription that cover the planning area from 'now' to 20 minutes in the future, and which will be used as part of the interaction tests.
-
-### [Create second background subscription test step](./fragments/sub/crud/create_query.md)
-
-Sets up the second subscription that cover the planning area from 20 minutes after the first starts and that lasts for 1 hour, and which will be used as part of the interaction tests.
+Sets up the subscription that cover the planning area from 'now' to 20 minutes in the future, and which will be used as part of the interaction tests.
 
 ### Create an OIR at every DSS in sequence test step
 
@@ -59,16 +55,9 @@ Check that the OIR creation query succeeds
 #### 🛑 DSS response contains the expected background subscription check
 
 The response from a DSS to a valid OIR creation request is expected to contain any relevant subscription for the OIR's extents.
-This includes one of the subscriptions created earlier, as it is designed to intersect with the OIRs being created.
+This includes the subscription created earlier, as it is designed to intersect with the OIRs being created.
 
 If the DSS omits the intersecting subscription, it fails to implement **[astm.f3548.v21.DSS0210,A2-7-2,4b](../../../../requirements/astm/f3548/v21.md)**.
-
-#### 🛑 DSS does not return non-intersecting background subscription check
-
-The response from a DSS to a valid OIR creation request is expected to contain any relevant subscription for the OIR's extents.
-This should exclude one of subscriptions created earlier, as it is designed to not intersect with the OIRs being created.
-
-If the DSS includes the non-intersecting subscription, it fails to implement **[astm.f3548.v21.DSS0210,A2-7-2,4b](../../../../requirements/astm/f3548/v21.md)**.
 
 #### 🛑 DSS returns the implicit subscriptions from intersecting OIRs check
 
@@ -78,6 +67,34 @@ This includes any implicit subscription previously created on the DSS as part of
 If the DSS omits any of the implicit subscriptions belonging to an OIR previously created on another DSS (which are designed to all intersect),
 any of the DSSes at which an earlier OIR was created, or the DSS at which the current OIR has been created,
 are in violation of **[astm.f3548.v21.DSS0210,A2-7-2,4b](../../../../requirements/astm/f3548/v21.md)**.
+
+### Modify an OIR at every DSS in sequence test step
+
+This test step will modify the previously created operational intent reference and assorted subscription at every DSS, in sequence, each time verifying that the DSS
+requires notifications for any previously established subscription that intersects with the modified OIR.
+
+Note that this step is run once for each involved DSS (that is, once for the primary DSS and once for every secondary DSS)
+
+#### [Modify OIR](./fragments/oir/crud/update_query.md)
+
+Check that the OIR modification query succeeds
+
+#### 🛑 DSS response contains the expected background subscription check
+
+The response from a DSS to a valid OIR modification request is expected to contain any relevant subscription for the OIR's extents.
+This includes the subscription created earlier, as it is designed to intersect with the OIRs being modified.
+
+If the DSS omits the intersecting subscription, it fails to implement **[astm.f3548.v21.DSS0210,A2-7-2,4c](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 DSS returns the implicit subscriptions from intersecting OIRs check
+
+The response from a DSS to a valid OIR modification request is expected to contain any relevant subscription for the OIR's extents.
+This includes any implicit subscription previously created on the DSS as part of a previously created OIR.
+
+If the DSS omits any of the implicit subscriptions belonging to an OIR previously created over time range A on another DSS (which are designed to all intersect),
+any of the DSSes at which an earlier OIR was created, or the DSS at which the current OIR has been modified,
+are in violation of **[astm.f3548.v21.DSS0210,A2-7-2,4c](../../../../requirements/astm/f3548/v21.md)**.
+
 
 ## Subscription creation returns relevant OIRs test case
 
