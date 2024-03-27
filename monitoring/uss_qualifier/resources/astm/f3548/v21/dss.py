@@ -262,6 +262,7 @@ class DSSInstance(object):
         base_url: UssBaseURL,
         oi_id: Optional[str] = None,
         ovn: Optional[str] = None,
+        subscription_id: Optional[str] = None,
     ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query,]:
         """
         Create or update an operational intent.
@@ -287,7 +288,10 @@ class DSSInstance(object):
             key=key,
             state=state,
             uss_base_url=base_url,
-            new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url),
+            subscription_id=subscription_id,
+            new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url)
+            if subscription_id is None
+            else None,
         )
         query = query_and_describe(
             self.client,

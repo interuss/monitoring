@@ -74,7 +74,7 @@ Verify that the operational intent reference's version fields are as expected.
 This test step mutates the previously created operational intent reference to verify that the DSS reacts properly: notably, it checks that the operational intent reference version is updated,
 including for changes that are not directly visible, such as changing the operational intent reference's footprint.
 
-#### [Update OIR](../fragments/oir/crud/update.md)
+#### [Update OIR](../fragments/oir/crud/update_correct.md)
 
 Confirm that the operational intent reference can be mutated.
 
