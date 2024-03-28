@@ -57,6 +57,12 @@ Retrieve and validate synchronization of the created operational intent at every
 
 Check that read query succeeds.
 
+#### Newly created OIR can be consistently retrieved from all DSS instances check
+
+If the operational intent retrieved from a secondary DSS instance is not consistent with the newly created one on the
+primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1a](../../../../../requirements/astm/f3548/v21.md)**
+and **[astm.f3548.v21.DSS0210,A2-7-2,1d](../../../../../requirements/astm/f3548/v21.md)**.
+
 #### [OIR is synchronized](../fragments/oir/sync.md)
 
 Confirm that each DSS provides direct access to the created operational intent reference.
@@ -69,6 +75,12 @@ Search for and validate synchronization of the created operational intent at eve
 #### [Search OIR](../fragments/oir/crud/search_query.md)
 
 Check that search query succeeds.
+
+#### Newly created OIR can be consistently searched for from all DSS instances check
+
+If the operational intent searched from a secondary DSS instance is not consistent with the newly created one on the
+primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1a](../../../../../requirements/astm/f3548/v21.md)**
+and **[astm.f3548.v21.DSS0210,A2-7-2,1c](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [OIR is synchronized](../fragments/oir/sync.md)
 
@@ -100,6 +112,12 @@ Retrieve and validate synchronization of the updated operational intent at every
 
 Check that read query succeeds.
 
+#### Updated OIR can be consistently retrieved from all DSS instances check
+
+If the operational intent retrieved from a secondary DSS instance is not consistent with the updated one on the
+primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1b](../../../../../requirements/astm/f3548/v21.md)**
+and **[astm.f3548.v21.DSS0210,A2-7-2,1d](../../../../../requirements/astm/f3548/v21.md)**.
+
 #### [OIR is synchronized](../fragments/oir/sync.md)
 
 Confirm that each DSS provides direct access to the updated operational intent reference.
@@ -112,6 +130,12 @@ Search for and validate synchronization of the updated operational intent at eve
 #### [Search OIR](../fragments/oir/crud/search_query.md)
 
 Check that search query succeeds.
+
+#### Updated OIR can be consistently searched for from all DSS instances check
+
+If the operational intent searched from a secondary DSS instance is not consistent with the updated one on the
+primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1b](../../../../../requirements/astm/f3548/v21.md)**
+and **[astm.f3548.v21.DSS0210,A2-7-2,1c](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [OIR is synchronized](../fragments/oir/sync.md)
 
@@ -140,9 +164,24 @@ Verify that the operational intent reference's version fields are as expected.
 
 Attempt to query and search for the deleted operational intent reference in various ways
 
-#### 🛑 Secondary DSS should not return the deleted operational intent reference check
+#### [Get OIR query](../fragments/oir/crud/read_query.md)
+
+Check that read query succeeds.
+
+#### 🛑 Deleted OIR cannot be retrieved from all DSS instances check
 
 If a DSS returns an operational intent reference that was previously successfully deleted from the primary DSS,
-either one of the primary DSS or the DSS that returned the operational intent reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**.
+either one of the primary DSS or the DSS that returned the operational intent reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**
+and **[astm.f3548.v21.DSS0210,A2-7-2,3b](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### [Search OIR](../fragments/oir/crud/search_query.md)
+
+Check that search query succeeds.
+
+#### 🛑 Deleted OIR cannot be searched for from all DSS instances check
+
+If a DSS returns an operational intent reference that was previously successfully deleted from the primary DSS,
+either one of the primary DSS or the DSS that returned the operational intent reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**
+and **[astm.f3548.v21.DSS0210,A2-7-2,3a](../../../../../requirements/astm/f3548/v21.md)**.
 
 ## [Cleanup](../clean_workspace.md)

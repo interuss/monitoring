@@ -133,11 +133,17 @@ class OIRSynchronization(TestScenario):
         self.end_test_step()
 
         self.begin_test_step("Retrieve newly created OIR")
-        self._query_secondaries_and_compare(self._oir_params)
+        self._query_secondaries_and_compare(
+            "Newly created OIR can be consistently retrieved from all DSS instances",
+            self._oir_params,
+        )
         self.end_test_step()
 
         self.begin_test_step("Search for newly created OIR")
-        self._search_secondaries_and_compare(self._oir_params)
+        self._search_secondaries_and_compare(
+            "Newly created OIR can be consistently searched for from all DSS instances",
+            self._oir_params,
+        )
         self.end_test_step()
 
         self.begin_test_step("Mutate OIR")
@@ -145,11 +151,17 @@ class OIRSynchronization(TestScenario):
         self.end_test_step()
 
         self.begin_test_step("Retrieve updated OIR")
-        self._query_secondaries_and_compare(self._oir_params)
+        self._query_secondaries_and_compare(
+            "Updated OIR can be consistently retrieved from all DSS instances",
+            self._oir_params,
+        )
         self.end_test_step()
 
         self.begin_test_step("Search for updated OIR")
-        self._search_secondaries_and_compare(self._oir_params)
+        self._search_secondaries_and_compare(
+            "Updated OIR can be consistently searched for from all DSS instances",
+            self._oir_params,
+        )
         self.end_test_step()
 
         self.begin_test_step("Delete OIR")
@@ -231,7 +243,9 @@ class OIRSynchronization(TestScenario):
         self._current_oir = oir
 
     def _query_secondaries_and_compare(
-        self, expected_oir_params: PutOperationalIntentReferenceParameters
+        self,
+        main_check_name: str,
+        expected_oir_params: PutOperationalIntentReferenceParameters,
     ):
         for secondary_dss in self._dss_read_instances:
             with self.check(
@@ -241,12 +255,12 @@ class OIRSynchronization(TestScenario):
                 try:
                     oir, q = secondary_dss.get_op_intent_reference(self._oir_id)
                     self.record_query(q)
-                except QueryError as e:
-                    self.record_queries(e.queries)
+                except QueryError as qe:
+                    self.record_queries(qe.queries)
                     check.record_failed(
                         summary="GET for operational intent reference failed",
-                        details=f"Query for operational intent reference failed: {e.msg}",
-                        query_timestamps=e.query_timestamps,
+                        details=f"Query for operational intent reference failed: {qe.msg}",
+                        query_timestamps=qe.query_timestamps,
                     )
 
             involved_participants = list(
@@ -260,20 +274,27 @@ class OIRSynchronization(TestScenario):
                 if q.status_code != 200:
                     check.record_failed(
                         summary="Requested operational intent was not found at secondary DSS.",
-                        details=f"Query for operational intent reference {self._oir_id} failed: {e.msg}",
-                        query_timestamps=e.query_timestamps,
+                        details=f"Query for operational intent reference {self._oir_id} failed: {q.msg}",
+                        query_timestamps=[q.request.timestamp],
                     )
 
-                self._validate_oir_from_secondary(
-                    oir=oir,
-                    q=q,
-                    expected_oir_params=expected_oir_params,
-                    involved_participants=involved_participants,
-                )
+            self._validate_oir_from_secondary(
+                oir=oir,
+                q=q,
+                expected_oir_params=expected_oir_params,
+                main_check_name=main_check_name,
+                involved_participants=involved_participants,
+            )
 
     def _search_secondaries_and_compare(
-        self, expected_oir_params: PutOperationalIntentReferenceParameters
+        self,
+        main_check_name: str,
+        expected_oir_params: PutOperationalIntentReferenceParameters,
     ):
+        """
+        Returns:
+         True if all checks passed, False otherwise; the participant IDs if the checks did not pass.
+        """
         for secondary_dss in self._dss_read_instances:
             with self.check(
                 "Successful operational intent reference search query",
@@ -311,12 +332,13 @@ class OIRSynchronization(TestScenario):
                         query_timestamps=[q.request.timestamp],
                     )
 
-                self._validate_oir_from_secondary(
-                    oir=oir,
-                    q=q,
-                    expected_oir_params=expected_oir_params,
-                    involved_participants=involved_participants,
-                )
+            self._validate_oir_from_secondary(
+                oir=oir,
+                q=q,
+                expected_oir_params=expected_oir_params,
+                main_check_name=main_check_name,
+                involved_participants=involved_participants,
+            )
 
             # TODO: craft a search with an area of interest that does not intersect with the planning area,
             #  but whose convex hull intersects with the planning area
@@ -326,74 +348,88 @@ class OIRSynchronization(TestScenario):
         oir: OperationalIntentReference,
         q: Query,
         expected_oir_params: PutOperationalIntentReferenceParameters,
+        main_check_name: str,
         involved_participants: List[str],
     ):
 
-        with self.check(
-            "Propagated operational intent reference contains the correct manager",
-            involved_participants,
-        ) as check:
-            if oir.manager != self._expected_manager:
-                check.record_failed(
-                    summary="Propagated OIR has an incorrect manager",
-                    details=f"Expected: {self._expected_manager}, Received: {oir.manager}",
-                    query_timestamps=[q.request.timestamp],
-                )
+        # TODO: this main check mechanism may be removed if we are able to specify requirements to be validated in test step fragments
 
-        with self.check(
-            "Propagated operational intent reference contains the correct USS base URL",
-            involved_participants,
-        ) as check:
-            if oir.uss_base_url != expected_oir_params.uss_base_url:
-                check.record_failed(
-                    "Propagated OIR has an incorrect USS base URL",
-                    details=f"Expected: {expected_oir_params.base_url}, Received: {oir.uss_base_url}",
-                    query_timestamps=[q.request.timestamp],
-                )
+        with self.check(main_check_name, involved_participants) as main_check:
+            with self.check(
+                "Propagated operational intent reference contains the correct manager",
+                involved_participants,
+            ) as check:
+                if oir.manager != self._expected_manager:
+                    check_args = dict(
+                        summary="Propagated OIR has an incorrect manager",
+                        details=f"Expected: {self._expected_manager}, Received: {oir.manager}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+                    check.record_failed(**check_args)
+                    main_check.record_failed(**check_args)
 
-        with self.check(
-            "Propagated operational intent reference contains the correct state",
-            involved_participants,
-        ) as check:
-            if oir.state != expected_oir_params.state:
-                check.record_failed(
-                    summary="Propagated OIR has an incorrect state",
-                    details=f"Expected: {expected_oir_params.state}, Received: {oir.state}",
-                    query_timestamps=[q.request.timestamp],
-                )
+            with self.check(
+                "Propagated operational intent reference contains the correct USS base URL",
+                involved_participants,
+            ) as check:
+                if oir.uss_base_url != expected_oir_params.uss_base_url:
+                    check_args = dict(
+                        summary="Propagated OIR has an incorrect USS base URL",
+                        details=f"Expected: {expected_oir_params.base_url}, Received: {oir.uss_base_url}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+                    check.record_failed(**check_args)
+                    main_check.record_failed(**check_args)
 
-        expected_volume_collection = Volume4DCollection.from_interuss_scd_api(
-            expected_oir_params.extents
-        )
-        expected_end = expected_volume_collection.time_end.datetime
-        expected_start = expected_volume_collection.time_start.datetime
-        with self.check(
-            "Propagated operational intent reference contains the correct start time",
-            involved_participants,
-        ) as check:
-            if (
-                abs(oir.time_start.value.datetime - expected_start).total_seconds()
-                > TIME_TOLERANCE_SEC
-            ):
-                check.record_failed(
-                    "Propagated OIR has an incorrect start time",
-                    details=f"Expected: {expected_start}, Received: {oir.time_start}",
-                    query_timestamps=[q.request.timestamp],
-                )
+            with self.check(
+                "Propagated operational intent reference contains the correct state",
+                involved_participants,
+            ) as check:
+                if oir.state != expected_oir_params.state:
+                    check_args = dict(
+                        summary="Propagated OIR has an incorrect state",
+                        details=f"Expected: {expected_oir_params.state}, Received: {oir.state}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+                    check.record_failed(**check_args)
+                    main_check.record_failed(**check_args)
 
-        with self.check(
-            "Propagated operational intent reference contains the correct end time",
-            involved_participants,
-        ) as check:
-            if (
-                abs(oir.time_end.value.datetime - expected_end).total_seconds()
-                > TIME_TOLERANCE_SEC
-            ):
-                check.record_failed(
-                    "Propagated OIR has an incorrect end time",
-                    details=f"Expected: {expected_end}, Received: {oir.time_end}",
-                    query_timestamps=[q.request.timestamp],
-                )
+            expected_volume_collection = Volume4DCollection.from_interuss_scd_api(
+                expected_oir_params.extents
+            )
+            expected_end = expected_volume_collection.time_end.datetime
+            expected_start = expected_volume_collection.time_start.datetime
+            with self.check(
+                "Propagated operational intent reference contains the correct start time",
+                involved_participants,
+            ) as check:
+                if (
+                    abs(oir.time_start.value.datetime - expected_start).total_seconds()
+                    > TIME_TOLERANCE_SEC
+                ):
+                    check_args = dict(
+                        summary="Propagated OIR has an incorrect start time",
+                        details=f"Expected: {expected_start}, Received: {oir.time_start}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+                    check.record_failed(**check_args)
+                    main_check.record_failed(**check_args)
+
+            with self.check(
+                "Propagated operational intent reference contains the correct end time",
+                involved_participants,
+            ) as check:
+                if (
+                    abs(oir.time_end.value.datetime - expected_end).total_seconds()
+                    > TIME_TOLERANCE_SEC
+                ):
+                    check_args = dict(
+                        summary="Propagated OIR has an incorrect end time",
+                        details=f"Expected: {expected_end}, Received: {oir.time_end}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+                    check.record_failed(**check_args)
+                    main_check.record_failed(**check_args)
 
     def _test_mutate_oir_shift_time(self):
         """Mutate the OIR by adding 10 seconds to its start and end times.
@@ -497,22 +533,57 @@ class OIRSynchronization(TestScenario):
 
     def _confirm_secondary_has_no_oir(self, secondary_dss: DSSInstance):
         with self.check(
-            "Secondary DSS should not return the deleted operational intent reference",
-            [secondary_dss.participant_id],
+            "Get operational intent reference by ID",
+            secondary_dss.participant_id,
         ) as check:
             try:
                 oir, q = secondary_dss.get_op_intent_reference(self._oir_id)
                 self.record_query(q)
-                status = q.status_code
-                q_ts = [q.request.timestamp]
             except QueryError as qe:
-                status = qe.cause_status_code
-                q_ts = qe.query_timestamps[-1]
-            if status != 404:
+                q = qe.cause
+                self.record_query(q)
+                if q.status_code != 404:
+                    check.record_failed(
+                        summary="GET for operational intent reference failed",
+                        details=f"Query for operational intent reference failed: {qe.msg}",
+                        query_timestamps=qe.query_timestamps,
+                    )
+
+        with self.check(
+            "Deleted OIR cannot be retrieved from all DSS instances",
+            [self._primary_pid, secondary_dss.participant_id],
+        ) as check:
+            if q.status_code != 404:
                 check.record_failed(
-                    "Secondary DSS still has the deleted operational intent reference",
-                    details=f"Expected 404, received {status}",
-                    query_timestamps=q_ts,
+                    summary="Secondary DSS still has the deleted operational intent reference",
+                    details=f"Expected 404, received {q.status_code}",
+                    query_timestamps=[q.request.timestamp],
+                )
+
+        with self.check(
+            "Successful operational intent reference search query",
+            [secondary_dss.participant_id],
+        ) as check:
+            try:
+                oirs, q = secondary_dss.find_op_intent(self._planning_area_volume4d)
+                self.record_query(q)
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                check.record_failed(
+                    summary="Failed to search for operational intent references",
+                    details=f"Failed to query operational intent references: got response code {qe.cause_status_code}: {qe.msg}",
+                    query_timestamps=qe.query_timestamps,
+                )
+
+        with self.check(
+            "Deleted OIR cannot be searched for from all DSS instances",
+            [self._primary_pid, secondary_dss.participant_id],
+        ) as check:
+            if self._oir_id in oirs:
+                check.record_failed(
+                    summary="Secondary DSS still has the deleted operational intent reference",
+                    details=f"OIR {self._oir_id} was found in the secondary DSS when searched for its expected geo-temporal extent",
+                    query_timestamps=[q.request.timestamp],
                 )
 
     def cleanup(self):
