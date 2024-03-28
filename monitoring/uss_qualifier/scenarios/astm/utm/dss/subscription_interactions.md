@@ -126,4 +126,33 @@ The subscription created on a DSS instance must be retrievable from all other DS
 
 If the subscription does not exist on one of the other DSS instances, one of the instances fails to comply with **[astm.f3548.v21.DSS0210,A2-7-2,4a](../../../../requirements/astm/f3548/v21.md)**.
 
+
+## Expiration of subscriptions removes them test case
+
+This test case validates that expired subscriptions (created explicitly) are removed from all DSS instances.
+To validate this requirement, the subscriptions that were previously created at each DSS instance are modified so that they expire shortly after the modification.
+Then it is checked that all the associated subscriptions were removed from all the DSS instances by searching for them in their planning area.
+Do note that they are not queried directly, as it is deemed acceptable for expired subscription that were not explicitly deleted to still be retrievable.
+
+### Expire explicit subscriptions at every DSS in sequence test step
+
+This test step will modify explicit subscriptions that were previously created at each DSS instance so that they expire shortly after the modification.
+
+Note that this step is run once for each involved DSS (that is, once for the primary DSS and once for every secondary DSS)
+
+#### [Modify subscription on a DSS instance so that it expires soon](./fragments/sub/crud/update_query.md)
+
+Check that the subscription modifications succeed and wait for them to expire.
+
+#### [Search for subscriptions from all other DSS instances succeeds](./fragments/sub/crud/search_query.md)
+
+Check that query succeeds.
+
+#### 🛑 Subscription does not exist on all other DSS instances check
+
+The explicit subscription expired on a DSS instance must have been removed from all other DSS instances.
+
+If the subscription still exists on one of the other DSS instances, one of the instances fails to comply with **[astm.f3548.v21.DSS0210,A2-7-2,4d](../../../../requirements/astm/f3548/v21.md)**.
+
+
 ## [Cleanup](./clean_workspace.md)
