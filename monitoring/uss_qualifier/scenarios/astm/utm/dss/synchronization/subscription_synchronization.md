@@ -91,7 +91,7 @@ Confirm that the subscription that was just created is properly synchronized acr
 
 Confirms that each DSS provides access to the created subscription,
 
-#### [Search subscription](../fragments/sub/crud/search.md)
+#### [Search subscription](../fragments/sub/crud/search_correct.md)
 
 Confirms that each DSS returns the created subscription when searched for.
 
@@ -108,7 +108,7 @@ Verify that the version of the subscription returned by every DSS is as expected
 This test step mutates the previously created subscription, by accessing the primary DSS, to verify that the update is propagated to all other DSSes.
 Notably, it checks that the subscription version is updated, including for changes that are not directly visible, such as changing the subscription's footprint.
 
-#### [Update subscription](../fragments/sub/crud/update.md)
+#### [Update subscription](../fragments/sub/crud/update_correct.md)
 
 Confirm that the subscription can be mutated.
 
@@ -132,7 +132,7 @@ Confirm that the subscription that was just mutated is properly synchronized acr
 
 Confirms that the subscription that was just mutated can be retrieved from any DSS.
 
-#### [Search subscription](../fragments/sub/crud/search.md)
+#### [Search subscription](../fragments/sub/crud/search_correct.md)
 
 Confirms that the subscription that was just mutated can be searched for from any DSS.
 
@@ -163,7 +163,7 @@ When queried for a subscription that was created via another DSS, a DSS instance
 
 If it does not, it might be in violation of **[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**.
 
-#### [Update subscription](../fragments/sub/crud/update.md)
+#### [Update subscription](../fragments/sub/crud/update_correct.md)
 
 Confirm that the secondary DSS handles the update properly.
 
@@ -189,7 +189,7 @@ Confirm that the subscription that was just mutated is properly synchronized acr
 
 Confirms that the subscription that was just mutated can be retrieved from any DSS, and that it has the expected content.
 
-#### [Search subscription](../fragments/sub/crud/search.md)
+#### [Search subscription](../fragments/sub/crud/search_correct.md)
 
 Confirms that the subscription that was just mutated can be searched for from any DSS, and that it has the expected content.
 
