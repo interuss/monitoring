@@ -25,10 +25,20 @@ v1:
           dss_instances: dss_instances
           mock_uss: mock_uss
           second_utm_auth: second_utm_auth
-          utm_client_identity: utm_client_identity
           planning_area: planning_area
           problematically_big_area: problematically_big_area
-          utm_client_identity: utm_client_identity
+
+    # When a test run is executed, a "baseline signature" is computed uniquely identifying the "baseline" of the test,
+    # usually excluding exactly what systems are participating in the test (the "environment").  This is a list of
+    # elements within this configuration to exclude from the configuration when computing the baseline signature.
+    non_baseline_inputs:
+      - v1.test_run.resources.resource_declarations.utm_auth
+      - v1.test_run.resources.resource_declarations.second_utm_auth
+      - v1.test_run.resources.resource_declarations.test_env_version_providers
+      - v1.test_run.resources.resource_declarations.flight_planners
+      - v1.test_run.resources.resource_declarations.dss
+      - v1.test_run.resources.resource_declarations.dss_instances
+      - v1.test_run.resources.resource_declarations.mock_uss
 
     # This block defines all the resources available in the resource pool.
     # Presumably all resources defined below would be used either
@@ -36,6 +46,10 @@ v1:
     #   2) to create another resource in the pool (see, e.g., `utm_auth` as it relates to `dss` below)
     resources:
       resource_declarations:
+        # =================================
+        # ========== Environment ==========
+        # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
         # Means by which uss_qualifier can obtain authorization to make requests in an ASTM USS ecosystem
         utm_auth:
           # resource_type is a ResourceTypeName (defined in uss_qualifier/resources/definitions.py)
@@ -56,23 +70,6 @@ v1:
               # Remove if the authentication provider pointed to by AUTH_SPEC does not support it.
               - ""
 
-        # Means by which uss_qualifier can discover which subscription ('sub' claim of its tokes) it is described by
-        utm_client_identity:
-          resource_type: resources.communications.ClientIdentityResource
-          dependencies:
-            auth_adapter: utm_auth
-          specification:
-            # Audience and scope to be used to issue a dummy query, should it be required to discover the subscription
-            whoami_audience: localhost
-            whoami_scope: rid.display_provider
-
-        # Means by which uss_qualifier generates identifiers
-        id_generator:
-          $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-          resource_type: resources.interuss.IDGeneratorResource
-          dependencies:
-            client_identity: utm_client_identity
-
         # A second auth adapter, for DSS tests that require a second set of credentials for accessing the ecosystem.
         # Note that the 'sub' claim of the tokens obtained through this adepter MUST be different from the first auth adapter.
         second_utm_auth:
@@ -81,47 +78,6 @@ v1:
             environment_variable_containing_auth_spec: AUTH_SPEC_2
             scopes_authorized:
               - utm.strategic_coordination
-
-        # Area that will be used for queries and resource creation that are geo-located
-        planning_area:
-          $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-          resource_type: resources.astm.f3548.v21.PlanningAreaResource
-          specification:
-            base_url: https://uss_qualifier.test.utm/dummy_base_url
-            volume:
-              outline_polygon:
-                vertices:
-                  - lat: 37.1853
-                    lng: -80.6140
-                  - lat: 37.2148
-                    lng: -80.6140
-                  - lat: 37.2148
-                    lng: -80.5440
-                  - lat: 37.1853
-                    lng: -80.5440
-              altitude_lower:
-                value: 0
-                reference: W84
-                units: M
-              altitude_upper:
-                value: 3048
-                reference: W84
-                units: M
-
-        # An area designed to be soo big as to be refused by systems queries with it.
-        problematically_big_area:
-          $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-          resource_type: resources.VerticesResource
-          specification:
-            vertices:
-              - lat: 38
-                lng: -81
-              - lat: 37
-                lng: -81
-              - lat: 37
-                lng: -80
-              - lat: 38
-                lng: -80
 
         # Means by which to obtain the versions of participants' systems under test (in the test environment).
         test_env_version_providers:
@@ -165,6 +121,103 @@ v1:
               - participant_id: uss2_core
                 v1_base_url: http://scdsc.uss2.localutm/flight_planning/v1
 
+        # Location of DSS instance that can be used to verify flight planning outcomes
+        dss:
+          resource_type: resources.astm.f3548.v21.DSSInstanceResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            # A USS that hosts a DSS instance is also a participant in the test, even if they don't fulfill any other roles
+            participant_id: uss1_dss
+            base_url: http://dss.uss1.localutm
+
+        dss_instances:
+          resource_type: resources.astm.f3548.v21.DSSInstancesResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            dss_instances:
+              - participant_id: uss1_dss
+                user_participant_ids:
+                  # Participants using a DSS instance they do not provide should be listed as users of that DSS (so that they can take credit for USS requirements enforced by the DSS)
+                  - mock_uss  # mock_uss uses this DSS instance; it does not provide its own instance
+                base_url: http://dss.uss1.localutm
+                has_private_address: true
+              - participant_id: uss2_dss
+                base_url: http://dss.uss2.localutm
+                has_private_address: true
+
+        # Mock USS that can be used in tests for flight planning, modifying data sharing behavior and recording interactions
+        mock_uss:
+          resource_type: resources.interuss.mock_uss.client.MockUSSResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            participant_id: mock_uss
+            mock_uss_base_url: http://scdsc.log.uss6.localutm
+
+        # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        # ========== Environment ==========
+        # =================================
+
+        # Means by which uss_qualifier can discover which subscription ('sub' claim of its tokes) it is described by
+        utm_client_identity:
+          resource_type: resources.communications.ClientIdentityResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            # Audience and scope to be used to issue a dummy query, should it be required to discover the subscription
+            whoami_audience: localhost
+            whoami_scope: utm.strategic_coordination
+
+        # Means by which uss_qualifier generates identifiers
+        id_generator:
+          $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+          resource_type: resources.interuss.IDGeneratorResource
+          dependencies:
+            client_identity: utm_client_identity
+
+        # Area that will be used for queries and resource creation that are geo-located
+        planning_area:
+          $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+          resource_type: resources.astm.f3548.v21.PlanningAreaResource
+          specification:
+            base_url: https://uss_qualifier.test.utm/dummy_base_url
+            volume:
+              outline_polygon:
+                vertices:
+                  - lat: 37.1853
+                    lng: -80.6140
+                  - lat: 37.2148
+                    lng: -80.6140
+                  - lat: 37.2148
+                    lng: -80.5440
+                  - lat: 37.1853
+                    lng: -80.5440
+              altitude_lower:
+                value: 0
+                reference: W84
+                units: M
+              altitude_upper:
+                value: 3048
+                reference: W84
+                units: M
+
+        # An area designed to be soo big as to be refused by systems queries with it.
+        problematically_big_area:
+          $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+          resource_type: resources.VerticesResource
+          specification:
+            vertices:
+              - lat: 38
+                lng: -81
+              - lat: 37
+                lng: -81
+              - lat: 37
+                lng: -80
+              - lat: 38
+                lng: -80
+
         # Details of conflicting flights (used in nominal planning scenario)
         conflicting_flights:
           resource_type: resources.flight_planning.FlightIntentsResource
@@ -207,53 +260,6 @@ v1:
                   degrees_east: -96.7587
                   meters_up: 93
 
-        # Location of DSS instance that can be used to verify flight planning outcomes
-        dss:
-          resource_type: resources.astm.f3548.v21.DSSInstanceResource
-          dependencies:
-            auth_adapter: utm_auth
-          specification:
-            # A USS that hosts a DSS instance is also a participant in the test, even if they don't fulfill any other roles
-            participant_id: uss1_dss
-            base_url: http://dss.uss1.localutm
-
-        dss_instances:
-            resource_type: resources.astm.f3548.v21.DSSInstancesResource
-            dependencies:
-                auth_adapter: utm_auth
-            specification:
-              dss_instances:
-                - participant_id: uss1_dss
-                  user_participant_ids:
-                    # Participants using a DSS instance they do not provide should be listed as users of that DSS (so that they can take credit for USS requirements enforced by the DSS)
-                    - mock_uss  # mock_uss uses this DSS instance; it does not provide its own instance
-                  base_url: http://dss.uss1.localutm
-                  has_private_address: true
-                - participant_id: uss2_dss
-                  base_url: http://dss.uss2.localutm
-                  has_private_address: true
-
-        # Mock USS that can be used in tests for flight planning, modifying data sharing behavior and recording interactions
-        mock_uss:
-          resource_type: resources.interuss.mock_uss.client.MockUSSResource
-          dependencies:
-            auth_adapter: utm_auth
-          specification:
-            participant_id: mock_uss
-            mock_uss_base_url: http://scdsc.log.uss6.localutm
-
-
-    # When a test run is executed, a "baseline signature" is computed uniquely identifying the "baseline" of the test,
-    # usually excluding exactly what systems are participating in the test (the "environment").  This is a list of
-    # elements within this configuration to exclude from the configuration when computing the baseline signature.
-    non_baseline_inputs:
-      - v1.test_run.resources.resource_declarations.utm_auth
-      - v1.test_run.resources.resource_declarations.test_env_version_providers
-      - v1.test_run.resources.resource_declarations.flight_planners
-      - v1.test_run.resources.resource_declarations.dss
-      - v1.test_run.resources.resource_declarations.dss_instances
-      - v1.test_run.resources.resource_declarations.mock_uss
-
     # How to execute a test run using this configuration
     execution:
       # Since we expect no failed checks and want to stop execution immediately if there are any failed checks, we set
@@ -272,38 +278,6 @@ v1:
 
     # Write out a human-readable reports of the F3548-21 requirements tested
     tested_requirements:
-      - report_name: gate1
-        aggregate_participants:
-          uss1:
-            - uss1_core
-            - uss1_dss
-          uss2:
-            - uss2_core
-            - uss2_dss
-        requirement_collections:
-          scd_no_dss:
-            requirements:
-              - astm.f3548.v21.GEN0300
-              - astm.f3548.v21.GEN0310
-              - astm.f3548.v21.OPIN0015
-              - astm.f3548.v21.OPIN0020
-              - astm.f3548.v21.OPIN0025
-              - astm.f3548.v21.OPIN0030
-              - astm.f3548.v21.OPIN0035
-              - astm.f3548.v21.OPIN0040
-              - astm.f3548.v21.USS0005
-              - astm.f3548.v21.SCD0035
-              - astm.f3548.v21.SCD0040
-              - astm.f3548.v21.SCD0045
-              - astm.f3548.v21.SCD0050
-              - astm.f3548.v21.SCD0075
-              - astm.f3548.v21.SCD0080
-              - astm.f3548.v21.SCD0085
-              - astm.f3548.v21.GEN0500
-              - astm.f3548.v21.USS0105
-        participant_requirements:
-          uss1: scd_no_dss
-          uss2: scd_no_dss
       - report_name: gate3
         aggregate_participants:
           uss1:
@@ -377,6 +351,13 @@ v1:
               - astm.f3548.v21.DSS0210,A2-7-2,7
               - astm.f3548.v21.DSS0215
               - astm.f3548.v21.DSS0300
+              - interuss.automated_testing.flight_planning.ClearArea
+              - interuss.automated_testing.flight_planning.DeleteFlightSuccess
+              - interuss.automated_testing.flight_planning.ExpectedBehavior
+              - interuss.automated_testing.flight_planning.FlightCoveredByOperationalIntent
+              - interuss.automated_testing.flight_planning.ImplementAPI
+              - interuss.automated_testing.flight_planning.Readiness
+              - interuss.f3548.notification_requirements.NoDssEntityNoNotification
           scd_no_dss:
             requirements:
               - astm.f3548.v21.GEN0100
@@ -400,6 +381,13 @@ v1:
               - astm.f3548.v21.SCD0085
               - astm.f3548.v21.GEN0500
               - astm.f3548.v21.USS0105
+              - interuss.automated_testing.flight_planning.ClearArea
+              - interuss.automated_testing.flight_planning.DeleteFlightSuccess
+              - interuss.automated_testing.flight_planning.ExpectedBehavior
+              - interuss.automated_testing.flight_planning.FlightCoveredByOperationalIntent
+              - interuss.automated_testing.flight_planning.ImplementAPI
+              - interuss.automated_testing.flight_planning.Readiness
+              - interuss.f3548.notification_requirements.NoDssEntityNoNotification
         participant_requirements:
           uss1: scd_and_dss
           uss2: scd_no_dss
