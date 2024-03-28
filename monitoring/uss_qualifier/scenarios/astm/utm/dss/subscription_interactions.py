@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Set
+from typing import Dict, List, Set
 
 from uas_standards.astm.f3548.v21.api import (
     Subscription,
@@ -11,7 +11,6 @@ from uas_standards.astm.f3548.v21.api import (
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
-from monitoring.monitorlib import fetch
 from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4D
@@ -23,12 +22,12 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
     DSSInstanceResource,
     DSSInstancesResource,
 )
-from monitoring.uss_qualifier.resources.astm.f3548.v21.subscription_params import (
-    SubscriptionParams,
-)
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.sub.crud import (
+    sub_create_query,
+)
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenario,
 )
@@ -140,7 +139,7 @@ class SubscriptionInteractions(TestScenario):
             notify_for_constraints=False,
         )
 
-        sub_now, _, _ = self._create_sub_with_params(sub_now_params)
+        sub_now, _, _ = sub_create_query(self, self._dss, sub_now_params)
         self._current_subs[sub_now_params.sub_id] = sub_now
         self.end_test_step()
 
@@ -301,7 +300,7 @@ class SubscriptionInteractions(TestScenario):
 
             sub_id = self._sub_ids[i]
             common_params.sub_id = sub_id
-            sub, oirs, r = self._create_sub_with_params(common_params)
+            sub, oirs, r = sub_create_query(self, self._dss, common_params)
             self._current_subs[sub_id] = sub
 
             returned_oir_ids = set(oir.id for oir in oirs)
@@ -416,21 +415,6 @@ class SubscriptionInteractions(TestScenario):
                         )
 
         self.end_test_step()
-
-    def _create_sub_with_params(
-        self, params: SubscriptionParams
-    ) -> Tuple[Subscription, List[OperationalIntentReference], fetch.Query]:
-        """Create a subscription with the given parameters via the primary DSS instance"""
-        with self.check("Create subscription query succeeds") as check:
-            r = self._dss.upsert_subscription(**params)
-            self.record_query(r)
-            if not r.success:
-                check.record_failed(
-                    summary="Create subscription query failed",
-                    details=f"Failed to create a subscription on primary DSS with code {r.status_code}: {r.error_message}",
-                    query_timestamps=[r.request.timestamp],
-                )
-        return r.subscription, r.operational_intent_references, r
 
     def _setup_case(self):
         self.begin_test_case("Setup")
