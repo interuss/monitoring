@@ -6,7 +6,7 @@ This test step fragment validates that subscriptions can be created.
 
 Check query succeeds
 
-## 🛑 Create subscription response format conforms to spec check
+## ⚠️ Create subscription response format conforms to spec check
 
 The response to a successful subscription creation query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
 
