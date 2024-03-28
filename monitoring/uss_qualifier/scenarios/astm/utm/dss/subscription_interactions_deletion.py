@@ -21,6 +21,9 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.sub.crud import (
+    sub_create_query,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.subscription_interactions import (
     PER_DSS_OIR_TYPE,
     PER_DSS_SUB_TYPE,
@@ -106,21 +109,7 @@ class SubscriptionInteractionsDeletion(TestScenario):
                 notify_for_op_intents=True,
                 notify_for_constraints=False,
             )
-
-            with self.check(
-                "Create subscription query succeeds",
-                [dss.participant_id],
-            ) as check:
-                sub = self._dss.upsert_subscription(
-                    **sub_params,
-                )
-                self.record_query(sub)
-                if not sub.success:
-                    check.record_failed(
-                        summary="Create subscription query failed",
-                        details=f"Failed to create a subscription on DSS instance with code {sub.status_code}: {sub.error_message}",
-                        query_timestamps=[sub.request.timestamp],
-                    )
+            _, _, sub = sub_create_query(self, self._dss, sub_params)
             self._current_subs[sub_id] = sub.subscription
         self.end_test_step()
 
