@@ -1,4 +1,4 @@
-from typing import Union, Set, Optional, Iterable
+from typing import Union, Set, Optional, Tuple, List, Iterable
 
 from implicitdict import ImplicitDict
 
@@ -19,6 +19,8 @@ from monitoring.uss_qualifier.reports.report import (
     TestScenarioReport,
     PassedCheck,
     FailedCheck,
+    TestCaseReport,
+    TestStepReport,
 )
 from monitoring.uss_qualifier.reports.tested_requirements.data_types import (
     TestedBreakdown,
@@ -124,89 +126,99 @@ def _populate_breakdown_with_scenario_report(
     req_set: Optional[Set[RequirementID]],
 ) -> None:
     scenario_type_name = scenario_report.scenario_type
+    steps: List[Tuple[Optional[TestCaseReport], TestStepReport]] = []
     for case in scenario_report.cases:
         for step in case.steps:
-            for check in step.passed_checks + step.failed_checks:
-                if not any(pid in check.participants for pid in participant_ids):
+            steps.append((case, step))
+    if "cleanup" in scenario_report and scenario_report.cleanup:
+        steps.append((None, scenario_report.cleanup))
+
+    for case, step in steps:
+        for check in step.passed_checks + step.failed_checks:
+            if not any(pid in check.participants for pid in participant_ids):
+                continue
+            for req_id in check.requirements:
+                if req_set is not None and req_id not in req_set:
                     continue
-                for req_id in check.requirements:
-                    if req_set is not None and req_id not in req_set:
-                        continue
-                    package_id = req_id.package()
-                    package_name = "<br>.".join(package_id.split("."))
-                    matches = [p for p in breakdown.packages if p.id == package_id]
-                    if matches:
-                        tested_package = matches[0]
-                    else:
-                        # TODO: Improve name of package by using title of page
-                        url = repo_url_of(package_id.md_file_path())
-                        tested_package = TestedPackage(
-                            id=package_id, url=url, name=package_name, requirements=[]
-                        )
-                        breakdown.packages.append(tested_package)
+                package_id = req_id.package()
+                package_name = "<br>.".join(package_id.split("."))
+                matches = [p for p in breakdown.packages if p.id == package_id]
+                if matches:
+                    tested_package = matches[0]
+                else:
+                    # TODO: Improve name of package by using title of page
+                    url = repo_url_of(package_id.md_file_path())
+                    tested_package = TestedPackage(
+                        id=package_id, url=url, name=package_name, requirements=[]
+                    )
+                    breakdown.packages.append(tested_package)
 
-                    short_req_id = req_id.split(".")[-1]
-                    matches = [
-                        r for r in tested_package.requirements if r.id == short_req_id
-                    ]
-                    if matches:
-                        tested_requirement = matches[0]
-                    else:
-                        tested_requirement = TestedRequirement(
-                            id=short_req_id, scenarios=[]
-                        )
-                        tested_package.requirements.append(tested_requirement)
+                short_req_id = req_id.split(".")[-1]
+                matches = [
+                    r for r in tested_package.requirements if r.id == short_req_id
+                ]
+                if matches:
+                    tested_requirement = matches[0]
+                else:
+                    tested_requirement = TestedRequirement(
+                        id=short_req_id, scenarios=[]
+                    )
+                    tested_package.requirements.append(tested_requirement)
 
-                    matches = [
-                        s
-                        for s in tested_requirement.scenarios
-                        if s.type == scenario_type_name
-                    ]
-                    if matches:
-                        tested_scenario = matches[0]
-                    else:
-                        tested_scenario = TestedScenario(
-                            type=scenario_type_name,
-                            name=scenario_report.name,
-                            url=scenario_report.documentation_url,
-                            cases=[],
-                        )
-                        tested_requirement.scenarios.append(tested_scenario)
+                matches = [
+                    s
+                    for s in tested_requirement.scenarios
+                    if s.type == scenario_type_name
+                ]
+                if matches:
+                    tested_scenario = matches[0]
+                else:
+                    tested_scenario = TestedScenario(
+                        type=scenario_type_name,
+                        name=scenario_report.name,
+                        url=scenario_report.documentation_url,
+                        cases=[],
+                    )
+                    tested_requirement.scenarios.append(tested_scenario)
 
-                    matches = [c for c in tested_scenario.cases if c.name == case.name]
-                    if matches:
-                        tested_case = matches[0]
-                    else:
-                        tested_case = TestedCase(
-                            name=case.name, url=case.documentation_url, steps=[]
-                        )
-                        tested_scenario.cases.append(tested_case)
+                if case:
+                    case_name = case.name
+                    case_url = case.documentation_url
+                else:
+                    case_name = "Cleanup"
+                    case_url = step.documentation_url
+                matches = [c for c in tested_scenario.cases if c.name == case_name]
+                if matches:
+                    tested_case = matches[0]
+                else:
+                    tested_case = TestedCase(name=case_name, url=case_url, steps=[])
+                    tested_scenario.cases.append(tested_case)
 
-                    matches = [s for s in tested_case.steps if s.name == step.name]
-                    if matches:
-                        tested_step = matches[0]
-                    else:
-                        tested_step = TestedStep(
-                            name=step.name, url=step.documentation_url, checks=[]
-                        )
-                        tested_case.steps.append(tested_step)
+                matches = [s for s in tested_case.steps if s.name == step.name]
+                if matches:
+                    tested_step = matches[0]
+                else:
+                    tested_step = TestedStep(
+                        name=step.name, url=step.documentation_url, checks=[]
+                    )
+                    tested_case.steps.append(tested_step)
 
-                    matches = [c for c in tested_step.checks if c.name == check.name]
-                    if matches:
-                        tested_check = matches[0]
-                    else:
-                        tested_check = TestedCheck(
-                            name=check.name, url="", has_todo=False
-                        )  # TODO: Consider populating has_todo with documentation instead
-                        if isinstance(check, FailedCheck):
-                            tested_check.url = check.documentation_url
-                        tested_step.checks.append(tested_check)
-                    if isinstance(check, PassedCheck):
-                        tested_check.successes += 1
-                    elif isinstance(check, FailedCheck):
-                        tested_check.failures += 1
-                    else:
-                        raise ValueError("Check is neither PassedCheck nor FailedCheck")
+                matches = [c for c in tested_step.checks if c.name == check.name]
+                if matches:
+                    tested_check = matches[0]
+                else:
+                    tested_check = TestedCheck(
+                        name=check.name, url="", has_todo=False
+                    )  # TODO: Consider populating has_todo with documentation instead
+                    if isinstance(check, FailedCheck):
+                        tested_check.url = check.documentation_url
+                    tested_step.checks.append(tested_check)
+                if isinstance(check, PassedCheck):
+                    tested_check.successes += 1
+                elif isinstance(check, FailedCheck):
+                    tested_check.failures += 1
+                else:
+                    raise ValueError("Check is neither PassedCheck nor FailedCheck")
 
 
 def _populate_breakdown_with_action_declaration(
