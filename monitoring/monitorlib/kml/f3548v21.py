@@ -10,6 +10,9 @@ from monitoring.monitorlib.kml.generation import (
     YELLOW,
     RED,
     make_placemark_from_volume,
+    TRANSPARENT,
+    TRANSLUCENT_YELLOW,
+    TRANSLUCENT_RED,
 )
 from monitoring.monitorlib.scd import priority_of
 from uas_standards.astm.f3548.v21.api import (
@@ -88,5 +91,25 @@ def f3548v21_styles() -> List[kml.Style]:
             kml.LineStyle(kml.color(RED), kml.width(5)),
             kml.PolyStyle(kml.color(TRANSLUCENT_GREEN)),
             id="F3548v21Contingent",
+        ),
+        kml.Style(
+            kml.LineStyle(kml.color(TRANSLUCENT_GRAY), kml.width(1)),
+            kml.PolyStyle(kml.color(TRANSPARENT)),
+            id="F3548v21AcceptedFuture",
+        ),
+        kml.Style(
+            kml.LineStyle(kml.color(TRANSLUCENT_GREEN), kml.width(1)),
+            kml.PolyStyle(kml.color(TRANSPARENT)),
+            id="F3548v21ActivatedFuture",
+        ),
+        kml.Style(
+            kml.LineStyle(kml.color(TRANSLUCENT_YELLOW), kml.width(1)),
+            kml.PolyStyle(kml.color(TRANSPARENT)),
+            id="F3548v21NonconformingFuture",
+        ),
+        kml.Style(
+            kml.LineStyle(kml.color(TRANSLUCENT_RED), kml.width(1)),
+            kml.PolyStyle(kml.color(TRANSPARENT)),
+            id="F3548v21ContingentFuture",
         ),
     ]
