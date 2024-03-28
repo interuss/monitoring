@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from implicitdict import StringBasedDateTime
-from uas_standards.astm.f3548.v21 import api
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
     PutOperationalIntentReferenceParameters,
@@ -11,7 +9,7 @@ from uas_standards.astm.f3548.v21.api import (
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
-from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.fetch import QueryError, Query
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
@@ -134,16 +132,24 @@ class OIRSynchronization(TestScenario):
         self._create_oir_with_params(self._oir_params)
         self.end_test_step()
 
-        self.begin_test_step("Query newly created OIR")
+        self.begin_test_step("Retrieve newly created OIR")
         self._query_secondaries_and_compare(self._oir_params)
+        self.end_test_step()
+
+        self.begin_test_step("Search for newly created OIR")
+        self._search_secondaries_and_compare(self._oir_params)
         self.end_test_step()
 
         self.begin_test_step("Mutate OIR")
         self._test_mutate_oir_shift_time()
         self.end_test_step()
 
-        self.begin_test_step("Query updated OIR")
+        self.begin_test_step("Retrieve updated OIR")
         self._query_secondaries_and_compare(self._oir_params)
+        self.end_test_step()
+
+        self.begin_test_step("Search for updated OIR")
+        self._search_secondaries_and_compare(self._oir_params)
         self.end_test_step()
 
         self.begin_test_step("Delete OIR")
@@ -228,34 +234,100 @@ class OIRSynchronization(TestScenario):
         self, expected_oir_params: PutOperationalIntentReferenceParameters
     ):
         for secondary_dss in self._dss_read_instances:
-            self._validate_oir_from_secondary(
-                secondary_dss=secondary_dss,
-                expected_oir_params=expected_oir_params,
-                involved_participants=list(
-                    {self._primary_pid, secondary_dss.participant_id}
-                ),
+            with self.check(
+                "Get operational intent reference by ID",
+                secondary_dss.participant_id,
+            ) as check:
+                try:
+                    oir, q = secondary_dss.get_op_intent_reference(self._oir_id)
+                    self.record_query(q)
+                except QueryError as e:
+                    self.record_queries(e.queries)
+                    check.record_failed(
+                        summary="GET for operational intent reference failed",
+                        details=f"Query for operational intent reference failed: {e.msg}",
+                        query_timestamps=e.query_timestamps,
+                    )
+
+            involved_participants = list(
+                {self._primary_pid, secondary_dss.participant_id}
             )
+
+            with self.check(
+                "Operational intent reference can be found at every DSS",
+                involved_participants,
+            ) as check:
+                if q.status_code != 200:
+                    check.record_failed(
+                        summary="Requested operational intent was not found at secondary DSS.",
+                        details=f"Query for operational intent reference {self._oir_id} failed: {e.msg}",
+                        query_timestamps=e.query_timestamps,
+                    )
+
+                self._validate_oir_from_secondary(
+                    oir=oir,
+                    q=q,
+                    expected_oir_params=expected_oir_params,
+                    involved_participants=involved_participants,
+                )
+
+    def _search_secondaries_and_compare(
+        self, expected_oir_params: PutOperationalIntentReferenceParameters
+    ):
+        for secondary_dss in self._dss_read_instances:
+            with self.check(
+                "Successful operational intent reference search query",
+                [secondary_dss.participant_id],
+            ) as check:
+                try:
+                    oirs, q = secondary_dss.find_op_intent(self._planning_area_volume4d)
+                    self.record_query(q)
+                except QueryError as qe:
+                    self.record_queries(qe.queries)
+                    check.record_failed(
+                        summary="Failed to search for operational intent references",
+                        details=f"Failed to query operational intent references: got response code {qe.cause_status_code}: {qe.msg}",
+                        query_timestamps=qe.query_timestamps,
+                    )
+
+            involved_participants = list(
+                {self._primary_pid, secondary_dss.participant_id}
+            )
+
+            with self.check(
+                "Propagated operational intent reference general area is synchronized",
+                involved_participants,
+            ) as check:
+                oir: Optional[OperationalIntentReference] = None
+                for _oir in oirs:
+                    if _oir.id == self._oir_id:
+                        oir = _oir
+                        break
+
+                if oir is None:
+                    check.record_failed(
+                        summary="Propagated OIR not found",
+                        details=f"OIR {self._oir_id} was not found in the secondary DSS when searched for its expected geo-temporal extent",
+                        query_timestamps=[q.request.timestamp],
+                    )
+
+                self._validate_oir_from_secondary(
+                    oir=oir,
+                    q=q,
+                    expected_oir_params=expected_oir_params,
+                    involved_participants=involved_participants,
+                )
+
+            # TODO: craft a search with an area of interest that does not intersect with the planning area,
+            #  but whose convex hull intersects with the planning area
 
     def _validate_oir_from_secondary(
         self,
-        secondary_dss: DSSInstance,
+        oir: OperationalIntentReference,
+        q: Query,
         expected_oir_params: PutOperationalIntentReferenceParameters,
         involved_participants: List[str],
     ):
-        with self.check(
-            "Operational intent reference can be found at every DSS",
-            involved_participants,
-        ) as check:
-            try:
-                oir, q = secondary_dss.get_op_intent_reference(self._oir_id)
-                self.record_query(q)
-            except QueryError as e:
-                self.record_queries(e.queries)
-                check.record_failed(
-                    summary="GET for operational intent reference failed",
-                    details=f"Query for operational intent reference failed: {e.msg}",
-                    query_timestamps=e.query_timestamps,
-                )
 
         with self.check(
             "Propagated operational intent reference contains the correct manager",
@@ -322,24 +394,6 @@ class OIRSynchronization(TestScenario):
                     details=f"Expected: {expected_end}, Received: {oir.time_end}",
                     query_timestamps=[q.request.timestamp],
                 )
-
-        with self.check(
-            "Get operational intent reference response content is correct",
-            [secondary_dss.participant_id],
-        ) as check:
-            # Do a full validation of the OIR as a sanity check
-            OIRValidator(
-                main_check=check,
-                scenario=self,
-                expected_manager=self._expected_manager,
-                participant_id=[secondary_dss.participant_id],
-                oir_params=expected_oir_params,
-            ).validate_fetched_oir(
-                expected_oir_id=self._oir_id,
-                fetched_oir=q,
-                expected_version=self._current_oir.version,
-                expected_ovn=self._current_oir.ovn,
-            )
 
     def _test_mutate_oir_shift_time(self):
         """Mutate the OIR by adding 10 seconds to its start and end times.

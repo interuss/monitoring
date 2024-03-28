@@ -49,25 +49,31 @@ Verify that an operational intent reference can be created on the primary DSS.
 
 Verify that the operational intent reference returned by the DSS under test is properly formatted and contains the expected content.
 
-### Query newly created OIR test step
+### Retrieve newly created OIR test step
 
-Query the created operational intent at every DSS provided in `dss_instances`.
+Retrieve and validate synchronization of the created operational intent at every DSS provided in `dss_instances`.
 
-#### [Get OIR](../fragments/oir/crud/read.md)
+#### [Get OIR query](../fragments/oir/crud/read_query.md)
 
-Confirms that each DSS provides access to the created operational intent reference,
+Check that read query succeeds.
 
 #### [OIR is synchronized](../fragments/oir/sync.md)
 
+Confirm that each DSS provides direct access to the created operational intent reference.
 Confirm that the operational intent reference that was just created is properly synchronized across all DSS instances.
 
-#### [OIR Content is correct](../fragments/oir/validate/correctness.md)
+### Search for newly created OIR test step
 
-Verify that the operational intent reference returned by every DSS is correctly formatted and corresponds to what was created earlier.
+Search for and validate synchronization of the created operational intent at every DSS provided in `dss_instances`.
 
-#### [OIR Versions are correct](../fragments/oir/validate/non_mutated.md)
+#### [Search OIR](../fragments/oir/crud/search_query.md)
 
-Verify that the operational intent reference's version fields are as expected.
+Check that search query succeeds.
+
+#### [OIR is synchronized](../fragments/oir/sync.md)
+
+Confirm that each DSS returns the operational intent in relevant search results.
+Confirm that the operational intent reference that was just created is properly synchronized across all DSS instances.
 
 ### Mutate OIR test step
 
@@ -86,25 +92,31 @@ Verify that the operational intent reference returned by the DSS is properly for
 
 Verify that the operational intent reference's version fields have been updated.
 
-### Query updated OIR test step
+### Retrieve updated OIR test step
 
-Query the updated operational intent reference at every DSS provided in `dss_instances`.
+Retrieve and validate synchronization of the updated operational intent at every DSS provided in `dss_instances`.
+
+#### [Get OIR query](../fragments/oir/crud/read_query.md)
+
+Check that read query succeeds.
 
 #### [OIR is synchronized](../fragments/oir/sync.md)
 
-Confirm that the operational intent reference that was just mutated is properly synchronized across all DSS instances.
+Confirm that each DSS provides direct access to the updated operational intent reference.
+Confirm that the operational intent reference that was just updated is properly synchronized across all DSS instances.
 
-#### [Get OIR](../fragments/oir/crud/read.md)
+### Search for updated OIR test step
 
-Confirms that the operational intent reference that was just mutated can be retrieved from any DSS.
+Search for and validate synchronization of the updated operational intent at every DSS provided in `dss_instances`.
 
-#### [Validate OIR](../fragments/oir/validate/correctness.md)
+#### [Search OIR](../fragments/oir/crud/search_query.md)
 
-Verify that the operational intent reference returned by every DSS is correctly formatted and corresponds to what was mutated earlier.
+Check that search query succeeds.
 
-#### [OIR Versions are correct](../fragments/oir/validate/non_mutated.md)
+#### [OIR is synchronized](../fragments/oir/sync.md)
 
-Verify that the operational intent reference's version fields are as expected.
+Confirm that each DSS returns the operational intent in relevant search results.
+Confirm that the operational intent reference that was just updated is properly synchronized across all DSS instances.
 
 ### Delete OIR test step
 
@@ -114,7 +126,7 @@ This also checks that the operational intent reference data returned by a succes
 
 #### [Delete OIR](../fragments/oir/crud/delete.md)
 
-Confirms that an operational intent reference can be deleted.
+Confirm that an operational intent reference can be deleted.
 
 #### [Validate OIR](../fragments/oir/validate/correctness.md)
 
