@@ -12,7 +12,10 @@ from monitoring.uss_qualifier.configurations.configuration import (
     USSQualifierConfigurationV1,
 )
 from monitoring.uss_qualifier.fileio import load_dict_with_references
-from monitoring.uss_qualifier.reports.artifacts import generate_artifacts
+from monitoring.uss_qualifier.reports.artifacts import (
+    generate_artifacts,
+    default_output_path,
+)
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
 
 
@@ -31,6 +34,12 @@ def parseArgs() -> argparse.Namespace:
         "--report",
         help="File name of the report to read; Several comma-separated file names matching the configurations may be specified",
         required=True,
+    )
+
+    parser.add_argument(
+        "--output-path",
+        default=None,
+        help="Path to folder where artifacts should be written.  If not specified, defaults to output/{CONFIG_NAME}",
     )
 
     return parser.parse_args()
@@ -60,12 +69,17 @@ def main() -> int:
 
         config: USSQualifierConfigurationV1 = whole_config.v1
         if config.artifacts:
-            generate_artifacts(report, config.artifacts)
+            if args.output_path:
+                output_path = args.output_path
+            else:
+                output_path = default_output_path(config_name)
+            generate_artifacts(report, config.artifacts, output_path)
         else:
+            output_path = "nowhere"
             logger.warning(f"No artifacts to generate for {config_name}")
 
         logger.info(
-            f"========== Completed generating artifacts for configuration {config_name} =========="
+            f"========== Wrote artifacts for configuration {config_name} to {os.path.abspath(output_path)} =========="
         )
 
     return os.EX_OK

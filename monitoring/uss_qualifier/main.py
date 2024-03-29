@@ -17,7 +17,10 @@ from monitoring.uss_qualifier.configurations.configuration import (
     USSQualifierConfigurationV1,
 )
 from monitoring.uss_qualifier.fileio import load_dict_with_references
-from monitoring.uss_qualifier.reports.artifacts import generate_artifacts
+from monitoring.uss_qualifier.reports.artifacts import (
+    generate_artifacts,
+    default_output_path,
+)
 from monitoring.uss_qualifier.reports.report import TestRunReport
 from monitoring.uss_qualifier.reports.validation.report_validation import (
     validate_report,
@@ -61,7 +64,7 @@ def parseArgs() -> argparse.Namespace:
     parser.add_argument(
         "--output-path",
         default=None,
-        help="If specified, override v1.artifacts.output_path with this value.  Overriding in this way does not change the test baseline.",
+        help="Path to folder where artifacts should be written.  If not specified, defaults to output/{CONFIG_NAME}",
     )
 
     return parser.parse_args()
@@ -124,7 +127,7 @@ def run_config(
     config_output: str,
     skip_validation: bool,
     exit_before_execution: bool,
-    output_path_override: Optional[str],
+    output_path: Optional[str],
 ):
     config_src = load_dict_with_references(config_name)
 
@@ -159,11 +162,16 @@ def run_config(
 
     config: USSQualifierConfigurationV1 = whole_config.v1
 
+    if config.artifacts and not output_path:
+        raise ValueError(
+            "--output-path must be specified when configuration produces artifacts"
+        )
+
     logger.info("Executing test run")
     report = execute_test_run(whole_config)
 
     if config.artifacts:
-        generate_artifacts(report, config.artifacts, output_path_override)
+        generate_artifacts(report, config.artifacts, output_path)
 
     if "validation" in config and config.validation:
         logger.info(f"Validating test run report for configuration '{config_name}'")
@@ -194,12 +202,16 @@ def main() -> int:
         logger.info(
             f"========== Running uss_qualifier for configuration {config_name} =========="
         )
+        if args.output_path:
+            output_path = args.output_path
+        else:
+            output_path = default_output_path(config_name)
         exit_code = run_config(
             config_name,
             config_outputs[idx],
             args.skip_validation,
             args.exit_before_execution,
-            args.output_path,
+            output_path,
         )
         if exit_code != os.EX_OK:
             return exit_code

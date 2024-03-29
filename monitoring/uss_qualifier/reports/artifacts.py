@@ -17,12 +17,22 @@ from monitoring.uss_qualifier.reports.tested_requirements.generate import (
 )
 
 
+def default_output_path(config_name: str) -> str:
+    if config_name.lower().endswith(".yaml") or config_name.lower().endswith(".json"):
+        simple_config_name = os.path.splitext(config_name)[0]
+    else:
+        simple_config_name = config_name
+    simple_config_name = simple_config_name.split(".")[-1]
+    simple_config_name = os.path.split(simple_config_name)[-1]
+    return os.path.join("output", simple_config_name)
+
+
 def generate_artifacts(
     report: TestRunReport,
     artifacts: ArtifactsConfiguration,
-    output_path_override: Optional[str] = None,
+    output_path: str,
 ):
-    output_path = output_path_override or artifacts.output_path
+    logger.debug(f"Writing artifacts to {os.path.abspath(output_path)}")
     os.makedirs(output_path, exist_ok=True)
 
     def _should_redact(cfg) -> bool:
