@@ -49,32 +49,50 @@ Verify that an operational intent reference can be created on the primary DSS.
 
 Verify that the operational intent reference returned by the DSS under test is properly formatted and contains the expected content.
 
-### Query newly created OIR test step
+### Retrieve newly created OIR test step
 
-Query the created operational intent at every DSS provided in `dss_instances`.
+Retrieve and validate synchronization of the created operational intent at every DSS provided in `dss_instances`.
 
-#### [Get OIR](../fragments/oir/crud/read.md)
+#### [Get OIR query](../fragments/oir/crud/read_query.md)
 
-Confirms that each DSS provides access to the created operational intent reference,
+Check that read query succeeds.
+
+#### Newly created OIR can be consistently retrieved from all DSS instances check
+
+If the operational intent retrieved from a secondary DSS instance is not consistent with the newly created one on the
+primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1a](../../../../../requirements/astm/f3548/v21.md)**
+and **[astm.f3548.v21.DSS0210,A2-7-2,1d](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [OIR is synchronized](../fragments/oir/sync.md)
 
+Confirm that each DSS provides direct access to the created operational intent reference.
 Confirm that the operational intent reference that was just created is properly synchronized across all DSS instances.
 
-#### [OIR Content is correct](../fragments/oir/validate/correctness.md)
+### Search for newly created OIR test step
 
-Verify that the operational intent reference returned by every DSS is correctly formatted and corresponds to what was created earlier.
+Search for and validate synchronization of the created operational intent at every DSS provided in `dss_instances`.
 
-#### [OIR Versions are correct](../fragments/oir/validate/non_mutated.md)
+#### [Search OIR](../fragments/oir/crud/search_query.md)
 
-Verify that the operational intent reference's version fields are as expected.
+Check that search query succeeds.
+
+#### Newly created OIR can be consistently searched for from all DSS instances check
+
+If the operational intent searched from a secondary DSS instance is not consistent with the newly created one on the
+primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1a](../../../../../requirements/astm/f3548/v21.md)**
+and **[astm.f3548.v21.DSS0210,A2-7-2,1c](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### [OIR is synchronized](../fragments/oir/sync.md)
+
+Confirm that each DSS returns the operational intent in relevant search results.
+Confirm that the operational intent reference that was just created is properly synchronized across all DSS instances.
 
 ### Mutate OIR test step
 
 This test step mutates the previously created operational intent reference to verify that the DSS reacts properly: notably, it checks that the operational intent reference version is updated,
 including for changes that are not directly visible, such as changing the operational intent reference's footprint.
 
-#### [Update OIR](../fragments/oir/crud/update.md)
+#### [Update OIR](../fragments/oir/crud/update_correct.md)
 
 Confirm that the operational intent reference can be mutated.
 
@@ -86,24 +104,84 @@ Verify that the operational intent reference returned by the DSS is properly for
 
 Verify that the operational intent reference's version fields have been updated.
 
-### Query updated OIR test step
+### Retrieve updated OIR test step
 
-Query the updated operational intent reference at every DSS provided in `dss_instances`.
+Retrieve and validate synchronization of the updated operational intent at every DSS provided in `dss_instances`.
+
+#### [Get OIR query](../fragments/oir/crud/read_query.md)
+
+Check that read query succeeds.
+
+#### Updated OIR can be consistently retrieved from all DSS instances check
+
+If the operational intent retrieved from a secondary DSS instance is not consistent with the updated one on the
+primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1b](../../../../../requirements/astm/f3548/v21.md)**
+and **[astm.f3548.v21.DSS0210,A2-7-2,1d](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [OIR is synchronized](../fragments/oir/sync.md)
 
-Confirm that the operational intent reference that was just mutated is properly synchronized across all DSS instances.
+Confirm that each DSS provides direct access to the updated operational intent reference.
+Confirm that the operational intent reference that was just updated is properly synchronized across all DSS instances.
 
-#### [Get OIR](../fragments/oir/crud/read.md)
+### Search for updated OIR test step
 
-Confirms that the operational intent reference that was just mutated can be retrieved from any DSS.
+Search for and validate synchronization of the updated operational intent at every DSS provided in `dss_instances`.
+
+#### [Search OIR](../fragments/oir/crud/search_query.md)
+
+Check that search query succeeds.
+
+#### Updated OIR can be consistently searched for from all DSS instances check
+
+If the operational intent searched from a secondary DSS instance is not consistent with the updated one on the
+primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1b](../../../../../requirements/astm/f3548/v21.md)**
+and **[astm.f3548.v21.DSS0210,A2-7-2,1c](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### [OIR is synchronized](../fragments/oir/sync.md)
+
+Confirm that each DSS returns the operational intent in relevant search results.
+Confirm that the operational intent reference that was just updated is properly synchronized across all DSS instances.
+
+### Delete OIR test step
+
+Attempt to delete the operational intent reference in various ways and ensure that the DSS reacts properly.
+
+This also checks that the operational intent reference data returned by a successful deletion is correct.
+
+#### [Delete OIR](../fragments/oir/crud/delete.md)
+
+Confirm that an operational intent reference can be deleted.
 
 #### [Validate OIR](../fragments/oir/validate/correctness.md)
 
-Verify that the operational intent reference returned by every DSS is correctly formatted and corresponds to what was mutated earlier.
+Verify that the operational intent reference returned by the DSS via the deletion is properly formatted and contains the correct content.
 
 #### [OIR Versions are correct](../fragments/oir/validate/non_mutated.md)
 
 Verify that the operational intent reference's version fields are as expected.
+
+### Query deleted OIR test step
+
+Attempt to query and search for the deleted operational intent reference in various ways
+
+#### [Get OIR query](../fragments/oir/crud/read_query.md)
+
+Check that read query succeeds.
+
+#### 🛑 Deleted OIR cannot be retrieved from all DSS instances check
+
+If a DSS returns an operational intent reference that was previously successfully deleted from the primary DSS,
+either one of the primary DSS or the DSS that returned the operational intent reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**
+and **[astm.f3548.v21.DSS0210,A2-7-2,3b](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### [Search OIR](../fragments/oir/crud/search_query.md)
+
+Check that search query succeeds.
+
+#### 🛑 Deleted OIR cannot be searched for from all DSS instances check
+
+If a DSS returns an operational intent reference that was previously successfully deleted from the primary DSS,
+either one of the primary DSS or the DSS that returned the operational intent reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**
+and **[astm.f3548.v21.DSS0210,A2-7-2,3a](../../../../../requirements/astm/f3548/v21.md)**.
 
 ## [Cleanup](../clean_workspace.md)

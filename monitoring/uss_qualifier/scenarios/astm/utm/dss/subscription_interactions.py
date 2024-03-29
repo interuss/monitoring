@@ -12,8 +12,10 @@ from uas_standards.astm.f3548.v21.api import (
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib import fetch
+from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4D
+from monitoring.monitorlib.temporal import Time
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
@@ -55,7 +57,7 @@ class SubscriptionInteractions(TestScenario):
 
     # Reference times for the subscriptions and operational intents
     _time_start: datetime
-    _time_send: datetime
+    _time_end: datetime
 
     _manager: str
 
@@ -120,6 +122,9 @@ class SubscriptionInteractions(TestScenario):
         self._steps_create_subs_at_each_dss()
         self.end_test_case()
 
+        self.begin_test_case("Expiration of subscriptions removes them")
+        self._steps_expire_subs_at_each_dss()
+        self.end_test_case()
         self.end_test_scenario()
 
     def _step_create_background_sub(self):
@@ -129,7 +134,7 @@ class SubscriptionInteractions(TestScenario):
         sub_now_params = self._planning_area.get_new_subscription_params(
             subscription_id=self._background_sub_id,
             start_time=self._time_start,
-            duration=self._time_send - self._time_start,
+            duration=self._time_end - self._time_start,
             # This is a planning area without constraint processing
             notify_for_op_intents=True,
             notify_for_constraints=False,
@@ -164,6 +169,7 @@ class SubscriptionInteractions(TestScenario):
             _notif_ids: set[str],
             _query_timestamp: datetime,
         ):
+            # TODO: the participants of this check should be only the subscription owner and the DSS that returned the subscription
             with self.check(
                 "DSS returns the implicit subscriptions from intersecting OIRs",
                 _participants,
@@ -187,7 +193,7 @@ class SubscriptionInteractions(TestScenario):
                 state=OperationalIntentState.Accepted,
                 uss_base_url="https://example.interuss.org/oir_base_url",
                 time_start=datetime.utcnow(),
-                time_end=self._time_send + timedelta(minutes=10),
+                time_end=self._time_end + timedelta(minutes=10),
                 subscription_id=None,
                 implicit_sub_base_url="https://example.interuss.org/sub_base_url",
             )
@@ -226,13 +232,63 @@ class SubscriptionInteractions(TestScenario):
             self._current_oirs[oir_id] = oir
         self.end_test_step()
 
+        self.begin_test_step("Modify an OIR at every DSS in sequence")
+        for i, dss in enumerate([self._dss] + self._secondary_instances):
+            oir_id = self._oir_ids[i]
+            oir = self._planning_area.get_new_operational_intent_ref_params(
+                key=[current_oir.ovn for current_oir in self._current_oirs.values()],
+                state=OperationalIntentState.Accepted,
+                uss_base_url="https://example.interuss.org/oir_base_url_bis",  # dummy modification of the OIR
+                time_start=datetime.utcnow(),
+                time_end=self._time_end + timedelta(minutes=10),
+                subscription_id=self._current_oirs[oir_id].subscription_id,
+            )
+
+            with self.check(
+                "Mutate operational intent reference query succeeds",
+                [dss.participant_id],
+            ) as check:
+                try:
+                    oir, subs, q = dss.put_op_intent(
+                        extents=oir.extents,
+                        key=oir.key,
+                        state=oir.state,
+                        base_url=oir.uss_base_url,
+                        oi_id=oir_id,
+                        ovn=self._current_oirs[oir_id].ovn,
+                        subscription_id=oir.subscription_id,
+                    )
+                    self.record_query(q)
+                except QueryError as qe:
+                    self.record_queries(qe.queries)
+                    check.record_failed(
+                        summary="Failed to mutate operational intent reference",
+                        details=f"Failed to mutate operational intent reference: {qe}",
+                        query_timestamps=qe.query_timestamps,
+                    )
+
+            notification_ids = to_sub_ids(subs)
+
+            _expected_subs_check(
+                dss.participant_id, notification_ids, q.request.timestamp
+            )
+            _implicit_subs_check(
+                [self._dss.participant_id]
+                + [sec_dss.participant_id for sec_dss in self._secondary_instances],
+                notification_ids,
+                q.request.timestamp,
+            )
+
+            self._current_oirs[oir_id] = oir
+        self.end_test_step()
+
     def _steps_create_subs_at_each_dss(self):
         """Creates a subscription at each DSS instance"""
 
         common_params = self._planning_area.get_new_subscription_params(
             subscription_id="",
             start_time=self._time_start,
-            duration=self._time_send - self._time_start,
+            duration=self._time_end - self._time_start,
             notify_for_op_intents=True,
             notify_for_constraints=False,
         )
@@ -291,6 +347,76 @@ class SubscriptionInteractions(TestScenario):
 
             self.end_test_step()
 
+    def _steps_expire_subs_at_each_dss(self):
+        self.begin_test_step("Expire explicit subscriptions at every DSS in sequence")
+        for i, dss in enumerate([self._dss] + self._secondary_instances):
+            sub_id = self._sub_ids[i]
+            sub_params = self._planning_area.get_new_subscription_params(
+                subscription_id=sub_id,
+                start_time=datetime.utcnow(),
+                duration=timedelta(seconds=SUBSCRIPTION_EXPIRY_DELAY_SEC),
+                notify_for_op_intents=True,
+                notify_for_constraints=False,
+            )
+
+            with self.check(
+                "Subscription can be mutated",
+                [dss.participant_id],
+            ) as check:
+                sub = self._dss.upsert_subscription(
+                    **sub_params,
+                    version=self._current_subs[sub_id].version,
+                )
+                self.record_query(sub)
+                if not sub.success:
+                    check.record_failed(
+                        summary="Update subscription query failed",
+                        details=f"Failed to update a subscription on DSS instance with code {sub.status_code}: {sub.error_message}",
+                        query_timestamps=[sub.request.timestamp],
+                    )
+            self._current_subs.pop(sub_id)
+
+        sleep(
+            timedelta(seconds=WAIT_FOR_EXPIRY_SEC),
+            "waiting for subscriptions to expire",
+        )
+
+        for i, dss in enumerate([self._dss] + self._secondary_instances):
+            sub_id = self._sub_ids[i]
+            for other_dss in {self._dss, *self._secondary_instances} - {dss}:
+                other_dss_subs = other_dss.query_subscriptions(
+                    Volume4D(
+                        volume=self._planning_area.volume,
+                        time_start=Time(self._time_start),
+                        time_end=Time(self._time_end),
+                    ).to_f3548v21()
+                )
+                self.record_query(other_dss_subs)
+
+                with self.check(
+                    "Successful subscription search query",
+                    dss.participant_id,
+                ) as check:
+                    if not other_dss_subs.success:
+                        check.record_failed(
+                            summary="Search subscriptions query failed",
+                            details=f"Failed to search for subscriptions from DSS with code {other_dss_subs.status_code}: {other_dss_subs.error_message}",
+                            query_timestamps=[other_dss_subs.request.timestamp],
+                        )
+
+                with self.check(
+                    "Subscription does not exist on all other DSS instances",
+                    [dss.participant_id, other_dss.participant_id],
+                ) as check:
+                    if sub_id in other_dss_subs.subscriptions:
+                        check.record_failed(
+                            summary="Subscription that expired on a DSS instance was found on another instance",
+                            details=f"Subscription {sub_id} expired on DSS instance {dss.participant_id} was found on DSS instance {other_dss.participant_id}.",
+                            query_timestamps=[other_dss_subs.request.timestamp],
+                        )
+
+        self.end_test_step()
+
     def _create_sub_with_params(
         self, params: SubscriptionParams
     ) -> Tuple[Subscription, List[OperationalIntentReference], fetch.Query]:
@@ -311,7 +437,7 @@ class SubscriptionInteractions(TestScenario):
 
         # Subscription from now to 20 minutes in the future
         self._time_start = datetime.utcnow()
-        self._time_send = self._time_start + timedelta(minutes=20)
+        self._time_end = self._time_start + timedelta(minutes=20)
 
         # Multiple runs of the scenario seem to rely on the same instance:
         # thus we need to reset the state of the scenario before running it.

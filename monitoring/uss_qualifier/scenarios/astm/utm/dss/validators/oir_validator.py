@@ -415,7 +415,7 @@ class OIRValidator:
             QueryOperationalIntentReferenceResponse
         )
 
-        by_id = {oir: oir.id for oir in resp_parsed.operational_intent_references}
+        by_id = {oir.id: oir for oir in resp_parsed.operational_intent_references}
 
         with self._scenario.check(
             "Created operational intent reference is in search results", self._pid

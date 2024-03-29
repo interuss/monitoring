@@ -7,9 +7,31 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
+    "aggregate_participants": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "description": "If specified, a list of 'aggregate participants', each of which is composed of multiple test participants.\n\nIf specified, these aggregate participants are the preferred subject for `participant_requirements`.",
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
     "participant_requirements": {
       "additionalProperties": {
-        "type": "string"
+        "type": [
+          "string",
+          "null"
+        ]
       },
       "properties": {
         "$ref": {

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Union, Iterable
 
 from implicitdict import StringBasedDateTime
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -46,20 +46,20 @@ def compute_overall_status(
     return overall_status
 
 
-def find_participant_system_version(
-    report: TestSuiteActionReport, participant_id: ParticipantID
-) -> Optional[str]:
+def find_participant_system_versions(
+    report: TestSuiteActionReport,
+    participant_ids: Union[ParticipantID, Iterable[ParticipantID]],
+) -> List[str]:
+    if isinstance(participant_ids, ParticipantID):
+        participant_ids = [participant_ids]
     test_suite, test_scenario, action_generator = report.get_applicable_report()
+    result = []
     if test_suite:
         for action in report.test_suite.actions:
-            version = find_participant_system_version(action, participant_id)
-            if version is not None:
-                return version
+            result.extend(find_participant_system_versions(action, participant_ids))
     elif action_generator:
         for action in report.action_generator.actions:
-            version = find_participant_system_version(action, participant_id)
-            if version is not None:
-                return version
+            result.extend(find_participant_system_versions(action, participant_ids))
     elif test_scenario:
         if (
             report.test_scenario.scenario_type
@@ -69,9 +69,21 @@ def find_participant_system_version(
             )
             and "notes" in report.test_scenario
         ):
-            if participant_id in report.test_scenario.notes:
-                system_identity, version = report.test_scenario.notes[
-                    participant_id
-                ].message.split("=")
-                return version
-    return None
+            for participant_id in participant_ids:
+                if participant_id in report.test_scenario.notes:
+                    system_identity, version = report.test_scenario.notes[
+                        participant_id
+                    ].message.split("=")
+                    result.append(version)
+    return result
+
+
+def get_system_version(system_versions: List[str]) -> Optional[str]:
+    if not system_versions:
+        return None
+    elif len(system_versions) > 1 and any(
+        v != system_versions[0] for v in system_versions
+    ):
+        return "CONFLICTED: " + " and ".join(system_versions)
+    else:
+        return system_versions[0]

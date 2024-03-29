@@ -2,9 +2,9 @@
 
 This test step fragment validates that subscriptions can be updated.
 
-## 🛑 Subscription can be mutated check
+## [Update query succeeds](./update_query.md)
 
-If a subscription cannot be modified with a valid set of parameters, the DSS is failing to meet **[astm.f3548.v21.DSS0005,5](../../../../../../../requirements/astm/f3548/v21.md)**.
+Check query succeeds.
 
 ## 🛑 Mutate subscription response format conforms to spec check
 
