@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 import glob
 import os
 import re
 from enum import Enum
-from typing import Protocol, Dict, Type, List
+from typing import Protocol, Dict, Type, List, Optional
 
 from loguru import logger
 from lxml import etree
@@ -20,6 +20,7 @@ from monitoring.mock_uss.tracer.log_types import (
     OperationalIntentNotification,
 )
 from monitoring.monitorlib.geotemporal import Volume4DCollection, Volume4D
+from monitoring.monitorlib.infrastructure import get_token_claims
 from monitoring.monitorlib.kml.f3548v21 import f3548v21_styles
 from monitoring.monitorlib.kml.generation import make_placemark_from_volume
 from monitoring.monitorlib.temporal import Time
@@ -99,6 +100,9 @@ def _historical_volumes_op_intent_notification(
         return []
     assert isinstance(req, PutOperationalIntentDetailsParameters)
 
+    claims = get_token_claims(log_entry.request.headers)
+    manager = claims.get("sub", "[Unknown manager]")
+
     if "operational_intent" in req and req.operational_intent:
         version = f"v{req.operational_intent.reference.version} ({req.operational_intent.reference.ovn})"
         state = req.operational_intent.reference.state.value
@@ -126,7 +130,7 @@ def _historical_volumes_op_intent_notification(
     return [
         HistoricalVolumesCollection(
             type=VolumeType.OperationalIntent,
-            name=req.operational_intent_id,
+            name=f"{manager} req.operational_intent_id",
             version=version,
             state=state,
             volumes=volumes,
@@ -137,6 +141,7 @@ def _historical_volumes_op_intent_notification(
 
 @dataclass
 class StyledVolume(object):
+    name: str
     volume: Volume4D
     style: str
 
@@ -146,14 +151,29 @@ class VolumesFolder(object):
     name: str
     volumes: List[StyledVolume]
     children: List[VolumesFolder]
+    reference_time: Optional[Time] = None
+
+    def truncate(self, latest_time: Time) -> None:
+        to_remove = []
+        for v in self.volumes:
+            if v.volume.time_start.datetime > latest_time.datetime:
+                to_remove.append(v)
+            elif v.volume.time_end.datetime > latest_time.datetime:
+                v.volume.time_end = latest_time
+        for v in to_remove:
+            self.volumes.remove(v)
+        for c in self.children:
+            c.truncate(latest_time)
 
     def to_kml_folder(self) -> kml.Folder:
+        def dt(t: Time) -> int:
+            return round((t.datetime - self.reference_time.datetime).total_seconds())
+
         folder = kml.Folder(kml.name(self.name))
-        for i, v in enumerate(self.volumes):
+        for v in self.volumes:
+            name = f"{v.name} {dt(v.volume.time_start)}s-{dt(v.volume.time_end)}s"
             folder.append(
-                make_placemark_from_volume(
-                    v.volume, name=f"Volume {i}", style_url=v.style
-                )
+                make_placemark_from_volume(v.volume, name=name, style_url=v.style)
             )
         for f in self.children:
             folder.append(f.to_kml_folder())
@@ -167,8 +187,10 @@ def _get_style(type: VolumeType, state: str, future: bool) -> str:
         raise NotImplementedError()
 
 
-def render_historical_kml(log_folder: str) -> str:
+def render_historical_kml(log_folder: str, day: Optional[str] = None) -> str:
     logger.debug("Rendering historical KML...")
+    if not day:
+        day = datetime.utcnow().strftime("%Y-%m-%d")
     historical_volume_collections: List[HistoricalVolumesCollection] = []
     for log_file in glob.glob(os.path.join(log_folder, "*.yaml")):
         # See if this is actually a log entry
@@ -199,8 +221,7 @@ def render_historical_kml(log_folder: str) -> str:
 
         # Render log entry into historical volume collections
         timestamp = StringBasedDateTime(
-            datetime.utcnow().strftime("%Y-%m-%d")
-            + f"T{m.group(2)}:{m.group(3)}:{m.group(4)}.{m.group(5)}Z"
+            f"{day}T{m.group(2)}:{m.group(3)}:{m.group(4)}.{m.group(5)}Z"
         ).datetime
         with open(log_file, "r") as f:
             try:
@@ -227,30 +248,41 @@ def render_historical_kml(log_folder: str) -> str:
         else:
             id_folder = children[0]
 
-        if id_folder.children:
-            # Truncate time ranges of volumes in previous version
-            for v in id_folder.children[-1].volumes:
-                if v.volume.time_end.datetime > hvc.active_at:
-                    v.volume.time_end = Time(hvc.active_at)
+        # Truncate time ranges of volumes in previous version(s)
+        t_hvc = Time(hvc.active_at)
+        id_folder.truncate(t_hvc)
+
+        if not hvc.volumes:
+            continue
 
         version_folder = VolumesFolder(name=hvc.version, volumes=[], children=[])
         id_folder.children.append(version_folder)
 
-        for v in hvc.volumes:
+        active_folder = VolumesFolder(
+            name="Active", reference_time=t_hvc, volumes=[], children=[]
+        )
+        future_folder = VolumesFolder(
+            name="Future", reference_time=t_hvc, volumes=[], children=[]
+        )
+        version_folder.children.append(active_folder)
+        version_folder.children.append(future_folder)
+
+        for i, v in enumerate(hvc.volumes):
             if v.time_end.datetime <= hvc.active_at:
                 # This volume ended before the collection was declared, so it never actually existed
                 continue
             if v.time_start.datetime < hvc.active_at:
-                v.time_start = Time(hvc.active_at)
+                # Volume is declared in the past, but it's only visible starting now
+                v.time_start = t_hvc
             elif v.time_start.datetime > hvc.active_at:
                 # Add a "future" volume between when this volume was declared and its start time
                 future_v = Volume4D(v)
                 future_v.time_end = v.time_start
-                future_v.time_start = Time(hvc.active_at)
+                future_v.time_start = t_hvc
                 style = _get_style(hvc.type, hvc.state, True)
-                version_folder.volumes.append(StyledVolume(future_v, style))
+                future_folder.volumes.append(StyledVolume(f"v{i}", future_v, style))
             style = _get_style(hvc.type, hvc.state, False)
-            version_folder.volumes.append(StyledVolume(v, style))
+            active_folder.volumes.append(StyledVolume(f"v{i}", v, style))
 
     doc = kml.kml(
         kml.Document(

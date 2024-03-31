@@ -171,8 +171,9 @@ def tracer_kmls(kml):
 @ui_auth.login_required
 def tracer_kml_historical():
     kml_name = f"historical_{datetime.datetime.utcnow().isoformat().split('.')[0]}.kml"
+    day = flask.request.args.get("day", None)
     return flask.Response(
-        render_historical_kml(context.tracer_logger.log_path),
+        render_historical_kml(context.tracer_logger.log_path, day),
         mimetype="application/vnd.google-earth.kml+xml",
         headers={"Content-Disposition": f"attachment;filename={kml_name}"},
     )

@@ -13,6 +13,8 @@ from monitoring.monitorlib.kml.generation import (
     TRANSPARENT,
     TRANSLUCENT_YELLOW,
     TRANSLUCENT_RED,
+    TRANSLUCENT_LIGHTGRAY,
+    TRANSLUCENT_LIGHTGREEN,
 )
 from monitoring.monitorlib.scd import priority_of
 from uas_standards.astm.f3548.v21.api import (
@@ -74,7 +76,7 @@ def f3548v21_styles() -> List[kml.Style]:
     return [
         kml.Style(
             kml.LineStyle(kml.color(GREEN), kml.width(3)),
-            kml.PolyStyle(kml.color(TRANSLUCENT_GRAY)),
+            kml.PolyStyle(kml.color(TRANSLUCENT_LIGHTGRAY)),
             id="F3548v21Accepted",
         ),
         kml.Style(
@@ -84,21 +86,21 @@ def f3548v21_styles() -> List[kml.Style]:
         ),
         kml.Style(
             kml.LineStyle(kml.color(YELLOW), kml.width(5)),
-            kml.PolyStyle(kml.color(TRANSLUCENT_GREEN)),
+            kml.PolyStyle(kml.color(TRANSLUCENT_YELLOW)),
             id="F3548v21Nonconforming",
         ),
         kml.Style(
             kml.LineStyle(kml.color(RED), kml.width(5)),
-            kml.PolyStyle(kml.color(TRANSLUCENT_GREEN)),
+            kml.PolyStyle(kml.color(TRANSLUCENT_RED)),
             id="F3548v21Contingent",
         ),
         kml.Style(
-            kml.LineStyle(kml.color(TRANSLUCENT_GRAY), kml.width(1)),
+            kml.LineStyle(kml.color(TRANSLUCENT_LIGHTGRAY), kml.width(1)),
             kml.PolyStyle(kml.color(TRANSPARENT)),
             id="F3548v21AcceptedFuture",
         ),
         kml.Style(
-            kml.LineStyle(kml.color(TRANSLUCENT_GREEN), kml.width(1)),
+            kml.LineStyle(kml.color(TRANSLUCENT_LIGHTGREEN), kml.width(1)),
             kml.PolyStyle(kml.color(TRANSPARENT)),
             id="F3548v21ActivatedFuture",
         ),
