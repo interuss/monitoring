@@ -130,7 +130,7 @@ def _historical_volumes_op_intent_notification(
     return [
         HistoricalVolumesCollection(
             type=VolumeType.OperationalIntent,
-            name=f"{manager} req.operational_intent_id",
+            name=f"{manager} {req.operational_intent_id}",
             version=version,
             state=state,
             volumes=volumes,
