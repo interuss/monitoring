@@ -1,10 +1,12 @@
 import os
 from typing import Tuple
 
+import arrow
 import flask
 from loguru import logger
 from termcolor import colored
 
+from implicitdict import StringBasedDateTime
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.log_types import BadRoute
@@ -27,7 +29,9 @@ from monitoring.mock_uss.tracer.routes import observation_areas
 def tracer_catch_all(u_path) -> Tuple[str, int]:
     logger.debug(f"Handling tracer_catch_all from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
-    log_name = context.tracer_logger.log_new(BadRoute(request=req))
+    log_name = context.tracer_logger.log_new(
+        BadRoute(request=req, recorded_at=StringBasedDateTime(arrow.utcnow()))
+    )
 
     claims = req.token
     owner = claims.get("sub", "<No owner in token>")
