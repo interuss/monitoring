@@ -13,6 +13,7 @@ import yaml
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.database import db
+from monitoring.mock_uss.tracer.kml import render_historical_kml
 from monitoring.mock_uss.tracer.log_types import PollFlights, TracerLogEntry
 from monitoring.mock_uss.tracer.observation_areas import ObservationArea
 from monitoring.mock_uss.tracer.ui_auth import ui_auth
@@ -163,6 +164,18 @@ def tracer_kmls(kml):
         mimetype="application/vnd.google-earth.kml+xml",
         attachment_filename=kml,
         as_attachment=True,
+    )
+
+
+@webapp.route("/tracer/kml/historical.kml")
+@ui_auth.login_required
+def tracer_kml_historical():
+    kml_name = f"historical_{datetime.datetime.utcnow().isoformat().split('.')[0]}.kml"
+    day = flask.request.args.get("day", None)
+    return flask.Response(
+        render_historical_kml(context.tracer_logger.log_path, day),
+        mimetype="application/vnd.google-earth.kml+xml",
+        headers={"Content-Disposition": f"attachment;filename={kml_name}"},
     )
 
 

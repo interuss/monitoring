@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 import sys
 from typing import Optional, Type
@@ -50,6 +52,24 @@ class TracerLogEntry(ImplicitDict):
         if len(matches) > 1:
             raise ValueError(
                 f"Multiple TracerLogEntry classes named `{type_name}` found"
+            )
+        return matches[0]
+
+    @staticmethod
+    def entry_type_from_prefix(prefix_code: str) -> Optional[Type[TracerLogEntry]]:
+        matches = [
+            cls
+            for name, cls in sys.modules[__name__].__dict__.items()
+            if isinstance(cls, type)
+            and issubclass(cls, TracerLogEntry)
+            and not cls is TracerLogEntry
+            and cls.prefix_code() == prefix_code
+        ]
+        if not matches:
+            return None
+        if len(matches) > 1:
+            raise ValueError(
+                f"Multiple TracerLogEntry classes with prefix code `{prefix_code}` found"
             )
         return matches[0]
 
