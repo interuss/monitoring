@@ -3,6 +3,7 @@
 set -eo pipefail
 
 # This script will deploy a collection of mock USS servers with docker compose.
+# When KEEP_TRACER_LOGS environment variable is set, tracer logs will not be erased upon startup.
 
 if [[ -z $(command -v docker) ]]; then
   echo "docker is required but not installed.  Visit https://docs.docker.com/install/ to install."
