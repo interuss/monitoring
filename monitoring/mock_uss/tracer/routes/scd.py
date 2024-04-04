@@ -1,10 +1,12 @@
 import os
 from typing import Tuple
 
+import arrow
 import flask
 from loguru import logger
 from termcolor import colored
 
+from implicitdict import StringBasedDateTime
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.log_types import (
@@ -27,7 +29,9 @@ def tracer_scd_v21_operation_notification(observation_area_id: str) -> Tuple[str
     req = fetch.describe_flask_request(flask.request)
     log_name = context.tracer_logger.log_new(
         OperationalIntentNotification(
-            observation_area_id=observation_area_id, request=req
+            observation_area_id=observation_area_id,
+            request=req,
+            recorded_at=StringBasedDateTime(arrow.utcnow()),
         )
     )
 
@@ -91,7 +95,11 @@ def tracer_scd_v21_constraint_notification(observation_area_id: str) -> Tuple[st
     logger.debug(f"Handling tracer_scd_v21_constraint_notification from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
     log_name = context.tracer_logger.log_new(
-        ConstraintNotification(observation_area_id=observation_area_id, request=req)
+        ConstraintNotification(
+            observation_area_id=observation_area_id,
+            request=req,
+            recorded_at=StringBasedDateTime(arrow.utcnow()),
+        )
     )
 
     claims = infrastructure.get_token_claims({k: v for k, v in flask.request.headers})

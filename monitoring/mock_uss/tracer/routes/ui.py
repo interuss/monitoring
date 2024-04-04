@@ -171,9 +171,8 @@ def tracer_kmls(kml):
 @ui_auth.login_required
 def tracer_kml_historical():
     kml_name = f"historical_{datetime.datetime.utcnow().isoformat().split('.')[0]}.kml"
-    day = flask.request.args.get("day", None)
     return flask.Response(
-        render_historical_kml(context.tracer_logger.log_path, day),
+        render_historical_kml(context.tracer_logger.log_path),
         mimetype="application/vnd.google-earth.kml+xml",
         headers={"Content-Disposition": f"attachment;filename={kml_name}"},
     )
@@ -242,7 +241,11 @@ def tracer_rid_request_poll(observation_area_id: str):
         enhanced_details=flask.request.form.get("enhanced_details", type=bool),
     )
     log_name = context.tracer_logger.log_new(
-        PollFlights(observation_area_id=observation_area_id, poll=flights_result)
+        PollFlights(
+            observation_area_id=observation_area_id,
+            poll=flights_result,
+            recorded_at=StringBasedDateTime(arrow.utcnow()),
+        )
     )
     return flask.redirect(flask.url_for("tracer_logs", log=log_name))
 

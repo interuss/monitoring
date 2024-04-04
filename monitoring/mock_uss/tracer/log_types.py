@@ -21,6 +21,9 @@ class TracerLogEntry(ImplicitDict):
     object_type: str
     """The type of log entry that this is (automatically populated according to concrete log entry class name."""
 
+    recorded_at: StringBasedDateTime
+    """The time at which this log entry was created."""
+
     def __init__(self, *args, **kwargs):
         kwargs = kwargs.copy()
         kwargs["object_type"] = type(self).__name__
@@ -276,5 +279,3 @@ class TracerShutdown(TracerLogEntry):
     @staticmethod
     def prefix_code() -> str:
         return "tracer_stop"
-
-    timestamp: StringBasedDateTime

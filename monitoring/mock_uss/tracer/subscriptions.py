@@ -1,5 +1,6 @@
 import uuid
 
+import arrow
 from implicitdict import StringBasedDateTime
 import yaml
 from yaml.representer import Representer
@@ -62,7 +63,12 @@ def subscribe_rid(
         rid_version=rid_version,
         utm_client=rid_client,
     )
-    logger.log_new(RIDSubscribe(changed_subscription=create_result))
+    logger.log_new(
+        RIDSubscribe(
+            changed_subscription=create_result,
+            recorded_at=StringBasedDateTime(arrow.utcnow()),
+        )
+    )
     if not create_result.success:
         raise SubscriptionManagementError("Could not create RID Subscription")
     return subscription_id
@@ -93,7 +99,12 @@ def subscribe_scd(
         area.volume.altitude_lower_wgs84_m(0),
         area.volume.altitude_upper_wgs84_m(3048),
     )
-    logfile = logger.log_new(SCDSubscribe(changed_subscription=create_result))
+    logfile = logger.log_new(
+        SCDSubscribe(
+            changed_subscription=create_result,
+            recorded_at=StringBasedDateTime(arrow.utcnow()),
+        )
+    )
     if not create_result.success:
         raise SubscriptionManagementError(
             "Could not create new SCD Subscription -> {}".format(logfile)
@@ -107,7 +118,12 @@ def unsubscribe_rid(
     logger = context.tracer_logger
     existing_result = fetch.rid.subscription(subscription_id, rid_version, rid_client)
     if existing_result.status_code != 404 and not existing_result.success:
-        logfile = logger.log_new(RIDUnsubscribe(existing_subscription=existing_result))
+        logfile = logger.log_new(
+            RIDUnsubscribe(
+                existing_subscription=existing_result,
+                recorded_at=StringBasedDateTime(arrow.utcnow()),
+            )
+        )
         raise SubscriptionManagementError(
             "Could not query existing RID Subscription -> {}".format(logfile)
         )
@@ -121,7 +137,9 @@ def unsubscribe_rid(
         )
         logfile = logger.log_new(
             RIDUnsubscribe(
-                existing_subscription=existing_result, deleted_subscription=del_result
+                existing_subscription=existing_result,
+                deleted_subscription=del_result,
+                recorded_at=StringBasedDateTime(arrow.utcnow()),
             )
         )
         if not del_result.success:
@@ -134,7 +152,12 @@ def unsubscribe_scd(subscription_id: str, scd_client: UTMClientSession) -> None:
     logger = context.tracer_logger
     get_result = fetch.scd.get_subscription(scd_client, subscription_id)
     if not get_result.success:
-        logfile = logger.log_new(SCDUnsubscribe(existing_subscription=get_result))
+        logfile = logger.log_new(
+            SCDUnsubscribe(
+                existing_subscription=get_result,
+                recorded_at=StringBasedDateTime(arrow.utcnow()),
+            )
+        )
         raise SubscriptionManagementError(
             "Could not query existing SCD Subscription -> {}".format(logfile)
         )
@@ -147,7 +170,9 @@ def unsubscribe_scd(subscription_id: str, scd_client: UTMClientSession) -> None:
         )
         logfile = logger.log_new(
             SCDUnsubscribe(
-                existing_subscription=get_result, deleted_subscription=del_result
+                existing_subscription=get_result,
+                deleted_subscription=del_result,
+                recorded_at=StringBasedDateTime(arrow.utcnow()),
             )
         )
         if not del_result.success:
