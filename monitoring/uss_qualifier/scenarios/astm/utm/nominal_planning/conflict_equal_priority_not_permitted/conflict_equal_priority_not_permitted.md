@@ -131,6 +131,9 @@ per **[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**.
 #### [Validate Flight 1 not shared](../../validate_not_shared_operational_intent.md)
 Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
 
+### Record time and flight status test step
+#### [Record time and flight status](test_steps/record_status_for_notification_check.md)
+Record the time and flight status data for use in verifying notifications later.
 
 ## Attempt to activate flight into conflict test case
 ![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict.svg)
@@ -166,6 +169,10 @@ As such the change to Flight 1c should be rejected per **[astm.f3548.v21.SCD0040
 #### [Validate Flight 1c not modified](../../validate_shared_operational_intent.md)
 Because the modification attempt was invalid, either Flight 1c should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
+
+### Record time and flight status test step
+#### [Record time and flight status](test_steps/record_status_for_notification_check.md)
+Record the time and flight status data for use in verifying notifications later.
 
 ## Attempt to modify activated flight into conflict test case
 ![Test case summary illustration](assets/attempt_to_modify_activated_flight_into_conflict.svg)
@@ -255,6 +262,12 @@ This step validates that the response of the USS is consistent with the flight s
 modified, or the USS considered the attempt invalid. In the latter case, because the modification attempt was invalid,
 either Flight 1 should not have been modified (because the USS kept the original accepted request), or it should have
 been removed (because the USS rejected the replacement plan provided).
+
+### Validate tested USS conflict notification to user
+
+#### [Validate tested USS conflict notification to user](test_steps/validate_conflict_notification_to_user.md)
+The test driver checks conflict notification logs of tested USS to verify that notification was sent to Flight 1 due to conflict with Flight 2 from case "Attempt to plan flight into conflict test case".
+The test driver also verifies that notification was sent to Flight 1c due to conflict with Flight 2 from case "Attempt to modify planned flight into conflict test case".
 
 ## Cleanup
 ### ⚠️ Successful flight deletion check

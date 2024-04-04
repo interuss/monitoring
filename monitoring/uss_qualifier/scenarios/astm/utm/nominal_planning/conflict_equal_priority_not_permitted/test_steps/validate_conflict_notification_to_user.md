@@ -5,11 +5,13 @@ This step verifies that when creating or modifying an operational intent, the te
 ## 🛑 Tested USS conflict notifications logs retrievable check
 
 If the query to tested USS fails or uss_qualifier is otherwise unable to retrieve the conflict notifications, the tested USS provider does not meet
-**[interuss.tested_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/tested_uss/hosted_instance.md)**.
+**[interuss.tested_uss.hosted_instance.ExposeInterface](../../../../../../requirements/interuss/tested_uss/hosted_instance.md)**.
 
 ## ⚠️ Expect conflict notification sent check
-As per **[astm.f3548.v21.SCD0090](../../../../../requirements/astm/f3548/v21.md)**, a conflict notification should be
-sent by the USS to the affected user of a new or modified operational intent in no more than
+As per **[astm.f3548.v21.SCD0090](../../../../../../requirements/astm/f3548/v21.md)**, a conflict notification should be
+sent by the USS to the user of a new or modified operational intent, and per **[astm.f3548.v21.SCD0095](../../../../../../requirements/astm/f3548/v21.md)**, a conflict notification should be
+sent by the USS to a user affected by a new or modified operational intent. 
+In both cases the notification should be sent in no more than
 ConflictingOIMaxUserNotificationTime (5) seconds, 95 percent of the time.
 To verify that the notification was indeed sent for this check, waiting up to
 ConflictingOIMaxUserNotificationTime gets us 95 percent confidence in declaring the USS non-compliant if
@@ -22,7 +24,7 @@ In addition, due to potential delays in the test harness setup, an additional 5 
 for test cases that check notification sent for an operational intent, we will wait for notifications until a threshold of 12 seconds (rounded).
 
 #### Note
-As per **[astm.f3548.v21.SCD0090](../../../../../requirements/astm/f3548/v21.md)**, ConflictingOIMaxUserNotificationTime
+As per **[astm.f3548.v21.SCD0090](../../../../../../requirements/astm/f3548/v21.md)**, ConflictingOIMaxUserNotificationTime
 is measured from time_start - detection of conflict with existing operational intent by USS - till time end - conflict notice sent to affected user.
 To make sure the test driver gives enough time for a conflict notification to be sent to the user,
 it marks the time to get conflict notifications from tested USS as - the time the expected result of the
@@ -31,11 +33,22 @@ The sequence of events is -
 1. Test driver initiates plan to tested USS. t0
 2. Tested USS shares the plan with DSS and receives DSS response. 
 3. USS detects conflict with existing operational intent. t_time_start
-4. Tested USS responds to test driver with expected response. 
-5. Test driver checks for shared operational_intent in DSS and checks its retrievable. t1
+4. Tested USS responds to test driver with expected result. 
+5. Test driver checks for shared operational_intent in DSS and verifies that it has the expected result. t1
 6. Test driver waits for 12 seconds.
 7. Test driver retrieves conflict notifications from tested USS. t1 + 12 seconds
 8. Test driver should verify that the conflict notification was sent to the user within 7 seconds of time t1.
+
+Similarly for **[astm.f3548.v21.SCD0095](../../../../../../requirements/astm/f3548/v21.md)** the sequence of events is - 
+1. Test driver initiates plan to tested USS. t0
+2. Tested USS shares the plan with DSS and receives DSS response. 
+3. USS detects conflict with existing operational intent. 
+4. USS notifies managing USS of affected operational intent (if needed) t_time_start
+5. Tested USS responds to test driver with expected result. 
+6. Test driver checks for shared operational_intent in DSS and verifies that it has the expected result. t1
+7. Test driver waits for 12 seconds.
+8. Test driver retrieves conflict notifications from tested USS. t1 + 12 seconds
+9. Test driver should verify that the conflict notification was sent to the user within 7 seconds of time t1.
 
 We know from above that waiting from t_time_start for 12 seconds would
 give us 99% confidence that we receive the notifications. But, the test driver doesn't have access to t_time_start.
@@ -44,4 +57,4 @@ This ensures that test driver waits for a long enough duration before getting th
 a high confidence that the test driver correctly verifies if a notification was sent by tested_uss.
 
 ## 🛑 Conflict notification data is valid check
-If data is not correct or exceeds the 99 percentile wait time of 7 seconds, the tested USS provider does not meet **[astm.f3548.v21.SCD0090](../../../../../requirements/astm/f3548/v21.md)**.
+If data is not correct or exceeds the 99 percentile wait time of 7 seconds, the tested USS provider does not meet **[astm.f3548.v21.SCD0090](../../../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.SCD0095](../../../../../../requirements/astm/f3548/v21.md)**.
