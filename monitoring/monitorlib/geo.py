@@ -23,6 +23,9 @@ from uas_standards.interuss.automated_testing.rid.v1 import (
     injection as f3411testing_injection,
 )
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api as fp_api
+from uas_standards.interuss.automated_testing.geospatial_map.v1 import (
+    api as geospatial_map_api,
+)
 
 EARTH_CIRCUMFERENCE_KM = 40075
 EARTH_CIRCUMFERENCE_M = EARTH_CIRCUMFERENCE_KM * 1000
@@ -396,6 +399,12 @@ class Volume3D(ImplicitDict):
         if self.altitude_upper:
             kwargs["altitude_upper"] = self.altitude_upper.to_flight_planning_api()
         return fp_api.Volume3D(**kwargs)
+
+    def to_geospatial_map_api(self) -> geospatial_map_api.Volume3D:
+        # geospatial_map API Volume3D is currently wire-compatible with flight_planning API
+        return ImplicitDict.parse(
+            self.to_flight_planning_api(), geospatial_map_api.Volume3D
+        )
 
     @staticmethod
     def from_f3548v21(vol: Union[f3548v21.Volume3D, dict]) -> Volume3D:

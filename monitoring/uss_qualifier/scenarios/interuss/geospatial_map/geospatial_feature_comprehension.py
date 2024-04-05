@@ -3,7 +3,21 @@ from typing import Dict
 
 import arrow
 
+from monitoring.monitorlib.clients.geospatial_info.client import (
+    GeospatialInfoClient,
+    GeospatialInfoError,
+)
+from monitoring.monitorlib.clients.geospatial_info.querying import (
+    GeospatialFeatureCheck,
+    GeospatialFeatureFilter,
+    OperationalImpact,
+    SelectionOutcome,
+)
 from monitoring.monitorlib.temporal import Time, TimeDuringTest
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
+from monitoring.uss_qualifier.resources.geospatial_info import (
+    GeospatialInfoProviderResource,
+)
 from monitoring.uss_qualifier.resources.interuss.geospatial_map import (
     FeatureCheckTableResource,
 )
@@ -18,6 +32,7 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
+_SUCCESSFUL_QUERY_CHECK_NAME = "Geospatial query succeeded"
 _BLOCK_CHECK_NAME = "Blocking geospatial features present"
 _ADVISE_CHECK_NAME = "Advisory geospatial features present"
 _NEITHER_CHECK_NAME = "No blocking or advisory features present"
@@ -29,13 +44,18 @@ _CHECK_NAMES = {
 
 
 class GeospatialFeatureComprehension(TestScenario):
+    participant_id: ParticipantID
+    geospatial_client: GeospatialInfoClient
     table: FeatureCheckTable
 
     def __init__(
         self,
-        table: FeatureCheckTableResource,  # TODO: Add geospatial map provider resource
+        geospatial_info_provider: GeospatialInfoProviderResource,
+        table: FeatureCheckTableResource,
     ):
         super().__init__()
+        self.participant_id = geospatial_info_provider.participant_id
+        self.geospatial_client = geospatial_info_provider.client
         self.table = table.table
 
     def run(self, context: ExecutionContext):
@@ -52,6 +72,11 @@ class GeospatialFeatureComprehension(TestScenario):
         self.end_test_scenario()
 
     def _map_query(self, times: Dict[TimeDuringTest, Time]):
+        query_check = [
+            c
+            for c in self._current_case.steps[0].checks
+            if c.name == _SUCCESSFUL_QUERY_CHECK_NAME
+        ][0]
         for row in self.table.rows:
             if row.expected_result not in _CHECK_NAMES:
                 raise NotImplementedError(
@@ -74,23 +99,100 @@ class GeospatialFeatureComprehension(TestScenario):
             doc = TestStepDocumentation(
                 name=row.geospatial_check_id,
                 url=self._current_case.steps[0].url,
-                checks=[check],
+                checks=[query_check, check],
             )
             self.begin_dynamic_test_step(doc)
 
-            if row.volumes:
-                times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-                concrete_volumes = [v.resolve(times) for v in row.volumes]
+            # Populate filter set
+            filter_set = GeospatialFeatureFilter()
 
-                # TODO: Query USSs under test
-                self.record_note(
-                    "map_query",
-                    f"TODO: Query USSs for features from {row.restriction_source} for {row.operation_rule_set} that cause {row.expected_result} from {concrete_volumes[0].time_start} to {concrete_volumes[0].time_end}",
+            times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+            concrete_volumes = [v.resolve(times) for v in row.volumes]
+            filter_set.volumes4d = concrete_volumes
+
+            if row.restriction_source:
+                filter_set.restriction_source = row.restriction_source
+
+            if row.operation_rule_set:
+                filter_set.operation_rule_set = row.operation_rule_set
+
+            if row.expected_result == ExpectedFeatureCheckResult.Block:
+                filter_set.resulting_operational_impact = OperationalImpact.Block
+            elif row.expected_result == ExpectedFeatureCheckResult.Advise:
+                filter_set.resulting_operational_impact = OperationalImpact.Advise
+            elif row.expected_result == ExpectedFeatureCheckResult.Neither:
+                filter_set.resulting_operational_impact = (
+                    OperationalImpact.BlockOrAdvise
+                )
+            else:
+                raise ValueError(
+                    f"GeospatialFeatureComprehension scenario is unable to perform an appropriate query for expected_result of {row.expected_result.value}"
                 )
 
+            feature_check = GeospatialFeatureCheck(filter_sets=[filter_set])
+
+            # Perform query
+            with self.check(_SUCCESSFUL_QUERY_CHECK_NAME, self.participant_id) as check:
+                try:
+                    resp = self.geospatial_client.query_geospatial_features(
+                        [feature_check]
+                    )
+                except GeospatialInfoError as e:
+                    for q in e.queries:
+                        self.record_query(q)
+                        check.record_failed(
+                            summary="Geospatial info query failed",
+                            details=str(e),
+                            query_timestamps=[q.request.timestamp for q in e.queries],
+                        )
+                    self.end_test_step()
+                    continue
+                for q in resp.queries:
+                    self.record_query(q)
+                query_timestamps = [q.request.timestamp for q in resp.queries]
+                if len(resp.results) != 1:
+                    check.record_failed(
+                        summary="Wrong number of results returned",
+                        details=f"Expected exactly 1 geospatial info query result, but instead received {len(resp.results)}",
+                        query_timestamps=query_timestamps,
+                    )
+
+            # Check whether the response was correct
             with self.check(
-                _CHECK_NAMES[row.expected_result], []
-            ) as check:  # TODO: Add participant_id
-                pass  # TODO: check USS query results
+                _CHECK_NAMES[row.expected_result], self.participant_id
+            ) as check:
+                result = resp.results[0]
+                if row.expected_result in (
+                    ExpectedFeatureCheckResult.Block,
+                    ExpectedFeatureCheckResult.Advise,
+                ):
+                    feature_type = (
+                        "blocking"
+                        if row.expected_result == ExpectedFeatureCheckResult.Block
+                        else "advisory"
+                    )
+                    if result.features_selection_outcome != SelectionOutcome.Present:
+                        details = f"Expected to find one or more {feature_type} geospatial features, but instead the query indicated {result.features_selection_outcome.value}"
+                        if "message" in result and result.message:
+                            details += f" with message '{result.message}'"
+                        check.record_failed(
+                            summary=f"Expected {feature_type} feature missing",
+                            details=details,
+                            query_timestamps=query_timestamps,
+                        )
+                elif row.expected_result == ExpectedFeatureCheckResult.Neither:
+                    if result.features_selection_outcome != SelectionOutcome.Absent:
+                        details = f"Expected to find no blocking or advisory geospatial features, but instead the query indicated {result.features_selection_outcome.value}"
+                        if "message" in result and result.message:
+                            details += f" with message '{result.message}'"
+                        check.record_failed(
+                            summary=f"Blocking and/or advisory geospatial features unexpectedly found",
+                            details=details,
+                            query_timestamps=query_timestamps,
+                        )
+                else:
+                    raise ValueError(
+                        f"GeospatialFeatureComprehension scenario is unable to test expected_result of {row.expected_result}"
+                    )
 
             self.end_test_step()

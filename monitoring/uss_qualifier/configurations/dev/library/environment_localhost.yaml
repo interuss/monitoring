@@ -29,6 +29,7 @@ utm_auth:
       - utm.availability_arbitration
       # InterUSS versioning automated testing
       - interuss.versioning.read_system_versions
+      - interuss.geospatial_map.query
       # For authentication test purposes
       - ""
 
@@ -271,3 +272,15 @@ scd_version_providers:
       - participant_id: uss2
         interuss:
           base_url: http://localhost:8094/versioning
+
+# ===== Geospatial map providers =====
+
+geospatial_info_provider:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.geospatial_info.GeospatialInfoProviderResource
+  dependencies:
+    auth_adapter: utm_auth
+  specification:
+    geospatial_info_provider:
+      participant_id: uss1
+      geospatial_map_v1_base_url: http://localhost:8076/geospatial_map/v1

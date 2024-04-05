@@ -329,6 +329,11 @@ class QueryType(str, Enum):
         "interuss.automated_testing.flight_planning.v1.DeleteFlightPlan"
     )
 
+    # InterUSS automated testing geospatial_map interface
+    InterUSSGeospatialMapV1QueryGeospatialMap = (
+        "interuss.automated_testing.geospatial_map.v1.QueryGeospatialMap"
+    )
+
     # InterUSS RID observation interface
     InterUSSRIDObservationV1GetDisplayData = (
         "interuss.automated_testing.rid.v1.observation.getDisplayData"

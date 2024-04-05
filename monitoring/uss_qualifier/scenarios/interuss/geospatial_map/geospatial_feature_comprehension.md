@@ -16,14 +16,18 @@ This test acts as a user viewing a USS's geospatial map and queries areas and fe
 
 The test steps for this test scenario are generated dynamically according to the definitions in the Feature Check Table.  The checks for each step are the same and are documented below.
 
-#### Blocking geospatial features present check
+#### ⚠️ Geospatial query succeeded check
+
+If the geospatial query to the USS did not succeed or return a valid response, this check will fail.
+
+#### ⚠️ Blocking geospatial features present check
 
 When the test designer specifies that a particular Feature Check has an expected result of "Block", that means querying a USS for geospatial features that would result in blocking a flight with the other specified characteristics should find matching geospatial features.  Upon performing this query, if this test finds no such matching geospatial features, this check will fail.
 
-#### Advisory geospatial features present check
+#### ⚠️ Advisory geospatial features present check
 
 When the test designer specifies that a particular Feature Check has an expected result of "Advise", that means querying a USS for geospatial features that would result in advisories or conditions for a flight with the other specified characteristics should find matching geospatial features.  Upon performing this query, if the test finds no such matching geospatial features, this check will fail.
 
-#### No blocking or advisory features present
+#### ⚠️ No blocking or advisory features present
 
 When the test designer specifies that a particular Feature Check has an expected result of "Neither" (neither Block nor Advise), that means querying a USS for geospatial features that would result in blocking or producing advisories or conditions for a flight with the other specified characteristics should find no matching geospatial features.  Upon performing this query, if the test finds any such matching geospatial features, this check will fail.
