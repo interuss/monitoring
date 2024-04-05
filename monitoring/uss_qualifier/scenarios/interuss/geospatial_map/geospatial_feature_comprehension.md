@@ -6,6 +6,10 @@ This test acts as a user viewing a USS's geospatial map and queries areas and fe
 
 ## Resources
 
+### geospatial_info_provider
+
+[GeospatialInfoProviderResource](../../../resources/geospatial_info/geospatial_info_providers.py) providing access to the USS under test providing geospatial information in this scenario.
+
 ### table
 
 [Feature Check Table](../../../resources/interuss/geospatial_map/feature_check_table.py) consisting of a list of Feature Check rows.  Each Feature Check row will cause this test to query the geospatial map of each USS under test according to the information in that Feature Check row.  This test will then perform checks according to the expected outcomes from those queries, according to the Feature Check row.
