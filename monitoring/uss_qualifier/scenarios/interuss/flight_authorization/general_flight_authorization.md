@@ -22,28 +22,28 @@ This test acts as a user using a USS's flight planning/authorization interface a
 
 ### Dynamic test step
 
-The test steps for this test scenario are generated dynamically according to the definitions in the Flight Check Table.  The checks for each step are the same and are documented below.
+The test steps for this test scenario are generated dynamically according to the definitions in the Flight Check Table.  The potential checks for each step are the same and are documented below.
 
-#### Valid planning response check
+#### 🛑 Valid planning response check
 
 The USS under test is expected to implement the InterUSS flight_planning automated testing API and respond to requests accordingly.  If the USS does not respond to a flight planning request to this API properly, it will have failed to meet **[interuss.automated_testing.flight_planning.ImplementAPI](../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-#### Disallowed flight check
+#### ⚠️ Disallowed flight check
 
 When the test designer specifies that a particular Flight Check has an expected acceptance of "No", that means attempting to plan/authorize that flight in a USS should result in the request being rejected.  Upon this test making this request, if the USS successfully plans/authorizes the flight, this check will fail.
 
-#### Allowed flight check
+#### ⚠️ Allowed flight check
 
 When the test designer specifies that a particular Flight Check has an expected acceptance of "Yes", that means attempting to plan/authorize that flight in a USS should result in the request being accepted.  Upon this test making this request, if the USS does not successfully plan/authorize the flight, this check will fail.
 
-#### Required conditions check
+#### ⚠️ Required conditions check
 
 When the test designer specifies that a particular Flight Check's conditions "MustBePresent", that means if a flight is successfully planned/authorized, it must be accompanied by conditions/advisories.  If a successfully-planned/authorized flight is not indicated to contain any conditions/advisories, this check will fail.
 
-#### Disallowed conditions check
+#### ⚠️ Disallowed conditions check
 
 When the test designer specifies that a particular Flight Check's conditions "MustBeAbsent", that means if a flight is successfully planned/authorized, it must NOT be accompanied by any conditions/advisories.  If a successfully-planned/authorized flight IS indicated to contain any conditions/advisories, this check will fail.
 
-#### Successful closure check
+#### 🛑 Successful closure check
 
 If a flight was successfully planned, then uss_qualifier will emulate a user attempting to close that flight.  The flight plan is expected to be Closed following that action.  If it is any other value, this check will fail per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../requirements/interuss/automated_testing/flight_planning.md)**.  A value of NotPlanned is not acceptable because the flight had previously been planned.
