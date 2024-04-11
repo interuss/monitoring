@@ -3,6 +3,7 @@
 set -eo pipefail
 
 # This script will deploy a collection of mock USS servers with docker compose.
+# When KEEP_TRACER_LOGS environment variable is set, tracer logs will not be erased upon startup.
 
 if [[ -z $(command -v docker) ]]; then
   echo "docker is required but not installed.  Visit https://docs.docker.com/install/ to install."
@@ -43,10 +44,12 @@ declare -a log_folders=( \
 for log_folder in "${log_folders[@]}"; do
   mkdir -p "$log_folder"
   if [[ "$DC_COMMAND" == up* ]]; then
-    echo "Cleaning up past logs in $log_folder"
-    # Prevent logs from building up too much by default
-    find "$log_folder" -name "*.yaml" -exec rm {} \;
-    find "$log_folder" -name "*.json" -exec rm {} \;
+    if [[ "$KEEP_TRACER_LOGS" == "" || "$log_folder" != "output/tracer" ]]; then
+      echo "Cleaning up past logs in $log_folder"
+      # Prevent logs from building up too much by default
+      find "$log_folder" -name "*.yaml" -exec rm {} \;
+      find "$log_folder" -name "*.json" -exec rm {} \;
+    fi
   fi
 done
 

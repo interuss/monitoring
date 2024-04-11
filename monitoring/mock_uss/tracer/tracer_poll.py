@@ -3,7 +3,8 @@ import json
 import sys
 from typing import Optional, Dict
 
-from implicitdict import ImplicitDict
+import arrow
+from implicitdict import ImplicitDict, StringBasedDateTime
 
 from monitoring.mock_uss.tracer.config import (
     KEY_TRACER_OUTPUT_FOLDER,
@@ -77,7 +78,9 @@ def _log_poll_start(logger):
             KEY_TRACER_KML_FOLDER: webapp.config[KEY_TRACER_KML_FOLDER],
             "code_version": versioning.get_code_version(),
         }
-        logger.log_new(PollStart(config=config))
+        logger.log_new(
+            PollStart(config=config, recorded_at=StringBasedDateTime(arrow.utcnow()))
+        )
 
 
 @webapp.periodic_task(TASK_POLL_OBSERVATION_AREAS)
@@ -130,7 +133,7 @@ def poll_isas(area: ObservationArea, logger: tracerlog.Logger) -> None:
             tx.need_line_break = True
         need_line_break = tx.need_line_break
 
-    log_entry = PollISAs(poll=result)
+    log_entry = PollISAs(poll=result, recorded_at=StringBasedDateTime(arrow.utcnow()))
     if log_new:
         logger.log_new(log_entry)
         if need_line_break:
@@ -173,7 +176,9 @@ def poll_ops(
             tx.need_line_break = True
         need_line_break = tx.need_line_break
 
-    log_entry = PollOperationalIntents(poll=result)
+    log_entry = PollOperationalIntents(
+        poll=result, recorded_at=StringBasedDateTime(arrow.utcnow())
+    )
     if log_new:
         logger.log_new(log_entry)
         if need_line_break:
@@ -212,7 +217,9 @@ def poll_constraints(
             tx.need_line_break = True
         need_line_break = tx.need_line_break
 
-    log_entry = PollConstraints(poll=result)
+    log_entry = PollConstraints(
+        poll=result, recorded_at=StringBasedDateTime(arrow.utcnow())
+    )
     if log_new:
         logger.log_new(log_entry)
         if need_line_break:

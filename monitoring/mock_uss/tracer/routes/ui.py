@@ -13,6 +13,7 @@ import yaml
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.database import db
+from monitoring.mock_uss.tracer.kml import render_historical_kml
 from monitoring.mock_uss.tracer.log_types import PollFlights, TracerLogEntry
 from monitoring.mock_uss.tracer.observation_areas import ObservationArea
 from monitoring.mock_uss.tracer.ui_auth import ui_auth
@@ -166,6 +167,17 @@ def tracer_kmls(kml):
     )
 
 
+@webapp.route("/tracer/kml/historical.kml")
+@ui_auth.login_required
+def tracer_kml_historical():
+    kml_name = f"historical_{datetime.datetime.utcnow().isoformat().split('.')[0]}.kml"
+    return flask.Response(
+        render_historical_kml(context.tracer_logger.log_path),
+        mimetype="application/vnd.google-earth.kml+xml",
+        headers={"Content-Disposition": f"attachment;filename={kml_name}"},
+    )
+
+
 def _get_validated_obs_area(observation_area_id: str) -> ObservationArea:
     with db as tx:
         if observation_area_id not in tx.observation_areas:
@@ -229,7 +241,11 @@ def tracer_rid_request_poll(observation_area_id: str):
         enhanced_details=flask.request.form.get("enhanced_details", type=bool),
     )
     log_name = context.tracer_logger.log_new(
-        PollFlights(observation_area_id=observation_area_id, poll=flights_result)
+        PollFlights(
+            observation_area_id=observation_area_id,
+            poll=flights_result,
+            recorded_at=StringBasedDateTime(arrow.utcnow()),
+        )
     )
     return flask.redirect(flask.url_for("tracer_logs", log=log_name))
 

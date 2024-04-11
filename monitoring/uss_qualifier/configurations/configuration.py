@@ -214,9 +214,6 @@ class RawReportConfiguration(ImplicitDict):
 
 
 class ArtifactsConfiguration(ImplicitDict):
-    output_path: str
-    """Path to folder where artifacts should be written.  Note that this value may be overridden at runtime without affecting the test baseline."""
-
     raw_report: Optional[RawReportConfiguration] = None
     """Configuration for raw report generation"""
 

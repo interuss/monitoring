@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from typing import Tuple, List, Union
 
+import arrow
 import flask
 import s2sphere
 from loguru import logger
@@ -149,7 +150,10 @@ def tracer_import_observation_areas() -> Union[Tuple[str, int], flask.Response]:
         )
         if not rid_subscriptions.success:
             context.tracer_logger.log_new(
-                ObservationAreaImportError(rid_subscriptions=rid_subscriptions)
+                ObservationAreaImportError(
+                    rid_subscriptions=rid_subscriptions,
+                    recorded_at=StringBasedDateTime(arrow.utcnow()),
+                )
             )
             return (
                 f"Could not retrieve F3411 subscriptions (code {rid_subscriptions.status_code})",
@@ -227,5 +231,5 @@ def _shutdown():
     logger.info("Observation areas cleanup complete.")
 
     context.tracer_logger.log_new(
-        TracerShutdown(timestamp=StringBasedDateTime(datetime.utcnow()))
+        TracerShutdown(recorded_at=StringBasedDateTime(arrow.utcnow()))
     )

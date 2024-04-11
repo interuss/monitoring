@@ -1,11 +1,12 @@
 import os
 from typing import Tuple
 
+import arrow
 import flask
 from loguru import logger
 from termcolor import colored
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.log_types import RIDISANotification
@@ -51,7 +52,11 @@ def tracer_rid_isa_notification(
     logger.debug(f"Handling tracer_rid_isa_notification from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
     log_name = context.tracer_logger.log_new(
-        RIDISANotification(observation_area_id=observation_area_id, request=req)
+        RIDISANotification(
+            observation_area_id=observation_area_id,
+            request=req,
+            recorded_at=StringBasedDateTime(arrow.utcnow()),
+        )
     )
 
     claims = req.token
