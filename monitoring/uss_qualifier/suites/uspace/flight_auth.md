@@ -5,7 +5,7 @@
 ## [Actions](../README.md#actions)
 
 1. Suite: [ASTM F3548-21](../astm/utm/f3548_21.md) ([`suites.astm.utm.f3548_21`](../astm/utm/f3548_21.yaml))
-2. Scenario: [Generic flight planners preparation](../../scenarios/flight_planning/prep_planners.md) ([`scenarios.flight_planning.PrepareFlightPlanners`](../../scenarios/flight_planning/prep_planners.py))
+2. Scenario: [Generic flight planners preparation](../../scenarios/flight_planning/prep_planners.md) ([`scenarios.flight_planning.PrepareFlightPlannersScenario`](../../scenarios/flight_planning/prep_planners.py))
 3. Action generator: [`action_generators.flight_planning.FlightPlannerCombinations`](../../action_generators/flight_planning/planner_combinations.py)
     1. Scenario: [Flight authorisation validation](../../scenarios/uspace/flight_auth/validation.md) ([`scenarios.uspace.flight_auth.Validation`](../../scenarios/uspace/flight_auth/validation.py))
 
