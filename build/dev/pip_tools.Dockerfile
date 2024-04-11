@@ -1,6 +1,6 @@
 # Dockerfile to expose pip-tools using the Python version the project relies on
 
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y openssl curl libgeos-dev gcc && apt-get install ca-certificates
 
