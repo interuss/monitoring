@@ -23,6 +23,9 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.sub.crud import (
+    sub_create_query,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators import (
     fail_with_schema_errors,
 )
@@ -274,23 +277,7 @@ class SubscriptionSynchronization(TestScenario):
     def _create_sub_with_params(
         self, creation_params: SubscriptionParams
     ) -> Subscription:
-
-        # TODO migrate to the try/except pattern for queries
-        newly_created = self._dss.upsert_subscription(
-            **creation_params,
-        )
-        self.record_query(newly_created)
-
-        with self.check(
-            "Create subscription query succeeds", [self._primary_pid]
-        ) as check:
-            if not newly_created.success:
-                loguru.logger.debug(f"Failed query: {newly_created.response.json}")
-                check.record_failed(
-                    "Subscription creation failed",
-                    details=f"Subscription creation failed with status code {newly_created.status_code}",
-                    query_timestamps=[newly_created.request.timestamp],
-                )
+        _, _, newly_created = sub_create_query(self, self._dss, creation_params)
 
         with self.check(
             "Create subscription response content is correct", [self._primary_pid]
@@ -621,21 +608,9 @@ class SubscriptionSynchronization(TestScenario):
         """Create a subscription on the main DSS with the separate credentials"""
         params = self._sub_params.copy()
         params.sub_id = self._acl_sub_id
-        with self.check(
-            "Create subscription query succeeds", [self._primary_pid]
-        ) as check:
-            acl_sub = self._dss_separate_creds.upsert_subscription(
-                **params,
-            )
-            self.record_query(acl_sub)
-            if not acl_sub.success:
-                check.record_failed(
-                    "Subscription creation with separate credentials failed",
-                    details=f"Subscription creation failed with status code {acl_sub.status_code} when attempted "
-                    f"with separate credentials: {acl_sub.error_message}",
-                    query_timestamps=[acl_sub.request.timestamp],
-                )
-            self._current_acl_sub = acl_sub.subscription
+
+        _, _, acl_sub = sub_create_query(self, self._dss_separate_creds, params)
+        self._current_acl_sub = acl_sub.subscription
 
     def _step_test_delete_sub_with_separate_creds(self):
         """Check we can't delete the subscription created with separate credentials with the main credentials.

@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Dict, List
 
-import loguru
 from uas_standards.astm.f3548.v21.api import Subscription, SubscriptionID
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -18,6 +17,9 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
 )
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.sub.crud import (
+    sub_create_query,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators.subscription_validator import (
     SubscriptionValidator,
 )
@@ -218,22 +220,11 @@ class SubscriptionSimple(TestScenario):
         self._create_sub_with_params(all_set_params)
 
     def _create_sub_with_params(self, creation_params: SubscriptionParams):
+        _, _, newly_created = sub_create_query(self, self._dss, creation_params)
 
-        newly_created = self._dss.upsert_subscription(
-            **creation_params,
-        )
-        self.record_query(newly_created)
-
-        with self.check("Create subscription query succeeds", self._pid) as check:
-            if not newly_created.success:
-                loguru.logger.debug(f"Failed query: {newly_created.response.json}")
-                check.record_failed(
-                    "Subscription creation failed",
-                    details=f"Subscription creation failed with status code {newly_created.status_code}",
-                    query_timestamps=[newly_created.request.timestamp],
-                )
-
-        with self.check("Create subscription response is correct", self._pid) as check:
+        with self.check(
+            "Create subscription response content is correct", self._pid
+        ) as check:
             SubscriptionValidator(
                 check,
                 self,
