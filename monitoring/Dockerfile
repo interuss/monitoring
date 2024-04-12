@@ -20,6 +20,9 @@ RUN apt-get update && apt-get install -y libffi-dev libssl-dev python3-dev build
 # required for lxml to install successfully with pip (at least on an ARM environment)
 RUN apt-get update && apt-get install -y libxml2-dev libxslt-dev
 
+# required for h5py to install successfully with pip (at least on an ARM environment)
+RUN apt-get update && apt-get install -y pkg-config libhdf5-dev
+
 RUN mkdir -p /app/monitoring
 COPY ./requirements.txt /app/monitoring/requirements.txt
 RUN pip install -r /app/monitoring/requirements.txt
