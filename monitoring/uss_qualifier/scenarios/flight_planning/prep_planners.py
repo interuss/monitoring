@@ -24,7 +24,7 @@ MAX_TEST_DURATION = timedelta(minutes=15)
 """The maximum time the tests depending on the area being clear might last."""
 
 
-class PrepareFlightPlannersScenario(TestScenario):
+class PrepareFlightPlanners(TestScenario):
     areas: List[Volume4D]
     flight_planners: Dict[ParticipantID, FlightPlannerClient]
 

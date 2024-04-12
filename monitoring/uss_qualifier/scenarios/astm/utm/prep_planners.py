@@ -14,7 +14,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss.test_step_fragments import 
     remove_op_intent,
 )
 from monitoring.uss_qualifier.scenarios.flight_planning.prep_planners import (
-    PrepareFlightPlannersScenario,
+    PrepareFlightPlanners as GenericPrepareFlightPlanners,
 )
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSResource,
@@ -25,7 +25,7 @@ from uas_standards.astm.f3548.v21.api import (
 from uas_standards.astm.f3548.v21.constants import Scope
 
 
-class PrepareFlightPlanners(PrepareFlightPlannersScenario):
+class PrepareFlightPlanners(GenericPrepareFlightPlanners):
     dss: DSSInstance
 
     def __init__(

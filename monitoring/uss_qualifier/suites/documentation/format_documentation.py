@@ -1,5 +1,4 @@
 import argparse
-import difflib
 import os
 import sys
 
@@ -42,14 +41,7 @@ def main(lint: bool) -> int:
         changes = True
         if lint:
             print(
-                f"vvv Begin diff of expected content versus existing content for {suite_doc_file}"
-            )
-            for line in difflib.unified_diff(
-                existing_content.split("\n"), suite_doc_content.split("\n")
-            ):
-                print(line)
-            print(
-                f"^^^ Test suite documentation must be regenerated with `make format`: {suite_doc_file}"
+                f"Test suite documentation must be regenerated with `make format`: {suite_doc_file}"
             )
         else:
             with open(suite_doc_file, "w") as f:

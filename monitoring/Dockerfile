@@ -9,7 +9,7 @@
 #
 # This image is intended to be built from the repository root context/folder.
 
-FROM python:3.11.8-slim
+FROM python:3.11.7-slim
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
 RUN apt-get update && apt-get install -y openssl curl libgeos-dev gcc && apt-get install ca-certificates
@@ -19,6 +19,9 @@ RUN apt-get update && apt-get install -y libffi-dev libssl-dev python3-dev build
 
 # required for lxml to install successfully with pip (at least on an ARM environment)
 RUN apt-get update && apt-get install -y libxml2-dev libxslt-dev
+
+# required for h5py to install successfully with pip (at least on an ARM environment)
+RUN apt-get update && apt-get install -y pkg-config libhdf5-dev
 
 RUN mkdir -p /app/monitoring
 COPY ./requirements.txt /app/monitoring/requirements.txt
