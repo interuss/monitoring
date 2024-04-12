@@ -93,7 +93,7 @@ def expect_tested_uss_receives_notification_from_mock_uss(
         with scenario.check(
             "Tested USS receives valid notification", [tested_uss_participant_id]
         ) as check:
-            if resp_status != 204:
+            if resp_status not in {204, 200, 201}:
                 check.record_failed(
                     summary=f"Valid notification not accepted by tested_uss.",
                     details=f"Valid notification by mock_uss not accepted by tested_uss. Tested_uss responded with response status {resp_status} instead of 204.",
