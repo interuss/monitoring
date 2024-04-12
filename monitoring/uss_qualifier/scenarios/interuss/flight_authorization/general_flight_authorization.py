@@ -1,8 +1,6 @@
-from datetime import datetime
 from typing import Dict
 
 import arrow
-from loguru import logger
 
 from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
@@ -15,7 +13,6 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     AdvisoryInclusion,
 )
 from monitoring.monitorlib.temporal import Time, TimeDuringTest
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightPlannerResource,
@@ -156,25 +153,20 @@ class GeneralFlightAuthorization(TestScenario):
                         self.record_query(q)
                     check.record_failed(
                         summary="Flight planning API request failed",
-                        severity=Severity.High,
                         details=str(e),
                         query_timestamps=[
                             q.request.initiated_at.datetime for q in e.queries
                         ],
                     )
-
-            logger.info(f"Recording {len(resp.queries)} queries")
-            for q in resp.queries:
-                self.record_query(q)
+                for q in resp.queries:
+                    self.record_query(q)
 
             # Evaluate acceptance result
             if row.acceptance_expectation == AcceptanceExpectation.MustBeAccepted:
-                logger.info("Must be accepted; checking...")
                 with self.check(_ACCEPT_CHECK_NAME, [self.participant_id]) as check:
                     if resp.activity_result != PlanningActivityResult.Completed:
                         check.record_failed(
                             summary=f"Expected-accepted flight request was {resp.activity_result}",
-                            severity=Severity.Medium,
                             details=f"The flight was expected to be accepted, but the activity result was indicated as {resp.activity_result}",
                             query_timestamps=[
                                 q.request.initiated_at.datetime for q in resp.queries
@@ -186,7 +178,6 @@ class GeneralFlightAuthorization(TestScenario):
                     ):
                         check.record_failed(
                             summary=f"Expected-accepted flight had {resp.flight_plan_status} flight plan",
-                            severity=Severity.Medium,
                             details=f"The flight was expected to be accepted, but the flight plan status following the planning action was indicated as {resp.flight_plan_status}",
                             query_timestamps=[
                                 q.request.initiated_at.datetime for q in resp.queries
@@ -194,12 +185,10 @@ class GeneralFlightAuthorization(TestScenario):
                         )
 
             if row.acceptance_expectation == AcceptanceExpectation.MustBeRejected:
-                logger.info("Must be rejected; checking...")
                 with self.check(_REJECT_CHECK_NAME, [self.participant_id]) as check:
                     if resp.activity_result != PlanningActivityResult.Rejected:
                         check.record_failed(
                             summary=f"Expected-rejected flight request was {resp.activity_result}",
-                            severity=Severity.Medium,
                             details=f"The flight was expected to be rejected, but the activity result was indicated as {resp.activity_result}",
                             query_timestamps=[
                                 q.request.initiated_at.datetime for q in resp.queries
@@ -208,7 +197,6 @@ class GeneralFlightAuthorization(TestScenario):
                     if resp.flight_plan_status != FlightPlanStatus.NotPlanned:
                         check.record_failed(
                             summary=f"Expected-accepted flight had {resp.flight_plan_status} flight plan",
-                            severity=Severity.Medium,
                             details=f"The flight was expected to be rejected, but the flight plan status following the planning action was indicated as {resp.flight_plan_status}",
                             query_timestamps=[
                                 q.request.initiated_at.datetime for q in resp.queries
@@ -222,7 +210,6 @@ class GeneralFlightAuthorization(TestScenario):
                 in (FlightPlanStatus.Planned, FlightPlanStatus.OkToFly)
             ):
                 if row.conditions_expectation == ConditionsExpectation.MustBePresent:
-                    logger.info("Checking conditions must be present...")
                     with self.check(
                         _CONDITIONAL_CHECK_NAME, [self.participant_id]
                     ) as check:
@@ -232,7 +219,6 @@ class GeneralFlightAuthorization(TestScenario):
                         ):
                             check.record_failed(
                                 summary=f"Missing expected conditions",
-                                severity=Severity.Medium,
                                 details=f"The flight planning activity result was expected to be accompanied by conditions/advisories, but advisory inclusion was {resp.includes_advisories}",
                                 query_timestamps=[
                                     q.request.initiated_at.datetime
@@ -241,7 +227,6 @@ class GeneralFlightAuthorization(TestScenario):
                             )
 
                 if row.conditions_expectation == ConditionsExpectation.MustBeAbsent:
-                    logger.info("Checking conditions must be absent...")
                     with self.check(
                         _UNCONDITIONAL_CHECK_NAME, [self.participant_id]
                     ) as check:
@@ -251,7 +236,6 @@ class GeneralFlightAuthorization(TestScenario):
                         ):
                             check.record_failed(
                                 summary=f"Expected-unqualified planning success was qualified by conditions",
-                                severity=Severity.Medium,
                                 details=f"The flight planning activity result was expected to be unqualified (accompanied by no conditions/advisories), but advisory inclusion was {resp.includes_advisories}",
                                 query_timestamps=[
                                     q.request.initiated_at.datetime
@@ -264,7 +248,6 @@ class GeneralFlightAuthorization(TestScenario):
                 FlightPlanStatus.Planned,
                 FlightPlanStatus.OkToFly,
             ):
-                logger.info("Removing flight...")
                 with self.check(
                     _VALID_API_RESPONSE_NAME, [self.participant_id]
                 ) as check:
@@ -277,21 +260,19 @@ class GeneralFlightAuthorization(TestScenario):
                             self.record_query(q)
                         check.record_failed(
                             summary="Flight planning API delete request failed",
-                            severity=Severity.High,
                             details=str(e),
                             query_timestamps=[
                                 q.request.initiated_at.datetime for q in e.queries
                             ],
                         )
-                for q in del_resp.queries:
-                    self.record_query(q)
+                    for q in del_resp.queries:
+                        self.record_query(q)
                 with self.check(
                     _SUCCESSFUL_CLOSURE_NAME, [self.participant_id]
                 ) as check:
                     if del_resp.flight_plan_status != FlightPlanStatus.Closed:
                         check.record_failed(
                             summary="Could not close flight plan successfully",
-                            severity=Severity.High,
                             details=f"Expected flight plan status to be Closed after request to end flight, but status was instead {del_resp.flight_plan_status}",
                             query_timestamps=[
                                 q.request.initiated_at.datetime
