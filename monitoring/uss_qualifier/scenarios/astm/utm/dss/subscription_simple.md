@@ -38,20 +38,9 @@ This test step creates multiple subscriptions with different combinations of the
 
 All subscriptions are left on the DSS when this step ends, as they are expected to be present for the subsequent step.
 
-#### 🛑 Create subscription query succeeds check
+#### [Create subscription](./fragments/sub/crud/create_correct.md)
 
-If the query to create a subscription with valid parameters is not successful, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
-
-#### 🛑 Create subscription response is correct check
-
-A successful subscription creation query is expected to return a well-defined body, the content of which reflects the created subscription.
-If the format and content of the response are not conforming, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
-
-#### ⚠️ Create subscription response format conforms to spec check
-
-The response to a successful subscription creation query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
-
-If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+Check creation succeeds and response is correct.
 
 #### [Validate subscription](fragments/sub/validate/correctness.md)
 
