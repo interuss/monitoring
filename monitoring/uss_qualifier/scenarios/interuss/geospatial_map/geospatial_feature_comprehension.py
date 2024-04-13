@@ -59,9 +59,7 @@ class GeospatialFeatureComprehension(TestScenario):
                 )
             check_name = _CHECK_NAMES[row.expected_result]
             original_check = [
-                c
-                for c in self._current_case.steps[0].checks
-                if c.name == check_name
+                c for c in self._current_case.steps[0].checks if c.name == check_name
             ][0]
             # Note that we are duck-typing a List[str] into a List[RequirementID] for applicable_requirements, but this
             # should be ok as the requirements are only used as strings from this point.
