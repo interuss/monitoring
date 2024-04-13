@@ -23,6 +23,7 @@ SERVICE_VERSIONING = "versioning"
 SERVICE_FLIGHT_PLANNING = "flight_planning"
 
 webapp = MockUSS(__name__)
+webapp.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
 enabled_services = set()
 
 

@@ -10,9 +10,17 @@
 </head>
 <body>
   <div>
-    Tracer ({{ username }}):
+    Tracer:
     <a href="{{ url_for('tracer_list_logs') }}">Home (logs)</a>
     <a href="{{ url_for('tracer_observation_areas_ui') }}">Observation Areas</a>
+    {% if current_user.is_authenticated %}
+      <span>
+        {{ current_user.username }}
+        <a href="{{ url_for('ui_logout') }}">Log out</a>
+      </span>
+    {% else %}
+      <a href="{{ url_for('ui_login') }}">Log in</a>
+    {% endif %}
   </div>
   <hr>
   <div>
