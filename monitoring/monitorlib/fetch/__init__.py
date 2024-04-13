@@ -596,6 +596,25 @@ def query_and_describe(
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
+        except requests.ConnectionError as e:
+            if "RemoteDisconnected" in str(e):
+                # This error manifests as:
+                #   ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+                # ...and this may be retryable
+                retryable = True
+            else:
+                retryable = False
+            location = (
+                traceback.format_list([traceback.extract_stack()[-2]])[0]
+                .split("\n")[0]
+                .strip()
+            )
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with {'' if retryable else 'non-'}retryable ConnectionError: {str(e)}\nAt {location}"
+            if not expect_failure:
+                logger.warning(failure_message)
+            failures.append(failure_message)
+            if not retryable:
+                break
         except requests.RequestException as e:
             location = (
                 traceback.format_list([traceback.extract_stack()[-2]])[0]
