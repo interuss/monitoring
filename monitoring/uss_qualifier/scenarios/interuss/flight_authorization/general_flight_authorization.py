@@ -127,7 +127,8 @@ class GeneralFlightAuthorization(TestScenario):
                     name=c.name,
                     url=c.url,
                     applicable_requirements=row.requirement_ids,
-                    has_todo=False,
+                    has_todo=c.has_todo,
+                    severity=c.severity,
                 )
                 for c in checks
             ]

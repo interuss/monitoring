@@ -1,0 +1,33 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/geospatial_info/geospatial_info_providers/GeospatialInfoProviderConfiguration.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.geospatial_info.geospatial_info_providers.GeospatialInfoProviderConfiguration, as defined in monitoring/uss_qualifier/resources/geospatial_info/geospatial_info_providers.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "geospatial_map_v1_base_url": {
+      "description": "Base URL for the geospatial information provider's implementation of the interfaces/automated_testing/geospatial_map/v1/geospatial_map.yaml API",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "participant_id": {
+      "description": "ID of the geospatial information provider for which geospatial data can be queried",
+      "type": "string"
+    },
+    "timeout_seconds": {
+      "description": "Number of seconds to allow for requests to this geospatial information provider.  If None, use default.",
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "participant_id"
+  ],
+  "type": "object"
+}
