@@ -6,8 +6,8 @@ from monitoring.mock_uss import webapp
 from monitoring.monitorlib.geoawareness_automated_testing.api import (
     SCOPE_GEOAWARENESS_TEST,
 )
-from ..auth import requires_scope
-from ...monitorlib import versioning
+from monitoring.mock_uss.auth import requires_scope
+from monitoring.monitorlib import versioning
 
 
 @webapp.route("/geoawareness/status")
@@ -19,3 +19,4 @@ def geoawareness_status():
 
 
 from . import routes_geoawareness
+from . import routes_geospatial_map
