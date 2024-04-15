@@ -22,7 +22,7 @@ The test steps for this test scenario are generated dynamically according to the
 
 #### ⚠️ Geospatial query succeeded check
 
-If the geospatial query to the USS did not succeed or return a valid response, this check will fail.
+If the geospatial query to the USS did not succeed or did not return a valid response, this check will fail.
 
 #### ⚠️ Blocking geospatial features present check
 

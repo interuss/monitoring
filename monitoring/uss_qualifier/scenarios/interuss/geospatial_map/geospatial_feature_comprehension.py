@@ -156,6 +156,8 @@ class GeospatialFeatureComprehension(TestScenario):
                         details=f"Expected exactly 1 geospatial info query result, but instead received {len(resp.results)}",
                         query_timestamps=query_timestamps,
                     )
+                    self.end_test_step()
+                    continue
 
             # Check whether the response was correct
             with self.check(
