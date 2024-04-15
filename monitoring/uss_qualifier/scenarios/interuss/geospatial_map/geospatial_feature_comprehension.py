@@ -58,18 +58,17 @@ class GeospatialFeatureComprehension(TestScenario):
                     f"expected_result {row.expected_result} is not yet supported"
                 )
             check_name = _CHECK_NAMES[row.expected_result]
-            check_url = [
-                c.url
-                for c in self._current_case.steps[0].checks
-                if c.name == check_name
+            original_check = [
+                c for c in self._current_case.steps[0].checks if c.name == check_name
             ][0]
             # Note that we are duck-typing a List[str] into a List[RequirementID] for applicable_requirements, but this
             # should be ok as the requirements are only used as strings from this point.
             check = TestCheckDocumentation(
                 name=check_name,
-                url=check_url,
+                url=original_check.url,
                 applicable_requirements=row.requirement_ids,
-                has_todo=False,
+                has_todo=original_check.has_todo,
+                severity=original_check.severity,
             )
             doc = TestStepDocumentation(
                 name=row.geospatial_check_id,
