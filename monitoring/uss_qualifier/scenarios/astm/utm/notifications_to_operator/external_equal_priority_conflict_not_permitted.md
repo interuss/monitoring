@@ -107,11 +107,7 @@ per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../
 If the USS indicates that the injection attempt failed, this check will fail.
 
 #### [Validate Flight 1 sharing](../validate_shared_operational_intent.md)
-
-### Record time and flight status test step
-#### [Record time and flight status](../nominal_planning/conflict_equal_priority_not_permitted/test_steps/record_status_for_notification_check.md)
-Record the time and flight status data for use in verifying notifications later.
-
+Flight 1 should be successfully logged in the DSS and available to be shared with tested USS.
 
 ### [Delete Flight 1 test step](../../../flight_planning/delete_flight_intent.md)
 To prepare for the next test case, Flight 1 must be removed from the system.
@@ -141,16 +137,15 @@ per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../
 If the USS indicates that the injection attempt failed, this check will fail.
 
 #### [Validate Flight 1 sharing](../validate_shared_operational_intent.md)
+Flight 1 should be successfully logged in the DSS and available to be shared with tested USS.
 
-### Record time and flight status test step
-#### [Record time and flight status](../nominal_planning/conflict_equal_priority_not_permitted/test_steps/record_status_for_notification_check.md)
-Record the time and flight status data for use in verifying notifications later.
+### Validate tested USS conflict notifications to user
 
-### Validate tested USS conflict notification to user
-
-#### [Validate tested USS conflict notification to user](test_steps/validate_user_conflict_notification_from_other_flight.md)
+#### [Validate tested USS conflict notification to user for new flight](test_steps/validate_user_conflict_notification_from_other_flight.md)
 The test driver checks conflict notification logs of tested USS to verify that notification was sent to Flight 2 due to conflict with Flight 1 from case "Attempt to create new nonconforming flight into conflict test case".
-The test driver also verifies that notification was sent to Flight 1c due to conflict with Flight 2 from case "Attempt to modify planned flight into conflict test case".
+
+#### [Validate tested USS conflict notification to user for modified flight](test_steps/validate_user_conflict_notification_from_other_flight.md)
+The test driver also checks conflict notification logs of tested USS to verify that notification was sent to Flight 2 due to conflict with Flight 1 from case "Attempt to modify planned flight into conflict test case".
 
 ## Cleanup
 ### ⚠️ Successful flight deletion check
