@@ -3,13 +3,14 @@ import os
 from typing import Tuple, Optional, Dict, List, Union
 
 import bc_jsonpath_ng
+import _jsonnet
 import requests
 import yaml
 
 FILE_PREFIX = "file://"
 HTTP_PREFIX = "http://"
 HTTPS_PREFIX = "https://"
-RECOGNIZED_EXTENSIONS = ".json", ".yaml", ".kml"
+RECOGNIZED_EXTENSIONS = ".json", ".yaml", ".kml", ".jsonnet"
 
 
 FileReference = str
@@ -23,6 +24,7 @@ May be:
 Allowed extensions:
   * .json (dict, content)
   * .yaml (dict, content)
+  * .jsonnet (dict, content)
   * .kml (content)
 """
 
@@ -117,12 +119,22 @@ def load_dict_with_references(data_file: FileReference) -> dict:
     base_file_name, anchor = _split_anchor(data_file)
     base_file_name = resolve_filename(base_file_name)
     file_name = base_file_name + (f"#{anchor}" if anchor is not None else "")
-    return _load_dict_with_references_from_file_name(file_name, file_name)
+    dict_content, _ = _load_dict_with_references_from_file_name(file_name, file_name)
+    return dict_content
+
+
+def _jsonnet_import_callback(
+    base_file_name: str, folder: str, rel: str, cache: Optional[Dict[str, dict]]
+) -> Tuple[str, bytes]:
+    dict_content, file_name = _load_dict_with_references_from_file_name(
+        rel, base_file_name, cache
+    )
+    return file_name, json.dumps(dict_content).encode()
 
 
 def _load_dict_with_references_from_file_name(
     file_name: str, context_file_name: str, cache: Optional[Dict[str, dict]] = None
-) -> dict:
+) -> Tuple[dict, str]:
     if cache is None:
         cache = {}
 
@@ -141,6 +153,7 @@ def _load_dict_with_references_from_file_name(
             or "\\" in base_file_name
             or base_file_name.lower().endswith(".yaml")
             or base_file_name.lower().endswith(".json")
+            or base_file_name.lower().endswith(".jsonnet")
         ):
             # This is a relative file path; it should be relative to the context
             root_path = os.path.dirname(context_file_name)
@@ -160,6 +173,15 @@ def _load_dict_with_references_from_file_name(
             dict_content = json.loads(file_content)
         elif base_file_name.lower().endswith(".yaml"):
             dict_content = yaml.safe_load(file_content)
+        elif base_file_name.lower().endswith(".jsonnet"):
+
+            def import_callback(folder: str, rel: str):
+                return _jsonnet_import_callback(base_file_name, folder, rel, cache)
+
+            json_str = _jsonnet.evaluate_snippet(
+                base_file_name, file_content, import_callback=import_callback
+            )
+            dict_content = json.loads(json_str)
         else:
             raise NotImplementedError(
                 f'Unable to parse data for "{base_file_name}" because its extension-based data format is not supported'
@@ -171,9 +193,9 @@ def _load_dict_with_references_from_file_name(
         cache[base_file_name] = dict_content
 
     if anchor is not None:
-        return _select_path(dict_content, anchor)
+        return _select_path(dict_content, anchor), base_file_name
     else:
-        return dict_content
+        return dict_content, base_file_name
 
 
 def _should_recurse(item):
@@ -262,7 +284,7 @@ def _replace_refs(
         parent = parent[0]
         ref_path = parent.pop("$ref")
         if not ref_path.startswith("#"):
-            ref_content = _load_dict_with_references_from_file_name(
+            ref_content, _ = _load_dict_with_references_from_file_name(
                 ref_path, context_file_name, cache
             )
         else:

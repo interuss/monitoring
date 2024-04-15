@@ -38,3 +38,7 @@ These reports were generated during continuous integration for the most recent P
 
 * [Sequence view](./artifacts/uss_qualifier/reports/general_flight_auth/sequence)
 * [Tested requirements](./artifacts/uss_qualifier/reports/general_flight_auth/requirements)
+
+### [Geospatial feature comprehension configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/geospatial_comprehension.yaml)
+
+* [Sequence view](./artifacts/uss_qualifier/reports/geospatial_comprehension/sequence)
