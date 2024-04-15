@@ -16,7 +16,8 @@ function makeVolume4D() {
     let lat2 = parseFloat(rectStr[2]);
     let lng2 = parseFloat(rectStr[3]);
     let timeStart = new Date();
-    let timeEnd = new Date(timeStart.getTime() + 60 * 60000);
+    let hours = parseFloat(document.getElementById("observation_duration").value);
+    let timeEnd = new Date(timeStart.getTime() + hours * 60 * 60000);
     return {
         "volume": {
             "outline_polygon": {
@@ -226,6 +227,10 @@ function deleteObservationArea(observationAreaID) {
     <p>
       <label for="bounding_box">Bounding box (lat,lng,lat,lng):</label>
       <input type="text" id="bounding_box" name="bounding_box" size="40">
+    </p>
+    <p>
+      <label for="observation_duration">Observation duration (hours):</label>
+      <input type="text" id="observation_duration" name="observation_duration" size="10" value="1">
     </p>
     <p>
       <label for="rid_version">F3411 version:</label>
