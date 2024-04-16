@@ -19,6 +19,7 @@ class GenericAuthValidator:
         dss: DSSInstance,
         valid_scope: Scope,
     ):
+        self._pid = dss.participant_id
         self._scenario = scenario
         self._authenticated_session = dss.client
         self._invalid_token_session = UTMClientSession(
@@ -84,7 +85,7 @@ class GenericAuthValidator:
         """Verifies that the passed query response's body is a valid ErrorResponse, as per the OpenAPI spec."""
 
         with self._scenario.check(
-            "Unauthorized requests return the proper error message body"
+            "Unauthorized requests return the proper error message body", self._pid
         ) as check:
             errors = schema_validation.validate(
                 F3548_21.OpenAPIPath,

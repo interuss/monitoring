@@ -172,7 +172,8 @@ class OperationalIntentRefAuthValidator:
                 )
 
         with self._scenario.check(
-            "Create operational intent reference response format conforms to spec"
+            "Create operational intent reference response format conforms to spec",
+            self._pid,
         ) as check:
             try:
                 oir_resp = ImplicitDict.parse(
@@ -347,7 +348,8 @@ class OperationalIntentRefAuthValidator:
                 )
 
         with self._scenario.check(
-            "Mutate operational intent reference response format conforms to spec"
+            "Mutate operational intent reference response format conforms to spec",
+            self._pid,
         ) as check:
             try:
                 parsed_oir = ImplicitDict.parse(
