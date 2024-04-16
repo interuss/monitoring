@@ -115,4 +115,9 @@ presubmit: hygiene-tests monitoring-tests
 .PHONY: restart-all
 restart-all: stop-uss-mocks down-locally start-locally start-uss-mocks
 
+# To be run locally whenever a direct dependency has been updated in requirements.in
+.PHONY: update-pinned-dependencies
+update-pinned-dependencies:
+	./scripts/pip_tools/pip_compile.sh --generate-hashes --output-file=requirements.txt requirements.in
+
 
