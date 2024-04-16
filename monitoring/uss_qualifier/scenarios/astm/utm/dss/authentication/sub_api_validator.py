@@ -103,7 +103,7 @@ class SubscriptionAuthValidator:
         # No auth:
         no_auth_q = self._gen_val.query_no_auth(**query_kwargs)
         with self._scenario.check(
-            "Create subscription with missing credentials"
+            "Create subscription with missing credentials", self._pid
         ) as check:
             if no_auth_q.status_code != 401:
                 check.record_failed(
@@ -118,7 +118,7 @@ class SubscriptionAuthValidator:
         # Bad token signature:
         invalid_token_q = self._gen_val.query_invalid_token(**query_kwargs)
         with self._scenario.check(
-            "Create subscription with invalid credentials"
+            "Create subscription with invalid credentials", self._pid
         ) as check:
             if invalid_token_q.status_code != 401:
                 check.record_failed(
@@ -134,7 +134,7 @@ class SubscriptionAuthValidator:
         if self._test_missing_scope:
             no_scope_q = self._gen_val.query_missing_scope(**query_kwargs)
             with self._scenario.check(
-                "Create subscription with missing scope"
+                "Create subscription with missing scope", self._pid
             ) as check:
                 if no_scope_q.status_code != 401:
                     check.record_failed(
@@ -151,7 +151,7 @@ class SubscriptionAuthValidator:
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
-                "Create subscription with incorrect scope"
+                "Create subscription with incorrect scope", self._pid
             ) as check:
                 if wrong_scope_q.status_code != 403:
                     check.record_failed(
@@ -168,7 +168,7 @@ class SubscriptionAuthValidator:
         #  - makes a subscription available for read/mutation tests
         create_ok_q = self._gen_val.query_valid_auth(**query_kwargs)
         with self._scenario.check(
-            "Create subscription with valid credentials"
+            "Create subscription with valid credentials", self._pid
         ) as check:
             if create_ok_q.status_code != 200:
                 check.record_failed(
@@ -190,7 +190,9 @@ class SubscriptionAuthValidator:
         )
 
         query_no_auth = self._gen_val.query_no_auth(**query_kwargs)
-        with self._scenario.check("Get subscription with missing credentials") as check:
+        with self._scenario.check(
+            "Get subscription with missing credentials", self._pid
+        ) as check:
             if query_no_auth.status_code != 401:
                 check.record_failed(
                     summary=f"Expected 401, got {query_no_auth.status_code}",
@@ -200,7 +202,9 @@ class SubscriptionAuthValidator:
         self._gen_val.verify_4xx_response(query_no_auth)
 
         query_invalid_token = self._gen_val.query_invalid_token(**query_kwargs)
-        with self._scenario.check("Get subscription with invalid credentials") as check:
+        with self._scenario.check(
+            "Get subscription with invalid credentials", self._pid
+        ) as check:
             if query_invalid_token.status_code != 401:
                 check.record_failed(
                     summary=f"Expected 401, got {query_invalid_token.status_code}",
@@ -211,7 +215,9 @@ class SubscriptionAuthValidator:
 
         if self._test_missing_scope:
             query_missing_scope = self._gen_val.query_missing_scope(**query_kwargs)
-            with self._scenario.check("Get subscription with missing scope") as check:
+            with self._scenario.check(
+                "Get subscription with missing scope", self._pid
+            ) as check:
                 if query_missing_scope.status_code != 401:
                     check.record_failed(
                         summary=f"Expected 401, got {query_missing_scope.status_code}",
@@ -225,7 +231,9 @@ class SubscriptionAuthValidator:
             query_wrong_scope = self._gen_val.query_wrong_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
-            with self._scenario.check("Get subscription with incorrect scope") as check:
+            with self._scenario.check(
+                "Get subscription with incorrect scope", self._pid
+            ) as check:
                 if query_wrong_scope.status_code != 403:
                     check.record_failed(
                         summary=f"Expected 403, got {query_wrong_scope.status_code}",
@@ -236,7 +244,9 @@ class SubscriptionAuthValidator:
             self._gen_val.verify_4xx_response(query_wrong_scope)
 
         query_ok = self._gen_val.query_valid_auth(**query_kwargs)
-        with self._scenario.check("Get subscription with valid credentials") as check:
+        with self._scenario.check(
+            "Get subscription with valid credentials", self._pid
+        ) as check:
             if query_ok.status_code != 200:
                 check.record_failed(
                     summary=f"Expected 200, got {query_ok.status_code}",
@@ -264,7 +274,7 @@ class SubscriptionAuthValidator:
 
         no_auth_q = self._gen_val.query_no_auth(**query_kwargs)
         with self._scenario.check(
-            "Mutate subscription with missing credentials"
+            "Mutate subscription with missing credentials", self._pid
         ) as check:
             if no_auth_q.status_code != 401:
                 check.record_failed(
@@ -278,7 +288,7 @@ class SubscriptionAuthValidator:
 
         invalid_token_q = self._gen_val.query_invalid_token(**query_kwargs)
         with self._scenario.check(
-            "Mutate subscription with invalid credentials"
+            "Mutate subscription with invalid credentials", self._pid
         ) as check:
             if invalid_token_q.status_code != 401:
                 check.record_failed(
@@ -293,7 +303,7 @@ class SubscriptionAuthValidator:
         if self._test_missing_scope:
             query_missing_scope = self._gen_val.query_missing_scope(**query_kwargs)
             with self._scenario.check(
-                "Mutate subscription with missing scope"
+                "Mutate subscription with missing scope", self._pid
             ) as check:
                 if query_missing_scope.status_code != 401:
                     check.record_failed(
@@ -311,7 +321,7 @@ class SubscriptionAuthValidator:
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
-                "Mutate subscription with incorrect scope"
+                "Mutate subscription with incorrect scope", self._pid
             ) as check:
                 if query_wrong_scope.status_code != 403:
                     check.record_failed(
@@ -325,7 +335,7 @@ class SubscriptionAuthValidator:
 
         mutate_ok_q = self._gen_val.query_valid_auth(**query_kwargs)
         with self._scenario.check(
-            "Mutate subscription with valid credentials"
+            "Mutate subscription with valid credentials", self._pid
         ) as check:
             if mutate_ok_q.status_code != 200:
                 check.record_failed(
@@ -350,7 +360,7 @@ class SubscriptionAuthValidator:
 
         query_no_auth = self._gen_val.query_no_auth(**query_kwargs)
         with self._scenario.check(
-            "Delete subscription with missing credentials"
+            "Delete subscription with missing credentials", self._pid
         ) as check:
             if query_no_auth.status_code != 401:
                 check.record_failed(
@@ -364,7 +374,7 @@ class SubscriptionAuthValidator:
 
         query_invalid_token = self._gen_val.query_invalid_token(**query_kwargs)
         with self._scenario.check(
-            "Delete subscription with invalid credentials"
+            "Delete subscription with invalid credentials", self._pid
         ) as check:
             if query_invalid_token.status_code != 401:
                 check.record_failed(
@@ -379,7 +389,7 @@ class SubscriptionAuthValidator:
         if self._test_missing_scope:
             query_missing_scope = self._gen_val.query_missing_scope(**query_kwargs)
             with self._scenario.check(
-                "Delete subscription with missing scope"
+                "Delete subscription with missing scope", self._pid
             ) as check:
                 if query_missing_scope.status_code != 401:
                     check.record_failed(
@@ -397,7 +407,7 @@ class SubscriptionAuthValidator:
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
-                "Delete subscription with incorrect scope"
+                "Delete subscription with incorrect scope", self._pid
             ) as check:
                 if query_wrong_scope.status_code != 403:
                     check.record_failed(
@@ -412,7 +422,7 @@ class SubscriptionAuthValidator:
 
         query_ok = self._gen_val.query_valid_auth(**query_kwargs)
         with self._scenario.check(
-            "Delete subscription with valid credentials"
+            "Delete subscription with valid credentials", self._pid
         ) as check:
             if query_ok.status_code != 200:
                 check.record_failed(
@@ -423,7 +433,7 @@ class SubscriptionAuthValidator:
         # Confirm the subscription was deleted
         not_found = self._dss.get_subscription(self._sub_params.sub_id)
         with self._scenario.check(
-            "Delete subscription with valid credentials"
+            "Delete subscription with valid credentials", self._pid
         ) as check:
             if not_found.status_code != 404:
                 check.record_failed(
@@ -450,7 +460,7 @@ class SubscriptionAuthValidator:
 
         query_no_auth = self._gen_val.query_no_auth(**query_kwargs)
         with self._scenario.check(
-            "Search subscriptions with missing credentials"
+            "Search subscriptions with missing credentials", self._pid
         ) as check:
             if query_no_auth.status_code != 401:
                 check.record_failed(
@@ -463,7 +473,7 @@ class SubscriptionAuthValidator:
 
         query_invalid_token = self._gen_val.query_invalid_token(**query_kwargs)
         with self._scenario.check(
-            "Search subscriptions with invalid credentials"
+            "Search subscriptions with invalid credentials", self._pid
         ) as check:
             if query_invalid_token.status_code != 401:
                 check.record_failed(
@@ -477,7 +487,7 @@ class SubscriptionAuthValidator:
         if self._test_missing_scope:
             query_missing_scope = self._gen_val.query_missing_scope(**query_kwargs)
             with self._scenario.check(
-                "Search subscriptions with missing scope"
+                "Search subscriptions with missing scope", self._pid
             ) as check:
                 if query_missing_scope.status_code != 401:
                     check.record_failed(
@@ -493,7 +503,7 @@ class SubscriptionAuthValidator:
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
-                "Search subscriptions with incorrect scope"
+                "Search subscriptions with incorrect scope", self._pid
             ) as check:
                 if query_wrong_scope.status_code != 403:
                     check.record_failed(
@@ -506,7 +516,7 @@ class SubscriptionAuthValidator:
 
         query_ok = self._gen_val.query_valid_auth(**query_kwargs)
         with self._scenario.check(
-            "Search subscriptions with valid credentials"
+            "Search subscriptions with valid credentials", self._pid
         ) as check:
             if query_ok.status_code != 200:
                 check.record_failed(
