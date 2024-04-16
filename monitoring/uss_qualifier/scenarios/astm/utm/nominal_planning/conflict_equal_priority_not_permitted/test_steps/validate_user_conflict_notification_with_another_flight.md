@@ -1,6 +1,6 @@
-# Validate conflict notification to user test step fragment
+# Validate conflict notification to user of new or modified flight test step fragment
 
-This step verifies that when creating or modifying an operational intent, the tested USS sent the required notification to the user of a conflicting operational intent.
+This step verifies that when creating or modifying an operational intent, the tested USS sent the required notification to the user of the new or modified conflicting operational intent.
 
 ## 🛑 Conflict notifications logs retrievable check
 If the query to tested USS fails or uss_qualifier is otherwise unable to retrieve the conflict notifications, this check will fail per
