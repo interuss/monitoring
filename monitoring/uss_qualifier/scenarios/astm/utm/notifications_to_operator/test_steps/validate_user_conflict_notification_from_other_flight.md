@@ -17,9 +17,6 @@ If the required conflict notification to the user is not present, this check wil
 If exactly one notification to the user per detected conflict is not present, this check will fail per **[astm.f3548.v21.SCD0095](../../../../../requirements/astm/f3548/v21.md)**
 
 ## 🛑 Performance evaluation of conflict notification data check
-If notification exceeds the 99 percentile wait time of 7 seconds, the tested USS provider does not meet **[astm.f3548.v21.SCD0095](../../../../../requirements/astm/f3548/v21.md)**.
-
-#### Note
 As per **[astm.f3548.v21.SCD0095](../../../../../requirements/astm/f3548/v21.md)**, a conflict notification should be
 sent by the USS to a user affected by a new or modified operational intent. 
 The notification should be sent in no more than
@@ -31,6 +28,9 @@ To ensure the notifications sent are not missed for a test case, we can pick a t
 a very high (e.g., 99 percent per test) confidence of non-compliance. We can make conservative assumptions
 about the distribution of the delays. If we assume that the notification delays have a normal distribution
 with 95 percentile at 5 seconds, then with the standard deviation of 3.04, we get the 99 percentile at 7.07 seconds.
+If notification exceeds the 99 percentile wait time of 7 seconds, the tested USS provider does not meet **[astm.f3548.v21.SCD0095](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### Note
 In addition, due to potential delays in the test harness setup, an additional 5 seconds is allowed. Hence,
 for test cases that check notification sent for an operational intent, we will wait for notifications until a threshold of 12 seconds (rounded).
 
