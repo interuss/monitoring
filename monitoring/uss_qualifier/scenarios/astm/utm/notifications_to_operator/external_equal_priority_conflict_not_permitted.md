@@ -1,5 +1,6 @@
 # Nominal planning: not permitted conflict with equal priority test scenario
 
+
 ## Description
 This test aims at testing the strategic coordination requirements that relate to the prioritization scenarios where
 there exists a conflict with an equal priority flight that is not permitted by regulation:
@@ -14,6 +15,7 @@ It involves a tested USS and a control USS through which conflicting flights are
 This scenario skips execution and completes successfully at the setup case if a resource containing equal priority flight intents where conflicts are not allow is not provided, such as if a jurisdiction does not have any priority levels at which conflicts are not allowed.
 
 It assumes that the area used in the scenario is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario).
+
 
 ## Resources
 ### flight_intents
@@ -75,6 +77,7 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 ### [Verify area is clear test step](../clear_area_validation.md)
 
 While this scenario assumes that the area used is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario) in order to avoid a large number of area-clearing operations, the scenario will not proceed correctly if the area was left in a dirty state following a previous scenario that was supposed to leave the area clear.  This test step verifies that the area is clear.
+
 
 ## Attempt to create new nonconforming flight into conflict test case
 ![Test case summary illustration](../nominal_planning/conflict_equal_priority_not_permitted/assets/attempt_to_plan_flight_into_conflict.svg)
@@ -146,6 +149,7 @@ The test driver checks conflict notification logs of tested USS to verify that n
 
 #### [Validate tested USS conflict notification to user for modified flight](test_steps/validate_user_conflict_notification_from_other_flight.md)
 The test driver also checks conflict notification logs of tested USS to verify that notification was sent to Flight 2 due to conflict with Flight 1 from case "Attempt to modify planned flight into conflict test case".
+
 
 ## Cleanup
 ### ⚠️ Successful flight deletion check
