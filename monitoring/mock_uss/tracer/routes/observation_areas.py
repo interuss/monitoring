@@ -30,7 +30,7 @@ from monitoring.mock_uss.tracer.observation_areas import (
     F3411ObservationArea,
 )
 from monitoring.mock_uss.tracer.tracer_poll import TASK_POLL_OBSERVATION_AREAS
-from monitoring.mock_uss.tracer.ui_auth import ui_auth
+from monitoring.mock_uss.ui import auth as ui_auth
 from monitoring.monitorlib import fetch
 import monitoring.monitorlib.fetch.rid
 from monitoring.monitorlib.geo import Volume3D

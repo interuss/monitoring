@@ -12,7 +12,7 @@
     </li>
   {% endfor %}
 </ul>
-{% if is_admin %}
+{% if current_user.is_admin() %}
 <p>
   <a href="{{ url_for('tracer_download_logs') }}">Download logs</a>
 </p>
