@@ -228,7 +228,9 @@ services:
       - MOCK_USS_TOKEN_AUDIENCE=tracer.uss4.localutm,localhost,host.docker.internal
       - MOCK_USS_BASE_URL=http://tracer.uss4.localutm
       - MOCK_USS_TRACER_OUTPUT_FOLDER=output/tracer
-      - MOCK_USS_TRACER_UI_USERS=admin@admin=admin;viewer=
+      - "MOCK_USS_UI_USERS=${MOCK_USS_UI_USERS:-admin:admin=admin;viewer=}"
+      - "GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}"
+      - "GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET:-}"
       - MOCK_USS_SERVICES=tracer
       - MOCK_USS_PORT=80
       - MOCK_USS_PROXY_VALUES=x_for=1,x_proto=1,x_host=1,x_prefix=1,x_port=1

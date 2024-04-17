@@ -6,6 +6,7 @@ import zipfile
 
 import arrow
 import flask
+import flask_login
 from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 import yaml
@@ -16,11 +17,9 @@ from monitoring.mock_uss.tracer.database import db
 from monitoring.mock_uss.tracer.kml import render_historical_kml
 from monitoring.mock_uss.tracer.log_types import PollFlights, TracerLogEntry
 from monitoring.mock_uss.tracer.observation_areas import ObservationArea
-from monitoring.mock_uss.tracer.ui_auth import ui_auth
+from monitoring.mock_uss.ui import auth as ui_auth
 from monitoring.monitorlib import fetch, geo, infrastructure
-from monitoring.monitorlib.fetch import summarize
 import monitoring.monitorlib.fetch.rid
-import monitoring.monitorlib.fetch.scd
 
 
 @webapp.route("/tracer/logs", methods=["GET"])
@@ -42,8 +41,7 @@ def tracer_list_logs():
             "tracer/logs.html",
             logs=logs,
             kmls=kmls,
-            username=ui_auth.current_user().username,
-            is_admin=ui_auth.current_user().is_admin(),
+            current_user=flask_login.current_user,
         )
     )
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
@@ -132,7 +130,7 @@ def tracer_logs(log):
         "tracer/log.html",
         log=_redact_and_augment_log(obj),
         title=logfile,
-        username=ui_auth.current_user().username,
+        username=flask_login.current_user.username,
     )
 
 
@@ -213,7 +211,7 @@ def tracer_observation_area_ui(observation_area_id: str):
         alt_lo=alt_lo,
         alt_hi=alt_hi,
         now=StringBasedDateTime(arrow.utcnow().datetime),
-        username=ui_auth.current_user().username,
+        username=flask_login.current_user.username,
     )
 
 
@@ -256,5 +254,5 @@ def tracer_observation_areas_ui():
     return flask.render_template(
         "tracer/observation_areas_ui.html",
         title="Observation Areas UI",
-        username=ui_auth.current_user().username,
+        username=flask_login.current_user.username,
     )
