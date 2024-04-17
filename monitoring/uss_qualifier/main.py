@@ -70,11 +70,36 @@ def parseArgs() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def execute_test_run(whole_config: USSQualifierConfiguration):
+class TestDefinitionDescription(ImplicitDict):
+    """Each of the fields below is as described in the TestRunReport data structure."""
+
+    codebase_version: str
+    commit_hash: str
+    baseline_signature: Optional[str] = None
+    environment_signature: Optional[str] = None
+
+    def sign(self, whole_config: USSQualifierConfiguration) -> None:
+        logger.debug("Computing signatures of inputs")
+        config = whole_config.v1.test_run
+        if config.non_baseline_inputs:
+            baseline, environment = remove_elements(
+                whole_config, config.non_baseline_inputs
+            )
+        else:
+            baseline = whole_config
+            environment = []
+        self.baseline_signature = compute_baseline_signature(
+            self.codebase_version,
+            self.commit_hash,
+            compute_signature(baseline),
+        )
+        self.environment_signature = compute_signature(environment)
+
+
+def execute_test_run(
+    whole_config: USSQualifierConfiguration, description: TestDefinitionDescription
+):
     config = whole_config.v1.test_run
-    codebase_version = get_code_version()
-    commit_hash = get_commit_hash()
-    logger.info(f"Codebase version {codebase_version}, commit hash {commit_hash}")
 
     logger.info("Instantiating resources")
     stop_when_not_created = (
@@ -87,21 +112,6 @@ def execute_test_run(whole_config: USSQualifierConfiguration):
         config.resources.resource_declarations, stop_when_not_created
     )
 
-    logger.info("Computing signatures of inputs")
-    if config.non_baseline_inputs:
-        baseline, environment = remove_elements(
-            whole_config, config.non_baseline_inputs
-        )
-    else:
-        baseline = whole_config
-        environment = []
-    baseline_signature = compute_baseline_signature(
-        codebase_version,
-        commit_hash,
-        compute_signature(baseline),
-    )
-    environment_signature = compute_signature(environment)
-
     logger.info("Instantiating top-level test suite action")
     context = ExecutionContext(config.execution if "execution" in config else None)
     action = TestSuiteAction(config.action, resources)
@@ -113,10 +123,10 @@ def execute_test_run(whole_config: USSQualifierConfiguration):
         logger.warning("Final result: FAILURE")
 
     return TestRunReport(
-        codebase_version=codebase_version,
-        commit_hash=commit_hash,
-        baseline_signature=baseline_signature,
-        environment_signature=environment_signature,
+        codebase_version=description.codebase_version,
+        commit_hash=description.commit_hash,
+        baseline_signature=description.baseline_signature,
+        environment_signature=description.environment_signature,
         configuration=whole_config,
         report=report,
     )
@@ -156,6 +166,19 @@ def run_config(
                 "Unsupported extension for --config-output; only .json or .yaml file paths may be specified"
             )
 
+    description = TestDefinitionDescription(
+        codebase_version=get_code_version(),
+        commit_hash=get_commit_hash(),
+    )
+    description.sign(whole_config)
+    logger.info(
+        "Test definition description:\n"
+        + f"Codebase version: {description.codebase_version}\n"
+        + f"Commit hash: {description.commit_hash}\n"
+        + f"Baseline signature: TB-{description.baseline_signature[0:7]} {description.baseline_signature}\n"
+        + f"Environment signature: TE-{description.environment_signature[0:7]} {description.environment_signature}"
+    )
+
     if exit_before_execution:
         logger.info("Exiting because --exit-before-execution specified.")
         return
@@ -168,7 +191,7 @@ def run_config(
         )
 
     logger.info("Executing test run")
-    report = execute_test_run(whole_config)
+    report = execute_test_run(whole_config, description)
 
     if config.artifacts:
         generate_artifacts(report, config.artifacts, output_path)
