@@ -22,6 +22,7 @@ services:
       - MOCK_USS_SERVICES=scdsc,versioning,interaction_logging,flight_planning
       - MOCK_USS_INTERACTIONS_LOG_DIR=output/scdsc_a_interaction_logs
       - MOCK_USS_PORT=80
+      - MOCK_USS_PROXY_VALUES=x_for=1,x_proto=1,x_host=1,x_prefix=1,x_port=1
     expose:
       - 80
     ports:
@@ -52,6 +53,7 @@ services:
       - MOCK_USS_BASE_URL=http://scdsc.uss2.localutm
       - MOCK_USS_SERVICES=scdsc,versioning,flight_planning
       - MOCK_USS_PORT=80
+      - MOCK_USS_PROXY_VALUES=x_for=1,x_proto=1,x_host=1,x_prefix=1,x_port=1
     expose:
       - 80
     ports:
@@ -77,6 +79,7 @@ services:
       - MOCK_USS_TOKEN_AUDIENCE=geoawareness.uss1.localutm,localhost,host.docker.internal
       - MOCK_USS_SERVICES=geoawareness
       - MOCK_USS_PORT=80
+      - MOCK_USS_PROXY_VALUES=x_for=1,x_proto=1,x_host=1,x_prefix=1,x_port=1
     expose:
       - 80
     ports:
@@ -106,6 +109,7 @@ services:
       - MOCK_USS_SERVICES=ridsp
       - MOCK_USS_RID_VERSION=F3411-22a
       - MOCK_USS_PORT=80
+      - MOCK_USS_PROXY_VALUES=x_for=1,x_proto=1,x_host=1,x_prefix=1,x_port=1
     expose:
       - 80
     ports:
@@ -135,6 +139,7 @@ services:
       - MOCK_USS_SERVICES=riddp
       - MOCK_USS_RID_VERSION=F3411-22a
       - MOCK_USS_PORT=80
+      - MOCK_USS_PROXY_VALUES=x_for=1,x_proto=1,x_host=1,x_prefix=1,x_port=1
     expose:
       - 80
     ports:
@@ -164,6 +169,7 @@ services:
       - MOCK_USS_SERVICES=ridsp
       - MOCK_USS_RID_VERSION=F3411-19
       - MOCK_USS_PORT=80
+      - MOCK_USS_PROXY_VALUES=x_for=1,x_proto=1,x_host=1,x_prefix=1,x_port=1
     expose:
       - 80
     ports:
@@ -193,6 +199,7 @@ services:
       - MOCK_USS_SERVICES=riddp
       - MOCK_USS_RID_VERSION=F3411-19
       - MOCK_USS_PORT=80
+      - MOCK_USS_PROXY_VALUES=x_for=1,x_proto=1,x_host=1,x_prefix=1,x_port=1
     expose:
       - 80
     ports:
@@ -226,6 +233,7 @@ services:
       - "GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET:-}"
       - MOCK_USS_SERVICES=tracer
       - MOCK_USS_PORT=80
+      - MOCK_USS_PROXY_VALUES=x_for=1,x_proto=1,x_host=1,x_prefix=1,x_port=1
     expose:
       - 80
     ports:
@@ -259,6 +267,7 @@ services:
       - MOCK_USS_SERVICES=scdsc,interaction_logging,flight_planning
       - MOCK_USS_INTERACTIONS_LOG_DIR=output/scdsc_interaction_logs
       - MOCK_USS_PORT=80
+      - MOCK_USS_PROXY_VALUES=x_for=1,x_proto=1,x_host=1,x_prefix=1,x_port=1
     expose:
       - 80
     ports:
@@ -275,6 +284,25 @@ services:
     profiles:
       - '' # starts when no profile is provided
       - scd
+
+  mock_uss_tls_proxy:
+    container_name: mock_uss_tls_proxy
+    hostname: tls_proxy.localutm
+    image: nginx:1.25
+    ports:
+      - 4430:4430
+    volumes:
+      - ./tls_proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./tls_proxy/localhost.crt:/etc/certs/localhost.crt:ro
+      - ./tls_proxy/localhost.key:/etc/certs/localhost.key:ro
+    restart: always
+    networks:
+      - interop_ecosystem_network
+    profiles:
+      - '' # starts when no profile is provided
+      - scd
+      - rid
+      - rid_v19
 
 networks:
   interop_ecosystem_network:

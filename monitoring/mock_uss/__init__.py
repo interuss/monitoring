@@ -9,6 +9,7 @@ from gevent import monkey
 monkey.patch_all()
 
 from loguru import logger
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from monitoring.mock_uss.server import MockUSS
 
@@ -24,6 +25,10 @@ SERVICE_FLIGHT_PLANNING = "flight_planning"
 
 webapp = MockUSS(__name__)
 webapp.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
+if os.environ.get("MOCK_USS_PROXY_VALUES"):
+    values = os.environ.get("MOCK_USS_PROXY_VALUES").split(",")
+    kwargs = {v.split("=")[0].strip(): int(v.split("=")[1]) for v in values}
+    webapp.wsgi_app = ProxyFix(webapp.wsgi_app, **kwargs)
 enabled_services = set()
 
 

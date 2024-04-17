@@ -11,4 +11,7 @@ mkdir ./public
 cp -r ./monitoring/github_pages/static/* ./public
 
 mkdir -p ./public/artifacts/uss_qualifier/reports
-cp -r ./artifacts/uss_qualifier/output/* ./public/artifacts/uss_qualifier/reports
+for d in ./artifacts/monitoring-test-uss_qualifier-*-reports/ ; do
+  echo "$d"
+  cp -r "$d"* ./public/artifacts/uss_qualifier/reports
+done
