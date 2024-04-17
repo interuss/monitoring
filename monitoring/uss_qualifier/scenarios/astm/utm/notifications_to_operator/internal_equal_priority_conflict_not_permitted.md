@@ -1,5 +1,6 @@
 # Notifications to operator: internal equal priority conflict not permitted test scenario
 
+
 ## Description
 This test aims at testing the strategic coordination requirements that relate to the notification scenarios where
 a new or modified operational intent creates a conflict with an existing operational intent within the same USS and the operator of that operational intent is notified. It conforms to the following regulations:
@@ -14,6 +15,7 @@ It involves a tested USS through which a control flight and conflicting flights 
 This scenario skips execution and completes successfully at the setup case if a resource containing equal priority flight intents where conflicts are not allow is not provided, such as if a jurisdiction does not have any priority levels at which conflicts are not allowed.
 
 It assumes that the area used in the scenario is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario).
+
 
 ## Resources
 ### flight_intents
@@ -71,6 +73,7 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 
 While this scenario assumes that the area used is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario) in order to avoid a large number of area-clearing operations, the scenario will not proceed correctly if the area was left in a dirty state following a previous scenario that was supposed to leave the area clear.  This test step verifies that the area is clear.
 
+
 ## Attempt to plan flight into conflict test case
 ![Test case summary illustration](../nominal_planning/conflict_equal_priority_not_permitted/assets/attempt_to_plan_flight_into_conflict.svg)
 
@@ -120,6 +123,7 @@ The test driver waits 12 seconds and checks conflict notification logs of tested
 
 #### [Validate tested USS conflict notification to user from attempted modified flight](test_steps/validate_user_conflict_notification_from_other_flight.md)
 The test driver also verifies that notification was sent to Flight 1c due to conflict with Flight 2 from case "Attempt to modify planned flight into conflict test case".
+
 
 ## Cleanup
 ### ⚠️ Successful flight deletion check
