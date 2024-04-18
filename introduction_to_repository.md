@@ -42,3 +42,15 @@ When building new monitoring tools, we recommend using Docker containers as a wa
 #### USS Qualifier
 
 The [uss_qualifier](monitoring/uss_qualifier/README.md) is a tool for testing / qualifying USS compliance with requirements including ASTM NetRID, flight planning, and more.
+
+### Updating Dependencies
+
+This project pins its dependencies with the help of [pip-tools](https://pypi.org/project/pip-tools/):
+
+Direct dependencies are declared in `requirements.in`. This file may be modified to update or add a new dependency.
+
+When `requirements.in` is updated, the pinned dependencies must be updated by running:
+
+```bash
+make update-pinned-dependencies
+```

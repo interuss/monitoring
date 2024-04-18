@@ -10,6 +10,9 @@ import s2sphere as s2sphere
 from monitoring.monitorlib.transformations import Transformation
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api as fp_api
+from uas_standards.interuss.automated_testing.geospatial_map.v1 import (
+    api as geospatial_map_api,
+)
 from uas_standards.interuss.automated_testing.scd.v1 import api as interuss_scd_api
 
 from monitoring.monitorlib import geo
@@ -234,6 +237,14 @@ class Volume4D(ImplicitDict):
         if self.time_end:
             kwargs["time_end"] = fp_api.Time(value=self.time_end)
         return fp_api.Volume4D(**kwargs)
+
+    def to_geospatial_map_api(self) -> geospatial_map_api.Volume4D:
+        kwargs = {"volume": self.volume.to_geospatial_map_api()}
+        if self.time_start:
+            kwargs["time_start"] = geospatial_map_api.Time(value=self.time_start)
+        if self.time_end:
+            kwargs["time_end"] = geospatial_map_api.Time(value=self.time_end)
+        return geospatial_map_api.Volume4D(**kwargs)
 
 
 class Volume4DCollection(List[Volume4D]):
