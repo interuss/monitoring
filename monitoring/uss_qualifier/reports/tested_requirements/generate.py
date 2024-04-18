@@ -45,12 +45,14 @@ def generate_tested_requirements(
         }
 
     participant_req_collections: Dict[ParticipantID, Optional[Set[RequirementID]]] = {}
+    participant_req_set_names: Dict[ParticipantID, str] = {}
     if "participant_requirements" in config and config.participant_requirements:
         for k, v in config.participant_requirements.items():
             if v and v not in req_collections:
                 raise ValueError(
                     f"Participant {k}'s requirement collection {v} is not defined in `requirement_collections` of TestedRequirementsConfiguration"
                 )
+            participant_req_set_names[k] = v if v else "All available requirements"
             participant_req_collections[k] = req_collections[v] if v else None
 
     import_submodules(scenarios)
@@ -102,6 +104,7 @@ def generate_tested_requirements(
             f.write(
                 template.render(
                     participant_id=participant_id,
+                    req_set_name=participant_req_set_names[participant_id],
                     other_participants=other_participants,
                     breakdown=participant_breakdown,
                     test_run=test_run,
