@@ -70,6 +70,14 @@ class F3548_21(str, Enum):
     )
     AirspaceConflictResponse = "components.schemas.AirspaceConflictResponse"
 
+    ChangeConstraintReferenceResponse = (
+        "components.schemas.ChangeConstraintReferenceResponse"
+    )
+    GetConstraintReferenceResponse = "components.schemas.GetConstraintReferenceResponse"
+    QueryConstraintReferenceResponse = (
+        "components.schemas.QueryConstraintReferenceResponse"
+    )
+
 
 _openapi_content_cache: Dict[str, dict] = {}
 
