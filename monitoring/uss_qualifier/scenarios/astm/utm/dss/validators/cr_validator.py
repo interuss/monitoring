@@ -27,7 +27,7 @@ TIME_TOLERANCE_SEC = 1
 
 class ConstraintReferenceValidator:
     """
-    Wraps the validation logic for an constraint reference that was returned by a DSS
+    Wraps the validation logic for a constraint reference that was returned by a DSS
 
     It will compare the provided CR with the parameters specified at its creation.
     """
