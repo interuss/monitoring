@@ -27,7 +27,7 @@ TIME_TOLERANCE_SEC = 1
 
 class ConstraintReferenceValidator:
     """
-    Wraps the validation logic for an operational intent reference that was returned by a DSS
+    Wraps the validation logic for an constraint reference that was returned by a DSS
 
     It will compare the provided CR with the parameters specified at its creation.
     """
@@ -109,7 +109,7 @@ class ConstraintReferenceValidator:
         """
 
         with self._scenario.check(
-            "Returned operational intent reference ID is correct", self._pid
+            "Returned constraint reference ID is correct", self._pid
         ) as check:
             if dss_cr.id != expected_entity_id:
                 self._fail_sub_check(
@@ -120,7 +120,7 @@ class ConstraintReferenceValidator:
                 )
 
         with self._scenario.check(
-            "Returned operational intent reference has a manager", self._pid
+            "Returned constraint reference has a manager", self._pid
         ) as check:
             # Check for empty string. None should have failed the schema check earlier
             if not dss_cr.manager:
@@ -132,7 +132,7 @@ class ConstraintReferenceValidator:
                 )
 
         with self._scenario.check(
-            "Returned operational intent reference manager is correct", self._pid
+            "Returned constraint reference manager is correct", self._pid
         ) as check:
             if dss_cr.manager != self._expected_manager:
                 self._fail_sub_check(
@@ -143,7 +143,7 @@ class ConstraintReferenceValidator:
                 )
 
         with self._scenario.check(
-            "Returned operational intent reference has an USS base URL", self._pid
+            "Returned constraint reference has an USS base URL", self._pid
         ) as check:
             # If uss_base_url is not present, or it is None or Empty, we should fail:
             if "uss_base_url" not in dss_cr or not dss_cr.uss_base_url:
@@ -155,7 +155,7 @@ class ConstraintReferenceValidator:
                 )
 
         with self._scenario.check(
-            "Returned operational intent reference base URL is correct", self._pid
+            "Returned constraint reference base URL is correct", self._pid
         ) as check:
             if dss_cr.uss_base_url != self._cr_params.uss_base_url:
                 self._fail_sub_check(
@@ -166,24 +166,24 @@ class ConstraintReferenceValidator:
                 )
 
         with self._scenario.check(
-            "Returned operational intent reference has a start time", self._pid
+            "Returned constraint reference has a start time", self._pid
         ) as check:
             if "time_start" not in dss_cr or dss_cr.time_start is None:
                 self._fail_sub_check(
                     check,
                     summary="Returned CR has no start time",
-                    details="The operational intent reference returned by the DSS has no start time when it should have one",
+                    details="The constraint reference returned by the DSS has no start time when it should have one",
                     t_dss=t_dss,
                 )
 
         with self._scenario.check(
-            "Returned operational intent reference has an end time", self._pid
+            "Returned constraint reference has an end time", self._pid
         ) as check:
             if "time_end" not in dss_cr or dss_cr.time_end is None:
                 self._fail_sub_check(
                     check,
                     summary="Returned CR has no end time",
-                    details="The operational intent reference returned by the DSS has no end time when it should have one",
+                    details="The constraint reference returned by the DSS has no end time when it should have one",
                     t_dss=t_dss,
                 )
 
@@ -216,7 +216,7 @@ class ConstraintReferenceValidator:
         # If the previous OVN is not None, we are dealing with a mutation:
         if previous_ovn is not None:
             with self._scenario.check(
-                "Mutated operational intent reference OVN is updated", self._pid
+                "Mutated constraint reference OVN is updated", self._pid
             ) as check:
                 if dss_cr.ovn == previous_ovn:
                     self._fail_sub_check(
@@ -228,7 +228,7 @@ class ConstraintReferenceValidator:
 
         if expected_ovn is not None:
             with self._scenario.check(
-                "Non-mutated operational intent reference keeps the same OVN", self._pid
+                "Non-mutated constraint reference keeps the same OVN", self._pid
             ) as check:
                 if dss_cr.ovn != expected_ovn:
                     self._fail_sub_check(
@@ -241,7 +241,7 @@ class ConstraintReferenceValidator:
         # If the previous version is not None, we are dealing with a mutation:
         if previous_version is not None:
             with self._scenario.check(
-                "Mutated operational intent reference version is updated", self._pid
+                "Mutated constraint reference version is updated", self._pid
             ) as check:
                 # TODO confirm that a mutation should imply a version update
                 if dss_cr.version == previous_version:
@@ -256,7 +256,7 @@ class ConstraintReferenceValidator:
         #  and we should probably check if it is equal or higher.
         if expected_version is not None:
             with self._scenario.check(
-                "Non-mutated operational intent reference keeps the same version",
+                "Non-mutated constraint reference keeps the same version",
                 self._pid,
             ) as check:
                 if dss_cr.version != expected_version:
@@ -278,9 +278,9 @@ class ConstraintReferenceValidator:
         """
 
         check_name = (
-            "Create operational intent reference response format conforms to spec"
+            "Create constraint reference response format conforms to spec"
             if action == "create"
-            else "Mutate operational intent reference response format conforms to spec"
+            else "Mutate constraint reference response format conforms to spec"
         )
 
         with self._scenario.check(check_name, self._pid) as check:
@@ -312,7 +312,7 @@ class ConstraintReferenceValidator:
             new_cr.response.json, ChangeConstraintReferenceResponse
         )
 
-        cr: ConstraintReference = parsed_resp.operational_intent_reference
+        cr: ConstraintReference = parsed_resp.constraint_reference
 
         # Validate the CR itself
         self._validate_cr(
@@ -342,7 +342,7 @@ class ConstraintReferenceValidator:
 
         cr = ImplicitDict.parse(
             mutated_cr.response.json, ChangeConstraintReferenceResponse
-        ).operational_intent_reference
+        ).constraint_reference
 
         # Validate the CR itself
         self._validate_cr(
@@ -368,7 +368,7 @@ class ConstraintReferenceValidator:
 
         # Validate the response schema
         with self._scenario.check(
-            "Get operational intent reference response format conforms to spec",
+            "Get constraint reference response format conforms to spec",
             self._pid,
         ) as check:
             errors = schema_validation.validate(
@@ -415,7 +415,7 @@ class ConstraintReferenceValidator:
         by_id = {cr.id: cr for cr in resp_parsed.operational_intent_references}
 
         with self._scenario.check(
-            "Created operational intent reference is in search results", self._pid
+            "Created constraint reference is in search results", self._pid
         ) as check:
             if expected_cr_id not in by_id:
                 self._fail_sub_check(
@@ -446,7 +446,7 @@ class ConstraintReferenceValidator:
     ) -> None:
         # Validate the response schema
         with self._scenario.check(
-            "Search operational intent reference response format conforms to spec",
+            "Search constraint reference response format conforms to spec",
             self._pid,
         ) as check:
             errors = schema_validation.validate(
@@ -469,7 +469,7 @@ class ConstraintReferenceValidator:
 
         # Validate the response schema
         with self._scenario.check(
-            "Delete operational intent reference response format conforms to spec",
+            "Delete constraint reference response format conforms to spec",
             self._pid,
         ) as check:
             errors = schema_validation.validate(
@@ -485,7 +485,7 @@ class ConstraintReferenceValidator:
         # Validate the CR itself
         self._validate_cr(
             expected_entity_id=expected_cr_id,
-            dss_cr=cr_resp.operational_intent_reference,
+            dss_cr=cr_resp.constraint_reference,
             t_dss=t_dss,
             previous_ovn=None,
             expected_ovn=expected_ovn,
