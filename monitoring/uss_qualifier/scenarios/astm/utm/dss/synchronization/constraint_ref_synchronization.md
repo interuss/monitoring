@@ -49,4 +49,31 @@ Verify that an constraint reference can be created on the primary DSS.
 
 Verify that the constraint reference returned by the DSS under test is properly formatted and contains the expected content.
 
+### Retrieve newly created CR test step
+
+Retrieve and validate synchronization of the created constraint at every DSS provided in `dss_instances`.
+
+#### [Get CR query](../fragments/cr/crud/read_correct.md)
+
+Check that read query succeeds.
+
+#### Newly created CR can be consistently retrieved from all DSS instances check
+
+If the constraint retrieved from a secondary DSS instance is not consistent with the newly created one on the
+primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1a](../../../../../requirements/astm/f3548/v21.md)**, **[astm.f3548.v21.DSS0210,A2-7-2,1f](../../../../../requirements/astm/f3548/v21.md)**,
+**[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### [CR is synchronized](../fragments/cr/sync.md)
+
+Confirm that each DSS provides direct access to the created constraint reference.
+Confirm that the constraint reference that was just created is properly synchronized across all DSS instances.
+
+#### [CR Content is correct](../fragments/cr/validate/correctness.md)
+
+Sanity check on the rest of the content and format of the response.
+
+#### [CR version is correct](../fragments/cr/validate/non_mutated.md)
+
+Confirm that version and OIR are as expected.
+
 ## [Cleanup](../clean_workspace.md)
