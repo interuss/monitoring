@@ -157,7 +157,13 @@ class CRSynchronization(TestScenario):
         )
         self.end_test_step()
 
-        # Other steps to follow in subsequent PRs
+        self.begin_test_step("Delete CR")
+        self._test_delete_sub()
+        self.end_test_step()
+
+        self.begin_test_step("Query deleted CR")
+        self._test_get_deleted_cr()
+        self.end_test_step()
 
         self.end_test_case()
         self.end_test_scenario()
@@ -487,6 +493,103 @@ class CRSynchronization(TestScenario):
             )
 
         self._current_cr = cr
+
+    def _test_delete_sub(self):
+        with self.check(
+            "Delete constraint reference query succeeds", [self._primary_pid]
+        ) as check:
+            try:
+                oir, subs, q = self._dss.delete_constraint_ref(
+                    self._cr_id, self._current_cr.ovn
+                )
+                self.record_query(q)
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                check.record_failed(
+                    summary="Constraint reference deletion on primary DSS failed",
+                    details=qe.msg,
+                    query_timestamps=qe.query_timestamps,
+                )
+
+        with self.check(
+            "Delete constraint reference response content is correct",
+            [self._primary_pid],
+        ) as check:
+            ConstraintReferenceValidator(
+                main_check=check,
+                scenario=self,
+                expected_manager=self._expected_manager,
+                participant_id=[self._primary_pid],
+                cr_params=self._cr_params,
+            ).validate_deleted_cr(
+                expected_cr_id=self._cr_id,
+                deleted_cr=q,
+                expected_ovn=self._current_cr.ovn,
+                expected_version=self._current_cr.version,
+            )
+
+        self._current_cr = None
+
+    def _test_get_deleted_cr(self):
+        for secondary_dss in self._secondary_dss_instances:
+            self._confirm_secondary_has_no_oir(secondary_dss)
+
+    def _confirm_secondary_has_no_oir(self, secondary_dss: DSSInstance):
+        with self.check(
+            "Get constraint reference by ID",
+            secondary_dss.participant_id,
+        ) as check:
+            try:
+                oir, q = secondary_dss.get_constraint_ref(self._cr_id)
+                self.record_query(q)
+            except QueryError as qe:
+                q = qe.cause
+                self.record_query(q)
+                if q.status_code != 404:
+                    check.record_failed(
+                        summary="GET for constraint reference failed",
+                        details=f"Query for constraint reference failed: {qe.msg}",
+                        query_timestamps=qe.query_timestamps,
+                    )
+
+        with self.check(
+            "Deleted CR cannot be retrieved from all DSS instances",
+            [self._primary_pid, secondary_dss.participant_id],
+        ) as check:
+            if q.status_code != 404:
+                check.record_failed(
+                    summary="Secondary DSS still has the deleted constraint reference",
+                    details=f"Expected 404, received {q.status_code}",
+                    query_timestamps=[q.request.timestamp],
+                )
+
+        with self.check(
+            "Successful constraint reference search query",
+            [secondary_dss.participant_id],
+        ) as check:
+            try:
+                crs, q = secondary_dss.find_constraint_ref(self._planning_area_volume4d)
+                self.record_query(q)
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                check.record_failed(
+                    summary="Failed to search for constraint references",
+                    details=f"Failed to query constraint references: got response code {qe.cause_status_code}: {qe.msg}",
+                    query_timestamps=qe.query_timestamps,
+                )
+
+        constraint_ref_ids = set([cr.id for cr in crs])
+        with self.check(
+            "Deleted CR cannot be searched for from all DSS instances",
+            [self._primary_pid, secondary_dss.participant_id],
+        ) as check:
+            # TODO fix same bug in OIR sync scenario
+            if self._cr_id in constraint_ref_ids:
+                check.record_failed(
+                    summary="Secondary DSS still has the deleted constraint reference",
+                    details=f"CR {self._cr_id} was found in the secondary DSS when searched for its expected geo-temporal extent",
+                    query_timestamps=[q.request.timestamp],
+                )
 
     def cleanup(self):
         self.begin_cleanup()
