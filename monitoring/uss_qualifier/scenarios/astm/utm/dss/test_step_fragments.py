@@ -37,6 +37,33 @@ def remove_op_intent(
     # TODO: Attempt to notify subscribers
 
 
+def remove_constraint_ref(
+    scenario: TestScenarioType, dss: DSSInstance, cr_id: EntityID, ovn: str
+) -> None:
+    """Remove the specified constraint reference from the DSS.
+
+    The specified constraint reference must be managed by `dss`'s auth adapter subscriber.
+
+    This function implements parts of the test step fragment described in astm/utm/dss/clean_workspace.md.
+    """
+    with scenario.check("Constraint reference removed", dss.participant_id) as check:
+        try:
+            removed_ref, subscribers_to_notify, query = dss.delete_constraint_ref(
+                cr_id, ovn
+            )
+            scenario.record_query(query)
+        except fetch.QueryError as e:
+            scenario.record_queries(e.queries)
+            query = e.queries[0]
+            check.record_failed(
+                summary=f"Could not remove constraint reference {cr_id}",
+                details=f"When attempting to remove constraint reference {cr_id} from the DSS, received {query.status_code}; {e}",
+                query_timestamps=[query.request.timestamp],
+            )
+
+    # TODO: Attempt to notify subscribers
+
+
 def cleanup_sub(
     scenario: TestScenarioType, dss: DSSInstance, sub_id: EntityID
 ) -> Optional[MutatedSubscription]:
@@ -95,6 +122,31 @@ def cleanup_active_subs(
         cleanup_sub(scenario, dss, sub_id)
 
 
+def cleanup_active_constraint_refs(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    volume: Volume4D,
+    manager_identity: str,
+) -> None:
+    with scenario.check(
+        "Constraint references can be searched for", [dss.participant_id]
+    ) as check:
+        try:
+            crs, query = dss.find_constraint_ref(volume)
+        except QueryError as qe:
+            scenario.record_queries(qe.queries)
+            check.record_failed(
+                summary="Failed to query constraint references",
+                details=f"Failed to query constraint references: got response code {qe.queries[0].status_code}",
+                query_timestamps=[qe.queries[0].request.timestamp],
+            )
+            return
+
+        for cr in crs:
+            if cr.manager == manager_identity:
+                remove_constraint_ref(scenario, dss, cr.id, cr.ovn)
+
+
 def cleanup_active_oirs(
     scenario: TestScenarioType,
     dss: DSSInstance,
@@ -142,3 +194,27 @@ def cleanup_op_intent(
                 return
 
     remove_op_intent(scenario, dss, oi_id, oir.ovn)
+
+
+def cleanup_constraint_ref(
+    scenario: TestScenarioType, dss: DSSInstance, cr_id: EntityID
+) -> None:
+    """Remove the specified constraint reference from the DSS, if it exists."""
+
+    with scenario.check(
+        "Constraint references can be queried by ID", [dss.participant_id]
+    ) as check:
+        try:
+            cr, q = dss.get_constraint_ref(cr_id)
+        except fetch.QueryError as e:
+            scenario.record_queries(e.queries)
+            if e.cause_status_code != 404:
+                check.record_failed(
+                    summary="CR Get query returned code different from 200 or 404",
+                    details=e.msg,
+                    query_timestamps=e.query_timestamps,
+                )
+            else:
+                return
+
+    remove_constraint_ref(scenario, dss, cr_id, cr.ovn)
