@@ -324,3 +324,39 @@ class ConstraintReferenceValidator:
             previous_ovn=None,
             expected_ovn=None,
         )
+
+    def validate_fetched_cr(
+        self,
+        expected_cr_id: EntityID,
+        fetched_cr: fetch.Query,
+        expected_version: int,
+        expected_ovn: EntityOVN,
+    ) -> None:
+        """Validate a CR that was directly queried by its ID."""
+
+        t_dss = fetched_cr.request.timestamp
+
+        # Validate the response schema
+        with self._scenario.check(
+            "Get constraint reference response format conforms to spec",
+            self._pid,
+        ) as check:
+            errors = schema_validation.validate(
+                F3548_21.OpenAPIPath,
+                F3548_21.GetConstraintReferenceResponse,
+                fetched_cr.response.json,
+            )
+            if errors:
+                fail_with_schema_errors(check, errors, t_dss)
+
+        parsed_resp = fetched_cr.parse_json_result(GetConstraintReferenceResponse)
+        # Validate the CR itself
+        self._validate_cr(
+            expected_entity_id=expected_cr_id,
+            dss_cr=parsed_resp.constraint_reference,
+            t_dss=t_dss,
+            previous_version=None,
+            expected_version=expected_version,
+            previous_ovn=None,
+            expected_ovn=expected_ovn,
+        )
