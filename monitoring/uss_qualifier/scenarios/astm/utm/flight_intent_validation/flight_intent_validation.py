@@ -275,6 +275,7 @@ class FlightIntentValidation(TestScenario):
                 {PlanningActivityResult.Failed: "Failure"},
                 self.tested_uss.client,
                 invalid_recently_ended,
+                skip_expiry_check=True,
             )
 
             validator.expect_not_shared()
