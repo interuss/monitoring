@@ -165,7 +165,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
         flight_1_activated = self.flight_1_activated.resolve(times)
         flight_2_planned = self.flight_2_planned.resolve(times)
 
-        resolved_extents = flight_info.extents_off(
+        resolved_extents = flight_info.extents_of(
             [flight_1_planned, flight_1_activated, flight_2_planned]
         ).to_f3548v21()
 
