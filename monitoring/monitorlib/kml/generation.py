@@ -103,12 +103,12 @@ def make_placemark_from_volume(
     upper_coords = []
     alt_lo = (
         _distance_value_of(v4.volume.altitude_lower) - geoid_offset
-        if "altitude_lower" in v4.volume
+        if v4.volume.altitude_lower
         else 0
     )
     alt_hi = (
         _distance_value_of(v4.volume.altitude_upper) - geoid_offset
-        if "altitude_upper" in v4.volume
+        if v4.volume.altitude_upper
         else 0
     )
     for vertex in vertices:
@@ -116,13 +116,13 @@ def make_placemark_from_volume(
         upper_coords.append((vertex.lng, vertex.lat, alt_hi))
     geo = kml.MultiGeometry()
     make_sides = True
-    if "altitude_lower" in v4.volume:
+    if v4.volume.altitude_lower:
         geo.append(
             kml.Polygon(
                 kml.altitudeMode(
                     _altitude_mode_of(
                         v4.volume.altitude_lower
-                        if "altitude_lower" in v4.volume
+                        if v4.volume.altitude_lower
                         else AltitudeDatum.SFC
                     )
                 ),
@@ -137,13 +137,13 @@ def make_placemark_from_volume(
         )
     else:
         make_sides = False
-    if "altitude_upper" in v4.volume:
+    if v4.volume.altitude_upper:
         geo.append(
             kml.Polygon(
                 kml.altitudeMode(
                     _altitude_mode_of(
                         v4.volume.altitude_upper
-                        if "altitude_upper" in v4.volume
+                        if v4.volume.altitude_upper
                         else AltitudeDatum.SFC
                     )
                 ),
