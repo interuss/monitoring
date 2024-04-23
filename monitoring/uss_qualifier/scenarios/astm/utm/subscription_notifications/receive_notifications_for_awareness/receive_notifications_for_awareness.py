@@ -2,6 +2,7 @@ from typing import Optional, Dict
 
 from uas_standards.astm.f3548.v21.api import OperationalIntentReference
 
+from monitoring.monitorlib.clients.flight_planning import flight_info
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
@@ -123,17 +124,9 @@ class ReceiveNotificationsForAwareness(TestScenario):
             raise ValueError(
                 f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
-        extents = []
 
         for efi in expected_flight_intents:
-            intent = FlightIntent.from_flight_info_template(templates[efi.intent_id])
-            extents.extend(intent.request.operational_intent.volumes)
-            extents.extend(intent.request.operational_intent.off_nominal_volumes)
             setattr(self, efi.intent_id, templates[efi.intent_id])
-
-        self._intents_extent = Volume4DCollection.from_interuss_scd_api(
-            extents
-        ).bounding_volume.to_f3548v21()
 
     def run(self, context: ExecutionContext):
         times = {
@@ -167,16 +160,21 @@ class ReceiveNotificationsForAwareness(TestScenario):
         self, times: Dict[TimeDuringTest, Time]
     ):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+
         flight_1_planned = self.flight_1_planned.resolve(times)
         flight_1_activated = self.flight_1_activated.resolve(times)
         flight_2_planned = self.flight_2_planned.resolve(times)
+
+        resolved_extents = flight_info.extents_off(
+            [flight_1_planned, flight_1_activated, flight_2_planned]
+        ).to_f3548v21()
 
         self.begin_test_step("Tested_uss plans and activates Flight 1")
         with OpIntentValidator(
             self,
             self.tested_uss_client,
             self.dss,
-            self._intents_extent,
+            resolved_extents,
         ) as validator:
             _, self.flight_1_id = plan_flight(
                 self,
@@ -189,7 +187,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
             self,
             self.tested_uss_client,
             self.dss,
-            self._intents_extent,
+            resolved_extents,
             self.flight_1_oi_ref,
         ) as validator:
             _, self.flight_1_id = activate_flight(
@@ -207,7 +205,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
             self,
             self.mock_uss_client,
             self.dss,
-            self._intents_extent,
+            resolved_extents,
         ) as validator:
             flight_2_planning_time = arrow.utcnow().datetime
             _, self.flight_2_id = plan_flight(
@@ -243,7 +241,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
             self,
             self.mock_uss_client,
             self.dss,
-            self._intents_extent,
+            flight_2_planned_modified.basic_information.area.bounding_volume.to_f3548v21(),
             self.flight_2_oi_ref,
         ) as validator:
             flight_2_modif_time = arrow.utcnow().datetime
