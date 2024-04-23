@@ -11,6 +11,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
     FlightInfo,
 )
 from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.geo import AltitudeDatum, Volume3D, Altitude, DistanceUnits
 from monitoring.monitorlib.scd import priority_of
 from monitoring.uss_qualifier.resources.overrides import apply_overrides
 from uas_standards.astm.f3548.v21 import api as f3548_v21
@@ -20,7 +21,7 @@ from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 from monitoring.mock_uss.f3548v21 import utm_client
 from monitoring.mock_uss.flights.database import FlightRecord, db
 from monitoring.monitorlib.clients import scd as scd_client
-from monitoring.monitorlib.geotemporal import Volume4DCollection
+from monitoring.monitorlib.geotemporal import Volume4DCollection, Volume4D
 from monitoring.monitorlib.locality import Locality
 
 
@@ -229,10 +230,80 @@ def op_intent_transition_valid(
         return False
 
 
+def _convert_altitudes(volumes: Volume4DCollection) -> Volume4DCollection:
+    """F3548-21 does not accept AGL altitudes; "convert" any AGL altitudes to WGS84-HAE assuming an arbitrary ground elevation."""
+    GROUND_ELEVATION = 123  # meters WGS84-HAE
+    # TODO: Use better estimate for ground elevation
+    result = []
+    for v in volumes:
+        convert = False
+        if (
+            v.volume.altitude_lower
+            and v.volume.altitude_lower.reference != AltitudeDatum.W84
+        ):
+            convert = True
+        if (
+            v.volume.altitude_upper
+            and v.volume.altitude_upper.reference != AltitudeDatum.W84
+        ):
+            convert = True
+        if convert:
+            kwargs = {}
+            if "outline_polygon" in v.volume:
+                kwargs["outline_polygon"] = v.volume.outline_polygon
+            if "outline_circle" in v.volume:
+                kwargs["outline_circle"] = v.volume.outline_circle
+            if v.volume.altitude_lower:
+                if v.volume.altitude_lower.reference == AltitudeDatum.W84:
+                    kwargs["altitude_lower"] = v.volume.altitude_lower
+                elif v.volume.altitude_lower.reference == AltitudeDatum.SFC:
+                    if v.volume.altitude_lower.units != DistanceUnits.M:
+                        raise NotImplementedError(
+                            "AGL altitudes with feet are not yet implemented"
+                        )
+                    kwargs["altitude_lower"] = Altitude(
+                        value=v.volume.altitude_lower.value + GROUND_ELEVATION,
+                        reference=AltitudeDatum.W84,
+                        units=v.volume.altitude_lower.units,
+                    )
+                else:
+                    raise NotImplementedError(
+                        f"{v.volume.altitude_lower.reference} altitude datum not yet supported"
+                    )
+            if v.volume.altitude_upper:
+                if v.volume.altitude_upper.reference == AltitudeDatum.W84:
+                    kwargs["altitude_upper"] = v.volume.altitude_upper
+                elif v.volume.altitude_upper.reference == AltitudeDatum.SFC:
+                    if v.volume.altitude_upper.units != DistanceUnits.M:
+                        raise NotImplementedError(
+                            "AGL altitudes with feet are not yet implemented"
+                        )
+                    kwargs["altitude_upper"] = Altitude(
+                        value=v.volume.altitude_upper.value + GROUND_ELEVATION,
+                        reference=AltitudeDatum.W84,
+                        units=v.volume.altitude_upper.units,
+                    )
+                else:
+                    raise NotImplementedError(
+                        f"{v.volume.altitude_upper.reference} altitude datum not yet supported"
+                    )
+            v2 = Volume4D(volume=Volume3D(**kwargs))
+            if v.time_start:
+                v2.time_start = v.time_start
+            if v.time_end:
+                v2.time_end = v.time_end
+            result.append(v2)
+        else:
+            result.append(v)
+    return Volume4DCollection(result)
+
+
 def op_intent_from_flightinfo(
     flight_info: FlightInfo, flight_id: str
 ) -> f3548_v21.OperationalIntent:
-    volumes = [v.to_f3548v21() for v in flight_info.basic_information.area]
+    volumes = [
+        v.to_f3548v21() for v in _convert_altitudes(flight_info.basic_information.area)
+    ]
     off_nominal_volumes = []
 
     state = flight_info.basic_information.f3548v21_op_intent_state()

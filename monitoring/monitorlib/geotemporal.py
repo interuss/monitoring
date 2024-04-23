@@ -366,18 +366,17 @@ class Volume4DCollection(List[Volume4D]):
         alt_lo = min(
             vol4.volume.altitude_lower.value
             for vol4 in self
-            if "altitude_lower" in vol4.volume
+            if vol4.volume.altitude_lower
         )
         alt_hi = max(
             vol4.volume.altitude_upper.value
             for vol4 in self
-            if "altitude_upper" in vol4.volume
+            if vol4.volume.altitude_upper
         )
         units = [
             vol4.volume.altitude_lower.units
             for vol4 in self
-            if "altitude_lower" in vol4.volume
-            and vol4.volume.altitude_lower.units != "M"
+            if vol4.volume.altitude_lower and vol4.volume.altitude_lower.units != "M"
         ]
         if units:
             raise NotImplementedError(
@@ -386,8 +385,7 @@ class Volume4DCollection(List[Volume4D]):
         units = [
             vol4.volume.altitude_upper.units
             for vol4 in self
-            if "altitude_upper" in vol4.volume
-            and vol4.volume.altitude_upper.units != "M"
+            if vol4.volume.altitude_upper and vol4.volume.altitude_upper.units != "M"
         ]
         if units:
             raise NotImplementedError(

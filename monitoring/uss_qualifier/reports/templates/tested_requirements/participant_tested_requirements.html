@@ -90,10 +90,12 @@
         <td>{{ system_version }}</td>
       </tr>
     {% endif %}
-    <tr>
-      <td>Other participants</td>
-      <td>{{ other_participants }}</td>
-    </tr>
+    {% if other_participants %}
+      <tr>
+        <td>Other participants</td>
+        <td>{{ other_participants }}</td>
+      </tr>
+    {% endif %}
     <tr>
       <td>Test run identifier</td>
       <td>TR-{{ test_run.test_run_id[0:7] }}</td>
