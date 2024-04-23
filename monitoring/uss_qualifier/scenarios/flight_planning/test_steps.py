@@ -1,8 +1,9 @@
 import inspect
-from datetime import datetime
-from typing import Optional, Tuple, Iterable, Set, Dict, Union, List
+from typing import Optional, Tuple, Iterable, Set, Dict, Union
 
-import pytz
+import arrow
+
+from monitoring.monitorlib.geotemporal import end_time_of
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     BasicFlightPlanInformationUsageState,
     BasicFlightPlanInformationUasState,
@@ -25,15 +26,12 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 )
 from monitoring.monitorlib.fetch import QueryError, Query
 
-from uas_standards.astm.f3548.v21.api import OperationalIntentState
-
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
     InjectFlightResponseResult,
     InjectFlightResponse,
     DeleteFlightResponseResult,
     DeleteFlightResponse,
-    Volume4D,
 )
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
@@ -263,10 +261,8 @@ def submit_flight_intent(
             f"expected and unexpected results overlap: {expected_results.intersection(failed_checks.keys())}"
         )
 
-    # Using UTC _should_ be fine here: StringBasedDateTime will assume UTC if no timezone is provided
-    # the call to .localize seems required as the volume's datetime seem to be offset-unaware – something we may want to fix?
-    intent_end_time = _get_utc_end_time(flight_intent.operational_intent.volumes)
-    if intent_end_time and intent_end_time < datetime.now(pytz.UTC):
+    intent_end_time = end_time_of(flight_intent.operational_intent.volumes)
+    if intent_end_time and intent_end_time.datetime < arrow.utcnow():
         raise ValueError(
             f"attempt to submit invalid flight intent: end time is in the past: {intent_end_time}"
         )
@@ -503,14 +499,14 @@ def submit_flight(
     flight_id: Optional[str] = None,
     additional_fields: Optional[dict] = None,
     skip_if_not_supported: bool = False,
-    skip_expiry_check: bool = False,
+    may_end_in_past: bool = False,
 ) -> Tuple[PlanningActivityResponse, Optional[str]]:
     """Submit a flight intent with an expected result.
     A check fail is considered by default of high severity and as such will raise an ScenarioCannotContinueError.
     The severity of each failed check may be overridden if needed.
     If skip_if_not_supported=True and the USS responds that the operation is not supported, the check is skipped without failing.
 
-    If skip_expiry_check=True, this function won't raise an error if the flight intent's end time is in the past.
+    If may_end_in_past=True, this function won't raise an error if the flight intent's end time is in the past.
 
     This function does not directly implement a test step.
 
@@ -523,11 +519,9 @@ def submit_flight(
             f"expected and unexpected results overlap: {expected_results.intersection(failed_checks.keys())}"
         )
 
-    if not skip_expiry_check:
-        # Using UTC _should_ be fine here: StringBasedDateTime will assume UTC if no timezone is provided
-        # the call to .localize seems required as the volume's datetime seem to be offset-unaware – something we may want to fix?
-        intent_end_time = flight_info.basic_information.area.time_end.datetime
-        if intent_end_time and intent_end_time < datetime.now(pytz.UTC):
+    if not may_end_in_past:
+        intent_end_time = end_time_of(flight_info.basic_information.area)
+        if intent_end_time and intent_end_time.datetime < arrow.utcnow():
             raise ValueError(
                 f"attempt to submit invalid flight intent: end time is in the past: {intent_end_time}"
             )
@@ -721,27 +715,3 @@ def cleanup_flights_fp_client(
                         severity=Severity.Medium,
                         query_timestamps=[query.request.timestamp],
                     )
-
-
-def _ensure_utc(dt: datetime) -> datetime:
-    if dt.tzinfo is None:
-        return pytz.UTC.localize(dt)
-    return dt
-
-
-def _get_utc_end_time(volumes: List[Volume4D]):
-    time_ends = [
-        volume.time_end.value.datetime
-        for volume in volumes
-        if volume.time_end is not None
-    ]
-
-    # We may receive volumes with no time_end
-    intent_end_time = None
-    if time_ends:
-        intent_end_time = max(time_ends)
-
-        if intent_end_time and intent_end_time.tzinfo is None:
-            intent_end_time = pytz.UTC.localize(intent_end_time)
-
-    return intent_end_time
