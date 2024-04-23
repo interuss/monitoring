@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import math
 from datetime import datetime, timedelta
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, List, Tuple, Dict, Union
 
+import arrow
 from implicitdict import ImplicitDict, StringBasedTimeDelta
 import s2sphere as s2sphere
 
@@ -427,3 +428,31 @@ class Volume4DCollection(List[Volume4D]):
 
 class Volume4DTemplateCollection(List[Volume4DTemplate]):
     pass
+
+
+def end_time_of(
+    volume_or_volumes: Union[
+        f3548v21.Volume4D,
+        Volume4D,
+        List[Union[f3548v21.Volume4D, Volume4D]],
+        Volume4DCollection,
+    ]
+) -> Optional[Time]:
+    """Retrieve the end time of a volume or list of volumes."""
+    if isinstance(volume_or_volumes, f3548v21.Volume4D):
+        if "time_end" in volume_or_volumes and volume_or_volumes.time_end:
+            return Time(volume_or_volumes.time_end.value)
+        else:
+            return None
+    elif isinstance(volume_or_volumes, Volume4D):
+        return volume_or_volumes.time_end
+    elif isinstance(volume_or_volumes, Volume4DCollection):
+        return volume_or_volumes.time_end
+    elif isinstance(volume_or_volumes, list):
+        time_ends = [end_time_of(v) for v in volume_or_volumes]
+        if not time_ends:
+            return None
+        elif any(t is None for t in time_ends):
+            return None
+        else:
+            return max(time_ends)

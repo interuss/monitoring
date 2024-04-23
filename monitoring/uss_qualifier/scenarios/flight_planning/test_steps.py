@@ -1,6 +1,9 @@
 import inspect
 from typing import Optional, Tuple, Iterable, Set, Dict, Union
 
+import arrow
+
+from monitoring.monitorlib.geotemporal import end_time_of
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     BasicFlightPlanInformationUsageState,
     BasicFlightPlanInformationUasState,
@@ -22,8 +25,6 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
     ExecutionStyle,
 )
 from monitoring.monitorlib.fetch import QueryError, Query
-
-from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
 from uas_standards.interuss.automated_testing.scd.v1.api import (
     InjectFlightRequest,
@@ -260,6 +261,12 @@ def submit_flight_intent(
             f"expected and unexpected results overlap: {expected_results.intersection(failed_checks.keys())}"
         )
 
+    intent_end_time = end_time_of(flight_intent.operational_intent.volumes)
+    if intent_end_time and intent_end_time.datetime < arrow.utcnow():
+        raise ValueError(
+            f"attempt to submit invalid flight intent: end time is in the past: {intent_end_time}"
+        )
+
     with scenario.check(success_check, [flight_planner.participant_id]) as check:
         try:
             resp, query, flight_id, advisories = flight_planner.request_flight(
@@ -492,11 +499,14 @@ def submit_flight(
     flight_id: Optional[str] = None,
     additional_fields: Optional[dict] = None,
     skip_if_not_supported: bool = False,
+    may_end_in_past: bool = False,
 ) -> Tuple[PlanningActivityResponse, Optional[str]]:
     """Submit a flight intent with an expected result.
     A check fail is considered by default of high severity and as such will raise an ScenarioCannotContinueError.
     The severity of each failed check may be overridden if needed.
     If skip_if_not_supported=True and the USS responds that the operation is not supported, the check is skipped without failing.
+
+    If may_end_in_past=True, this function won't raise an error if the flight intent's end time is in the past.
 
     This function does not directly implement a test step.
 
@@ -508,6 +518,13 @@ def submit_flight(
         raise ValueError(
             f"expected and unexpected results overlap: {expected_results.intersection(failed_checks.keys())}"
         )
+
+    if not may_end_in_past:
+        intent_end_time = end_time_of(flight_info.basic_information.area)
+        if intent_end_time and intent_end_time.datetime < arrow.utcnow():
+            raise ValueError(
+                f"attempt to submit invalid flight intent: end time is in the past: {intent_end_time}"
+            )
 
     with scenario.check(success_check, [flight_planner.participant_id]) as check:
         try:
