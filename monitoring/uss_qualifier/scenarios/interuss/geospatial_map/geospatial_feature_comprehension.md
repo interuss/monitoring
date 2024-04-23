@@ -32,6 +32,6 @@ When the test designer specifies that a particular Feature Check has an expected
 
 When the test designer specifies that a particular Feature Check has an expected result of "Advise", that means querying a USS for geospatial features that would result in advisories or conditions for a flight with the other specified characteristics should find matching geospatial features.  Upon performing this query, if the test finds no such matching geospatial features, this check will fail.
 
-#### ⚠️ No blocking or advisory features present
+#### ⚠️ No blocking or advisory features present check
 
 When the test designer specifies that a particular Feature Check has an expected result of "Neither" (neither Block nor Advise), that means querying a USS for geospatial features that would result in blocking or producing advisories or conditions for a flight with the other specified characteristics should find no matching geospatial features.  Upon performing this query, if the test finds any such matching geospatial features, this check will fail.

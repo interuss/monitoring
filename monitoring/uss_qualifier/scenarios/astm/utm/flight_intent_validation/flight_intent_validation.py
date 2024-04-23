@@ -266,7 +266,7 @@ class FlightIntentValidation(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            self._intents_extent,
+            invalid_recently_ended.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             submit_flight(
                 self,
@@ -275,6 +275,7 @@ class FlightIntentValidation(TestScenario):
                 {PlanningActivityResult.Failed: "Failure"},
                 self.tested_uss.client,
                 invalid_recently_ended,
+                may_end_in_past=True,
             )
 
             validator.expect_not_shared()
