@@ -256,7 +256,7 @@ def _convert_altitudes(volumes: Volume4DCollection) -> Volume4DCollection:
             if v.volume.altitude_lower:
                 if v.volume.altitude_lower.reference == AltitudeDatum.W84:
                     kwargs["altitude_lower"] = v.volume.altitude_lower
-                else:
+                elif v.volume.altitude_lower.reference == AltitudeDatum.SFC:
                     if v.volume.altitude_lower.units != DistanceUnits.M:
                         raise NotImplementedError(
                             "AGL altitudes with feet are not yet implemented"
@@ -266,10 +266,14 @@ def _convert_altitudes(volumes: Volume4DCollection) -> Volume4DCollection:
                         reference=AltitudeDatum.W84,
                         units=v.volume.altitude_lower.units,
                     )
+                else:
+                    raise NotImplementedError(
+                        f"{v.volume.altitude_lower.reference} altitude datum not yet supported"
+                    )
             if v.volume.altitude_upper:
                 if v.volume.altitude_upper.reference == AltitudeDatum.W84:
                     kwargs["altitude_upper"] = v.volume.altitude_upper
-                else:
+                elif v.volume.altitude_upper.reference == AltitudeDatum.SFC:
                     if v.volume.altitude_upper.units != DistanceUnits.M:
                         raise NotImplementedError(
                             "AGL altitudes with feet are not yet implemented"
@@ -278,6 +282,10 @@ def _convert_altitudes(volumes: Volume4DCollection) -> Volume4DCollection:
                         value=v.volume.altitude_upper.value + GROUND_ELEVATION,
                         reference=AltitudeDatum.W84,
                         units=v.volume.altitude_upper.units,
+                    )
+                else:
+                    raise NotImplementedError(
+                        f"{v.volume.altitude_upper.reference} altitude datum not yet supported"
                     )
             v2 = Volume4D(volume=Volume3D(**kwargs))
             if v.time_start:
