@@ -20,7 +20,7 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSResource,
 )
 
-MAX_TEST_DURATION = timedelta(minutes=15)
+MAX_TEST_DURATION = timedelta(minutes=45)
 """The maximum time the tests depending on the area being clear might last."""
 
 

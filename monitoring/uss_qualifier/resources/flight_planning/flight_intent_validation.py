@@ -19,7 +19,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
 
 FlightIntentName = str
 
-MAX_TEST_RUN_DURATION = timedelta(minutes=30)
+MAX_TEST_RUN_DURATION = timedelta(minutes=45)
 """The longest a test run might take (to estimate flight intent timestamps prior to scenario execution)"""
 
 
