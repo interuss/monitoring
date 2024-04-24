@@ -157,13 +157,20 @@ class ReceiveNotificationsForAwareness(TestScenario):
         self.end_test_scenario()
 
     def _receive_notification_successfully_when_activated_test_case(
-        self, times: Dict[TimeDuringTest, Time]
+        self, times_in: Dict[TimeDuringTest, Time]
     ):
+        times = times_in.copy()
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
 
+        # Resolve planned flights
         flight_1_planned = self.flight_1_planned.resolve(times)
-        flight_1_activated = self.flight_1_activated.resolve(times)
         flight_2_planned = self.flight_2_planned.resolve(times)
+
+        # Resolve activated flight (keep the same end time)
+        times[
+            TimeDuringTest.Volume4DEndTime
+        ] = flight_1_planned.basic_information.area.time_end
+        flight_1_activated = self.flight_1_activated.resolve(times)
 
         resolved_extents = flight_info.extents_of(
             [flight_1_planned, flight_1_activated, flight_2_planned]

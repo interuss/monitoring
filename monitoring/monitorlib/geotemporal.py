@@ -69,7 +69,10 @@ class Volume4DTemplate(ImplicitDict):
             time_start = None
 
         if self.end_time is not None:
-            time_end = self.end_time.resolve(times)
+            if TimeDuringTest.Volume4DEndTime in times:
+                time_end = times[TimeDuringTest.Volume4DEndTime]
+            else:
+                time_end = self.end_time.resolve(times)
         else:
             time_end = None
 

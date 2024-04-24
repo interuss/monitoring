@@ -72,6 +72,10 @@ class TimeDuringTest(str, Enum):
     TimeOfEvaluation = "TimeOfEvaluation"
     """The time at which a TestTime was resolved to an absolute time; generally close to 'now'."""
 
+    Volume4DEndTime = "Volume4DEndTime"
+    """The time to use as the end time of a resolved Volume4D. Useful to allow a flight intent's state to be updated
+    without updating the end time of its area."""
+
 
 class TestTime(ImplicitDict):
     """Exactly one of the time option fields of this object must be specified."""
