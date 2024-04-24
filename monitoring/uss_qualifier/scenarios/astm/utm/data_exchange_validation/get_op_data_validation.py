@@ -128,16 +128,8 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
 
-        extents = []
         for efi in expected_flight_intents:
-            intent = FlightIntent.from_flight_info_template(templates[efi.intent_id])
-            extents.extend(intent.request.operational_intent.volumes)
-            extents.extend(intent.request.operational_intent.off_nominal_volumes)
             setattr(self, efi.intent_id, templates[efi.intent_id])
-
-        self._intents_extent = Volume4DCollection.from_interuss_scd_api(
-            extents
-        ).bounding_volume.to_f3548v21()
 
     def run(self, context: ExecutionContext):
         times = {
@@ -170,7 +162,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self,
             self.mock_uss_client,
             self.dss,
-            self._intents_extent,
+            flight_2.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             flight_2_planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
@@ -190,7 +182,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self,
             self.tested_uss_client,
             self.dss,
-            self._intents_extent,
+            flight_1.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             flight_1_planning_time = Time(arrow.utcnow().datetime)
             plan_res, self.flight_1_id = plan_flight(
@@ -284,7 +276,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self,
             self.mock_uss_client,
             self.dss,
-            self._intents_extent,
+            flight_info.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             flight_2_planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id = plan_flight(
@@ -307,7 +299,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self,
             self.tested_uss_client,
             self.dss,
-            self._intents_extent,
+            flight_1.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             flight_1_planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_1_id = submit_flight(

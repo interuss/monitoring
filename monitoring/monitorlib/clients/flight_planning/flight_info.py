@@ -420,3 +420,10 @@ class ExecutionStyle(str, Enum):
 
     InReality = "InReality"
     """The user is communicating an actual state of reality. The USS should consider the user to be actually performing (or attempting to perform) this action, regardless of whether or not the action is allowed under relevant UTM rules."""
+
+
+def extents_of(flight_infos: List[FlightInfo]) -> Volume4D:
+    """Return the bounding volume of all volumes in the flight infos"""
+    return sum(
+        [f.basic_information.area for f in flight_infos], Volume4DCollection([])
+    ).bounding_volume
