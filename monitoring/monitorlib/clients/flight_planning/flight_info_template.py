@@ -33,9 +33,13 @@ class BasicFlightPlanInformationTemplate(ImplicitDict):
     area: Volume4DTemplateCollection
     """User intends to or may fly anywhere in this entire area."""
 
-    def resolve(self, times: Dict[TimeDuringTest, Time]) -> BasicFlightPlanInformation:
+    def resolve(
+        self, times: Dict[TimeDuringTest, Time], force_end_time: Optional[Time] = None
+    ) -> BasicFlightPlanInformation:
         kwargs = {k: v for k, v in self.items()}
-        kwargs["area"] = Volume4DCollection([t.resolve(times) for t in self.area])
+        kwargs["area"] = Volume4DCollection(
+            [t.resolve(times, force_end_time) for t in self.area]
+        )
         return ImplicitDict.parse(kwargs, BasicFlightPlanInformation)
 
 
@@ -56,9 +60,11 @@ class FlightInfoTemplate(ImplicitDict):
     transformations: Optional[List[Transformation]]
     """If specified, transform this flight according to these transformations in order (after all templates are resolved)."""
 
-    def resolve(self, times: Dict[TimeDuringTest, Time]) -> FlightInfo:
+    def resolve(
+        self, times: Dict[TimeDuringTest, Time], force_end_time: Optional[Time] = None
+    ) -> FlightInfo:
         kwargs = {k: v for k, v in self.items() if k not in {"transformations"}}
-        basic_info = self.basic_information.resolve(times)
+        basic_info = self.basic_information.resolve(times, force_end_time)
         if "transformations" in self and self.transformations:
             for xform in self.transformations:
                 basic_info.area = [v.transform(xform) for v in basic_info.area]

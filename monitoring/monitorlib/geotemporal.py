@@ -46,7 +46,9 @@ class Volume4DTemplate(ImplicitDict):
     transformations: Optional[List[Transformation]] = None
     """If specified, transform this volume according to these transformations in order."""
 
-    def resolve(self, times: Dict[TimeDuringTest, Time]) -> Volume4D:
+    def resolve(
+        self, times: Dict[TimeDuringTest, Time], force_end_time: Optional[Time] = None
+    ) -> Volume4D:
         """Resolve Volume4DTemplate into concrete Volume4D."""
         # Make 3D volume
         kwargs = {}
@@ -69,7 +71,10 @@ class Volume4DTemplate(ImplicitDict):
             time_start = None
 
         if self.end_time is not None:
-            time_end = self.end_time.resolve(times)
+            if force_end_time is not None:
+                time_end = force_end_time
+            else:
+                time_end = self.end_time.resolve(times)
         else:
             time_end = None
 
