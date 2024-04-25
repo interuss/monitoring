@@ -4,6 +4,7 @@ from typing import Optional, Tuple, Iterable, Set, Dict, Union
 import arrow
 
 from monitoring.monitorlib.geotemporal import end_time_of
+from monitoring.monitorlib.deprecation import assert_deprecated, CallSite
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     BasicFlightPlanInformationUsageState,
     BasicFlightPlanInformationUasState,
@@ -77,6 +78,46 @@ def plan_flight_intent(
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
     """
+    assert_deprecated(
+        legacy_callers=[
+            CallSite(
+                "_validate_ended_cancellation",
+                "monitoring/uss_qualifier/scenarios/astm/utm/flight_intent_validation/flight_intent_validation.py",
+            ),
+            CallSite(
+                "_validate_precision_intersection",
+                "monitoring/uss_qualifier/scenarios/astm/utm/flight_intent_validation/flight_intent_validation.py",
+            ),
+            CallSite(
+                "_attempt_modify_planned_flight_conflict",
+                "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.py",
+            ),
+            CallSite(
+                "_attempt_plan_flight_conflict",
+                "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.py",
+            ),
+            CallSite(
+                "_modify_activated_flight_preexisting_conflict",
+                "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.py",
+            ),
+            CallSite(
+                "_attempt_modify_planned_flight_conflict",
+                "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.py",
+            ),
+            CallSite(
+                "_attempt_plan_flight_conflict",
+                "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.py",
+            ),
+            CallSite(
+                "_modify_activated_flight_conflict_preexisting",
+                "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.py",
+            ),
+            CallSite(
+                "_plan_valid_flight",
+                "monitoring/uss_qualifier/scenarios/uspace/flight_auth/validation.py",
+            ),
+        ]
+    )
     expect_flight_intent_state(
         flight_intent,
         BasicFlightPlanInformationUsageState.Planned,
@@ -256,6 +297,102 @@ def submit_flight_intent(
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
     """
+    assert_deprecated(
+        legacy_callers=[
+            CallSite(
+                "_attempt_invalid",
+                "monitoring/uss_qualifier/scenarios/astm/utm/flight_intent_validation/flight_intent_validation.py",
+            ),
+            CallSite(
+                "_validate_precision_intersection",
+                "monitoring/uss_qualifier/scenarios/astm/utm/flight_intent_validation/flight_intent_validation.py",
+            ),
+            CallSite(
+                "_modify_activated_flight_preexisting_conflict",
+                "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.py",
+            ),
+            CallSite(
+                "_plan_flight_conflict_planned",
+                "monitoring/uss_qualifier/scenarios/astm/utm/off_nominal_planning/down_uss.py",
+            ),
+            CallSite(
+                "_plan_flight_conflict_activated",
+                "monitoring/uss_qualifier/scenarios/astm/utm/off_nominal_planning/down_uss_equal_priority_not_permitted.py",
+            ),
+            CallSite(
+                "_plan_flight_conflict_contingent",
+                "monitoring/uss_qualifier/scenarios/astm/utm/off_nominal_planning/down_uss_equal_priority_not_permitted.py",
+            ),
+            CallSite(
+                "_plan_flight_conflict_nonconforming",
+                "monitoring/uss_qualifier/scenarios/astm/utm/off_nominal_planning/down_uss_equal_priority_not_permitted.py",
+            ),
+            CallSite(
+                "activate_conflict_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/prioritization_test_steps.py",
+            ),
+            CallSite(
+                "activate_permitted_conflict_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/prioritization_test_steps.py",
+            ),
+            CallSite(
+                "activate_priority_conflict_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/prioritization_test_steps.py",
+            ),
+            CallSite(
+                "modify_activated_conflict_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/prioritization_test_steps.py",
+            ),
+            CallSite(
+                "modify_activated_permitted_conflict_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/prioritization_test_steps.py",
+            ),
+            CallSite(
+                "modify_activated_priority_conflict_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/prioritization_test_steps.py",
+            ),
+            CallSite(
+                "modify_planned_conflict_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/prioritization_test_steps.py",
+            ),
+            CallSite(
+                "modify_planned_permitted_conflict_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/prioritization_test_steps.py",
+            ),
+            CallSite(
+                "modify_planned_priority_conflict_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/prioritization_test_steps.py",
+            ),
+            CallSite(
+                "plan_conflict_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/prioritization_test_steps.py",
+            ),
+            CallSite(
+                "plan_permitted_conflict_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/prioritization_test_steps.py",
+            ),
+            CallSite(
+                "plan_priority_conflict_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/prioritization_test_steps.py",
+            ),
+            CallSite(
+                "activate_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/test_steps.py",
+            ),
+            CallSite(
+                "modify_activated_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/test_steps.py",
+            ),
+            CallSite(
+                "modify_planned_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/test_steps.py",
+            ),
+            CallSite(
+                "plan_flight_intent",
+                "monitoring/uss_qualifier/scenarios/flight_planning/test_steps.py",
+            ),
+        ]
+    )
     if expected_results.intersection(failed_checks.keys()):
         raise ValueError(
             f"expected and unexpected results overlap: {expected_results.intersection(failed_checks.keys())}"
@@ -326,6 +463,26 @@ def delete_flight_intent(
 
     Returns: The deletion response.
     """
+    assert_deprecated(
+        legacy_callers=[
+            CallSite(
+                "_validate_ended_cancellation",
+                "monitoring/uss_qualifier/scenarios/astm/utm/flight_intent_validation/flight_intent_validation.py",
+            ),
+            CallSite(
+                "_attempt_modify_activated_flight_conflict",
+                "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.py",
+            ),
+            CallSite(
+                "_attempt_plan_flight_conflict",
+                "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.py",
+            ),
+            CallSite(
+                "_modify_activated_flight_conflict_preexisting",
+                "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.py",
+            ),
+        ]
+    )
     with scenario.check(
         "Successful deletion", [flight_planner.participant_id]
     ) as check:
@@ -368,6 +525,30 @@ def cleanup_flights(
     * `scenario` is currently cleaning up (cleanup has started)
     * "Successful flight deletion" check declared for cleanup phase in `scenario`'s documentation
     """
+    assert_deprecated(
+        legacy_callers=[
+            CallSite(
+                "cleanup",
+                "monitoring/uss_qualifier/scenarios/astm/utm/flight_intent_validation/flight_intent_validation.py",
+            ),
+            CallSite(
+                "cleanup",
+                "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.py",
+            ),
+            CallSite(
+                "cleanup",
+                "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.py",
+            ),
+            CallSite(
+                "cleanup",
+                "monitoring/uss_qualifier/scenarios/astm/utm/off_nominal_planning/down_uss.py",
+            ),
+            CallSite(
+                "cleanup",
+                "monitoring/uss_qualifier/scenarios/uspace/flight_auth/validation.py",
+            ),
+        ]
+    )
     for flight_planner in flight_planners:
         removed = []
         to_remove = flight_planner.created_flight_ids.copy()
