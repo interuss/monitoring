@@ -642,6 +642,76 @@ def modify_planned_flight(
     )[0]
 
 
+def modify_activated_flight(
+    scenario: TestScenarioType,
+    flight_planner: FlightPlannerClient,
+    flight_info: FlightInfo,
+    flight_id: str,
+    preexisting_conflict: bool = False,
+    additional_fields: Optional[dict] = None,
+) -> PlanningActivityResponse:
+    """Modify an activated flight intent that should result in success.
+
+    This function implements the test step described in
+    modify_activated_flight_intent.md.
+
+    Returns: The injection response.
+    """
+    expect_flight_intent_state(
+        flight_info,
+        BasicFlightPlanInformationUsageState.InUse,
+        BasicFlightPlanInformationUasState.Nominal,
+        scenario,
+    )
+
+    if preexisting_conflict:
+        resp, _ = submit_flight(
+            scenario=scenario,
+            success_check="Successful modification",
+            expected_results={
+                (PlanningActivityResult.Completed, FlightPlanStatus.OkToFly),
+                (PlanningActivityResult.NotSupported, FlightPlanStatus.OkToFly),
+                # the following results is considered expected in order to fail another check as low severity
+                (PlanningActivityResult.Rejected, FlightPlanStatus.OkToFly),
+            },
+            failed_checks={PlanningActivityResult.Failed: "Failure"},
+            flight_planner=flight_planner,
+            flight_info=flight_info,
+            flight_id=flight_id,
+            additional_fields=additional_fields,
+        )
+
+        with scenario.check(
+            "Rejected modification", [flight_planner.participant_id]
+        ) as check:
+            if resp.activity_result == PlanningActivityResult.Rejected:
+                msg = f"{flight_planner.participant_id} indicated ({resp.activity_result}, {resp.flight_plan_status})"
+                if "notes" in resp and resp.notes:
+                    msg += f' with notes "{resp.notes}"'
+                else:
+                    msg += " with no notes"
+                check.record_failed(
+                    summary="Warning (not a failure): modification got rejected but a pre-existing conflict was present",
+                    details=msg,
+                )
+
+    else:
+        resp, _ = submit_flight(
+            scenario=scenario,
+            success_check="Successful modification",
+            expected_results={
+                (PlanningActivityResult.Completed, FlightPlanStatus.OkToFly)
+            },
+            failed_checks={PlanningActivityResult.Failed: "Failure"},
+            flight_planner=flight_planner,
+            flight_info=flight_info,
+            flight_id=flight_id,
+            additional_fields=additional_fields,
+        )
+
+    return resp
+
+
 def activate_flight(
     scenario: TestScenarioType,
     flight_planner: FlightPlannerClient,
