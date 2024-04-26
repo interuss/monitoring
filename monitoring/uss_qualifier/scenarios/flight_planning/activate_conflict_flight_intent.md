@@ -2,7 +2,7 @@
 
 This page describes the content of a common test step where a user flight intent should be denied activation because of
 a non-permitted conflict with an equal priority flight intent.
-See `activate_conflict_flight_intent` in [prioritization_test_steps.py](prioritization_test_steps.py).
+See `activate_conflict_flight` in [prioritization_test_steps.py](prioritization_test_steps.py).
 
 ## 🛑 Incorrectly activated check
 
