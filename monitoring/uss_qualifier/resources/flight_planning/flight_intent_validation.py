@@ -212,13 +212,13 @@ def validate_flight_intents(
             expected_intent.time_start_min_bound or expected_intent.time_start_max_bound
         ) and not intent.basic_information.area.time_start:
             raise ValueError(
-                f"Flight intent `{expected_intent.intent_id}` has an time_start bound requirement but has not time_start specified"
+                f"Flight intent `{expected_intent.intent_id}` has a time_start bound requirement but has no time_start specified"
             )
         if (
             expected_intent.time_end_min_bound or expected_intent.time_end_max_bound
         ) and not intent.basic_information.area.time_end:
             raise ValueError(
-                f"Flight intent `{expected_intent.intent_id}` has an time_end bound requirement but has not time_end specified"
+                f"Flight intent `{expected_intent.intent_id}` has a time_end bound requirement but has no time_end specified"
             )
 
         if expected_intent.time_start_min_bound:
@@ -227,7 +227,7 @@ def validate_flight_intents(
             )
             if intent.basic_information.area.time_start.datetime < min_start_time:
                 raise ValueError(
-                    f"Flight intent `{expected_intent.intent_id}` must have time_start ({intent.basic_information.area.time_start.datetime}) >= min_start_time {min_start_time}"
+                    f"Flight intent `{expected_intent.intent_id}` must have time_start ({intent.basic_information.area.time_start.datetime}) >= min_start_time ({min_start_time})"
                 )
         if expected_intent.time_start_max_bound:
             max_start_time = (
@@ -235,17 +235,17 @@ def validate_flight_intents(
             )
             if intent.basic_information.area.time_start.datetime > max_start_time:
                 raise ValueError(
-                    f"Flight intent `{expected_intent.intent_id}` must have time_start ({intent.basic_information.area.time_start.datetime}) <= max_start_time {max_start_time}"
+                    f"Flight intent `{expected_intent.intent_id}` must have time_start ({intent.basic_information.area.time_start.datetime}) <= max_start_time ({max_start_time})"
                 )
         if expected_intent.time_end_min_bound:
             min_end_time = now.datetime + expected_intent.time_end_min_bound.timedelta
             if intent.basic_information.area.time_end.datetime < min_end_time:
                 raise ValueError(
-                    f"Flight intent `{expected_intent.intent_id}` must have time_end ({intent.basic_information.area.time_end.datetime}) >= min_end_time {min_end_time}"
+                    f"Flight intent `{expected_intent.intent_id}` must have time_end ({intent.basic_information.area.time_end.datetime}) >= min_end_time ({min_end_time})"
                 )
         if expected_intent.time_end_max_bound:
             max_end_time = now.datetime + expected_intent.time_end_max_bound.timedelta
             if intent.basic_information.area.time_end.datetime > max_end_time:
                 raise ValueError(
-                    f"Flight intent `{expected_intent.intent_id}` must have time_end ({intent.basic_information.area.time_end.datetime}) <= max_end_time {max_end_time}"
+                    f"Flight intent `{expected_intent.intent_id}` must have time_end ({intent.basic_information.area.time_end.datetime}) <= max_end_time ({max_end_time})"
                 )
