@@ -13,6 +13,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
+from monitoring.monitorlib.geotemporal import Volume4DCollection, Volume4D
 from monitoring.monitorlib.temporal import TimeDuringTest, Time
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntentID,
@@ -43,7 +44,12 @@ class ExpectedFlightIntent(object):
 def validate_flight_intent_templates(
     templates: Dict[FlightIntentID, FlightInfoTemplate],
     expected_intents: List[ExpectedFlightIntent],
-) -> None:
+) -> Volume4D:
+    """
+    Returns: the bounding extents of the flight intent templates
+    """
+    extents = Volume4DCollection([])
+
     now = Time(arrow.utcnow().datetime)
     times = {
         TimeDuringTest.StartOfTestRun: now,
@@ -51,6 +57,8 @@ def validate_flight_intent_templates(
         TimeDuringTest.TimeOfEvaluation: now,
     }
     flight_intents = {k: v.resolve(times) for k, v in templates.items()}
+    for flight_intent in flight_intents.values():
+        extents.extend(flight_intent.basic_information.area)
     validate_flight_intents(flight_intents, expected_intents, now)
 
     later = Time(now.datetime + MAX_TEST_RUN_DURATION)
@@ -60,7 +68,11 @@ def validate_flight_intent_templates(
         TimeDuringTest.TimeOfEvaluation: later,
     }
     flight_intents = {k: v.resolve(times) for k, v in templates.items()}
+    for flight_intent in flight_intents.values():
+        extents.extend(flight_intent.basic_information.area)
     validate_flight_intents(flight_intents, expected_intents, later)
+
+    return extents.bounding_volume
 
 
 def validate_flight_intents(
