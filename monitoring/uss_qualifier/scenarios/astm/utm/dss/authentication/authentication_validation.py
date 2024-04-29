@@ -103,7 +103,7 @@ class AuthenticationValidation(TestScenario):
             # Set this slightly in the past: we will update the subscriptions
             # to a later value that still needs to be roughly 'now' without getting into the future
             start_time=datetime.now().astimezone() - timedelta(seconds=10),
-            duration=timedelta(minutes=20),
+            duration=timedelta(minutes=45),
             # This is a planning area without constraint processing
             notify_for_op_intents=True,
             notify_for_constraints=False,
