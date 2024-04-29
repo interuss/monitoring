@@ -2,9 +2,9 @@
 
 This page describes the content of a common test case where a valid user flight intent in activated state is tentatively
 modified by a flight planned. Multiple outcomes may be valid.
-See `modify_activated_flight_intent` in [test_steps.py](test_steps.py).
+See `modify_activated_flight` in [test_steps.py](test_steps.py).
 
-## Successful modification check
+## 🛑 Successful modification check
 
 All flight intent data provided is correct and valid. The (already activated) provided flight intent may be in conflict
 with another activated flight, but only if this conflict already existed before the modification was initiated.
@@ -23,7 +23,7 @@ the activated state of the flight, this check will fail.
 Do take note that if the USS rejects the modification when a pre-existing conflict was present, this check will not fail,
 but the following *Rejected modification check* will. Refer to this check for more information.
 
-## Rejected modification check
+## ℹ️ Rejected modification check
 
 If the provided flight intent is in conflict with another intent and that a pre-existing conflict was present, the USS
 may have rejected the modification instead of modifying it or indicating that the modification is not supported. This
@@ -36,7 +36,7 @@ As such, if the pre-existing conflict was present, and that the USS rejected the
 a low severity per **[astm.f3548.v21.SCD0030](../../requirements/astm/f3548/v21.md)**. This won't actually fail the test
 but will serve as a warning.
 
-## Failure check
+## 🛑 Failure check
 
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
 to reject or accept the flight. If the USS indicates that the injection attempt failed, this check will fail per
