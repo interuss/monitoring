@@ -19,6 +19,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
 )
 from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
@@ -44,6 +45,8 @@ class OpIntentValidator(object):
     It assumes an area lock on the extent of the flight intent.
     """
 
+    _extent: Volume4D
+
     _before_oi_refs: List[OperationalIntentReference]
     _before_query: fetch.Query
 
@@ -57,7 +60,7 @@ class OpIntentValidator(object):
         scenario: TestScenarioType,
         flight_planner: Union[FlightPlanner, FlightPlannerClient],
         dss: DSSInstance,
-        extent: Volume4D,
+        extent: Union[Volume4D, List[Volume4D], FlightInfo, List[FlightInfo]],
         orig_oi_ref: Optional[OperationalIntentReference] = None,
     ):
         """
@@ -70,8 +73,30 @@ class OpIntentValidator(object):
         self._scenario: TestScenarioType = scenario
         self._flight_planner: Union[FlightPlanner, FlightPlannerClient] = flight_planner
         self._dss: DSSInstance = dss
-        self._extent: Volume4D = extent
         self._orig_oi_ref: Optional[OperationalIntentReference] = orig_oi_ref
+
+        if isinstance(extent, List):
+            extents_list: List[Volume4D] = []
+            for extent_el in extent:
+                if isinstance(extent_el, Volume4D):
+                    extents_list.append(extent_el)
+                elif isinstance(extent_el, FlightInfo):
+                    extents_list.append(
+                        extent_el.basic_information.area.bounding_volume.to_f3548v21()
+                    )
+                else:
+                    raise ValueError(f"unexpected extent type {type(extent_el)}")
+
+            self._extent = Volume4DCollection.from_f3548v21(
+                extents_list
+            ).bounding_volume.to_f3548v21()
+
+        elif isinstance(extent, Volume4D):
+            self._extent = extent
+        elif isinstance(extent, FlightInfo):
+            self._extent = extent.basic_information.area.bounding_volume.to_f3548v21()
+        else:
+            raise ValueError(f"unexpected extent type {type(extent)}")
 
     def __enter__(self) -> OpIntentValidator:
         with self._scenario.check("DSS responses", [self._dss.participant_id]) as check:
