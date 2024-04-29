@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from enum import Enum
 from typing import Optional, List
 
@@ -409,6 +410,32 @@ class FlightInfo(ImplicitDict):
                 self.uspace_flight_authorisation, scd_api.FlightAuthorisationData
             )
         return scd_api.InjectFlightRequest(**kwargs)
+
+    def get_f3548v21_op_intent_state(self) -> f3548v21.OperationalIntentState:
+        usage_state = self.basic_information.usage_state
+        uas_state = self.basic_information.uas_state
+        if uas_state == UasState.Nominal:
+            if usage_state == AirspaceUsageState.Planned:
+                return f3548v21.OperationalIntentState.Accepted
+            elif usage_state == AirspaceUsageState.InUse:
+                return f3548v21.OperationalIntentState.Activated
+            else:
+                raise NotImplementedError(
+                    f"Unsupported operator AirspaceUsageState '{usage_state}' with UasState '{uas_state}'"
+                )
+        elif usage_state == AirspaceUsageState.InUse:
+            if uas_state == UasState.OffNominal:
+                return f3548v21.OperationalIntentState.Nonconforming
+            elif uas_state == UasState.Contingent:
+                return f3548v21.OperationalIntentState.Contingent
+            else:
+                raise NotImplementedError(
+                    f"Unsupported operator UasState '{uas_state}' with AirspaceUsageState '{usage_state}'"
+                )
+        else:
+            raise NotImplementedError(
+                f"Unsupported combination of operator AirspaceUsageState '{usage_state}' and UasState '{uas_state}'"
+            )
 
 
 class ExecutionStyle(str, Enum):

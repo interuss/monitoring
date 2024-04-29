@@ -52,27 +52,3 @@ class FlightIntentsResource(Resource[FlightIntentsSpecification]):
 
     def get_flight_intents(self) -> Dict[FlightIntentID, FlightInfoTemplate]:
         return self._intent_collection.resolve()
-
-
-def unpack_flight_intents(
-    flight_intents: FlightIntentsResource, flight_identifiers: List[str]
-):
-    """
-    Extracts the specified flight identifiers from the passed FlightIntentsResource
-    """
-    flight_intents = {
-        k: FlightIntent.from_flight_info_template(v)
-        for k, v in flight_intents.get_flight_intents().items()
-        if k in flight_identifiers
-    }
-
-    extents = []
-    for intent in flight_intents.values():
-        extents.extend(intent.request.operational_intent.volumes)
-        extents.extend(intent.request.operational_intent.off_nominal_volumes)
-
-    intents_extent = Volume4DCollection.from_interuss_scd_api(
-        extents
-    ).bounding_volume.to_f3548v21()
-
-    return intents_extent, flight_intents

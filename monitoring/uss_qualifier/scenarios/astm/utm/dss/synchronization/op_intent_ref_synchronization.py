@@ -105,6 +105,7 @@ class OIRSynchronization(TestScenario):
             volume=self._planning_area.volume,
         )
 
+    def run(self, context: ExecutionContext):
         self._oir_params = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
@@ -115,8 +116,6 @@ class OIRSynchronization(TestScenario):
             implicit_sub_base_url=None,
             implicit_sub_for_constraints=None,
         )
-
-    def run(self, context: ExecutionContext):
 
         # Check that we actually have at least one other DSS to test against:
         if not self._dss_read_instances:

@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta
 
+from monitoring.uss_qualifier.resources.astm.f3548.v21.subscription_params import (
+    SubscriptionParams,
+)
 from uas_standards.astm.f3548.v21.constants import (
     Scope,
 )
@@ -46,6 +49,10 @@ class AuthenticationValidation(TestScenario):
     # As we are testing serially and cleaning up after each test, this should be fine.
     _test_id: str
     """Base identifier for the entities that will be created"""
+
+    _sub_validator: SubscriptionAuthValidator
+    _oir_validator: OperationalIntentRefAuthValidator
+    _sub_params: SubscriptionParams
 
     def __init__(
         self,
@@ -98,17 +105,6 @@ class AuthenticationValidation(TestScenario):
             volume=self._planning_area.volume,
         )
 
-        self._sub_params = self._planning_area.get_new_subscription_params(
-            subscription_id=self._test_id,
-            # Set this slightly in the past: we will update the subscriptions
-            # to a later value that still needs to be roughly 'now' without getting into the future
-            start_time=datetime.now().astimezone() - timedelta(seconds=10),
-            duration=timedelta(minutes=45),
-            # This is a planning area without constraint processing
-            notify_for_op_intents=True,
-            notify_for_constraints=False,
-        )
-
         # Session that won't provide a token at all
         self._no_auth_session = UTMClientSession(self._dss.base_url, auth_adapter=None)
 
@@ -117,6 +113,7 @@ class AuthenticationValidation(TestScenario):
             self._dss.base_url, auth_adapter=InvalidTokenSignatureAuth()
         )
 
+    def run(self, context: ExecutionContext):
         generic_validator = GenericAuthValidator(
             self, self._dss, Scope.StrategicCoordination
         )
@@ -147,7 +144,17 @@ class AuthenticationValidation(TestScenario):
             test_missing_scope=self._test_missing_scope,
         )
 
-    def run(self, context: ExecutionContext):
+        self._sub_params = self._planning_area.get_new_subscription_params(
+            subscription_id=self._test_id,
+            # Set this slightly in the past: we will update the subscriptions
+            # to a later value that still needs to be roughly 'now' without getting into the future
+            start_time=datetime.now().astimezone() - timedelta(seconds=10),
+            duration=timedelta(minutes=45),
+            # This is a planning area without constraint processing
+            notify_for_op_intents=True,
+            notify_for_constraints=False,
+        )
+
         self.begin_test_scenario(context)
         self._setup_case()
         self.begin_test_case("Endpoint authorization")
