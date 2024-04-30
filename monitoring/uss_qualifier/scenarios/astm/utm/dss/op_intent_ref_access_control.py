@@ -1,11 +1,24 @@
-from typing import List
+from typing import List, Dict
 
+import arrow
+
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    AirspaceUsageState,
+    UasState,
+)
+from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
+    FlightInfoTemplate,
+)
+from monitoring.monitorlib.temporal import TimeDuringTest, Time
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
+    ExpectedFlightIntent,
+    validate_flight_intent_templates,
+)
 from uas_standards.astm.f3548.v21 import api as f3548v21
-from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4DCollection
+from monitoring.monitorlib.geotemporal import Volume4DCollection, Volume4D
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -14,12 +27,6 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
 )
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
-    FlightIntent,
-)
-from monitoring.uss_qualifier.resources.flight_planning.flight_intents_resource import (
-    unpack_flight_intents,
-)
 from monitoring.uss_qualifier.resources.interuss import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -43,13 +50,8 @@ class OpIntentReferenceAccessControl(TestScenario):
     # The same DSS, available via a separate auth adapter
     _dss_separate_creds: DSSInstance
 
-    _flight1_planned: FlightIntent
-    _flight2_planned: FlightIntent
-
-    _volumes1: Volume4DCollection
-    _volumes2: Volume4DCollection
-
-    _intents_extent: f3548v21.Volume4D
+    _flight_1: FlightInfoTemplate
+    _flight_2: FlightInfoTemplate
 
     _current_ref_1: f3548v21.OperationalIntentReference
     _current_ref_2: f3548v21.OperationalIntentReference
@@ -78,43 +80,52 @@ class OpIntentReferenceAccessControl(TestScenario):
                 second_utm_auth, scopes
             )
 
+        expected_flight_intents = [
+            ExpectedFlightIntent(
+                "flight_1",
+                "Flight 1",
+                must_not_conflict_with=["Flight 2"],
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+            ),
+            ExpectedFlightIntent(
+                "flight_2",
+                "Flight 2",
+                must_not_conflict_with=["Flight 1"],
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+            ),
+        ]
+
+        templates = flight_intents.get_flight_intents()
         try:
-            (self._intents_extent, planned_flights) = unpack_flight_intents(
-                flight_intents, ["flight_1", "flight_2"]
-            )
-            self._flight1_planned = planned_flights["flight_1"]
-            self._flight2_planned = planned_flights["flight_2"]
-
-            self._volumes1 = Volume4DCollection.from_interuss_scd_api(
-                self._flight1_planned.request.operational_intent.volumes
-            )
-
-            self._volumes2 = Volume4DCollection.from_interuss_scd_api(
-                self._flight2_planned.request.operational_intent.volumes
-            )
-
-        except KeyError as e:
-            raise ValueError(
-                f"`{self.me()}` TestScenario requirements for flight_intents not met: missing flight intent {e}"
-            )
-        except AssertionError as e:
+            validate_flight_intent_templates(templates, expected_flight_intents)
+        except ValueError as e:
             raise ValueError(
                 f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
+        self._flight_1 = templates["flight_1"]
+        self._flight_2 = templates["flight_2"]
 
     def run(self, context: ExecutionContext):
+        times = {
+            TimeDuringTest.StartOfTestRun: Time(context.start_time),
+            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
+        }
         self.begin_test_scenario(context)
         self.begin_test_case("Setup")
 
         self.begin_test_step("Ensure clean workspace")
-        ws_is_clean = self._ensure_clean_workspace()
+        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        ws_is_clean = self._ensure_clean_workspace(times)
         self.end_test_step()
 
         if ws_is_clean:
             self.begin_test_step(
                 "Create operational intent references with different credentials"
             )
-            self._create_op_intents()
+            times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow())
+            self._create_op_intents(times)
             self._ensure_credentials_are_different()
             self.end_test_step()
 
@@ -127,7 +138,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 "Attempt unauthorized operational intent reference modification"
             )
 
-            self._check_mutation_on_non_owned_intent_fails()
+            self._check_mutation_on_non_owned_intent_fails(times)
 
             self.end_test_step()
             self.end_test_case()
@@ -138,6 +149,13 @@ class OpIntentReferenceAccessControl(TestScenario):
             )
 
         self.end_test_scenario()
+
+    def _get_extents(self, times: Dict[TimeDuringTest, Time]) -> Volume4D:
+        extents = Volume4DCollection()
+        for info in (self._flight_1.resolve(times), self._flight_2.resolve(times)):
+            extents.extend(info.basic_information.area)
+
+        return extents.bounding_volume
 
     def _clean_known_op_intents_ids(self):
 
@@ -161,6 +179,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         if q.response.status_code != 404:
             with self.check(
                 "Operational intent references can be searched for",
+                # TODO: This is not the appropriate check when attempting to delete an operational intent reference
                 self._pid,
             ) as check:
                 try:
@@ -211,16 +230,19 @@ class OpIntentReferenceAccessControl(TestScenario):
                         query_timestamps=[dq.request.timestamp],
                     )
 
-    def _attempt_to_delete_remaining_op_intents(self):
+    def _attempt_to_delete_remaining_op_intents(
+        self, times: Dict[TimeDuringTest, Time]
+    ):
         """Search for op intents and attempt to delete them using the main credentials"""
 
+        extent = self._get_extents(times)
         with self.check(
             "Operational intent references can be searched for",
             self._pid,
         ) as check:
             try:
                 # Also check for any potential other op_intents and delete them
-                (op_intents_1, q) = self._dss.find_op_intent(self._intents_extent)
+                (op_intents_1, q) = self._dss.find_op_intent(extent.to_f3548v21())
                 self.record_query(q)
             except QueryError as e:
                 self.record_queries(e.queries)
@@ -258,7 +280,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         ) as check:
             try:
                 (op_intents_2, q) = self._dss_separate_creds.find_op_intent(
-                    self._intents_extent
+                    extent.to_f3548v21()
                 )
                 self.record_query(q)
             except QueryError as e:
@@ -294,13 +316,15 @@ class OpIntentReferenceAccessControl(TestScenario):
                             query_timestamps=[dq.request.timestamp],
                         )
 
-    def _ensure_clean_workspace(self) -> bool:
+    def _ensure_clean_workspace(self, times: Dict[TimeDuringTest, Time]) -> bool:
         """
         Tries to provide a clean workspace. If it fails to do so and the underlying check
         has a severity below HIGH, this function will return false.
 
         It will only return true if the workspace is clean.
         """
+        extent = self._get_extents(times)
+
         # Record the subscription to help with troubleshooting in case of failures to clean-up
         self.record_note("main_credentials", self._dss.client.auth_adapter.get_sub())
         self.record_note(
@@ -310,7 +334,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         # Delete what we know about
         self._clean_known_op_intents_ids()
         # Search and attempt deleting what may be found through search
-        self._attempt_to_delete_remaining_op_intents()
+        self._attempt_to_delete_remaining_op_intents(times)
 
         with self.check(
             "Operational intent references can be searched for",
@@ -318,7 +342,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         ) as check:
             try:
                 # We can't delete anything that would be left.
-                (stray_oir, q) = self._dss.find_op_intent(self._intents_extent)
+                (stray_oir, q) = self._dss.find_op_intent(extent.to_f3548v21())
                 self.record_query(q)
             except QueryError as e:
                 self.record_queries(e.queries)
@@ -342,16 +366,17 @@ class OpIntentReferenceAccessControl(TestScenario):
 
         return True
 
-    def _create_op_intents(self):
+    def _create_op_intents(self, times: Dict[TimeDuringTest, Time]):
+        flight_1 = self._flight_1.resolve(times)
         with self.check(
             "Can create an operational intent with valid credentials", self._pid
         ) as check:
             try:
                 (self._current_ref_1, subscribers1, q1) = self._dss.put_op_intent(
                     oi_id=self._oid_1,
-                    extents=self._volumes1.to_f3548v21(),
+                    extents=flight_1.basic_information.area.to_f3548v21(),
                     key=[],
-                    state=self._flight1_planned.request.operational_intent.state,
+                    state=flight_1.get_f3548v21_op_intent_state(),
                     base_url=DUMMY_USS_BASE_URL,
                 )
                 self.record_query(q1)
@@ -364,6 +389,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                     query_timestamps=[q1.request.timestamp],
                 )
 
+        flight_2 = self._flight_2.resolve(times)
         with self.check(
             "Can create an operational intent with valid credentials", self._pid
         ) as check:
@@ -374,9 +400,9 @@ class OpIntentReferenceAccessControl(TestScenario):
                     q2,
                 ) = self._dss_separate_creds.put_op_intent(
                     oi_id=self._oid_2,
-                    extents=self._volumes2.to_f3548v21(),
+                    extents=flight_2.basic_information.area.to_f3548v21(),
                     key=[self._current_ref_1.ovn],
-                    state=self._flight2_planned.request.operational_intent.state,
+                    state=flight_2.get_f3548v21_op_intent_state(),
                     base_url=DUMMY_USS_BASE_URL,
                 )
                 self.record_query(q2)
@@ -406,7 +432,10 @@ class OpIntentReferenceAccessControl(TestScenario):
                     f" resources ({self._dss.client.auth_adapter.get_sub()}),",
                 )
 
-    def _check_mutation_on_non_owned_intent_fails(self):
+    def _check_mutation_on_non_owned_intent_fails(
+        self, times: Dict[TimeDuringTest, Time]
+    ):
+        flight_1 = self._flight_1.resolve(times)
         with self.check(
             "Non-owning credentials cannot modify operational intent",
             self._pid + self._uids,
@@ -415,9 +444,9 @@ class OpIntentReferenceAccessControl(TestScenario):
                 # Attempt to update the uss_base_url of the intent created with the main credentials using the second credentials
                 (ref, notif, q) = self._dss_separate_creds.put_op_intent(
                     oi_id=self._oid_1,
-                    extents=self._volumes1.to_f3548v21(),
+                    extents=flight_1.basic_information.area.to_f3548v21(),
                     key=[self._current_ref_2.ovn],
-                    state=self._flight1_planned.request.operational_intent.state,
+                    state=flight_1.get_f3548v21_op_intent_state(),
                     base_url=self._current_ref_1.uss_base_url + "/mutated",
                     ovn=self._current_ref_1.ovn,
                 )
@@ -445,7 +474,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 # Attempt to update the base_url of the intent created with the main credentials using the second credentials
                 (ref, notif, q) = self._dss_separate_creds.put_op_intent(
                     oi_id=self._oid_1,
-                    extents=self._volumes1.to_f3548v21(),
+                    extents=flight_1.basic_information.area.to_f3548v21(),
                     key=[self._current_ref_2.ovn],
                     state=self._current_ref_1.state,
                     base_url="https://another-url.uss/down",

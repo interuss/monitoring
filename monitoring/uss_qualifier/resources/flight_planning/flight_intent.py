@@ -43,10 +43,6 @@ class FlightIntent(ImplicitDict):
         assert_deprecated(
             legacy_callers=[
                 CallSite(
-                    "unpack_flight_intents",
-                    "monitoring/uss_qualifier/resources/flight_planning/flight_intents_resource.py",
-                ),
-                CallSite(
                     "__init__",
                     "monitoring/uss_qualifier/scenarios/astm/utm/data_exchange_validation/get_op_data_validation.py",
                 ),

@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 from typing import List, Optional, Self
 
+import arrow
 import s2sphere
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import PutSubscriptionParameters
@@ -28,7 +29,7 @@ class SubscriptionParams(ImplicitDict):
     max_alt_m: Optional[float]
     """Maximum altitude in meters"""
 
-    start_time: datetime.datetime
+    start_time: Optional[datetime.datetime] = None
     """Start time of subscription"""
 
     end_time: datetime.datetime
@@ -84,7 +85,7 @@ class SubscriptionParams(ImplicitDict):
             area_vertices=self.area_vertices,
             min_alt_m=self.min_alt_m,
             max_alt_m=self.max_alt_m,
-            start_time=self.start_time + shift,
+            start_time=self.start_time + shift if self.start_time else None,
             end_time=self.end_time + shift,
             base_url=self.base_url,
             notify_for_op_intents=self.notify_for_op_intents,

@@ -150,6 +150,15 @@ class SubscriptionSynchronization(TestScenario):
             )
         )
 
+        if second_utm_auth is not None:
+            # Build a second DSSWrapper identical to the first but with the other auth adapter
+            self._dss_separate_creds = self._dss.with_different_auth(
+                second_utm_auth, scopes_primary
+            )
+        else:
+            self._dss_separate_creds = None
+
+    def run(self, context: ExecutionContext):
         self._sub_params = self._planning_area.get_new_subscription_params(
             subscription_id=self._sub_id,
             # Set this slightly in the past: we will update the subscriptions
@@ -160,16 +169,6 @@ class SubscriptionSynchronization(TestScenario):
             notify_for_op_intents=True,
             notify_for_constraints=False,
         )
-
-        if second_utm_auth is not None:
-            # Build a second DSSWrapper identical to the first but with the other auth adapter
-            self._dss_separate_creds = self._dss.with_different_auth(
-                second_utm_auth, scopes_primary
-            )
-        else:
-            self._dss_separate_creds = None
-
-    def run(self, context: ExecutionContext):
 
         # Check that we actually have at least one other DSS to test against:
         if not self._dss_read_instances:
