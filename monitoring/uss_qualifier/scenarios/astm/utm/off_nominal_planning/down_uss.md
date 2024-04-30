@@ -49,6 +49,10 @@ Delete any leftover operational intent references created at DSS by virtual USS.
 #### 🛑 Successful operational intents cleanup check
 If the search for operational intent references or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**, respectively.
 
+### [Verify area is clear test step](../clear_area_validation.md)
+
+This scenario requires the area to have been cleared of operational intents. If it has not, this test step will raise a failed check.
+
 ## Plan Flight 1 in conflict with accepted operational intent managed by down USS test case
 This test case aims at testing requirement **[astm.f3548.v21.SCD0005](../../../../requirements/astm/f3548/v21.md)**.
 
