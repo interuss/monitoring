@@ -40,14 +40,14 @@ DSSInstanceResource that provides access to a DSS instance where:
 ### Resolve USS ID of virtual USS test step
 Make a dummy request to the DSS in order to resolve the USS ID of the virtual USS.
 
-#### Successful dummy query check
+#### 🛑 Successful dummy query check
 
 ### [Restore virtual USS availability test step](../set_uss_available.md)
 
 ### Clear operational intents created by virtual USS test step
 Delete any leftover operational intents created at DSS by virtual USS.
 
-#### Successful operational intents cleanup check
+#### 🛑 Successful operational intents cleanup check
 If the search for operational intent references or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**, respectively.
 
 ## Plan Flight 2 in conflict with activated operational intent managed by down USS test case
@@ -57,14 +57,14 @@ This test case aims at testing requirement **[astm.f3548.v21.SCD0010](../../../.
 The USS qualifier, acting as a virtual USS, creates an operational intent at the DSS with a non-working base URL.
 The objective is to make the later request by the tested USS to retrieve operational intent details to fail.
 
-#### Operational intent successfully created check
+#### 🛑 Operational intent successfully created check
 If the creation of the operational intent reference at the DSS fails, this check fails per **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 ### Virtual USS activates conflicting operational intent test step
 The USS qualifier, acting as a virtual USS, activates the operational intent previously created at the DSS with a non-working base URL.
 The objective is to make the later request by the tested USS to retrieve operational intent details to fail.
 
-#### Operational intent successfully activated check
+#### 🛑 Operational intent successfully activated check
 If the activation of the operational intent reference at the DSS fails, this check fails per **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Declare virtual USS as down at DSS test step](../set_uss_down.md)
@@ -79,12 +79,12 @@ However, since:
 The tested USS should evaluate the conflicting operational intent as having the highest priority status allowed by the local regulation.
 As such, the tested USS should reject the planning of Flight 2.
 
-#### Incorrectly planned check
-All flight intent data provided is correct and the USS should have rejected properly the planning per **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)**.
+#### 🛑 Incorrectly planned check
+All flight intent data provided is correct and the USS should have properly rejected the planning per **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)**.
 If the USS indicates that the injection attempt failed, this check will fail.
 If the USS successfully plans Flight 2 or otherwise fails to indicate a conflict, this check will fail.
 
-#### Failure check
+#### 🛑 Failure check
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
 to reject or accept Flight 2. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
@@ -101,7 +101,7 @@ This test case aims at testing requirement **[astm.f3548.v21.SCD0010](../../../.
 The USS qualifier, acting as a virtual USS, transitions to Nonconforming the operational intent previously created at the DSS with a non-working base URL.
 The objective is to make the later request by the tested USS to retrieve operational intent details to fail.
 
-#### Operational intent successfully transitioned to Nonconforming check
+#### 🛑 Operational intent successfully transitioned to Nonconforming check
 If the transition of the operational intent reference at the DSS fails, this check fails per **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Declare virtual USS as down at DSS test step](../set_uss_down.md)
@@ -116,12 +116,12 @@ However, since:
 The tested USS should evaluate the conflicting operational intent as having the highest priority status allowed by the local regulation.
 As such, the tested USS should reject the planning of Flight 2.
 
-#### Incorrectly planned check
+#### 🛑 Incorrectly planned check
 All flight intent data provided is correct and the USS should have rejected properly the planning per **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)**.
 If the USS indicates that the injection attempt failed, this check will fail.
 If the USS successfully plans Flight 2 or otherwise fails to indicate a conflict, this check will fail.
 
-#### Failure check
+#### 🛑 Failure check
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
 to reject or accept Flight 2. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
@@ -138,7 +138,7 @@ This test case aims at testing requirement **[astm.f3548.v21.SCD0010](../../../.
 The USS qualifier, acting as a virtual USS, transitions to Contingent the operational intent previously created at the DSS with a non-working base URL.
 The objective is to make the later request by the tested USS to retrieve operational intent details to fail.
 
-#### Operational intent successfully transitioned to Contingent check
+#### 🛑 Operational intent successfully transitioned to Contingent check
 If the transition of the operational intent reference at the DSS fails, this check fails per **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 ### [Declare virtual USS as down at DSS test step](../set_uss_down.md)
@@ -153,12 +153,12 @@ However, since:
 The tested USS should evaluate the conflicting operational intent as having the highest priority status allowed by the local regulation.
 As such, the tested USS should reject the planning of Flight 2.
 
-#### Incorrectly planned check
+#### 🛑 Incorrectly planned check
 All flight intent data provided is correct and the USS should have rejected properly the planning per **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)**.
 If the USS indicates that the injection attempt failed, this check will fail.
 If the USS successfully plans Flight 2 or otherwise fails to indicate a conflict, this check will fail.
 
-#### Failure check
+#### 🛑 Failure check
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
 to reject or accept Flight 2. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
@@ -167,13 +167,13 @@ to reject or accept Flight 2. If the USS indicates that the injection attempt fa
 
 
 ## Cleanup
-### Availability of virtual USS restored check
+### 🛑 Availability of virtual USS restored check
 **[astm.f3548.v21.DSS0100,1](../../../../requirements/astm/f3548/v21.md)**
 
-### Successful flight deletion check
+### 🛑 Successful flight deletion check
 Delete flights injected at USS through the flight planning interface.
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../requirements/interuss/automated_testing/flight_planning.md)**
 
-### Successful operational intents cleanup check
+### 🛑 Successful operational intents cleanup check
 Delete operational intents created at DSS by virtual USS.
 If the search for operational intent references or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**, respectively.
