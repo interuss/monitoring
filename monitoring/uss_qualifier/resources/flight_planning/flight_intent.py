@@ -3,88 +3,14 @@ from __future__ import annotations
 import json
 from typing import Optional, Dict, List
 
-import arrow
-from implicitdict import ImplicitDict, StringBasedDateTime
-
-from monitoring.monitorlib.deprecation import assert_deprecated, CallSite
-from uas_standards.interuss.automated_testing.scd.v1.api import InjectFlightRequest
+from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.monitorlib.transformations import Transformation
 from monitoring.uss_qualifier.resources.files import ExternalFile
 from monitoring.uss_qualifier.resources.overrides import apply_overrides
-
-
-class FlightIntent(ImplicitDict):
-    """DEPRECATED.  Use FlightInfoTemplate instead."""
-
-    def __init__(self, *args, **kwargs):
-        super(FlightIntent, self).__init__(*args, **kwargs)
-        assert_deprecated(
-            legacy_callers=[
-                CallSite(
-                    "from_flight_info_template",
-                    "monitoring/uss_qualifier/resources/flight_planning/flight_intent.py",
-                ),
-            ]
-        )
-
-    reference_time: StringBasedDateTime
-    """The time that all other times in the FlightInjectionAttempt are relative to. If this FlightInjectionAttempt is initiated by uss_qualifier at t_test, then each t_volume_original timestamp within test_injection should be adjusted to t_volume_adjusted such that t_volume_adjusted = t_test + planning_time when t_volume_original = reference_time"""
-
-    request: InjectFlightRequest
-    """Definition of the flight the user wants to create."""
-
-    @staticmethod
-    def from_flight_info_template(info_template: FlightInfoTemplate) -> FlightIntent:
-        assert_deprecated(
-            legacy_callers=[
-                CallSite(
-                    "__init__",
-                    "monitoring/uss_qualifier/scenarios/astm/utm/data_exchange_validation/get_op_data_validation.py",
-                ),
-                CallSite(
-                    "__init__",
-                    "monitoring/uss_qualifier/scenarios/astm/utm/flight_intent_validation/flight_intent_validation.py",
-                ),
-                CallSite(
-                    "__init__",
-                    "monitoring/uss_qualifier/scenarios/astm/utm/flight_intent_validation/flight_intent_validation.py",
-                ),
-                CallSite(
-                    "__init__",
-                    "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.py",
-                ),
-                CallSite(
-                    "__init__",
-                    "monitoring/uss_qualifier/scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.py",
-                ),
-                CallSite(
-                    "__init__",
-                    "monitoring/uss_qualifier/scenarios/astm/utm/off_nominal_planning/down_uss.py",
-                ),
-                CallSite(
-                    "__init__",
-                    "monitoring/uss_qualifier/scenarios/astm/utm/subscription_notifications/receive_notifications_for_awareness/receive_notifications_for_awareness.py",
-                ),
-                CallSite(
-                    "__init__",
-                    "monitoring/uss_qualifier/scenarios/uspace/flight_auth/validation.py",
-                ),
-            ]
-        )
-        t_now = Time(arrow.utcnow().datetime)
-        times = {
-            TimeDuringTest.StartOfTestRun: t_now,
-            TimeDuringTest.StartOfScenario: t_now,
-            TimeDuringTest.TimeOfEvaluation: t_now,
-        }  # Not strictly correct, but this class is deprecated
-        request = info_template.to_scd_inject_request(times)
-        return FlightIntent(reference_time=StringBasedDateTime(t_now), request=request)
-
 
 FlightIntentID = str
 """Identifier for a flight planning intent within a collection of flight planning intents.

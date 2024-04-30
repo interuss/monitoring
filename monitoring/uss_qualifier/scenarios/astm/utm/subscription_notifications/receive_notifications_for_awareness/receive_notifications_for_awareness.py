@@ -7,11 +7,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
 )
-from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.monitorlib.temporal import TimeDuringTest
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
-    FlightIntent,
-)
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
     ExpectedFlightIntent,
     validate_flight_intent_templates,
@@ -40,7 +36,7 @@ from uas_standards.astm.f3548.v21.constants import Scope
 import arrow
 from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
-    cleanup_flights_fp_client,
+    cleanup_flights,
     plan_flight,
     activate_flight,
     modify_planned_flight,
@@ -270,5 +266,5 @@ class ReceiveNotificationsForAwareness(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights_fp_client(self, (self.mock_uss_client, self.tested_uss_client))
+        cleanup_flights(self, (self.mock_uss_client, self.tested_uss_client))
         self.end_cleanup()

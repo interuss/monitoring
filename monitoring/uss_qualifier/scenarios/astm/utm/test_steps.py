@@ -22,9 +22,6 @@ from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
-from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
-    FlightPlanner,
-)
 from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 from monitoring.uss_qualifier.scenarios.astm.utm.evaluation import (
     validate_op_intent_details,
@@ -33,7 +30,6 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenarioType,
     TestRunCannotContinueError,
 )
-from uas_standards.interuss.automated_testing.scd.v1.api import InjectFlightRequest
 
 
 class OpIntentValidator(object):
@@ -58,7 +54,7 @@ class OpIntentValidator(object):
     def __init__(
         self,
         scenario: TestScenarioType,
-        flight_planner: Union[FlightPlanner, FlightPlannerClient],
+        flight_planner: FlightPlannerClient,
         dss: DSSInstance,
         extent: Union[Volume4D, List[Volume4D], FlightInfo, List[FlightInfo]],
         orig_oi_ref: Optional[OperationalIntentReference] = None,
@@ -71,7 +67,7 @@ class OpIntentValidator(object):
         :param orig_oi_ref: if this is validating a previously existing operational intent (e.g. modification), pass the original reference.
         """
         self._scenario: TestScenarioType = scenario
-        self._flight_planner: Union[FlightPlanner, FlightPlannerClient] = flight_planner
+        self._flight_planner: FlightPlannerClient = flight_planner
         self._dss: DSSInstance = dss
         self._orig_oi_ref: Optional[OperationalIntentReference] = orig_oi_ref
 
@@ -200,31 +196,28 @@ class OpIntentValidator(object):
 
     def expect_shared(
         self,
-        flight_intent: Union[InjectFlightRequest, FlightInfo],
+        flight_info: FlightInfo,
         skip_if_not_found: bool = False,
     ) -> Optional[OperationalIntentReference]:
         """Validate that operational intent information was correctly shared for a flight intent.
 
         This function implements the test step described in validate_shared_operational_intent.md.
 
-        :param flight_intent: the flight intent that was supposed to have been shared.
+        :param flight_info: the flight intent that was supposed to have been shared.
         :param skip_if_not_found: set to True to skip the execution of the checks if the operational intent was not found while it should have been modified.
 
         :returns: the shared operational intent reference. None if skipped because not found.
         """
-        if isinstance(flight_intent, InjectFlightRequest):
-            flight_intent = FlightInfo.from_scd_inject_flight_request(flight_intent)
-
         self._begin_step_fragment()
-        oi_ref = self._operational_intent_shared_check(flight_intent, skip_if_not_found)
+        oi_ref = self._operational_intent_shared_check(flight_info, skip_if_not_found)
         if oi_ref is None:
             return None
 
-        self._check_op_intent_reference(flight_intent, oi_ref)
-        self._check_op_intent_details(flight_intent, oi_ref)
+        self._check_op_intent_reference(flight_info, oi_ref)
+        self._check_op_intent_details(flight_info, oi_ref)
 
         # Check telemetry if intent is off-nominal
-        if flight_intent.basic_information.uas_state in {
+        if flight_info.basic_information.uas_state in {
             UasState.OffNominal,
             UasState.Contingent,
         } and self._dss.can_use_scope(
@@ -236,7 +229,7 @@ class OpIntentValidator(object):
 
     def expect_shared_with_invalid_data(
         self,
-        flight_intent: Union[InjectFlightRequest, FlightInfo],
+        flight_info: FlightInfo,
         validation_failure_type: OpIntentValidationFailureType,
         invalid_fields: Optional[List] = None,
         skip_if_not_found: bool = False,
@@ -252,11 +245,8 @@ class OpIntentValidator(object):
 
         :returns: the shared operational intent reference. None if skipped because not found.
         """
-        if isinstance(flight_intent, InjectFlightRequest):
-            flight_intent = FlightInfo.from_scd_inject_flight_request(flight_intent)
-
         self._begin_step_fragment()
-        oi_ref = self._operational_intent_shared_check(flight_intent, skip_if_not_found)
+        oi_ref = self._operational_intent_shared_check(flight_info, skip_if_not_found)
         if oi_ref is None:
             return None
 

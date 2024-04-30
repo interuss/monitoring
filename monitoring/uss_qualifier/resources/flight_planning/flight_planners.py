@@ -13,7 +13,6 @@ from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlannerConfiguration,
-    FlightPlanner,
 )
 
 
@@ -22,7 +21,6 @@ class FlightPlannerSpecification(ImplicitDict):
 
 
 class FlightPlannerResource(Resource[FlightPlannerSpecification]):
-    flight_planner: FlightPlanner
     client: FlightPlannerClient
     participant_id: ParticipantID
 
@@ -57,9 +55,6 @@ class FlightPlannerResource(Resource[FlightPlannerSpecification]):
                 "The means by which to interact with the flight planner is not currently supported in FlightPlannerResource (neither scd_injection_base_url nor v1_base_url were specified)"
             )
 
-        self.flight_planner = FlightPlanner(
-            specification.flight_planner, auth_adapter.adapter
-        )
         self.client = specification.flight_planner.to_client(auth_adapter.adapter)
         self.participant_id = specification.flight_planner.participant_id
 
@@ -108,9 +103,7 @@ class FlightPlannerCombinationSelectorResource(
     def is_valid_combination(
         self, flight_planners: Dict[ResourceID, FlightPlannerResource]
     ):
-        participants = [
-            p.flight_planner.participant_id for p in flight_planners.values()
-        ]
+        participants = [p.participant_id for p in flight_planners.values()]
 
         # Apply must_include criteria
         if "must_include" in self._specification:

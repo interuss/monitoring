@@ -21,9 +21,6 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
 )
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
-    FlightIntent,
-)
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
     ExpectedFlightIntent,
     validate_flight_intent_templates,
@@ -31,7 +28,6 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
-from monitoring.monitorlib.geotemporal import Volume4DCollection
 
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
@@ -55,7 +51,7 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioCannotContinueError,
 )
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
-    cleanup_flights_fp_client,
+    cleanup_flights,
     plan_flight,
     delete_flight,
     submit_flight,
@@ -371,5 +367,5 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights_fp_client(self, (self.mock_uss_client, self.tested_uss_client)),
+        cleanup_flights(self, (self.mock_uss_client, self.tested_uss_client)),
         self.end_cleanup()

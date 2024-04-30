@@ -4,6 +4,7 @@ from typing import Dict
 import arrow
 from implicitdict import StringBasedTimeDelta
 
+from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
@@ -33,9 +34,6 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
 )
-from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
-    FlightPlanner,
-)
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
@@ -47,7 +45,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     submit_flight,
     plan_flight,
     delete_flight,
-    cleanup_flights_fp_client,
+    cleanup_flights,
 )
 
 
@@ -63,7 +61,7 @@ class FlightIntentValidation(TestScenario):
 
     valid_conflict_tiny_overlap: FlightInfoTemplate
 
-    tested_uss: FlightPlanner
+    tested_uss: FlightPlannerClient
     dss: DSSInstance
 
     def __init__(
@@ -73,7 +71,7 @@ class FlightIntentValidation(TestScenario):
         dss: DSSInstanceResource,
     ):
         super().__init__()
-        self.tested_uss = tested_uss.flight_planner
+        self.tested_uss = tested_uss.client
         self.dss = dss.get_instance(
             {
                 Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities"
@@ -147,7 +145,7 @@ class FlightIntentValidation(TestScenario):
         self.begin_test_scenario(context)
         self.record_note(
             "Tested USS",
-            f"{self.tested_uss.config.participant_id}",
+            f"{self.tested_uss.participant_id}",
         )
 
         self.begin_test_case("Attempt to plan invalid flights")
@@ -181,7 +179,7 @@ class FlightIntentValidation(TestScenario):
                     (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned)
                 },
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
-                flight_planner=self.tested_uss.client,
+                flight_planner=self.tested_uss,
                 flight_info=invalid_too_far_away,
             )
 
@@ -204,7 +202,7 @@ class FlightIntentValidation(TestScenario):
                     (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned)
                 },
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
-                flight_planner=self.tested_uss.client,
+                flight_planner=self.tested_uss,
                 flight_info=invalid_recently_ended,
                 may_end_in_past=True,
             )
@@ -224,7 +222,7 @@ class FlightIntentValidation(TestScenario):
         ) as planned_validator:
             _, flight_id = plan_flight(
                 self,
-                self.tested_uss.client,
+                self.tested_uss,
                 valid_flight,
             )
             oi_ref = planned_validator.expect_shared(valid_flight)
@@ -237,7 +235,7 @@ class FlightIntentValidation(TestScenario):
             self.dss,
             valid_flight,
         ) as cancelled_validator:
-            _ = delete_flight(self, self.tested_uss.client, flight_id)
+            _ = delete_flight(self, self.tested_uss, flight_id)
             cancelled_validator.expect_removed(oi_ref.id)
         self.end_test_step()
 
@@ -247,7 +245,7 @@ class FlightIntentValidation(TestScenario):
 
         plan_flight(
             self,
-            self.tested_uss.client,
+            self.tested_uss,
             valid_flight,
         )
         self.end_test_step()
@@ -270,7 +268,7 @@ class FlightIntentValidation(TestScenario):
                     (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned)
                 },
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
-                flight_planner=self.tested_uss.client,
+                flight_planner=self.tested_uss,
                 flight_info=valid_conflict_tiny_overlap,
             )
 
@@ -279,5 +277,5 @@ class FlightIntentValidation(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights_fp_client(self, [self.tested_uss.client])
+        cleanup_flights(self, [self.tested_uss])
         self.end_cleanup()
