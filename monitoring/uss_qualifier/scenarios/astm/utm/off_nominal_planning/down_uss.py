@@ -3,7 +3,7 @@ from typing import Dict, Optional
 import arrow
 
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4DCollection
+from monitoring.monitorlib.geotemporal import Volume4DCollection, Volume4D
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentState,
@@ -27,6 +27,9 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
+)
+from monitoring.uss_qualifier.scenarios.astm.utm.clear_area_validation import (
+    validate_clear_area,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     OpIntentValidator,
@@ -160,6 +163,15 @@ class DownUSS(TestScenario):
 
         self.begin_test_step("Clear operational intents created by virtual USS")
         self._clear_op_intents()
+        self.end_test_step()
+
+        self.begin_test_step("Verify area is clear")
+        validate_clear_area(
+            self,
+            self.dss,
+            [Volume4D.from_f3548v21(self._intents_extent)],
+            ignore_self=True,
+        )
         self.end_test_step()
 
     def _put_conflicting_op_intent_step(
