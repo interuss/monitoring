@@ -65,8 +65,6 @@ class SubscriptionParams(ImplicitDict):
             A dict to be passed as the request body when calling the subscription creation or update API.
 
         """
-        if not self.start_time:
-            self.start_time = arrow.utcnow().datetime
         return mutate.build_upsert_subscription_params(
             area_vertices=area,
             start_time=self.start_time,

@@ -124,7 +124,7 @@ def upsert_subscription(
 
 def build_upsert_subscription_params(
     area_vertices: s2sphere.LatLngRect,
-    start_time: datetime.datetime,
+    start_time: Optional[datetime.datetime],
     end_time: datetime.datetime,
     base_url: str,
     notify_for_op_intents: bool,
