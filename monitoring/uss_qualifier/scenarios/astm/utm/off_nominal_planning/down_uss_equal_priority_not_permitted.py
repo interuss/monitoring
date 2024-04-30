@@ -1,15 +1,24 @@
-from typing import Dict
+from typing import Dict, List
 
+import arrow
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentState,
     OperationalIntentReference,
 )
-from uas_standards.interuss.automated_testing.scd.v1.api import (
-    InjectFlightResponseResult,
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    AirspaceUsageState,
+    UasState,
 )
-
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
-    FlightIntent,
+from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
+    FlightInfoTemplate,
+)
+from monitoring.monitorlib.clients.flight_planning.planning import (
+    PlanningActivityResult,
+    FlightPlanStatus,
+)
+from monitoring.monitorlib.temporal import TimeDuringTest, Time
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
+    ExpectedFlightIntent,
 )
 
 from monitoring.uss_qualifier.scenarios.astm.utm import DownUSS
@@ -19,33 +28,31 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     set_uss_available,
 )
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
-    submit_flight_intent,
+    submit_flight,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class DownUSSEqualPriorityNotPermitted(DownUSS):
-    flight2_planned: FlightIntent
+    flight2_planned: FlightInfoTemplate
 
-    def _parse_flight_intents(self, flight_intents: Dict[str, FlightIntent]) -> None:
-        try:
-            self.flight2_planned = flight_intents["flight2_planned"]
-
-            assert (
-                self.flight2_planned.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "flight2_planned must have state Accepted"
-
-        except KeyError as e:
-            raise ValueError(
-                f"`{self.me()}` TestScenario requirements for flight_intents not met: missing flight intent {e}"
+    @property
+    def _expected_flight_intents(self) -> List[ExpectedFlightIntent]:
+        return [
+            ExpectedFlightIntent(
+                "flight2_planned",
+                "Flight 2",
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
             )
-        except AssertionError as e:
-            raise ValueError(
-                f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
-            )
+        ]
 
     def run(self, context: ExecutionContext):
+        self.times = {
+            TimeDuringTest.StartOfTestRun: Time(context.start_time),
+            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
+        }
+
         self.begin_test_scenario(context)
 
         self.record_note(
@@ -80,13 +87,14 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
     def _plan_flight_conflict_activated(self) -> OperationalIntentReference:
 
         # Virtual USS creates conflicting operational intent test step
+        flight2_planned = self.resolve_flight(self.flight2_planned)
         oi_ref = self._put_conflicting_op_intent_step(
-            self.flight2_planned, OperationalIntentState.Accepted
+            flight2_planned, OperationalIntentState.Accepted
         )
 
         # Virtual USS activates conflicting operational intent test step
         oi_ref = self._put_conflicting_op_intent_step(
-            self.flight2_planned, OperationalIntentState.Activated, oi_ref
+            flight2_planned, OperationalIntentState.Activated, oi_ref
         )
 
         # Declare virtual USS as down at DSS test step
@@ -100,20 +108,17 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
             self,
             self.tested_uss,
             self.dss,
-            self._intents_extent,
+            flight2_planned,
         ) as validator:
-            submit_flight_intent(
-                self,
-                "Incorrectly planned",
-                {
-                    InjectFlightResponseResult.Rejected,
-                    InjectFlightResponseResult.ConflictWithFlight,
+            submit_flight(
+                scenario=self,
+                success_check="Incorrectly planned",
+                expected_results={
+                    (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned),
                 },
-                {
-                    InjectFlightResponseResult.Failed: "Failure",
-                },
-                self.tested_uss,
-                self.flight2_planned.request,
+                failed_checks={PlanningActivityResult.Failed: "Failure"},
+                flight_planner=self.tested_uss.client,
+                flight_info=flight2_planned,
             )
 
             validator.expect_not_shared()
@@ -131,8 +136,9 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
     ) -> OperationalIntentReference:
 
         # Virtual USS transitions to Nonconforming conflicting operational intent test step
+        flight2_planned = self.resolve_flight(self.flight2_planned)
         oi_ref = self._put_conflicting_op_intent_step(
-            self.flight2_planned, OperationalIntentState.Nonconforming, oi_ref
+            flight2_planned, OperationalIntentState.Nonconforming, oi_ref
         )
 
         # Declare virtual USS as down at DSS test step
@@ -146,20 +152,17 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
             self,
             self.tested_uss,
             self.dss,
-            self._intents_extent,
+            flight2_planned,
         ) as validator:
-            submit_flight_intent(
-                self,
-                "Incorrectly planned",
-                {
-                    InjectFlightResponseResult.Rejected,
-                    InjectFlightResponseResult.ConflictWithFlight,
+            submit_flight(
+                scenario=self,
+                success_check="Incorrectly planned",
+                expected_results={
+                    (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned),
                 },
-                {
-                    InjectFlightResponseResult.Failed: "Failure",
-                },
-                self.tested_uss,
-                self.flight2_planned.request,
+                failed_checks={PlanningActivityResult.Failed: "Failure"},
+                flight_planner=self.tested_uss.client,
+                flight_info=flight2_planned,
             )
 
             validator.expect_not_shared()
@@ -175,8 +178,9 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
     def _plan_flight_conflict_contingent(self, oi_ref: OperationalIntentReference):
 
         # Virtual USS transitions to Contingent conflicting operational intent test step
+        flight2_planned = self.resolve_flight(self.flight2_planned)
         self._put_conflicting_op_intent_step(
-            self.flight2_planned, OperationalIntentState.Contingent, oi_ref
+            flight2_planned, OperationalIntentState.Contingent, oi_ref
         )
 
         # Declare virtual USS as down at DSS test step
@@ -190,20 +194,17 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
             self,
             self.tested_uss,
             self.dss,
-            self._intents_extent,
+            flight2_planned,
         ) as validator:
-            submit_flight_intent(
-                self,
-                "Incorrectly planned",
-                {
-                    InjectFlightResponseResult.Rejected,
-                    InjectFlightResponseResult.ConflictWithFlight,
+            submit_flight(
+                scenario=self,
+                success_check="Incorrectly planned",
+                expected_results={
+                    (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned),
                 },
-                {
-                    InjectFlightResponseResult.Failed: "Failure",
-                },
-                self.tested_uss,
-                self.flight2_planned.request,
+                failed_checks={PlanningActivityResult.Failed: "Failure"},
+                flight_planner=self.tested_uss.client,
+                flight_info=flight2_planned,
             )
 
             validator.expect_not_shared()

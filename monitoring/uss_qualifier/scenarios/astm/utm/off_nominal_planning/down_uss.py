@@ -1,26 +1,35 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 import arrow
 
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    AirspaceUsageState,
+    UasState,
+    FlightInfo,
+)
+from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
+    FlightInfoTemplate,
+)
+from monitoring.monitorlib.clients.flight_planning.planning import (
+    PlanningActivityResult,
+    FlightPlanStatus,
+)
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4DCollection, Volume4D
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentState,
     OperationalIntentReference,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
-from uas_standards.interuss.automated_testing.scd.v1.api import (
-    InjectFlightResponseResult,
-)
 
+from monitoring.monitorlib.temporal import TimeDuringTest, Time
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
 )
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
-    FlightIntent,
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
+    ExpectedFlightIntent,
+    validate_flight_intent_templates,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlanner,
@@ -38,14 +47,16 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
-    cleanup_flights,
-    submit_flight_intent,
+    submit_flight,
+    cleanup_flights_fp_client,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class DownUSS(TestScenario):
-    flight1_planned: FlightIntent
+    times: Dict[TimeDuringTest, Time]
+
+    flight1_planned: FlightInfoTemplate
 
     uss_qualifier_sub: str
 
@@ -67,55 +78,40 @@ class DownUSS(TestScenario):
             }
         )
 
-        _flight_intents: Dict[str, FlightIntent] = {
-            k: FlightIntent.from_flight_info_template(v)
-            for k, v in flight_intents.get_flight_intents().items()
-        }
-
-        extents = []
-        for intent in _flight_intents.values():
-            extents.extend(intent.request.operational_intent.volumes)
-            extents.extend(intent.request.operational_intent.off_nominal_volumes)
-        self._intents_extent = Volume4DCollection.from_interuss_scd_api(
-            extents
-        ).bounding_volume.to_f3548v21()
-
-        now = arrow.utcnow().datetime
-        for intent_name, intent in _flight_intents.items():
-            if (
-                intent.request.operational_intent.state
-                == OperationalIntentState.Activated
-            ):
-                if not Volume4DCollection.from_interuss_scd_api(
-                    intent.request.operational_intent.volumes
-                    + intent.request.operational_intent.off_nominal_volumes
-                ).has_active_volume(now):
-                    err_msg = f"at least one volume of activated intent {intent_name} must be active now (now is {now})"
-                    raise ValueError(
-                        f"`{self.me()}` TestScenario requirements for flight_intents not met: {err_msg}"
-                    )
-
-        self._parse_flight_intents(_flight_intents)
-
-    def _parse_flight_intents(self, flight_intents: Dict[str, FlightIntent]) -> None:
+        templates = flight_intents.get_flight_intents()
         try:
-            self.flight1_planned = flight_intents["flight1_planned"]
-
-            assert (
-                self.flight1_planned.request.operational_intent.state
-                == OperationalIntentState.Accepted
-            ), "flight1_planned must have state Accepted"
-
-        except KeyError as e:
-            raise ValueError(
-                f"`{self.me()}` TestScenario requirements for flight_intents not met: missing flight intent {e}"
+            self._intents_extent = validate_flight_intent_templates(
+                templates, self._expected_flight_intents
             )
-        except AssertionError as e:
+        except ValueError as e:
             raise ValueError(
                 f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
 
+        for efi in self._expected_flight_intents:
+            setattr(self, efi.intent_id, templates[efi.intent_id])
+
+    @property
+    def _expected_flight_intents(self) -> List[ExpectedFlightIntent]:
+        return [
+            ExpectedFlightIntent(
+                "flight1_planned",
+                "Flight 1",
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+            )
+        ]
+
+    def resolve_flight(self, flight_template: FlightInfoTemplate) -> FlightInfo:
+        self.times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        return flight_template.resolve(self.times)
+
     def run(self, context: ExecutionContext):
+        self.times = {
+            TimeDuringTest.StartOfTestRun: Time(context.start_time),
+            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
+        }
+
         self.begin_test_scenario(context)
 
         self.record_note(
@@ -140,7 +136,9 @@ class DownUSS(TestScenario):
         self.begin_test_step("Resolve USS ID of virtual USS")
         with self.check("Successful dummy query", [self.dss.participant_id]) as check:
             try:
-                _, dummy_query = self.dss.find_op_intent(self._intents_extent)
+                _, dummy_query = self.dss.find_op_intent(
+                    self._intents_extent.to_f3548v21()
+                )
                 self.record_query(dummy_query)
             except QueryError as e:
                 self.record_queries(e.queries)
@@ -169,14 +167,14 @@ class DownUSS(TestScenario):
         validate_clear_area(
             self,
             self.dss,
-            [Volume4D.from_f3548v21(self._intents_extent)],
+            [self._intents_extent],
             ignore_self=True,
         )
         self.end_test_step()
 
     def _put_conflicting_op_intent_step(
         self,
-        conflicting_intent: FlightIntent,
+        conflicting_flight: FlightInfo,
         target_state: OperationalIntentState,
         old_op_intent: Optional[OperationalIntentReference] = None,
     ) -> OperationalIntentReference:
@@ -211,9 +209,7 @@ class DownUSS(TestScenario):
         ) as check:
             try:
                 oi_ref, _, query = self.dss.put_op_intent(
-                    Volume4DCollection.from_interuss_scd_api(
-                        conflicting_intent.request.operational_intent.volumes
-                    ).to_f3548v21(),
+                    conflicting_flight.basic_information.area.to_f3548v21(),
                     key,
                     target_state,
                     "https://fake.uss/down",
@@ -235,8 +231,9 @@ class DownUSS(TestScenario):
     def _plan_flight_conflict_planned(self):
 
         # Virtual USS creates conflicting operational intent test step
+        flight1_planned = self.resolve_flight(self.flight1_planned)
         self._put_conflicting_op_intent_step(
-            self.flight1_planned, OperationalIntentState.Accepted
+            flight1_planned, OperationalIntentState.Accepted
         )
 
         # Declare virtual USS as down at DSS test step
@@ -250,30 +247,24 @@ class DownUSS(TestScenario):
             self,
             self.tested_uss,
             self.dss,
-            self._intents_extent,
+            flight1_planned,
         ) as validator:
-            resp, flight_id, _ = submit_flight_intent(
-                self,
-                "Successful planning",
-                {
-                    InjectFlightResponseResult.Planned,
-                    # the following two results are considered expected in order to fail another check as low severity
-                    InjectFlightResponseResult.Rejected,
-                    InjectFlightResponseResult.ConflictWithFlight,
+            resp, flight_id = submit_flight(
+                scenario=self,
+                success_check="Successful planning",
+                expected_results={
+                    (PlanningActivityResult.Completed, FlightPlanStatus.Planned),
+                    # the following result is considered expected in order to fail another check as low severity
+                    (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned),
                 },
-                {
-                    InjectFlightResponseResult.Failed: "Failure",
-                },
-                self.tested_uss,
-                self.flight1_planned.request,
+                failed_checks={PlanningActivityResult.Failed: "Failure"},
+                flight_planner=self.tested_uss.client,
+                flight_info=flight1_planned,
             )
 
-            if resp.result == InjectFlightResponseResult.Planned:
-                validator.expect_shared(self.flight1_planned.request)
-            elif (
-                resp.result == InjectFlightResponseResult.Rejected
-                or resp.result == InjectFlightResponseResult.ConflictWithFlight
-            ):
+            if resp.activity_result == PlanningActivityResult.Completed:
+                validator.expect_shared(flight1_planned)
+            elif resp.activity_result == PlanningActivityResult.Rejected:
                 with self.check(
                     "Rejected planning", [self.tested_uss.participant_id]
                 ) as check:
@@ -295,7 +286,9 @@ class DownUSS(TestScenario):
             "Successful operational intents cleanup", [self.dss.participant_id]
         ) as check:
             try:
-                oi_refs, find_query = self.dss.find_op_intent(self._intents_extent)
+                oi_refs, find_query = self.dss.find_op_intent(
+                    self._intents_extent.to_f3548v21()
+                )
                 self.record_query(find_query)
             except QueryError as e:
                 self.record_queries(e.queries)
@@ -343,7 +336,7 @@ class DownUSS(TestScenario):
                     query_timestamps=[avail_query.request.timestamp],
                 )
 
-        cleanup_flights(self, [self.tested_uss])
+        cleanup_flights_fp_client(self, [self.tested_uss.client])
         self._clear_op_intents()
 
         self.end_cleanup()

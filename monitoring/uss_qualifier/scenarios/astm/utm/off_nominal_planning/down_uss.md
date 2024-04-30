@@ -14,14 +14,14 @@ FlightIntentsResource that provides the following flight intents:
   <tr>
     <th>Flight intent ID</th>
     <th>Flight name</th>
-    <th>Priority</th>
-    <th>State</th><!-- TODO: Update with usage_state and uas_state when new flight planning API is adopted -->
+    <th>Usage State</th>
+    <th>UAS State</th>
   </tr>
   <tr>
     <td><code>flight1_planned</code></td>
     <td>Flight 1</td>
-    <td>Any</td>
-    <td>Accepted</td>
+    <td>Planned</td>
+    <td>Nominal</td>
   </tr>
 </table>
 
