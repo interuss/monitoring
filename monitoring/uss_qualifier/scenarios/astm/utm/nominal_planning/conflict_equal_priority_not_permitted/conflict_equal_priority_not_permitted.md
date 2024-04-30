@@ -222,7 +222,7 @@ execution will stop without failing.
 All flight intent data provided is correct, therefore it should have been
 transitioned to non-conforming state by the USS
 per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
-If the USS indicates a conflict, this check will fail. If the USS indicates that the injection attempt failed, this check will fail.
+If the USS rejects the transition, this check will fail.
 
 #### 🛑 Failure check
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
