@@ -30,7 +30,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     submit_flight,
-    cleanup_flights_fp_client,
+    cleanup_flights,
     plan_flight,
 )
 
@@ -154,5 +154,5 @@ class Validation(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights_fp_client(self, [self.ussp])
+        cleanup_flights(self, [self.ussp])
         self.end_cleanup()

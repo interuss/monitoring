@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import List
 
 import arrow
 from uas_standards.astm.f3548.v21.api import (
@@ -57,7 +57,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
 
         self.record_note(
             "Tested USS",
-            f"{self.tested_uss.config.participant_id}",
+            f"{self.tested_uss.participant_id}",
         )
 
         self.begin_test_case("Setup")
@@ -117,7 +117,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                     (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned),
                 },
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
-                flight_planner=self.tested_uss.client,
+                flight_planner=self.tested_uss,
                 flight_info=flight2_planned,
             )
 
@@ -161,7 +161,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                     (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned),
                 },
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
-                flight_planner=self.tested_uss.client,
+                flight_planner=self.tested_uss,
                 flight_info=flight2_planned,
             )
 
@@ -203,7 +203,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                     (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned),
                 },
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
-                flight_planner=self.tested_uss.client,
+                flight_planner=self.tested_uss,
                 flight_info=flight2_planned,
             )
 

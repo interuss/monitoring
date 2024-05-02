@@ -1,11 +1,10 @@
-from typing import Dict, List
+from typing import Dict
 
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
-from monitoring.monitorlib.geotemporal import Volume4DCollection
 
 from monitoring.uss_qualifier.resources.files import load_dict
 from monitoring.uss_qualifier.resources.resource import Resource
@@ -13,7 +12,6 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntentCollection,
     FlightIntentsSpecification,
     FlightIntentID,
-    FlightIntent,
 )
 
 

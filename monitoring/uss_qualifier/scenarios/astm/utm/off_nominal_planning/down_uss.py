@@ -2,6 +2,7 @@ from typing import Dict, Optional, List
 
 import arrow
 
+from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
@@ -31,9 +32,6 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation
     ExpectedFlightIntent,
     validate_flight_intent_templates,
 )
-from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
-    FlightPlanner,
-)
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
@@ -48,7 +46,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     submit_flight,
-    cleanup_flights_fp_client,
+    cleanup_flights,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
@@ -60,7 +58,7 @@ class DownUSS(TestScenario):
 
     uss_qualifier_sub: str
 
-    tested_uss: FlightPlanner
+    tested_uss: FlightPlannerClient
     dss: DSSInstance
 
     def __init__(
@@ -70,7 +68,7 @@ class DownUSS(TestScenario):
         dss: DSSInstanceResource,
     ):
         super().__init__()
-        self.tested_uss = tested_uss.flight_planner
+        self.tested_uss = tested_uss.client
         self.dss = dss.get_instance(
             {
                 Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities and retrieve operational intent details",
@@ -116,7 +114,7 @@ class DownUSS(TestScenario):
 
         self.record_note(
             "Tested USS",
-            f"{self.tested_uss.config.participant_id}",
+            f"{self.tested_uss.participant_id}",
         )
 
         self.begin_test_case("Setup")
@@ -258,7 +256,7 @@ class DownUSS(TestScenario):
                     (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned),
                 },
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
-                flight_planner=self.tested_uss.client,
+                flight_planner=self.tested_uss,
                 flight_info=flight1_planned,
             )
 
@@ -336,7 +334,7 @@ class DownUSS(TestScenario):
                     query_timestamps=[avail_query.request.timestamp],
                 )
 
-        cleanup_flights_fp_client(self, [self.tested_uss.client])
+        cleanup_flights(self, [self.tested_uss])
         self._clear_op_intents()
 
         self.end_cleanup()

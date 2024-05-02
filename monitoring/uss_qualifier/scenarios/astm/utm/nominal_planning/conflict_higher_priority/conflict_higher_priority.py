@@ -2,6 +2,7 @@ from typing import Optional, Tuple, Dict
 
 import arrow
 
+from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
@@ -29,9 +30,6 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
 )
-from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
-    FlightPlanner,
-)
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
@@ -50,7 +48,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     delete_flight,
     activate_flight,
     modify_activated_flight,
-    cleanup_flights_fp_client,
+    cleanup_flights,
 )
 
 
@@ -70,8 +68,8 @@ class ConflictHigherPriority(TestScenario):
     flight2_activated: FlightInfoTemplate
     flight2m_activated: FlightInfoTemplate
 
-    tested_uss: FlightPlanner
-    control_uss: FlightPlanner
+    tested_uss: FlightPlannerClient
+    control_uss: FlightPlannerClient
     dss: DSSInstance
 
     def __init__(
@@ -82,8 +80,8 @@ class ConflictHigherPriority(TestScenario):
         dss: DSSInstanceResource,
     ):
         super().__init__()
-        self.tested_uss = tested_uss.flight_planner
-        self.control_uss = control_uss.flight_planner
+        self.tested_uss = tested_uss.client
+        self.control_uss = control_uss.client
         self.dss = dss.get_instance(
             {
                 Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities and retrieve operational intent details"
@@ -180,11 +178,11 @@ class ConflictHigherPriority(TestScenario):
 
         self.record_note(
             "Tested USS",
-            f"{self.tested_uss.config.participant_id}",
+            f"{self.tested_uss.participant_id}",
         )
         self.record_note(
             "Control USS",
-            f"{self.control_uss.config.participant_id}",
+            f"{self.control_uss.participant_id}",
         )
 
         self.begin_test_case("Attempt to plan flight in conflict")
@@ -232,7 +230,7 @@ class ConflictHigherPriority(TestScenario):
         ) as validator:
             _, self.flight2_id = plan_flight(
                 self,
-                self.control_uss.client,
+                self.control_uss,
                 flight2_planned,
             )
             validator.expect_shared(flight2_planned)
@@ -249,14 +247,14 @@ class ConflictHigherPriority(TestScenario):
         ) as validator:
             plan_priority_conflict_flight(
                 self,
-                self.tested_uss.client,
+                self.tested_uss,
                 flight1_planned,
             )
             validator.expect_not_shared()
         self.end_test_step()
 
         self.begin_test_step("Delete Flight 2")
-        _ = delete_flight(self, self.control_uss.client, self.flight2_id)
+        _ = delete_flight(self, self.control_uss, self.flight2_id)
         self.flight2_id = None
         self.end_test_step()
 
@@ -274,7 +272,7 @@ class ConflictHigherPriority(TestScenario):
         ) as validator:
             _, self.flight1_id = plan_flight(
                 self,
-                self.tested_uss.client,
+                self.tested_uss,
                 flight1_planned,
             )
             flight_1_oi_ref = validator.expect_shared(flight1_planned)
@@ -291,7 +289,7 @@ class ConflictHigherPriority(TestScenario):
         ) as validator:
             _, self.flight2_id = plan_flight(
                 self,
-                self.control_uss.client,
+                self.control_uss,
                 flight2_planned,
             )
             validator.expect_shared(flight2_planned)
@@ -309,7 +307,7 @@ class ConflictHigherPriority(TestScenario):
         ) as validator:
             modify_planned_priority_conflict_flight(
                 self,
-                self.tested_uss.client,
+                self.tested_uss,
                 flight1m_planned,
                 self.flight1_id,
             )
@@ -337,7 +335,7 @@ class ConflictHigherPriority(TestScenario):
         ) as validator:
             activate_priority_conflict_flight(
                 self,
-                self.tested_uss.client,
+                self.tested_uss,
                 flight1_activated,
                 self.flight1_id,
             )
@@ -352,7 +350,7 @@ class ConflictHigherPriority(TestScenario):
         self, flight_1_oi_ref: Optional[OperationalIntentReference]
     ) -> Tuple[FlightInfo, OperationalIntentReference, OperationalIntentReference]:
         self.begin_test_step("Delete Flight 2")
-        _ = delete_flight(self, self.control_uss.client, self.flight2_id)
+        _ = delete_flight(self, self.control_uss, self.flight2_id)
         self.flight2_id = None
         self.end_test_step()
 
@@ -368,7 +366,7 @@ class ConflictHigherPriority(TestScenario):
         ) as validator:
             activate_flight(
                 self,
-                self.tested_uss.client,
+                self.tested_uss,
                 flight1_activated,
                 self.flight1_id,
             )
@@ -386,7 +384,7 @@ class ConflictHigherPriority(TestScenario):
         ) as validator:
             _, self.flight2_id = plan_flight(
                 self,
-                self.control_uss.client,
+                self.control_uss,
                 flight2_planned,
             )
             flight_2_oi_ref = validator.expect_shared(flight2_planned)
@@ -404,7 +402,7 @@ class ConflictHigherPriority(TestScenario):
         ) as validator:
             activate_flight(
                 self,
-                self.control_uss.client,
+                self.control_uss,
                 flight2_activated,
                 self.flight2_id,
             )
@@ -425,7 +423,7 @@ class ConflictHigherPriority(TestScenario):
         ) as validator:
             resp = modify_activated_flight(
                 self,
-                self.tested_uss.client,
+                self.tested_uss,
                 flight1m_activated,
                 self.flight1_id,
                 preexisting_conflict=True,
@@ -460,7 +458,7 @@ class ConflictHigherPriority(TestScenario):
         ) as validator:
             modify_activated_flight(
                 self,
-                self.control_uss.client,
+                self.control_uss,
                 flight2m_activated,
                 self.flight2_id,
             )
@@ -479,7 +477,7 @@ class ConflictHigherPriority(TestScenario):
         ) as validator:
             modify_activated_priority_conflict_flight(
                 self,
-                self.tested_uss.client,
+                self.tested_uss,
                 flight1c_activated,
                 self.flight1_id,
             )
@@ -491,7 +489,5 @@ class ConflictHigherPriority(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights_fp_client(
-            self, (self.control_uss.client, self.tested_uss.client)
-        )
+        cleanup_flights(self, (self.control_uss, self.tested_uss))
         self.end_cleanup()

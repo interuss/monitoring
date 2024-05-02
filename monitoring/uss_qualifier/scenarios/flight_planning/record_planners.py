@@ -16,7 +16,7 @@ class RecordPlanners(TestScenario):
         self.record_note(
             "Available flight planners",
             "\n".join(
-                f"* {fp.config.participant_id}: {fp.config.scd_injection_base_url}"
+                f"* {fp.participant_id}: {fp.client.get_base_url()}"
                 for fp in self._flight_planners.flight_planners
             ),
         )
