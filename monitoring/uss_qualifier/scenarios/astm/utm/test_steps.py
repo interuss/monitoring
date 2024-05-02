@@ -220,6 +220,7 @@ class OpIntentValidator(object):
         if oi_ref is None:
             return None
 
+        self._check_op_intent_reference(flight_intent, oi_ref)
         self._check_op_intent_details(flight_intent, oi_ref)
 
         # Check telemetry if intent is off-nominal
@@ -377,6 +378,20 @@ class OpIntentValidator(object):
                 oi_ref = self._new_oi_ref
 
         return oi_ref
+
+    def _check_op_intent_reference(
+        self, flight_intent: FlightInfo, oi_ref: OperationalIntentReference
+    ):
+        with self._scenario.check(
+            "Operational intent state is correct",
+            [self._flight_planner.participant_id],
+        ) as check:
+            if flight_intent.get_f3548v21_op_intent_state() != oi_ref.state:
+                check.record_failed(
+                    summary="Operational intent state does not match user's flight intent",
+                    details=f"Expected state {flight_intent.get_f3548v21_op_intent_state()} but got state {oi_ref.state}",
+                    query_timestamps=[self._after_query.request.timestamp],
+                )
 
     def _check_op_intent_details(
         self, flight_intent: FlightInfo, oi_ref: OperationalIntentReference

@@ -17,6 +17,10 @@ If an activated operational intent is expected to exist after it has been modifi
 in the DSS, this means that there is an active flight without a corresponding operational intent, then this check will
 fail per **[interuss.automated_testing.flight_planning.FlightCoveredByOperationalIntent](../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
+## 🛑 Operational intent state is correct check
+
+If the state of the operational intent found in the DSS does not match the user's flight intent, this check will fail per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../requirements/interuss/automated_testing/flight_planning.md)**.
+
 ## 🛑 Operational intent details retrievable check
 
 If the operational intent details for the flight cannot be retrieved from the USS, this check will fail per **[astm.f3548.v21.USS0105](../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.OPIN0025](../../../requirements/astm/f3548/v21.md)**.
