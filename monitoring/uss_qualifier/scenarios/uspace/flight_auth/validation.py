@@ -1,35 +1,46 @@
-from typing import List
+from typing import List, Dict
 
-from monitoring.monitorlib.fetch import QueryError
-from monitoring.uss_qualifier.suites.suite import ExecutionContext
-from uas_standards.interuss.automated_testing.scd.v1.api import (
-    InjectFlightResponseResult,
+import arrow
+
+from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    AirspaceUsageState,
+    UasState,
+    FlightInfo,
 )
-from monitoring.monitorlib.uspace import problems_with_flight_authorisation
-from monitoring.uss_qualifier.common_data_definitions import Severity
+from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
+    FlightInfoTemplate,
+)
+from monitoring.monitorlib.clients.flight_planning.planning import (
+    PlanningActivityResult,
+    FlightPlanStatus,
+)
+from monitoring.monitorlib.temporal import TimeDuringTest, Time
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
+    ExpectedFlightIntent,
+    validate_flight_intent_templates,
+)
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
-)
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
-    FlightIntent,
-)
-from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
-    FlightPlanner,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
-    plan_flight_intent,
-    cleanup_flights,
+    submit_flight,
+    cleanup_flights_fp_client,
+    plan_flight,
 )
 
 
 class Validation(TestScenario):
-    invalid_flight_intents: List[FlightIntent]
-    valid_flight_intent: FlightIntent
-    ussp: FlightPlanner
+    times: Dict[TimeDuringTest, Time]
+
+    invalid_flight_intents: List[FlightInfoTemplate]
+    valid_flight_intent: FlightInfoTemplate
+    ussp: FlightPlannerClient
 
     def __init__(
         self,
@@ -37,37 +48,58 @@ class Validation(TestScenario):
         flight_planner: FlightPlannerResource,
     ):
         super().__init__()
-        self.ussp = flight_planner.flight_planner
+        self.ussp = flight_planner.client
 
-        intents = flight_intents.get_flight_intents()
-        if len(intents) < 2 or "valid_flight_auth" not in intents:
+        templates = flight_intents.get_flight_intents()
+        expected_flight_intents = [
+            ExpectedFlightIntent(
+                "valid_flight_auth",
+                "Valid Flight",
+                usage_state=AirspaceUsageState.Planned,
+                uas_state=UasState.Nominal,
+                valid_uspace_flight_auth=True,
+            )
+        ]
+        for intent_id, flight_template in templates.items():
+            if intent_id.startswith("invalid_"):
+                expected_flight_intents.append(
+                    ExpectedFlightIntent(
+                        intent_id,
+                        f"Invalid Flight {intent_id}",
+                        usage_state=AirspaceUsageState.Planned,
+                        uas_state=UasState.Nominal,
+                        valid_uspace_flight_auth=False,
+                    )
+                )
+
+        try:
+            if len(expected_flight_intents) < 2:
+                raise ValueError(
+                    f"`{self.me()}` TestScenario requires at least 2 flight_intents; found {len(expected_flight_intents)}"
+                )
+            validate_flight_intent_templates(templates, expected_flight_intents)
+        except ValueError as e:
             raise ValueError(
-                f"`{self.me()}` TestScenario requires at least 2 flight_intents and valid_flight_auth; found {len(intents)}"
+                f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
 
         self.invalid_flight_intents = []
-        for fID, info_template in intents.items():
-            flight_intent = FlightIntent.from_flight_info_template(info_template)
-            problems = problems_with_flight_authorisation(
-                flight_intent.request.flight_authorisation
-            )
-
-            if fID == "valid_flight_auth":
-                self.valid_flight_intent = flight_intent
-                if problems:
-                    problems = ", ".join(problems)
-                    raise ValueError(
-                        f"`{self.me()}` TestScenario requires valid_flight_auth to be valid.  Instead, the flight authorisation data had: {problems}"
-                    )
-
+        for efi in expected_flight_intents:
+            if efi.intent_id == "valid_flight_auth":
+                self.valid_flight_intent = templates[efi.intent_id]
             else:
-                self.invalid_flight_intents.append(flight_intent)
-                if not problems:
-                    raise ValueError(
-                        f"`{self.me()}` TestScenario requires all flight intents except the last to have invalid flight authorisation data.  Instead, intent {fID} had valid flight authorisation data."
-                    )
+                self.invalid_flight_intents.append(templates[efi.intent_id])
+
+    def resolve_flight(self, flight_template: FlightInfoTemplate) -> FlightInfo:
+        self.times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        return flight_template.resolve(self.times)
 
     def run(self, context: ExecutionContext):
+        self.times = {
+            TimeDuringTest.StartOfTestRun: Time(context.start_time),
+            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
+        }
+
         self.begin_test_scenario(context)
 
         self.record_note("Planner", self.ussp.participant_id)
@@ -89,56 +121,31 @@ class Validation(TestScenario):
     def _attempt_invalid_flights(self) -> bool:
         self.begin_test_step("Inject invalid flight intents")
 
-        for flight_intent in self.invalid_flight_intents:
-            with self.check("Failure", [self.ussp.participant_id]) as failure_check:
-                try:
-                    resp, query, flight_id, _ = self.ussp.request_flight(
-                        flight_intent.request
-                    )
-                except QueryError as e:
-                    for q in e.queries:
-                        self.record_query(q)
-                    check.record_failed(
-                        summary=f"Error from {self.ussp.participant_id} when attempting to inject invalid flight",
-                        severity=Severity.High,
-                        details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
-                        query_timestamps=[q.request.timestamp for q in e.queries],
-                    )
-                self.record_query(query)
+        for flight_intent_template in self.invalid_flight_intents:
+            flight_intent = self.resolve_flight(flight_intent_template)
 
-                with self.check(
-                    "Incorrectly planned", [self.ussp.participant_id]
-                ) as check:
-                    if resp.result == InjectFlightResponseResult.Planned:
-                        problems = ", ".join(
-                            problems_with_flight_authorisation(
-                                flight_intent.request.flight_authorisation
-                            )
-                        )
-                        check.record_failed(
-                            summary="Flight planned with invalid flight authorisation",
-                            severity=Severity.Medium,
-                            details=f"Flight intent resulted in successful flight planning even though the flight authorisation had: {problems}",
-                            query_timestamps=[query.request.timestamp],
-                        )
+            resp, _ = submit_flight(
+                scenario=self,
+                success_check="Incorrectly planned",
+                expected_results={
+                    (PlanningActivityResult.Rejected, FlightPlanStatus.NotPlanned),
+                },
+                failed_checks={PlanningActivityResult.Failed: "Failure"},
+                flight_planner=self.ussp,
+                flight_info=flight_intent,
+            )
 
-                if resp.result == InjectFlightResponseResult.Failed:
-                    failure_check.record_failed(
-                        summary="Failed to create flight",
-                        severity=Severity.Medium,
-                        details=f'{self.ussp.participant_id} Failed to process the user flight intent: "{resp.notes}"',
-                        query_timestamps=[query.request.timestamp],
-                    )
-
-            self.end_test_step()  # Inject flight intents
+        self.end_test_step()  # Inject flight intents
 
         return True
 
     def _plan_valid_flight(self) -> bool:
-        resp, _, _ = plan_flight_intent(
+        valid_flight_intent = self.resolve_flight(self.valid_flight_intent)
+
+        resp, _ = plan_flight(
             self,
             self.ussp,
-            self.valid_flight_intent.request,
+            valid_flight_intent,
         )
         if resp is None:
             return False
@@ -147,5 +154,5 @@ class Validation(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights(self, [self.ussp])
+        cleanup_flights_fp_client(self, [self.ussp])
         self.end_cleanup()

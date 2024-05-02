@@ -18,6 +18,7 @@ from monitoring.monitorlib.temporal import TimeDuringTest, Time
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntentID,
 )
+from monitoring.monitorlib.uspace import problems_with_flight_authorisation
 
 FlightIntentName = str
 
@@ -39,6 +40,7 @@ class ExpectedFlightIntent(object):
     time_start_max_bound: Optional[StringBasedTimeDelta] = None
     time_end_min_bound: Optional[StringBasedTimeDelta] = None
     time_end_max_bound: Optional[StringBasedTimeDelta] = None
+    valid_uspace_flight_auth: Optional[bool] = None
 
 
 def validate_flight_intent_templates(
@@ -260,4 +262,18 @@ def validate_flight_intents(
             if intent.basic_information.area.time_end.datetime > max_end_time:
                 raise ValueError(
                     f"Flight intent `{expected_intent.intent_id}` must have time_end ({intent.basic_information.area.time_end.datetime}) <= max_end_time ({max_end_time})"
+                )
+
+        # Ensure flight authorisation data is (in)valid
+        if expected_intent.valid_uspace_flight_auth is not None:
+            problems = problems_with_flight_authorisation(
+                intent.uspace_flight_authorisation
+            )
+            if expected_intent.valid_uspace_flight_auth and problems:
+                raise ValueError(
+                    f"Flight intent `{expected_intent.intent_id}` must have valid flight authorisation, instead it had: {problems}."
+                )
+            elif not expected_intent.valid_uspace_flight_auth and not problems:
+                raise ValueError(
+                    f"Flight intent `{expected_intent.intent_id}` must have invalid flight authorisation, instead it had valid flight authorisation data."
                 )

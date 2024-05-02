@@ -16,8 +16,29 @@ pre-existing flights (using, for instance, PrepareFlightPlanners scenario).
 ## Resources
 
 ### flight_intents
+FlightIntentsResource that provides the following flight intents:
 
-FlightIntentsResource that provides at least two flight intents. The flight intent `valid_flight_intent` is expected to be valid and should be planned successfully.  All other flight intents must have some problem with the flight authorisation data such that they should be rejected.
+<table>
+  <tr>
+    <th>Flight intent ID</th>
+    <th>Flight name</th>
+    <th>Usage State</th>
+    <th>UAS State</th>
+    <th>Flight authorisation</th>
+  </tr>
+  <tr>
+    <td><code>valid_flight_intent</code></td>
+    <td>Valid Flight</td>
+    <td rowspan="2">Planned</td>
+    <td rowspan="2">Nominal</td>
+    <td>Valid</td>
+  </tr>
+  <tr>
+    <td><code>invalid_*</code></td>
+    <td>Invalid Flight *</td>
+    <td>Invalid</td>
+  </tr>
+</table>
 
 ### flight_planner
 
@@ -29,11 +50,11 @@ FlightPlannerResource that provides the flight planner (USSP) which should be te
 
 uss_qualifier indicates to the first flight planner a user intent to create each of the invalid flight intents expecting the flight planner to reject each of these intents.
 
-#### Incorrectly planned check
+#### 🛑 Incorrectly planned check
 
 Each of the attempted flight intents contains invalid flight authorisation data.  If the USSP successfully plans the flight, it means they failed to detect the invalid flight authorisation.  Therefore, this check will fail if the USS indicates success in creating the flight from the user flight intent.
 
-#### Failure check
+#### ⚠️ Failure check
 
 Although the flight authorisation data is invalid, it is properly formatted and should allow the USSP to process it and reject the flight rather than causing a failure.  If the USS indicates that the injection attempt failed, this check will fail.
 
@@ -45,6 +66,6 @@ uss_qualifier indicates to the flight planner a user intent to create a valid fl
 
 ## Cleanup
 
-### Successful flight deletion check
+### 🛑 Successful flight deletion check
 
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../requirements/interuss/automated_testing/flight_planning.md)**
