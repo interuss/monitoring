@@ -17,6 +17,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
     FlightInfo,
     FlightID,
     ExecutionStyle,
+    UasState,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
@@ -128,6 +129,14 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 scd_api.InjectFlightResponseResult.NotSupported: old_state,
             }[resp.result],
         )
+
+        if (
+            response.flight_plan_status == FlightPlanStatus.OkToFly
+            and flight_info.basic_information.uas_state == UasState.OffNominal
+        ):
+            # With this API, we have no way of knowing if the flight is in an off-nominal state as a result of the injection since the USS will always respond with the ReadyToFly result.
+            # As a mitigation, if the USS responds with ReadyToFly for an off-nominal injected flight, we assume that the USS responded correctly.
+            response.flight_plan_status = FlightPlanStatus.OffNominal
 
         created_status = [
             FlightPlanStatus.Planned,
