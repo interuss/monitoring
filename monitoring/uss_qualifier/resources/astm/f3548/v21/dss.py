@@ -271,7 +271,15 @@ class DSSInstance(object):
         Raises:
             * QueryError: if request failed, if HTTP status code is different than 200 or 201, or if the parsing of the response failed.
         """
+        scopes = [Scope.StrategicCoordination]
         self._uses_scope(Scope.StrategicCoordination)
+        if state in [
+            OperationalIntentState.Nonconforming,
+            OperationalIntentState.Contingent,
+        ]:
+            scopes.append(Scope.ConformanceMonitoringForSituationalAwareness)
+            self._uses_scope(Scope.ConformanceMonitoringForSituationalAwareness)
+
         oi_uuid = str(uuid.uuid4()) if oi_id is None else oi_id
         create = ovn is None
         if create:
@@ -299,7 +307,7 @@ class DSSInstance(object):
             url,
             query_type,
             self.participant_id,
-            scope=Scope.StrategicCoordination,
+            scopes=scopes,
             json=req,
         )
         if (create and query.status_code == 201) or (

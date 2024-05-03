@@ -13,6 +13,7 @@ ALL_SCOPES = [
     "dss.write.identification_service_areas",
     "dss.read.identification_service_areas",
     "utm.strategic_coordination",
+    "utm.conformance_monitoring_sa",
     "utm.constraint_management",
     "utm.constraint_consumption",
 ]

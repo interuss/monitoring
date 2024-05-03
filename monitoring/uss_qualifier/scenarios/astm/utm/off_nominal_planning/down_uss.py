@@ -73,6 +73,7 @@ class DownUSS(TestScenario):
             {
                 Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities and retrieve operational intent details",
                 Scope.AvailabilityArbitration: "declare virtual USS down in DSS",
+                Scope.ConformanceMonitoringForSituationalAwareness: "create operational intent references in an off-nominal state",
             }
         )
 
