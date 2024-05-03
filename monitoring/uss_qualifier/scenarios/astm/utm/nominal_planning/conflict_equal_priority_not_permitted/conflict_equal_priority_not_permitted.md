@@ -218,11 +218,12 @@ Do note that executing this test step requires the control USS to support the CM
 transition to non-conforming state, it will be assumed that the control USS does not support this role and the test
 execution will stop without failing.
 
-#### ℹ️ Successful transition to non-conforming state check
+#### 🛑 Successful transition to non-conforming state check
 All flight intent data provided is correct, therefore it should have been
 transitioned to non-conforming state by the USS
 per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 If the USS rejects the transition, this check will fail.
+If the USS indicates that the operation is not supported, the USS does not support the CMSA role, and as such the scenario execution will stop without failing.
 
 #### 🛑 Failure check
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
