@@ -48,10 +48,73 @@ uss_qualifier is generally designed to skip test components when some prerequisi
 
 ## Architecture
 
-* [Test suites](suites/README.md)
-* [Test scenarios](scenarios/README.md) (includes test case, test step, check breakdown)
-* [Test configurations](configurations/README.md)
-* [Test resources](resources/README.md)
+### Structure
+
+* [Test scenarios](scenarios/README.md) are the core, mostly-self-contained, units of test runs.  Test scenarios are broken down into test cases, then test steps, then checks.
+* [Test suites](suites/README.md) are static "playlists" of test scenarios (sometimes involving child test suites or action generators).
+    * [Action generators](action_generators/README.md) are dynamic generators of test scenarios (sometimes via child test suites or action generators).
+* [Test configurations](configurations/README.md) are inputs to uss_qualifier which define what testing is to be performed and how that testing is to be performed.
+    * [Test resources](resources/README.md) provide information for where to find participants' systems and/or the ability to perform specific test behaviors.  They are specified in the test configuration and then used by test scenarios.
+
+### Execution outline
+
+When uss_qualifier is invoked, execution follows the general flow below:
+
+#### Load test configuration
+
+* Test configurations are dict-like files (JSON, YAML, Jsonnet) and may consist of multiple files for a single configuration.
+* All referenced content is loaded and rendered into a concrete [USSQualifierConfiguration](configurations/configuration.py) instance.
+
+#### Validate test configuration
+
+Configuration is validated against configuration schema (unless skipped per command line flag).
+
+* This only detects violations of the schema, not necessarily all errors in configuration.
+
+#### Write rendered test configuration
+
+Rendered configuration is written to file (if requested via command line flag).
+
+* Configuration source files can be complex and non-trivial to understand; if this option is specified, the actual interpreted configuration will be output for inspection and verification by test designers or other interested parties.
+
+#### Evaluate and log test definition
+
+* The tests to perform are fully defined by the InterUSS `monitoring` codebase version (described by git commit hash + any local modifications) and test configuration.
+* Test configuration is abbreviated with a test environment signature (hash of all elements of the test configuration labeled as "environment") and a test baseline signature (hash of all elements of the test configuration not labeled as "environment").
+* The test definition description consists of the elements above and is logged (this information will also be included in the test report).
+
+#### Exit early
+
+uss_qualifier may exit early at this point without actually executing the test run (if requested via command line flag).
+
+#### Execute test run
+
+1. All resources specified in the test configuration are instantiated when possible.
+    * Resources that cannot be instantiated are simply omitted from the resource pool unless the test configuration specifies that execution should stop when resources cannot be created.
+    * All instantiated resources form the resource pool available to the top-level test action.
+1. The top-level test action specified in the test configuration is instantiated.
+    * Whenever a test suite is instantiated as an action, it instantiates all its child test actions, providing a subset of the resource pool to each child test action as specified in the test suite definition.
+    * An action generator may instantiate its child test actions when the action generator is instantiated, or dynamically at runtime, or a combination of both.
+        * Generally, test actions are instantiated as early as possible, so most action generators instantiate their child test actions when the action generator is instantiated.
+    * Test scenario actions are instantiated by calling the constructor of the TestScenario class, expecting the non-optional resources in its constructor to be supplied in its resource pool.
+1. The top-level test action is `run`.
+    * All descendant test actions are run sequentially, depth-first (as a consequence of how test suites and action generators work).
+    * Whenever a test action is about to be run, the execution criteria optionally provided in the test configuration are checked to see whether it should be skipped or not.
+    * Any test action will be skipped when its required resources are not provided/available.
+    * Each test action produces a test action report.  This report is incorporated hierarchically into the final test report.
+1. The top-level test action's report (including a tree of reports from all descendant test actions that were run) is incorporated into a final [TestRunReport](reports/report.py).
+
+#### Generate artifacts
+
+Any artifacts specified in test configuration are generated.
+
+* Artifacts are generated solely from the information in the final TestRunReport and the artifacts portion of the test configuration.
+* `report.json` is the raw TestRunReport content (when generated as an artifact).
+* Any other artifact [can be generated](#artifacts) after the test run is complete if `report.json` is provided.
+
+#### Validate test report
+
+Test report is evaluated in order to return the appropriate "success or error" execution code (if specified in test configuration).
 
 ### Verifiable capabilities
 
