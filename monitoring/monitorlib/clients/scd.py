@@ -52,7 +52,7 @@ def create_operational_intent_reference(
     url = "/dss/v1/operational_intent_references/{}".format(id)
     subject = f"createOperationalIntentReference to {url}"
     query = fetch.query_and_describe(
-        utm_client, "PUT", url, json=req, scope=scd.SCOPE_SC
+        utm_client, "PUT", url, json=req, scopes=[scd.SCOPE_SC, scd.SCOPE_CM_SA]
     )
     if query.status_code != 200 and query.status_code != 201:
         raise QueryError(
@@ -84,7 +84,7 @@ def update_operational_intent_reference(
     url = "/dss/v1/operational_intent_references/{}/{}".format(id, ovn)
     subject = f"updateOperationalIntentReference to {url}"
     query = fetch.query_and_describe(
-        utm_client, "PUT", url, json=req, scope=scd.SCOPE_SC
+        utm_client, "PUT", url, json=req, scopes=[scd.SCOPE_SC, scd.SCOPE_CM_SA]
     )
     if query.status_code != 200 and query.status_code != 201:
         raise QueryError(
