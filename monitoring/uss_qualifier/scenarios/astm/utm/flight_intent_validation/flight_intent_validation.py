@@ -103,7 +103,7 @@ class FlightIntentValidation(TestScenario):
                 "Too Far Away Flight",
                 usage_state=AirspaceUsageState.Planned,
                 uas_state=UasState.Nominal,
-                time_start_min_bound=StringBasedTimeDelta(
+                earliest_time_start=StringBasedTimeDelta(
                     timedelta(days=OiMaxPlanHorizonDays)
                 ),
             ),
@@ -112,10 +112,10 @@ class FlightIntentValidation(TestScenario):
                 "Recently Ended Flight",
                 usage_state=AirspaceUsageState.Planned,
                 uas_state=UasState.Nominal,
-                time_end_min_bound=StringBasedTimeDelta(
+                earliest_time_end=StringBasedTimeDelta(
                     timedelta(seconds=-TimeSyncMaxDifferentialSeconds - 5)
                 ),
-                time_end_max_bound=StringBasedTimeDelta(
+                latest_time_end=StringBasedTimeDelta(
                     timedelta(seconds=-TimeSyncMaxDifferentialSeconds)
                 ),
             ),
