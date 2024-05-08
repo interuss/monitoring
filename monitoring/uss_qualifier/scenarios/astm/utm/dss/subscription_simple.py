@@ -99,7 +99,12 @@ class SubscriptionSimple(TestScenario):
             self._base_sub_id[:-1] + f"{i}" for i in range(4)
         ]
 
-        self._sub_generation_params = self._planning_area.get_new_subscription_params(
+        self._problematically_big_area_vol = Polygon(
+            vertices=problematically_big_area.specification.vertices
+        )
+
+    def _build_current_time_sub_params(self):
+        return self._planning_area.get_new_subscription_params(
             subscription_id="",  # subscription ID will need to be overwritten
             # Set this slightly in the past: we will update the subscriptions
             # to a later value that still needs to be roughly 'now' without getting into the future
@@ -108,10 +113,6 @@ class SubscriptionSimple(TestScenario):
             # This is a planning area without constraint processing
             notify_for_op_intents=True,
             notify_for_constraints=False,
-        )
-
-        self._problematically_big_area_vol = Polygon(
-            vertices=problematically_big_area.specification.vertices
         )
 
     def run(self, context: ExecutionContext):
@@ -154,6 +155,9 @@ class SubscriptionSimple(TestScenario):
         # thus we need to reset the state of the scenario before running it.
         self._current_subscriptions = {}
         self._sub_params_by_sub_id = {}
+        # The subscription needs to be reasonably close to 'now':
+        # We reset it at the beginning of each run.
+        self._sub_generation_params = self._build_current_time_sub_params()
 
         self._ensure_clean_workspace_step()
 
