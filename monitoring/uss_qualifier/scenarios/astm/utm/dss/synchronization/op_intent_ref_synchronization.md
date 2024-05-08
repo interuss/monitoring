@@ -60,8 +60,8 @@ Check that read query succeeds.
 #### Newly created OIR can be consistently retrieved from all DSS instances check
 
 If the operational intent retrieved from a secondary DSS instance is not consistent with the newly created one on the
-primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1a](../../../../../requirements/astm/f3548/v21.md)**
-and **[astm.f3548.v21.DSS0210,A2-7-2,1d](../../../../../requirements/astm/f3548/v21.md)**.
+primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1a](../../../../../requirements/astm/f3548/v21.md)**, **[astm.f3548.v21.DSS0210,A2-7-2,1d](../../../../../requirements/astm/f3548/v21.md)**,
+, **[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [OIR is synchronized](../fragments/oir/sync.md)
 
@@ -79,8 +79,8 @@ Check that search query succeeds.
 #### Newly created OIR can be consistently searched for from all DSS instances check
 
 If the operational intent searched from a secondary DSS instance is not consistent with the newly created one on the
-primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1a](../../../../../requirements/astm/f3548/v21.md)**
-and **[astm.f3548.v21.DSS0210,A2-7-2,1c](../../../../../requirements/astm/f3548/v21.md)**.
+primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1a](../../../../../requirements/astm/f3548/v21.md)**, **[astm.f3548.v21.DSS0210,A2-7-2,1c](../../../../../requirements/astm/f3548/v21.md)**,
+, **[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [OIR is synchronized](../fragments/oir/sync.md)
 
