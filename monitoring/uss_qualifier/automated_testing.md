@@ -105,6 +105,56 @@ Remote Identification test suite (even one using the F3411 test suite to
 validate compliance via F3411) would indicate failure due to missing operator
 location.
 
+#### Logical inference and sensitivity
+
+It is often the case that the data collected during a test is not exactly the
+same as the metric relevant to a requirement. In these cases, it is important to
+draw justified inferences about requirement compliance from the data available,
+even though it does not exactly match the requirement's metric.
+
+For instance, it may be that REQ1 requires a USS must perform X in 5 seconds,
+and we know that a USS always reports they have performed X within 3 seconds of
+completing X. If a USS takes 15 seconds to report completing X, we can conclude
+that the USS has failed to meet REQ1. If a USS takes 8.1 seconds to report
+completing X, we can also conclude that the USS has failed to meet REQ1. The
+8.1-second check is a
+higher-[sensitivity](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
+check than the 15-second check, however perfect sensitivity is not required, nor
+is "maximum" sensitivity (subject to some set of constraints) generally
+required (see [Scope of testing capability](#scope-of-testing-capability)) as
+long as the test design has "sufficient" sensitivity/coverage.
+
+If the test constraints (
+e.g., [encapsulation of system under test](#encapsulation-of-system-under-test))
+are such that the test director cannot reasonably observe the time at which a
+USS completed X, the test director is still capable of verifying compliance to
+REQ1 at some level of sensitivity: at 8.1 seconds, the test director can declare
+non-compliance. If a USS is non-compliant to REQ1 and takes 6 seconds to perform
+X, but also quickly notifies in 1 second, the test director will observe 7
+seconds to report completing X and will fail to declare non-compliance at the
+8.1-second threshold. This test therefore has
+less [sensitivity](https://en.wikipedia.org/wiki/Sensitivity_and_specificity)
+than a test capable of detecting failure to comply whenever the time to perform
+X is any longer than 5.5 seconds because this test is only necessarily capable
+of detecting failure to comply whenever the time to perform X is longer than 8.1
+seconds. However, perfect sensitivity is not required, nor is "maximum"
+sensitivity (subject to some set of constraints)
+generally required (
+see [Scope of testing capability](#scope-of-testing-capability)) as long as the
+test design has "sufficient" sensitivity/coverage.
+
+If verifying a requirement is met within 10 meters is critical to sufficiently
+verifying compliance to that requirement, a sufficient test must have enough
+sensitivity to detect non-compliance at 10.1 meters, but does not necessarily
+need enough sensitivity to detect non-compliance at 10 nanometers. If verifying
+REQ1 within 0.5 seconds is critical to sufficiently verify compliance to REQ1,
+then the 8.1-second reporting threshold is insufficiently sensitive to establish
+sufficient coverage of REQ1. However, if it is only critical to verify REQ1
+within 10 seconds, then the 8.1-second reporting threshold is sufficiently
+sensitive to establish sufficient coverage of REQ1. Existing checkout/approval
+methods (generally manual tests) accepted by regulators are usually excellent
+guides for estimating sufficient test coverage.
+
 #### Requirement-centric artifacts
 
 One succinct way to define success could be that compliance to a certain minimum
@@ -181,3 +231,29 @@ to flight planning requirements cannot be accomplished if uss_qualifier cannot
 cause attempts to plan flights. Therefore, a requirement to implement a flight
 planning interface may be a necessary requirement for effective InterUSS testing
 of flight planning requirements.
+
+## Encapsulation of system under test
+
+An important characteristic of effective tests is that the system under test is
+as similar to the deployed system as possible. This is important for two
+reasons:
+
+1. If the deployed system is substantively different from the tested system,
+   successful tests on the tested system do not provide high confidence that the
+   deployed system meets requirements (which is the goal of qualification
+   testing, both manual and automated).
+2. Requiring extensive modifications to a system in order to participate in
+   testing raises the barrier for participating in testing.
+
+Reason #1 is codified into multiple standards including ASTM F3411-19 and
+F3411-22a (NET0500, DSS0210) and ASTM F3548-21 (GEN0305, X6.3.1). Reason #2 is
+the motivation
+behind [the goal of minimizing additional InterUSS requirements](#compatibility).
+
+In the words of ASTM F3548-21 (X6.3.1), InterUSS's automated tests are intended
+to be "integration tests" rather than "unit tests" when requirements apply to
+the integrated system rather than system units. Accordingly, such automated
+testing should usually interact with the external interfaces of the integrated
+system rather than reaching inside the integrated system to manipulate and
+observe sub-units of the system in ways the system is not designed to support
+when deployed.
