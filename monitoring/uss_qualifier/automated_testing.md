@@ -105,6 +105,13 @@ Remote Identification test suite (even one using the F3411 test suite to
 validate compliance via F3411) would indicate failure due to missing operator
 location.
 
+#### Requirement-centric artifacts
+
+One succinct way to define success could be that compliance to a certain minimum
+set of requirements was verified for a test participant. A uss_qualifier
+artifact that organizes results of a test by participant and requirement
+is [tested requirements](./reports/tested_requirements).
+
 #### Logical inference and sensitivity
 
 It is often the case that the data collected during a test is not exactly the
@@ -124,8 +131,8 @@ is "maximum" sensitivity (subject to some set of constraints) generally
 required (see [Scope of testing capability](#scope-of-testing-capability)) as
 long as the test design has "sufficient" sensitivity/coverage.
 
-If the test constraints (
-e.g., [encapsulation of system under test](#encapsulation-of-system-under-test))
+If the test constraints (e.g.,
+[encapsulation of system under test](#encapsulation-of-system-under-test))
 are such that the test director cannot reasonably observe the time at which a
 USS completed X, the test director is still capable of verifying compliance to
 REQ1 at some level of sensitivity: at 8.1 seconds, the test director can declare
@@ -139,8 +146,8 @@ X is any longer than 5.5 seconds because this test is only necessarily capable
 of detecting failure to comply whenever the time to perform X is longer than 8.1
 seconds. However, perfect sensitivity is not required, nor is "maximum"
 sensitivity (subject to some set of constraints)
-generally required (
-see [Scope of testing capability](#scope-of-testing-capability)) as long as the
+generally required (see
+[Scope of testing capability](#scope-of-testing-capability)) as long as the
 test design has "sufficient" sensitivity/coverage.
 
 If verifying a requirement is met within 10 meters is critical to sufficiently
@@ -154,13 +161,6 @@ within 10 seconds, then the 8.1-second reporting threshold is sufficiently
 sensitive to establish sufficient coverage of REQ1. Existing checkout/approval
 methods (generally manual tests) accepted by regulators are usually excellent
 guides for estimating sufficient test coverage.
-
-#### Requirement-centric artifacts
-
-One succinct way to define success could be that compliance to a certain minimum
-set of requirements was verified for a test participant. A uss_qualifier
-artifact that organizes results of a test by participant and requirement
-is [tested requirements](./reports/tested_requirements).
 
 ## Failure
 
