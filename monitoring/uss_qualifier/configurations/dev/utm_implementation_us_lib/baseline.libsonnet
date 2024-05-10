@@ -387,6 +387,21 @@ function(env) {
             },
           },
         },
+         {
+          applicability: {
+            // We also want to make sure we don't skip more scenarios that we should
+            skipped_actions: {},
+          },
+          pass_condition: {
+            elements: {
+              count: {
+                // We currently expect this amount of skipped scenarios: making it an equality
+                // to make sure this is reduced if some scenarios start to be executed
+                equal_to: 7,
+              },
+            },
+          },
+        },
       ], // criteria
     }, // validation
   }, // v1
