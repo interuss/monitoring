@@ -263,22 +263,40 @@ class DSSInstance(object):
         oi_id: Optional[str] = None,
         ovn: Optional[str] = None,
         subscription_id: Optional[str] = None,
+        force_query_scopes: Optional[Scope] = None,
     ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query,]:
         """
         Create or update an operational intent.
+
+        This method will automatically add the required scopes based on the passed 'state':
+          - nominal states (Accepted, Activated, Ended) require only the StrategicCoordination scope.
+          - off-nominal states (Nonconforming, Contingent) require ConformanceMonitoringForSituationalAwareness
+
+        Scenarios that wish to test the behavior of the DSS when an incorrect scope is used can force the scope
+        to be with the 'force_query_scope' parameter.
+
         Returns:
              the operational intent reference created or updated, the subscribers to notify, the query
         Raises:
             * QueryError: if request failed, if HTTP status code is different than 200 or 201, or if the parsing of the response failed.
         """
-        scopes = [Scope.StrategicCoordination]
-        self._uses_scope(Scope.StrategicCoordination)
-        if state in [
+
+        # Default to SCD if no override is provided
+        scopes = (
+            [force_query_scopes]
+            if force_query_scopes
+            else [Scope.StrategicCoordination]
+        )
+
+        # If no override is provided and the state warrants it, we add the CMSA scope
+        if not force_query_scopes and state in [
             OperationalIntentState.Nonconforming,
             OperationalIntentState.Contingent,
         ]:
             scopes.append(Scope.ConformanceMonitoringForSituationalAwareness)
-            self._uses_scope(Scope.ConformanceMonitoringForSituationalAwareness)
+
+        for s in scopes:
+            self._uses_scope(s)
 
         oi_uuid = str(uuid.uuid4()) if oi_id is None else oi_id
         create = ovn is None
