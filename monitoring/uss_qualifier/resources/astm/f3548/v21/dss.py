@@ -375,14 +375,50 @@ class DSSInstance(object):
             result = query.parse_json_result(ChangeOperationalIntentReferenceResponse)
             return result.operational_intent_reference, result.subscribers, query
 
+    def get_uss_availability(
+        self,
+        uss_id: str,
+        scope: Scope = Scope.StrategicCoordination,
+    ) -> Tuple[UssAvailabilityStatusResponse, Query]:
+        """
+        Request the availability status for the specified USS.
+
+        By default the StrategicCoordination scope is used. It can be overridden for callers that
+        wish to use a different scope.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
+        """
+        self._uses_scope(scope)
+        op = OPERATIONS[OperationID.GetUssAvailability]
+        query = query_and_describe(
+            self.client,
+            op.verb,
+            op.path.format(uss_id=uss_id),
+            QueryType.F3548v21DSSGetUssAvailability,
+            self.participant_id,
+            scope=scope,
+        )
+        if query.status_code != 200:
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to retrieve USS availability of {uss_id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
+        else:
+            result = query.parse_json_result(UssAvailabilityStatusResponse)
+            return result, query
+
     def set_uss_availability(
         self,
         uss_id: str,
-        available: bool,
+        available: Optional[bool],
         version: str = "",
     ) -> Tuple[str, Query]:
         """
-        Set USS availability.
+        Set the availability for the USS identified by 'uss_id'.
+
+        If 'available' is None, the availability will be set to 'Unknown'.
+        True will set it to 'Normal', and False to 'Down'.
+
         Returns:
             A tuple composed of
             1) the new version of the USS availability;
@@ -391,7 +427,9 @@ class DSSInstance(object):
             * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
         """
         self._uses_scope(Scope.AvailabilityArbitration)
-        if available:
+        if available is None:
+            availability = UssAvailabilityState.Unknown
+        elif available:
             availability = UssAvailabilityState.Normal
         else:
             availability = UssAvailabilityState.Down
