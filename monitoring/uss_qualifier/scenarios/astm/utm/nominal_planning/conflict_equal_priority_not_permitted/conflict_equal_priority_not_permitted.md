@@ -256,14 +256,6 @@ modified, or the USS considered the attempt invalid. In the latter case, because
 either Flight 1 should not have been modified (because the USS kept the original accepted request), or it should have
 been removed (because the USS rejected the replacement plan provided).
 
-### Validate tested USS conflict notifications to user
-
-#### [Validate tested USS conflict notification to user for attempted new flight](test_steps/validate_conflict_notification_to_user.md)
-The test driver checks conflict notification logs of tested USS to verify that notification was sent to Flight 1 due to conflict with Flight 2 from case "Attempt to plan flight into conflict test case".
-
-#### [Validate tested USS conflict notification to user for attempted modified flight](test_steps/validate_conflict_notification_to_user.md)
-The test driver also verifies that notification was sent to Flight 1c due to conflict with Flight 2 from case "Attempt to modify planned flight into conflict test case".
-
 ## Cleanup
 ### ⚠️ Successful flight deletion check
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../../requirements/interuss/automated_testing/flight_planning.md)**
