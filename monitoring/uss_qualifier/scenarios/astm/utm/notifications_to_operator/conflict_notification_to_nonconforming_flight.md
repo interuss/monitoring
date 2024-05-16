@@ -85,17 +85,8 @@ Flight 2 should be successfully planned by the control USS.
 #### [Validate Flight 2 sharing](../validate_shared_operational_intent.md)
 
 ### Create nonconforming Flight 1 test step
+#### [Create nonconforming Flight 1](test_steps/create_nonconforming_flight.md)
 The test driver instructs the tested USS to create Flight 1 as nonconforming. This makes nonconforming Flight 1 conflict with planned Flight 2.
-
-Do note that executing this test step requires the tested USS to support the CMSA role. As such, if the USS rejects the creation 
-of the Nonconforming state, it will be assumed that the tested USS does not support this role and the test
-execution will stop without failing.
-
-#### 🛑 Failure check
-All flight intent data provided is correct, therefore it should have been
-created in the Nonconforming state by the USS
-per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
-If the USS indicates that the injection attempt failed, this check will fail.
 
 #### [Validate Flight 1 sharing](../validate_shared_operational_intent.md)
 Flight 1 should be successfully logged in the DSS and available to be shared.
@@ -115,17 +106,8 @@ The smaller Flight 1c form (which doesn't conflict with Flight 2) should be succ
 #### [Validate Flight 1c sharing](../validate_shared_operational_intent.md)
 
 ### Modify Flight 1 to nonconforming state test step
+#### [Modify Flight 1c to nonconforming.](test_steps/modify_flight_to_nonconforming.md)
 The test driver instructs the tested USS to modify Flight 1c into a larger Nonconforming state. This makes nonconforming Flight 1 conflict with planned Flight 2.
-
-Do note that executing this test step requires the tested USS to support the CMSA role. As such, if the USS rejects the modification 
-to the Nonconforming state, it will be assumed that the tested USS does not support this role and the test
-execution will stop without failing.
-
-#### 🛑 Failure check
-All flight intent data provided is correct, therefore it should have been
-modified to the Nonconforming state by the USS
-per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
-If the USS indicates that the injection attempt failed, this check will fail.
 
 #### [Validate Flight 1 sharing](../validate_shared_operational_intent.md)
 Flight 1 should be successfully logged in the DSS and available to be shared.
@@ -141,7 +123,6 @@ The test driver checks conflict notification logs of tested USS to verify that n
 The test driver also checks conflict notification logs of tested USS to verify that notification was sent to Flight 1 due to conflict with Flight 2 from case "Attempt to modify planned flight into nonconforming conflict test case".
 
 ## Cleanup
-### ⚠️ Successful flight deletion check
-**[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../requirements/interuss/automated_testing/flight_planning.md)**
+#### [Clear flights from control USS and tested USS](test_steps/clear_flights.md)
 
 The test driver clears flights from control USS and tested USS.
