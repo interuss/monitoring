@@ -115,7 +115,7 @@ The smaller Flight 1c form (which doesn't conflict with Flight 2) should be succ
 
 #### [Validate Flight 1c sharing](../validate_shared_operational_intent.md)
 
-### Modify Flight 1c to nonconforming state test step
+### Modify Flight 1c to Nonconforming state test step
 #### [Modify Flight 1c to nonconforming](test_steps/modify_flight_to_nonconforming.md)
 The test driver instructs the control USS to modify Flight 1c into a larger Nonconforming state. This makes nonconforming Flight 1 conflict with activated Flight 2.
 
