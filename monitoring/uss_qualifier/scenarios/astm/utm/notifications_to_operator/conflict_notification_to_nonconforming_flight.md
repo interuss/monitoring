@@ -1,4 +1,4 @@
-# Nominal planning: not permitted conflict with equal priority test scenario
+# Notification to operator: conflict notification to nonconforming flight test scenario
 
 ## Description
 This test aims at testing the strategic conflict detection requirements that relate to the scenario where
@@ -106,7 +106,7 @@ The smaller Flight 1c form (which doesn't conflict with Flight 2) should be succ
 #### [Validate Flight 1c sharing](../validate_shared_operational_intent.md)
 
 ### Modify Flight 1 to nonconforming state test step
-#### [Modify Flight 1c to nonconforming.](test_steps/modify_flight_to_nonconforming.md)
+#### [Modify Flight 1c to Nonconforming.](test_steps/modify_flight_to_nonconforming.md)
 The test driver instructs the tested USS to modify Flight 1c into a larger Nonconforming state. This makes nonconforming Flight 1 conflict with planned Flight 2.
 
 #### [Validate Flight 1 sharing](../validate_shared_operational_intent.md)
