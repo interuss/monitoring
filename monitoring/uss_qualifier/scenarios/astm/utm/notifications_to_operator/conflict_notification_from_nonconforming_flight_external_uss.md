@@ -1,4 +1,4 @@
-# Notification to operator: conflict notification from nonconfroming flight external USS test scenario
+# Notification to operator: conflict notification from nonconforming flight external USS test scenario
 
 
 ## Description
