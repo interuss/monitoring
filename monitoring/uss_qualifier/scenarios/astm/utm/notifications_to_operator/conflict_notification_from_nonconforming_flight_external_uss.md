@@ -36,20 +36,21 @@ The FlightIntentsResource must provide the following flight intents:
     <td><code>flight1_planned</code></td>
     <td>Flight 1</td>
     <td rowspan="3">Any</td>
-    <td>Planned</td>
+    <td>Nonconforming</td>
     <td>Flight 2</td>
     <td>N/A</td>
   </tr>
   <tr>
     <td><code>flight1c_planned</code></td>
     <td>Flight 1c</td>
-    <td rowspan="2">Accepted</td>
+    <td>Accepted</td>
     <td>N/A</td>
     <td>Flight 2</td>
   </tr>
   <tr>
     <td><code>equal_prio_flight2_planned</code></td>
     <td>Flight 2</td>
+    <td>Activated</td>
     <td>Flight 1</td>
     <td>Flight 1c</td>
   </tr>
