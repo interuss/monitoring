@@ -1,8 +1,8 @@
 # Nominal planning: not permitted conflict with equal priority test scenario
 
 ## Description
-This test aims at testing the strategic coordination requirements that relate to the scenarios where
-a conflict is created between an existing planned flight and a nonconforming flight:
+This test aims at testing the strategic conflict detection requirements that relate to the scenario where
+a conflict is created between an existing planned flight and a nonconforming flight and the nonconforming flight is notified ofthe conflict:
 - **[astm.f3548.v21.OPIN0025](../../../../requirements/astm/f3548/v21.md)**
 - **[astm.f3548.v21.SCD0035](../../../../requirements/astm/f3548/v21.md)**
 - **[astm.f3548.v21.SCD0090](../../../../requirements/astm/f3548/v21.md)**
