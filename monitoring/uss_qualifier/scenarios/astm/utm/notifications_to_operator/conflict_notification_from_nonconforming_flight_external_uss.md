@@ -1,4 +1,4 @@
-# Nominal planning: not permitted conflict with equal priority test scenario
+# Notification to operator: conflict notification from nonconfroming flight external USS test scenario
 
 
 ## Description
@@ -123,6 +123,8 @@ The test driver instructs the control USS to modify Flight 1c into a larger Nonc
 Flight 1 should be successfully logged in the DSS and available to be shared with tested USS.
 
 ### Validate tested USS conflict notifications to user
+
+Wait a minimum of 15 seconds before continuing to give system time to process messages.
 
 #### [Validate tested USS conflict notification to user for new flight](test_steps/validate_user_conflict_notification_from_other_flight.md)
 The test driver checks conflict notification logs of tested USS to verify that notification was sent to Flight 2 due to conflict with Flight 1 from case "Attempt to create new nonconforming flight into conflict test case".
