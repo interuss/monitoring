@@ -34,7 +34,7 @@ The FlightIntentsResource must provide the following flight intents:
     <td><code>nonconforming_flight1_planned</code></td>
     <td>Flight 1</td>
     <td rowspan="3">Any</td>
-    <td>Planned</td>
+    <td>Nonconforming</td>
     <td>Flight 2</td>
     <td>N/A</td>
   </tr>
