@@ -1,5 +1,4 @@
-# Notifications to operator: internal equal priority conflict not permitted test scenario
-
+# Notifications to operator: conflict notification from nonconforming flight same USS test scenario
 
 ## Description
 This test aims at testing the strategic coordination requirements that relate to the notification scenarios where
@@ -16,6 +15,9 @@ This scenario skips execution and completes successfully at the setup case if a 
 
 It assumes that the area used in the scenario is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario).
 
+## Sequence
+
+![Sequence diagram](assets/SCD95_internal_with_nonconforming.png)
 
 ## Resources
 ### flight_intents
