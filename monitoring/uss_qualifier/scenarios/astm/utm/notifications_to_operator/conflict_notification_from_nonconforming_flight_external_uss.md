@@ -2,8 +2,8 @@
 
 
 ## Description
-This test aims at testing the strategic coordination requirements that relate to the prioritization scenarios where
-there exists a conflict with an equal priority flight that is not permitted by regulation:
+This test aims at testing the strategic conflict detection requirements that relate to the scenario where a conflict is created 
+between an existing planned flight and a nonconforming flight from another USS and the existing flight is notified of the conflict:
 - **[astm.f3548.v21.OPIN0025](../../../../requirements/astm/f3548/v21.md)**
 - **[astm.f3548.v21.SCD0035](../../../../requirements/astm/f3548/v21.md)**
 - **[astm.f3548.v21.SCD0045](../../../../requirements/astm/f3548/v21.md)**
@@ -12,17 +12,15 @@ there exists a conflict with an equal priority flight that is not permitted by r
 
 It involves a tested USS and a control USS through which conflicting flights are injected.
 
-This scenario skips execution and completes successfully at the setup case if a resource containing equal priority flight intents where conflicts are not allow is not provided, such as if a jurisdiction does not have any priority levels at which conflicts are not allowed.
-
 It assumes that the area used in the scenario is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario).
 
+## Sequence
+
+![Sequence diagram](assets/SCD95_external_with_nonconforming.png)
 
 ## Resources
 ### flight_intents
-If the jurisdiction in which these tests are being conducted does not have a priority level at which conflicts are not allowed, the FlightIntentsResource must be None to prevent the
-execution of this test.
-
-Otherwise, the FlightIntentsResource must provide the following flight intents:
+The FlightIntentsResource must provide the following flight intents:
 
 
 <table>
@@ -37,7 +35,7 @@ Otherwise, the FlightIntentsResource must provide the following flight intents:
   <tr>
     <td><code>flight1_planned</code></td>
     <td>Flight 1</td>
-    <td rowspan="3">Any (but all the same)</td>
+    <td rowspan="3">Any</td>
     <td>Planned</td>
     <td>Flight 2</td>
     <td>N/A</td>
@@ -57,7 +55,7 @@ Otherwise, the FlightIntentsResource must provide the following flight intents:
   </tr>
 </table>
 
-Because the scenario involves activation of intents, all activated intents must be active during the execution of the
+Because the scenario involves activation of intents and a nonconforming intent, all activated and nonconforming intents must be active during the execution of the
 test scenario. Additionally, their end time must leave sufficient time for the execution of the test scenario. For the
 sake of simplicity, it is recommended to set the start and end times of all the intents to the same range.
 
@@ -97,17 +95,8 @@ Flight 2 should be successfully activated by the tested USS.
 #### [Validate Flight 2 sharing](../validate_shared_operational_intent.md)
 
 ### Create nonconforming Flight 1 test step
-The test driver instructs the control USS to create Flight 1 as nonconforming. This makes nonconforming Flight 1 conflict with activated Flight 2 -- this same-priority conflict would not be allowed if Flight 1 were in a nominal state.
-
-Do note that executing this test step requires the control USS to support the CMSA role. As such, if the USS rejects the creation 
-of the Nonconforming state, it will be assumed that the control USS does not support this role and the test
-execution will stop without failing.
-
-#### 🛑 Failure check
-All flight intent data provided is correct, therefore it should have been
-created in the Nonconforming state by the USS
-per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
-If the USS indicates that the injection attempt failed, this check will fail.
+#### [Create nonconflorming Flight 1](test_steps/create_nonconforming_flight.md)
+The test driver instructs the control USS to create Flight 1 as nonconforming. This makes nonconforming Flight 1 conflict with activated Flight 2.
 
 #### [Validate Flight 1 sharing](../validate_shared_operational_intent.md)
 Flight 1 should be successfully logged in the DSS and available to be shared with tested USS.
@@ -126,18 +115,9 @@ The smaller Flight 1c form (which doesn't conflict with Flight 2) should be succ
 
 #### [Validate Flight 1c sharing](../validate_shared_operational_intent.md)
 
-### Modify Flight 1 to nonconforming state test step
-The test driver instructs the control USS to modify Flight 1c into a larger Nonconforming state. This makes nonconforming Flight 1 conflict with activated Flight 2 -- this same-priority conflict would not be allowed if Flight 1 were in a nominal state.
-
-Do note that executing this test step requires the control USS to support the CMSA role. As such, if the USS rejects the modification 
-to the Nonconforming state, it will be assumed that the control USS does not support this role and the test
-execution will stop without failing.
-
-#### 🛑 Failure check
-All flight intent data provided is correct, therefore it should have been
-modified to the Nonconforming state by the USS
-per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
-If the USS indicates that the injection attempt failed, this check will fail.
+### Modify Flight 1c to nonconforming state test step
+#### [Modify Flight 1c to nonconforming](test_steps/modify_flight_to_nonconforming.md)
+The test driver instructs the control USS to modify Flight 1c into a larger Nonconforming state. This makes nonconforming Flight 1 conflict with activated Flight 2.
 
 #### [Validate Flight 1 sharing](../validate_shared_operational_intent.md)
 Flight 1 should be successfully logged in the DSS and available to be shared with tested USS.
@@ -152,5 +132,6 @@ The test driver also checks conflict notification logs of tested USS to verify t
 
 
 ## Cleanup
-### ⚠️ Successful flight deletion check
-**[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../requirements/interuss/automated_testing/flight_planning.md)**
+#### [Clear flights from control USS and tested USS](test_steps/clear_flights.md)
+
+The test driver clears flights from control USS and tested USS.
