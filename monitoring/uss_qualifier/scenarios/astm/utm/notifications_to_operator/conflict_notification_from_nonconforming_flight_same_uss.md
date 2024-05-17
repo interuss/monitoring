@@ -1,8 +1,9 @@
 # Notifications to operator: conflict notification from nonconforming flight same USS test scenario
 
 ## Description
-This test aims at testing the strategic coordination requirements that relate to the notification scenarios where
-a new or modified operational intent creates a conflict with an existing operational intent within the same USS and the operator of that operational intent is notified. It conforms to the following regulations:
+This test aims at testing the strategic conflict detection requirements that relate to the 
+scenario where a conflict is created between an existing planned flight and a nonconforming flight 
+from within the same USS and the existing flight is notified of the conflict:
 - **[astm.f3548.v21.OPIN0025](../../../../requirements/astm/f3548/v21.md)**
 - **[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**
 - **[astm.f3548.v21.SCD0040](../../../../../requirements/astm/f3548/v21.md)**
@@ -10,8 +11,6 @@ a new or modified operational intent creates a conflict with an existing operati
 - **[astm.f3548.v21.USS0005](../../../../requirements/astm/f3548/v21.md)**
 
 It involves a tested USS through which a control flight and conflicting flights are injected.
-
-This scenario skips execution and completes successfully at the setup case if a resource containing equal priority flight intents where conflicts are not allow is not provided, such as if a jurisdiction does not have any priority levels at which conflicts are not allowed.
 
 It assumes that the area used in the scenario is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario).
 
@@ -21,10 +20,7 @@ It assumes that the area used in the scenario is already clear of any pre-existi
 
 ## Resources
 ### flight_intents
-If the jurisdiction in which these tests are being conducted does not have a priority level at which conflicts are not allowed, the FlightIntentsResource must be None to prevent the
-execution of this test.
-
-Otherwise, the FlightIntentsResource must provide the following flight intents:
+The FlightIntentsResource must provide the following flight intents:
 
 <table>
   <tr>
@@ -58,9 +54,10 @@ Otherwise, the FlightIntentsResource must provide the following flight intents:
   </tr>
 </table>
 
-Because the scenario involves injection of intents, all accepted intents must be discoverable during the execution of the
-test scenario. Additionally, their end time must leave sufficient time for the execution of the test scenario. For the
-sake of simplicity, it is recommended to set the start and end times of all the intents to the same range.
+Because the scenario involves activation of intents and a nonconforming intent, 
+all activated and nonconforming intents must be active during the execution of the test scenario. 
+Additionally, their end time must leave sufficient time for the execution of the test scenario. 
+For the sake of simplicity, it is recommended to set the start and end times of all the intents to the same range.
 
 ### tested_uss
 FlightPlannerResource that is under test and be used to inject conflicting Flight 2 and will manage Flight 1 and its variants.
