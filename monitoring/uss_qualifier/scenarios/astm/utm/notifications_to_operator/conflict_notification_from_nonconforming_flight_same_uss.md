@@ -61,7 +61,7 @@ Additionally, their end time must leave sufficient time for the execution of the
 For the sake of simplicity, it is recommended to set the start and end times of all the intents to the same range.
 
 ### tested_uss
-FlightPlannerResource that is under test and be used to inject control Flight 2 and will manage conflicting Flight 1 and its variant. Note that this tested USS needs to support the CMSA role in order to transition to the Nonconforming state in order to create a conflict.
+FlightPlannerResource that is under test and be used to inject control Flight 2 and will manage conflicting Flight 1 and its variant. Note that this tested USS needs to support the CMSA role in order to transition a flight to the `Nonconforming` state in order to create a conflict.
 
 ### dss
 DSSInstanceResource that provides access to a DSS instance where flight creation/sharing can be verified.
