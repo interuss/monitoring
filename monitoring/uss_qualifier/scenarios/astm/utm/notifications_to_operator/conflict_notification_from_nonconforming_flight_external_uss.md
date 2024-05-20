@@ -65,7 +65,7 @@ FlightPlannerResource that will be used to inject control Flight 2.
 
 ### control_uss
 FlightPlannerResource that is under test and will manage conflicting Flight 1 and its variant. Note that this control USS needs to support the
-CMSA role in order to transition to the `Nonconforming` state in order to create a pre-existing conflict among equal-priority operational intents.
+CMSA role in order to transition a flight to the `Nonconforming` state.
 
 ### dss
 DSSInstanceResource that provides access to a DSS instance where flight creation/sharing can be verified.
