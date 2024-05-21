@@ -70,8 +70,9 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 
 ## Prerequisites check test case
 
-### [Verify area is clear test step](../clear_area_validation.md)
+### Verify area is clear test step
 
+#### [Verify area is clear](../clear_area_validation.md)
 While this scenario assumes that the area used is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario) in order to avoid a large number of area-clearing operations, the scenario will not proceed correctly if the area was left in a dirty state following a previous scenario that was supposed to leave the area clear.  This test step verifies that the area is clear.
 
 ## Attempt to create new nonconforming flight into conflict test case
@@ -91,7 +92,9 @@ The test driver instructs the tested USS to create Flight 1 as nonconforming. Th
 #### [Validate Flight 1 sharing](../validate_shared_operational_intent.md)
 Flight 1 should be successfully logged in the DSS and available to be shared.
 
-### [Delete Flight 1 test step](../../../flight_planning/delete_flight_intent.md)
+### Delete Flight 1 test step
+
+#### [Delete Flight 1](../../../flight_planning/delete_flight_intent.md)
 To prepare for the next test case, Flight 1 must be removed from the system.
 
 
@@ -112,6 +115,8 @@ The test driver instructs the tested USS to modify Flight 1c into a larger Nonco
 #### [Validate Flight 1 sharing](../validate_shared_operational_intent.md)
 Flight 1 should be successfully logged in the DSS and available to be shared.
 
+## Validate tested USS conflict notifications to user test case
+
 ### Validate tested USS conflict notifications to user test step
 
 Wait a minimum of 15 seconds before continuing to give system time to process messages. 
@@ -122,7 +127,10 @@ The test driver checks conflict notification logs of tested USS to verify that n
 #### [Validate tested USS conflict notification to user for modified flight](test_steps/validate_user_conflict_notification_with_another_flight.md)
 The test driver also checks conflict notification logs of tested USS to verify that notification was sent to Flight 1 due to conflict with Flight 2 from case "Attempt to modify planned flight into nonconforming conflict test case".
 
-## Cleanup
+## Cleanup test case
+
+### Cleanup test step
+
 #### [Clear flights from control USS and tested USS](test_steps/clear_flights.md)
 
 The test driver clears flights from control USS and tested USS.
