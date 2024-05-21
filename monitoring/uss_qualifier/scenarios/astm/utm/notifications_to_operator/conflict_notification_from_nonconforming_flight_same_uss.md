@@ -92,12 +92,15 @@ Flight 2 should be successfully activated by the tested USS.
 #### [Validate Flight 2 sharing](../validate_shared_operational_intent.md)
 
 ### Create nonconforming Flight 1 test step
+
 #### [Create nonconflorming Flight 1](test_steps/create_nonconforming_flight.md)
 The test driver instructs the tested USS to create Flight 1 as nonconforming. This makes nonconforming Flight 1 conflict with activated Flight 2.
 
 #### [Validate Flight 1 sharing](../validate_shared_operational_intent.md)
 
-### [Delete Flight 1 test step](../../../flight_planning/delete_flight_intent.md)
+### Delete Flight 1 test step
+
+#### [Delete Flight 1](../../../flight_planning/delete_flight_intent.md)
 To prepare for the next test case, Flight 1 must be removed from the system.
 
 ## Attempt to modify planned flight into conflict test case
@@ -116,7 +119,7 @@ The test driver instructs the tested USS to modify Flight 1c into a larger Nonco
 
 #### [Validate Flight 1 sharing](../validate_shared_operational_intent.md)
 
-### Validate tested USS conflict notification to user
+### Validate tested USS conflict notifications to user test step
 
 #### [Validate tested USS conflict notifications to user from attempted new planned flight](test_steps/validate_user_conflict_notification_from_other_flight.md)
 The test driver waits 12 seconds and checks conflict notification logs of tested USS to verify that notification was sent to Flight 1 due to conflict with Flight 2 from case "Attempt to plan flight into conflict test case".
