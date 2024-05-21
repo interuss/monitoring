@@ -69,7 +69,9 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 
 ## Prerequisites check test case
 
-### [Verify area is clear test step](../clear_area_validation.md)
+### Verify area is clear test step
+
+#### [Verify area is clear](../clear_area_validation.md)
 
 While this scenario assumes that the area used is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario) in order to avoid a large number of area-clearing operations, the scenario will not proceed correctly if the area was left in a dirty state following a previous scenario that was supposed to leave the area clear.  This test step verifies that the area is clear.
 
@@ -119,15 +121,23 @@ The test driver instructs the tested USS to modify Flight 1c into a larger Nonco
 
 #### [Validate Flight 1 sharing](../validate_shared_operational_intent.md)
 
+## Validate tested USS conflict notifications to user test case
+
 ### Validate tested USS conflict notifications to user test step
 
+The test driver waits a minimum of 12 seconds to allow system to process messages.
+
 #### [Validate tested USS conflict notifications to user from attempted new planned flight](test_steps/validate_user_conflict_notification_from_other_flight.md)
-The test driver waits 12 seconds and checks conflict notification logs of tested USS to verify that notification was sent to Flight 1 due to conflict with Flight 2 from case "Attempt to plan flight into conflict test case".
+The test driver checks conflict notification logs of tested USS to verify that notification was sent to Flight 1 due to conflict with Flight 2 from case "Attempt to plan flight into conflict test case".
 
 #### [Validate tested USS conflict notification to user from attempted modified flight](test_steps/validate_user_conflict_notification_from_other_flight.md)
 The test driver also verifies that notification was sent to Flight 1c due to conflict with Flight 2 from case "Attempt to modify planned flight into conflict test case".
 
 
-## Cleanup
-### ⚠️ Successful flight deletion check
-**[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../requirements/interuss/automated_testing/flight_planning.md)**
+## Cleanup test case
+
+### Cleanup test step
+
+#### [Clear flights from control USS and tested USS](test_steps/clear_flights.md)
+
+The test driver clears flights from control USS and tested USS.
