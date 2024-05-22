@@ -6,8 +6,4 @@ where we confirm that a USS availability can be correctly read from a DSS instan
 ## 🛑 USS Availability can be requested check
 
 If, when queried for the availability of a USS using valid credentials, the DSS does not return a valid 200 response,
-it is in violation of the OpenAPI spec referenced by DSS0005.
-
-TODO unclear which requirement to point to: DSS0005,[1-5] do not cover this endpoint. DSS0210,A2-7-2,6 is about synchronization.
-Should we add a 'synthetic' requirement based on the OpenAPI spec, as it was done for the NetRID requirements?
-
+it is in violation of the OpenAPI specification referenced by **[astm.f3548.v21.DSS0100,1](../../../../../../requirements/astm/f3548/v21.md)**.

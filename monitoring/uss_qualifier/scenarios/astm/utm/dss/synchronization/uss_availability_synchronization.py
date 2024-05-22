@@ -72,7 +72,7 @@ class USSAvailabilitySynchronization(TestScenario):
         self.begin_test_scenario(context)
 
         self.begin_test_case("Setup")
-        self.begin_test_step("Set test USS to Unknown availability")
+        self.begin_test_step("Ensure test USS has Unknown availability")
         self._ensure_test_uss_availability_unknown()
         self.end_test_step()
         self.end_test_case()
@@ -203,11 +203,8 @@ class USSAvailabilitySynchronization(TestScenario):
 
     def _ensure_test_uss_availability_unknown(self, check_consistency: bool = True):
         """
-        Ensure that the availability of the USS being used for the test is set to 'Unknown'.
-        """
-        """
-        Set the availability of the USS being used for the test to 'Unknown',
-        the default state for USS availability when nothing else is known:
+        Ensure that the availability of the USS being used for the test is set to 'Unknown',
+        the default state for USS availability when nothing else is known.
         We want to both start and end this scenario with this state.
         """
 
@@ -230,9 +227,6 @@ class USSAvailabilitySynchronization(TestScenario):
 
         self._current_version = availability.version
 
-        if not check_consistency:
-            return
-
         # If the state is not currently unknown, we set it to unknown
         if availability.status.availability != UssAvailabilityState.Unknown:
             with self.check("USS Availability can be set to Unknown") as check:
@@ -248,6 +242,9 @@ class USSAvailabilitySynchronization(TestScenario):
                         details=qe.msg,
                         query_timestamps=qe.query_timestamps,
                     )
+
+        if not check_consistency:
+            return
 
         self._query_and_expect_on_secondaries(
             self._uss_id, UssAvailabilityState.Unknown, self._current_version

@@ -25,7 +25,19 @@ for which availabilities will be updated.
 For the setup of this test case, the scenario ensures that the availability for the USS specified in the `client_identity` resource
 is `Unknown`, which is the default expected state when nothing else is known.
 
-### [Set test USS to Unknown availability](../fragments/availability/cleanup.md) test step
+### Ensure test USS has Unknown availability test step
+
+This step ensures that the scenario starts from a state where the USS availability is `Unknown`.
+
+#### 🛑 USS Availability can be requested check
+
+If, when queried for the availability of a USS using valid credentials, the DSS does not return a valid 200 response,
+it is in violation of the OpenAPI spec referenced by **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 USS Availability can be set to Unknown check
+
+A valid request to set the availability of a USS to `Unknown` should be accepted by the DSS,
+otherwise it is failing to implement the OpenAPI spec referenced by **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Consistent availability](../fragments/availability/sync.md)
 
@@ -79,13 +91,23 @@ to receive an `Unknown` availability along with an unset version. This should be
 #### 🛑 Main DSS instance reports Unknown availability check
 
 If the primary DSS instance does not return an `Unknown` availability for a USS identifier that has not received any updates,
-it is in violation of the OpenAPI spec referenced by DSS0005.
+it is in violation of the OpenAPI spec referenced by **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### ⚠️ Availability version for an unknown USS should be empty check
 
 If the primary DSS instance reports a non-empty version for the availability of an USS identifier that should not be known to the DSS,
-it is in violation of the OpenAPI spec referenced by DSS0005.
+it is in violation of the OpenAPI spec referenced by **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Consistent availability](../fragments/availability/sync.md)
 
-## [Cleanup](../fragments/availability/cleanup.md)
+## Cleanup
+
+#### ⚠️ USS Availability can be requested check
+
+If, when queried for the availability of a USS using valid credentials, the DSS does not return a valid 200 response,
+it is in violation of the OpenAPI spec referenced by **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ USS Availability can be set to Unknown check
+
+A valid request to set the availability of a USS to `Unknown` should be accepted by the DSS,
+otherwise it is failing to implement the OpenAPI spec referenced by **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
