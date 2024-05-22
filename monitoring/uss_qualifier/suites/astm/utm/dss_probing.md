@@ -4,19 +4,20 @@
 
 ## [Actions](../../README.md#actions)
 
-1. Scenario: [ASTM F3548-21 UTM DSS Operational Intent Reference State Transitions](../../../scenarios/astm/utm/dss/op_intent_ref_state_transitions.md) ([`scenarios.astm.utm.dss.OpIntentReferenceStateTransitions`](../../../scenarios/astm/utm/dss/op_intent_ref_state_transitions.py))
-2. Scenario: [ASTM SCD DSS: Subscription and entity deletion interaction](../../../scenarios/astm/utm/dss/subscription_interactions_deletion.md) ([`scenarios.astm.utm.dss.SubscriptionInteractionsDeletion`](../../../scenarios/astm/utm/dss/subscription_interactions_deletion.py))
-3. Scenario: [ASTM SCD DSS: Subscription and entity interaction](../../../scenarios/astm/utm/dss/subscription_interactions.md) ([`scenarios.astm.utm.dss.SubscriptionInteractions`](../../../scenarios/astm/utm/dss/subscription_interactions.py))
-4. Scenario: [ASTM SCD DSS: Operational Intent Reference Key Validation](../../../scenarios/astm/utm/dss/op_intent_ref_key_validation.md) ([`scenarios.astm.utm.dss.OIRKeyValidation`](../../../scenarios/astm/utm/dss/op_intent_ref_key_validation.py))
-5. Scenario: [ASTM SCD DSS: Operational Intent Reference Synchronization](../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md) ([`scenarios.astm.utm.dss.synchronization.OIRSynchronization`](../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.py))
-6. Scenario: [ASTM SCD DSS: Interfaces authentication](../../../scenarios/astm/utm/dss/authentication/authentication_validation.md) ([`scenarios.astm.utm.dss.authentication.AuthenticationValidation`](../../../scenarios/astm/utm/dss/authentication/authentication_validation.py))
-7. Scenario: [ASTM SCD DSS: Subscription Simple](../../../scenarios/astm/utm/dss/subscription_simple.md) ([`scenarios.astm.utm.dss.SubscriptionSimple`](../../../scenarios/astm/utm/dss/subscription_simple.py))
-8. Scenario: [ASTM SCD DSS: Subscription Validation](../../../scenarios/astm/utm/dss/subscription_validation.md) ([`scenarios.astm.utm.dss.SubscriptionValidation`](../../../scenarios/astm/utm/dss/subscription_validation.py))
-9. Scenario: [ASTM F3548-21 UTM DSS Operational Intent Reference Access Control](../../../scenarios/astm/utm/dss/op_intent_ref_access_control.md) ([`scenarios.astm.utm.dss.OpIntentReferenceAccessControl`](../../../scenarios/astm/utm/dss/op_intent_ref_access_control.py))
-10. Scenario: [ASTM F3548-21 UTM DSS interoperability](../../../scenarios/astm/utm/dss/dss_interoperability.md) ([`scenarios.astm.utm.dss.DSSInteroperability`](../../../scenarios/astm/utm/dss/dss_interoperability.py))
-11. Scenario: [ASTM SCD DSS: Subscription Synchronization](../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md) ([`scenarios.astm.utm.dss.synchronization.SubscriptionSynchronization`](../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.py))
-12. Scenario: [ASTM UTM DSS: Direct CRDB access](../../../scenarios/astm/utm/dss/crdb_access.md) ([`scenarios.astm.utm.dss.CRDBAccess`](../../../scenarios/astm/utm/dss/crdb_access.py))
-13. Scenario: [ASTM SCD DSS: Report](../../../scenarios/astm/utm/dss/report.md) ([`scenarios.astm.utm.dss.Report`](../../../scenarios/astm/utm/dss/report.py))
+1. Scenario: [ASTM SCD DSS: USS Availability Synchronization](../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md) ([`scenarios.astm.utm.dss.synchronization.USSAvailabilitySynchronization`](../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.py))
+2. Scenario: [ASTM F3548-21 UTM DSS Operational Intent Reference State Transitions](../../../scenarios/astm/utm/dss/op_intent_ref_state_transitions.md) ([`scenarios.astm.utm.dss.OpIntentReferenceStateTransitions`](../../../scenarios/astm/utm/dss/op_intent_ref_state_transitions.py))
+3. Scenario: [ASTM SCD DSS: Subscription and entity deletion interaction](../../../scenarios/astm/utm/dss/subscription_interactions_deletion.md) ([`scenarios.astm.utm.dss.SubscriptionInteractionsDeletion`](../../../scenarios/astm/utm/dss/subscription_interactions_deletion.py))
+4. Scenario: [ASTM SCD DSS: Subscription and entity interaction](../../../scenarios/astm/utm/dss/subscription_interactions.md) ([`scenarios.astm.utm.dss.SubscriptionInteractions`](../../../scenarios/astm/utm/dss/subscription_interactions.py))
+5. Scenario: [ASTM SCD DSS: Operational Intent Reference Key Validation](../../../scenarios/astm/utm/dss/op_intent_ref_key_validation.md) ([`scenarios.astm.utm.dss.OIRKeyValidation`](../../../scenarios/astm/utm/dss/op_intent_ref_key_validation.py))
+6. Scenario: [ASTM SCD DSS: Operational Intent Reference Synchronization](../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md) ([`scenarios.astm.utm.dss.synchronization.OIRSynchronization`](../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.py))
+7. Scenario: [ASTM SCD DSS: Interfaces authentication](../../../scenarios/astm/utm/dss/authentication/authentication_validation.md) ([`scenarios.astm.utm.dss.authentication.AuthenticationValidation`](../../../scenarios/astm/utm/dss/authentication/authentication_validation.py))
+8. Scenario: [ASTM SCD DSS: Subscription Simple](../../../scenarios/astm/utm/dss/subscription_simple.md) ([`scenarios.astm.utm.dss.SubscriptionSimple`](../../../scenarios/astm/utm/dss/subscription_simple.py))
+9. Scenario: [ASTM SCD DSS: Subscription Validation](../../../scenarios/astm/utm/dss/subscription_validation.md) ([`scenarios.astm.utm.dss.SubscriptionValidation`](../../../scenarios/astm/utm/dss/subscription_validation.py))
+10. Scenario: [ASTM F3548-21 UTM DSS Operational Intent Reference Access Control](../../../scenarios/astm/utm/dss/op_intent_ref_access_control.md) ([`scenarios.astm.utm.dss.OpIntentReferenceAccessControl`](../../../scenarios/astm/utm/dss/op_intent_ref_access_control.py))
+11. Scenario: [ASTM F3548-21 UTM DSS interoperability](../../../scenarios/astm/utm/dss/dss_interoperability.md) ([`scenarios.astm.utm.dss.DSSInteroperability`](../../../scenarios/astm/utm/dss/dss_interoperability.py))
+12. Scenario: [ASTM SCD DSS: Subscription Synchronization](../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md) ([`scenarios.astm.utm.dss.synchronization.SubscriptionSynchronization`](../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.py))
+13. Scenario: [ASTM UTM DSS: Direct CRDB access](../../../scenarios/astm/utm/dss/crdb_access.md) ([`scenarios.astm.utm.dss.CRDBAccess`](../../../scenarios/astm/utm/dss/crdb_access.py))
+14. Scenario: [ASTM SCD DSS: Report](../../../scenarios/astm/utm/dss/report.md) ([`scenarios.astm.utm.dss.Report`](../../../scenarios/astm/utm/dss/report.py))
 
 ## [Checked requirements](../../README.md#checked-requirements)
 
@@ -28,7 +29,7 @@
     <th><a href="../../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="43" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
+    <td rowspan="48" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0005,1</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/dss/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a><br><a href="../../../scenarios/astm/utm/dss/op_intent_ref_state_transitions.md">ASTM F3548-21 UTM DSS Operational Intent Reference State Transitions</a><br><a href="../../../scenarios/astm/utm/dss/authentication/authentication_validation.md">ASTM SCD DSS: Interfaces authentication</a><br><a href="../../../scenarios/astm/utm/dss/op_intent_ref_key_validation.md">ASTM SCD DSS: Operational Intent Reference Key Validation</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/subscription_simple.md">ASTM SCD DSS: Subscription Simple</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions_deletion.md">ASTM SCD DSS: Subscription and entity deletion interaction</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions.md">ASTM SCD DSS: Subscription and entity interaction</a></td>
@@ -51,7 +52,12 @@
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0020</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0100,1</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0100,2</a></td>
@@ -144,6 +150,21 @@
     <td><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a></td>
   </tr>
   <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,3a</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,3b</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,3c</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
+  </tr>
+  <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,A2-7-2,1a</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a></td>
@@ -219,6 +240,11 @@
     <td><a href="../../../scenarios/astm/utm/dss/subscription_interactions_deletion.md">ASTM SCD DSS: Subscription and entity deletion interaction</a></td>
   </tr>
   <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,A2-7-2,6</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
+  </tr>
+  <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,A2-7-2,7</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/dss/authentication/authentication_validation.md">ASTM SCD DSS: Interfaces authentication</a></td>
@@ -226,7 +252,7 @@
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0215</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0300</a></td>
