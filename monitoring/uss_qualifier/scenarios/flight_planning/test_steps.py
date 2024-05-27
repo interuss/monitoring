@@ -53,17 +53,22 @@ def plan_flight(
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     additional_fields: Optional[dict] = None,
+    nearby_potential_conflict: bool = False,
 ) -> Tuple[PlanningActivityResponse, Optional[str]]:
     """Plan a flight intent that should result in success.
 
     This function implements the test step fragment described in
     plan_flight_intent.md.
 
+    Parameters:
+      nearby_potential_conflict: set to True when there is a nearby flight that may be detected as conflicting by the USS if it does not compute intersection correctly, this will trigger a validation of GEN0500.
+
     Returns:
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
     """
-    return submit_flight(
+
+    resp, flight_id = submit_flight(
         scenario=scenario,
         success_check="Successful planning",
         expected_results={(PlanningActivityResult.Completed, FlightPlanStatus.Planned)},
@@ -72,6 +77,16 @@ def plan_flight(
         flight_info=flight_info,
         additional_fields=additional_fields,
     )
+
+    if (
+        nearby_potential_conflict
+        and resp.flight_plan_status == FlightPlanStatus.Planned
+    ):
+        scenario.check(
+            "Validate tested USS intersection algorithm", flight_planner.participant_id
+        ).record_passed()
+
+    return resp, flight_id
 
 
 def modify_planned_flight(

@@ -329,6 +329,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 self,
                 self.tested_uss,
                 flight1c_planned,
+                nearby_potential_conflict=True,
             )
             flight_1_oi_ref = validator.expect_shared(flight1c_planned)
         self.end_test_step()
