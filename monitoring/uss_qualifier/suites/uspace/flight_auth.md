@@ -172,7 +172,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0210,A2-7-2,1b</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a></td>
+    <td><a href="../../scenarios/astm/utm/dss/synchronization/constraint_ref_synchronization.md">ASTM SCD DSS: Constraint Reference Synchronization</a><br><a href="../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0210,A2-7-2,1c</a></td>
@@ -182,7 +182,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0210,A2-7-2,1d</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a></td>
+    <td><a href="../../scenarios/astm/utm/dss/synchronization/constraint_ref_synchronization.md">ASTM SCD DSS: Constraint Reference Synchronization</a><br><a href="../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">DSS0210,A2-7-2,1e</a></td>
