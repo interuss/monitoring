@@ -12,6 +12,18 @@ is failing to implement one of the following requirements:
 
 As a result, the DSS pool under test is failing to meet **[astm.f3548.v21.DSS0020](../../../../../../requirements/astm/f3548/v21.md)**.
 
+## 🛑 Propagated constraint reference general area is synchronized check
+
+When querying a secondary DSS for constraints in the planning area that contains the propagated
+constraint, if the propagated constraint is not contained in the response, then the general area in which the
+propagated constraint is located is not synchronized across DSS instances.
+As such, either the primary or the secondary DSS fail to properly one of the following requirements:
+
+**[astm.f3548.v21.DSS0210,2e](../../../../../../requirements/astm/f3548/v21.md)**, if the API is not working as described by the OpenAPI specification;
+**[astm.f3548.v21.DSS0215](../../../../../../requirements/astm/f3548/v21.md)**, if the DSS is returning API calls to the client before having updated its underlying distributed storage.
+
+As a result, the DSS pool under test is failing to meet **[astm.f3548.v21.DSS0020](../../../../../../requirements/astm/f3548/v21.md)**.
+
 ## ⚠️ Propagated constraint reference contains the correct manager check
 
 If the constraint reference returned by a DSS to which the constraint reference was synchronized to does not contain the correct manager,

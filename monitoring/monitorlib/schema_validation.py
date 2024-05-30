@@ -75,7 +75,7 @@ class F3548_21(str, Enum):
     )
     GetConstraintReferenceResponse = "components.schemas.GetConstraintReferenceResponse"
     QueryConstraintReferenceResponse = (
-        "components.schemas.QueryConstraintReferenceResponse"
+        "components.schemas.QueryConstraintReferencesResponse"
     )
 
 
