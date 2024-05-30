@@ -333,6 +333,36 @@ class ConstraintReferenceValidator:
             expected_ovn=None,
         )
 
+    def validate_mutated_cr(
+        self,
+        expected_cr_id: EntityID,
+        mutated_cr: fetch.Query,
+        previous_ovn: str,
+        previous_version: int,
+    ) -> None:
+        """Validate a CR that was just mutated, meaning we have a previous version and OVN to compare to.
+        Callers must specify if this is an implicit CR or not."""
+        t_dss = mutated_cr.request.timestamp
+
+        # Validate the response schema
+        if not self._validate_put_cr_response_schema(mutated_cr, t_dss, "mutate"):
+            return
+
+        cr = ImplicitDict.parse(
+            mutated_cr.response.json, ChangeConstraintReferenceResponse
+        ).constraint_reference
+
+        # Validate the CR itself
+        self._validate_cr(
+            expected_entity_id=expected_cr_id,
+            dss_cr=cr,
+            t_dss=t_dss,
+            previous_version=previous_version,
+            expected_version=None,
+            previous_ovn=previous_ovn,
+            expected_ovn=None,
+        )
+
     def validate_fetched_cr(
         self,
         expected_cr_id: EntityID,
