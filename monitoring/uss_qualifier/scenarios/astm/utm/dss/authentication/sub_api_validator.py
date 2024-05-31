@@ -6,7 +6,6 @@ from uas_standards.astm.f3548.v21.api import (
     OperationID,
     QuerySubscriptionParameters,
 )
-from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.fetch import QueryType

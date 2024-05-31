@@ -68,34 +68,36 @@ class AuthenticationValidation(TestScenario):
                  but has no other requirements.
         """
         super().__init__()
-        # This is the proper scope for interactions with the DSS in this scenario
-        scopes = {Scope.StrategicCoordination: "create and delete subscriptions"}
 
-        # For the 'wrong' scope we pick anything from the available scopes that isn't the SCD or empty scope:
-        available_scopes = dss.get_authorized_scopes()
-        available_scopes.discard(Scope.StrategicCoordination)
-        available_scopes.discard("")
+        # This is the proper scope for interactions with the DSS for subscriptions and operational intent
+        # references in this scenario
+        scd_scopes = {Scope.StrategicCoordination: "create and delete subscriptions"}
 
-        if len(available_scopes) > 0:
-            # Sort the scopes to obtain a deterministic order, pick the first one
-            available_scopes = sorted(available_scopes)
-            self._wrong_scope = available_scopes[0]
-            scopes[
-                self._wrong_scope
+        # For the 'wrong' scope we pick anything from the available scopes that isn't the SCD, CMSA or empty scope:
+        self._wrong_scope_for_scd = dss.get_authorized_scope_not_in(
+            [
+                Scope.StrategicCoordination,
+                # CMSA is excluded too, as it is allowed to do certain operations on the OIR endpoints
+                Scope.ConformanceMonitoringForSituationalAwareness,
+                "",
+            ]
+        )
+
+        if self._wrong_scope_for_scd is not None:
+            scd_scopes[
+                self._wrong_scope_for_scd
             ] = "Attempt to query subscriptions with wrong scope"
-        else:
-            self._wrong_scope = None
 
         self._test_missing_scope = False
         if dss.can_use_scope(""):
-            scopes[""] = "Attempt to query subscriptions with missing scope"
+            scd_scopes[""] = "Attempt to query subscriptions with missing scope"
             self._test_missing_scope = True
 
         # Note: .get_instance should be called once we know every scope we will need,
         #  in order to guarantee that they are indeed available.
-        self._dss = dss.get_instance(scopes)
+        self._scd_dss = dss.get_instance(scd_scopes)
 
-        self._pid = [self._dss.participant_id]
+        self._pid = [dss.participant_id]
         self._test_id = id_generator.id_factory.make_id(self.SUB_TYPE)
         self._planning_area = planning_area.specification
 
@@ -106,41 +108,41 @@ class AuthenticationValidation(TestScenario):
         )
 
         # Session that won't provide a token at all
-        self._no_auth_session = UTMClientSession(self._dss.base_url, auth_adapter=None)
+        self._no_auth_session = UTMClientSession(dss.base_url, auth_adapter=None)
 
         # Session that should provide a well-formed token with a wrong signature
         self._invalid_token_session = UTMClientSession(
-            self._dss.base_url, auth_adapter=InvalidTokenSignatureAuth()
+            dss.base_url, auth_adapter=InvalidTokenSignatureAuth()
         )
 
     def run(self, context: ExecutionContext):
         generic_validator = GenericAuthValidator(
-            self, self._dss, Scope.StrategicCoordination
+            self, self._scd_dss, Scope.StrategicCoordination
         )
 
         self._sub_validator = SubscriptionAuthValidator(
             scenario=self,
             generic_validator=generic_validator,
-            dss=self._dss,
+            dss=self._scd_dss,
             test_id=self._test_id,
             planning_area=self._planning_area,
             planning_area_volume4d=self._planning_area_volume4d,
             no_auth_session=self._no_auth_session,
             invalid_token_session=self._invalid_token_session,
-            test_wrong_scope=self._wrong_scope,
+            test_wrong_scope=self._wrong_scope_for_scd,
             test_missing_scope=self._test_missing_scope,
         )
 
         self._oir_validator = OperationalIntentRefAuthValidator(
             scenario=self,
             generic_validator=generic_validator,
-            dss=self._dss,
+            dss=self._scd_dss,
             test_id=self._test_id,
             planning_area=self._planning_area,
             planning_area_volume4d=self._planning_area_volume4d,
             no_auth_session=self._no_auth_session,
             invalid_token_session=self._invalid_token_session,
-            test_wrong_scope=self._wrong_scope,
+            test_wrong_scope=self._wrong_scope_for_scd,
             test_missing_scope=self._test_missing_scope,
         )
 
@@ -159,13 +161,15 @@ class AuthenticationValidation(TestScenario):
         self._setup_case()
         self.begin_test_case("Endpoint authorization")
 
-        if self._wrong_scope:
+        if self._wrong_scope_for_scd:
             self.record_note(
-                "wrong_scope",
-                f"Incorrect scope testing enabled with scope {self._wrong_scope}.",
+                "wrong_scope_scd",
+                f"Incorrect scope testing enabled for SCD endpoints with scope {self._wrong_scope_for_scd}.",
             )
         else:
-            self.record_note("wrong_scope", "Incorrect scope testing disabled.")
+            self.record_note(
+                "wrong_scope_scd", "Incorrect scope testing disabled for SCD endpoints"
+            )
 
         if self._test_missing_scope:
             self.record_note("missing_scope", "Missing scope testing enabled.")
@@ -203,13 +207,13 @@ class AuthenticationValidation(TestScenario):
 
         # Drop OIR's first: subscriptions may be tied to them and can't be deleted
         # as long as they exist
-        test_step_fragments.cleanup_op_intent(self, self._dss, self._test_id)
-        test_step_fragments.cleanup_sub(self, self._dss, self._test_id)
+        test_step_fragments.cleanup_op_intent(self, self._scd_dss, self._test_id)
+        test_step_fragments.cleanup_sub(self, self._scd_dss, self._test_id)
 
     def _ensure_no_active_subs_exist(self):
         test_step_fragments.cleanup_active_subs(
             self,
-            self._dss,
+            self._scd_dss,
             self._planning_area_volume4d,
         )
 
