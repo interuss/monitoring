@@ -38,7 +38,11 @@ Optional scopes that will allow the scenario to provide additional coverage:
 
 ### [Ensure clean workspace test step](../clean_workspace.md)
 
-This step ensures that no entity with the known test IDs exists in the DSS.
+This step ensures that the availability for the test identifier is set to `Unknown`.
+
+#### [Availability can be requested](../fragments/availability/read.md)
+
+#### [Availability can be set](../fragments/availability/update.md)
 
 ## Endpoint authorization test case
 
@@ -313,6 +317,77 @@ it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../require
 If the DSS does not allow searching for operational intents when valid credentials are presented,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../requirements/astm/f3548/v21.md)**.
 
+### Availability endpoints authentication test step
+
+#### 🛑 Unauthorized requests return the proper error message body check
+
+If the DSS under test does not return a proper error message body when an unauthorized request is received,
+it fails to properly implement the OpenAPI specification that is part of **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Read availability with missing credentials check
+
+If the DSS under test allows the fetching of a USS's availability without any credentials being presented,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Read availability with invalid credentials check
+
+If the DSS under test allows the fetching of a USS's availability with credentials that are well-formed but invalid,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Read availability with missing scope check
+
+If the DSS under test allows the fetching of a USS's availability with valid credentials but a missing scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Read availability with incorrect scope check
+
+If the DSS under test allows the fetching of a USS's availability with valid credentials but an incorrect scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Read availability with valid credentials check
+
+If the DSS does not allow fetching a USS's availability when valid credentials are presented,
+it is in violation of **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 USS Availability Get response format conforms to spec check
+
+The response to a successful USS Availability request is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21,
+otherwise, the DSS is failing to implement **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Set availability with missing credentials check
+
+If the DSS under test allows the setting of a USS's availability without any credentials being presented,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Set availability with invalid credentials check
+
+If the DSS under test allows the setting of a USS's availability with credentials that are well-formed but invalid,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Set availability with missing scope check
+
+If the DSS under test allows the setting of a USS's availability with valid credentials but a missing scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Set availability with incorrect scope check
+
+If the DSS under test allows the setting of a USS's availability with valid credentials but an incorrect scope,
+it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Set availability with valid credentials check
+
+If the DSS does not allow setting a USS's availability when valid credentials are presented,
+it is in violation of **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 USS Availability Set response format conforms to spec check
+
+The response to a successful USS Availability Set request is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21,
+otherwise, the DSS is failing to implement **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
+
 ## [Cleanup](../clean_workspace.md)
+
+### [Availability can be requested](../fragments/availability/read.md)
+
+### [Availability can be set](../fragments/availability/update.md)
 
 The cleanup phase of this test scenario removes the subscription with the known test ID if it has not been removed before.

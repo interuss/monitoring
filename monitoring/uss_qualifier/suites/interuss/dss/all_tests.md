@@ -436,7 +436,7 @@
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0100,1</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/authentication/authentication_validation.md">ASTM SCD DSS: Interfaces authentication</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0100,2</a></td>
