@@ -13,6 +13,7 @@ from uas_standards.astm.f3548.v21.api import (
 )
 
 from monitoring.monitorlib import schema_validation, fetch
+from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.monitorlib.schema_validation import F3548_21
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators import (
     fail_with_schema_errors,
@@ -58,8 +59,9 @@ class OIRValidator:
         self._pid = participant_id
         self._oir_params = oir_params
         self._expected_manager = expected_manager
-        self._expected_start = oir_params.extents[0].time_start.value.datetime
-        self._expected_end = oir_params.extents[-1].time_end.value.datetime
+        vol_collection = Volume4DCollection.from_f3548v21(oir_params.extents)
+        self._expected_start = vol_collection.time_start.datetime
+        self._expected_end = vol_collection.time_end.datetime
 
     def _fail_sub_check(
         self, sub_check: PendingCheck, summary: str, details: str, t_dss: datetime
