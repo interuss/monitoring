@@ -68,6 +68,9 @@ class AuthenticationValidation(TestScenario):
     _scd_dss: DSSInstance
     _availability_dss: DSSInstance
 
+    _wrong_scope_for_availability: Scope
+    _wrong_scope_for_scd: Scope
+
     def __init__(
         self,
         dss: DSSInstanceResource,

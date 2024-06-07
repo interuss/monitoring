@@ -80,6 +80,7 @@ class AvailabilityAuthValidator:
             if no_auth_q.status_code != 401:
                 check.record_failed(
                     summary=f"Expected 401, got {no_auth_q.status_code}",
+                    details=no_auth_q.failure_details,
                     query_timestamps=[no_auth_q.request.timestamp],
                 )
 
@@ -93,6 +94,7 @@ class AvailabilityAuthValidator:
             if invalid_token_q.status_code != 401:
                 check.record_failed(
                     summary=f"Expected 401, got {invalid_token_q.status_code}",
+                    details=invalid_token_q.failure_details,
                     query_timestamps=[invalid_token_q.request.timestamp],
                 )
 
@@ -107,6 +109,7 @@ class AvailabilityAuthValidator:
                 if no_scope_q.status_code != 401:
                     check.record_failed(
                         summary=f"Expected 401, got {no_scope_q.status_code}",
+                        details=no_scope_q.failure_details,
                         query_timestamps=[no_scope_q.request.timestamp],
                     )
 
@@ -123,7 +126,7 @@ class AvailabilityAuthValidator:
                 if wrong_scope_q.status_code != 403:
                     check.record_failed(
                         summary=f"Expected 403, got {wrong_scope_q.status_code}",
-                        details="With an incorrect scope, the DSS should return a 403 without any data.",
+                        details=wrong_scope_q.failure_details,
                         query_timestamps=[wrong_scope_q.request.timestamp],
                     )
 
@@ -138,6 +141,7 @@ class AvailabilityAuthValidator:
             if request_ok.status_code != 200:
                 check.record_failed(
                     summary=f"Expected 200, got {request_ok.status_code}",
+                    details=request_ok.failure_details,
                     query_timestamps=[request_ok.request.timestamp],
                 )
 
@@ -145,10 +149,10 @@ class AvailabilityAuthValidator:
             "USS Availability Get response format conforms to spec", self._pid
         ) as check:
             try:
-                parsed_resp = ImplicitDict.parse(
-                    request_ok.response.json, UssAvailabilityStatusResponse
+                parsed_resp = request_ok.parse_json_result(
+                    UssAvailabilityStatusResponse
                 )
-            except ValueError as e:
+            except QueryError as e:
                 check.record_failed(
                     summary="Could not parse the response body",
                     details=f"Could not parse the response body as a UssAvailabilityStatusResponse: {e}",
@@ -178,6 +182,7 @@ class AvailabilityAuthValidator:
             if no_auth_q.status_code != 401:
                 check.record_failed(
                     summary=f"Expected 401, got {no_auth_q.status_code}",
+                    details=no_auth_q.failure_details,
                     query_timestamps=[no_auth_q.request.timestamp],
                 )
 
@@ -195,6 +200,7 @@ class AvailabilityAuthValidator:
             if invalid_token_q.status_code != 401:
                 check.record_failed(
                     summary=f"Expected 401, got {invalid_token_q.status_code}",
+                    details=invalid_token_q.failure_details,
                     query_timestamps=[invalid_token_q.request.timestamp],
                 )
 
@@ -213,6 +219,7 @@ class AvailabilityAuthValidator:
                 if no_scope_q.status_code != 401:
                     check.record_failed(
                         summary=f"Expected 401, got {no_scope_q.status_code}",
+                        details=no_scope_q.failure_details,
                         query_timestamps=[no_scope_q.request.timestamp],
                     )
 
@@ -232,7 +239,7 @@ class AvailabilityAuthValidator:
                 if wrong_scope_q.status_code != 403:
                     check.record_failed(
                         summary=f"Expected 403, got {wrong_scope_q.status_code}",
-                        details="With an incorrect scope, the DSS should return a 403 without any data.",
+                        details=wrong_scope_q.failure_details,
                         query_timestamps=[wrong_scope_q.request.timestamp],
                     )
 
@@ -250,7 +257,7 @@ class AvailabilityAuthValidator:
             if request_ok.status_code != 200:
                 check.record_failed(
                     summary=f"Expected 200, got {request_ok.status_code}",
-                    details=f"Response body: {request_ok.response.json}",
+                    details=request_ok.failure_details,
                     query_timestamps=[request_ok.request.timestamp],
                 )
 
@@ -258,10 +265,8 @@ class AvailabilityAuthValidator:
             "USS Availability Set response format conforms to spec", self._pid
         ) as check:
             try:
-                _ = ImplicitDict.parse(
-                    request_ok.response.json, UssAvailabilityStatusResponse
-                )
-            except ValueError as e:
+                _ = request_ok.parse_json_result(UssAvailabilityStatusResponse)
+            except QueryError as e:
                 check.record_failed(
                     summary="Could not parse the response body",
                     details=f"Could not parse the response body as a UssAvailabilityStatusResponse: {e}",

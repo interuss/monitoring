@@ -435,6 +435,19 @@ class Query(ImplicitDict):
             else None
         )
 
+    @property
+    def failure_details(self) -> Optional[str]:
+        """
+        Returns the error message if one is available, otherwise returns the response content.
+        To be used to fill in the details of a check failure.
+        Note that 'failure' here is context dependent: possibly a 401 is expected and a 404 or 200 is returned,
+        in both situations we would like to return the most relevant information.
+        """
+        err_msg = self.error_message
+        if err_msg:
+            return err_msg
+        return self.response.json
+
     def get_client_sub(self):
         headers = self.request.headers
         if "Authorization" in headers:
