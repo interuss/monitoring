@@ -154,6 +154,12 @@ Flight 1 should not have been shared with the interoperability ecosystem since i
 #### [Plan Flight 1c](../../../../flight_planning/plan_flight_intent.md)
 The smaller Flight 1c form (which doesn't conflict with Flight 2) should be successfully planned by the tested USS.
 
+#### ℹ️ Validate tested USS intersection algorithm check
+Because Flight 2 is nearby Flight 1c, successful planning of Flight 1c indicates the tested USS is complying with the portion of
+**[astm.f3548.v21.GEN0500](../../../../../requirements/astm/f3548/v21.md)** that requires a USS to indicate two 4D volumes are non-intersecting when they are separated by more than 1 cm.
+
+This check does not fail if the planning is rejected.
+
 #### [Validate Flight 1c sharing](../../validate_shared_operational_intent.md)
 
 ### Attempt to modify planned Flight 1c into conflict test step

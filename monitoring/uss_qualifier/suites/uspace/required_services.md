@@ -722,7 +722,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">GEN0500</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
+    <td><a href="../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md">Validation of operational intents</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">OPIN0015</a></td>
