@@ -500,14 +500,6 @@ class OpIntentValidator(object):
                     query_timestamps=[oi_tel_query.request.timestamp],
                 )
 
-            if oi_tel is None:
-                check.record_failed(
-                    summary="Warning (not a failure): USS indicated that no operational intent telemetry was available",
-                    severity=Severity.Low,
-                    details=f"Received status code {oi_tel_query.status_code} from {self._flight_planner.participant_id} when querying for details of operational intent {oi_ref.id}",
-                    query_timestamps=[oi_tel_query.request.timestamp],
-                )
-
     def _evaluate_op_intent_validation(
         self, oi_full_query: fetch.Query
     ) -> Set[OpIntentValidationFailure]:

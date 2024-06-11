@@ -43,6 +43,9 @@ If the operational intent details reported by the USS do not match the user's fl
 
 ## 🛑 Operational intent telemetry retrievable check
 
-If the operational intent is in an off-nominal state and that its telemetry cannot be retrieved from the USS, this check will fail per **[astm.f3548.v21.SCD0100](../../../requirements/astm/f3548/v21.md)**.
+If:
+- the operational intent is in an off-nominal state,
+- that its telemetry cannot be retrieved from the USS, and
+- that the USS does not explicitly indicate that no telemetry is available,
 
-The USS may explicitly indicate that no telemetry is available for this operational intent, in which case, as a warning, this check will fail with a low severity.
+this check will fail per **[astm.f3548.v21.USS0105](../../../requirements/astm/f3548/v21.md)**.
