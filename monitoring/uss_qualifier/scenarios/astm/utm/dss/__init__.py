@@ -8,3 +8,4 @@ from .report import Report
 from .op_intent_ref_key_validation import OIRKeyValidation
 from .subscription_interactions import SubscriptionInteractions
 from .subscription_interactions_deletion import SubscriptionInteractionsDeletion
+from .oir_implicit_sub_handling import OIRImplicitSubHandling
