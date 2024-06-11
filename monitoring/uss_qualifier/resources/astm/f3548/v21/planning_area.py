@@ -34,6 +34,15 @@ class PlanningAreaSpecification(ImplicitDict):
     volume: Volume3D
     """3D volume of service area"""
 
+    def get_volume4d(
+        self, time_start: datetime.datetime, time_end: datetime.datetime
+    ) -> Volume4D:
+        return Volume4D(
+            volume=self.volume,
+            time_start=Time(time_start),
+            time_end=Time(time_end),
+        )
+
     def get_new_subscription_params(
         self,
         subscription_id: str,
@@ -83,13 +92,7 @@ class PlanningAreaSpecification(ImplicitDict):
         Note that this method allows building inconsistent parameters:
         """
         return PutOperationalIntentReferenceParameters(
-            extents=[
-                Volume4D(
-                    volume=self.volume,
-                    time_start=Time(time_start),
-                    time_end=Time(time_end),
-                ).to_f3548v21()
-            ],
+            extents=[self.get_volume4d(time_start, time_end).to_f3548v21()],
             key=key,
             state=state,
             uss_base_url=uss_base_url,
@@ -115,13 +118,7 @@ class PlanningAreaSpecification(ImplicitDict):
         as for testing authentication or parameter validation.
         """
         return PutConstraintReferenceParameters(
-            extents=[
-                Volume4D(
-                    volume=self.volume,
-                    time_start=Time(time_start),
-                    time_end=Time(time_end),
-                ).to_f3548v21()
-            ],
+            extents=[self.get_volume4d(time_start, time_end).to_f3548v21()],
             uss_base_url=self.base_url,
         )
 
