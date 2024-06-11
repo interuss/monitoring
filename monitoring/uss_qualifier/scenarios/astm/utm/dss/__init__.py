@@ -10,3 +10,4 @@ from .constraint_ref_simple import CRSimple
 from .op_intent_ref_simple import OIRSimple
 from .subscription_interactions import SubscriptionInteractions
 from .subscription_interactions_deletion import SubscriptionInteractionsDeletion
+from .oir_implicit_sub_handling import OIRImplicitSubHandling
