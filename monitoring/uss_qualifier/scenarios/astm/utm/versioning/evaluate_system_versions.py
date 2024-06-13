@@ -200,7 +200,9 @@ class EvaluateSystemVersions(TestScenario):
                             details=f"When queried for the version of the '{self._system_identity}' system, earlier response indicated '{resp.system_version}' but later response indicated '{test_env_versions[q.participant_id].version}'",
                             query_timestamps=[
                                 q.request.timestamp,
-                                test_env_versions[q.participant_id].query.request.timestamp,
+                                test_env_versions[
+                                    q.participant_id
+                                ].query.request.timestamp,
                             ],
                         )
 
