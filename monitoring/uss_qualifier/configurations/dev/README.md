@@ -1,0 +1,69 @@
+# Development test configurations
+
+The [test configurations](../README.md) in this folder represent common/useful test situations.
+
+## [dss_probing](dss_probing.yaml)
+
+Runs all tests available for an InterUSS DSS implementation deployment.
+
+## [f3548_self_contained](f3548_self_contained.yaml)
+
+A self-contained (all content is contained in a single YAML configuration file) test configuration which happens to test compliance to ASTM F3548-21 requirements in a particular regulatory environment.
+
+This configuration is a good example to start from to understand
+
+## [general_flight_auth](general_flight_auth.jsonnet)
+
+Demonstration of a test where a list of flight planning attempts has a corresponding list of expected outcomes.
+
+Demonstrates the use of jsonnet as a file format.
+
+## [generate_rid_test_data](generate_rid_test_data.yaml)
+
+Demonstrates simple in-configuration test suite definition with short test actions that don't have external dependencies.
+
+## [geoawareness_cis](geoawareness_cis.yaml)
+
+Demonstration of a test where a list of expected geospatial map feature queries has the corresponding expected outcomes.
+
+## [message_signing](message_signing.yaml)
+
+Exercise of automated tests for message signing (not well-developed yet).
+
+
+## [netrid_v19](netrid_v19.yaml)
+
+Verification of ASTM F3411-19 network remote identification requirements.
+
+## [netrid_v22a](netrid_v22a.yaml)
+
+Verification of ASTM F3411-22a network remote identification requirements.
+
+## [noop](noop.yaml)
+
+Simple configuration performing nearly no action to verify that uss_qualifier runs correctly.
+
+## [uspace](uspace.yaml)
+
+Verifies requirements for U-space Service Providers using ASTM standards (F3411-22a + F3548-21) as means of compliance.
+
+## [uspace_f3548](uspace_f3548.yaml)
+
+Same configuration as [uspace](#uspace), except only the portions related to ASTM F3548-21 verification are executed (other parts are skipped).
+
+## [utm_implementation_us](utm_implementation_us.yaml)
+
+Intended to be an InterUSS interpretation of how to verify the requirements of the [US Shared Airspace group](https://github.com/utmimplementationus/getstarted) verified via automated testing as documented in their [Requirements Traceability Matrix for Strategic Coordination](https://github.com/utmimplementationus/getstarted/blob/main/docs/Strategic_Coordination_Compliance_Matrix_v1.0.xlsx).  Note that this is merely InterUSS's interpretation of the publicly-available information for that project and this test configuration may not exactly match the test configuration actually in use by that group (which is not organizationally affiliated with InterUSS).  InterUSS welcomes contributions to change this test configuration to better align with the intent of that group.
+
+The baseline portion of the test configuration is found in [utm_implementation_us.yaml](utm_implementation_us.yaml) and the environmental portion of the test configuration is found in [utm_implementation_us_env.yaml](utm_implementation_us_env.yaml).  To adapt this configuration to target a non-local ecosystem and USS, only changes to the environmental file should be necessary.  These two files may be copied into the [personal](../personal) folder to make modifications without affecting git-tracked files.
+
+### Environment characteristics
+
+Some characteristics of this pseudo-regulatory environment are:
+
+1. ASTM F3548-21 is being used
+2. Participants perform Strategic Coordination only
+3. Only one priority level is defined (level 0) and conflicts are not permitted at that priority level
+4. No participant is authorized to perform Conformance Monitoring for Situational Awareness
+5. No participant is authorized to act as availability arbitrator outside DSS functionality verification
+6. No constraints are used (management nor processing)

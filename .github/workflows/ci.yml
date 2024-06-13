@@ -127,6 +127,17 @@ jobs:
         cd monitoring/uss_qualifier
         make test
 
+  uss_qualifier-utm_implementation_us-test:
+    name: uss_qualifier configurations.dev.utm_implementation_us tests
+    uses: ./.github/workflows/monitoring-test.yml
+    with:
+      name: uss_qualifier-utm_implementation_us-test
+      script: |
+        export CONFIG_NAME="configurations.dev.utm_implementation_us"
+
+        cd monitoring/uss_qualifier
+        make test
+
   uss_qualifier-netrid_v22a-test:
     name: uss_qualifier configurations.dev.netrid_v22a tests
     uses: ./.github/workflows/monitoring-test.yml
@@ -171,7 +182,22 @@ jobs:
 
   publish-gh-pages:
     name: Publish GitHub Pages
-    needs: [hygiene-tests, mock_uss-test, uss_qualifier-noop-test, uss_qualifier-geoawareness_cis-test, uss_qualifier-generate_rid_test_data-test, uss_qualifier-geospatial_comprehension-test, uss_qualifier-general_flight_auth-test, uss_qualifier-message_signing-test, uss_qualifier-dss_probing-test, uss_qualifier-f3548_self_contained-test, uss_qualifier-netrid_v22a-test, uss_qualifier-netrid_v19-test, uss_qualifier-uspace-test, prober-test]
+    needs:
+      - hygiene-tests
+      - mock_uss-test
+      - uss_qualifier-noop-test
+      - uss_qualifier-geoawareness_cis-test
+      - uss_qualifier-generate_rid_test_data-test
+      - uss_qualifier-geospatial_comprehension-test
+      - uss_qualifier-general_flight_auth-test
+      - uss_qualifier-message_signing-test
+      - uss_qualifier-dss_probing-test
+      - uss_qualifier-f3548_self_contained-test
+      - uss_qualifier-utm_implementation_us-test
+      - uss_qualifier-netrid_v22a-test
+      - uss_qualifier-netrid_v19-test
+      - uss_qualifier-uspace-test
+      - prober-test
     if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
     runs-on: ubuntu-latest
     permissions:
