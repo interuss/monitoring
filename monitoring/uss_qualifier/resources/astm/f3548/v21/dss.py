@@ -682,6 +682,7 @@ class DSSInstance(object):
         """
         Retrieve a subscription from the DSS, using only its ID
         """
+        # TODO should be migrated to the pattern where failures raise a QueryError
         self._uses_scope(Scope.StrategicCoordination)
         return fetch.get_subscription(
             self.client,
