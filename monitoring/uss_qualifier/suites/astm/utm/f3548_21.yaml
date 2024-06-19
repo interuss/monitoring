@@ -223,6 +223,17 @@ actions:
         - uss1
   on_failure: Continue
 - test_scenario:
+    scenario_type: scenarios.astm.utm.PrepareFlightPlanners  # TODO: Convert this to a scenario which only clears the area (does not check readiness)
+    resources:
+      flight_planners: flight_planners
+      mock_uss: mock_uss?
+      dss: dss
+      flight_intents: invalid_flight_intents
+      flight_intents2: priority_preemption_flights?
+      flight_intents3: conflicting_flights?
+      flight_intents4: non_conflicting_flights?
+  on_failure: Continue
+- test_scenario:
     scenario_type: scenarios.astm.utm.versioning.evaluate_system_versions.EvaluateSystemVersions
     resources:
       test_env_version_providers: test_env_version_providers
