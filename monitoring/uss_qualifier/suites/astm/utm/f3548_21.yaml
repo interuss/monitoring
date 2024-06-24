@@ -3,6 +3,7 @@ resources:
   test_env_version_providers: resources.versioning.VersionProvidersResource?
   prod_env_version_providers: resources.versioning.VersionProvidersResource?
   flight_planners: resources.flight_planning.FlightPlannersResource
+  flight_planners_to_clear: resources.flight_planning.FlightPlannersResource
   dss: resources.astm.f3548.v21.DSSInstanceResource
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_crdb_cluster: resources.interuss.crdb.CockroachDBClusterResource?
@@ -34,7 +35,7 @@ actions:
 - test_scenario:
     scenario_type: scenarios.astm.utm.PrepareFlightPlanners
     resources:
-      flight_planners: flight_planners
+      flight_planners: flight_planners_to_clear
       mock_uss: mock_uss?
       dss: dss
       flight_intents: invalid_flight_intents
