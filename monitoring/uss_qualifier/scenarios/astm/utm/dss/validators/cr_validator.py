@@ -226,6 +226,59 @@ class ConstraintReferenceValidator:
                     t_dss=t_dss,
                 )
 
+        if previous_ovn is not None:
+            with self._scenario.check(
+                "Mutated constraint reference OVN is updated", self._pid
+            ) as check:
+                if dss_cr.ovn == previous_ovn:
+                    self._fail_sub_check(
+                        check,
+                        summary="Returned CR OVN was not updated",
+                        details=f"Expected OVN to be different from {previous_ovn}, but it was not",
+                        t_dss=t_dss,
+                    )
+
+        if expected_ovn is not None:
+            with self._scenario.check(
+                "Non-mutated constraint reference keeps the same OVN", self._pid
+            ) as check:
+                if dss_cr.ovn != expected_ovn:
+                    self._fail_sub_check(
+                        check,
+                        summary="Returned CR OVN was updated",
+                        details=f"Expected OVN to be {expected_ovn}, Returned: {dss_cr.ovn}",
+                        t_dss=t_dss,
+                    )
+
+        # If the previous version is not None, we are dealing with a mutation:
+        if previous_version is not None:
+            with self._scenario.check(
+                "Mutated constraint reference version is updated", self._pid
+            ) as check:
+                # TODO confirm that a mutation should imply a version update
+                if dss_cr.version == previous_version:
+                    self._fail_sub_check(
+                        check,
+                        summary="Returned CR version was not updated",
+                        details=f"Expected version to be different from {previous_version}, but it was not",
+                        t_dss=t_dss,
+                    )
+
+        # TODO version _might_ get incremented due to changes caused outside of the uss_qualifier
+        #  and we should probably check if it is equal or higher. Leaving as-is for now.
+        if expected_version is not None:
+            with self._scenario.check(
+                "Non-mutated constraint reference keeps the same version",
+                self._pid,
+            ) as check:
+                if dss_cr.version != expected_version:
+                    self._fail_sub_check(
+                        check,
+                        summary="Returned CR version was updated",
+                        details=f"Expected version to be {expected_version}, Returned: {dss_cr.version}",
+                        t_dss=t_dss,
+                    )
+
         # TODO add check for:
         #  - subscription ID of the CR (based on passed parameters, if these were set)
 
@@ -278,4 +331,142 @@ class ConstraintReferenceValidator:
             expected_version=None,
             previous_ovn=None,
             expected_ovn=None,
+        )
+
+    def validate_fetched_cr(
+        self,
+        expected_cr_id: EntityID,
+        fetched_cr: fetch.Query,
+        expected_version: int,
+        expected_ovn: EntityOVN,
+    ) -> None:
+        """Validate a CR that was directly queried by its ID."""
+
+        t_dss = fetched_cr.request.timestamp
+
+        # Validate the response schema
+        with self._scenario.check(
+            "Get constraint reference response format conforms to spec",
+            self._pid,
+        ) as check:
+            errors = schema_validation.validate(
+                F3548_21.OpenAPIPath,
+                F3548_21.GetConstraintReferenceResponse,
+                fetched_cr.response.json,
+            )
+            if errors:
+                fail_with_schema_errors(check, errors, t_dss)
+
+        parsed_resp = fetched_cr.parse_json_result(GetConstraintReferenceResponse)
+        # Validate the CR itself
+        self._validate_cr(
+            expected_entity_id=expected_cr_id,
+            dss_cr=parsed_resp.constraint_reference,
+            t_dss=t_dss,
+            previous_version=None,
+            expected_version=expected_version,
+            previous_ovn=None,
+            expected_ovn=expected_ovn,
+        )
+
+    def validate_searched_cr(
+        self,
+        expected_cr_id: EntityID,
+        search_response: fetch.Query,
+        expected_ovn: str,
+        expected_version: int,
+    ) -> None:
+        """Validate a CR that was retrieved through search.
+        Note that the callers need to pass the entire response from the DSS, as the schema check
+        will be performed on the entire response, not just the CR itself.
+        However, only the expected CR is checked for the correctness of its contents."""
+
+        t_dss = search_response.request.timestamp
+
+        # Validate the response schema
+        self.validate_searched_cr_format(search_response, t_dss)
+
+        resp_parsed = search_response.parse_json_result(
+            QueryConstraintReferencesResponse
+        )
+
+        by_id = {cr.id: cr for cr in resp_parsed.constraint_references}
+
+        with self._scenario.check(
+            "Expected constraint reference is in search results", self._pid
+        ) as check:
+            if expected_cr_id not in by_id:
+                self._fail_sub_check(
+                    check,
+                    summary="Created CR is not present in search results",
+                    details=f"The CR with ID {expected_cr_id} was expected to be found in the search results, but these only contained the following entities: {by_id.keys()}",
+                    t_dss=t_dss,
+                )
+                # Depending on the severity defined in the documentation, the above might not raise an exception,
+                # and we should still stop here if the check failed.
+                return
+
+        cr = by_id[expected_cr_id]
+
+        # Validate the CR itself
+        self._validate_cr(
+            expected_entity_id=expected_cr_id,
+            dss_cr=cr,
+            t_dss=t_dss,
+            previous_ovn=None,
+            expected_ovn=expected_ovn,
+            previous_version=None,
+            expected_version=expected_version,
+        )
+
+    def validate_searched_cr_format(
+        self, search_response: fetch.Query, t_dss: datetime
+    ) -> None:
+        # Validate the response schema
+        with self._scenario.check(
+            "Search constraint reference response format conforms to spec",
+            self._pid,
+        ) as check:
+            errors = schema_validation.validate(
+                F3548_21.OpenAPIPath,
+                F3548_21.QueryConstraintReferenceResponse,
+                search_response.response.json,
+            )
+            if errors:
+                fail_with_schema_errors(check, errors, t_dss)
+
+    def validate_deleted_cr(
+        self,
+        expected_cr_id: EntityID,
+        deleted_cr: fetch.Query,
+        expected_ovn: str,
+        expected_version: int,
+    ) -> None:
+
+        t_dss = deleted_cr.request.timestamp
+
+        # Validate the response schema
+        with self._scenario.check(
+            "Delete constraint reference response format conforms to spec",
+            self._pid,
+        ) as check:
+            errors = schema_validation.validate(
+                F3548_21.OpenAPIPath,
+                F3548_21.ChangeConstraintReferenceResponse,
+                deleted_cr.response.json,
+            )
+            if errors:
+                fail_with_schema_errors(check, errors, t_dss)
+
+        cr_resp = deleted_cr.parse_json_result(ChangeConstraintReferenceResponse)
+
+        # Validate the CR itself
+        self._validate_cr(
+            expected_entity_id=expected_cr_id,
+            dss_cr=cr_resp.constraint_reference,
+            t_dss=t_dss,
+            previous_ovn=None,
+            expected_ovn=expected_ovn,
+            previous_version=None,
+            expected_version=expected_version,
         )
