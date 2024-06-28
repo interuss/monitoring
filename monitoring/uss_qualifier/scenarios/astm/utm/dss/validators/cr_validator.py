@@ -260,7 +260,7 @@ class ConstraintReferenceValidator:
                     self._fail_sub_check(
                         check,
                         summary="Returned CR version was not updated",
-                        details=f"Expected version to be different from {previous_ovn}, but it was not",
+                        details=f"Expected version to be different from {previous_version}, but it was not",
                         t_dss=t_dss,
                     )
 
@@ -275,7 +275,7 @@ class ConstraintReferenceValidator:
                     self._fail_sub_check(
                         check,
                         summary="Returned CR version was updated",
-                        details=f"Expected version to be {expected_ovn}, Returned: {dss_cr.version}",
+                        details=f"Expected version to be {expected_version}, Returned: {dss_cr.version}",
                         t_dss=t_dss,
                     )
 
