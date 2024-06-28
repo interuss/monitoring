@@ -226,6 +226,59 @@ class ConstraintReferenceValidator:
                     t_dss=t_dss,
                 )
 
+        if previous_ovn is not None:
+            with self._scenario.check(
+                "Mutated constraint reference OVN is updated", self._pid
+            ) as check:
+                if dss_cr.ovn == previous_ovn:
+                    self._fail_sub_check(
+                        check,
+                        summary="Returned CR OVN was not updated",
+                        details=f"Expected OVN to be different from {previous_ovn}, but it was not",
+                        t_dss=t_dss,
+                    )
+
+        if expected_ovn is not None:
+            with self._scenario.check(
+                "Non-mutated constraint reference keeps the same OVN", self._pid
+            ) as check:
+                if dss_cr.ovn != expected_ovn:
+                    self._fail_sub_check(
+                        check,
+                        summary="Returned CR OVN was updated",
+                        details=f"Expected OVN to be {expected_ovn}, Returned: {dss_cr.ovn}",
+                        t_dss=t_dss,
+                    )
+
+        # If the previous version is not None, we are dealing with a mutation:
+        if previous_version is not None:
+            with self._scenario.check(
+                "Mutated constraint reference version is updated", self._pid
+            ) as check:
+                # TODO confirm that a mutation should imply a version update
+                if dss_cr.version == previous_version:
+                    self._fail_sub_check(
+                        check,
+                        summary="Returned CR version was not updated",
+                        details=f"Expected version to be different from {previous_version}, but it was not",
+                        t_dss=t_dss,
+                    )
+
+        # TODO version _might_ get incremented due to changes caused outside of the uss_qualifier
+        #  and we should probably check if it is equal or higher. Leaving as-is for now.
+        if expected_version is not None:
+            with self._scenario.check(
+                "Non-mutated constraint reference keeps the same version",
+                self._pid,
+            ) as check:
+                if dss_cr.version != expected_version:
+                    self._fail_sub_check(
+                        check,
+                        summary="Returned CR version was updated",
+                        details=f"Expected version to be {expected_version}, Returned: {dss_cr.version}",
+                        t_dss=t_dss,
+                    )
+
         # TODO add check for:
         #  - subscription ID of the CR (based on passed parameters, if these were set)
 
@@ -278,4 +331,40 @@ class ConstraintReferenceValidator:
             expected_version=None,
             previous_ovn=None,
             expected_ovn=None,
+        )
+
+    def validate_fetched_cr(
+        self,
+        expected_cr_id: EntityID,
+        fetched_cr: fetch.Query,
+        expected_version: int,
+        expected_ovn: EntityOVN,
+    ) -> None:
+        """Validate a CR that was directly queried by its ID."""
+
+        t_dss = fetched_cr.request.timestamp
+
+        # Validate the response schema
+        with self._scenario.check(
+            "Get constraint reference response format conforms to spec",
+            self._pid,
+        ) as check:
+            errors = schema_validation.validate(
+                F3548_21.OpenAPIPath,
+                F3548_21.GetConstraintReferenceResponse,
+                fetched_cr.response.json,
+            )
+            if errors:
+                fail_with_schema_errors(check, errors, t_dss)
+
+        parsed_resp = fetched_cr.parse_json_result(GetConstraintReferenceResponse)
+        # Validate the CR itself
+        self._validate_cr(
+            expected_entity_id=expected_cr_id,
+            dss_cr=parsed_resp.constraint_reference,
+            t_dss=t_dss,
+            previous_version=None,
+            expected_version=expected_version,
+            previous_ovn=None,
+            expected_ovn=expected_ovn,
         )
