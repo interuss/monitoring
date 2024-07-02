@@ -223,7 +223,7 @@ def main() -> int:
     runtime_metadata = (
         json.loads(args.runtime_metadata) if args.runtime_metadata else None
     )
-    if not isinstance(runtime_metadata, dict):
+    if runtime_metadata is not None and not isinstance(runtime_metadata, dict):
         raise ValueError("--runtime-metadata must specify a JSON dictionary")
 
     config_names = str(args.config).split(",")
