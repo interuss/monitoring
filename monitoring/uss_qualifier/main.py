@@ -67,6 +67,12 @@ def parseArgs() -> argparse.Namespace:
         help="Path to folder where artifacts should be written.  If not specified, defaults to output/{CONFIG_NAME}",
     )
 
+    parser.add_argument(
+        "--runtime-metadata",
+        default=None,
+        help="JSON string containing runtime metadata to record in the test run report (if specified).",
+    )
+
     return parser.parse_args()
 
 
@@ -138,6 +144,7 @@ def run_config(
     skip_validation: bool,
     exit_before_execution: bool,
     output_path: Optional[str],
+    runtime_metadata: Optional[dict],
 ):
     config_src = load_dict_with_references(config_name)
 
@@ -193,6 +200,9 @@ def run_config(
     logger.info("Executing test run")
     report = execute_test_run(whole_config, description)
 
+    if runtime_metadata is not None:
+        report.runtime_metadata = runtime_metadata
+
     if config.artifacts:
         generate_artifacts(report, config.artifacts, output_path)
 
@@ -209,6 +219,12 @@ def run_config(
 
 def main() -> int:
     args = parseArgs()
+
+    runtime_metadata = (
+        json.loads(args.runtime_metadata) if args.runtime_metadata else None
+    )
+    if not isinstance(runtime_metadata, dict):
+        raise ValueError("--runtime-metadata must specify a JSON dictionary")
 
     config_names = str(args.config).split(",")
 
@@ -235,6 +251,7 @@ def main() -> int:
             args.skip_validation,
             args.exit_before_execution,
             output_path,
+            runtime_metadata,
         )
         if exit_code != os.EX_OK:
             return exit_code

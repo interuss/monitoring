@@ -738,6 +738,9 @@ class TestRunReport(ImplicitDict):
     report: TestSuiteActionReport
     """Report produced by configured test action"""
 
+    runtime_metadata: Optional[dict]
+    """Metadata for the test run specified at runtime."""
+
 
 def redact_access_tokens(report: Union[Dict[str, Any], list]) -> None:
     if isinstance(report, dict):
