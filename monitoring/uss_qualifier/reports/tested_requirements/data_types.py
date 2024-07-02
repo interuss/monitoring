@@ -195,3 +195,7 @@ class RequirementsVerificationReport(ImplicitDict):
 
     participant_verifications: Dict[ParticipantID, ParticipantVerificationInfo]
     """Information regarding verification of compliance for each participant."""
+
+    artifact_configuration: Optional[str]
+    """Name of the tested requirements artifact configuration from the test run configuration, or "post-hoc" if the
+    artifact configuration generating this verification report is not specified in the test run configuration."""
