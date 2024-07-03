@@ -35,6 +35,30 @@ from monitoring.uss_qualifier.requirements.documentation import (
 def generate_tested_requirements(
     report: TestRunReport, config: TestedRequirementsConfiguration, output_path: str
 ) -> None:
+    # Determine where the configuration to generate these tested requirements originated
+    artifacts = report.configuration.v1.artifacts
+    if "tested_requirements" in artifacts and artifacts.tested_requirements:
+        i = (
+            artifacts.tested_requirements.index(config)
+            if config in artifacts.tested_requirements
+            else -1
+        )
+        n = len(artifacts.tested_requirements)
+        if i < 0:
+            config_source = "custom post-hoc artifact configuration"
+            artifact_configuration = "post-hoc"
+        elif n == 1:
+            config_source = "test run artifact configuration"
+            artifact_configuration = config.report_name
+        else:
+            config_source = (
+                f"test run artifact configuration {i + 1}/{n}: {config.report_name}"
+            )
+            artifact_configuration = config.report_name
+    else:
+        config_source = "post-hoc artifact configuration"
+        artifact_configuration = "post-hoc"
+
     req_collections: Dict[
         TestedRequirementsCollectionIdentifier, Set[RequirementID]
     ] = {}
@@ -72,7 +96,9 @@ def generate_tested_requirements(
         f.write(template.render(participant_ids=reported_participant_ids))
 
     verification_report = RequirementsVerificationReport(
-        test_run_information=test_run, participant_verifications={}
+        test_run_information=test_run,
+        participant_verifications={},
+        artifact_configuration=artifact_configuration,
     )
     template = jinja_env.get_template(
         "tested_requirements/participant_tested_requirements.html"
@@ -112,6 +138,7 @@ def generate_tested_requirements(
                     system_version=system_version,
                     ParticipantVerificationStatus=ParticipantVerificationStatus,
                     codebase_version=get_code_version(),
+                    config_source=config_source,
                 )
             )
 
