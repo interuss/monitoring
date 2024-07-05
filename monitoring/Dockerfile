@@ -12,37 +12,50 @@
 FROM python:3.12-slim
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
+# Install system tools
+#   openssl: Provides TLS tools
+#   curl: Useful debugging utility
+#   gcc: Required to build various packages
+#   ca-certificates: Needed to accurately validate TLS connections
 RUN apt-get update && apt-get install -y openssl curl libgeos-dev gcc && apt-get install ca-certificates
 
-# required for gevent to build without error in an ARM environment
-RUN apt-get update && apt-get install -y libffi-dev libssl-dev python3-dev build-essential
+# Required to build in an ARM environment
+#   gevent: libffi-dev libssl-dev python3-dev build-essential
+#   lxml: libxml2-dev libxslt-dev
+#   h5py: pkg-config libhdf5-dev
+RUN apt-get install -y libffi-dev libssl-dev python3-dev build-essential libxml2-dev libxslt-dev pkg-config libhdf5-dev
 
-# required for lxml to install successfully with pip (at least on an ARM environment)
-RUN apt-get update && apt-get install -y libxml2-dev libxslt-dev
-
-# required for h5py to install successfully with pip (at least on an ARM environment)
-RUN apt-get update && apt-get install -y pkg-config libhdf5-dev
-
+# Install the necessary Python packages from requirements.txt
 RUN mkdir -p /app/monitoring
 COPY ./requirements.txt /app/monitoring/requirements.txt
-RUN pip install -r /app/monitoring/requirements.txt
+RUN pip install -r /app/monitoring/requirements.txt && rm -rf __pycache__
 
-RUN rm -rf __pycache__
-
+# Add core content from repo
 ADD ./interfaces /app/interfaces
 ADD ./monitoring /app/monitoring
+
+# Add health check to the /app root and make it executable
 COPY ./monitoring/health_check.sh /app/health_check.sh
 RUN chmod 766 /app/health_check.sh
+
+# Start in this folder
 WORKDIR /app/monitoring
 
 # Additional preparations for uss_qualifier/webapp
 RUN mkdir -p /app/uss-host-files
 
+# This script indicates the status of the container
 HEALTHCHECK CMD sh /app/health_check.sh
 
+# Discover `monitoring` module in Python
 ENV PYTHONPATH /app
+
+# This image should be built by passing in `version` and `commit_hash` based on information from git (see `make image`)
+# This version information becomes available in the environment variables specified below
 ARG version
 ARG commit_hash
 ENV MONITORING_VERSION=$version
 ENV GIT_COMMIT_HASH=$commit_hash
+
+# No entry point maximizes flexibility in the use of this image
 ENTRYPOINT []
