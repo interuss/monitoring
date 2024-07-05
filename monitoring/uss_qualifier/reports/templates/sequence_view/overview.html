@@ -72,6 +72,16 @@
   </div>
 </div>
 
+{% if "runtime_metadata" in report %}
+<div id="runtime_metadata_section" class="collapseable">
+  <div class="node_key" onclick="showHide(document.getElementById('runtime_metadata_section'))"><h2>Runtime metadata</h2></div>
+  <div class="node_value">
+    {{ explorer_content("runtime_metadata_tree", report.runtime_metadata) }}
+    {% set collapsible.queries = collapsible.queries + ["runtime_metadata_tree"] %}
+  </div>
+</div>
+{% endif %}
+
 <div>
   <h2>Scenarios executed</h2>
   <table>
@@ -147,6 +157,9 @@
 <script>
   showHide(document.getElementById('resources_configuration_section'));
   showHide(document.getElementById('full_configuration_section'));
+  {% if "runtime_metadata" in report %}
+    showHide(document.getElementById('runtime_metadata_section'));
+  {% endif %}
 </script>
 </body>
 </html>
