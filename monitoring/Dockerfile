@@ -17,7 +17,7 @@ FROM python:3.12-slim
 #   curl: Useful debugging utility
 #   gcc: Required to build various packages
 #   ca-certificates: Needed to accurately validate TLS connections
-RUN apt-get update && apt-get install -y openssl curl libgeos-dev gcc && apt-get install ca-certificates
+RUN apt-get update --fix-missing && apt-get install -y openssl curl libgeos-dev gcc && apt-get install ca-certificates
 
 # Required to build in an ARM environment
 #   gevent: libffi-dev libssl-dev python3-dev build-essential
