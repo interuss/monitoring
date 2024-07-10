@@ -8,8 +8,8 @@ from uas_standards.astm.f3548.v21.api import (
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
-from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4D
+from monitoring.monitorlib.fetch import QueryError, Query
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -22,6 +22,9 @@ from monitoring.uss_qualifier.resources.interuss.id_generator import IDGenerator
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators.cr_validator import (
     ConstraintReferenceValidator,
+)
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators.oir_validator import (
+    TIME_TOLERANCE_SEC,
 )
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenario,
@@ -122,6 +125,13 @@ class CRSynchronization(TestScenario):
         self._create_cr_with_params(self._cr_params)
         self.end_test_step()
 
+        self.begin_test_step("Retrieve newly created CR")
+        self._query_secondaries_and_compare(
+            "Newly created CR can be consistently retrieved from all DSS instances",
+            self._cr_params,
+        )
+        self.end_test_step()
+
         # Other steps to follow in subsequent PRs
 
         self.end_test_case()
@@ -195,6 +205,139 @@ class CRSynchronization(TestScenario):
             ).validate_created_cr(self._cr_id, new_cr=q)
 
         self._current_cr = cr
+
+    def _query_secondaries_and_compare(
+        self,
+        main_check_name: str,
+        expected_cr_params: PutConstraintReferenceParameters,
+    ):
+        for secondary_dss in self._secondary_dss_instances:
+            with self.check(
+                "Get constraint reference by ID",
+                secondary_dss.participant_id,
+            ) as check:
+                try:
+                    oir, q = secondary_dss.get_constraint_ref(self._cr_id)
+                    self.record_query(q)
+                except QueryError as qe:
+                    self.record_queries(qe.queries)
+                    check.record_failed(
+                        summary="GET for constraint reference failed",
+                        details=f"Query for constraint reference failed: {qe.msg}",
+                        query_timestamps=qe.query_timestamps,
+                    )
+
+            involved_participants = list(
+                {self._primary_pid, secondary_dss.participant_id}
+            )
+
+            with self.check(
+                "Constraint reference can be found at every DSS",
+                involved_participants,
+            ) as check:
+                if q.status_code != 200:
+                    check.record_failed(
+                        summary="Requested constraint reference was not found at secondary DSS.",
+                        details=f"Query for constraint reference {self._cr_id} failed: {q.msg}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+
+            self._validate_cr_from_secondary(
+                cr=oir,
+                q=q,
+                expected_cr_params=expected_cr_params,
+                main_check_name=main_check_name,
+                involved_participants=involved_participants,
+            )
+
+    def _validate_cr_from_secondary(
+        self,
+        cr: ConstraintReference,
+        q: Query,
+        expected_cr_params: PutConstraintReferenceParameters,
+        main_check_name: str,
+        involved_participants: List[str],
+    ):
+        with self.check(main_check_name, involved_participants) as main_check:
+            with self.check(
+                "Propagated constraint reference contains the correct manager",
+                involved_participants,
+            ) as check:
+                if cr.manager != self._expected_manager:
+                    check_args = dict(
+                        summary="Propagated CR has an incorrect manager",
+                        details=f"Expected: {self._expected_manager}, Received: {cr.manager}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+                    check.record_failed(**check_args)
+                    main_check.record_failed(**check_args)
+
+            with self.check(
+                "Propagated constraint reference contains the correct USS base URL",
+                involved_participants,
+            ) as check:
+                if cr.uss_base_url != expected_cr_params.uss_base_url:
+                    check_args = dict(
+                        summary="Propagated CR has an incorrect USS base URL",
+                        details=f"Expected: {expected_cr_params.base_url}, Received: {cr.uss_base_url}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+                    check.record_failed(**check_args)
+                    main_check.record_failed(**check_args)
+
+            expected_volume_collection = Volume4DCollection.from_interuss_scd_api(
+                expected_cr_params.extents
+            )
+            expected_end = expected_volume_collection.time_end.datetime
+            expected_start = expected_volume_collection.time_start.datetime
+            with self.check(
+                "Propagated constraint reference contains the correct start time",
+                involved_participants,
+            ) as check:
+                if (
+                    abs(cr.time_start.value.datetime - expected_start).total_seconds()
+                    > TIME_TOLERANCE_SEC
+                ):
+                    check_args = dict(
+                        summary="Propagated CR has an incorrect start time",
+                        details=f"Expected: {expected_start}, Received: {cr.time_start}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+                    check.record_failed(**check_args)
+                    main_check.record_failed(**check_args)
+
+            with self.check(
+                "Propagated constraint reference contains the correct end time",
+                involved_participants,
+            ) as check:
+                if (
+                    abs(cr.time_end.value.datetime - expected_end).total_seconds()
+                    > TIME_TOLERANCE_SEC
+                ):
+                    check_args = dict(
+                        summary="Propagated CR has an incorrect end time",
+                        details=f"Expected: {expected_end}, Received: {cr.time_end}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+                    check.record_failed(**check_args)
+                    main_check.record_failed(**check_args)
+
+        with self.check(
+            "Get constraint reference response content is correct",
+            [self._primary_pid],
+        ) as check:
+            ConstraintReferenceValidator(
+                main_check=check,
+                scenario=self,
+                expected_manager=self._expected_manager,
+                participant_id=involved_participants,
+                cr_params=expected_cr_params,
+            ).validate_fetched_cr(
+                self._cr_id,
+                fetched_cr=q,
+                expected_version=cr.version,
+                expected_ovn=cr.ovn,
+            )
 
     def cleanup(self):
         self.begin_cleanup()
