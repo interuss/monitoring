@@ -126,10 +126,18 @@ def load_dict_with_references(data_file: FileReference) -> dict:
 def _jsonnet_import_callback(
     base_file_name: str, folder: str, rel: str, cache: Optional[Dict[str, dict]]
 ) -> Tuple[str, bytes]:
-    dict_content, file_name = _load_dict_with_references_from_file_name(
-        rel, base_file_name, cache
-    )
-    return file_name, json.dumps(dict_content).encode()
+    if rel.endswith(".libsonnet"):
+        # Do not attempt to parse libsonnet content (e.g., resolve $refs);
+        # it will be parsed after loading the full top-level Jsonnet.
+        root_path = os.path.dirname(base_file_name)
+        file_name = os.path.join(root_path, rel)
+        file_content = _load_content_from_file_name(file_name)
+        return file_name, file_content.encode()
+    else:
+        dict_content, file_name = _load_dict_with_references_from_file_name(
+            rel, base_file_name, cache
+        )
+        return file_name, json.dumps(dict_content).encode()
 
 
 def _load_dict_with_references_from_file_name(

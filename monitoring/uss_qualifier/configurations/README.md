@@ -8,13 +8,17 @@ To execute a test run with uss_qualifier, a uss_qualifier configuration must be 
 
 When referring to a configuration, three methods may be used; see [`FileReference` documentation](../fileio.py) for more details.
 
+Regardless of method used to refer to a configuration, the content of that configuration must be dict content following the [`USSQualifierConfiguration`](configuration.py) schema.
+
 * **Package-based**: refer to a dictionary (*.json, *.yaml) file located in a subfolder of the `uss_qualifier` folder using the Python module style, omitting the extension of the file name.  For instance, `configurations.dev.uspace` would refer to [uss_qualifier/configurations/dev/uspace.yaml](dev/uspace.yaml).
 * **Local file**: when a configuration reference is prefixed with `file://`, it refers to a local file using the path syntax of the host operating system.
 * **Web file**: when a configuration reference is prefixed with `http://` or `https://`, it refers to a file accessible at the specified URL.
 
 ### Building
 
-A valid configuration file must provide a single instance of the [`USSQualifierConfiguration` schema](configuration.py) in the format chosen (JSON or YAML), as indicated by the file extension (.json or .yaml).
+A valid configuration file must provide a single instance of the [`USSQualifierConfiguration` schema](configuration.py) in the format chosen (JSON, YAML, Jsonnet), as indicated by the file extension (.json, .yaml, or .jsonnet).
+
+Note that the configuration file may use or refer to other files via [$refs](#references) in JSON, YAML, or Jsonnet.  Jsonnet files may also use or refer to other files via [imports](https://jsonnet.org/learning/tutorial.html#imports).
 
 #### Personalization
 
@@ -22,7 +26,7 @@ When designing personalized/custom configuration files for specific, non-standar
 
 #### References
 
-To reduce repetition in similar configurations, the configuration parser supports the inclusion of all or parts of other files by using a `$ref` notation similar to (but not the same as) OpenAPI.
+To reduce repetition in similar configurations, the configuration parser supports the inclusion of all or parts of other files by using a `$ref` notation similar to (but not the same as) OpenAPI in JSON, YAML, and Jsonnet files (but not .libsonnet files).
 
 When a `$ref` key is encountered, the keys and values of the referenced content are used to overwrite any keys at the same level of the `$ref`.  For instance:
 
