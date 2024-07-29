@@ -1,0 +1,30 @@
+digraph {
+  node [shape=box]
+  compound=true
+
+  subgraph cluster_TestConfig {
+    label="Test configuration"
+
+    BaselineConfig [label="Test baseline\nconfiguration"]
+    EnvironmentConfig [label="Test environment\nconfiguration"]
+  }
+
+  BaselineID [label="Test baseline\nidentifier"]
+  EnvironmentID [label="Test environment\nidentifier"]
+  TestRunReport [label="Test run report"]
+  TestRunID [label="Test run\nidentifier"]
+
+  BaselineConfig -> BaselineID
+  EnvironmentConfig -> EnvironmentID
+
+  uss_qualifier [label="uss_qualifier\ntest run",shape=invtrapezium]
+
+  CodebaseVersion [label="InterUSS `monitoring`\ncodebase version"]
+  CodebaseVersion -> BaselineID
+  CodebaseVersion -> uss_qualifier
+  BaselineConfig -> uss_qualifier [ltail=cluster_TestConfig]
+  EnvironmentConfig -> uss_qualifier [style=invis]
+  uss_qualifier -> TestRunReport -> TestRunID
+  BaselineID -> TestRunReport
+  EnvironmentID -> TestRunReport
+}

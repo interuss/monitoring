@@ -8,17 +8,29 @@ To execute a test run with uss_qualifier, a uss_qualifier configuration must be 
 
 When referring to a configuration, three methods may be used; see [`FileReference` documentation](../fileio.py) for more details.
 
-Regardless of method used to refer to a configuration, the content of that configuration must be dict content following the [`USSQualifierConfiguration`](configuration.py) schema.
+Regardless of method used to refer to a configuration, the content of that configuration must be dict (JSON-like) content following the [`USSQualifierConfiguration`](configuration.py) schema.
 
-* **Package-based**: refer to a dictionary (*.json, *.yaml) file located in a subfolder of the `uss_qualifier` folder using the Python module style, omitting the extension of the file name.  For instance, `configurations.dev.uspace` would refer to [uss_qualifier/configurations/dev/uspace.yaml](dev/uspace.yaml).
+* **Package-based**: refer to a dictionary (*.json, *.yaml, *.jsonnet) file located in a subfolder of the `uss_qualifier` folder using the Python module style, omitting the extension of the file name.  For instance, `configurations.dev.uspace` would refer to [uss_qualifier/configurations/dev/uspace.yaml](dev/uspace.yaml).
 * **Local file**: when a configuration reference is prefixed with `file://`, it refers to a local file using the path syntax of the host operating system.
 * **Web file**: when a configuration reference is prefixed with `http://` or `https://`, it refers to a file accessible at the specified URL.
+
+### Terminology
+
+![Terminology flow chart](assets/terminology.png)
+
+* **Test configuration**: A configuration following the [`USSQualifierConfiguration`](configuration.py) schema which fully defines the actions uss_qualifier should perform when run.  This is the primary input to uss_qualifier and is fully defined by the combination of the test baseline configuration and the test environment configuration.  See ["Specifying"](#specifying) and ["Building"](#building) for more information.
+* **Test baseline configuration**: A configuration defining the behavior of the test, but generally omitting which systems are to be tested and where those systems are located.  A test baseline configuration is defined as everything in a test configuration except those elements of the configuration explicitly identified as [`non_baseline_inputs`](configuration.py).
+* **Test environment configuration**: The portions of a test configuration explicitly identified as [`non_baseline_inputs`](configuration.py) and generally corresponding with which systems are to be tested and where those systems are located.
+* **Test baseline identifier**: An identifier that corresponds to the test baseline configuration + InterUSS `monitoring` codebase version used to run the configuration.  This identifier has the characteristics of a hash: whenever any element of the test baseline configuration changes, the test baseline identifier should change as well.  Given just the test baseline identifier, there is not enough information to construct the corresponding test baseline configuration.  The long-form test baseline identifier is a long hexadecimal hash and can be found in the [`baseline_signature` field of a TestRunReport](../reports/report.py).  This long-form identifier is shortened to a short-form identifier by combining a `TB-` prefix with the first 7 characters of the long-form identifier in certain human-facing artifacts.
+* **Test environment identifier**: An identifier that corresponds to the test environment configuration.  This identifier is identical to the test baseline identifier except that it hashes the test environment configuration rather than the test baseline configuration + InterUSS `monitoring` codebase version, its long-form identifier can be found in the [`environment_signature` field of a TestRunReport](../reports/report.py), and its short-form identifier is prefixed with `TE-`.
+* **Test run report**: The full set of information captured for a test run is recorded in a [`TestRunReport` object](../reports/report.py), and often written to report.json.  This information is the test run report, and it is the basis for creating all other test artifacts.
+* **Test run identifier**: An identifier that corresponds to a particular test run.  This identifier is identical to the test baseline identifier except that it hashes the test run report rather than the test baseline configuration + InterUSS `monitoring` codebase version, and its short-form identifier is prefixed with `TR-`.
 
 ### Building
 
 A valid configuration file must provide a single instance of the [`USSQualifierConfiguration` schema](configuration.py) in the format chosen (JSON, YAML, Jsonnet), as indicated by the file extension (.json, .yaml, or .jsonnet).
 
-Note that the configuration file may use or refer to other files via [$refs](#references) in JSON, YAML, or Jsonnet.  Jsonnet files may also use or refer to other files via [imports](https://jsonnet.org/learning/tutorial.html#imports).
+Note that the configuration file may use or refer to other files via [$refs](#references) in JSON, YAML, or Jsonnet.  Jsonnet files may also use or refer to other files via [imports](https://jsonnet.org/learning/tutorial.html#imports).  See the continuous integration test configurations in the [dev folder](dev) for examples.
 
 #### Personalization
 
@@ -26,7 +38,7 @@ When designing personalized/custom configuration files for specific, non-standar
 
 #### References
 
-To reduce repetition in similar configurations, the configuration parser supports the inclusion of all or parts of other files by using a `$ref` notation similar to (but not the same as) OpenAPI in JSON, YAML, and Jsonnet files (but not .libsonnet files).
+To reduce repetition in similar configurations, the configuration parser supports the inclusion of all or parts of other files by using a `$ref` notation similar to (but not the same as) OpenAPI in JSON, YAML, and Jsonnet files.
 
 When a `$ref` key is encountered, the keys and values of the referenced content are used to overwrite any keys at the same level of the `$ref`.  For instance:
 
