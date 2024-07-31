@@ -368,3 +368,69 @@ class ConstraintReferenceValidator:
             previous_ovn=None,
             expected_ovn=expected_ovn,
         )
+
+    def validate_searched_cr(
+        self,
+        expected_cr_id: EntityID,
+        search_response: fetch.Query,
+        expected_ovn: str,
+        expected_version: int,
+    ) -> None:
+        """Validate a CR that was retrieved through search.
+        Note that the callers need to pass the entire response from the DSS, as the schema check
+        will be performed on the entire response, not just the CR itself.
+        However, only the expected CR is checked for the correctness of its contents."""
+
+        t_dss = search_response.request.timestamp
+
+        # Validate the response schema
+        self.validate_searched_cr_format(search_response, t_dss)
+
+        resp_parsed = search_response.parse_json_result(
+            QueryConstraintReferencesResponse
+        )
+
+        by_id = {cr.id: cr for cr in resp_parsed.constraint_references}
+
+        with self._scenario.check(
+            "Expected constraint reference is in search results", self._pid
+        ) as check:
+            if expected_cr_id not in by_id:
+                self._fail_sub_check(
+                    check,
+                    summary="Created CR is not present in search results",
+                    details=f"The CR with ID {expected_cr_id} was expected to be found in the search results, but these only contained the following entities: {by_id.keys()}",
+                    t_dss=t_dss,
+                )
+                # Depending on the severity defined in the documentation, the above might not raise an exception,
+                # and we should still stop here if the check failed.
+                return
+
+        cr = by_id[expected_cr_id]
+
+        # Validate the CR itself
+        self._validate_cr(
+            expected_entity_id=expected_cr_id,
+            dss_cr=cr,
+            t_dss=t_dss,
+            previous_ovn=None,
+            expected_ovn=expected_ovn,
+            previous_version=None,
+            expected_version=expected_version,
+        )
+
+    def validate_searched_cr_format(
+        self, search_response: fetch.Query, t_dss: datetime
+    ) -> None:
+        # Validate the response schema
+        with self._scenario.check(
+            "Search constraint reference response format conforms to spec",
+            self._pid,
+        ) as check:
+            errors = schema_validation.validate(
+                F3548_21.OpenAPIPath,
+                F3548_21.QueryConstraintReferencesResponse,
+                search_response.response.json,
+            )
+            if errors:
+                fail_with_schema_errors(check, errors, t_dss)

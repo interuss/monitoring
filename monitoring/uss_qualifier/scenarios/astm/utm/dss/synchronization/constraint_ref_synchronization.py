@@ -132,6 +132,13 @@ class CRSynchronization(TestScenario):
         )
         self.end_test_step()
 
+        self.begin_test_step("Search for newly created CR")
+        self._search_secondaries_and_compare(
+            "Newly created CR can be consistently searched for from all DSS instances",
+            self._cr_params,
+        )
+        self.end_test_step()
+
         # Other steps to follow in subsequent PRs
 
         self.end_test_case()
@@ -250,6 +257,60 @@ class CRSynchronization(TestScenario):
                 involved_participants=involved_participants,
             )
 
+    def _search_secondaries_and_compare(
+        self,
+        main_check_name: str,
+        expected_cr_params: PutConstraintReferenceParameters,
+    ):
+        """
+        Returns:
+         True if all checks passed, False otherwise; the participant IDs if the checks did not pass.
+        """
+        for secondary_dss in self._secondary_dss_instances:
+            with self.check(
+                "Successful constraint reference search query",
+                [secondary_dss.participant_id],
+            ) as check:
+                try:
+                    crs, q = secondary_dss.find_constraint_ref(
+                        self._planning_area_volume4d
+                    )
+                    self.record_query(q)
+                except QueryError as qe:
+                    self.record_queries(qe.queries)
+                    check.record_failed(
+                        summary="Failed to search for constraint references",
+                        details=f"Failed to query constraint references: got response code {qe.cause_status_code}: {qe.msg}",
+                        query_timestamps=qe.query_timestamps,
+                    )
+
+            involved_participants = list(
+                {self._primary_pid, secondary_dss.participant_id}
+            )
+
+            with self.check(
+                "Propagated constraint reference general area is synchronized",
+                involved_participants,
+            ) as check:
+                cr: Optional[ConstraintReference] = next(
+                    (_cr for _cr in crs if _cr.id == self._cr_id), None
+                )
+                if cr is None:
+                    check.record_failed(
+                        summary="Propagated CR not found",
+                        details=f"CR {self._cr_id} was not found in the secondary DSS when searched for in its expected geo-temporal extent",
+                        query_timestamps=[q.request.timestamp],
+                    )
+
+            self._validate_cr_from_secondary(
+                cr=cr,
+                q=q,
+                expected_cr_params=expected_cr_params,
+                main_check_name=main_check_name,
+                involved_participants=involved_participants,
+                from_search=True,
+            )
+
     def _validate_cr_from_secondary(
         self,
         cr: ConstraintReference,
@@ -257,6 +318,7 @@ class CRSynchronization(TestScenario):
         expected_cr_params: PutConstraintReferenceParameters,
         main_check_name: str,
         involved_participants: List[str],
+        from_search: bool = False,
     ):
         with self.check(main_check_name, involved_participants) as main_check:
             with self.check(
@@ -322,22 +384,37 @@ class CRSynchronization(TestScenario):
                     check.record_failed(**check_args)
                     main_check.record_failed(**check_args)
 
+        content_check_name = (
+            "Search constraint reference response content is correct"
+            if from_search
+            else "Get constraint reference response content is correct"
+        )
+
         with self.check(
-            "Get constraint reference response content is correct",
+            content_check_name,
             [self._primary_pid],
         ) as check:
-            ConstraintReferenceValidator(
+            validator = ConstraintReferenceValidator(
                 main_check=check,
                 scenario=self,
                 expected_manager=self._expected_manager,
                 participant_id=involved_participants,
                 cr_params=expected_cr_params,
-            ).validate_fetched_cr(
-                self._cr_id,
-                fetched_cr=q,
-                expected_version=cr.version,
-                expected_ovn=cr.ovn,
             )
+            if from_search:
+                validator.validate_searched_cr(
+                    self._cr_id,
+                    q,
+                    expected_version=self._current_cr.version,
+                    expected_ovn=self._current_cr.ovn,
+                )
+            else:
+                validator.validate_fetched_cr(
+                    self._cr_id,
+                    q,
+                    expected_version=self._current_cr.version,
+                    expected_ovn=self._current_cr.ovn,
+                )
 
     def cleanup(self):
         self.begin_cleanup()
