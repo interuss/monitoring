@@ -429,44 +429,8 @@ class ConstraintReferenceValidator:
         ) as check:
             errors = schema_validation.validate(
                 F3548_21.OpenAPIPath,
-                F3548_21.QueryConstraintReferenceResponse,
+                F3548_21.QueryConstraintReferencesResponse,
                 search_response.response.json,
             )
             if errors:
                 fail_with_schema_errors(check, errors, t_dss)
-
-    def validate_deleted_cr(
-        self,
-        expected_cr_id: EntityID,
-        deleted_cr: fetch.Query,
-        expected_ovn: str,
-        expected_version: int,
-    ) -> None:
-
-        t_dss = deleted_cr.request.timestamp
-
-        # Validate the response schema
-        with self._scenario.check(
-            "Delete constraint reference response format conforms to spec",
-            self._pid,
-        ) as check:
-            errors = schema_validation.validate(
-                F3548_21.OpenAPIPath,
-                F3548_21.ChangeConstraintReferenceResponse,
-                deleted_cr.response.json,
-            )
-            if errors:
-                fail_with_schema_errors(check, errors, t_dss)
-
-        cr_resp = deleted_cr.parse_json_result(ChangeConstraintReferenceResponse)
-
-        # Validate the CR itself
-        self._validate_cr(
-            expected_entity_id=expected_cr_id,
-            dss_cr=cr_resp.constraint_reference,
-            t_dss=t_dss,
-            previous_ovn=None,
-            expected_ovn=expected_ovn,
-            previous_version=None,
-            expected_version=expected_version,
-        )

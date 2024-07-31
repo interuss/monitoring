@@ -125,6 +125,13 @@ class CRSynchronization(TestScenario):
         self._create_cr_with_params(self._cr_params)
         self.end_test_step()
 
+        self.begin_test_step("Retrieve newly created CR")
+        self._query_secondaries_and_compare(
+            "Newly created CR can be consistently retrieved from all DSS instances",
+            self._cr_params,
+        )
+        self.end_test_step()
+
         self.begin_test_step("Search for newly created CR")
         self._search_secondaries_and_compare(
             "Newly created CR can be consistently searched for from all DSS instances",
@@ -285,12 +292,9 @@ class CRSynchronization(TestScenario):
                 "Propagated constraint reference general area is synchronized",
                 involved_participants,
             ) as check:
-                cr: Optional[ConstraintReference] = None
-                for _cr in crs:
-                    if _cr.id == self._cr_id:
-                        cr = _cr
-                        break
-
+                cr: Optional[ConstraintReference] = next(
+                    (_cr for _cr in crs if _cr.id == self._cr_id), None
+                )
                 if cr is None:
                     check.record_failed(
                         summary="Propagated CR not found",
