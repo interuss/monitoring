@@ -139,6 +139,24 @@ class CRSynchronization(TestScenario):
         )
         self.end_test_step()
 
+        self.begin_test_step("Mutate CR")
+        self._test_mutate_oir_shift_time()
+        self.end_test_step()
+
+        self.begin_test_step("Retrieve updated CR")
+        self._query_secondaries_and_compare(
+            "Updated CR can be consistently retrieved from all DSS instances",
+            self._cr_params,
+        )
+        self.end_test_step()
+
+        self.begin_test_step("Search for updated CR")
+        self._search_secondaries_and_compare(
+            "Updated CR can be consistently searched for from all DSS instances",
+            self._cr_params,
+        )
+        self.end_test_step()
+
         # Other steps to follow in subsequent PRs
 
         self.end_test_case()
@@ -415,6 +433,60 @@ class CRSynchronization(TestScenario):
                     expected_version=self._current_cr.version,
                     expected_ovn=self._current_cr.ovn,
                 )
+
+    def _test_mutate_oir_shift_time(self):
+        """Mutate the CR by adding 10 seconds to its start and end times.
+        This is achieved by updating the first and last element of the extents.
+        """
+
+        new_extents = (
+            Volume4DCollection.from_f3548v21(self._cr_params.extents)
+            .offset_times(timedelta(seconds=10))
+            .to_f3548v21()
+        )
+
+        self._cr_params = PutConstraintReferenceParameters(
+            extents=new_extents,
+            uss_base_url=self._cr_params.uss_base_url,
+        )
+
+        with self.check(
+            "Mutate constraint reference query succeeds", [self._primary_pid]
+        ) as check:
+            try:
+                cr, subs, q = self._dss.put_constraint_ref(
+                    extents=self._cr_params.extents,
+                    uss_base_url=self._cr_params.uss_base_url,
+                    cr_id=self._cr_id,
+                    ovn=self._current_cr.ovn,
+                )
+                self.record_query(q)
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                check.record_failed(
+                    summary="Constraint reference mutation failed",
+                    details=qe.msg,
+                    query_timestamps=qe.query_timestamps,
+                )
+
+        with self.check(
+            "Mutate constraint reference response content is correct",
+            [self._primary_pid],
+        ) as check:
+            ConstraintReferenceValidator(
+                main_check=check,
+                scenario=self,
+                expected_manager=self._expected_manager,
+                participant_id=[self._primary_pid],
+                cr_params=self._cr_params,
+            ).validate_mutated_cr(
+                expected_cr_id=self._cr_id,
+                mutated_cr=q,
+                previous_ovn=self._current_cr.ovn,
+                previous_version=self._current_cr.version,
+            )
+
+        self._current_cr = cr
 
     def cleanup(self):
         self.begin_cleanup()
