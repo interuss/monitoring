@@ -6,6 +6,7 @@ from typing import Tuple, Optional, Dict, List, Union
 
 import bc_jsonpath_ng
 import _jsonnet
+from loguru import logger
 import requests
 import yaml
 
@@ -85,6 +86,10 @@ def _get_web_content(url: str) -> str:
             url,
         )
         if github_match:
+            if github_match.group("hostname") == "github.com":
+                logger.warning(
+                    f"{url} references the main GitHub UI; did you mean to specify a reference to the corresponding content on raw.githubusercontent.com?"
+                )
             org = github_match.group("org")
             repo = github_match.group("repo")
 
