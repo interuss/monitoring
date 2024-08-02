@@ -4,16 +4,6 @@
 
 To execute a test run with uss_qualifier, a uss_qualifier configuration must be provided.  This configuration consists of the test suite to run, along with definitions for all resources needed by that test suite, plus information about artifacts that should be generated.  See [`USSQualifierConfiguration`](configuration.py) for the exact schema and [the dev configurations](./dev) for examples.
 
-### Specifying
-
-When referring to a configuration, three methods may be used; see [`FileReference` documentation](../fileio.py) for more details.
-
-Regardless of method used to refer to a configuration, the content of that configuration must be dict (JSON-like) content following the [`USSQualifierConfiguration`](configuration.py) schema.
-
-* **Package-based**: refer to a dictionary (*.json, *.yaml, *.jsonnet) file located in a subfolder of the `uss_qualifier` folder using the Python module style, omitting the extension of the file name.  For instance, `configurations.dev.uspace` would refer to [uss_qualifier/configurations/dev/uspace.yaml](dev/uspace.yaml).
-* **Local file**: when a configuration reference is prefixed with `file://`, it refers to a local file using the path syntax of the host operating system.
-* **Web file**: when a configuration reference is prefixed with `http://` or `https://`, it refers to a file accessible at the specified URL.
-
 ### Terminology
 
 ![Terminology flow chart](assets/terminology.png)
@@ -25,6 +15,54 @@ Regardless of method used to refer to a configuration, the content of that confi
 * **Test environment identifier**: An identifier that corresponds to the test environment configuration.  This identifier is identical to the test baseline identifier except that it hashes the test environment configuration rather than the test baseline configuration + InterUSS `monitoring` codebase version, its long-form identifier can be found in the [`environment_signature` field of a TestRunReport](../reports/report.py), and its short-form identifier is prefixed with `TE-`.
 * **Test run report**: The full set of information captured for a test run is recorded in a [`TestRunReport` object](../reports/report.py), and often written to report.json.  This information is the test run report, and it is the basis for creating all other test artifacts.
 * **Test run identifier**: An identifier that corresponds to a particular test run.  This identifier is identical to the test baseline identifier except that it hashes the test run report rather than the test baseline configuration + InterUSS `monitoring` codebase version, and its short-form identifier is prefixed with `TR-`.
+
+### Specifying
+
+When referring to a configuration, three methods may be used; see [`FileReference` documentation](../fileio.py) for more details.
+
+Regardless of method used to refer to a configuration, the content of that configuration must be dict (JSON-like) content following the [`USSQualifierConfiguration`](configuration.py) schema.
+
+* **Package-based**: refer to a dictionary (*.json, *.yaml, *.jsonnet) file located in a subfolder of the `uss_qualifier` folder using the Python module style, omitting the extension of the file name.  For instance, `configurations.dev.uspace` would refer to [uss_qualifier/configurations/dev/uspace.yaml](dev/uspace.yaml).
+* **Local file**: when a configuration reference is prefixed with `file://`, it refers to a local file using the path syntax of the host operating system.
+* **Web file**: when a configuration reference is prefixed with `http://` or `https://`, it refers to a file accessible at the specified URL.
+
+#### Accessing private GitHub repos
+
+If some or all of a test configuration is located in a private GitHub repo, uss_qualifier can be configured to retrieve that private configuration content in the same way it retrieves publicly-available configuration content.  To enable this:
+
+* Enable personal access tokens in the organization (if the repo is owned by an organization)
+    * Go to Settings from the organization page
+    * On the left under "Third-party Access", expand "Personal access tokens" and click on "Settings"
+    * Allow access to fine-grained personal access tokens
+        * For increased security, recommended settings are to require administrator approval and to restrict access to classic personal access tokens, but these settings are up to the organization administrator's discretion
+* Create a personal access token capable of viewing the private repo
+    * With the GitHub user who will be executing (or managing the execution of) uss_qualifier, navigate to user "Settings"
+    * On the left at the very button, navigate to "Developer settings"
+    * On the left, expand "Personal access tokens" and navigate to "Fine-grained tokens"
+    * Click "Generate new token"
+    * Name the token something descriptive; e.g., "Read-only access to private repos"
+    * Under "Resource owner", select the appropriate owner (the organization, if the repo is owned by an organization)
+    * Under "Repository access", select "Only select repositories" and select the private repos to be accessed
+    * Under "Permissions", expand "Repository permissions" and change "Contents" to "Access: read-only"
+    * Create the token and copy the value to a secure location
+* Identify the private repos and provide the personal access token to uss_qualifier
+    * Before running uss_qualifier, populate the environment variable `GITHUB_PRIVATE_REPOS`
+        * The value of this environment variable should be a series of private repositories declarations delimited with semicolons
+        * Each private repositories declaration should follow the format `ORG_NAME/REPO_NAMES:PAT` where
+            * `ORG_NAME` is the name of the GitHub organization or user who owns the repository
+            * `REPO_NAMES` is a comma-separated listed of private repos
+            * `PAT` is the personal access token
+        * Example: `interuss/secret_repo1,secret_repo2:github_pat_abcdefg01234_foobar;interuss_collaborator/other_secret_repo:github_pat_zyxw987_baz`
+
+Now, references to content in these private repos can be used in configurations.  For instance:
+
+```yaml
+$ref: https://raw.githubusercontent.com/interuss/secret_repo1/main/configuration/test_baseline.yaml
+```
+
+```jsonnet
+local test_environment = import 'https://raw.githubusercontent.com/interuss_collaborator/other_secret_repo/1234abcdef/configuration/test_environment.libsonnet';
+```
 
 ### Building
 
