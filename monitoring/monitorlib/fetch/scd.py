@@ -375,10 +375,17 @@ def constraints(
 class FetchedSubscription(fetch.Query):
     @property
     def success(self) -> bool:
+        """
+        Returns: True if the query was successful OR if it returned a 404.
+        """
         return not self.errors
 
     @property
     def errors(self) -> List[str]:
+        """
+        Returns: A list of messages describing the errors encountered during the query.
+        IMPORTANT: a 404 is not considered as an error for this query.
+        """
         if self.status_code == 404:
             return []
         if self.status_code != 200:
