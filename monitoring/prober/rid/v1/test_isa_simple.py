@@ -55,14 +55,14 @@ def test_create_isa(ids, session_ridv1):
             "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
             "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
         },
-        "flights_url": "https://example.com/dss",
+        "flights_url": "https://example.interuss.org/dss",
     }
     resp = session_ridv1.put("{}/{}".format(ISA_PATH, ids(ISA_TYPE)), json=req_body)
     assert resp.status_code == 200, resp.content
 
     data = resp.json()
     assert data["service_area"]["id"] == ids(ISA_TYPE)
-    assert data["service_area"]["flights_url"] == "https://example.com/dss"
+    assert data["service_area"]["flights_url"] == "https://example.interuss.org/dss"
     assert_datetimes_are_equal(
         data["service_area"]["time_start"], req_body["extents"]["time_start"]
     )
@@ -80,7 +80,7 @@ def test_get_isa_by_id(ids, session_ridv1):
 
     data = resp.json()
     assert data["service_area"]["id"] == ids(ISA_TYPE)
-    assert data["service_area"]["flights_url"] == "https://example.com/dss"
+    assert data["service_area"]["flights_url"] == "https://example.interuss.org/dss"
 
 
 @default_scope(Scope.Write)
@@ -100,14 +100,14 @@ def test_update_isa(ids, session_ridv1):
                     "altitude_hi": 400,
                 },
             },
-            "flights_url": "https://example.com/dss/v2",
+            "flights_url": "https://example.interuss.org/dss/v2",
         },
     )
     assert resp.status_code == 200
 
     data = resp.json()
     assert data["service_area"]["id"] == ids(ISA_TYPE)
-    assert data["service_area"]["flights_url"] == "https://example.com/dss/v2"
+    assert data["service_area"]["flights_url"] == "https://example.interuss.org/dss/v2"
     assert re.match(r"[a-z0-9]{10,}$", data["service_area"]["version"])
     assert "subscribers" in data
 
@@ -119,7 +119,7 @@ def test_get_isa_by_id_after_update(ids, session_ridv1):
 
     data = resp.json()
     assert data["service_area"]["id"] == ids(ISA_TYPE)
-    assert data["service_area"]["flights_url"] == "https://example.com/dss/v2"
+    assert data["service_area"]["flights_url"] == "https://example.interuss.org/dss/v2"
 
 
 @default_scope(Scope.Read)

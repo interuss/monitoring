@@ -43,7 +43,7 @@ class Sub(client.USS):
                     "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
                 },
                 "callbacks": {
-                    "identification_service_area_url": "https://example.com/foo"
+                    "identification_service_area_url": "https://example.interuss.org/foo"
                 },
             },
         )
@@ -84,7 +84,7 @@ class Sub(client.USS):
                     "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
                 },
                 "callbacks": {
-                    "identification_service_area_url": "https://example.com/foo"
+                    "identification_service_area_url": "https://example.interuss.org/foo"
                 },
             },
         )

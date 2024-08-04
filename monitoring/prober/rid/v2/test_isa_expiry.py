@@ -53,7 +53,7 @@ def test_create(ids, session_ridv2):
                 "time_start": rid_v2.make_time(time_start),
                 "time_end": rid_v2.make_time(time_end),
             },
-            "uss_base_url": "https://example.com/ridv2",
+            "uss_base_url": "https://example.interuss.org/ridv2",
         },
     )
     assert resp.status_code == 200, resp.content

@@ -20,11 +20,11 @@ from monitoring.prober.infrastructure import for_api_versions, register_resource
 from monitoring.prober.scd import actions
 
 
-CONSTRAINT_BASE_URL_1 = "https://example.com/con1/uss"
-CONSTRAINT_BASE_URL_2 = "https://example.com/con2/uss"
-CONSTRAINT_BASE_URL_3 = "https://example.com/con3/uss"
-SUB_BASE_URL_A = "https://example.com/sub1/uss"
-SUB_BASE_URL_B = "https://example.com/sub2/uss"
+CONSTRAINT_BASE_URL_1 = "https://example.interuss.org/con1/uss"
+CONSTRAINT_BASE_URL_2 = "https://example.interuss.org/con2/uss"
+CONSTRAINT_BASE_URL_3 = "https://example.interuss.org/con3/uss"
+SUB_BASE_URL_A = "https://example.interuss.org/sub1/uss"
+SUB_BASE_URL_B = "https://example.interuss.org/sub2/uss"
 
 CONSTRAINT_TYPE = register_resource_type(2, "Single constraint")
 SUB1_TYPE = register_resource_type(3, "Constraint subscription 1")

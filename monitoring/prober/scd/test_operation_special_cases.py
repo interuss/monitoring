@@ -118,7 +118,7 @@ def test_id_conversion_bug(ids, scd_api, scd_session):
             "time_end": {"value": time_end.isoformat() + "Z", "format": "RFC3339"},
         },
         "old_version": 0,
-        "uss_base_url": "https://example.com/uss/v1/",
+        "uss_base_url": "https://example.interuss.org/uss/v1/",
         "notify_for_constraints": True,
     }
     resp = scd_session.put("/subscriptions/{}".format(sub_uuid), json=req)

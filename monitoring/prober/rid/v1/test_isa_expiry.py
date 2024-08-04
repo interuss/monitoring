@@ -49,7 +49,7 @@ def test_create(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "flights_url": "https://example.com/dss",
+            "flights_url": "https://example.interuss.org/dss",
         },
     )
     assert resp.status_code == 200, resp.content

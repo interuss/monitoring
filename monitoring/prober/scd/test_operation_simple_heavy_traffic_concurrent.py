@@ -32,7 +32,7 @@ from monitoring.prober.infrastructure import (
 from monitoring.prober.scd import actions
 
 
-BASE_URL = "https://example.com/uss"
+BASE_URL = "https://example.interuss.org/uss"
 # TODO(#742): Increase number of concurrent operations from 20 to 100
 OP_TYPES = [
     register_resource_type(110 + i, "Operational intent {}".format(i))
@@ -208,7 +208,7 @@ def _build_mutate_request(idx, op_id, op_map, scd_session, scd_api):
         "extents": req["extents"],
         "old_version": existing_op["version"],
         "state": "Activated",
-        "uss_base_url": "https://example.com/uss2",
+        "uss_base_url": "https://example.interuss.org/uss2",
         "subscription_id": existing_op["subscription_id"],
     }
     return req
@@ -456,7 +456,7 @@ def test_mutate_ops_concurrent(ids, scd_api, scd_session, scd_session_async):
         data = resp["content"]
         op = data["operational_intent_reference"]
         assert op["id"] == op_id
-        assert op["uss_base_url"] == "https://example.com/uss2"
+        assert op["uss_base_url"] == "https://example.interuss.org/uss2"
         assert op["version"] == 2
         assert op["subscription_id"] == existing_op["subscription_id"]
 

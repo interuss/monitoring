@@ -32,7 +32,7 @@ from monitoring.prober.scd import actions
 import pytest
 
 
-BASE_URL = "https://example.com/uss"
+BASE_URL = "https://example.interuss.org/uss"
 CONSTRAINT_TYPE = register_resource_type(1, "Single constraint")
 
 
@@ -304,7 +304,7 @@ def test_mutate_constraint(ids, scd_api, scd_session):
         "key": [existing_constraint["ovn"]],
         "extents": req["extents"],
         "old_version": existing_constraint["version"],
-        "uss_base_url": "https://example.com/uss2",
+        "uss_base_url": "https://example.interuss.org/uss2",
     }
 
     ovn = existing_constraint["ovn"]
@@ -337,7 +337,7 @@ def test_mutate_constraint(ids, scd_api, scd_session):
     data = resp.json()
     constraint = data["constraint_reference"]
     assert constraint["id"] == id
-    assert constraint["uss_base_url"] == "https://example.com/uss2"
+    assert constraint["uss_base_url"] == "https://example.interuss.org/uss2"
     assert constraint["uss_availability"] == "Unknown"
     assert constraint["version"] == 2
 
@@ -357,7 +357,7 @@ def test_delete_constraint(ids, scd_api, scd_session):
         "key": [existing_constraint["ovn"]],
         "extents": req["extents"],
         "old_version": existing_constraint["version"],
-        "uss_base_url": "https://example.com/uss2",
+        "uss_base_url": "https://example.interuss.org/uss2",
     }
 
     ovn = existing_constraint["ovn"]

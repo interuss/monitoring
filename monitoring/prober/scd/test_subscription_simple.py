@@ -40,7 +40,7 @@ def _make_sub1_req(scd_api):
         "extents": Volume4D.from_values(
             time_start, time_end, 0, 1000, Circle.from_meters(12, -34, 300)
         ).to_f3548v21(),
-        "uss_base_url": "https://example.com/foo",
+        "uss_base_url": "https://example.interuss.org/foo",
         "notify_for_constraints": False,
     }
     req.update({"notify_for_operational_intents": True})
@@ -52,7 +52,7 @@ def _check_sub1(data, sub_id, scd_api):
     assert ("notification_index" not in data["subscription"]) or (
         data["subscription"]["notification_index"] == 0
     )
-    assert data["subscription"]["uss_base_url"] == "https://example.com/foo"
+    assert data["subscription"]["uss_base_url"] == "https://example.interuss.org/foo"
     assert data["subscription"]["time_start"]["format"] == api.TimeFormat.RFC3339
     assert data["subscription"]["time_end"]["format"] == api.TimeFormat.RFC3339
     assert ("notify_for_constraints" not in data["subscription"]) or (
