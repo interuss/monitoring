@@ -65,7 +65,9 @@ def test_create_sub_empty_vertices(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "callbacks": {"identification_service_area_url": "https://example.interuss.org/foo"},
+            "callbacks": {
+                "identification_service_area_url": "https://example.interuss.org/foo"
+            },
         },
     )
     assert resp.status_code == 400, resp.content
@@ -87,7 +89,9 @@ def test_create_sub_missing_footprint(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "callbacks": {"identification_service_area_url": "https://example.interuss.org/foo"},
+            "callbacks": {
+                "identification_service_area_url": "https://example.interuss.org/foo"
+            },
         },
     )
     assert resp.status_code == 400, resp.content
@@ -112,7 +116,9 @@ def test_create_sub_with_huge_area(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "callbacks": {"identification_service_area_url": "https://example.interuss.org/foo"},
+            "callbacks": {
+                "identification_service_area_url": "https://example.interuss.org/foo"
+            },
         },
     )
     assert resp.status_code == 400, resp.content
@@ -202,7 +208,9 @@ def test_create_sub_with_too_long_end_time(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "callbacks": {"identification_service_area_url": "https://example.interuss.org/foo"},
+            "callbacks": {
+                "identification_service_area_url": "https://example.interuss.org/foo"
+            },
         },
     )
     assert resp.status_code == 400, resp.content
@@ -226,7 +234,9 @@ def test_update_sub_with_too_long_end_time(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "callbacks": {"identification_service_area_url": "https://example.interuss.org/foo"},
+            "callbacks": {
+                "identification_service_area_url": "https://example.interuss.org/foo"
+            },
         },
     )
     assert resp.status_code == 200, resp.content
@@ -248,7 +258,9 @@ def test_update_sub_with_too_long_end_time(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "callbacks": {"identification_service_area_url": "https://example.interuss.org/foo"},
+            "callbacks": {
+                "identification_service_area_url": "https://example.interuss.org/foo"
+            },
         },
     )
     assert resp.status_code == 400, resp.content
