@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Dict, Any
 
 from uas_standards.astm.f3548.v21.constants import (
@@ -132,7 +132,7 @@ class SubscriptionValidation(TestScenario):
         - trying to mutate an existing subscription to be too long
         """
 
-        start_time = datetime.utcnow() - timedelta(minutes=1)
+        start_time = datetime.now(UTC) - timedelta(minutes=1)
         # This is 10 minutes too long
         invalid_duration = timedelta(hours=DSSMaxSubscriptionDurationHours, minutes=10)
 

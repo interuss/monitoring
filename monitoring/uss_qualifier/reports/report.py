@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import List, Optional, Dict, Tuple, Any, Union, Set, Iterator, Callable
 
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -201,7 +201,7 @@ class ErrorReport(ImplicitDict):
         return ErrorReport(
             type=str(inspection.fullname(e.__class__)),
             message=str(e),
-            timestamp=StringBasedDateTime(datetime.utcnow()),
+            timestamp=StringBasedDateTime(datetime.now(UTC)),
             stacktrace=stacktrace_string(e),
         )
 

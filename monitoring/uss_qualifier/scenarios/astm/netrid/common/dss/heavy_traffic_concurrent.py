@@ -1,6 +1,6 @@
 import asyncio
 import typing
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import List, Dict
 
 import arrow
@@ -209,12 +209,12 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 url,
             )
             prep = self._dss.client.prepare_request(r)
-            t0 = datetime.utcnow()
+            t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
             status, headers, resp_json = await self._async_session.get(
                 url=url, scope=self._read_scope()
             )
-            duration = datetime.utcnow() - t0
+            duration = datetime.now(UTC) - t0
             rq = Query(
                 request=req_descr,
                 response=describe_aiohttp_response(
@@ -238,12 +238,12 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 json=payload,
             )
             prep = self._dss.client.prepare_request(r)
-            t0 = datetime.utcnow()
+            t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
             status, headers, resp_json = await self._async_session.put(
                 url=url, json=payload, scope=self._write_scope()
             )
-            duration = datetime.utcnow() - t0
+            duration = datetime.now(UTC) - t0
             rq = Query(
                 request=req_descr,
                 response=describe_aiohttp_response(
@@ -262,12 +262,12 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 url,
             )
             prep = self._dss.client.prepare_request(r)
-            t0 = datetime.utcnow()
+            t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
             status, headers, resp_json = await self._async_session.delete(
                 url=url, scope=self._write_scope()
             )
-            duration = datetime.utcnow() - t0
+            duration = datetime.now(UTC) - t0
             rq = Query(
                 request=req_descr,
                 response=describe_aiohttp_response(

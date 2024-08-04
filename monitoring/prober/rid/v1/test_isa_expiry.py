@@ -32,7 +32,7 @@ def test_ensure_clean_workspace(ids, session_ridv1):
 
 @default_scope(Scope.Write)
 def test_create(ids, session_ridv1):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(seconds=5)
 
     resp = session_ridv1.put(

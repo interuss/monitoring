@@ -33,7 +33,7 @@ SUB3_TYPE = register_resource_type(5, "Constraint subscription 3")
 
 
 def _make_c1_request():
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
         "extents": [
@@ -51,7 +51,7 @@ def _make_c1_request():
 
 
 def _make_sub_req(base_url: str, notify_ops: bool, notify_constraints: bool) -> Dict:
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
         "extents": Volume4D.from_values(

@@ -56,13 +56,13 @@ query_hooks.append(InteractionLoggingHook())
 # https://stackoverflow.com/a/67856316
 @webapp.before_request
 def interaction_log_before_request():
-    flask.Flask.custom_profiler = {"start": datetime.datetime.utcnow()}
+    flask.Flask.custom_profiler = {"start": datetime.datetime.now(datetime.UTC)}
 
 
 @webapp.after_request
 def interaction_log_after_request(response):
     elapsed_s = (
-        datetime.datetime.utcnow() - flask.current_app.custom_profiler["start"]
+        datetime.datetime.now(datetime.UTC) - flask.current_app.custom_profiler["start"]
     ).total_seconds()
     # TODO: Make this configurable instead of hardcoding exactly these query types
     if "/uss/v1/" in flask.request.url:

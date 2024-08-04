@@ -69,7 +69,7 @@ class ISAExpiry(GenericTestScenario):
         but it should not appear in searches anymore.
         """
 
-        start_time = datetime.datetime.utcnow()
+        start_time = datetime.datetime.now(datetime.UTC)
         end_time = start_time + datetime.timedelta(seconds=5)
 
         # Create a short-lived ISA of a few seconds

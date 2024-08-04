@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Dict, List, Set
 
 from uas_standards.astm.f3548.v21.api import (
@@ -191,7 +191,7 @@ class SubscriptionInteractions(TestScenario):
                 key=[current_oir.ovn for current_oir in self._current_oirs.values()],
                 state=OperationalIntentState.Accepted,
                 uss_base_url="https://example.interuss.org/oir_base_url",
-                time_start=datetime.utcnow(),
+                time_start=datetime.now(UTC),
                 time_end=self._time_end + timedelta(minutes=10),
                 subscription_id=None,
                 implicit_sub_base_url="https://example.interuss.org/sub_base_url",
@@ -238,7 +238,7 @@ class SubscriptionInteractions(TestScenario):
                 key=[current_oir.ovn for current_oir in self._current_oirs.values()],
                 state=OperationalIntentState.Accepted,
                 uss_base_url="https://example.interuss.org/oir_base_url_bis",  # dummy modification of the OIR
-                time_start=datetime.utcnow(),
+                time_start=datetime.now(UTC),
                 time_end=self._time_end + timedelta(minutes=10),
                 subscription_id=self._current_oirs[oir_id].subscription_id,
             )
@@ -352,7 +352,7 @@ class SubscriptionInteractions(TestScenario):
             sub_id = self._sub_ids[i]
             sub_params = self._planning_area.get_new_subscription_params(
                 subscription_id=sub_id,
-                start_time=datetime.utcnow(),
+                start_time=datetime.now(UTC),
                 duration=timedelta(seconds=SUBSCRIPTION_EXPIRY_DELAY_SEC),
                 notify_for_op_intents=True,
                 notify_for_constraints=False,
@@ -420,7 +420,7 @@ class SubscriptionInteractions(TestScenario):
         self.begin_test_case("Setup")
 
         # Subscription from now to 20 minutes in the future
-        self._time_start = datetime.utcnow()
+        self._time_start = datetime.now(UTC)
         self._time_end = self._time_start + timedelta(minutes=20)
 
         # Multiple runs of the scenario seem to rely on the same instance:

@@ -34,7 +34,7 @@ def test_ensure_clean_workspace(ids, scd_api, scd_session):
 
 
 def _make_sub1_req(scd_api):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
     req = {
         "extents": Volume4D.from_values(
@@ -134,7 +134,7 @@ def test_get_sub_by_id(ids, scd_api, scd_session):
 def test_get_sub_by_search(ids, scd_api, scd_session):
     if scd_session is None:
         return
-    time_now = datetime.datetime.utcnow()
+    time_now = datetime.datetime.now(datetime.UTC)
     resp = scd_session.post(
         "/subscriptions/query",
         json={
@@ -218,7 +218,7 @@ def test_get_deleted_sub_by_id(ids, scd_api, scd_session):
 def test_get_deleted_sub_by_search(ids, scd_api, scd_session):
     if scd_session is None:
         return
-    time_now = datetime.datetime.utcnow()
+    time_now = datetime.datetime.now(datetime.UTC)
     resp = scd_session.post(
         "/subscriptions/query",
         json={

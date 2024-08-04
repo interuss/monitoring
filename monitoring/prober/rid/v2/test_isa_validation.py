@@ -42,7 +42,7 @@ def test_ensure_clean_workspace(ids, session_ridv2):
 
 @default_scope(Scope.ServiceProvider)
 def test_isa_huge_area(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv2.put(
@@ -68,7 +68,7 @@ def test_isa_huge_area(ids, session_ridv2):
 
 @default_scope(Scope.ServiceProvider)
 def test_isa_empty_vertices(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv2.put(
@@ -94,7 +94,7 @@ def test_isa_empty_vertices(ids, session_ridv2):
 
 @default_scope(Scope.ServiceProvider)
 def test_isa_missing_outline(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv2.put(
@@ -117,7 +117,7 @@ def test_isa_missing_outline(ids, session_ridv2):
 
 @default_scope(Scope.ServiceProvider)
 def test_isa_missing_volume(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv2.put(
@@ -151,7 +151,7 @@ def test_isa_missing_extents(ids, session_ridv2):
 
 @default_scope(Scope.ServiceProvider)
 def test_isa_start_time_in_past(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow() - datetime.timedelta(minutes=10)
+    time_start = datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=10)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv2.put(
@@ -180,7 +180,7 @@ def test_isa_start_time_in_past(ids, session_ridv2):
 
 @default_scope(Scope.ServiceProvider)
 def test_isa_start_time_after_time_end(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=10)
     time_end = time_start - datetime.timedelta(minutes=5)
 
     resp = session_ridv2.put(
@@ -209,7 +209,7 @@ def test_isa_start_time_after_time_end(ids, session_ridv2):
 
 @default_scope(Scope.ServiceProvider)
 def test_isa_not_on_earth(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv2.put(

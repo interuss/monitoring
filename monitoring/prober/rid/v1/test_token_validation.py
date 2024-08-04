@@ -37,7 +37,7 @@ def test_ensure_clean_workspace(ids, session_ridv1):
 
 
 def test_put_isa_with_read_only_scope_token(ids, session_ridv1):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv1.put(
@@ -62,7 +62,7 @@ def test_put_isa_with_read_only_scope_token(ids, session_ridv1):
 
 
 def test_create_isa(ids, session_ridv1):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv1.put(

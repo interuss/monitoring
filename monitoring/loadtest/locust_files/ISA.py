@@ -16,7 +16,7 @@ class ISA(client.USS):
 
     @task(10)
     def create_isa(self):
-        time_start = datetime.datetime.utcnow()
+        time_start = datetime.datetime.now(datetime.UTC)
         time_end = time_start + datetime.timedelta(minutes=60)
         isa_uuid = str(uuid.uuid4())
 
@@ -47,8 +47,8 @@ class ISA(client.USS):
             print("Nothing to pick from isa_dict for UPDATE")
             return
 
-        time_start = datetime.datetime.utcnow()
-        time_end = datetime.datetime.utcnow() + datetime.timedelta(minutes=2)
+        time_start = datetime.datetime.now(datetime.UTC)
+        time_end = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=2)
         resp = self.client.put(
             "/identification_service_areas/{}/{}".format(target_isa, target_version),
             json={

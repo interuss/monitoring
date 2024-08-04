@@ -50,7 +50,7 @@ def test_sub_does_not_exist(ids, session_ridv1):
 @default_scope(Scope.Read)
 def test_create_sub(ids, session_ridv1):
     """ASTM Compliance Test: DSS0030_C_PUT_SUB."""
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     req_body = {

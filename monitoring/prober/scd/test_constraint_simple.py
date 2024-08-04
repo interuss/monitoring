@@ -37,7 +37,7 @@ CONSTRAINT_TYPE = register_resource_type(1, "Single constraint")
 
 
 def _make_c1_request():
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
         "extents": [
@@ -73,7 +73,7 @@ def test_constraint_does_not_exist_get(ids, scd_api, scd_session):
 def test_constraint_does_not_exist_query(ids, scd_api, scd_session):
     if scd_session is None:
         return
-    time_now = datetime.datetime.utcnow()
+    time_now = datetime.datetime.now(datetime.UTC)
 
     auths = (SCOPE_CM, SCOPE_CP)
 
@@ -217,7 +217,7 @@ def test_get_constraint_by_search(ids, scd_api, scd_session):
 @default_scope(SCOPE_CM)
 @depends_on(test_create_constraint)
 def test_get_constraint_by_search_earliest_time_included(ids, scd_api, scd_session):
-    earliest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=59)
+    earliest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=59)
     resp = scd_session.post(
         "/constraint_references/query",
         json={
@@ -236,7 +236,7 @@ def test_get_constraint_by_search_earliest_time_included(ids, scd_api, scd_sessi
 @default_scope(SCOPE_CM)
 @depends_on(test_create_constraint)
 def test_get_constraint_by_search_earliest_time_excluded(ids, scd_api, scd_session):
-    earliest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=61)
+    earliest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=61)
     resp = scd_session.post(
         "/constraint_references/query",
         json={
@@ -255,7 +255,7 @@ def test_get_constraint_by_search_earliest_time_excluded(ids, scd_api, scd_sessi
 @default_scope(SCOPE_CM)
 @depends_on(test_create_constraint)
 def test_get_constraint_by_search_latest_time_included(ids, scd_api, scd_session):
-    latest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=1)
+    latest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=1)
     resp = scd_session.post(
         "/constraint_references/query",
         json={
@@ -274,7 +274,7 @@ def test_get_constraint_by_search_latest_time_included(ids, scd_api, scd_session
 @default_scope(SCOPE_CM)
 @depends_on(test_create_constraint)
 def test_get_constraint_by_search_latest_time_excluded(ids, scd_api, scd_session):
-    latest_time = datetime.datetime.utcnow() - datetime.timedelta(minutes=1)
+    latest_time = datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=1)
     resp = scd_session.post(
         "/constraint_references/query",
         json={

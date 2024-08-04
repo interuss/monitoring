@@ -36,7 +36,7 @@ def test_ensure_clean_workspace_v2(ids, session_ridv2):
 
 @default_scope(Scope.ServiceProvider)
 def test_create(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(seconds=5)
 
     resp = session_ridv2.put(

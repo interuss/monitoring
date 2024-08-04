@@ -108,7 +108,7 @@ def poll_isas(area: ObservationArea, logger: tracerlog.Logger) -> None:
     rid_client = context.get_client(area.f3411.auth_spec, area.f3411.dss_base_url)
     box = get_latlngrect_vertices(make_latlng_rect(area.area.volume))
 
-    t0 = datetime.datetime.utcnow()
+    t0 = datetime.datetime.now(datetime.UTC)
     result = fetch.rid.isas(
         box,
         area.area.time_start.datetime,
@@ -116,7 +116,7 @@ def poll_isas(area: ObservationArea, logger: tracerlog.Logger) -> None:
         area.f3411.rid_version,
         rid_client,
     )
-    t1 = datetime.datetime.utcnow()
+    t1 = datetime.datetime.now(datetime.UTC)
 
     log_new = False
     last_result = None
@@ -148,7 +148,7 @@ def poll_ops(
     area: ObservationArea, scd_client: UTMClientSession, logger: tracerlog.Logger
 ) -> None:
     box = make_latlng_rect(area.area.volume)
-    t0 = datetime.datetime.utcnow()
+    t0 = datetime.datetime.now(datetime.UTC)
     if "operational_intents" not in context.scd_cache:
         context.scd_cache["operational_intents"]: Dict[
             str, fetch.scd.FetchedEntity
@@ -160,7 +160,7 @@ def poll_ops(
         area.area.time_end.datetime,
         operation_cache=context.scd_cache["operational_intents"],
     )
-    t1 = datetime.datetime.utcnow()
+    t1 = datetime.datetime.now(datetime.UTC)
 
     log_new = False
     last_result = None
@@ -193,7 +193,7 @@ def poll_constraints(
     area: ObservationArea, scd_client: UTMClientSession, logger: tracerlog.Logger
 ) -> None:
     box = make_latlng_rect(area.area.volume)
-    t0 = datetime.datetime.utcnow()
+    t0 = datetime.datetime.now(datetime.UTC)
     if "constraints" not in context.scd_cache:
         context.scd_cache["constraints"]: Dict[str, fetch.scd.FetchedEntity] = {}
     result = fetch.scd.constraints(
@@ -203,7 +203,7 @@ def poll_constraints(
         area.area.time_end.datetime,
         constraint_cache=context.scd_cache["constraints"],
     )
-    t1 = datetime.datetime.utcnow()
+    t1 = datetime.datetime.now(datetime.UTC)
 
     log_new = False
     last_result = None

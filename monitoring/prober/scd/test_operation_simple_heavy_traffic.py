@@ -35,7 +35,7 @@ ovn_map = {}
 # Generate request with volumes that cover a circle area that initially centered at (-56, 178)
 # The circle's center lat shifts 0.001 degree (111 meters) per sequential idx change
 def _make_op_request(idx):
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=20)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=20)
     time_end = time_start + datetime.timedelta(minutes=60)
     lat = -56 - 0.001 * idx
     return {
@@ -72,7 +72,7 @@ def test_ops_do_not_exist_get(ids, scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_ops_do_not_exist_query(ids, scd_api, scd_session):
-    time_now = datetime.datetime.utcnow()
+    time_now = datetime.datetime.now(datetime.UTC)
     end_time = time_now + datetime.timedelta(hours=1)
 
     resp = scd_session.post(
@@ -159,7 +159,7 @@ def test_get_ops_by_search(ids, scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_get_ops_by_search_earliest_time_included(ids, scd_api, scd_session):
-    earliest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=59)
+    earliest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=59)
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
@@ -178,7 +178,7 @@ def test_get_ops_by_search_earliest_time_included(ids, scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_get_ops_by_search_earliest_time_excluded(ids, scd_api, scd_session):
-    earliest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=81)
+    earliest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=81)
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
@@ -195,7 +195,7 @@ def test_get_ops_by_search_earliest_time_excluded(ids, scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_get_ops_by_search_latest_time_included(ids, scd_api, scd_session):
-    latest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=20)
+    latest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=20)
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
@@ -214,7 +214,7 @@ def test_get_ops_by_search_latest_time_included(ids, scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_get_ops_by_search_latest_time_excluded(ids, scd_api, scd_session):
-    latest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=1)
+    latest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=1)
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
