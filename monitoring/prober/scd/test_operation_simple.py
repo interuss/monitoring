@@ -24,7 +24,7 @@ from monitoring.prober.infrastructure import (
 from monitoring.prober.scd import actions
 
 
-BASE_URL = "https://example.com/uss"
+BASE_URL = "https://example.interuss.org/uss"
 OP_TYPE = register_resource_type(341, "Operational intent")
 
 
@@ -372,7 +372,7 @@ def test_mutate_op(ids, scd_api, scd_session, scd_session_cp, scd_session_cm):
         "extents": req["extents"],
         "old_version": existing_op["version"],
         "state": "Activated",
-        "uss_base_url": "https://example.com/uss2",
+        "uss_base_url": "https://example.interuss.org/uss2",
         "subscription_id": existing_op["subscription_id"],
     }
 
@@ -402,7 +402,7 @@ def test_mutate_op(ids, scd_api, scd_session, scd_session_cp, scd_session_cm):
     data = resp.json()
     op = data["operational_intent_reference"]
     assert op["id"] == ids(OP_TYPE)
-    assert op["uss_base_url"] == "https://example.com/uss2"
+    assert op["uss_base_url"] == "https://example.interuss.org/uss2"
     assert op["version"] == 2
     assert op["subscription_id"] == existing_op["subscription_id"]
     # assert 'state' not in op

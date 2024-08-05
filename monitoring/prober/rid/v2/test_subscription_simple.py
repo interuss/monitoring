@@ -21,7 +21,7 @@ from . import common
 
 SUBSCRIPTION_PATH = OPERATIONS[OperationID.SearchSubscriptions].path
 SUB_TYPE = register_resource_type(349, "Subscription")
-BASE_URL = "https://example.com/rid/v2"
+BASE_URL = "https://example.interuss.org/rid/v2"
 
 
 def test_ensure_clean_workspace(ids, session_ridv2):

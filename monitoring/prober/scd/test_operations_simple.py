@@ -22,10 +22,10 @@ from monitoring.prober.infrastructure import for_api_versions, register_resource
 from monitoring.prober.scd import actions
 
 
-URL_OP1 = "https://example.com/op1/dss"
-URL_SUB1 = "https://example.com/subs1/dss"
-URL_OP2 = "https://example.com/op2/dss"
-URL_SUB2 = "https://example.com/subs2/dss"
+URL_OP1 = "https://example.interuss.org/op1/dss"
+URL_SUB1 = "https://example.interuss.org/subs1/dss"
+URL_OP2 = "https://example.interuss.org/op2/dss"
+URL_SUB2 = "https://example.interuss.org/subs2/dss"
 
 OP1_TYPE = register_resource_type(213, "Operational intent 1")
 OP2_TYPE = register_resource_type(214, "Operational intent 2")

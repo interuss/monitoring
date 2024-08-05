@@ -24,7 +24,7 @@ tokens.  See [the auth spec documentation](../monitorlib/README.md#Auth_specs)
 for the format of these values.  Note that if an authorization spec is omitted,
 the tests that depend on that authorization will be skipped.
 
-Example: `--rid-auth "UsernamePassword(https://example.com/token, username=uss1,
+Example: `--rid-auth "UsernamePassword(https://example.interuss.org/token, username=uss1,
 password=uss1, client_id=uss1)"`
 
 ## Running prober via Docker

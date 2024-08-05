@@ -65,7 +65,9 @@ def test_create_sub(ids, session_ridv1):
             "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
             "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
         },
-        "callbacks": {"identification_service_area_url": "https://example.com/foo"},
+        "callbacks": {
+            "identification_service_area_url": "https://example.interuss.org/foo"
+        },
     }
     resp = session_ridv1.put(
         "{}/{}".format(SUBSCRIPTION_PATH, ids(SUB_TYPE)), json=req_body
@@ -76,7 +78,7 @@ def test_create_sub(ids, session_ridv1):
     assert data["subscription"]["id"] == ids(SUB_TYPE)
     assert data["subscription"]["notification_index"] == 0
     assert data["subscription"]["callbacks"] == {
-        "identification_service_area_url": "https://example.com/foo"
+        "identification_service_area_url": "https://example.interuss.org/foo"
     }
     assert_datetimes_are_equal(
         data["subscription"]["time_start"], req_body["extents"]["time_start"]
@@ -98,7 +100,7 @@ def test_get_sub_by_id(ids, session_ridv1):
     assert data["subscription"]["id"] == ids(SUB_TYPE)
     assert data["subscription"]["notification_index"] == 0
     assert data["subscription"]["callbacks"] == {
-        "identification_service_area_url": "https://example.com/foo"
+        "identification_service_area_url": "https://example.interuss.org/foo"
     }
 
 

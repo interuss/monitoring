@@ -16,13 +16,13 @@ spec:
                     readOnly: true
             env:
                 -   name: MOCK_USS_DSS_URL
-                    value: https://dss.example.com <-- UPDATE
+                    value: https://dss.example.interuss.org <-- UPDATE
                 -   name: MOCK_USS_PUBLIC_KEY
-                    value: https://auth.example.com/jwks.json <-- UPDATE
+                    value: https://auth.example.interuss.org/jwks.json <-- UPDATE
                 -   name: MOCK_USS_TOKEN_AUDIENCE
-                    value: mockuss.example.com <-- UPDATE
+                    value: mockuss.example.interuss.org <-- UPDATE
                 -   name: MOCK_USS_BASE_URL
-                    value: https://mockuss.example.com <-- UPDATE
+                    value: https://mockuss.example.interuss.org <-- UPDATE
                 -   name: MOCK_USS_SERVICES
                     value: scdsc,versioning,interaction_logging,flight_planning
                 -   name: MOCK_USS_INTERACTIONS_LOG_DIR
@@ -30,7 +30,7 @@ spec:
                 -   name: MOCK_USS_PORT
                     value: "8074"
                 -   name: MOCK_USS_AUTH_SPEC
-                    value: ServiceAccount(https://auth.example.com/oauth/token,/auth/mock_uss-creds.json) <-- UPDATE
+                    value: ServiceAccount(https://auth.example.interuss.org/oauth/token,/auth/mock_uss-creds.json) <-- UPDATE
             command: ["/bin/sh", "-c"]
             args:
                 - mkdir -p /output/interaction_logs && mock_uss/start.sh
@@ -66,7 +66,7 @@ metadata:
     name: managed-cert
 spec:
     domains:
-        - mockuss.example.com <-- UPDATE
+        - mockuss.example.interuss.org <-- UPDATE
 
 ---
 apiVersion: networking.k8s.io/v1

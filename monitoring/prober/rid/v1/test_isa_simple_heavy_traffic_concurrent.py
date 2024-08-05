@@ -20,7 +20,7 @@ from uas_standards.astm.f3411.v19.api import OPERATIONS, OperationID
 from uas_standards.astm.f3411.v19.constants import Scope
 
 THREAD_COUNT = 10
-FLIGHTS_URL = "https://example.com/dss"
+FLIGHTS_URL = "https://example.interuss.org/dss"
 ISA_PATH = OPERATIONS[OperationID.SearchIdentificationServiceAreas].path
 ISA_TYPES = [
     register_resource_type(224 + i, "Operational intent {}".format(i))
@@ -110,7 +110,7 @@ def test_create_isa_concurrent(ids, session_ridv1_async):
         assert resp[0] == 200, resp[2]
         data = resp[2]
         assert data["service_area"]["id"] == isa_id
-        assert data["service_area"]["flights_url"] == "https://example.com/dss"
+        assert data["service_area"]["flights_url"] == "https://example.interuss.org/dss"
         assert_datetimes_are_equal(
             data["service_area"]["time_start"], req["extents"]["time_start"]
         )

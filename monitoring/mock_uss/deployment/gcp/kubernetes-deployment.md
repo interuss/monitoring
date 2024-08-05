@@ -81,4 +81,4 @@ kubectl apply -f mockuss.yaml
 
 GKE ingresses with managed certificates can take tens of minutes to provision; track progress in the Ingresses tab of the Services GKE menu item.
 
-Confirm deployment by visiting https://your-domain.example.com/status in a browser, which should display the version.
+Confirm deployment by visiting https://your-domain.example.interuss.org/status in a browser, which should display the version.

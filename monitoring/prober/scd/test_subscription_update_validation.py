@@ -27,7 +27,7 @@ from monitoring.prober.infrastructure import (
 from monitoring.prober.scd import actions
 
 
-BASE_URL = "https://example.com/uss"
+BASE_URL = "https://example.interuss.org/uss"
 OP_TYPE = register_resource_type(221, "Operational intent")
 sub_id = None
 

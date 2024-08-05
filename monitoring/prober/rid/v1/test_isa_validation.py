@@ -54,7 +54,7 @@ def test_isa_huge_area(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "flights_url": "https://example.com/uss/flights",
+            "flights_url": "https://example.interuss.org/uss/flights",
         },
     )
     assert resp.status_code == 400, resp.content
@@ -80,7 +80,7 @@ def test_isa_empty_vertices(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "flights_url": "https://example.com/uss/flights",
+            "flights_url": "https://example.interuss.org/uss/flights",
         },
     )
     assert resp.status_code == 400, resp.content
@@ -103,7 +103,7 @@ def test_isa_missing_footprint(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "flights_url": "https://example.com/uss/flights",
+            "flights_url": "https://example.interuss.org/uss/flights",
         },
     )
     assert resp.status_code == 400, resp.content
@@ -122,7 +122,7 @@ def test_isa_missing_spatial_volume(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "flights_url": "https://example.com/uss/flights",
+            "flights_url": "https://example.interuss.org/uss/flights",
         },
     )
     assert resp.status_code == 400, resp.content
@@ -134,7 +134,7 @@ def test_isa_missing_extents(ids, session_ridv1):
     resp = session_ridv1.put(
         "{}/{}".format(ISA_PATH, ids(ISA_TYPE)),
         json={
-            "flights_url": "https://example.com/uss/flights",
+            "flights_url": "https://example.interuss.org/uss/flights",
         },
     )
     assert resp.status_code == 400, resp.content
@@ -160,7 +160,7 @@ def test_isa_start_time_in_past(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "flights_url": "https://example.com/uss/flights",
+            "flights_url": "https://example.interuss.org/uss/flights",
         },
     )
     assert resp.status_code == 400, resp.content
@@ -189,7 +189,7 @@ def test_isa_start_time_after_time_end(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "flights_url": "https://example.com/uss/flights",
+            "flights_url": "https://example.interuss.org/uss/flights",
         },
     )
     assert resp.status_code == 400, resp.content
@@ -223,7 +223,7 @@ def test_isa_not_on_earth(ids, session_ridv1):
                 "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                 "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
             },
-            "flights_url": "https://example.com/uss/flights",
+            "flights_url": "https://example.interuss.org/uss/flights",
         },
     )
     assert resp.status_code == 400, resp.content

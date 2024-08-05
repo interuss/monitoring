@@ -12,7 +12,7 @@ from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
 from monitoring.prober.infrastructure import for_api_versions, register_resource_type
 
-BASE_URL = "https://example.com/uss"
+BASE_URL = "https://example.interuss.org/uss"
 
 SUB_TYPE = register_resource_type(219, "Subscription")
 

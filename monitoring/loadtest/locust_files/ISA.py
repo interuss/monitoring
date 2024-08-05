@@ -34,7 +34,7 @@ class ISA(client.USS):
                     "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                     "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
                 },
-                "flights_url": "https://example.com/dss",
+                "flights_url": "https://example.interuss.org/dss",
             },
         )
         if resp.status_code == 200:
@@ -63,7 +63,7 @@ class ISA(client.USS):
                     "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                     "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
                 },
-                "flights_url": "https://example.com/dss",
+                "flights_url": "https://example.interuss.org/dss",
             },
         )
         if resp.status_code == 200:

@@ -21,8 +21,8 @@ from . import common
 
 ISA_PATH = OPERATIONS[OperationID.SearchIdentificationServiceAreas].path
 ISA_TYPE = register_resource_type(348, "ISA")
-BASE_URL_V1 = "https://example.com/rid/v2"
-BASE_URL_V2 = "https://s2.example.com/rid/v2"
+BASE_URL_V1 = "https://example.interuss.org/rid/v2"
+BASE_URL_V2 = "https://s2.example.interuss.org/rid/v2"
 
 
 def test_ensure_clean_workspace(ids, session_ridv2):
