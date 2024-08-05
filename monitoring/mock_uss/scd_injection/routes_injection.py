@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Tuple, Optional, List, Dict
 
 import flask
@@ -339,7 +339,7 @@ def scdsc_clear_area() -> Tuple[str, int]:
         outcome=ClearAreaOutcome(
             success=clear_resp.success,
             message="See `details` field in response for more information",
-            timestamp=StringBasedDateTime(datetime.utcnow()),
+            timestamp=StringBasedDateTime(datetime.now(UTC)),
         ),
     )
     resp["request"] = req

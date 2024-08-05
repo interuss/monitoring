@@ -1,6 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from multiprocessing import Process
 import os
 import signal
@@ -175,7 +175,7 @@ class MockUSS(flask.Flask):
                 with db as tx:
                     assert isinstance(tx, Database)
                     tx.most_recent_periodic_check = StringBasedDateTime(
-                        datetime.utcnow()
+                        datetime.now(UTC)
                     )
 
                     # Cancel the loop if we're stopping

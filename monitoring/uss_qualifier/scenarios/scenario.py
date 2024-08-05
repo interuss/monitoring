@@ -1,6 +1,6 @@
 import traceback
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, UTC
 from enum import Enum
 import inspect
 from typing import Callable, Dict, List, Optional, TypeVar, Union, Set, Type
@@ -274,7 +274,7 @@ class GenericTestScenario(ABC):
             name=self.documentation.name,
             scenario_type=self.declaration.scenario_type,
             documentation_url=self.documentation.url,
-            start_time=StringBasedDateTime(datetime.utcnow()),
+            start_time=StringBasedDateTime(datetime.now(UTC)),
             cases=[],
         )
 
@@ -343,7 +343,7 @@ class GenericTestScenario(ABC):
         self._case_report = TestCaseReport(
             name=self._current_case.name,
             documentation_url=self._current_case.url,
-            start_time=StringBasedDateTime(datetime.utcnow()),
+            start_time=StringBasedDateTime(datetime.now(UTC)),
             steps=[],
         )
         self._scenario_report.cases.append(self._case_report)
@@ -373,7 +373,7 @@ class GenericTestScenario(ABC):
         self._step_report = TestStepReport(
             name=self._current_step.name,
             documentation_url=self._current_step.url,
-            start_time=StringBasedDateTime(datetime.utcnow()),
+            start_time=StringBasedDateTime(datetime.now(UTC)),
             failed_checks=[],
             passed_checks=[],
         )
@@ -468,7 +468,7 @@ class GenericTestScenario(ABC):
 
     def end_test_step(self) -> TestStepReport:
         self._expect_phase(ScenarioPhase.RunningTestStep)
-        self._step_report.end_time = StringBasedDateTime(datetime.utcnow())
+        self._step_report.end_time = StringBasedDateTime(datetime.now(UTC))
         self._current_step = None
         report = self._step_report
         self._step_report = None
@@ -477,14 +477,14 @@ class GenericTestScenario(ABC):
 
     def end_test_case(self) -> None:
         self._expect_phase(ScenarioPhase.ReadyForTestStep)
-        self._case_report.end_time = StringBasedDateTime(datetime.utcnow())
+        self._case_report.end_time = StringBasedDateTime(datetime.now(UTC))
         self._current_case = None
         self._case_report = None
         self._phase = ScenarioPhase.ReadyForTestCase
 
     def end_test_scenario(self) -> None:
         self._expect_phase(ScenarioPhase.ReadyForTestCase)
-        self._scenario_report.end_time = StringBasedDateTime(datetime.utcnow())
+        self._scenario_report.end_time = StringBasedDateTime(datetime.now(UTC))
         self._phase = ScenarioPhase.ReadyForCleanup
 
     def go_to_cleanup(self) -> None:
@@ -508,7 +508,7 @@ class GenericTestScenario(ABC):
         self._step_report = TestStepReport(
             name=self._current_step.name,
             documentation_url=self._current_step.url,
-            start_time=StringBasedDateTime(datetime.utcnow()),
+            start_time=StringBasedDateTime(datetime.now(UTC)),
             failed_checks=[],
             passed_checks=[],
         )
@@ -525,7 +525,7 @@ class GenericTestScenario(ABC):
 
     def end_cleanup(self) -> None:
         self._expect_phase(ScenarioPhase.CleaningUp)
-        self._step_report.end_time = StringBasedDateTime(datetime.utcnow())
+        self._step_report.end_time = StringBasedDateTime(datetime.now(UTC))
         self._phase = ScenarioPhase.Complete
 
     def ensure_cleanup_ended(self) -> None:
@@ -535,7 +535,7 @@ class GenericTestScenario(ABC):
         end_cleanup was called."""
         self._expect_phase({ScenarioPhase.CleaningUp, ScenarioPhase.Complete})
         if self._phase == ScenarioPhase.CleaningUp:
-            self._step_report.end_time = StringBasedDateTime(datetime.utcnow())
+            self._step_report.end_time = StringBasedDateTime(datetime.now(UTC))
             self._phase = ScenarioPhase.Complete
 
     def record_execution_error(self, e: Exception) -> None:

@@ -40,7 +40,7 @@ def test_ensure_clean_workspace(ids, session_ridv1):
 @default_scope(Scope.Write)
 def test_create_isa(ids, session_ridv1):
     """ASTM Compliance Test: DSS0030_A_PUT_ISA."""
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     req_body = {
@@ -137,7 +137,7 @@ def test_get_isa_by_search(ids, session_ridv1):
 
 @default_scope(Scope.Read)
 def test_get_isa_by_search_earliest_time_included(ids, session_ridv1):
-    earliest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=59)
+    earliest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=59)
     resp = session_ridv1.get(
         "{}?area={}&earliest_time={}".format(
             ISA_PATH,
@@ -151,7 +151,7 @@ def test_get_isa_by_search_earliest_time_included(ids, session_ridv1):
 
 @default_scope(Scope.Read)
 def test_get_isa_by_search_earliest_time_excluded(ids, session_ridv1):
-    earliest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=61)
+    earliest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=61)
     resp = session_ridv1.get(
         "{}?area={}&earliest_time={}".format(
             ISA_PATH,
@@ -165,7 +165,7 @@ def test_get_isa_by_search_earliest_time_excluded(ids, session_ridv1):
 
 @default_scope(Scope.Read)
 def test_get_isa_by_search_latest_time_included(ids, session_ridv1):
-    latest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=1)
+    latest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=1)
     resp = session_ridv1.get(
         "{}?area={}&latest_time={}".format(
             ISA_PATH,
@@ -179,7 +179,7 @@ def test_get_isa_by_search_latest_time_included(ids, session_ridv1):
 
 @default_scope(Scope.Read)
 def test_get_isa_by_search_latest_time_excluded(ids, session_ridv1):
-    latest_time = datetime.datetime.utcnow() - datetime.timedelta(minutes=1)
+    latest_time = datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=1)
     resp = session_ridv1.get(
         "{}?area={}&latest_time={}".format(
             ISA_PATH,

@@ -40,7 +40,7 @@ def test_subscription_with_invalid_start_time(ids, scd_api, scd_session):
     if scd_session is None:
         return
 
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(hours=2.5)
     req = _make_sub_req(time_start, time_end, 200, 1000, 500, scd_api)
     req["extents"]["time_start"]["value"] = "something-invalid"

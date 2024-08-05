@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Dict, List
 
 from uas_standards.astm.f3548.v21.api import (
@@ -263,7 +263,7 @@ class SubscriptionInteractionsDeletion(TestScenario):
     def _setup_case(self):
         self.begin_test_case("Setup")
 
-        self._time_start = datetime.utcnow()
+        self._time_start = datetime.now(UTC)
         self._time_end = self._time_start + timedelta(minutes=20)
 
         self._current_subs = {}

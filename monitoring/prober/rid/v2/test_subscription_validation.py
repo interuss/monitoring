@@ -50,7 +50,7 @@ def test_ensure_clean_workspace(ids, session_ridv2):
 
 @default_scope(Scope.DisplayProvider)
 def test_create_sub_empty_vertices(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(seconds=10)
 
     resp = session_ridv2.put(
@@ -75,7 +75,7 @@ def test_create_sub_empty_vertices(ids, session_ridv2):
 
 @default_scope(Scope.DisplayProvider)
 def test_create_sub_missing_outline_polygon(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(seconds=10)
 
     resp = session_ridv2.put(
@@ -97,7 +97,7 @@ def test_create_sub_missing_outline_polygon(ids, session_ridv2):
 
 @default_scope(Scope.DisplayProvider)
 def test_create_sub_with_huge_area(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(seconds=10)
 
     resp = session_ridv2.put(
@@ -123,7 +123,7 @@ def test_create_sub_with_huge_area(ids, session_ridv2):
 @default_scope(Scope.DisplayProvider)
 def test_create_too_many_subs(ids, session_ridv2):
     """ASTM Compliance Test: DSS0050_MAX_SUBS_PER_AREA."""
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(seconds=30)
 
     # create 1 more than the max allowed Subscriptions per area
@@ -185,7 +185,7 @@ def test_create_too_many_subs(ids, session_ridv2):
 @default_scope(Scope.DisplayProvider)
 def test_create_sub_with_too_long_end_time(ids, session_ridv2):
     """ASTM Compliance Test: DSS0060_MAX_SUBS_DURATION."""
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(
         hours=(NetDSSMaxSubscriptionDurationHours + 1)
     )
@@ -211,7 +211,7 @@ def test_create_sub_with_too_long_end_time(ids, session_ridv2):
 @default_scope(Scope.DisplayProvider)
 def test_update_sub_with_too_long_end_time(ids, session_ridv2):
     """ASTM Compliance Test: DSS0060_MAX_SUBS_DURATION."""
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(seconds=10)
 
     resp = session_ridv2.put(

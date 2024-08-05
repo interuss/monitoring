@@ -61,7 +61,7 @@ def test_ensure_clean_workspace(ids, session_ridv2):
 
 @default_scope(Scope.ServiceProvider)
 def test_create_isa(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv2.put(
@@ -86,7 +86,7 @@ def test_create_isa(ids, session_ridv2):
 
 @default_scope(Scope.DisplayProvider)
 def test_create_subscription(ids, session_ridv2):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv2.put(
@@ -123,7 +123,7 @@ def test_modify_isa(ids, session_ridv2):
     version = resp.json()["service_area"]["version"]
 
     # Then modify it.
-    time_end = datetime.datetime.utcnow() + datetime.timedelta(minutes=60)
+    time_end = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=60)
     resp = session_ridv2.put(
         "{}/{}/{}".format(ISA_PATH, ids(ISA_TYPE), version),
         json={

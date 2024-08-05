@@ -85,7 +85,9 @@ def get_monitoring_user(
     )
 
     # Compute validity
-    valid_until = (datetime.datetime.utcnow() + datetime.timedelta(days=2)).isoformat()
+    valid_until = (
+        datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=2)
+    ).isoformat()
     execute_sql(
         client,
         namespace,

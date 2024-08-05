@@ -37,7 +37,7 @@ def test_ensure_clean_workspace(ids, session_ridv1):
 
 @default_scope(Scope.Write)
 def test_isa_huge_area(ids, session_ridv1):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv1.put(
@@ -63,7 +63,7 @@ def test_isa_huge_area(ids, session_ridv1):
 
 @default_scope(Scope.Write)
 def test_isa_empty_vertices(ids, session_ridv1):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv1.put(
@@ -89,7 +89,7 @@ def test_isa_empty_vertices(ids, session_ridv1):
 
 @default_scope(Scope.Write)
 def test_isa_missing_footprint(ids, session_ridv1):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv1.put(
@@ -112,7 +112,7 @@ def test_isa_missing_footprint(ids, session_ridv1):
 
 @default_scope(Scope.Write)
 def test_isa_missing_spatial_volume(ids, session_ridv1):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv1.put(
@@ -143,7 +143,7 @@ def test_isa_missing_extents(ids, session_ridv1):
 
 @default_scope(Scope.Write)
 def test_isa_start_time_in_past(ids, session_ridv1):
-    time_start = datetime.datetime.utcnow() - datetime.timedelta(minutes=10)
+    time_start = datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=10)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv1.put(
@@ -172,7 +172,7 @@ def test_isa_start_time_in_past(ids, session_ridv1):
 
 @default_scope(Scope.Write)
 def test_isa_start_time_after_time_end(ids, session_ridv1):
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=10)
     time_end = time_start - datetime.timedelta(minutes=5)
 
     resp = session_ridv1.put(
@@ -201,7 +201,7 @@ def test_isa_start_time_after_time_end(ids, session_ridv1):
 
 @default_scope(Scope.Write)
 def test_isa_not_on_earth(ids, session_ridv1):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
 
     resp = session_ridv1.put(

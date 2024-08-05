@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Tuple, List, Union
 
 import arrow
@@ -218,7 +218,7 @@ def tracer_import_observation_areas() -> Union[Tuple[str, int], flask.Response]:
 @webapp.shutdown_task("observation areas cleanup")
 def _shutdown():
     logger.info(
-        f"Cleaning up observation areas from PID {os.getpid()} at {datetime.utcnow()}..."
+        f"Cleaning up observation areas from PID {os.getpid()} at {datetime.now(UTC)}..."
     )
 
     with db as tx:

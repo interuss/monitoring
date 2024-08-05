@@ -18,7 +18,7 @@ ALL_SCOPES = [
     "utm.constraint_consumption",
 ]
 
-EPOCH = datetime.datetime.utcfromtimestamp(0)
+EPOCH = datetime.datetime.fromtimestamp(0, datetime.UTC)
 TOKEN_REFRESH_MARGIN = datetime.timedelta(seconds=15)
 CLIENT_TIMEOUT = 10  # seconds
 
@@ -52,7 +52,7 @@ class AuthAdapter(object):
             token = self._tokens[intended_audience][scope_string]
         payload = jwt.decode(token, options={"verify_signature": False})
         expires = EPOCH + datetime.timedelta(seconds=payload["exp"])
-        if datetime.datetime.utcnow() > expires - TOKEN_REFRESH_MARGIN:
+        if datetime.datetime.now(datetime.UTC) > expires - TOKEN_REFRESH_MARGIN:
             token = self.issue_token(intended_audience, scopes)
         self._tokens[intended_audience][scope_string] = token
         return {"Authorization": "Bearer " + token}

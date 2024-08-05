@@ -5,7 +5,7 @@ from monitoring.monitorlib import formatting
 def _print_time_range(t0: str, t1: str) -> str:
     if not t0 and not t1:
         return ""
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
     if t0.endswith("Z"):
         t0 = t0[0:-1]
     if t1.endswith("Z"):
