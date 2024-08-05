@@ -55,7 +55,7 @@ Same configuration as [uspace](#uspace), except only the portions related to AST
 
 Intended to be an InterUSS interpretation of how to verify the requirements of the [US Shared Airspace group](https://github.com/utmimplementationus/getstarted) verified via automated testing as documented in their [Requirements Traceability Matrix for Strategic Coordination](https://github.com/utmimplementationus/getstarted/blob/main/docs/Strategic_Coordination_Compliance_Matrix_v1.0.xlsx).  Note that this is merely InterUSS's interpretation of the publicly-available information for that project and this test configuration may not exactly match the test configuration actually in use by that group (which is not organizationally affiliated with InterUSS).  InterUSS welcomes contributions to change this test configuration to better align with the intent of that group.
 
-The baseline portion of the test configuration is found in [utm_implementation_us_baseline.libsonnet](utm_implementation_us_baseline.libsonnet) and the environmental portion of the test configuration is found in [utm_implementation_us_env_local.libsonnet](utm_implementation_us_env_local.libsonnet).  The top-level test configuration [utm_implementation_us.jsonnet](utm_implementation_us.jsonnet) combines the test baseline with the test environment to form a full test configuration.
+The baseline portion of the test configuration is found in [baseline.libsonnet](utm_implementation_us_lib/baseline.libsonnet) and the environmental portion of the test configuration is found in [env_all.libsonnet](utm_implementation_us_lib/local/env_all.libsonnet).  The top-level test configuration [utm_implementation_us.jsonnet](utm_implementation_us.jsonnet) combines the test baseline with the test environment to form a full test configuration.
 
 ### Environment characteristics
 
@@ -74,9 +74,11 @@ To adapt this configuration to target a non-local ecosystem and USS:
 * Make appropriately-named copies of the environmental and top-level configurations.
     * For instance, if testing in a pre-qualification environment, appropriate renaming might be:
         * utm_implementation_us.jsonnet -> utm_implementation_us_prequal.jsonnet
-        * utm_implementation_us_env_local.jsonnet -> utm_implementation_us_env_prequal.jsonnet
+        * local (folder) -> prequal (folder)
     * These appropriately-named copies may be put into the [personal](../personal) folder to make modifications without affecting git-tracked files.
 * Edit the new top-level configuration (e.g., utm_implementation_us_prequal.jsonnet) to point to the appropriate test baseline and test environment
-    * The relative path of utm_implementation_us_baseline.libsonnet may need to be adjusted.  For instance, if the top-level configuration is now in the personal folder, `import 'utm_implementation_us_baseline.libsonnet'` must be changed to `import '../dev/utm_implementation_us_baseline.libsonnet'`
-    * The imported filename for `env` must be updated to the new environment filename (e.g., utm_implementation_us_env_prequal.jsonnet)
-* Edit the new environmental configuration (e.g., utm_implementation_us_env_prequal.libsonnet) to accurately describe the environment in which the new test is being conducted.
+    * The relative path of baseline.libsonnet may need to be adjusted.  For instance, if the top-level configuration is now in the personal folder, `import 'utm_implementation_us_lib/baseline.libsonnet'` must be changed to `import '../dev/utm_implementation_us_lib/baseline.libsonnet'`
+    * The imported filename for the environment must be updated to the new environment filename (e.g., prequal/env_all.jsonnet)
+* Edit the new participant-agnostic environmental configuration (e.g., prequal/env.libsonnet) to accurately describe the environment in which the new test is being conducted.
+* Edit and rename environmental configurations for participants (e.g., uss1.libsonnet, uss2.libsonnet) to accurately describe these participants and their systems under test.
+* Edit the new participant-specific environmental configuration (e.g., prequal/env_all.libsonnet) to accurately describe the participants in the new environment.

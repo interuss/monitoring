@@ -1,5 +1,6 @@
-{
+function(participants) {
   // This file contains environmental (non-baseline) parameters for the utm_implementation_us.jsonnet test configuration for the standard local CI environment.
+  // It is parameterized on which participants to include in the test.
   // Top-level keys are used in utm_implementation_us_baseline.jsonnet when this content is provided as `env`.
   resource_declarations: {
     // Means by which uss_qualifier can obtain authorization to make requests in an ASTM USS ecosystem
@@ -41,18 +42,9 @@
       },
       specification: {
         instances: [
-          {
-            participant_id: 'uss1_core',
-            interuss: {
-              base_url: 'http://scdsc.uss1.localutm/versioning',
-            },
-          },
-          {
-            participant_id: 'uss2_core',
-            interuss: {
-              base_url: 'http://scdsc.uss2.localutm/versioning',
-            },
-          },
+          participant.test_env_version_provider
+          for participant in participants
+          if 'test_env_version_provider' in participant
         ],
       },
     },
@@ -65,18 +57,9 @@
       },
       specification: {
         instances: [
-          {
-            participant_id: 'uss1_core',
-            interuss: {
-              base_url: 'http://scdsc.uss1.localutm/versioning',
-            },
-          },
-          {
-            participant_id: 'uss2_core',
-            interuss: {
-              base_url: 'http://scdsc.uss2.localutm/versioning',
-            },
-          },
+          participant.prod_env_version_provider
+          for participant in participants
+          if 'prod_env_version_provider' in participant
         ],
       },
     },
@@ -89,17 +72,9 @@
       },
       specification: {
         flight_planners: [
-          // uss1 is the mock_uss directly exposing flight planning functionality
-          {
-            participant_id: 'uss1_core',
-            v1_base_url: 'http://scdsc.uss1.localutm/flight_planning/v1',
-          },
-
-          // uss2 is another mock_uss directly exposing flight planning functionality
-          {
-            participant_id: 'uss2_core',
-            v1_base_url: 'http://scdsc.uss2.localutm/flight_planning/v1',
-          },
+          participant.flight_planner
+          for participant in participants
+          if 'flight_planner' in participant
         ],
       },
     },
@@ -124,20 +99,10 @@
       },
       specification: {
         dss_instances: [
-          {
-            participant_id: 'uss1_dss',
-            user_participant_ids: [
-              // Participants using a DSS instance they do not provide should be listed as users of that DSS (so that they can take credit for USS requirements enforced by the DSS)
-              'mock_uss',  // mock_uss uses this DSS instance; it does not provide its own instance
-            ],
-            base_url: 'http://dss.uss1.localutm',
-            has_private_address: true, // This should be removed for production systems
-          },
-          {
-            participant_id: 'uss2_dss',
-            base_url: 'http://dss.uss2.localutm',
-            has_private_address: true, // This should be removed for production systems
-          },
+          instance
+          for participant in participants
+          if 'dss_instances' in participant
+          for instance in participant.dss_instances
         ],
       },
     },
@@ -156,18 +121,13 @@
   },
 
   aggregate_participants: {
-    uss1: [
-      'uss1_core',
-      'uss1_dss',
-    ],
-    uss2: [
-      'uss2_core',
-      'uss2_dss',
-    ],
+    [participant.participant_id]: participant.aggregate_participant_ids
+    for participant in participants
+    if 'aggregate_participant_ids' in participant
   },
 
   participant_requirements: {
-    uss1: 'Basic SCD with DSS provision',
-    uss2: 'Basic SCD without DSS provision',
+    [participant.participant_id]: participant.participant_requirements
+    for participant in participants
   },
 }
