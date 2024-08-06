@@ -176,8 +176,7 @@ def _jsonnet_import_callback(
     if rel.endswith(".libsonnet"):
         # Do not attempt to parse libsonnet content (e.g., resolve $refs);
         # it will be parsed after loading the full top-level Jsonnet.
-        root_path = os.path.dirname(base_file_name)
-        file_name = os.path.join(root_path, rel)
+        file_name = os.path.join(folder, rel)
         file_content = _load_content_from_file_name(file_name)
         return file_name, file_content.encode()
     else:
