@@ -80,5 +80,8 @@ To adapt this configuration to target a non-local ecosystem and USS:
     * The relative path of baseline.libsonnet may need to be adjusted.  For instance, if the top-level configuration is now in the personal folder, `import 'utm_implementation_us_lib/baseline.libsonnet'` must be changed to `import '../dev/utm_implementation_us_lib/baseline.libsonnet'`
     * The imported filename for the environment must be updated to the new environment filename (e.g., prequal/env_all.jsonnet)
 * Edit the new participant-agnostic environmental configuration (e.g., prequal/env.libsonnet) to accurately describe the environment in which the new test is being conducted.
-* Edit and rename environmental configurations for participants (e.g., uss1.libsonnet, uss2.libsonnet) to accurately describe these participants and their systems under test.
+    * When referring to information specified by participant, create and use a new environment identifier -- i.e., change participant.local_env.* to, e.g., participant.prequal_env.*
+* Edit and rename environmental configurations for participants (e.g., uss1.libsonnet, uss2.libsonnet) to accurately describe these participants and their systems under test in the new environment.
+    * A new field/block should be added to the top-level participant config to capture the new environment information (e.g., prequal_env), matching the name chosen in the previous step
+    * The content of this field/block can be copied from existing environment information (e.g., the local_env field/block)
 * Edit the new participant-specific environmental configuration (e.g., prequal/env_all.libsonnet) to accurately describe the participants in the new environment.
