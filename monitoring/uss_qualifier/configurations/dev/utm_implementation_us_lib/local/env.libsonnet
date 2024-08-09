@@ -1,6 +1,6 @@
 function(participants) {
   // This file contains environmental (non-baseline) parameters for the utm_implementation_us.jsonnet test configuration for the standard local CI environment.
-  // It is parameterized on which participants to include in the test.
+  // It is parameterized on which participants to include in the test.  Each participant is expected to have a "local_env" block in their definitions.
   // Top-level keys are used in utm_implementation_us_baseline.jsonnet when this content is provided as `env`.
   resource_declarations: {
     // Means by which uss_qualifier can obtain authorization to make requests in an ASTM USS ecosystem
@@ -42,9 +42,9 @@ function(participants) {
       },
       specification: {
         instances: [
-          participant.test_env_version_provider
+          participant.local_env.test_env_version_provider
           for participant in participants
-          if 'test_env_version_provider' in participant
+          if 'test_env_version_provider' in participant.local_env
         ],
       },
     },
@@ -57,9 +57,9 @@ function(participants) {
       },
       specification: {
         instances: [
-          participant.prod_env_version_provider
+          participant.local_env.prod_env_version_provider
           for participant in participants
-          if 'prod_env_version_provider' in participant
+          if 'prod_env_version_provider' in participant.local_env
         ],
       },
     },
@@ -72,9 +72,9 @@ function(participants) {
       },
       specification: {
         flight_planners: [
-          participant.flight_planner
+          participant.local_env.flight_planner
           for participant in participants
-          if 'flight_planner' in participant
+          if 'flight_planner' in participant.local_env
         ],
       },
     },
@@ -101,8 +101,8 @@ function(participants) {
         dss_instances: [
           instance
           for participant in participants
-          if 'dss_instances' in participant
-          for instance in participant.dss_instances
+          if 'dss_instances' in participant.local_env
+          for instance in participant.local_env.dss_instances
         ],
       },
     },
