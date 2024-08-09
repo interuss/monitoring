@@ -13,17 +13,20 @@ Note that this does not cover authorization.
 [`DSSInstanceResource`](../../../../../resources/astm/f3548/v21/dss.py) to be tested in this scenario.
 
 Note that to benefit from the maximum coverage, the DSS' AuthAdapterResource must be able to obtain credentials
-for multiple scopes (so that a wrong scope may be used in place of the correct one) as well as an empty scope (that is, provide credentials where the scope is an empty string).
+for multiple scopes (so that a wrong scope may be used in place of the correct one) as well as an empty scope
+(that is, provide credentials where the scope is an empty string).
 
 This scenario will check for the scope's availability and transparently ignore checks that can't be conducted.
 
-Required scopes for running this scenario:
+At least one of the following scopes needs to be available for this scenario to at least partially run:
 
 - `utm.strategic_coordination`
+- `utm.availability_arbitration`
+
+In order to verify each endpoint group, all scopes above must be available.
 
 Optional scopes that will allow the scenario to provide additional coverage:
 
-- `utm.availability_arbitration`
 - `""` (empty string)
 
 ### id_generator
