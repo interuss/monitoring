@@ -1,19 +1,21 @@
-import os
 import datetime
+import json
+import os
 
 import flask
-import json
 
 from monitoring.mock_uss import webapp, require_config_value
 from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_DIR
+from monitoring.monitorlib.clients import QueryHook, query_hooks
 from monitoring.monitorlib.clients.mock_uss.interactions import (
     Interaction,
     QueryDirection,
 )
-from monitoring.monitorlib.clients import QueryHook, query_hooks
 from monitoring.monitorlib.fetch import Query, describe_flask_query, QueryType
 
 require_config_value(KEY_INTERACTIONS_LOG_DIR)
+
+LOGGED_INTERACTION_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 def log_interaction(direction: QueryDirection, query: Query) -> None:
@@ -22,21 +24,19 @@ def log_interaction(direction: QueryDirection, query: Query) -> None:
         direction: Whether this interaction was initiated or handled by this system.
         query: Full description of the interaction to log.
     """
-    interaction: Interaction = Interaction(query=query, direction=direction)
-    method = query.request.method
-    log_file(f"{direction}_{method}", interaction)
+    log_file(
+        code=f"{direction.value}_{query.request.method}",
+        content=Interaction(query=query, direction=direction),
+    )
 
 
 def log_file(code: str, content: Interaction) -> None:
     log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]
     n = len(os.listdir(log_path))
-    basename = "{:06d}_{}_{}".format(
-        n, code, datetime.datetime.now().strftime("%H%M%S_%f")
+    basename = "{:06d}_{}_{}.json".format(
+        n, code, datetime.datetime.now().strftime(LOGGED_INTERACTION_TIMESTAMP_FORMAT)
     )
-    logname = "{}.json".format(basename)
-    fullname = os.path.join(log_path, logname)
-
-    with open(fullname, "w") as f:
+    with open(os.path.join(log_path, basename), "w") as f:
         json.dump(content, f)
 
 
