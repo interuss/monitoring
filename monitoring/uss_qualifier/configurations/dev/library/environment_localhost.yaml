@@ -107,11 +107,11 @@ netrid_dss_instances_v19:
       - participant_id: uss1
         rid_version: F3411-19
         base_url: http://localhost:8082
-        has_private_address: true
+        has_private_address: true  # TODO monitoring#739: not used on its own anymore, to be removed alongside local_debug
       - participant_id: uss2
         rid_version: F3411-19
         base_url: http://localhost:8082
-        has_private_address: true
+        has_private_address: true  # TODO monitoring#739: not used on its own anymore, to be removed alongside local_debug
 
 netrid_dss_instances_v22a:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -123,11 +123,11 @@ netrid_dss_instances_v22a:
       - participant_id: uss1
         rid_version: F3411-22a
         base_url: http://localhost:8082/rid/v2
-        has_private_address: true
+        has_private_address: true  # TODO monitoring#739: not used on its own anymore, to be removed alongside local_debug
       - participant_id: uss2
         rid_version: F3411-22a
         base_url: http://localhost:8082/rid/v2
-        has_private_address: true
+        has_private_address: true  # TODO monitoring#739: not used on its own anymore, to be removed alongside local_debug
 
 netrid_dss_instance_v19:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -138,7 +138,7 @@ netrid_dss_instance_v19:
     participant_id: uss1
     rid_version: F3411-19
     base_url: http://localhost:8082
-    has_private_address: true
+    has_private_address: true  # TODO monitoring#739: not used on its own anymore, to be removed alongside local_debug
 
 netrid_dss_instance_v22a:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -149,7 +149,7 @@ netrid_dss_instance_v22a:
     participant_id: uss1
     rid_version: F3411-22a
     base_url: http://localhost:8082/rid/v2
-    has_private_address: true
+    has_private_address: true  # TODO monitoring#739: not used on its own anymore, to be removed alongside local_debug
 
 # ===== Flight planning =====
 
@@ -200,7 +200,6 @@ scd_dss:
   specification:
     participant_id: uss1
     base_url: http://localhost:8082
-    has_private_address: true
 
 scd_dss_instances:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -213,10 +212,8 @@ scd_dss_instances:
         user_participant_ids:
           - mock_uss
         base_url: http://localhost:8082
-        has_private_address: true
       - participant_id: uss2
         base_url: http://localhost:8082
-        has_private_address: true
 
 # ===== DSS CockroachDB nodes =====
 

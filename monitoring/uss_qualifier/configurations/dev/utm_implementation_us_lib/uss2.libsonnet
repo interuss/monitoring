@@ -40,7 +40,6 @@
       {
         participant_id: 'uss2_dss',
         base_url: 'http://dss.uss2.localutm',
-        has_private_address: true, // This should be removed for production systems
       },
     ]
   }
