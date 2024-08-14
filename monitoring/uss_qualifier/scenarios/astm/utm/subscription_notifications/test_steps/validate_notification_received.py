@@ -150,7 +150,7 @@ def _is_notification_sent_to_url_with_op_intent_id(
 
 def _check_notification_sent_with_subscription_id_and_response(
     interactions: List[Interaction], subscription_id: str
-) -> Tuple[bool, bool, int]:
+) -> Tuple[bool, int]:
     """
     This function checks if a notification with subscription_id is found in the given interactions,
 

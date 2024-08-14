@@ -3,6 +3,7 @@ import json
 import os
 
 import flask
+import arrow
 
 from monitoring.mock_uss import webapp, require_config_value
 from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_DIR
@@ -15,7 +16,9 @@ from monitoring.monitorlib.fetch import Query, describe_flask_query, QueryType
 
 require_config_value(KEY_INTERACTIONS_LOG_DIR)
 
-LOGGED_INTERACTION_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+# We use dashes between hours, minutes and seconds, because colons might be problematic for Windows,
+# and the CI is unhappy about them in filenames.
+LOGGED_INTERACTION_FILENAME_TIMESTAMP_FORMAT = "%Y-%m-%dT%H-%M-%S.%fZ"
 
 
 def log_interaction(direction: QueryDirection, query: Query) -> None:
@@ -34,7 +37,11 @@ def log_file(code: str, content: Interaction) -> None:
     log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]
     n = len(os.listdir(log_path))
     basename = "{:06d}_{}_{}.json".format(
-        n, code, datetime.datetime.now().strftime(LOGGED_INTERACTION_TIMESTAMP_FORMAT)
+        n,
+        code,
+        content.interaction_time().strftime(
+            LOGGED_INTERACTION_FILENAME_TIMESTAMP_FORMAT
+        ),
     )
     with open(os.path.join(log_path, basename), "w") as f:
         json.dump(content, f)
