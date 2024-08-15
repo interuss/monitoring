@@ -31,6 +31,7 @@ function(env) {
             problematically_big_area: 'problematically_big_area',
             system_identity: 'system_identity',
             // dss_crdb_cluster: dss_crdb_cluster  # TODO: Provide once local DSS uses a multi-node cluster
+            test_exclusions: 'test_exclusions',
           },
         },
       },
@@ -58,6 +59,15 @@ function(env) {
       //   2) to create another resource in the pool
       resources: {
         resource_declarations: env.resource_declarations + {
+
+          // Controls tests behavior
+          test_exclusions: {
+            resource_type: 'resources.dev.TestExclusionsResource',
+            specification: {
+              // Tests should allow private addresses that are not publicly addressable since this configuration runs locally
+              allow_private_addresses: true,
+            },
+          },
 
           // Means by which uss_qualifier can discover which subscription ('sub' claim of its tokes) it is described by
           utm_client_identity: {
