@@ -233,7 +233,13 @@ def compute_tested_scenario(
             before=report.cleanup.start_time.datetime,
             after=latest_step_time,
         )
-        epochs[-1].case.steps[-1].events.extend(dangling_notes)
+        if dangling_notes:
+            if not epochs:
+                # Nothing happened during this scenario, so add a virtual test case
+                epochs.append(
+                    Epoch(case=TestedCase(name="No actions", url="#", steps=[]))
+                )
+            epochs[-1].case.steps[-1].events.extend(dangling_notes)
 
         # Add a one-step case for cleanup
         tested_step, latest_step_time = _step_events(
