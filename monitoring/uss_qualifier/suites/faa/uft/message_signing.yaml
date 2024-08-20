@@ -15,6 +15,7 @@ resources:
   second_utm_auth: resources.communications.AuthAdapterResource?
   planning_area: resources.astm.f3548.v21.PlanningAreaResource
   problematically_big_area: resources.VerticesResource
+  test_exclusions: resources.dev.TestExclusionsResource?
 actions:
 - test_scenario:
     scenario_type: scenarios.faa.uft.StartMessageSigningReport
@@ -41,6 +42,7 @@ actions:
       second_utm_auth: second_utm_auth
       planning_area: planning_area
       problematically_big_area: problematically_big_area
+      test_exclusions: test_exclusions?
   on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.faa.uft.FinalizeMessageSigningReport

@@ -20,6 +20,7 @@ resources:
   planning_area: resources.astm.f3548.v21.PlanningAreaResource
   problematically_big_area: resources.VerticesResource
   system_identity: resources.versioning.SystemIdentityResource?
+  test_exclusions: resources.dev.TestExclusionsResource?
 local_resources:
   system_identity:
     resource_type: resources.versioning.SystemIdentityResource
@@ -54,6 +55,7 @@ actions:
       id_generator: id_generator
       planning_area: planning_area
       problematically_big_area: problematically_big_area
+      test_exclusions: test_exclusions?
     specification:
       action_to_repeat:
         test_suite:
@@ -68,10 +70,30 @@ actions:
             id_generator: id_generator
             planning_area: planning_area
             problematically_big_area: problematically_big_area
+            test_exclusions: test_exclusions?
         on_failure: Continue
       dss_instances_source: dss_instances
       dss_instance_id: dss
     on_failure: Continue
+- action_generator:
+    generator_type: action_generators.flight_planning.FlightPlannerCombinations
+    resources:
+      flight_planners: flight_planners
+      flight_intents: conflicting_flights
+      dss: dss
+    specification:
+      action_to_repeat:
+        test_scenario:
+          scenario_type: scenarios.astm.utm.nominal_planning.solo_happy_path.SoloHappyPath
+          resources:
+            flight_intents: flight_intents
+            tested_uss: tested_uss
+            dss: dss
+        on_failure: Continue
+      flight_planners_source: flight_planners
+      roles:
+        - tested_uss
+  on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:

@@ -67,9 +67,6 @@ class DSSInstanceSpecification(ImplicitDict):
     base_url: str
     """Base URL for the DSS instance according to the ASTM F3548-21 API"""
 
-    has_private_address: Optional[bool]
-    """Whether this DSS instance is expected to have a private address that is not publicly addressable."""
-
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         try:
@@ -82,7 +79,6 @@ class DSSInstance(object):
     participant_id: str
     user_participant_ids: List[str]
     base_url: str
-    has_private_address: bool = False
     client: infrastructure.UTMClientSession
     _scopes_authorized: Set[str]
 
@@ -91,15 +87,12 @@ class DSSInstance(object):
         participant_id: str,
         user_participant_ids: List[str],
         base_url: str,
-        has_private_address: Optional[bool],
         auth_adapter: infrastructure.AuthAdapter,
         scopes_authorized: List[str],
     ):
         self.participant_id = participant_id
         self.user_participant_ids = user_participant_ids
         self.base_url = base_url
-        if has_private_address is not None:
-            self.has_private_address = has_private_address
         self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
         self._scopes_authorized = set(
             s.value if isinstance(s, Enum) else s for s in scopes_authorized
@@ -135,7 +128,6 @@ class DSSInstance(object):
             participant_id=self.participant_id,
             user_participant_ids=self.user_participant_ids,
             base_url=self.base_url,
-            has_private_address=self.has_private_address,
             auth_adapter=auth_adapter.adapter,
             scopes_authorized=list(scopes_required),
         )
@@ -772,7 +764,6 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
             and self._specification.user_participant_ids
             else [],
             self._specification.base_url,
-            self._specification.get("has_private_address"),
             self._auth_adapter.adapter,
             list(scopes_required),
         )
