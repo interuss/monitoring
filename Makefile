@@ -116,8 +116,8 @@ presubmit: hygiene-tests monitoring-tests
 restart-all: stop-uss-mocks down-locally start-locally start-uss-mocks
 
 # For local development when restarts of the mock USS are frequently required
-.PHONY: restart-mock-uss
-restart-mock-uss: stop-uss-mocks start-uss-mocks
+.PHONY: restart-uss-mocks
+restart-uss-mocks: stop-uss-mocks start-uss-mocks
 
 # To be run locally whenever a direct dependency has been updated in requirements.in
 .PHONY: update-pinned-dependencies

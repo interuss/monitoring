@@ -45,7 +45,6 @@ def interaction_logs() -> Tuple[Response, int]:
         # Parse the interaction time from the file name:
         fname_parts = fname.split("_")
         if len(fname_parts) != 4:
-            # TODO: should we consider failing hard here, to let users know something is likely very wrong?
             logger.warning(
                 f"Skipping file {fname} as it does not match the expected format"
             )
