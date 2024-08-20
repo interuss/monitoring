@@ -25,7 +25,7 @@ This resource is optional.
 
 For this step, all successful display data queries made during the execution of the previous scenarios are used to compute an aggregate statistic.
 
-#### Performance of /display_data/<flight_id> requests check
+#### ⚠️ Performance of /display_data/<flight_id> requests check
 
 **[astm.f3411.v19.NET0460](../../../../requirements/astm/f3411/v19.md) Checks that the DP response times for the
 Display Application's flight details requests have a p95 and p99 that are respectively below
@@ -37,12 +37,12 @@ observer and per request (identified by their URLs). For each of those, and usin
 `NetMinSessionLength`, the queries are split between initial and subsequent ones.
 The percentiles of both all the initial and all the subsequent queries are then computed to be checked.
 
-#### Performance of /display_data initial requests check
+#### ⚠️ Performance of /display_data initial requests check
 **[astm.f3411.v19.NET0420](../../../../requirements/astm/f3411/v19.md)** requires that the 95th and 99th percentiles
 of the durations for the initial display data queries do not exceed the respectives thresholds
 `NetDpInitResponse95thPercentile` and `NetDpInitResponse99thPercentile`.
 
-#### Performance of /display_data subsequent requests check
+#### ⚠️ Performance of /display_data subsequent requests check
 **[astm.f3411.v19.NET0440](../../../../requirements/astm/f3411/v19.md)** requires that the 95th and 99th percentiles
 of the durations for the subsequent display data queries do not exceed the respectives thresholds
 `NetDpDataResponse95thPercentile` and `NetDpDataResponse99thPercentile`.
@@ -51,13 +51,13 @@ of the durations for the subsequent display data queries do not exceed the respe
 
 ### Performance of /flights?view requests test step
 
-#### 95th percentile response time check
+#### ⚠️ 95th percentile response time check
 
 **[astm.f3411.v19.NET0260,NetSpDataResponseTime95thPercentile](../../../../requirements/astm/f3411/v19.md)** requires that the 95th percentile
 of the durations for the replies to requested flights in an area does not exceed the threshold
 `NetSpDataResponseTime95thPercentile` (1 second).
 
-#### 99th percentile response time check
+#### ⚠️ 99th percentile response time check
 
 **[astm.f3411.v19.NET0260,NetSpDataResponseTime99thPercentile](../../../../requirements/astm/f3411/v19.md)** requires that the 99th percentile
 of the durations for the replies to requested flights in an area does not exceed the threshold
@@ -69,7 +69,7 @@ of the durations for the replies to requested flights in an area does not exceed
 
 Inspects all record queries for their usage of https.
 
-#### All interactions happen over https check
+#### ⚠️ All interactions happen over https check
 
 If non-encrypted interactions such as plaintext queries over http are allowed, **[astm.f3411.v19.NET0220](../../../../requirements/astm/f3411/v19.md)** is not satisfied.
 
@@ -84,7 +84,7 @@ compliance with requirements.
 
 ### Evaluate mock USS interactions test step
 
-#### No large Display Provider queries check
+#### ⚠️ No large Display Provider queries check
 
 If one of the Display Provider test participants was found to have sent a query to mock_uss with a larger-than-allowed
 area requested, then that participant will have violated **[astm.f3411.v19.NET0240](../../../../requirements/astm/f3411/v19.md)**.
