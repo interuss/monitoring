@@ -22,7 +22,9 @@ class DSSInstanceSpecification(ImplicitDict):
     base_url: str
     """Base URL for the DSS instance according to the ASTM F3411 API appropriate to the specified rid_version"""
 
-    has_private_address: Optional[bool]
+    has_private_address: Optional[
+        bool
+    ]  # TODO monitoring#739: not used on its own anymore, to be removed alongside local_debug
     """Whether this DSS instance is expected to have a private address that is not publicly addressable."""
 
     local_debug: Optional[bool]
@@ -50,7 +52,6 @@ class DSSInstance(object):
     participant_id: ParticipantID
     rid_version: RIDVersion
     base_url: str
-    has_private_address: bool = False
     local_debug: bool = False
     client: infrastructure.UTMClientSession
 
@@ -58,7 +59,9 @@ class DSSInstance(object):
         self,
         participant_id: ParticipantID,
         base_url: str,
-        has_private_address: Optional[bool],
+        has_private_address: Optional[
+            bool
+        ],  # TODO monitoring#739: not used on its own anymore, to be removed alongside local_debug
         local_debug: Optional[bool],
         rid_version: RIDVersion,
         auth_adapter: infrastructure.AuthAdapter,
@@ -69,7 +72,6 @@ class DSSInstance(object):
         self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
 
         if has_private_address is not None:
-            self.has_private_address = has_private_address
             self.local_debug = True
         if local_debug is not None:
             self.local_debug = local_debug
@@ -79,7 +81,6 @@ class DSSInstance(object):
             self.participant_id == other.participant_id
             and self.rid_version == other.rid_version
             and self.base_url == other.base_url
-            and self.has_private_address == other.has_private_address
             and self.local_debug == other.local_debug
         )
 

@@ -59,10 +59,6 @@ class DSSWrapper(object):
     def base_url(self) -> str:
         return self._dss.base_url
 
-    @property
-    def has_private_address(self) -> bool:
-        return self._dss.has_private_address
-
     # TODO: QueryError is not actually raised for RID functions, this function and its uses should be removed
     def _handle_query_error(
         self,
