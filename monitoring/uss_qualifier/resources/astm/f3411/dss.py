@@ -22,26 +22,8 @@ class DSSInstanceSpecification(ImplicitDict):
     base_url: str
     """Base URL for the DSS instance according to the ASTM F3411 API appropriate to the specified rid_version"""
 
-    has_private_address: Optional[
-        bool
-    ]  # TODO monitoring#739: not used on its own anymore, to be removed alongside local_debug
-    """Whether this DSS instance is expected to have a private address that is not publicly addressable."""
-
-    local_debug: Optional[bool]
-    """Whether this DSS instance is running locally for debugging or development purposes. Mostly used for relaxing
-    constraints around encryption.
-    Assumed to be true if left unspecified and has_private_address is true, otherwise defaults to false
-    """
-
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
-        if not self.has_field_with_value("local_debug"):
-            if self.has_field_with_value("has_private_address") and self.get(
-                "has_private_address"
-            ):
-                self.local_debug = True
-            else:
-                self.local_debug = False
         try:
             urlparse(self.base_url)
         except ValueError:
@@ -52,17 +34,12 @@ class DSSInstance(object):
     participant_id: ParticipantID
     rid_version: RIDVersion
     base_url: str
-    local_debug: bool = False
     client: infrastructure.UTMClientSession
 
     def __init__(
         self,
         participant_id: ParticipantID,
         base_url: str,
-        has_private_address: Optional[
-            bool
-        ],  # TODO monitoring#739: not used on its own anymore, to be removed alongside local_debug
-        local_debug: Optional[bool],
         rid_version: RIDVersion,
         auth_adapter: infrastructure.AuthAdapter,
     ):
@@ -71,17 +48,11 @@ class DSSInstance(object):
         self.rid_version = rid_version
         self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
 
-        if has_private_address is not None:
-            self.local_debug = True
-        if local_debug is not None:
-            self.local_debug = local_debug
-
     def is_same_as(self, other: DSSInstance) -> bool:
         return (
             self.participant_id == other.participant_id
             and self.rid_version == other.rid_version
             and self.base_url == other.base_url
-            and self.local_debug == other.local_debug
         )
 
 
@@ -105,8 +76,6 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
         self.dss_instance = DSSInstance(
             specification.participant_id,
             specification.base_url,
-            specification.has_private_address,
-            specification.local_debug,
             specification.rid_version,
             auth_adapter.adapter,
         )
