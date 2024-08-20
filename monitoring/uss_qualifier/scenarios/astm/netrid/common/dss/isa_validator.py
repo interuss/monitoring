@@ -103,7 +103,7 @@ class ISAValidator(object):
                     )
 
         with self._scenario.check("ISA version format", dss_id) as sub_check:
-            if not all(c not in "\0\t\r\n#%/:?@[\]" for c in dss_isa.version):
+            if not all(c not in "\0\t\r\n#%/:?@[\\]" for c in dss_isa.version):
                 self._fail_sub_check(
                     sub_check,
                     f"DSS returned ISA (ID {isa_id}) with invalid version format",
