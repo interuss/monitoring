@@ -66,6 +66,8 @@ function(env) {
             specification: {
               // Tests should allow private addresses that are not publicly addressable since this configuration runs locally
               allow_private_addresses: true,
+              // Tests should allow cleartext queries since this configuration runs locally without generalized usage of HTTPS
+              allow_cleartext_queries: true,
             },
           },
 

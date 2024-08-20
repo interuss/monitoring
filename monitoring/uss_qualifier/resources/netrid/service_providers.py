@@ -21,11 +21,6 @@ class ServiceProviderConfiguration(ImplicitDict):
     injection_base_url: str
     """Base URL for the Service Provider's implementation of the interfaces/automated-testing/rid/injection.yaml API"""
 
-    local_debug: Optional[bool]
-    """Whether this Service Provider instance is running locally for debugging or development purposes. Mostly used for relaxing
-    constraints around encryption.
-    """
-
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         try:
@@ -44,21 +39,18 @@ class NetRIDServiceProvider(object):
     participant_id: str
     injection_base_url: str
     injection_client: infrastructure.UTMClientSession
-    local_debug: bool
 
     def __init__(
         self,
         participant_id: str,
         injection_base_url: str,
         auth_adapter: infrastructure.AuthAdapter,
-        local_debug: bool,
     ):
         self.participant_id = participant_id
         self.injection_base_url = injection_base_url
         self.injection_client = infrastructure.UTMClientSession(
             injection_base_url, auth_adapter
         )
-        self.local_debug = local_debug
 
     def submit_test(self, request: CreateTestParameters, test_id: str) -> fetch.Query:
         return fetch.query_and_describe(
@@ -102,7 +94,6 @@ class NetRIDServiceProviders(Resource[NetRIDServiceProvidersSpecification]):
                 participant_id=s.participant_id,
                 injection_base_url=s.injection_base_url,
                 auth_adapter=auth_adapter.adapter,
-                local_debug=s.get("local_debug", False),
             )
             for s in specification.service_providers
         ]

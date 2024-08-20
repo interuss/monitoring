@@ -15,6 +15,10 @@ The observers to evaluate in the report.
 ### dss_instances
 The DSS instances that have been relied upon or tested by the framework.
 
+### test_exclusions
+A [resources.dev.TestExclusionsResource](../../../../resources/dev/test_exclusions.py) containing test exclusions parameters like whether cleartext queries are allowed.
+This resource is optional.
+
 ## Performance of Display Providers requests test case
 
 ### Performance of /display_data/<flight_id> requests test step
@@ -63,12 +67,13 @@ of the durations for the replies to requested flights in an area does not exceed
 
 ### Verify https is in use test step
 
-Inspects all record queries for their usage of https. If services such as a service provider, observer or DSS are marked
-as being in "local debug" mode, they may serve requests over http without producing failed checks despite their lack of encryption.
+Inspects all record queries for their usage of https.
 
 #### All interactions happen over https check
 
 If non-encrypted interactions such as plaintext queries over http are allowed, **[astm.f3411.v22a.NET0220](../../../../requirements/astm/f3411/v22a.md)** is not satisfied.
+
+This check is skipped if the test exclusion `allow_cleartext_queries` is set to `True`.
 
 ## Mock USS interactions evaluation test case
 
