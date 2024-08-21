@@ -20,6 +20,8 @@ from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_s
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
+# Margin interaction lookup to prevent issues from slight clock skew
+INTERACTION_LOG_CLOCK_SKEW_MARGIN = timedelta(seconds=5)
 
 def expect_mock_uss_receives_op_intent_notification(
     scenario: TestScenarioType,
@@ -94,20 +96,28 @@ def mock_uss_interactions(
     since: StringBasedDateTime,
     query_params: Optional[Dict[str, str]] = None,
     is_applicable: Optional[Callable[[Interaction], bool]] = None,
+    include_clock_skew_buffer: bool = True
 ) -> Tuple[List[Interaction], Query]:
-    """Determine if mock_uss recorded an interaction for the specified operation in the specified direction."""
+    """
+    Determine if mock_uss recorded an interaction for the specified operation in the specified direction.
 
+    if include_clock_skew_buffer is True (the default), interactions will be looked up slightly earlier than specified
+    (see the INTERACTION_LOG_CLOCK_SKEW_MARGIN constant) to prevent a small clock skew from breaking scenarios.
+    """
+
+    lookup_time = since.datetime - INTERACTION_LOG_CLOCK_SKEW_MARGIN if include_clock_skew_buffer else since.datetime
+    margin_message = " (includes skew margin)" if include_clock_skew_buffer else ""
     with scenario.check(
         "Mock USS interactions logs retrievable", [mock_uss.participant_id]
     ) as check:
         try:
-            interactions, query = mock_uss.get_interactions(since)
+            interactions, query = mock_uss.get_interactions(StringBasedDateTime(lookup_time))
             scenario.record_query(query)
         except QueryError as e:
             for q in e.queries:
                 scenario.record_query(q)
             check.record_failed(
-                summary=f"Error from mock_uss when attempting to get interactions since {since}",
+                summary=f"Error from mock_uss when attempting to get interactions since {lookup_time }{margin_message}",
                 details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
