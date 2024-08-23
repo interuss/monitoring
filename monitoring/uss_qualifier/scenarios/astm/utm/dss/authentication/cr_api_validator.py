@@ -13,6 +13,7 @@ from uas_standards.astm.f3548.v21.api import (
     PutConstraintReferenceParameters,
     ChangeConstraintReferenceResponse,
     QueryConstraintReferenceParameters,
+    QueryConstraintReferencesResponse,
 )
 
 from monitoring.monitorlib import fetch
@@ -263,6 +264,21 @@ class ConstraintRefAuthValidator:
                     query_timestamps=[query_valid_auth.request.timestamp],
                 )
 
+        with self._scenario.check(
+            "Get constraint reference response format conforms to spec",
+            self._pid,
+        ) as check:
+            try:
+                ImplicitDict.parse(
+                    query_valid_auth.response.json, ChangeConstraintReferenceResponse
+                )
+            except ValueError as e:
+                check.record_failed(
+                    summary="Could not parse the response body",
+                    details=f"Failed to parse the response body as a ChangeConstraintReferenceResponse: {e}",
+                    query_timestamps=[query_valid_auth.request.timestamp],
+                )
+
     def _verify_cr_mutation(self):
         op = OPERATIONS[OperationID.UpdateConstraintReference]
         new_params = PutConstraintReferenceParameters(**self._cr_params)
@@ -429,6 +445,20 @@ class ConstraintRefAuthValidator:
                     query_timestamps=[valid_q.request.timestamp],
                 )
 
+        with self._scenario.check(
+            "Delete constraint reference response format conforms to spec", self._pid
+        ) as check:
+            try:
+                ImplicitDict.parse(
+                    valid_q.response.json, ChangeConstraintReferenceResponse
+                )
+            except ValueError as e:
+                check.record_failed(
+                    summary="Could not parse the deletion response",
+                    details=f"Failed to parse the response body as a ChangeConstraintReferenceResponse: {e}",
+                    query_timestamps=[valid_q.request.timestamp],
+                )
+
         self._current_cr = None
 
     def _verify_cr_search(self):
@@ -507,6 +537,21 @@ class ConstraintRefAuthValidator:
                     query_timestamps=[valid_q.request.timestamp],
                 )
 
+        with self._scenario.check(
+            "Search constraint reference response format conforms to spec",
+            self._pid,
+        ) as check:
+            try:
+                ImplicitDict.parse(
+                    valid_q.response.json, QueryConstraintReferencesResponse
+                )
+            except ValueError as e:
+                check.record_failed(
+                    summary="Could not parse the search response",
+                    details=f"Failed to parse the response body as a ChangeConstraintReferenceResponse: {e}",
+                    query_timestamps=[valid_q.request.timestamp],
+                )
+
     def _sanity_check_cr_not_created(
         self, check: PendingCheck, creation_q: fetch.Query
     ):
@@ -532,6 +577,17 @@ class ConstraintRefAuthValidator:
         try:
             cr, sanity_check = self._dss.get_constraint_ref(self._test_id)
             self._scenario.record_query(sanity_check)
+            # Check if the version changed
+            if cr.version != self._current_cr.version:
+                check.record_failed(
+                    summary="CR version updated by an unauthorized request.",
+                    details=f"The Constraint Reference with id {self._test_id} should not have been updated, as the update attempt was not authenticated.",
+                    query_timestamps=[
+                        creation_q.request.timestamp,
+                        sanity_check.request.timestamp,
+                    ],
+                )
+            # For the unlikely case where the version would not change but the CR would be mutated anyway:
             if (
                 abs(
                     cr.time_end.value.datetime
@@ -540,7 +596,7 @@ class ConstraintRefAuthValidator:
                 > TIME_TOLERANCE_SEC
             ):
                 check.record_failed(
-                    summary="CR was updated by an unauthorized request.",
+                    summary="CR end time updated by an unauthorized request.",
                     details=f"The Constraint Reference with id {self._test_id} should not have been updated, as the update attempt was not authenticated.",
                     query_timestamps=[
                         creation_q.request.timestamp,
