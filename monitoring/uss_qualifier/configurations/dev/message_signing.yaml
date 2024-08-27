@@ -49,6 +49,8 @@ v1:
     action:
       test_suite:
         suite_type: suites.faa.uft.message_signing
+        # Note: suite cannot currently accept flights that conflict due to different priorities,
+        #  which is why priority_preemption_flights is not populated here.
         resources:
           mock_uss: mock_uss
           flight_planners: flight_planners
@@ -56,7 +58,6 @@ v1:
           conflicting_flights: che_conflicting_flights
           invalid_flight_intents: che_invalid_flight_intents
           non_conflicting_flights: che_non_conflicting_flights
-          priority_preemption_flights: che_conflicting_flights
           dss: scd_dss
           dss_instances: scd_dss_instances
           id_generator: id_generator
@@ -71,3 +72,27 @@ v1:
   artifacts:
     raw_report: {}
     sequence_view: {}
+
+  # This block defines whether to return an error code from the execution of uss_qualifier, based on the content of the
+  # test run report.  All of the criteria must be met to return a successful code.
+  validation:
+    criteria:
+      # applicability indicates which test report elements the pass_condition applies to
+      - applicability:
+          # We want to make sure no test scenarios had execution errors
+          test_scenarios: {}
+        pass_condition:
+          each_element:
+            has_execution_error: false
+      - applicability:
+          # We also want to make sure there are no failed checks...
+          failed_checks:
+            # ...at least, no failed checks with severity higher than "Low".
+            has_severity:
+              higher_than: Low
+        pass_condition:
+          # When considering all of the applicable elements...
+          elements:
+            # ...the number of applicable elements should be zero.
+            count:
+              equal_to: 0
