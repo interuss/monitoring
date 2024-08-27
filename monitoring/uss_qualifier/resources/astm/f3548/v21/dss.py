@@ -717,7 +717,7 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     def base_url(self) -> str:
         return self._specification.base_url
 
-    def get_authorized_scope_not_in(self, ignored_scopes: List[str]) -> Optional[str]:
+    def get_authorized_scope_not_in(self, ignored_scopes: List[str]) -> Optional[Scope]:
         """Returns a scope that this DSS Resource is allowed to use but that is not any of the ones that are passed
         in 'ignored_scopes'. If no such scope is found, None is returned.
 

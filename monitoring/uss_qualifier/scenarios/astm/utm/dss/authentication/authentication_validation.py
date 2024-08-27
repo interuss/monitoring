@@ -24,6 +24,9 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.availability_api_validator import (
     AvailabilityAuthValidator,
 )
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.cr_api_validator import (
+    ConstraintRefAuthValidator,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.generic import (
     GenericAuthValidator,
 )
@@ -59,6 +62,7 @@ class AuthenticationValidation(TestScenario):
 
     _scd_dss: Optional[DSSInstance] = None
     _availability_dss: Optional[DSSInstance] = None
+    _constraints_dss: Optional[DSSInstance] = None
 
     def __init__(
         self,
@@ -119,6 +123,27 @@ class AuthenticationValidation(TestScenario):
             availability_scopes = None
             self._wrong_scope_for_availability = None
 
+        if dss.can_use_scope(Scope.ConstraintManagement):
+            constraints_scopes = {
+                Scope.ConstraintManagement: "Create, update, and delete constraints",
+            }
+
+            self._wrong_scope_for_constraints = dss.get_authorized_scope_not_in(
+                [
+                    Scope.ConstraintManagement,  # Allowed to get and update
+                    Scope.ConstraintProcessing,  # Allowed to get
+                    "",  # Already Used for empty scope testing
+                ]
+            )
+
+            if self._wrong_scope_for_constraints is not None:
+                constraints_scopes[
+                    self._wrong_scope_for_constraints
+                ] = "Attempt to query constraints with wrong scope"
+        else:
+            constraints_scopes = None
+            self._wrong_scope_for_constraints = None
+
         self._test_missing_scope = False
         if dss.can_use_scope(""):
             # Add empty scope to every map when they are non-empty:
@@ -131,6 +156,10 @@ class AuthenticationValidation(TestScenario):
                 availability_scopes[
                     ""
                 ] = "Attempt to query availability with missing scope"
+            if constraints_scopes:
+                constraints_scopes[
+                    ""
+                ] = "Attempt to query constraints with missing scope"
             self._test_missing_scope = True
 
         # Note: .get_instance should be called once we know every scope we will need,
@@ -139,6 +168,8 @@ class AuthenticationValidation(TestScenario):
         # and skip .get_instance altogether (otherwise the scenario would not be run)
         if scd_scopes:
             self._scd_dss = dss.get_instance(scd_scopes)
+        if constraints_scopes:
+            self._constraints_dss = dss.get_instance(constraints_scopes)
         if availability_scopes:
             self._availability_dss = dss.get_instance(availability_scopes)
 
@@ -162,7 +193,11 @@ class AuthenticationValidation(TestScenario):
             self._scd_dss.base_url, auth_adapter=InvalidTokenSignatureAuth()
         )
 
-        if not self._scd_dss and not self._availability_dss:
+        if (
+            not self._scd_dss
+            and not self._constraints_dss
+            and not self._availability_dss
+        ):
             raise MissingResourceError(
                 f"AuthAdapterResource provided to {fullname(type(self))} has none of the required scopes for this scenario.",
                 "<unknown>",
@@ -268,6 +303,37 @@ class AuthenticationValidation(TestScenario):
             self.end_test_step()
         else:
             self.record_note("availability", "Skipping Availability endpoints")
+
+        if self._constraints_dss:
+            self.record_note("constraints", "Testing Constraint Reference endpoints")
+            self.begin_test_step("Constraint reference endpoints authentication")
+            if self._wrong_scope_for_constraints:
+                self.record_note(
+                    "constraints_wrong_scope",
+                    f"Incorrect scope testing enabled with scope {self._wrong_scope_for_constraints}.",
+                )
+            else:
+                self.record_note(
+                    "constraints_wrong_scope", "Incorrect scope testing disabled."
+                )
+            cr_validator = ConstraintRefAuthValidator(
+                scenario=self,
+                generic_validator=GenericAuthValidator(
+                    self, self._constraints_dss, Scope.ConstraintManagement
+                ),
+                dss=self._constraints_dss,
+                test_id=self._test_id,
+                planning_area=self._planning_area,
+                planning_area_volume4d=self._planning_area_volume4d,
+                no_auth_session=self._no_auth_session,
+                invalid_token_session=self._invalid_token_session,
+                test_wrong_scope=self._wrong_scope_for_constraints,
+                test_missing_scope=self._test_missing_scope,
+            )
+            cr_validator.verify_cr_endpoints_authentication()
+            self.end_test_step()
+        else:
+            self.record_note("constraints", "Skipping Constraint Reference endpoints")
 
         self.end_test_case()
         self.end_test_scenario()

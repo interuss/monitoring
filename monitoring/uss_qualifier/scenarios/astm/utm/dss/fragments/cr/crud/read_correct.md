@@ -6,11 +6,9 @@ This test step fragment validates that constraint references can be read
 
 Check query succeeds.
 
-## 🛑 Get constraint reference response format conforms to spec check
+## [Read response format](./read_format.md)
 
-The response to a successful get constraint reference query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
-
-If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,3](../../../../../../../requirements/astm/f3548/v21.md)**.
+Check response format
 
 ## 🛑 Get constraint reference response content is correct check
 

@@ -6,11 +6,9 @@ This test step fragment validates that constraint references can be searched for
 
 Check query succeeds.
 
-## 🛑 Search constraint reference response format conforms to spec check
+## [Response format](./search_format.md)
 
-The response to a successful constraint reference search query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
-
-If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,4](../../../../../../../requirements/astm/f3548/v21.md)**.
+Check response format.
 
 ## 🛑 Expected constraint reference is in search results check
 
