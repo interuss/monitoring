@@ -418,7 +418,7 @@ it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../require
 #### 🛑 Create constraint reference with valid credentials check
 
 If the DSS does not allow the creation of a constraint reference when valid credentials are presented,
-it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../requirements/astm/f3548/v21.md)**.
+it is in violation of **[astm.f3548.v21.DSS0005,3](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Create response format](../fragments/cr/crud/create_format.md)
 
@@ -447,7 +447,7 @@ it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../require
 #### 🛑 Get constraint reference with valid credentials check
 
 If the DSS does not allow fetching a constraint reference when valid credentials are presented,
-it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../requirements/astm/f3548/v21.md)**.
+it is in violation of **[astm.f3548.v21.DSS0005,3](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Read response format](../fragments/cr/crud/read_format.md)
 
@@ -505,7 +505,7 @@ it is in violation of **[astm.f3548.v21.DSS0210,A2-7-2,7](../../../../../require
 #### 🛑 Delete constraint reference with valid credentials check
 
 If the DSS does not allow the deletion of a constraint reference when valid credentials are presented,
-it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../requirements/astm/f3548/v21.md)**.
+it is in violation of **[astm.f3548.v21.DSS0005,3](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Delete response format](../fragments/cr/crud/delete_format.md)
 
