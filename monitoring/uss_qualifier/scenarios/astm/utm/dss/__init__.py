@@ -6,5 +6,6 @@ from .op_intent_ref_state_transitions import OpIntentReferenceStateTransitions
 from .dss_interoperability import DSSInteroperability
 from .report import Report
 from .op_intent_ref_key_validation import OIRKeyValidation
+from .op_intent_ref_simple import OIRSimple
 from .subscription_interactions import SubscriptionInteractions
 from .subscription_interactions_deletion import SubscriptionInteractionsDeletion
