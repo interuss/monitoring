@@ -54,4 +54,26 @@ This step verifies that an existing CR cannot be deleted with an incorrect OVN.
 If the DSS under test allows the qualifier to delete an existing CR with a request that provided an incorrect OVN,
 it is in violation of **[astm.f3548.v21.DSS0005,3](../../../../requirements/astm/f3548/v21.md)**
 
+## Mutation requires correct OVN test case
+
+Ensures that an existing CR can only be mutated when the correct OVN is provided.
+
+### Attempt mutation with missing OVN test step
+
+This step verifies that an existing CR cannot be mutated with a missing OVN.
+
+#### 🛑 Request to mutate CR with empty OVN fails check
+
+If the DSS under test allows the qualifier to mutate an existing CR with a request that provided an empty OVN,
+it is in violation of **[astm.f3548.v21.DSS0005,3](../../../../requirements/astm/f3548/v21.md)**
+
+### Attempt mutation with incorrect OVN test step
+
+This step verifies that an existing CR cannot be mutated with an incorrect OVN.
+
+#### 🛑 Request to mutate CR with incorrect OVN fails check
+
+If the DSS under test allows the qualifier to mutate an existing CR with a request that provided an incorrect OVN,
+it is in violation of **[astm.f3548.v21.DSS0005,3](../../../../requirements/astm/f3548/v21.md)**
+
 ## [Cleanup](./clean_workspace.md)
