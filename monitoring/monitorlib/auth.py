@@ -23,7 +23,7 @@ from google.oauth2 import service_account
 
 from monitoring.monitorlib.infrastructure import AuthAdapter, AuthSpec
 
-_UNIX_EPOCH = datetime.datetime.utcfromtimestamp(0)
+_UNIX_EPOCH = datetime.datetime.fromtimestamp(0, datetime.UTC)
 
 
 class NoAuth(AuthAdapter):
@@ -61,7 +61,9 @@ class NoAuth(AuthAdapter):
 
     # Overrides method in AuthAdapter
     def issue_token(self, intended_audience: str, scopes: List[str]) -> str:
-        timestamp = int((datetime.datetime.utcnow() - _UNIX_EPOCH).total_seconds())
+        timestamp = int(
+            (datetime.datetime.now(datetime.UTC) - _UNIX_EPOCH).total_seconds()
+        )
         claims = {
             "sub": self.sub,
             "client_id": self.sub,
@@ -127,7 +129,9 @@ class InvalidTokenSignatureAuth(AuthAdapter):
         self.sub = sub
 
     def issue_token(self, intended_audience: str, scopes: List[str]) -> str:
-        timestamp = int((datetime.datetime.utcnow() - _UNIX_EPOCH).total_seconds())
+        timestamp = int(
+            (datetime.datetime.now(datetime.UTC) - _UNIX_EPOCH).total_seconds()
+        )
         claims = {
             "sub": self.sub,
             "client_id": self.sub,
@@ -421,7 +425,7 @@ class SignedRequest(AuthAdapter):
             "client_id": self._client_id,
             "scope": " ".join(scopes),
             "resource": intended_audience,
-            "current_timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+            "current_timestamp": datetime.datetime.now(datetime.UTC).isoformat() + "Z",
         }
         payload = "&".join([k + "=" + v for k, v in query.items()])
 
@@ -469,7 +473,7 @@ class SignedRequest(AuthAdapter):
                 ),
                 "@signature-params": "({});created={}".format(
                     " ".join('"{}"'.format(c) for c in components),
-                    int(datetime.datetime.utcnow().timestamp()),
+                    int(datetime.datetime.now(datetime.UTC).timestamp()),
                 ),
             }
             components.append("@signature-params")

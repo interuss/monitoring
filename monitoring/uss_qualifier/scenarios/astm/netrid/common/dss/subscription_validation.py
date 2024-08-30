@@ -213,7 +213,7 @@ class SubscriptionValidation(GenericTestScenario):
             self._dss_wrapper.cleanup_sub(sub_id=self._sub_id)
 
     def _default_subscription_params(self, duration: datetime.timedelta) -> Dict:
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.UTC)
         return dict(
             area_vertices=[vertex.as_s2sphere() for vertex in self._isa.footprint],
             alt_lo=self._isa.altitude_min,

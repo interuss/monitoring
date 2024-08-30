@@ -22,10 +22,10 @@ from monitoring.prober.infrastructure import for_api_versions, register_resource
 from monitoring.prober.scd import actions
 
 
-URL_OP1 = "https://example.com/op1/dss"
-URL_SUB1 = "https://example.com/subs1/dss"
-URL_OP2 = "https://example.com/op2/dss"
-URL_SUB2 = "https://example.com/subs2/dss"
+URL_OP1 = "https://example.interuss.org/op1/dss"
+URL_SUB1 = "https://example.interuss.org/subs1/dss"
+URL_OP2 = "https://example.interuss.org/op2/dss"
+URL_SUB2 = "https://example.interuss.org/subs2/dss"
 
 OP1_TYPE = register_resource_type(213, "Operational intent 1")
 OP2_TYPE = register_resource_type(214, "Operational intent 2")
@@ -39,7 +39,7 @@ sub2_version = None
 
 
 def _make_op1_request():
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
         "extents": [
@@ -55,7 +55,7 @@ def _make_op1_request():
 
 
 def _make_op2_request():
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
         "extents": [
@@ -130,7 +130,7 @@ def test_op1_does_not_exist_get_2(ids, scd_api, scd_session2):
 def test_op1_does_not_exist_query_1(ids, scd_api, scd_session, scd_session2):
     if scd_session is None:
         return
-    time_now = datetime.datetime.utcnow()
+    time_now = datetime.datetime.now(datetime.UTC)
     end_time = time_now + datetime.timedelta(hours=1)
     resp = scd_session.post(
         "/operational_intent_references/query",
@@ -154,7 +154,7 @@ def test_op1_does_not_exist_query_1(ids, scd_api, scd_session, scd_session2):
 def test_op1_does_not_exist_query_2(ids, scd_api, scd_session, scd_session2):
     if scd_session2 is None:
         return
-    time_now = datetime.datetime.utcnow()
+    time_now = datetime.datetime.now(datetime.UTC)
     end_time = time_now + datetime.timedelta(hours=1)
     resp = scd_session2.post(
         "/operational_intent_references/query",
@@ -269,7 +269,7 @@ def test_create_op2_no_ovn(ids, scd_api, scd_session, scd_session2):
 def test_create_op2sub(ids, scd_api, scd_session, scd_session2):
     if scd_session2 is None:
         return
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=70)
     req = {
         "extents": Volume4D.from_values(
@@ -378,7 +378,7 @@ def test_create_op2(ids, scd_api, scd_session, scd_session2):
 def test_read_ops_from_uss1(ids, scd_api, scd_session, scd_session2):
     if scd_session is None:
         return
-    time_now = datetime.datetime.utcnow()
+    time_now = datetime.datetime.now(datetime.UTC)
     end_time = time_now + datetime.timedelta(hours=1)
     resp = scd_session.post(
         "/operational_intent_references/query",
@@ -410,7 +410,7 @@ def test_read_ops_from_uss1(ids, scd_api, scd_session, scd_session2):
 def test_read_ops_from_uss2(ids, scd_api, scd_session, scd_session2):
     if scd_session2 is None:
         return
-    time_now = datetime.datetime.utcnow()
+    time_now = datetime.datetime.now(datetime.UTC)
     end_time = time_now + datetime.timedelta(hours=1)
     resp = scd_session2.post(
         "/operational_intent_references/query",
@@ -548,7 +548,7 @@ def test_delete_dependent_sub(ids, scd_api, scd_session, scd_session2):
 def test_mutate_sub2(ids, scd_api, scd_session, scd_session2):
     if scd_session2 is None:
         return
-    time_now = datetime.datetime.utcnow()
+    time_now = datetime.datetime.now(datetime.UTC)
     time_start = time_now - datetime.timedelta(minutes=1)
     time_end = time_now + datetime.timedelta(minutes=61)
 

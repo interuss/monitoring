@@ -24,7 +24,7 @@ class Sub(client.USS):
 
     @task(100)
     def create_sub(self):
-        time_start = datetime.datetime.utcnow()
+        time_start = datetime.datetime.now(datetime.UTC)
         time_end = time_start + datetime.timedelta(minutes=60)
         sub_uuid = str(uuid.uuid4())
 
@@ -43,7 +43,7 @@ class Sub(client.USS):
                     "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
                 },
                 "callbacks": {
-                    "identification_service_area_url": "https://example.com/foo"
+                    "identification_service_area_url": "https://example.interuss.org/foo"
                 },
             },
         )
@@ -67,8 +67,8 @@ class Sub(client.USS):
             print("Nothing to pick from sub_dict for UPDATE")
             return
 
-        time_start = datetime.datetime.utcnow()
-        time_end = datetime.datetime.utcnow() + datetime.timedelta(minutes=2)
+        time_start = datetime.datetime.now(datetime.UTC)
+        time_end = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=2)
         resp = self.client.put(
             "/subscriptions/{}/{}".format(target_sub, target_version),
             json={
@@ -84,7 +84,7 @@ class Sub(client.USS):
                     "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
                 },
                 "callbacks": {
-                    "identification_service_area_url": "https://example.com/foo"
+                    "identification_service_area_url": "https://example.interuss.org/foo"
                 },
             },
         )

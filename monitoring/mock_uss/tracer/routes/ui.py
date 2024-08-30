@@ -62,7 +62,9 @@ def tracer_download_logs():
         for log in logs:
             with open(os.path.join(context.tracer_logger.log_path, log), "r") as f:
                 zip_file.writestr(log, f.read())
-    zip_name = f"logs_{datetime.datetime.utcnow().isoformat().split('.')[0]}.zip"
+    zip_name = (
+        f"logs_{datetime.datetime.now(datetime.UTC).isoformat().split('.')[0]}.zip"
+    )
     return flask.Response(
         zip_buffer.getvalue(),
         mimetype="application/zip",
@@ -168,7 +170,7 @@ def tracer_kmls(kml):
 @webapp.route("/tracer/kml/historical.kml")
 @ui_auth.login_required
 def tracer_kml_historical():
-    kml_name = f"historical_{datetime.datetime.utcnow().isoformat().split('.')[0]}.kml"
+    kml_name = f"historical_{datetime.datetime.now(datetime.UTC).isoformat().split('.')[0]}.kml"
     return flask.Response(
         render_historical_kml(context.tracer_logger.log_path),
         mimetype="application/vnd.google-earth.kml+xml",

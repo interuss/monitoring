@@ -267,7 +267,7 @@ class DownUSS(TestScenario):
                 with self.check(
                     "Rejected planning", [self.tested_uss.participant_id]
                 ) as check:
-                    msg = f"{self.tested_uss.participant_id} indicated {resp.result}"
+                    msg = f"{self.tested_uss.participant_id} indicated {resp.activity_result}"
                     if "notes" in resp and resp.notes:
                         msg += f' with notes "{resp.notes}"'
                     else:

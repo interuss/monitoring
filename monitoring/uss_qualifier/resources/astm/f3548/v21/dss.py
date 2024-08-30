@@ -33,6 +33,11 @@ from uas_standards.astm.f3548.v21.api import (
     ExchangeRecord,
     ErrorReport,
     AirspaceConflictResponse,
+    PutConstraintReferenceParameters,
+    ChangeConstraintReferenceResponse,
+    ConstraintReference,
+    QueryConstraintReferenceParameters,
+    QueryConstraintReferencesResponse,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -62,9 +67,6 @@ class DSSInstanceSpecification(ImplicitDict):
     base_url: str
     """Base URL for the DSS instance according to the ASTM F3548-21 API"""
 
-    has_private_address: Optional[bool]
-    """Whether this DSS instance is expected to have a private address that is not publicly addressable."""
-
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         try:
@@ -77,7 +79,6 @@ class DSSInstance(object):
     participant_id: str
     user_participant_ids: List[str]
     base_url: str
-    has_private_address: bool = False
     client: infrastructure.UTMClientSession
     _scopes_authorized: Set[str]
 
@@ -86,15 +87,12 @@ class DSSInstance(object):
         participant_id: str,
         user_participant_ids: List[str],
         base_url: str,
-        has_private_address: Optional[bool],
         auth_adapter: infrastructure.AuthAdapter,
         scopes_authorized: List[str],
     ):
         self.participant_id = participant_id
         self.user_participant_ids = user_participant_ids
         self.base_url = base_url
-        if has_private_address is not None:
-            self.has_private_address = has_private_address
         self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
         self._scopes_authorized = set(
             s.value if isinstance(s, Enum) else s for s in scopes_authorized
@@ -130,7 +128,6 @@ class DSSInstance(object):
             participant_id=self.participant_id,
             user_participant_ids=self.user_participant_ids,
             base_url=self.base_url,
-            has_private_address=self.has_private_address,
             auth_adapter=auth_adapter.adapter,
             scopes_authorized=list(scopes_required),
         )
@@ -457,6 +454,139 @@ class DSSInstance(object):
             result = query.parse_json_result(UssAvailabilityStatusResponse)
             return result.version, query
 
+    def put_constraint_ref(
+        self,
+        cr_id: str,
+        extents: List[Volume4D],
+        uss_base_url: UssBaseURL,
+        ovn: Optional[str] = None,
+    ) -> Tuple[ConstraintReference, List[SubscriberToNotify], Query]:
+        """
+        Create or update a constraint reference.
+        Returns:
+            the constraint reference created or updated, the subscribers to notify, the query
+        Raises:
+            * QueryError if request failed, if HTTP status code is different than 200 or 201, or if the parsing of the response failed.
+        """
+        self._uses_scope(Scope.ConstraintManagement)
+        create = ovn is None
+        if create:
+            op = OPERATIONS[OperationID.CreateConstraintReference]
+            url = op.path.format(entityid=cr_id)
+            query_type = QueryType.F3548v21DSSCreateConstraintReference
+        else:
+            op = OPERATIONS[OperationID.UpdateConstraintReference]
+            url = op.path.format(entityid=cr_id, ovn=ovn)
+            query_type = QueryType.F3548v21DSSUpdateConstraintReference
+
+        req = PutConstraintReferenceParameters(
+            extents=extents,
+            uss_base_url=uss_base_url,
+        )
+        query = query_and_describe(
+            self.client,
+            op.verb,
+            url,
+            query_type,
+            self.participant_id,
+            scope=Scope.ConstraintManagement,
+            json=req,
+        )
+        if (create and query.status_code == 201) or (
+            not create and query.status_code == 200
+        ):
+            result = query.parse_json_result(ChangeConstraintReferenceResponse)
+            return result.constraint_reference, result.subscribers, query
+        else:
+            err_msg = query.error_message if query.error_message is not None else ""
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to {'create' if create else 'update'} constraint reference with ID {cr_id}; error message: `{err_msg}`",
+                query,
+            )
+
+    def get_constraint_ref(self, id: str) -> Tuple[ConstraintReference, Query]:
+        """
+        Retrieve a constraint reference from the DSS, using only its ID
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
+        """
+        self._uses_scope(Scope.ConstraintManagement)
+        op = OPERATIONS[OperationID.GetConstraintReference]
+        query = query_and_describe(
+            self.client,
+            op.verb,
+            op.path.format(entityid=id),
+            QueryType.F3548v21DSSGetConstraintReference,
+            self.participant_id,
+            scope=Scope.ConstraintManagement,
+        )
+        if query.status_code != 200:
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to retrieve constraint reference {id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
+        else:
+            result = query.parse_json_result(ChangeConstraintReferenceResponse)
+            return result.constraint_reference, query
+
+    def find_constraint_ref(
+        self, extent: Volume4D
+    ) -> Tuple[List[ConstraintReference], Query]:
+        """
+        Find constraint references overlapping with a given volume 4D.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
+        """
+        self._uses_scope(Scope.ConstraintManagement)
+        op = OPERATIONS[OperationID.QueryConstraintReferences]
+        req = QueryConstraintReferenceParameters(area_of_interest=extent)
+        query = query_and_describe(
+            self.client,
+            op.verb,
+            op.path,
+            QueryType.F3548v21DSSQueryConstraintReferences,
+            self.participant_id,
+            scope=Scope.ConstraintManagement,
+            json=req,
+        )
+        if query.status_code != 200:
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to find operational intents in {extent}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
+        else:
+            result = query.parse_json_result(QueryConstraintReferencesResponse)
+            return result.constraint_references, query
+
+    def delete_constraint_ref(
+        self,
+        id: str,
+        ovn: str,
+    ) -> Tuple[ConstraintReference, List[SubscriberToNotify], Query]:
+        """
+        Delete a constraint reference.
+        Raises:
+            * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
+        """
+        self._uses_scope(Scope.ConstraintManagement)
+        op = OPERATIONS[OperationID.DeleteConstraintReference]
+        query = query_and_describe(
+            self.client,
+            op.verb,
+            op.path.format(entityid=id, ovn=ovn),
+            QueryType.F3548v21DSSDeleteConstraintReference,
+            self.participant_id,
+            scope=Scope.ConstraintManagement,
+        )
+        if query.status_code != 200:
+            raise QueryError(
+                f"Received code {query.status_code} when attempting to delete constraint reference {id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                query,
+            )
+        else:
+            result = query.parse_json_result(ChangeConstraintReferenceResponse)
+            return result.constraint_reference, result.subscribers, query
+
     def make_report(
         self,
         exchange: ExchangeRecord,
@@ -579,6 +709,31 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     def get_authorized_scopes(self) -> Set[str]:
         return self._auth_adapter.scopes.copy()
 
+    @property
+    def participant_id(self) -> str:
+        return self._specification.participant_id
+
+    @property
+    def base_url(self) -> str:
+        return self._specification.base_url
+
+    def get_authorized_scope_not_in(self, ignored_scopes: List[str]) -> Optional[Scope]:
+        """Returns a scope that this DSS Resource is allowed to use but that is not any of the ones that are passed
+        in 'ignored_scopes'. If no such scope is found, None is returned.
+
+        This function is mostly meant to be used from scenarios that are testing authentication and authorization of endpoints.
+
+        The output of this function is deterministic.
+        """
+        available_scopes_scd = self.get_authorized_scopes()
+        for to_ignore in ignored_scopes:
+            available_scopes_scd.discard(to_ignore)
+
+        if len(available_scopes_scd) > 0:
+            return sorted(available_scopes_scd)[0]
+
+        return None
+
     def get_instance(self, scopes_required: Dict[str, str]) -> DSSInstance:
         """Get a client object ready to be used.
 
@@ -609,7 +764,6 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
             and self._specification.user_participant_ids
             else [],
             self._specification.base_url,
-            self._specification.get("has_private_address"),
             self._auth_adapter.adapter,
             list(scopes_required),
         )

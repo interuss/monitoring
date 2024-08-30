@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, UTC
 import json
 import re
 from typing import Dict, List, Optional, Union, Iterator
@@ -289,7 +289,7 @@ class TestSuite(object):
             name=self.definition.name,
             suite_type=self.declaration.type_name,
             documentation_url=self.documentation_url,
-            start_time=StringBasedDateTime(datetime.utcnow()),
+            start_time=StringBasedDateTime(datetime.now(UTC)),
             actions=[],
             capability_evaluations=[],
         )
@@ -357,7 +357,7 @@ def _run_actions(
                     f"Action {a} indicated an unrecognized reaction to failure: {str(action.declaration.on_failure)}"
                 )
     report.successful = success
-    report.end_time = StringBasedDateTime(datetime.utcnow())
+    report.end_time = StringBasedDateTime(datetime.now(UTC))
 
 
 @dataclass

@@ -175,7 +175,9 @@ class ISAValidation(GenericTestScenario):
             )
 
     def _isa_start_time_in_past(self):
-        time_start = datetime.datetime.utcnow() - datetime.timedelta(minutes=10)
+        time_start = datetime.datetime.now(datetime.UTC) - datetime.timedelta(
+            minutes=10
+        )
         time_end = time_start + datetime.timedelta(minutes=60)
 
         with self.check(

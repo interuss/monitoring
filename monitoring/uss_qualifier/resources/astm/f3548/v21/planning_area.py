@@ -9,6 +9,7 @@ from uas_standards.astm.f3548.v21.api import (
     EntityID,
     PutOperationalIntentReferenceParameters,
     ImplicitSubscriptionParameters,
+    PutConstraintReferenceParameters,
 )
 
 from monitoring.monitorlib.geo import make_latlng_rect, Volume3D
@@ -99,6 +100,29 @@ class PlanningAreaSpecification(ImplicitDict):
             )
             if implicit_sub_base_url
             else None,
+        )
+
+    def get_new_constraint_ref_params(
+        self,
+        time_start: datetime.datetime,
+        time_end: datetime.datetime,
+    ) -> PutConstraintReferenceParameters:
+        """
+        Builds a PutConstraintReferenceParameters object that can be used against the DSS OCR API.
+
+        The extents contained in these parameters contain a single 4DVolume, which may not be entirely realistic,
+        but is sufficient in situations where the content of the CR is irrelevant as long as it is valid, such
+        as for testing authentication or parameter validation.
+        """
+        return PutConstraintReferenceParameters(
+            extents=[
+                Volume4D(
+                    volume=self.volume,
+                    time_start=Time(time_start),
+                    time_end=Time(time_end),
+                ).to_f3548v21()
+            ],
+            uss_base_url=self.base_url,
         )
 
 

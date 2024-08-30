@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 
 from monitoring.monitorlib.delay import sleep
 from monitoring.uss_qualifier.resources.dev import NoOpResource
@@ -18,12 +18,12 @@ class NoOp(TestScenario):
 
         self.record_note(
             "Start time",
-            f"Starting at {datetime.utcnow().isoformat()}Z, sleeping for {self.sleep_secs}s...",
+            f"Starting at {datetime.now(UTC).isoformat()}Z, sleeping for {self.sleep_secs}s...",
         )
 
         sleep(self.sleep_secs, "the no-op scenario sleeps for the specified time")
 
-        self.record_note("End time", f"Ending at {datetime.utcnow().isoformat()}Z.")
+        self.record_note("End time", f"Ending at {datetime.now(UTC).isoformat()}Z.")
 
         self.end_test_step()
         self.end_test_case()

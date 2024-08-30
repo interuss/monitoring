@@ -245,7 +245,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
         # Reuse info from flight 1 for the third Operational Intent Ref
         flight_3 = self._flight.resolve(times)
         with self.check(
-            "Direct Nonconforming state creation is forbidden", self._pid
+            "Direct Nonconforming state creation is forbidden", self._pid + self._uids
         ) as check:
             try:
                 (self._current_ref, subscribers, q) = self._dss.put_op_intent(
@@ -274,7 +274,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                     )
 
         with self.check(
-            "Direct Contingent state creation is forbidden", self._pid
+            "Direct Contingent state creation is forbidden", self._pid + self._uids
         ) as check:
             try:
                 (self._current_ref, subscribers, q) = self._dss.put_op_intent(
@@ -341,7 +341,8 @@ class OpIntentReferenceStateTransitions(TestScenario):
         )
 
         with self.check(
-            "Transition from Accepted to Nonconforming is forbidden", self._pid
+            "Transition from Accepted to Nonconforming is forbidden",
+            self._pid + self._uids,
         ) as check:
             try:
                 (self._current_ref, subscribers, q) = self._dss.put_op_intent(
@@ -370,7 +371,8 @@ class OpIntentReferenceStateTransitions(TestScenario):
                     )
 
         with self.check(
-            "Transition from Accepted to Contingent is forbidden", self._pid
+            "Transition from Accepted to Contingent is forbidden",
+            self._pid + self._uids,
         ) as check:
             try:
                 (self._current_ref, subscribers, q) = self._dss.put_op_intent(
@@ -430,7 +432,8 @@ class OpIntentReferenceStateTransitions(TestScenario):
         )
 
         with self.check(
-            "Transition from Activated to Nonconforming is forbidden", self._pid
+            "Transition from Activated to Nonconforming is forbidden",
+            self._pid + self._uids,
         ) as check:
             try:
                 (self._current_ref, subscribers, q) = self._dss.put_op_intent(
@@ -459,7 +462,8 @@ class OpIntentReferenceStateTransitions(TestScenario):
                     )
 
         with self.check(
-            "Transition from Activated to Contingent is forbidden", self._pid
+            "Transition from Activated to Contingent is forbidden",
+            self._pid + self._uids,
         ) as check:
             try:
                 (self._current_ref, subscribers, q) = self._dss.put_op_intent(
@@ -519,7 +523,8 @@ class OpIntentReferenceStateTransitions(TestScenario):
         )
 
         with self.check(
-            "Transition from Ended to Nonconforming is forbidden", self._pid
+            "Transition from Ended to Nonconforming is forbidden",
+            self._pid + self._uids,
         ) as check:
             try:
                 (self._current_ref, subscribers, q) = self._dss.put_op_intent(
@@ -548,7 +553,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                     )
 
         with self.check(
-            "Transition from Ended to Contingent is forbidden", self._pid
+            "Transition from Ended to Contingent is forbidden", self._pid + self._uids
         ) as check:
             try:
                 (self._current_ref, subscribers, q) = self._dss.put_op_intent(

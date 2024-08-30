@@ -34,13 +34,13 @@ def test_ensure_clean_workspace(ids, scd_api, scd_session):
 
 
 def _make_sub1_req(scd_api):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
     req = {
         "extents": Volume4D.from_values(
             time_start, time_end, 0, 1000, Circle.from_meters(12, -34, 300)
         ).to_f3548v21(),
-        "uss_base_url": "https://example.com/foo",
+        "uss_base_url": "https://example.interuss.org/foo",
         "notify_for_constraints": False,
     }
     req.update({"notify_for_operational_intents": True})
@@ -52,7 +52,7 @@ def _check_sub1(data, sub_id, scd_api):
     assert ("notification_index" not in data["subscription"]) or (
         data["subscription"]["notification_index"] == 0
     )
-    assert data["subscription"]["uss_base_url"] == "https://example.com/foo"
+    assert data["subscription"]["uss_base_url"] == "https://example.interuss.org/foo"
     assert data["subscription"]["time_start"]["format"] == api.TimeFormat.RFC3339
     assert data["subscription"]["time_end"]["format"] == api.TimeFormat.RFC3339
     assert ("notify_for_constraints" not in data["subscription"]) or (
@@ -134,7 +134,7 @@ def test_get_sub_by_id(ids, scd_api, scd_session):
 def test_get_sub_by_search(ids, scd_api, scd_session):
     if scd_session is None:
         return
-    time_now = datetime.datetime.utcnow()
+    time_now = datetime.datetime.now(datetime.UTC)
     resp = scd_session.post(
         "/subscriptions/query",
         json={
@@ -218,7 +218,7 @@ def test_get_deleted_sub_by_id(ids, scd_api, scd_session):
 def test_get_deleted_sub_by_search(ids, scd_api, scd_session):
     if scd_session is None:
         return
-    time_now = datetime.datetime.utcnow()
+    time_now = datetime.datetime.now(datetime.UTC)
     resp = scd_session.post(
         "/subscriptions/query",
         json={

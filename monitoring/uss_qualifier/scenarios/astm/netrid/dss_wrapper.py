@@ -59,10 +59,6 @@ class DSSWrapper(object):
     def base_url(self) -> str:
         return self._dss.base_url
 
-    @property
-    def has_private_address(self) -> bool:
-        return self._dss.has_private_address
-
     # TODO: QueryError is not actually raised for RID functions, this function and its uses should be removed
     def _handle_query_error(
         self,
@@ -1020,7 +1016,7 @@ class DSSWrapper(object):
             method=method,
             url=url_path,
             json=json,
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=datetime.datetime.now(datetime.UTC),
         )
 
         resp = self._dss.client.put(url_path, json=json)
@@ -1032,7 +1028,7 @@ class DSSWrapper(object):
                 json=resp.json(),
                 body=resp.content,
                 headers=resp.headers,
-                reported=StringBasedDateTime(datetime.datetime.utcnow()),
+                reported=StringBasedDateTime(datetime.datetime.now(datetime.UTC)),
             ),
         )
         self._scenario.record_query(q)

@@ -27,13 +27,13 @@ from monitoring.prober.infrastructure import (
 from monitoring.prober.scd import actions
 
 
-BASE_URL = "https://example.com/uss"
+BASE_URL = "https://example.interuss.org/uss"
 OP_TYPE = register_resource_type(221, "Operational intent")
 sub_id = None
 
 
 def _make_op_req():
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=20)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=20)
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
         "extents": [
@@ -114,7 +114,7 @@ def test_mutate_sub_shrink_2d(scd_api, scd_session):
     existing_sub = resp.json().get("subscription", None)
     assert existing_sub is not None
 
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=20)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=20)
     time_end = time_start + datetime.timedelta(minutes=60)
     req = _make_sub_req(time_start, time_end, 0, 1000, 50, scd_api)
     req["notify_for_constraints"] = True
@@ -136,7 +136,7 @@ def test_mutate_sub_shrink_altitude(scd_api, scd_session):
     existing_sub = resp.json().get("subscription", None)
     assert existing_sub is not None
 
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=20)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=20)
     time_end = time_start + datetime.timedelta(minutes=60)
     req = _make_sub_req(time_start, time_end, 200, 1000, 500, scd_api)
     req["notify_for_constraints"] = True
@@ -158,7 +158,7 @@ def test_mutate_sub_shrink_time(scd_api, scd_session):
     existing_sub = resp.json().get("subscription", None)
     assert existing_sub is not None
 
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=20)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=20)
     time_end = time_start + datetime.timedelta(minutes=40)
     req = _make_sub_req(time_start, time_end, 0, 1000, 500, scd_api)
     req["notify_for_constraints"] = True
@@ -180,7 +180,7 @@ def test_mutate_sub_not_shrink(scd_api, scd_session):
     existing_sub = resp.json().get("subscription", None)
     assert existing_sub is not None
 
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=20)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=20)
     time_end = time_start + datetime.timedelta(minutes=60)
     req = _make_sub_req(time_start, time_end, 0, 1000, 500, scd_api)
     req["notify_for_constraints"] = True

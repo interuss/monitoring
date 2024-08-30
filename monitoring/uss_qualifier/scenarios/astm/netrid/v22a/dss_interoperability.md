@@ -19,6 +19,11 @@ A resources.astm.f3411.DSSInstanceResource containing the "primary" DSS instance
 
 A resources.astm.f3411.DSSInstancesResource containing at least two DSS instances complying with ASTM F3411-22a.
 
+### test_exclusions
+
+A [resources.dev.TestExclusionsResource](../../../../resources/dev/test_exclusions.py) containing test exclusions parameters like whether private addresses are allowed.
+This resource is optional.
+
 ## Test sequence legend
 
 * *P*: Primary DSS instance under test.  The sequence below is
@@ -44,10 +49,10 @@ the note to wait >D seconds from a particular time
 
 ### Test environment requirements test step
 
-#### DSS instance is publicly addressable check
+#### 🛑 DSS instance is publicly addressable check
 As per **[astm.f3411.v22a.DSS0210](../../../../requirements/astm/f3411/v22a.md)** the DSS instance should be publicly addressable.
-As such, this check will fail if the resolved IP of the DSS host is a private IP address, unless that is explicitly
-expected.
+As such, this check will fail if the resolved IP of the DSS host is a private IP address.
+This check is skipped if the test exclusion `allow_private_addresses` is set to `True`.
 
 #### DSS instance is reachable check
 As per **[astm.f3411.v22a.DSS0210](../../../../requirements/astm/f3411/v22a.md)** the DSS instance should be publicly addressable.

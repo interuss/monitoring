@@ -85,7 +85,7 @@ def describe_flask_request(request: flask.Request) -> RequestDescription:
     kwargs = {
         "method": request.method,
         "url": request.url,
-        "received_at": StringBasedDateTime(datetime.datetime.utcnow()),
+        "received_at": StringBasedDateTime(datetime.datetime.now(datetime.UTC)),
         "headers": headers,
     }
     data = request.data.decode("utf-8")
@@ -155,7 +155,7 @@ def describe_response(resp: requests.Response) -> ResponseDescription:
         "code": resp.status_code,
         "headers": headers,
         "elapsed_s": resp.elapsed.total_seconds(),
-        "reported": StringBasedDateTime(datetime.datetime.utcnow()),
+        "reported": StringBasedDateTime(datetime.datetime.now(datetime.UTC)),
     }
     try:
         kwargs["json"] = resp.json()
@@ -171,7 +171,7 @@ def describe_aiohttp_response(
         "code": status,
         "headers": headers,
         "elapsed_s": duration.total_seconds(),
-        "reported": StringBasedDateTime(datetime.datetime.utcnow()),
+        "reported": StringBasedDateTime(datetime.datetime.now(datetime.UTC)),
         "json": resp_json,
     }
 
@@ -183,7 +183,7 @@ def describe_flask_response(resp: flask.Response, elapsed_s: float):
     kwargs = {
         "code": resp.status_code,
         "headers": headers,
-        "reported": StringBasedDateTime(datetime.datetime.utcnow()),
+        "reported": StringBasedDateTime(datetime.datetime.now(datetime.UTC)),
         "elapsed_s": elapsed_s,
     }
     try:
@@ -435,6 +435,19 @@ class Query(ImplicitDict):
             else None
         )
 
+    @property
+    def failure_details(self) -> Optional[str]:
+        """
+        Returns the error message if one is available, otherwise returns the response content.
+        To be used to fill in the details of a check failure.
+        Note that 'failure' here is context dependent: possibly a 401 is expected and a 404 or 200 is returned,
+        in both situations we would like to return the most relevant information.
+        """
+        err_msg = self.error_message
+        if err_msg:
+            return err_msg
+        return self.response.json
+
     def get_client_sub(self):
         headers = self.request.headers
         if "Authorization" in headers:
@@ -583,7 +596,7 @@ def query_and_describe(
     # `max_retries`, however we do not want to mutate the provided Session.  Instead, retry only on errors we explicitly
     # consider retryable.
     for attempt in range(ATTEMPTS):
-        t0 = datetime.datetime.utcnow()
+        t0 = datetime.datetime.now(datetime.UTC)
         try:
             return describe_query(
                 client.request(verb, url, **req_kwargs),
@@ -633,7 +646,7 @@ def query_and_describe(
 
             break
         finally:
-            t1 = datetime.datetime.utcnow()
+            t1 = datetime.datetime.now(datetime.UTC)
 
     # Reconstruct request similar to the one in the query (which is not
     # accessible at this point)

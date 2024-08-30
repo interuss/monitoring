@@ -27,6 +27,7 @@ utm_auth:
       - utm.strategic_coordination
       - utm.conformance_monitoring_sa
       - utm.availability_arbitration
+      - utm.constraint_management
       # InterUSS versioning automated testing
       - interuss.versioning.read_system_versions
       - interuss.geospatial_map.query
@@ -62,7 +63,6 @@ netrid_service_providers_v19:
     service_providers:
       - participant_id: uss2
         injection_base_url: http://v19.ridsp.uss2.localutm/ridsp/injection
-        local_debug: true
 
 netrid_service_providers_v22a:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -73,7 +73,6 @@ netrid_service_providers_v22a:
     service_providers:
       - participant_id: uss1
         injection_base_url: http://v22a.ridsp.uss1.localutm/ridsp/injection
-        local_debug: true
 
 netrid_observers_v19:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -84,7 +83,6 @@ netrid_observers_v19:
     observers:
       - participant_id: uss3
         observation_base_url: http://v19.riddp.uss3.localutm/riddp/observation
-        local_debug: true
 
 netrid_observers_v22a:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -95,7 +93,6 @@ netrid_observers_v22a:
     observers:
       - participant_id: uss1
         observation_base_url: http://v22a.riddp.uss1.localutm/riddp/observation
-        local_debug: true
 
 netrid_dss_instances_v19:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -107,11 +104,9 @@ netrid_dss_instances_v19:
       - participant_id: uss1
         rid_version: F3411-19
         base_url: http://dss.uss1.localutm
-        has_private_address: true
       - participant_id: uss2
         rid_version: F3411-19
         base_url: http://dss.uss2.localutm
-        has_private_address: true
 
 netrid_dss_instances_v22a:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -123,11 +118,9 @@ netrid_dss_instances_v22a:
       - participant_id: uss1
         rid_version: F3411-22a
         base_url: http://dss.uss1.localutm/rid/v2
-        has_private_address: true
       - participant_id: uss2
         rid_version: F3411-22a
         base_url: http://dss.uss2.localutm/rid/v2
-        has_private_address: true
 
 netrid_dss_instance_v19:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -138,7 +131,6 @@ netrid_dss_instance_v19:
     participant_id: uss1
     rid_version: F3411-19
     base_url: http://dss.uss1.localutm
-    has_private_address: true
 
 netrid_dss_instance_v22a:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -149,7 +141,6 @@ netrid_dss_instance_v22a:
     participant_id: uss1
     rid_version: F3411-22a
     base_url: http://dss.uss1.localutm/rid/v2
-    has_private_address: true
 
 # ===== Flight planning =====
 
@@ -162,11 +153,9 @@ all_flight_planners:
     flight_planners:
       - participant_id: uss1
         v1_base_url: http://scdsc.uss1.localutm/flight_planning/v1
-        local_debug: true
 
       - participant_id: uss2
         scd_injection_base_url: http://scdsc.uss2.localutm/scdsc
-        local_debug: true
 
 uss1_flight_planner:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -177,7 +166,6 @@ uss1_flight_planner:
     flight_planner:
       participant_id: uss1
       v1_base_url: http://scdsc.uss1.localutm/flight_planning/v1
-      local_debug: true
 
 uss2_flight_planner:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -188,7 +176,6 @@ uss2_flight_planner:
     flight_planner:
       participant_id: uss2
       scd_injection_base_url: http://scdsc.uss2.localutm/scdsc
-      local_debug: true
 
 # ===== F3548 =====
 
@@ -200,7 +187,6 @@ scd_dss:
   specification:
     participant_id: uss1
     base_url: http://dss.uss1.localutm
-    has_private_address: true
 
 scd_dss_instances:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -213,10 +199,8 @@ scd_dss_instances:
         user_participant_ids:
           - mock_uss
         base_url: http://dss.uss1.localutm
-        has_private_address: true
       - participant_id: uss2
         base_url: http://dss.uss2.localutm
-        has_private_address: true
 
 # ===== DSS CockroachDB nodes =====
 

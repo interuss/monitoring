@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Callable, Optional
 
 from monitoring.mock_uss.flights.database import FlightRecord, db, DEADLOCK_TIMEOUT
@@ -9,7 +9,7 @@ from monitoring.monitorlib.delay import sleep
 def lock_flight(flight_id: str, log: Callable[[str], None]) -> FlightRecord:
     # If this is a change to an existing flight, acquire lock to that flight
     log(f"Acquiring lock for flight {flight_id}")
-    deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
+    deadline = datetime.now(UTC) + DEADLOCK_TIMEOUT
     while True:
         with db as tx:
             if flight_id in tx.flights:
@@ -28,7 +28,7 @@ def lock_flight(flight_id: str, log: Callable[[str], None]) -> FlightRecord:
         # available
         sleep(0.5, f"flight {flight_id} is currently already locked")
 
-        if datetime.utcnow() > deadline:
+        if datetime.now(UTC) > deadline:
             raise RuntimeError(
                 f"Deadlock in inject_flight while attempting to gain access to flight {flight_id}"
             )
@@ -49,7 +49,7 @@ def release_flight_lock(flight_id: str, log: Callable[[str], None]) -> None:
 
 
 def delete_flight_record(flight_id: str) -> Optional[FlightRecord]:
-    deadline = datetime.utcnow() + DEADLOCK_TIMEOUT
+    deadline = datetime.now(UTC) + DEADLOCK_TIMEOUT
     while True:
         with db as tx:
             if flight_id in tx.flights:
@@ -66,7 +66,7 @@ def delete_flight_record(flight_id: str) -> Optional[FlightRecord]:
             0.5,
             f"flight {flight_id} is currently already locked while we are trying to delete it",
         )
-        if datetime.utcnow() > deadline:
+        if datetime.now(UTC) > deadline:
             raise RuntimeError(
-                f"Deadlock in delete_flight while attempting to gain access to flight {flight_id} (now: {datetime.utcnow()}, deadline: {deadline})"
+                f"Deadlock in delete_flight while attempting to gain access to flight {flight_id} (now: {datetime.now(UTC)}, deadline: {deadline})"
             )

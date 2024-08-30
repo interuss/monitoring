@@ -1,9 +1,12 @@
+import base64
 import json
 import os
+import re
 from typing import Tuple, Optional, Dict, List, Union
 
 import bc_jsonpath_ng
 import _jsonnet
+from loguru import logger
 import requests
 import yaml
 
@@ -72,12 +75,56 @@ def get_package_name(local_file_path: str) -> FileReference:
     return ".".join(os.path.normpath(rel_path).split(os.path.sep))
 
 
+def _get_web_content(url: str) -> str:
+    headers = {}
+
+    # Check if this is a request to a private GitHub repo
+    github_private_repos_key = "GITHUB_PRIVATE_REPOS"
+    if github_private_repos_key in os.environ:
+        github_match = re.match(
+            r"^https://(?P<hostname>github\.com|raw\.githubusercontent\.com|api\.github\.com)/(?P<org>[^/]*)/(?P<repo>[^/?#]*)(?P<predicate>.*)$",
+            url,
+        )
+        if github_match:
+            if github_match.group("hostname") == "github.com":
+                logger.warning(
+                    f"{url} references the main GitHub UI; did you mean to specify a reference to the corresponding content on raw.githubusercontent.com?"
+                )
+            org = github_match.group("org")
+            repo = github_match.group("repo")
+
+            # Extract personal access token(s) and applicability from environment variable
+            token = None
+            pat_defs = os.environ.get(github_private_repos_key).split(";")
+            for pat_def in pat_defs:
+                patdef_match = re.match(
+                    f"^(?P<org>[^/]*)/(?P<repos>[^:]*):(?P<token>.*)$", pat_def
+                )
+                if not patdef_match:
+                    raise ValueError(
+                        f"Error in {github_private_repos_key} environment variable: element `{pat_def}` does not follow the pattern ORG/REPOS:TOKEN"
+                    )
+                token_org = patdef_match.group("org")
+                token_repos = patdef_match.group("repos").split(",")
+                if org == token_org and repo in token_repos:
+                    token = patdef_match.group("token")
+                    break
+
+            if token is not None:
+                # This request is for a resource in a private GitHub repo that we have a personal access token for.
+                headers[
+                    "Authorization"
+                ] = f"Basic {base64.b64encode(token.encode()).decode()}"
+
+    resp = requests.get(url, headers=headers)
+    resp.raise_for_status()
+    return resp.content.decode("utf-8")
+
+
 def _load_content_from_file_name(file_name: str) -> str:
     if file_name.startswith(HTTP_PREFIX) or file_name.startswith(HTTPS_PREFIX):
         # http(s):// web file reference
-        resp = requests.get(file_name)
-        resp.raise_for_status()
-        file_content = resp.content.decode("utf-8")
+        file_content = _get_web_content(file_name)
     else:
         with open(file_name, "r") as f:
             file_content = f.read()
@@ -126,10 +173,17 @@ def load_dict_with_references(data_file: FileReference) -> dict:
 def _jsonnet_import_callback(
     base_file_name: str, folder: str, rel: str, cache: Optional[Dict[str, dict]]
 ) -> Tuple[str, bytes]:
-    dict_content, file_name = _load_dict_with_references_from_file_name(
-        rel, base_file_name, cache
-    )
-    return file_name, json.dumps(dict_content).encode()
+    if rel.endswith(".libsonnet"):
+        # Do not attempt to parse libsonnet content (e.g., resolve $refs);
+        # it will be parsed after loading the full top-level Jsonnet.
+        file_name = os.path.join(folder, rel)
+        file_content = _load_content_from_file_name(file_name)
+        return file_name, file_content.encode()
+    else:
+        dict_content, file_name = _load_dict_with_references_from_file_name(
+            rel, base_file_name, cache
+        )
+        return file_name, json.dumps(dict_content).encode()
 
 
 def _load_dict_with_references_from_file_name(
@@ -162,7 +216,10 @@ def _load_dict_with_references_from_file_name(
             # This is a package-based file path
             base_file_name = resolve_filename(base_file_name)
 
-    base_file_name = os.path.abspath(base_file_name)
+    if not base_file_name.startswith(HTTP_PREFIX) and not base_file_name.startswith(
+        HTTPS_PREFIX
+    ):
+        base_file_name = os.path.abspath(base_file_name)
 
     if base_file_name in cache:
         dict_content = cache[base_file_name]

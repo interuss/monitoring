@@ -14,6 +14,8 @@ v1:
         netrid_service_providers_v19: {$ref: 'library/environment.yaml#/netrid_service_providers_v19'}
         netrid_observers_v19: {$ref: 'library/environment.yaml#/netrid_observers_v19'}
         netrid_dss_instances_v19: {$ref: 'library/environment.yaml#/netrid_dss_instances_v19'}
+
+        test_exclusions: { $ref: 'library/resources.yaml#/test_exclusions' }
     non_baseline_inputs:
       - v1.test_run.resources.resource_declarations.utm_auth
       - v1.test_run.resources.resource_declarations.netrid_service_providers_v19
@@ -32,6 +34,7 @@ v1:
           id_generator: id_generator
           service_area: kentland_service_area
           problematically_big_area: au_problematically_big_area
+          test_exclusions: test_exclusions
     execution:
       stop_fast: true
   artifacts:

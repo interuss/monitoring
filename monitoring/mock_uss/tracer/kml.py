@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import glob
 import os
 import re
@@ -37,10 +37,10 @@ class Stopwatch(object):
     elapsed_time: timedelta = timedelta(seconds=0)
 
     def __enter__(self):
-        self._start_time = datetime.utcnow()
+        self._start_time = datetime.now(UTC)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.elapsed_time += datetime.utcnow() - self._start_time
+        self.elapsed_time += datetime.now(UTC) - self._start_time
 
 
 class VolumeType(str, Enum):

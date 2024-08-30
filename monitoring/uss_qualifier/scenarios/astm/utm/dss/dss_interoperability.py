@@ -1,10 +1,13 @@
 import ipaddress
 import socket
-from typing import List
+from typing import List, Optional
 from urllib.parse import urlparse
 
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
+from monitoring.uss_qualifier.resources.dev.test_exclusions import (
+    TestExclusionsResource,
+)
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import Volume4D, Volume3D, Polygon, LatLngPoint
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -21,6 +24,7 @@ class DSSInteroperability(TestScenario):
 
     _dss_primary: DSSInstance
     _dss_others: List[DSSInstance]
+    _allow_private_addresses: bool = False
 
     _valid_search_area: Volume4D
 
@@ -29,6 +33,7 @@ class DSSInteroperability(TestScenario):
         primary_dss_instance: DSSInstanceResource,
         all_dss_instances: DSSInstancesResource,
         planning_area: PlanningAreaResource,
+        test_exclusions: Optional[TestExclusionsResource] = None,
     ):
         super().__init__()
         scopes = {
@@ -42,6 +47,9 @@ class DSSInteroperability(TestScenario):
         ]
 
         self._valid_search_area = Volume4D(volume=planning_area.specification.volume)
+
+        if test_exclusions is not None:
+            self._allow_private_addresses = test_exclusions.allow_private_addresses
 
     def run(self, context: ExecutionContext):
 
@@ -65,16 +73,14 @@ class DSSInteroperability(TestScenario):
                 parsed_url = urlparse(dss.base_url)
                 ip_addr = socket.gethostbyname(parsed_url.hostname)
 
-                if dss.has_private_address:
-                    self.record_note(
-                        f"{dss.participant_id}_private_address",
-                        f"DSS instance (URL: {dss.base_url}, netloc: {parsed_url.netloc}, resolved IP: {ip_addr}) is declared as explicitly having a private address, skipping check",
-                    )
-                elif ipaddress.ip_address(ip_addr).is_private:
-                    check.record_failed(
-                        summary=f"DSS host {parsed_url.netloc} is not publicly addressable",
-                        details=f"DSS (URL: {dss.base_url}, netloc: {parsed_url.netloc}, resolved IP: {ip_addr}) is not publicly addressable",
-                    )
+                if ipaddress.ip_address(ip_addr).is_private:
+                    if self._allow_private_addresses:
+                        check.skip()
+                    else:
+                        check.record_failed(
+                            summary=f"DSS host {parsed_url.netloc} is not publicly addressable",
+                            details=f"DSS (URL: {dss.base_url}, netloc: {parsed_url.netloc}, resolved IP: {ip_addr}) is not publicly addressable",
+                        )
 
             with self.check("DSS instance is reachable", [dss.participant_id]) as check:
                 try:

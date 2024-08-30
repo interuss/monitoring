@@ -24,7 +24,7 @@ from monitoring.prober.infrastructure import (
 from monitoring.prober.scd import actions
 
 
-BASE_URL = "https://example.com/uss"
+BASE_URL = "https://example.interuss.org/uss"
 OP_TYPE = register_resource_type(341, "Operational intent")
 
 
@@ -34,7 +34,7 @@ def test_ensure_clean_workspace(ids, scd_api, scd_session):
 
 
 def _make_op1_request():
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=20)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=20)
     time_end = time_start + datetime.timedelta(minutes=60)
     return {
         "extents": [
@@ -61,7 +61,7 @@ def test_op_does_not_exist_get(ids, scd_api, scd_session):
 def test_op_does_not_exist_query(
     ids, scd_api, scd_session, scd_session_cp, scd_session_cm
 ):
-    time_now = datetime.datetime.utcnow()
+    time_now = datetime.datetime.now(datetime.UTC)
     end_time = time_now + datetime.timedelta(hours=1)
     resp = scd_session.post(
         "/operational_intent_references/query",
@@ -236,7 +236,7 @@ def test_get_op_by_search(ids, scd_api, scd_session):
 @default_scope(SCOPE_SC)
 @depends_on(test_create_op)
 def test_get_op_by_search_earliest_time_included(ids, scd_api, scd_session):
-    earliest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=59)
+    earliest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=59)
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
@@ -254,7 +254,7 @@ def test_get_op_by_search_earliest_time_included(ids, scd_api, scd_session):
 @default_scope(SCOPE_SC)
 @depends_on(test_create_op)
 def test_get_op_by_search_earliest_time_excluded(ids, scd_api, scd_session):
-    earliest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=81)
+    earliest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=81)
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
@@ -272,7 +272,7 @@ def test_get_op_by_search_earliest_time_excluded(ids, scd_api, scd_session):
 @default_scope(SCOPE_SC)
 @depends_on(test_create_op)
 def test_get_op_by_search_latest_time_included(ids, scd_api, scd_session):
-    latest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=20)
+    latest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=20)
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
@@ -342,7 +342,7 @@ def test_get_op_by_query_other_uss(ids, scd_session2):
 @default_scope(SCOPE_SC)
 @depends_on(test_create_op)
 def test_get_op_by_search_latest_time_excluded(ids, scd_api, scd_session):
-    latest_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=1)
+    latest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=1)
     resp = scd_session.post(
         "/operational_intent_references/query",
         json={
@@ -372,7 +372,7 @@ def test_mutate_op(ids, scd_api, scd_session, scd_session_cp, scd_session_cm):
         "extents": req["extents"],
         "old_version": existing_op["version"],
         "state": "Activated",
-        "uss_base_url": "https://example.com/uss2",
+        "uss_base_url": "https://example.interuss.org/uss2",
         "subscription_id": existing_op["subscription_id"],
     }
 
@@ -402,7 +402,7 @@ def test_mutate_op(ids, scd_api, scd_session, scd_session_cp, scd_session_cm):
     data = resp.json()
     op = data["operational_intent_reference"]
     assert op["id"] == ids(OP_TYPE)
-    assert op["uss_base_url"] == "https://example.com/uss2"
+    assert op["uss_base_url"] == "https://example.interuss.org/uss2"
     assert op["version"] == 2
     assert op["subscription_id"] == existing_op["subscription_id"]
     # assert 'state' not in op

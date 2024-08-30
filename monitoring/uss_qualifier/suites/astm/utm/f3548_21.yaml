@@ -3,6 +3,7 @@ resources:
   test_env_version_providers: resources.versioning.VersionProvidersResource?
   prod_env_version_providers: resources.versioning.VersionProvidersResource?
   flight_planners: resources.flight_planning.FlightPlannersResource
+  flight_planners_to_clear: resources.flight_planning.FlightPlannersResource
   dss: resources.astm.f3548.v21.DSSInstanceResource
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_crdb_cluster: resources.interuss.crdb.CockroachDBClusterResource?
@@ -19,6 +20,7 @@ resources:
   planning_area: resources.astm.f3548.v21.PlanningAreaResource
   problematically_big_area: resources.VerticesResource
   system_identity: resources.versioning.SystemIdentityResource?
+  test_exclusions: resources.dev.TestExclusionsResource?
 local_resources:
   system_identity:
     resource_type: resources.versioning.SystemIdentityResource
@@ -34,7 +36,7 @@ actions:
 - test_scenario:
     scenario_type: scenarios.astm.utm.PrepareFlightPlanners
     resources:
-      flight_planners: flight_planners
+      flight_planners: flight_planners_to_clear
       mock_uss: mock_uss?
       dss: dss
       flight_intents: invalid_flight_intents
@@ -53,6 +55,7 @@ actions:
       id_generator: id_generator
       planning_area: planning_area
       problematically_big_area: problematically_big_area
+      test_exclusions: test_exclusions?
     specification:
       action_to_repeat:
         test_suite:
@@ -67,10 +70,30 @@ actions:
             id_generator: id_generator
             planning_area: planning_area
             problematically_big_area: problematically_big_area
+            test_exclusions: test_exclusions?
         on_failure: Continue
       dss_instances_source: dss_instances
       dss_instance_id: dss
     on_failure: Continue
+- action_generator:
+    generator_type: action_generators.flight_planning.FlightPlannerCombinations
+    resources:
+      flight_planners: flight_planners
+      flight_intents: conflicting_flights
+      dss: dss
+    specification:
+      action_to_repeat:
+        test_scenario:
+          scenario_type: scenarios.astm.utm.nominal_planning.solo_happy_path.SoloHappyPath
+          resources:
+            flight_intents: flight_intents
+            tested_uss: tested_uss
+            dss: dss
+        on_failure: Continue
+      flight_planners_source: flight_planners
+      roles:
+        - tested_uss
+  on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
@@ -221,6 +244,17 @@ actions:
       flight_planners_source: flight_planners
       roles:
         - uss1
+  on_failure: Continue
+- test_scenario:
+    scenario_type: scenarios.astm.utm.PrepareFlightPlanners  # TODO: Convert this to a scenario which only clears the area (does not check readiness)
+    resources:
+      flight_planners: flight_planners
+      mock_uss: mock_uss?
+      dss: dss
+      flight_intents: invalid_flight_intents
+      flight_intents2: priority_preemption_flights?
+      flight_intents3: conflicting_flights?
+      flight_intents4: non_conflicting_flights?
   on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.astm.utm.versioning.evaluate_system_versions.EvaluateSystemVersions

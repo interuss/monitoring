@@ -1216,7 +1216,7 @@ def all_flights(
     enhanced_details: bool = False,
     dss_participant_id: Optional[str] = None,
 ) -> FetchedFlights:
-    t = datetime.datetime.utcnow()
+    t = datetime.datetime.now(datetime.UTC)
     isa_list = isas(
         geo.get_latlngrect_vertices(area),
         t,

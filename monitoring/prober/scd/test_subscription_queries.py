@@ -29,14 +29,14 @@ FOOTPRINT_SPACING_M = 10000
 
 
 def _make_sub1_req(scd_api):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=60)
     lat = LAT0 - latitude_degrees(FOOTPRINT_SPACING_M)
     req = {
         "extents": Volume4D.from_values(
             None, time_end, 0, 300, Circle.from_meters(lat, LNG0, 100)
         ).to_f3548v21(),
-        "uss_base_url": "https://example.com/foo",
+        "uss_base_url": "https://example.interuss.org/foo",
         "notify_for_constraints": False,
     }
     req.update({"notify_for_operational_intents": True})
@@ -44,14 +44,14 @@ def _make_sub1_req(scd_api):
 
 
 def _make_sub2_req(scd_api):
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=2)
     time_end = time_start + datetime.timedelta(minutes=60)
     req = {
         "extents": Volume4D.from_values(
             time_start, time_end, 350, 650, Circle.from_meters(LAT0, LNG0, 100)
         ).to_f3548v21(),
         "old_version": 0,
-        "uss_base_url": "https://example.com/foo",
+        "uss_base_url": "https://example.interuss.org/foo",
         "notify_for_operations": True,
         "notify_for_constraints": False,
     }
@@ -60,14 +60,14 @@ def _make_sub2_req(scd_api):
 
 
 def _make_sub3_req(scd_api):
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(hours=4)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=4)
     time_end = time_start + datetime.timedelta(minutes=60)
     lat = LAT0 + latitude_degrees(FOOTPRINT_SPACING_M)
     req = {
         "extents": Volume4D.from_values(
             time_start, time_end, 700, 1000, Circle.from_meters(lat, LNG0, 100)
         ).to_f3548v21(),
-        "uss_base_url": "https://example.com/foo",
+        "uss_base_url": "https://example.interuss.org/foo",
         "notify_for_constraints": False,
     }
     req.update({"notify_for_operational_intents": True})
@@ -190,7 +190,7 @@ def test_search_footprint(ids, scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_search_time(ids, scd_api, scd_session):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(minutes=1)
 
     resp = scd_session.post(
@@ -229,7 +229,7 @@ def test_search_time(ids, scd_api, scd_session):
     assert ids(SUB2_TYPE) not in result_ids
     assert ids(SUB3_TYPE) not in result_ids
 
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(hours=4)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=4)
     time_end = time_start + datetime.timedelta(minutes=1)
 
     resp = scd_session.post(
@@ -274,7 +274,7 @@ def test_search_time(ids, scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_search_time_footprint(ids, scd_api, scd_session):
-    time_start = datetime.datetime.utcnow()
+    time_start = datetime.datetime.now(datetime.UTC)
     time_end = time_start + datetime.timedelta(hours=2.5)
     lat = LAT0 + latitude_degrees(FOOTPRINT_SPACING_M)
     resp = scd_session.post(

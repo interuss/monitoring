@@ -32,7 +32,7 @@ from monitoring.prober.infrastructure import (
 from monitoring.prober.scd import actions
 
 
-BASE_URL = "https://example.com/uss"
+BASE_URL = "https://example.interuss.org/uss"
 # TODO(#742): Increase number of concurrent operations from 20 to 100
 OP_TYPES = [
     register_resource_type(110 + i, "Operational intent {}".format(i))
@@ -64,7 +64,7 @@ def _make_op_request_with_extents(extents):
 # The circle's center lat shifts 0.1 degree (11.1 km) per sequential idx change
 # The altitude and time window won't change with idx
 def _make_op_request_differ_in_2d(idx):
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=20)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=20)
     time_end = time_start + datetime.timedelta(minutes=60)
     lat = _calculate_lat(idx)
 
@@ -78,7 +78,7 @@ def _make_op_request_differ_in_2d(idx):
 # The altitude starts with [0, 19] and increases 20 per sequential idx change
 # The 2D area and time window won't change with idx
 def _make_op_request_differ_in_altitude(idx):
-    time_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=20)
+    time_start = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=20)
     time_end = time_start + datetime.timedelta(minutes=60)
     delta = 20
     alt0 = delta * idx
@@ -96,7 +96,9 @@ def _make_op_request_differ_in_altitude(idx):
 def _make_op_request_differ_in_time(idx, time_gap):
     delta = 10
     time_start = (
-        datetime.datetime.utcnow() + time_gap + datetime.timedelta(minutes=delta * idx)
+        datetime.datetime.now(datetime.UTC)
+        + time_gap
+        + datetime.timedelta(minutes=delta * idx)
     )
     time_end = time_start + datetime.timedelta(minutes=delta - 1)
 
@@ -208,7 +210,7 @@ def _build_mutate_request(idx, op_id, op_map, scd_session, scd_api):
         "extents": req["extents"],
         "old_version": existing_op["version"],
         "state": "Activated",
-        "uss_base_url": "https://example.com/uss2",
+        "uss_base_url": "https://example.interuss.org/uss2",
         "subscription_id": existing_op["subscription_id"],
     }
     return req
@@ -236,7 +238,7 @@ def test_ensure_clean_workspace(ids, scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_create_ops_concurrent(ids, scd_api, scd_session_async):
-    start_time = datetime.datetime.utcnow()
+    start_time = datetime.datetime.now(datetime.UTC)
     assert len(ovn_map) == 0
     op_req_map = {}
     op_resp_map = {}
@@ -317,7 +319,7 @@ def test_create_ops_concurrent(ids, scd_api, scd_session_async):
         ovn_map[op_id] = op["ovn"]
     assert len(ovn_map) == len(OP_TYPES)
     print(
-        f"\n{inspect.stack()[0][3]} time_taken: {datetime.datetime.utcnow() - start_time}"
+        f"\n{inspect.stack()[0][3]} time_taken: {datetime.datetime.now(datetime.UTC) - start_time}"
     )
 
 
@@ -326,7 +328,7 @@ def test_create_ops_concurrent(ids, scd_api, scd_session_async):
 @for_api_versions(scd.API_0_3_17)
 @depends_on(test_create_ops_concurrent)
 def test_get_ops_by_ids_concurrent(ids, scd_api, scd_session_async):
-    start_time = datetime.datetime.utcnow()
+    start_time = datetime.datetime.now(datetime.UTC)
     op_resp_map = {}
     # Get operations concurrently
     loop = asyncio.get_event_loop()
@@ -353,7 +355,7 @@ def test_get_ops_by_ids_concurrent(ids, scd_api, scd_session_async):
         assert op["uss_base_url"] == BASE_URL
         assert op["version"] == 1
     print(
-        f"\n{inspect.stack()[0][3]} time_taken: {datetime.datetime.utcnow() - start_time}"
+        f"\n{inspect.stack()[0][3]} time_taken: {datetime.datetime.now(datetime.UTC) - start_time}"
     )
 
 
@@ -363,7 +365,7 @@ def test_get_ops_by_ids_concurrent(ids, scd_api, scd_session_async):
 @default_scope(SCOPE_SC)
 @depends_on(test_create_ops_concurrent)
 def test_get_ops_by_search_concurrent(ids, scd_api, scd_session_async):
-    start_time = datetime.datetime.utcnow()
+    start_time = datetime.datetime.now(datetime.UTC)
     op_resp_map = {}
     total_found_ids = set()
 
@@ -392,7 +394,7 @@ def test_get_ops_by_search_concurrent(ids, scd_api, scd_session_async):
 
     assert len(_intersection(map(ids, OP_TYPES), total_found_ids)) == len(OP_TYPES)
     print(
-        f"\n{inspect.stack()[0][3]} time_taken: {datetime.datetime.utcnow() - start_time}"
+        f"\n{inspect.stack()[0][3]} time_taken: {datetime.datetime.now(datetime.UTC) - start_time}"
     )
 
 
@@ -402,7 +404,7 @@ def test_get_ops_by_search_concurrent(ids, scd_api, scd_session_async):
 @default_scope(SCOPE_SC)
 @depends_on(test_create_ops_concurrent)
 def test_mutate_ops_concurrent(ids, scd_api, scd_session, scd_session_async):
-    start_time = datetime.datetime.utcnow()
+    start_time = datetime.datetime.now(datetime.UTC)
     op_req_map = {}
     op_resp_map = {}
     op_map = {}
@@ -425,7 +427,7 @@ def test_mutate_ops_concurrent(ids, scd_api, scd_session, scd_session_async):
         )
     )
     print(
-        f"\n{inspect.stack()[0][3]} time_taken: {datetime.datetime.utcnow() - start_time}"
+        f"\n{inspect.stack()[0][3]} time_taken: {datetime.datetime.now(datetime.UTC) - start_time}"
     )
     for req_map, resp in zip(op_req_map.items(), results):
         op_id = req_map[0]
@@ -456,7 +458,7 @@ def test_mutate_ops_concurrent(ids, scd_api, scd_session, scd_session_async):
         data = resp["content"]
         op = data["operational_intent_reference"]
         assert op["id"] == op_id
-        assert op["uss_base_url"] == "https://example.com/uss2"
+        assert op["uss_base_url"] == "https://example.interuss.org/uss2"
         assert op["version"] == 2
         assert op["subscription_id"] == existing_op["subscription_id"]
 
@@ -470,7 +472,7 @@ def test_mutate_ops_concurrent(ids, scd_api, scd_session, scd_session_async):
 @for_api_versions(scd.API_0_3_17)
 @depends_on(test_mutate_ops_concurrent)
 def test_delete_op_concurrent(ids, scd_api, scd_session_async):
-    start_time = datetime.datetime.utcnow()
+    start_time = datetime.datetime.now(datetime.UTC)
     op_resp_map = {}
 
     # Delete operations concurrently
@@ -493,7 +495,7 @@ def test_delete_op_concurrent(ids, scd_api, scd_session_async):
     for resp in op_resp_map.values():
         assert resp["status_code"] == 200, resp["content"]
     print(
-        f"\n{inspect.stack()[0][3]} time_taken: {datetime.datetime.utcnow() - start_time}"
+        f"\n{inspect.stack()[0][3]} time_taken: {datetime.datetime.now(datetime.UTC) - start_time}"
     )
 
 

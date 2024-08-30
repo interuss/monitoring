@@ -27,10 +27,37 @@ def remove_op_intent(
             scenario.record_query(query)
         except fetch.QueryError as e:
             scenario.record_queries(e.queries)
-            query = e.queries[0]
+            query = e.cause
             check.record_failed(
                 summary=f"Could not remove op intent reference {oi_id}",
                 details=f"When attempting to remove op intent reference {oi_id} from the DSS, received {query.status_code}; {e}",
+                query_timestamps=[query.request.timestamp],
+            )
+
+    # TODO: Attempt to notify subscribers
+
+
+def remove_constraint_ref(
+    scenario: TestScenarioType, dss: DSSInstance, cr_id: EntityID, ovn: str
+) -> None:
+    """Remove the specified constraint reference from the DSS.
+
+    The specified constraint reference must be managed by `dss`'s auth adapter subscriber.
+
+    This function implements parts of the test step fragment described in astm/utm/dss/clean_workspace.md.
+    """
+    with scenario.check("Constraint reference removed", dss.participant_id) as check:
+        try:
+            removed_ref, subscribers_to_notify, query = dss.delete_constraint_ref(
+                cr_id, ovn
+            )
+            scenario.record_query(query)
+        except fetch.QueryError as e:
+            scenario.record_queries(e.queries)
+            query = e.cause
+            check.record_failed(
+                summary=f"Could not remove constraint reference {cr_id}",
+                details=f"When attempting to remove constraint reference {cr_id} from the DSS, received {query.status_code}; {e}",
                 query_timestamps=[query.request.timestamp],
             )
 
@@ -77,7 +104,7 @@ def cleanup_active_subs(
 ) -> None:
     """Search for and delete all active subscriptions at the DSS.
 
-    This function implements the test step fragment described in search_and_delete_active_subs.md.
+    This function implements the test step fragment described in clean_workspace.md.
     """
     query = dss.query_subscriptions(volume)
     scenario.record_query(query)
@@ -95,6 +122,39 @@ def cleanup_active_subs(
         cleanup_sub(scenario, dss, sub_id)
 
 
+def cleanup_active_constraint_refs(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    volume: Volume4D,
+    manager_identity: str,
+) -> None:
+    """
+    Search for and delete all active constraint references at the DSS.
+
+    This function implements some of the test step fragment described in clean_workspace.md:
+      - Constraint references can be searched for
+      - Constraint reference removed
+    """
+    with scenario.check(
+        "Constraint references can be searched for", [dss.participant_id]
+    ) as check:
+        try:
+            crs, query = dss.find_constraint_ref(volume)
+            scenario.record_query(query)
+        except QueryError as qe:
+            scenario.record_queries(qe.queries)
+            check.record_failed(
+                summary="Failed to query constraint references",
+                details=f"Failed to query constraint references: got response code {qe.cause.status_code}",
+                query_timestamps=[qe.cause.request.timestamp],
+            )
+            return
+
+    for cr in crs:
+        if cr.manager == manager_identity:
+            remove_constraint_ref(scenario, dss, cr.id, cr.ovn)
+
+
 def cleanup_active_oirs(
     scenario: TestScenarioType,
     dss: DSSInstance,
@@ -109,9 +169,9 @@ def cleanup_active_oirs(
         except QueryError as qe:
             scenario.record_queries(qe.queries)
             check.record_failed(
-                summary="Failed to query operational intent references",
-                details=f"Failed to query operational intent references: got response code {qe.queries[0].status_code}",
-                query_timestamps=[qe.queries[0].request.timestamp],
+                summary=f"Failed OIR search with HTTP code {qe.cause.status_code}",
+                details=f"Failed to query operational intent references: {qe}",
+                query_timestamps=[qe.cause.request.timestamp],
             )
             return
 
@@ -142,3 +202,34 @@ def cleanup_op_intent(
                 return
 
     remove_op_intent(scenario, dss, oi_id, oir.ovn)
+
+
+def cleanup_constraint_ref(
+    scenario: TestScenarioType, dss: DSSInstance, cr_id: EntityID
+) -> None:
+    """
+    Remove the specified constraint reference from the DSS, if it exists.
+
+    This function implements some of the test step fragment described in clean_workspace.md:
+        - Constraint references can be queried by ID
+        - Constraint reference removed
+    """
+
+    with scenario.check(
+        "Constraint references can be queried by ID", [dss.participant_id]
+    ) as check:
+        try:
+            cr, q = dss.get_constraint_ref(cr_id)
+            scenario.record_query(q)
+        except fetch.QueryError as e:
+            scenario.record_queries(e.queries)
+            if e.cause_status_code != 404:
+                check.record_failed(
+                    summary="CR Get query returned code different from 200 or 404",
+                    details=e.msg,
+                    query_timestamps=e.query_timestamps,
+                )
+            else:
+                return
+
+    remove_constraint_ref(scenario, dss, cr_id, cr.ovn)

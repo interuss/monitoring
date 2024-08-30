@@ -53,10 +53,13 @@ def get_commit_hash() -> str:
 
 
 def _retrieve_commit_hash() -> str:
+    # When the monitoring image is built, the GIT_COMMIT_HASH environment variable should be populated from a build
+    # arg according to the git information for the repo.
     env_hash = os.environ.get("GIT_COMMIT_HASH", "")
     if env_hash:
         return env_hash
 
+    # We must be running outside a monitoring-image container; use git to determine the commit hash.
     process = subprocess.Popen(
         ["git", "rev-parse", "HEAD"],
         stdout=subprocess.PIPE,
@@ -79,6 +82,9 @@ def get_code_version() -> str:
 
 
 def _retrieve_code_version() -> str:
+    # When the monitoring image is built, the MONITORING_VERSION environment variable should be populated from a build
+    # arg according to the git information for the repo -- look for this variable first.  A legacy name for this
+    # variable was CODE_VERSION; use that as backup.
     env_version = os.environ.get("MONITORING_VERSION", "")
     if env_version:
         return env_version
@@ -86,6 +92,7 @@ def _retrieve_code_version() -> str:
     if env_version:
         return env_version
 
+    # We must be running outside a monitoring-image container; use git to determine the code version.
     commit = get_commit_hash()
     if len(commit) > 7:
         commit = commit[0:7]
@@ -95,7 +102,9 @@ def _retrieve_code_version() -> str:
     )
     status, _ = process.communicate()
     if process.returncode != 0:
+        # git status returned an error so we don't know the working status of the repo
         return commit + "-unknown"
     elif status:
+        # git status indicated differences from the latest commit, so the working copy is dirty
         return commit + "-dirty"
     return commit

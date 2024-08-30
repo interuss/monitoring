@@ -93,7 +93,7 @@ def test_op_query_not_area_too_large(scd_api, scd_session):
 @default_scope(SCOPE_SC)
 def test_id_conversion_bug(ids, scd_api, scd_session):
     sub_uuid = ids(SUB_TYPE)
-    time_ref = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+    time_ref = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)
     time_start = datetime.datetime(time_ref.year, time_ref.month, time_ref.day, 1, 30)
     time_end = datetime.datetime(time_ref.year, time_ref.month, time_ref.day, 22, 15)
     req = {
@@ -118,7 +118,7 @@ def test_id_conversion_bug(ids, scd_api, scd_session):
             "time_end": {"value": time_end.isoformat() + "Z", "format": "RFC3339"},
         },
         "old_version": 0,
-        "uss_base_url": "https://example.com/uss/v1/",
+        "uss_base_url": "https://example.interuss.org/uss/v1/",
         "notify_for_constraints": True,
     }
     resp = scd_session.put("/subscriptions/{}".format(sub_uuid), json=req)

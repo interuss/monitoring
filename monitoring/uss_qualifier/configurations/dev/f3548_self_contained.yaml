@@ -18,6 +18,7 @@ v1:
           test_env_version_providers: test_env_version_providers
           prod_env_version_providers: prod_env_version_providers
           flight_planners: flight_planners
+          flight_planners_to_clear: flight_planners
           conflicting_flights: conflicting_flights
           invalid_flight_intents: invalid_flight_intents
           non_conflicting_flights: non_conflicting_flights
@@ -27,6 +28,7 @@ v1:
           second_utm_auth: second_utm_auth
           planning_area: planning_area
           problematically_big_area: problematically_big_area
+          test_exclusions: test_exclusions
 
     # When a test run is executed, a "baseline signature" is computed uniquely identifying the "baseline" of the test,
     # usually excluding exactly what systems are participating in the test (the "environment").  This is a list of
@@ -36,6 +38,7 @@ v1:
       - v1.test_run.resources.resource_declarations.second_utm_auth
       - v1.test_run.resources.resource_declarations.test_env_version_providers
       - v1.test_run.resources.resource_declarations.flight_planners
+      - v1.test_run.resources.resource_declarations.flight_planners_to_clear
       - v1.test_run.resources.resource_declarations.dss
       - v1.test_run.resources.resource_declarations.dss_instances
       - v1.test_run.resources.resource_declarations.mock_uss
@@ -66,6 +69,7 @@ v1:
               # ASTM F3548-21 USS emulation roles
               - utm.strategic_coordination
               - utm.availability_arbitration
+              - utm.constraint_management
               # For authentication test purposes.
               # Remove if the authentication provider pointed to by AUTH_SPEC does not support it.
               - ""
@@ -142,10 +146,8 @@ v1:
                   # Participants using a DSS instance they do not provide should be listed as users of that DSS (so that they can take credit for USS requirements enforced by the DSS)
                   - mock_uss  # mock_uss uses this DSS instance; it does not provide its own instance
                 base_url: http://dss.uss1.localutm
-                has_private_address: true
               - participant_id: uss2_dss
                 base_url: http://dss.uss2.localutm
-                has_private_address: true
 
         # Mock USS that can be used in tests for flight planning, modifying data sharing behavior and recording interactions
         mock_uss:
@@ -159,6 +161,15 @@ v1:
         # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         # ========== Environment ==========
         # =================================
+
+        # Controls tests behavior
+        test_exclusions:
+          $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+          resource_type: resources.dev.TestExclusionsResource
+          specification:
+            # Tests should allow private addresses that are not publicly addressable since this configuration runs locally
+            allow_private_addresses: true
+            allow_cleartext_queries: true
 
         # Means by which uss_qualifier can discover which subscription ('sub' claim of its tokes) it is described by
         utm_client_identity:

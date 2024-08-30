@@ -1,13 +1,13 @@
 import re
-from typing import List, Dict, Set
+from typing import List, Dict, Optional
 
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.fetch import evaluation, QueryType
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411 import DSSInstancesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
+from monitoring.uss_qualifier.resources.dev import TestExclusionsResource
 
 from monitoring.uss_qualifier.resources.netrid import (
     NetRIDServiceProviders,
@@ -32,7 +32,7 @@ class AggregateChecks(GenericTestScenario):
 
     _queries: List[fetch.Query]
     _participants_by_base_url: Dict[str, ParticipantID] = dict()
-    _debug_mode_usses: Set[ParticipantID] = set()
+    _allow_cleartext_queries: bool = False
     _queries_by_participant: Dict[ParticipantID, List[fetch.Query]]
 
     def __init__(
@@ -40,6 +40,7 @@ class AggregateChecks(GenericTestScenario):
         service_providers: NetRIDServiceProviders,
         observers: NetRIDObserversResource,
         dss_instances: DSSInstancesResource,
+        test_exclusions: Optional[TestExclusionsResource] = None,
     ):
         super().__init__()
         self._service_providers = service_providers.service_providers
@@ -55,18 +56,8 @@ class AggregateChecks(GenericTestScenario):
             {dp.base_url: dp.participant_id for dp in self._observers}
         )
 
-        # identify usses running in debug mode
-        for sp in self._service_providers:
-            if sp.local_debug:
-                self._debug_mode_usses.add(sp.participant_id)
-
-        for o in self._observers:
-            if o.local_debug:
-                self._debug_mode_usses.add(o.participant_id)
-
-        for dss in self._dss_instances:
-            if dss.local_debug:
-                self._debug_mode_usses.add(dss.participant_id)
+        if test_exclusions is not None:
+            self._allow_cleartext_queries = test_exclusions.allow_cleartext_queries
 
     def _init_queries(self, context: ExecutionContext):
         self._queries = list(context.sibling_queries())
@@ -112,8 +103,6 @@ class AggregateChecks(GenericTestScenario):
                 "observer", f"configured observer: {o.participant_id} - {o.base_url}"
             )
 
-        self.record_note("debug_usses", f"debug mode usses: {self._debug_mode_usses}")
-
         # DP performance
         self.begin_test_case("Performance of Display Providers requests")
         self.begin_test_step("Performance of /display_data requests")
@@ -147,8 +136,17 @@ class AggregateChecks(GenericTestScenario):
         self.end_test_scenario()
 
     def _verify_https_everywhere(self):
-        for participant_id, participant_queries in self._queries_by_participant.items():
-            self._inspect_participant_queries(participant_id, participant_queries)
+        if not self._allow_cleartext_queries:
+            for (
+                participant_id,
+                participant_queries,
+            ) in self._queries_by_participant.items():
+                self._inspect_participant_queries(participant_id, participant_queries)
+        else:
+            self.record_note(
+                "https-check",
+                f"cleartext queries are allowed by test exclusions, skipping HTTPS check",
+            )
 
         # Check that all queries have been attributed to a participant
         unattr_queries = [
@@ -168,33 +166,25 @@ class AggregateChecks(GenericTestScenario):
         cleartext_queries = []
         for query in participant_queries:
             if query.request.url.startswith("http://"):
-                if participant_id not in self._debug_mode_usses:
-                    cleartext_queries.append(query)
-                    logger.info(
-                        f"query is not https: {participant_id} - {query.request.url}",
-                    )
+                cleartext_queries.append(query)
+                logger.info(
+                    f"query is not https: {participant_id} - {query.request.url}",
+                )
 
-        if participant_id not in self._debug_mode_usses:
-            with self.check(
-                "All interactions happen over https",
-                [participant_id],
-            ) as check:
-                if len(cleartext_queries) > 0:
-                    timestamps = [
-                        q.request.initiated_at.datetime for q in cleartext_queries
-                    ]
-                    urls = set([q.request.url for q in cleartext_queries])
-                    check.record_failed(
-                        summary=f"found {len(cleartext_queries)} cleartext http queries",
-                        details=f"unique cleartext urls: {urls}",
-                        severity=Severity.Medium,
-                        query_timestamps=timestamps,
-                    )
-        else:
-            self.record_note(
-                "https-check",
-                f"participant {participant_id} is in local debug mode, skipping HTTPS check",
-            )
+        with self.check(
+            "All interactions happen over https",
+            [participant_id],
+        ) as check:
+            if len(cleartext_queries) > 0:
+                timestamps = [
+                    q.request.initiated_at.datetime for q in cleartext_queries
+                ]
+                urls = set([q.request.url for q in cleartext_queries])
+                check.record_failed(
+                    summary=f"found {len(cleartext_queries)} cleartext http queries",
+                    details=f"unique cleartext urls: {urls}",
+                    query_timestamps=timestamps,
+                )
 
     def _dp_display_data_details_times_step(self):
         """
@@ -228,13 +218,11 @@ class AggregateChecks(GenericTestScenario):
                 if p95 > self._rid_version.dp_details_resp_percentile95_s:
                     check.record_failed(
                         summary=f"95th percentile of durations for DP display_data details queries is higher than threshold",
-                        severity=Severity.Medium,
                         details=f"threshold: {self._rid_version.dp_details_resp_percentile95_s}s, 95th percentile: {p95:.3g}s",
                     )
                 if p99 > self._rid_version.dp_details_resp_percentile99_s:
                     check.record_failed(
                         summary=f"99th percentile of durations for DP display_data details queries is higher than threshold",
-                        severity=Severity.Medium,
                         details=f"threshold: {self._rid_version.dp_details_resp_percentile99_s}s, 99th percentile: {p99:.3g}s",
                     )
 
@@ -272,14 +260,12 @@ class AggregateChecks(GenericTestScenario):
                 if p95 > self._rid_version.sp_data_resp_percentile95_s:
                     check.record_failed(
                         summary=f"95th percentile of /flights?view requests is {p95:.3g} s",
-                        severity=Severity.Medium,
                         details=f"expected less than {self._rid_version.sp_data_resp_percentile95_s} s, was {p95:.3g}",
                     )
             with self.check("99th percentile response time", [participant]) as check:
                 if p99 > self._rid_version.sp_data_resp_percentile99_s:
                     check.record_failed(
                         summary=f"99th percentile of /flights?view requests is {p99:.3g} s",
-                        severity=Severity.Medium,
                         details=f"expected less than {self._rid_version.sp_data_resp_percentile99_s} s, was {p99:.3g}",
                     )
 
@@ -330,13 +316,11 @@ class AggregateChecks(GenericTestScenario):
                 if init_95th > self._rid_version.dp_init_resp_percentile95_s:
                     check.record_failed(
                         summary=f"95th percentile of durations for initial DP display_data queries is higher than threshold",
-                        severity=Severity.Medium,
                         details=f"threshold: {self._rid_version.dp_init_resp_percentile95_s}, 95th percentile: {init_95th:.3g}",
                     )
                 if init_99th > self._rid_version.dp_init_resp_percentile99_s:
                     check.record_failed(
                         summary=f"99th percentile of durations for initial DP display_data queries is higher than threshold",
-                        severity=Severity.Medium,
                         details=f"threshold: {self._rid_version.dp_init_resp_percentile99_s}, 99th percentile: {init_99th:.3g}",
                     )
 
@@ -346,13 +330,11 @@ class AggregateChecks(GenericTestScenario):
                 if subsequent_95th > self._rid_version.dp_data_resp_percentile95_s:
                     check.record_failed(
                         summary=f"95th percentile of durations for subsequent DP display_data queries is higher than threshold",
-                        severity=Severity.Medium,
                         details=f"threshold: {self._rid_version.dp_data_resp_percentile95_s}, 95th percentile: {subsequent_95th:.3g}",
                     )
                 if subsequent_99th > self._rid_version.dp_data_resp_percentile99_s:
                     check.record_failed(
                         summary=f"99th percentile of durations for subsequent DP display_data queries is higher than threshold",
-                        severity=Severity.Medium,
                         details=f"threshold: {self._rid_version.dp_data_resp_percentile99_s}, 95th percentile: {subsequent_99th:.3g}",
                     )
 
