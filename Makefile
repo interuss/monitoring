@@ -120,8 +120,13 @@ restart-all: stop-uss-mocks down-locally start-locally start-uss-mocks
 restart-uss-mocks: stop-uss-mocks start-uss-mocks
 
 # To be run locally whenever a direct dependency has been updated in requirements.in
+# --allow-unsafe allows us to pin setuptools
 .PHONY: update-pinned-dependencies
 update-pinned-dependencies:
-	./scripts/pip_tools/pip_compile.sh --generate-hashes --output-file=requirements.txt requirements.in
+	./scripts/pip_tools/pip_compile.sh \
+		--generate-hashes \
+		--allow-unsafe \
+		--output-file=requirements.txt \
+		requirements.in
 
 
