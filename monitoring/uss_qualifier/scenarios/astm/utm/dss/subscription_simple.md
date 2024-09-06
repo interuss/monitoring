@@ -96,6 +96,18 @@ Verify that the subscription returned by the DSS via the search is correctly for
 
 Verify that the version field is as expected.
 
+### Attempt Subscription mutation with incorrect version test step
+
+This test step attempts to mutate the subscription both with a missing and incorrect OVN, and checks that the DSS reacts properly.
+
+#### 🛑 Mutation with empty version fails check
+
+If a request to mutate a subscription is missing the version and succeeds, the DSS is failing to properly implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Mutation with incorrect version fails check
+
+If a request to mutate a subscription providing the wrong version succeeds, the DSS is failing to properly implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
+
 ### Mutate Subscription test step
 
 This test step mutates the previously created subscription to verify that the DSS reacts properly: notably, it checks that the subscription version is updated,

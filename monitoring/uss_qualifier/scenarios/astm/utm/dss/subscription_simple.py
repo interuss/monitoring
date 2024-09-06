@@ -124,6 +124,10 @@ class SubscriptionSimple(TestScenario):
         self._create_and_validate_subs()
         self.end_test_step()
 
+        self.begin_test_step("Attempt Subscription mutation with incorrect version")
+        self._test_mutate_subscription_version_check()
+        self.end_test_step()
+
         self.begin_test_step("Mutate Subscription")
         self._test_mutate_subscriptions_shift_time()
         self._test_mutate_subscriptions_change_area()
@@ -276,6 +280,46 @@ class SubscriptionSimple(TestScenario):
             was_mutated=was_mutated,
             query_timestamps=[creation_resp_under_test.request.timestamp],
         )
+
+    def _test_mutate_subscription_version_check(self):
+        """Attempt to mutate a subscription while providing a missing and incorrect OVN"""
+        orig_params = self._sub_params_by_sub_id[self._base_sub_id].copy()
+        sub = self._current_subscriptions[self._base_sub_id]
+        new_params = SubscriptionParams(
+            sub_id=self._base_sub_id,
+            area_vertices=orig_params.area_vertices,
+            min_alt_m=orig_params.min_alt_m,
+            max_alt_m=orig_params.max_alt_m,
+            start_time=sub.time_start.value.datetime + timedelta(seconds=10),
+            end_time=sub.time_end.value.datetime + timedelta(seconds=10),
+            base_url=orig_params.base_url,
+            notify_for_op_intents=orig_params.notify_for_op_intents,
+            notify_for_constraints=orig_params.notify_for_constraints,
+        )
+
+        with self.check("Mutation with empty version fails", self._pid) as check:
+            no_version_res = self._dss.upsert_subscription(
+                version="",
+                **new_params,
+            )
+            if no_version_res.status_code not in [400, 409]:
+                check.record_failed(
+                    "Mutation with empty version did not fail as expected",
+                    details=f"Mutation with an empty version is expected , received status code {no_version_res.status_code}",
+                    query_timestamps=[no_version_res.request.timestamp],
+                )
+
+        with self.check("Mutation with incorrect version fails", self._pid) as check:
+            wrong_version_res = self._dss.upsert_subscription(
+                version="ThisIsAnIncorrectVersion",
+                **new_params,
+            )
+            if wrong_version_res.status_code not in [400, 409]:
+                check.record_failed(
+                    "Mutation with incorrect version did not fail as expected",
+                    details=f"Mutation with an incorrect version is expected , received status code {wrong_version_res.status_code}",
+                    query_timestamps=[wrong_version_res.request.timestamp],
+                )
 
     def _test_mutate_subscriptions_shift_time(self):
         """Mutate all existing subscriptions by adding 10 seconds to their start and end times"""
