@@ -66,6 +66,13 @@ class V1FlightPlannerClient(FlightPlannerClient):
             participant_id=self.participant_id,
             query_type=QueryType.InterUSSFlightPlanningV1UpsertFlightPlan,
         )
+        if query.status_code != 999:
+            # We record  the flight in any situation where there might
+            # be a small chance that it was created, as a non-success HTTP code
+            # does not guarantee that a flight has not been injected,
+            # and dangling flights tend to cause issues with other tests.
+            self.created_flight_ids.add(flight_plan_id)
+
         if query.status_code != 200 and query.status_code != 201:
             raise PlanningActivityError(
                 f"Attempt to plan flight returned status {query.status_code} rather than 200 as expected",
@@ -79,15 +86,6 @@ class V1FlightPlannerClient(FlightPlannerClient):
             raise PlanningActivityError(
                 f"Response to plan flight could not be parsed: {str(e)}", query
             )
-
-        created_status = [
-            FlightPlanStatus.Planned,
-            FlightPlanStatus.OkToFly,
-            FlightPlanStatus.OffNominal,
-        ]
-        if resp.planning_result == PlanningActivityResult.Completed:
-            if resp.flight_plan_status in created_status:
-                self.created_flight_ids.add(flight_plan_id)
 
         response = PlanningActivityResponse(
             flight_id=flight_plan_id,
@@ -139,7 +137,8 @@ class V1FlightPlannerClient(FlightPlannerClient):
             participant_id=self.participant_id,
             query_type=QueryType.InterUSSFlightPlanningV1DeleteFlightPlan,
         )
-        if query.status_code != 200:
+        # 404 is acceptable, as the end state we are interested in is already effective.
+        if query.status_code not in [200, 404]:
             raise PlanningActivityError(
                 f"Attempt to delete flight plan returned status {query.status_code} rather than 200 as expected",
                 query,
