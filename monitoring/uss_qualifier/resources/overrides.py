@@ -26,6 +26,11 @@ def apply_overrides(
 
 
 def _apply_overrides(base_object, overrides):
+    """
+    recursively apply the passed overrides to base_object.
+    Note that it may be mutated directly rather than copied.
+    """
+
     if base_object is None:
         return overrides
 
@@ -44,7 +49,10 @@ def _apply_overrides(base_object, overrides):
 
     elif isinstance(overrides, dict):
         if isinstance(base_object, dict):
-            result = {k: v for k, v in base_object.items()}
+            # Reuse the base object as the result to preserve its type:
+            # Eg: ImplicitDict and its subtypes implement dict, and we
+            # need to preserve their type.
+            result = base_object
         else:
             raise ValueError(
                 f"Attempted to override field with type {type(base_object)} with type {type(overrides)} ({json.dumps(base_object)} -> {json.dumps(overrides)})"

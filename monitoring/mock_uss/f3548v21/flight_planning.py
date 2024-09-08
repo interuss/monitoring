@@ -4,25 +4,24 @@ from typing import Optional, List, Callable, Dict, Tuple
 
 import arrow
 import requests
+from uas_standards.astm.f3548.v21 import api as f3548_v21
+from uas_standards.astm.f3548.v21.constants import OiMaxVertices, OiMaxPlanHorizonDays
+from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.config import KEY_BASE_URL
+from monitoring.mock_uss.f3548v21 import utm_client
+from monitoring.mock_uss.flights.database import FlightRecord, db
+from monitoring.monitorlib.clients import scd as scd_client
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     FlightInfo,
 )
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geo import AltitudeDatum, Volume3D, Altitude, DistanceUnits
-from monitoring.monitorlib.scd import priority_of
-from monitoring.uss_qualifier.resources.overrides import apply_overrides
-from uas_standards.astm.f3548.v21 import api as f3548_v21
-from uas_standards.astm.f3548.v21.constants import OiMaxVertices, OiMaxPlanHorizonDays
-from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
-
-from monitoring.mock_uss.f3548v21 import utm_client
-from monitoring.mock_uss.flights.database import FlightRecord, db
-from monitoring.monitorlib.clients import scd as scd_client
 from monitoring.monitorlib.geotemporal import Volume4DCollection, Volume4D
 from monitoring.monitorlib.locality import Locality
+from monitoring.monitorlib.scd import priority_of
+from monitoring.uss_qualifier.resources.overrides import apply_overrides
 
 
 class PlanningError(Exception):
@@ -363,6 +362,10 @@ def op_intent_from_flightrecord(
             op_intent, mod_op_sharing_behavior.modify_fields, parse_result=False
         )
 
+    # TODO Sanity checks while working on this, consider removing before merging,
+    # alternatively, keep the check and ensure the exception is properly surfaced
+    if not type(op_intent) == f3548_v21.OperationalIntent:
+        raise Exception(f"Expected OperationalIntent, got {type(op_intent)} instead")
     return op_intent
 
 
