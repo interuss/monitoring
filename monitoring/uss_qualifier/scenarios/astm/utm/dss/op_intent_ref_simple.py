@@ -87,7 +87,7 @@ class OIRSimple(TestScenario):
         self._setup_case()
 
         self.begin_test_case("Deletion requires correct OVN")
-        # self._step_attempt_delete_missing_ovn()
+        self._step_attempt_delete_missing_ovn()
         self._step_attempt_delete_incorrect_ovn()
         self.end_test_case()
 

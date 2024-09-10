@@ -47,7 +47,7 @@ it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm
 
 ### Attempt deletion with incorrect OVN test step
 
-This step verifies that an existing OIR cannot be deleted with a missing or incorrect OVN.
+This step verifies that an existing OIR cannot be deleted with an incorrect OVN.
 
 #### 🛑 Request to delete OIR with incorrect OVN fails check
 
