@@ -9,7 +9,7 @@
 #
 # This image is intended to be built from the repository root context/folder.
 
-FROM python:3.12-slim
+FROM python:3.12.6-slim
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
 # Install system tools

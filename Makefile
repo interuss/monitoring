@@ -120,7 +120,8 @@ restart-all: stop-uss-mocks down-locally start-locally start-uss-mocks
 restart-uss-mocks: stop-uss-mocks start-uss-mocks
 
 # To be run locally whenever a direct dependency has been updated in requirements.in
-# --allow-unsafe allows us to pin setuptools
+# --allow-unsafe allows us to pin setuptools, without it we run into issues
+# such as https://github.com/interuss/monitoring/issues/768
 .PHONY: update-pinned-dependencies
 update-pinned-dependencies:
 	./scripts/pip_tools/pip_compile.sh \

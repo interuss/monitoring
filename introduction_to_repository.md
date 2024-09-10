@@ -54,3 +54,5 @@ When `requirements.in` is updated, the pinned dependencies must be updated by ru
 ```bash
 make update-pinned-dependencies
 ```
+
+Please note that we invoke `pip-tools` with the `--allow-unsafe` option to avoid issues such as https://github.com/interuss/monitoring/issues/768
