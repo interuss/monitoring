@@ -13,4 +13,4 @@ is expected to trigger the creation of a new implicit subscription.
 
 If the DSS does not create the implicit subscription, it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../../requirements/astm/f3548/v21.md)**.
 
-## [Correct temporal parameters](implicit_correct.md)
+## [Correct temporal parameters](implicit_correct_exact.md)
