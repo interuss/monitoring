@@ -355,10 +355,18 @@ class AuthenticationValidation(TestScenario):
 
     def _ensure_test_entities_dont_exist(self):
 
-        # Drop OIR's first: subscriptions may be tied to them and can't be deleted
-        # as long as they exist
-        test_step_fragments.cleanup_op_intent(self, self._scd_dss, self._test_id)
-        test_step_fragments.cleanup_sub(self, self._scd_dss, self._test_id)
+        if self._scd_dss:
+            # Drop OIR's first: subscriptions may be tied to them and can't be deleted
+            # as long as they exist
+            test_step_fragments.cleanup_op_intent(self, self._scd_dss, self._test_id)
+            test_step_fragments.cleanup_sub(self, self._scd_dss, self._test_id)
+
+        if self._constraints_dss:
+            test_step_fragments.cleanup_constraint_ref(
+                self,
+                self._constraints_dss,
+                self._test_id,
+            )
 
         # Make sure the test ID for uss availability is set to 'Unknown'
         # if we are testing availabilities
@@ -366,11 +374,12 @@ class AuthenticationValidation(TestScenario):
             self._ensure_availability_is_unknown()
 
     def _ensure_no_active_subs_exist(self):
-        test_step_fragments.cleanup_active_subs(
-            self,
-            self._scd_dss,
-            self._planning_area_volume4d,
-        )
+        if self._scd_dss:
+            test_step_fragments.cleanup_active_subs(
+                self,
+                self._scd_dss,
+                self._planning_area_volume4d,
+            )
 
     def _ensure_availability_is_unknown(self):
 
