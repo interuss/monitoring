@@ -361,7 +361,9 @@ class AuthenticationValidation(TestScenario):
         test_step_fragments.cleanup_sub(self, self._scd_dss, self._test_id)
 
         # Make sure the test ID for uss availability is set to 'Unknown'
-        self._ensure_availability_is_unknown()
+        # if we are testing availabilities
+        if self._availability_dss:
+            self._ensure_availability_is_unknown()
 
     def _ensure_no_active_subs_exist(self):
         test_step_fragments.cleanup_active_subs(
