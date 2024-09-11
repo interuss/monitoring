@@ -55,6 +55,12 @@ class V1FlightPlannerClient(FlightPlannerClient):
             for k, v in additional_fields.items():
                 req[k] = v
 
+        # We record the flight regardless of the outcome of the query that will be executed
+        # below. This should ward off unexpected exceptions, timeouts or error responses returned
+        # by the server despite the flight having been created.
+        # The cleanup logic supports cleanup attempts for flights that do not exist.
+        self.created_flight_ids.add(flight_plan_id)
+
         op = api.OPERATIONS[api.OperationID.UpsertFlightPlan]
         url = op.path.format(flight_plan_id=flight_plan_id)
         query = query_and_describe(
@@ -66,13 +72,6 @@ class V1FlightPlannerClient(FlightPlannerClient):
             participant_id=self.participant_id,
             query_type=QueryType.InterUSSFlightPlanningV1UpsertFlightPlan,
         )
-        if query.status_code != 999:
-            # We record  the flight in any situation where there might
-            # be a small chance that it was created, as a non-success HTTP code
-            # does not guarantee that a flight has not been injected,
-            # and dangling flights tend to cause issues with other tests.
-            self.created_flight_ids.add(flight_plan_id)
-
         if query.status_code != 200 and query.status_code != 201:
             raise PlanningActivityError(
                 f"Attempt to plan flight returned status {query.status_code} rather than 200 as expected",
