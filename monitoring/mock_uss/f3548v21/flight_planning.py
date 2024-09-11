@@ -362,10 +362,12 @@ def op_intent_from_flightrecord(
             op_intent, mod_op_sharing_behavior.modify_fields, parse_result=False
         )
 
-    # TODO Sanity checks while working on this, consider removing before merging,
-    # alternatively, keep the check and ensure the exception is properly surfaced
-    if not type(op_intent) == f3548_v21.OperationalIntent:
-        raise Exception(f"Expected OperationalIntent, got {type(op_intent)} instead")
+    # Sanity check on the result of apply_overrides
+    if not isinstance(op_intent, f3548_v21.OperationalIntent):
+        raise Exception(
+            f"Expected OperationalIntent, got {type(op_intent).__name__} instead. This is likely a bug in apply_overrides."
+        )
+
     return op_intent
 
 
