@@ -55,6 +55,12 @@ class V1FlightPlannerClient(FlightPlannerClient):
             for k, v in additional_fields.items():
                 req[k] = v
 
+        # We record the flight regardless of the outcome of the query that will be executed
+        # below. This should ward off unexpected exceptions, timeouts or error responses returned
+        # by the server despite the flight having been created.
+        # The cleanup logic supports cleanup attempts for flights that do not exist.
+        self.created_flight_ids.add(flight_plan_id)
+
         op = api.OPERATIONS[api.OperationID.UpsertFlightPlan]
         url = op.path.format(flight_plan_id=flight_plan_id)
         query = query_and_describe(
@@ -79,15 +85,6 @@ class V1FlightPlannerClient(FlightPlannerClient):
             raise PlanningActivityError(
                 f"Response to plan flight could not be parsed: {str(e)}", query
             )
-
-        created_status = [
-            FlightPlanStatus.Planned,
-            FlightPlanStatus.OkToFly,
-            FlightPlanStatus.OffNominal,
-        ]
-        if resp.planning_result == PlanningActivityResult.Completed:
-            if resp.flight_plan_status in created_status:
-                self.created_flight_ids.add(flight_plan_id)
 
         response = PlanningActivityResponse(
             flight_id=flight_plan_id,
@@ -139,7 +136,8 @@ class V1FlightPlannerClient(FlightPlannerClient):
             participant_id=self.participant_id,
             query_type=QueryType.InterUSSFlightPlanningV1DeleteFlightPlan,
         )
-        if query.status_code != 200:
+        # 404 is acceptable, as the end state we are interested in is already effective.
+        if query.status_code not in [200, 404]:
             raise PlanningActivityError(
                 f"Attempt to delete flight plan returned status {query.status_code} rather than 200 as expected",
                 query,

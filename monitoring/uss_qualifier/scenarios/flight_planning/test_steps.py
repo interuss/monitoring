@@ -2,20 +2,12 @@ import inspect
 from typing import Optional, Tuple, Iterable, Set, Dict
 
 import arrow
-
-from monitoring.monitorlib.geotemporal import end_time_of
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     BasicFlightPlanInformationUsageState,
     BasicFlightPlanInformationUasState,
 )
 
 from monitoring.monitorlib.clients.flight_planning.client import PlanningActivityError
-from monitoring.monitorlib.clients.flight_planning.planning import (
-    PlanningActivityResponse,
-    PlanningActivityResult,
-    FlightPlanStatus,
-)
-
 from monitoring.monitorlib.clients.flight_planning.client_v1 import (
     FlightPlannerClient,
 )
@@ -23,8 +15,13 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
     FlightInfo,
     ExecutionStyle,
 )
+from monitoring.monitorlib.clients.flight_planning.planning import (
+    PlanningActivityResponse,
+    PlanningActivityResult,
+    FlightPlanStatus,
+)
 from monitoring.monitorlib.fetch import QueryError, Query
-
+from monitoring.monitorlib.geotemporal import end_time_of
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
@@ -341,7 +338,6 @@ def request_flight(
 def cleanup_flight(
     flight_planner: FlightPlannerClient, flight_id: str
 ) -> Tuple[PlanningActivityResponse, Query]:
-
     try:
         resp = flight_planner.try_end_flight(flight_id, ExecutionStyle.IfAllowed)
     except PlanningActivityError as e:
@@ -431,10 +427,8 @@ def cleanup_flights(
                     )
                     continue
 
-                if (
-                    resp.activity_result == PlanningActivityResult.Completed
-                    and resp.flight_plan_status == FlightPlanStatus.Closed
-                ):
+                # A non-existing flight is considered successfully deleted
+                if query.status_code in [200, 404]:
                     removed.append(flight_id)
                 else:
                     check.record_failed(
