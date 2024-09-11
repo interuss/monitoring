@@ -34,7 +34,9 @@ Note that all baseline test configurations using local mocks can be run with `mo
 
 ### Artifacts
 
-Part of a configuration defines artifacts that should be produced by the test run.  The raw output of the test run is a raw TestRunReport, which can be produced with the `raw_report` artifact option and has the file name `report.json`.  Given a `report.json`, any other artifacts can be generated with [`make_artifacts.sh`](./make_artifacts.sh).  From the repository root, for instance: `monitoring/uss_qualifier/make_artifacts.sh configurations.personal.my_artifacts file://output/report.json`.  That command loads the report at monitoring/uss_qualifier/output/report.json along with the configuration at monitoring/configurations/personal/my_artifacts.yaml and write the artifacts defined in the my_artifacts configuration.
+Part of a configuration defines artifacts that should be produced by the test run.  The raw output of the test run is a raw TestRunReport, which can be produced with the `raw_report` artifact option and has the file name `report.json`.  Given a `report.json`, any other artifacts can be generated with [`make_artifacts.sh`](./make_artifacts.sh).  From the repository root, for instance: `monitoring/uss_qualifier/make_artifacts.sh file://output/report.json configurations.personal.my_artifacts`.  That command loads the report at monitoring/uss_qualifier/output/report.json along with the configuration at monitoring/configurations/personal/my_artifacts.yaml and write the artifacts defined in the my_artifacts configuration.
+
+To regenerate artifacts using just a raw TestRunReport (using the configuration embedded in the TestRunReport), only specify the report.  For example: `monitoring/uss_qualifier/make_artifacts.sh file://output/report.json`
 
 ### Local testing
 
