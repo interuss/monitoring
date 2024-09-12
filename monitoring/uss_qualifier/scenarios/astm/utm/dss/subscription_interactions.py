@@ -325,7 +325,7 @@ class SubscriptionInteractions(TestScenario):
                     "Get Subscription by ID",
                     other_dss.participant_id,
                 ) as check:
-                    if not other_dss_sub.success:
+                    if not (other_dss_sub.success or other_dss_sub.was_not_found):
                         check.record_failed(
                             summary="Get subscription query failed",
                             details=f"Failed to retrieved a subscription from DSS with code {other_dss_sub.status_code}: {other_dss_sub.error_message}",

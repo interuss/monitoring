@@ -140,7 +140,7 @@ class SubscriptionInteractionsDeletion(TestScenario):
                 ) as check:
                     other_dss_sub = other_dss.get_subscription(sub_id)
                     self.record_query(other_dss_sub)
-                    if not other_dss_sub.success:
+                    if not (other_dss_sub.success or other_dss_sub.was_not_found):
                         check.record_failed(
                             summary="Get subscription query failed",
                             details=f"Failed to retrieved a subscription from DSS with code {other_dss_sub.status_code}: {other_dss_sub.error_message}",

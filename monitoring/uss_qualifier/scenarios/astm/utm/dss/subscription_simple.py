@@ -417,7 +417,7 @@ class SubscriptionSimple(TestScenario):
             fetched_sub = self._dss.get_subscription(sub_id)
             self.record_query(fetched_sub)
             with self.check("Get subscription query succeeds", self._pid) as check:
-                if not fetched_sub.success:
+                if not (fetched_sub.success or fetched_sub.was_not_found):
                     check.record_failed(
                         "Get subscription by ID failed",
                         details=f"Get subscription by ID failed with status code {fetched_sub.status_code}",
