@@ -375,12 +375,21 @@ def constraints(
 class FetchedSubscription(fetch.Query):
     @property
     def success(self) -> bool:
+        """Returns true if a subscription could be successfully fetched."""
         return not self.errors
+
+    @property
+    def was_not_found(self) -> bool:
+        """
+        Returns true if the subscription was not found.
+        Any http return code different from 404 will cause this to be False.
+        """
+        return self.status_code == 404
 
     @property
     def errors(self) -> List[str]:
         if self.status_code == 404:
-            return []
+            return ["Subscription not found"]
         if self.status_code != 200:
             return ["Request to get Subscription failed ({})".format(self.status_code)]
         if self.json_result is None:

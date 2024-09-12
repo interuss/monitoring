@@ -151,7 +151,7 @@ def unsubscribe_rid(
 def unsubscribe_scd(subscription_id: str, scd_client: UTMClientSession) -> None:
     logger = context.tracer_logger
     get_result = fetch.scd.get_subscription(scd_client, subscription_id)
-    if not get_result.success:
+    if not (get_result.success or get_result.was_not_found):
         logfile = logger.log_new(
             SCDUnsubscribe(
                 existing_subscription=get_result,
