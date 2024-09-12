@@ -151,7 +151,7 @@ class OIRSimple(TestScenario):
             except QueryError as qe:
                 self.record_queries(qe.queries)
                 if qe.cause_status_code in [400 or 409]:
-                    # An empty OVN can be seen as both an incorrect parameter as well as a conflict
+                    # An empty OVN cen be seen as both an incorrect parameter as well as a conflict
                     # because the value is incorrect: we accept both a 400 and 409 return code here.
                     pass
                 else:
@@ -216,19 +216,19 @@ class OIRSimple(TestScenario):
                 # We don't expect the reach this point:
                 check.record_failed(
                     summary="OIR Mutation with missing OVN was not expected to succeed",
-                    details=f"Was expecting an HTTP 400 or 409 response because of a missing OVN, but got {query.status_code} instead",
+                    details=f"Was expecting an HTTP 400, 404 or 409 response because of a missing OVN, but got {query.status_code} instead",
                     query_timestamps=[query.request.timestamp],
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code in [400, 409]:
-                    # An empty OVN can be seen as both an incorrect parameter as well as a conflict
-                    # because the value is incorrect: we accept both a 400 and 409 return code here.
+                if qe.cause_status_code in [400, 404, 409]:
+                    # An empty OVN can be seen as:
+                    # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
                     pass
                 else:
                     check.record_failed(
                         summary="OIR Mutation with missing OVN failed for unexpected reason",
-                        details=f"Was expecting an HTTP 400 or 409 response because of a missing OVN, but got {qe.cause_status_code} instead",
+                        details=f"Was expecting an HTTP 400, 404 or 409 response because of a missing OVN, but got {qe.cause_status_code} instead",
                         query_timestamps=qe.query_timestamps,
                     )
         self.end_test_step()
