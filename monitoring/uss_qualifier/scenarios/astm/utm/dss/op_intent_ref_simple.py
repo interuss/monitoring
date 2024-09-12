@@ -145,19 +145,19 @@ class OIRSimple(TestScenario):
                 # We don't expect the reach this point:
                 check.record_failed(
                     summary="OIR Deletion with empty OVN was not expected to succeed",
-                    details=f"Was expecting an HTTP 400 or 409 response because of an empty OVN, but got {q.status_code} instead",
+                    details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {q.status_code} instead",
                     query_timestamps=[q.request.timestamp],
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code in [400 or 409]:
-                    # An empty OVN cen be seen as both an incorrect parameter as well as a conflict
-                    # because the value is incorrect: we accept both a 400 and 409 return code here.
+                if qe.cause_status_code in [400, 404, 409]:
+                    # An empty OVN can be seen as:
+                    # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
                     pass
                 else:
                     check.record_failed(
                         summary="OIR Deletion with empty OVN failed for unexpected reason",
-                        details=f"Was expecting an HTTP 400 or 409 response because of an empty OVN, but got {qe.cause_status_code} instead",
+                        details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {qe.cause_status_code} instead",
                         query_timestamps=qe.query_timestamps,
                     )
 
