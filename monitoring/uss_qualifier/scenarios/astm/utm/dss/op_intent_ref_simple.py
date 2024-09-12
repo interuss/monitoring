@@ -91,6 +91,11 @@ class OIRSimple(TestScenario):
         self._step_attempt_delete_incorrect_ovn()
         self.end_test_case()
 
+        self.begin_test_case("Mutation requires correct OVN")
+        self._step_attempt_mutation_missing_ovn()
+        self._step_attempt_mutation_incorrect_ovn()
+        self.end_test_case()
+
         self.end_test_scenario()
 
     def _step_create_oir(self):
@@ -190,6 +195,81 @@ class OIRSimple(TestScenario):
 
         self.end_test_step()
 
+    def _step_attempt_mutation_missing_ovn(self):
+
+        self.begin_test_step("Attempt mutation with missing OVN")
+
+        oir_params = self._test_params_for_current_time()
+        with self.check(
+            "Request to mutate OIR with empty OVN fails", self._pid
+        ) as check:
+            try:
+                _, _, query = self._dss.put_op_intent(
+                    extents=oir_params.extents,
+                    key=oir_params.key,
+                    state=oir_params.state,
+                    base_url=oir_params.uss_base_url,
+                    oi_id=self._oir_id,
+                    ovn="",
+                )
+                self.record_query(query)
+                # We don't expect the reach this point:
+                check.record_failed(
+                    summary="OIR Mutation with missing OVN was not expected to succeed",
+                    details=f"Was expecting an HTTP 400, 404 or 409 response because of a missing OVN, but got {query.status_code} instead",
+                    query_timestamps=[query.request.timestamp],
+                )
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                if qe.cause_status_code in [400, 404, 409]:
+                    # An empty OVN can be seen as:
+                    # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
+                    pass
+                else:
+                    check.record_failed(
+                        summary="OIR Mutation with missing OVN failed for unexpected reason",
+                        details=f"Was expecting an HTTP 400, 404 or 409 response because of a missing OVN, but got {qe.cause_status_code} instead",
+                        query_timestamps=qe.query_timestamps,
+                    )
+        self.end_test_step()
+
+    def _step_attempt_mutation_incorrect_ovn(self):
+
+        self.begin_test_step("Attempt mutation with incorrect OVN")
+
+        oir_params = self._test_params_for_current_time()
+        with self.check(
+            "Request to mutate OIR with incorrect OVN fails", self._pid
+        ) as check:
+            try:
+                _, _, query = self._dss.put_op_intent(
+                    extents=oir_params.extents,
+                    key=oir_params.key,
+                    state=oir_params.state,
+                    base_url=oir_params.uss_base_url,
+                    oi_id=self._oir_id,
+                    ovn="ThisIsAnIncorrectOVN",
+                )
+                self.record_query(query)
+                # We don't expect the reach this point:
+                check.record_failed(
+                    summary="OIR Mutation with incorrect OVN was not expected to succeed",
+                    details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {query.status_code} instead",
+                    query_timestamps=[query.request.timestamp],
+                )
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                if qe.cause_status_code == 409:
+                    pass
+                else:
+                    check.record_failed(
+                        summary="OIR Mutation with incorrect OVN failed for unexpected reason",
+                        details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {qe.cause_status_code} instead",
+                        query_timestamps=qe.query_timestamps,
+                    )
+
+        self.end_test_step()
+
     def _setup_case(self):
         self.begin_test_case("Setup")
         # Multiple runs of the scenario seem to rely on the same instance of it:
@@ -225,3 +305,13 @@ class OIRSimple(TestScenario):
         self.begin_cleanup()
         self._ensure_clean_workspace_step()
         self.end_cleanup()
+
+    def _test_params_for_current_time(self):
+        return self._planning_area.get_new_operational_intent_ref_params(
+            key=[],
+            state=OperationalIntentState.Accepted,
+            uss_base_url=self._planning_area.base_url,
+            time_start=datetime.now() - timedelta(seconds=10),
+            time_end=datetime.now() + timedelta(minutes=20),
+            subscription_id=None,
+        )

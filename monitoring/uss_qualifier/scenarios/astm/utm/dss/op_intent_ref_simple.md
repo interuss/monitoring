@@ -54,4 +54,26 @@ This step verifies that an existing OIR cannot be deleted with an incorrect OVN.
 If the DSS under test allows the qualifier to delete an existing OIR with a request that provided an incorrect OVN,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
 
+## Mutation requires correct OVN test case
+
+Test DSS behavior when mutation requests are not providing the required OVN.
+
+### Attempt mutation with missing OVN test step
+
+This step verifies that an existing OIR cannot be mutated with a missing OVN.
+
+#### 🛑 Request to mutate OIR with empty OVN fails check
+
+If the DSS under test allows the qualifier to mutate an existing OIR with a request that provided an empty OVN,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
+
+### Attempt mutation with incorrect OVN test step
+
+This step verifies that an existing OIR cannot be mutated with an incorrect OVN.
+
+#### 🛑 Request to mutate OIR with incorrect OVN fails check
+
+If the DSS under test allows the qualifier to mutate an existing OIR with a request that provided an incorrect OVN,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
+
 ## [Cleanup](./clean_workspace.md)
