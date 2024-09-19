@@ -12,7 +12,7 @@ Most mock systems depend on a standards-compliant interoperability ecosystem in 
 
 To deploy a local interoperability ecosystem: `make start-locally`
 
-To determine the status of a local interoperability ecosystem, run `docker container ls` and inspect the results for the three containers constituting the ecosystem (see diagram above).  Alternately/additionally, run [`wait_for_local_infra.sh`](../../build/dev/wait_for_local_infra.sh) to see if it completes successfully.
+To determine the status of a local interoperability ecosystem, run `docker container ls` and inspect the results for the three containers constituting the ecosystem (see diagram above).
 
 To tear down a local interoperability ecosystem: `make down-locally`
 
