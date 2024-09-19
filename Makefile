@@ -62,7 +62,6 @@ tag:
 .PHONY: start-locally
 start-locally:
 	build/dev/run_locally.sh up -d
-	build/dev/wait_for_local_infra.sh
 
 .PHONY: probe-locally
 probe-locally:
