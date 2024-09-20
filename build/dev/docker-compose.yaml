@@ -1,6 +1,6 @@
 # Brings up a local interoperability ecosystem consisting of a DSS instance and dummy OAuth server.
 
-# To bring up this system, run ./run_locally.sh then optionally ./wait_for_local_infra.sh to wait for the servers to start.
+# To bring up this system, run ./run_locally.sh up -d and wait for all containers to succeed or become healthy.
 
 version: '3.8'
 
@@ -18,26 +18,27 @@ services:
     restart: always
     networks:
       - dss_internal_network
+    healthcheck:
+      test: curl -f 'http://localhost:8080/health?ready=1' || exit 1
+      interval: 3m
+      start_period: 30s
+      start_interval: 5s
 
   rid_bootstrapper:
     image: interuss/dss:v0.18.0-rc1
-    volumes:
-      - dss_component_coordination:/var/dss_component_coordination
-      - $PWD/startup:/startup:ro
-    entrypoint: /startup/rid_bootstrapper.sh
+    command: /usr/bin/db-manager --schemas_dir=/db-schemas/rid --db_version "latest" --cockroach_host crdb
     depends_on:
-      - crdb
+      crdb:
+        condition: service_healthy
     networks:
       - dss_internal_network
 
   scd_bootstrapper:
     image: interuss/dss:v0.18.0-rc1
-    volumes:
-      - dss_component_coordination:/var/dss_component_coordination
-      - $PWD/startup:/startup:ro
-    entrypoint: /startup/scd_bootstrapper.sh
+    command: /usr/bin/db-manager --schemas_dir=/db-schemas/scd --db_version "latest" --cockroach_host crdb
     depends_on:
-      - crdb
+      crdb:
+        condition: service_healthy
     networks:
       - dss_internal_network
 
@@ -46,8 +47,7 @@ services:
     image: interuss/dss:v0.18.0-rc1
     volumes:
       - $PWD/../test-certs:/var/test-certs:ro
-      - dss_component_coordination:/var/dss_component_coordination
-      - $PWD/startup:/startup:ro
+      - $PWD/startup/core_service.sh:/startup/core_service.sh:ro
     command: /startup/core_service.sh ${DEBUG_ON:-0}
     expose:
       - 8082
@@ -55,13 +55,20 @@ services:
       - "4000:4000"
       - "8082:80"
     depends_on:
-      - rid_bootstrapper
-      - scd_bootstrapper
+      rid_bootstrapper:
+        condition: service_completed_successfully
+      scd_bootstrapper:
+        condition: service_completed_successfully
     networks:
       dss_internal_network:
       interop_ecosystem_network:
         aliases:
           - dss.uss2.localutm
+    healthcheck:
+      test: wget -O - 'http://localhost/healthy' || exit 1
+      interval: 3m
+      start_period: 30s
+      start_interval: 5s
 
   oauth:
     hostname: oauth.authority.localutm
@@ -73,7 +80,11 @@ services:
       - "8085:8085"
     networks:
       - interop_ecosystem_network
-
+    healthcheck:
+      test: wget -O - 'http://localhost:8085/token?intended_audience=-&scope=-' || exit 1
+      interval: 3m
+      start_period: 30s
+      start_interval: 5s
 
 networks:
   dss_internal_network:
