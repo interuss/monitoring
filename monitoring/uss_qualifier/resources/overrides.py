@@ -1,3 +1,4 @@
+import copy
 import json
 from typing import TypeVar
 from implicitdict import ImplicitDict
@@ -26,6 +27,11 @@ def apply_overrides(
 
 
 def _apply_overrides(base_object, overrides):
+    """
+    recursively apply the passed overrides to base_object.
+    Note that the passed object won't be modified and copies made whenever necessary.
+    """
+
     if base_object is None:
         return overrides
 
@@ -44,7 +50,8 @@ def _apply_overrides(base_object, overrides):
 
     elif isinstance(overrides, dict):
         if isinstance(base_object, dict):
-            result = {k: v for k, v in base_object.items()}
+            # We do a deep-copy of the base-object to preserve its type
+            result = copy.deepcopy(base_object)
         else:
             raise ValueError(
                 f"Attempted to override field with type {type(base_object)} with type {type(overrides)} ({json.dumps(base_object)} -> {json.dumps(overrides)})"
