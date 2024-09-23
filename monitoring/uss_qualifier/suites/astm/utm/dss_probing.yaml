@@ -12,6 +12,13 @@ resources:
   test_exclusions: resources.dev.TestExclusionsResource?
 actions:
   - test_scenario:
+      scenario_type: scenarios.astm.utm.dss.OIRImplicitSubHandling
+      resources:
+          dss: dss
+          id_generator: id_generator
+          planning_area: planning_area
+          utm_client_identity: utm_client_identity
+  - test_scenario:
       scenario_type: scenarios.astm.utm.dss.OIRSimple
       resources:
         dss: dss

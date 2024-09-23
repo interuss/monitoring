@@ -261,6 +261,7 @@ class DSSInstance(object):
         ovn: Optional[str] = None,
         subscription_id: Optional[str] = None,
         force_query_scopes: Optional[Scope] = None,
+        force_no_implicit_subscription: bool = False,
     ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query,]:
         """
         Create or update an operational intent.
@@ -271,6 +272,8 @@ class DSSInstance(object):
 
         Scenarios that wish to test the behavior of the DSS when an incorrect scope is used can force the scope
         to be with the 'force_query_scope' parameter.
+
+        If 'force_no_implicit_subscription' is True, no implicit subscription will be requested under any circumstance.
 
         Returns:
              the operational intent reference created or updated, the subscribers to notify, the query
@@ -313,7 +316,7 @@ class DSSInstance(object):
             uss_base_url=base_url,
             subscription_id=subscription_id,
             new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url)
-            if subscription_id is None
+            if subscription_id is None and force_no_implicit_subscription is False
             else None,
         )
         query = query_and_describe(
@@ -674,6 +677,7 @@ class DSSInstance(object):
         """
         Retrieve a subscription from the DSS, using only its ID
         """
+        # TODO should be migrated to the pattern where failures raise a QueryError
         self._uses_scope(Scope.StrategicCoordination)
         return fetch.get_subscription(
             self.client,
