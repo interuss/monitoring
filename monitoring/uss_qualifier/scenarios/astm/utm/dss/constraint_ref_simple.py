@@ -84,6 +84,11 @@ class CRSimple(TestScenario):
         self._step_attempt_delete_incorrect_ovn()
         self.end_test_case()
 
+        self.begin_test_case("Mutation requires correct OVN")
+        self._step_attempt_mutation_missing_ovn()
+        self._step_attempt_mutation_incorrect_ovn()
+        self.end_test_case()
+
         self.end_test_scenario()
 
     def _step_create_cr(self):
@@ -125,19 +130,19 @@ class CRSimple(TestScenario):
                 # We don't expect the reach this point:
                 check.record_failed(
                     summary="CR Deletion with empty OVN was not expected to succeed",
-                    details=f"Was expecting an HTTP 400 or 409 response because of an empty OVN, but got {q.status_code} instead",
+                    details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {q.status_code} instead",
                     query_timestamps=[q.request.timestamp],
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code in [400, 409]:
-                    # An empty OVN cen be seen as both an incorrect parameter as well as a conflict
-                    # because the value is incorrect: we accept both a 400 and 409 return code here.
+                if qe.cause_status_code in [400, 404, 409]:
+                    # An empty OVN can be seen as:
+                    # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
                     pass
                 else:
                     check.record_failed(
                         summary="CR Deletion with empty OVN failed for unexpected reason",
-                        details=f"Was expecting an HTTP 400 or 409 response because of an empty OVN, but got {qe.cause_status_code} instead",
+                        details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {qe.cause_status_code} instead",
                         query_timestamps=qe.query_timestamps,
                     )
 
@@ -173,6 +178,83 @@ class CRSimple(TestScenario):
                         query_timestamps=qe.query_timestamps,
                     )
 
+        self.end_test_step()
+
+    def _step_attempt_mutation_missing_ovn(self):
+        self.begin_test_step("Attempt mutation with missing OVN")
+        cr_params = self._planning_area.get_new_constraint_ref_params(
+            time_start=datetime.now() - timedelta(seconds=10),
+            time_end=datetime.now() + timedelta(minutes=20),
+        )
+
+        with self.check(
+            "Request to mutate CR with empty OVN fails", self._pid
+        ) as check:
+            try:
+                _, _, q = self._dss.put_constraint_ref(
+                    cr_id=self._cr_id,
+                    extents=cr_params.extents,
+                    uss_base_url=self._planning_area.base_url,
+                    ovn="",
+                )
+                self.record_query(q)
+                # We don't expect the reach this point:
+                check.record_failed(
+                    summary="CR mutation with empty OVN was not expected to succeed",
+                    details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {q.status_code} instead",
+                    query_timestamps=[q.request.timestamp],
+                )
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                if qe.cause_status_code in [400, 404, 409]:
+                    # An empty OVN can be seen as:
+                    # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
+                    pass
+                else:
+                    check.record_failed(
+                        summary="CR mutation with empty OVN failed for unexpected reason",
+                        details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {qe.cause_status_code} instead",
+                        query_timestamps=qe.query_timestamps,
+                    )
+
+        self.end_test_step()
+
+    def _step_attempt_mutation_incorrect_ovn(self):
+        self.begin_test_step("Attempt mutation with incorrect OVN")
+        cr_params = self._planning_area.get_new_constraint_ref_params(
+            time_start=datetime.now() - timedelta(seconds=10),
+            time_end=datetime.now() + timedelta(minutes=20),
+        )
+
+        with self.check(
+            "Request to mutate CR with incorrect OVN fails", self._pid
+        ) as check:
+            try:
+                _, _, q = self._dss.put_constraint_ref(
+                    cr_id=self._cr_id,
+                    extents=cr_params.extents,
+                    uss_base_url=self._planning_area.base_url,
+                    ovn="ThisIsAnIncorrectOVN",
+                )
+                self.record_query(q)
+                # We don't expect the reach this point:
+                check.record_failed(
+                    summary="CR mutation with incorrect OVN was not expected to succeed",
+                    details=f"Was expecting an HTTP 400 or 409 response because of an incorrect OVN, but got {q.status_code} instead",
+                    query_timestamps=[q.request.timestamp],
+                )
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                if qe.cause_status_code in [400, 409]:
+                    # An empty OVN cen be seen as both an incorrect parameter as well as a conflict
+                    # because the value is incorrect: we accept both a 400 and 409 return code here.
+                    pass
+                else:
+                    check.record_failed(
+                        summary="CR mutation with incorrect OVN failed for unexpected reason",
+                        details=f"Was expecting an HTTP 400 or 409 response because of an incorrect OVN, but got {qe.cause_status_code} instead",
+                        query_timestamps=qe.query_timestamps,
+                    )
         self.end_test_step()
 
     def _setup_case(self):
