@@ -1,11 +1,27 @@
 from typing import List, Optional, Tuple
 
+from uas_standards.astm.f3548.v21.api import OperationalIntentState
+
 from monitoring.monitorlib import fetch, scd
 from monitoring.monitorlib.clients import call_query_hooks
 from monitoring.monitorlib.fetch import QueryError, Query, QueryType
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21 import api
+
+
+def _scopes_for_state(state: OperationalIntentState) -> List[str]:
+    """
+    The scope required to set an OIR's state depends on the state itself: Contingent and Nonconforming
+    require the CMSA scope in addition to SC.
+    """
+    scopes = [scd.SCOPE_SC]
+    if (
+        state == OperationalIntentState.Contingent
+        or state == OperationalIntentState.Nonconforming
+    ):
+        scopes.append(scd.SCOPE_CM_SA)
+    return scopes
 
 
 # === DSS operations defined in ASTM API ===
@@ -52,8 +68,9 @@ def create_operational_intent_reference(
     url = "/dss/v1/operational_intent_references/{}".format(id)
     subject = f"createOperationalIntentReference to {url}"
     query = fetch.query_and_describe(
-        utm_client, "PUT", url, json=req, scopes=[scd.SCOPE_SC, scd.SCOPE_CM_SA]
+        utm_client, "PUT", url, json=req, scopes=_scopes_for_state(req.state)
     )
+
     if query.status_code != 200 and query.status_code != 201:
         raise QueryError(
             msg="{} failed {}:\n{}".format(
@@ -84,7 +101,7 @@ def update_operational_intent_reference(
     url = "/dss/v1/operational_intent_references/{}/{}".format(id, ovn)
     subject = f"updateOperationalIntentReference to {url}"
     query = fetch.query_and_describe(
-        utm_client, "PUT", url, json=req, scopes=[scd.SCOPE_SC, scd.SCOPE_CM_SA]
+        utm_client, "PUT", url, json=req, scopes=_scopes_for_state(req.state)
     )
     if query.status_code != 200 and query.status_code != 201:
         raise QueryError(
