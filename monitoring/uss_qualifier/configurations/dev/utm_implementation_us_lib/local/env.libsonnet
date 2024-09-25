@@ -17,7 +17,6 @@ function(participants) {
           'interuss.versioning.read_system_versions',
           // ASTM F3548-21 USS emulation roles
           'utm.strategic_coordination',
-          'utm.availability_arbitration',
         ],
       },
     },
