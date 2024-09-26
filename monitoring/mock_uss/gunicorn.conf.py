@@ -21,27 +21,36 @@ def when_ready(server: Arbiter):
     webapp.start_periodic_tasks_daemon()
 
 
+def _skip_logging(req: Request) -> bool:
+    # Status endpoint is polled constantly for liveness; to avoid filling logs, we don't log it
+    if req.path == "/status" and req.method == "GET":
+        return True
+    return False
+
+
 def pre_request(worker: Worker, req: Request):
     """gunicorn server hook called just before a worker processes the request."""
-    logger.debug(
-        "gunicorn pre_request from worker {} (OS PID {}): {} {}",
-        worker.pid,
-        os.getpid(),
-        req.method,
-        req.path,
-    )
+    if not _skip_logging(req):
+        logger.debug(
+            "gunicorn pre_request from worker {} (OS PID {}): {} {}",
+            worker.pid,
+            os.getpid(),
+            req.method,
+            req.path,
+        )
 
 
 def post_request(worker: Worker, req: Request, environ: dict, resp: Response):
     """gunicorn server hook called after a worker processes the request."""
-    logger.debug(
-        "gunicorn post_request from worker {} (OS PID {}): {} {} -> {}",
-        worker.pid,
-        os.getpid(),
-        req.method,
-        req.path,
-        resp.status_code,
-    )
+    if not _skip_logging(req):
+        logger.debug(
+            "gunicorn post_request from worker {} (OS PID {}): {} {} -> {}",
+            worker.pid,
+            os.getpid(),
+            req.method,
+            req.path,
+            resp.status_code,
+        )
 
 
 def worker_abort(worker: Worker):

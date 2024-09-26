@@ -76,6 +76,7 @@ def require_config_value(config_key: str) -> None:
 
 from monitoring.mock_uss import config
 from monitoring.mock_uss import routes as basic_routes
+from monitoring.mock_uss import logging
 
 if SERVICE_GEOAWARENESS in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_GEOAWARENESS)
