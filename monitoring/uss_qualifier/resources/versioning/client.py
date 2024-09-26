@@ -37,8 +37,10 @@ class VersionProvidersResource(Resource[VersionProvidersSpecification]):
     def __init__(
         self,
         specification: VersionProvidersSpecification,
+        resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
+        super(VersionProvidersResource, self).__init__(specification, resource_origin)
         auth_adapter.assert_scopes_available(
             {
                 Scope.ReadSystemVersions: "read and record the version of each system under test",

@@ -106,8 +106,10 @@ class NetRIDObserversResource(Resource[NetRIDObserversSpecification]):
     def __init__(
         self,
         specification: NetRIDObserversSpecification,
+        resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
+        super(NetRIDObserversResource, self).__init__(specification, resource_origin)
         auth_adapter.assert_scopes_available(
             scopes_required={
                 Scope.Observe: "observe RID flights visible to user from USSs under test"

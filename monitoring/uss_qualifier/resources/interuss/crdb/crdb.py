@@ -28,7 +28,9 @@ class CockroachDBNodeResource(Resource[CockroachDBNodeSpecification]):
     def __init__(
         self,
         specification: CockroachDBNodeSpecification,
+        resource_origin: str,
     ):
+        super(CockroachDBNodeResource, self).__init__(specification, resource_origin)
         self._specification = specification
 
     def get_client(self) -> CockroachDBNode:
@@ -56,12 +58,14 @@ class CockroachDBClusterResource(Resource[CockroachDBClusterSpecification]):
     def __init__(
         self,
         specification: CockroachDBClusterSpecification,
+        resource_origin: str,
     ):
+        super(CockroachDBClusterResource, self).__init__(specification, resource_origin)
         self.nodes = [
             CockroachDBNodeResource(
-                specification=s,
+                specification=s, resource_origin=f"node {i + 1} in {resource_origin}"
             )
-            for s in specification.nodes
+            for i, s in enumerate(specification.nodes)
         ]
 
 

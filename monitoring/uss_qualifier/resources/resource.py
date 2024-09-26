@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import get_type_hints, Dict, Generic, Set, Tuple, TypeVar, Type
+from typing import get_type_hints, Dict, Generic, Set, Tuple, TypeVar, Type, Optional
 
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -16,18 +16,22 @@ SpecificationType = TypeVar("SpecificationType", bound=ImplicitDict)
 
 
 class Resource(ABC, Generic[SpecificationType]):
-    @abstractmethod
-    def __init__(self, specification: SpecificationType, **dependencies):
+    resource_origin: str
+    """The origin of this resource (usually the resource name in the top-level resource pool for a test configuration,
+    though occasionally local to a test suite, derived from another resource, default, or something else)"""
+
+    def __init__(
+        self, specification: SpecificationType, resource_origin: str, **dependencies
+    ):
         """Create an instance of the resource.
 
         Concrete subclasses of Resource must implement their constructor according to this specification.
 
         :param specification: A serializable (subclass of implicitdict.ImplicitDict) specification for how to create the resource.
+        :param resource_origin: The location where this resource originated.
         :param dependencies: If this resource depends on any other resources, each of the other dependencies should be declared as an additional typed parameter to the constructor.  Each parameter type should be a class that is a subclass of Resource.
         """
-        raise NotImplementedError(
-            "A concrete resource type must implement __init__ method"
-        )
+        self.resource_origin = resource_origin
 
     def is_type(self, resource_type: str) -> bool:
         specified_type = inspection.get_module_object_by_name(
@@ -49,6 +53,7 @@ class MissingResourceError(ValueError):
 
 def create_resources(
     resource_declarations: Dict[ResourceID, ResourceDeclaration],
+    resource_source: str,
     stop_when_not_created: bool = False,
 ) -> Dict[ResourceID, ResourceType]:
     """Instantiate all resources from the provided declarations.
@@ -58,6 +63,7 @@ def create_resources(
 
     Args:
         resource_declarations: Mapping between resource ID and declaration for that resource.
+        resource_source: Where this set of resource declarations originate.
         stop_when_not_created: If true, reraise any MissingResourceErrors encountered while creating resources.
 
     Returns: Mapping between resource ID and an instance of that declared resource.
@@ -97,7 +103,10 @@ def create_resources(
 
             # All dependencies met; try to create resource
             try:
-                resource_pool[name] = _make_resource(declaration, resource_pool)
+                resource_origin = f"{name} in {resource_source}"
+                resource_pool[name] = _make_resource(
+                    declaration, resource_pool, resource_origin
+                )
                 resources_created += 1
             except MissingResourceError as e:
                 logger.warning(f"Could not create resource `{name}` because {e}")
@@ -155,25 +164,27 @@ def get_resource_types(
             continue
         if arg_name == "self":
             continue
+        if arg_name == "resource_origin":
+            continue
         if arg_name == "specification":
             specification_type = arg_type
             continue
         if arg_name not in declaration.dependencies:
             raise ValueError(
-                'Resource declaration for {} is missing a source for dependency "{}"'.format(
-                    declaration.resource_type, arg_type
-                )
+                f'Resource declaration for {declaration.resource_type} is missing a source for dependency "{arg_name}" ({arg_type.__name__})'
             )
 
     return resource_type, specification_type
 
 
 def _make_resource(
-    declaration: ResourceDeclaration, resource_pool: Dict[ResourceID, Resource]
+    declaration: ResourceDeclaration,
+    resource_pool: Dict[ResourceID, Resource],
+    resource_origin: str,
 ) -> Resource:
     resource_type, specification_type = get_resource_types(declaration)
 
-    constructor_args = {}
+    constructor_args = {"resource_origin": resource_origin}
     for arg_name, pool_source in declaration.dependencies.items():
         if pool_source not in resource_pool:
             raise ValueError(
@@ -189,7 +200,8 @@ def _make_resource(
         declaration.specification = specification
         constructor_args["specification"] = specification
 
-    return resource_type(**constructor_args)
+    resource = resource_type(**constructor_args)
+    return resource
 
 
 def make_child_resources(

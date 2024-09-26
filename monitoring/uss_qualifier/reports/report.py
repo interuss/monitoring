@@ -19,6 +19,7 @@ from monitoring.uss_qualifier.reports.capability_definitions import (
     JSONPathExpression,
 )
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
+from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
 
@@ -220,6 +221,9 @@ class TestScenarioReport(ImplicitDict):
 
     documentation_url: str
     """URL at which this test scenario is described"""
+
+    resource_origins: Optional[Dict[ResourceID, str]]
+    """For each resource used by this test scenario, the place that resource originated."""
 
     notes: Optional[Dict[str, Note]]
     """Additional information about this scenario that may be useful"""

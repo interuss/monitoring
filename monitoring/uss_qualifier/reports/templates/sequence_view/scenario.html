@@ -17,6 +17,17 @@
     <h2>{{ test_scenario.name }}</h2>
   {% endif %}
   <h3>{{ test_scenario.type }}</h3>
+  <div id="resources_configuration_section" class="collapseable">
+    <div class="node_key" onclick="showHide(document.getElementById('resources_configuration_section'))"><h4>Resources</h4></div>
+    <div class="node_value">
+      <ul id="resource_origin_list">
+        {% for local_resource_id, resource_origin in test_scenario.resource_origins.items() %}
+          <li><a href="{{ test_scenario.url }}#{{ local_resource_id }}"><code>{{ local_resource_id }}</code></a> provided by <a href="./index.html#resources-configuration">{{ resource_origin }}</a></li>
+        {% endfor %}
+      </ul>
+      {% set collapsible.queries = collapsible.queries + ["resource_origin_list"] %}
+    </div>
+  </div>
   {% if kml_file %}
     <h4>
       <a href="{{ kml_file }}">KML visualization</a>

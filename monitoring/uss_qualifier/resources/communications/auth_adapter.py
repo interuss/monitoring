@@ -32,7 +32,8 @@ class AuthAdapterResource(Resource[AuthAdapterSpecification]):
     adapter: infrastructure.AuthAdapter
     scopes: Set[str]
 
-    def __init__(self, specification: AuthAdapterSpecification):
+    def __init__(self, specification: AuthAdapterSpecification, resource_origin: str):
+        super(AuthAdapterResource, self).__init__(specification, resource_origin)
         if (
             "environment_variable_containing_auth_spec" in specification
             and specification.environment_variable_containing_auth_spec

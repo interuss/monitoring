@@ -13,5 +13,8 @@ class FeatureCheckTableSpecification(ImplicitDict):
 class FeatureCheckTableResource(Resource[FeatureCheckTableSpecification]):
     table: FeatureCheckTable
 
-    def __init__(self, specification: FeatureCheckTableSpecification):
+    def __init__(
+        self, specification: FeatureCheckTableSpecification, resource_origin: str
+    ):
+        super(FeatureCheckTableResource, self).__init__(specification, resource_origin)
         self.table = specification.table

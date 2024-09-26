@@ -20,5 +20,8 @@ class EvaluationConfiguration(ImplicitDict):
 class EvaluationConfigurationResource(Resource[EvaluationConfiguration]):
     configuration: EvaluationConfiguration
 
-    def __init__(self, specification: EvaluationConfiguration):
+    def __init__(self, specification: EvaluationConfiguration, resource_origin: str):
+        super(EvaluationConfigurationResource, self).__init__(
+            specification, resource_origin
+        )
         self.configuration = specification

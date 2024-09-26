@@ -11,7 +11,9 @@ class LocalitySpecification(ImplicitDict):
 class LocalityResource(Resource[LocalitySpecification]):
     locality_code: LocalityCode
 
-    def __init__(self, specification: LocalitySpecification):
+    def __init__(self, specification: LocalitySpecification, resource_origin: str):
+        super(LocalityResource, self).__init__(specification, resource_origin)
+
         # Make sure provided code is valid
         Locality.from_locale(specification.locality_code)
 

@@ -27,8 +27,10 @@ class FlightPlannerResource(Resource[FlightPlannerSpecification]):
     def __init__(
         self,
         specification: FlightPlannerSpecification,
+        resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
+        super(FlightPlannerResource, self).__init__(specification, resource_origin)
         if (
             "scd_injection_base_url" in specification.flight_planner
             and specification.flight_planner.scd_injection_base_url
@@ -69,15 +71,19 @@ class FlightPlannersResource(Resource[FlightPlannersSpecification]):
     def __init__(
         self,
         specification: FlightPlannersSpecification,
+        resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
+        super(FlightPlannersResource, self).__init__(specification, resource_origin)
         self._specification = specification
         self._auth_adapter = auth_adapter
         self.flight_planners = [
             FlightPlannerResource(
-                FlightPlannerSpecification(flight_planner=p), auth_adapter
+                FlightPlannerSpecification(flight_planner=p),
+                f"instance {i + 1} in {resource_origin}",
+                auth_adapter,
             )
-            for p in specification.flight_planners
+            for i, p in enumerate(specification.flight_planners)
         ]
 
     def make_subset(self, select_indices: Iterable[int]) -> List[FlightPlannerResource]:
@@ -97,7 +103,14 @@ class FlightPlannerCombinationSelectorResource(
 ):
     _specification: FlightPlannerCombinationSelectorSpecification
 
-    def __init__(self, specification: FlightPlannerCombinationSelectorSpecification):
+    def __init__(
+        self,
+        specification: FlightPlannerCombinationSelectorSpecification,
+        resource_origin: str,
+    ):
+        super(FlightPlannerCombinationSelectorResource, self).__init__(
+            specification, resource_origin
+        )
         self._specification = specification
 
     def is_valid_combination(

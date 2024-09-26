@@ -702,8 +702,10 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     def __init__(
         self,
         specification: DSSInstanceSpecification,
+        resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
+        super(DSSInstanceResource, self).__init__(specification, resource_origin)
         self._specification = specification
         self._auth_adapter = auth_adapter
 
@@ -789,12 +791,15 @@ class DSSInstancesResource(Resource[DSSInstancesSpecification]):
     def __init__(
         self,
         specification: DSSInstancesSpecification,
+        resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
+        super(DSSInstancesResource, self).__init__(specification, resource_origin)
         self.dss_instances = [
             DSSInstanceResource(
                 specification=s,
+                resource_origin=f"instance {i + 1} in {resource_origin}",
                 auth_adapter=auth_adapter,
             )
-            for s in specification.dss_instances
+            for i, s in enumerate(specification.dss_instances)
         ]

@@ -10,5 +10,8 @@ class SystemIdentitySpecification(ImplicitDict):
 class SystemIdentityResource(Resource[SystemIdentitySpecification]):
     system_identity: str
 
-    def __init__(self, specification: SystemIdentitySpecification):
+    def __init__(
+        self, specification: SystemIdentitySpecification, resource_origin: str
+    ):
+        super(SystemIdentityResource, self).__init__(specification, resource_origin)
         self.system_identity = specification.system_identity

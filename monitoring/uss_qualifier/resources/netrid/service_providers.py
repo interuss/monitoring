@@ -80,8 +80,10 @@ class NetRIDServiceProviders(Resource[NetRIDServiceProvidersSpecification]):
     def __init__(
         self,
         specification: NetRIDServiceProvidersSpecification,
+        resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
+        super(NetRIDServiceProviders, self).__init__(specification, resource_origin)
         auth_adapter.assert_scopes_available(
             scopes_required={
                 SCOPE_RID_QUALIFIER_INJECT: "inject RID test flight data into USSs under test"

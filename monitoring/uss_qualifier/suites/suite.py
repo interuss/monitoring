@@ -241,7 +241,9 @@ class TestSuite(object):
         else:
             self.local_resources = {}
         if "local_resources" in self.definition and self.definition.local_resources:
-            local_resources = create_resources(self.definition.local_resources)
+            local_resources = create_resources(
+                self.definition.local_resources, self.declaration.type_name
+            )
             for local_resource_id, resource in local_resources.items():
                 if local_resource_id not in self.local_resources:
                     self.local_resources[local_resource_id] = resource
