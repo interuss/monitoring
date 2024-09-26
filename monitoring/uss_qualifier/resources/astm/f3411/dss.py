@@ -86,9 +86,12 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
         )
 
     @classmethod
-    def from_dss_instance(cls, dss_instance: DSSInstance) -> DSSInstanceResource:
+    def from_dss_instance(
+        cls, dss_instance: DSSInstance, resource_origin: str
+    ) -> DSSInstanceResource:
         self = cls.__new__(cls)
         self.dss_instance = dss_instance
+        self.resource_origin = resource_origin
         return self
 
 
