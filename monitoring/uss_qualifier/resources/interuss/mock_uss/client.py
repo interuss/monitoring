@@ -102,7 +102,6 @@ class MockUSSClient(object):
         url = "{}/mock_uss/interuss_logging/logs?from_time={}".format(
             self.base_url, from_time
         )
-        logger.debug(f"Getting interactions from {from_time} : {url}")
         query = fetch.query_and_describe(
             self.session,
             "GET",

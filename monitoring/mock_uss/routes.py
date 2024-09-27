@@ -4,6 +4,8 @@ from werkzeug.exceptions import HTTPException
 
 from monitoring.monitorlib import auth_validation, versioning
 from monitoring.mock_uss import webapp, enabled_services
+from monitoring.mock_uss.logging import disable_log_reporting_for_request
+from ..monitorlib.errors import stacktrace_string
 
 
 @webapp.route("/status")
@@ -23,6 +25,7 @@ def handle_exception(e):
     if isinstance(e, HTTPException):
         return e
     elif isinstance(e, auth_validation.InvalidScopeError):
+        disable_log_reporting_for_request()
         return (
             flask.jsonify(
                 {
@@ -33,6 +36,7 @@ def handle_exception(e):
             403,
         )
     elif isinstance(e, auth_validation.InvalidAccessTokenError):
+        disable_log_reporting_for_request()
         return flask.jsonify({"message": e.message}), 401
     elif isinstance(e, auth_validation.ConfigurationError):
         return (
@@ -43,10 +47,18 @@ def handle_exception(e):
         )
     elif isinstance(e, ValueError):
         traceback.print_exc()
-        return flask.jsonify({"message": str(e)}), 400
+        return (
+            flask.jsonify({"message": str(e), "stacktrace": stacktrace_string(e)}),
+            400,
+        )
     traceback.print_exc()
     return (
-        flask.jsonify({"message": "Unhandled {}: {}".format(type(e).__name__, str(e))}),
+        flask.jsonify(
+            {
+                "message": f"Unhandled {type(e).__name__}: {str(e)}",
+                "stacktrace": stacktrace_string(e),
+            }
+        ),
         500,
     )
 
