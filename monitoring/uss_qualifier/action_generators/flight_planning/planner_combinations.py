@@ -93,7 +93,8 @@ class FlightPlannerCombinations(
                 )
         else:
             combination_selector = FlightPlannerCombinationSelectorResource(
-                FlightPlannerCombinationSelectorSpecification()
+                FlightPlannerCombinationSelectorSpecification(),
+                "default flight planner combination selector",
             )
 
         self._actions = []

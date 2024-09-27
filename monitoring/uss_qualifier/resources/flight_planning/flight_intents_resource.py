@@ -18,7 +18,8 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
 class FlightIntentsResource(Resource[FlightIntentsSpecification]):
     _intent_collection: FlightIntentCollection
 
-    def __init__(self, specification: FlightIntentsSpecification):
+    def __init__(self, specification: FlightIntentsSpecification, resource_origin: str):
+        super(FlightIntentsResource, self).__init__(specification, resource_origin)
         has_file = "file" in specification and specification.file
         has_literal = (
             "intent_collection" in specification and specification.intent_collection

@@ -57,8 +57,12 @@ class GeospatialInfoProviderResource(Resource[GeospatialInfoProviderSpecificatio
     def __init__(
         self,
         specification: GeospatialInfoProviderSpecification,
+        resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
+        super(GeospatialInfoProviderResource, self).__init__(
+            specification, resource_origin
+        )
         if (
             "geospatial_map_v1_base_url" in specification.geospatial_info_provider
             and specification.geospatial_info_provider.geospatial_map_v1_base_url

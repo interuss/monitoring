@@ -126,5 +126,6 @@ class PlanningAreaSpecification(ImplicitDict):
 class PlanningAreaResource(Resource[PlanningAreaSpecification]):
     specification: PlanningAreaSpecification
 
-    def __init__(self, specification: PlanningAreaSpecification):
+    def __init__(self, specification: PlanningAreaSpecification, resource_origin: str):
+        super(PlanningAreaResource, self).__init__(specification, resource_origin)
         self.specification = specification

@@ -25,7 +25,10 @@ from monitoring.uss_qualifier.reports.report import (
     ParticipantID,
     PassedCheck,
 )
-from monitoring.uss_qualifier.resources.resource import MissingResourceError
+from monitoring.uss_qualifier.resources.resource import (
+    MissingResourceError,
+    ResourceType,
+)
 from monitoring.uss_qualifier.scenarios.definitions import (
     TestScenarioDeclaration,
     TestScenarioTypeName,
@@ -36,7 +39,7 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestStepDocumentation,
     TestCheckDocumentation,
 )
-from monitoring.uss_qualifier.resources.definitions import ResourceTypeName, ResourceID
+from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
 
 SQUELCH_WARN_ON_QUERY_TYPE = [
@@ -197,6 +200,10 @@ class GenericTestScenario(ABC):
     declaration: TestScenarioDeclaration
     documentation: TestScenarioDocumentation
     on_failed_check: Optional[Callable[[FailedCheck], None]] = None
+
+    resource_origins: Dict[ResourceID, str]
+    """Map between local resource name (as defined in test scenario) to where that resource originated."""
+
     _phase: ScenarioPhase = ScenarioPhase.Undefined
     _scenario_report: Optional[TestScenarioReport] = None
     _current_case: Optional[TestCaseDocumentation] = None
@@ -217,12 +224,13 @@ class GenericTestScenario(ABC):
     @staticmethod
     def make_test_scenario(
         declaration: TestScenarioDeclaration,
-        resource_pool: Dict[ResourceID, ResourceTypeName],
+        resource_pool: Dict[ResourceID, ResourceType],
     ) -> "TestScenario":
         scenario_type = get_scenario_type_by_name(declaration.scenario_type)
 
         constructor_signature = inspect.signature(scenario_type.__init__)
         constructor_args = {}
+        resource_origins = {}
         for arg_name, arg in constructor_signature.parameters.items():
             if arg_name == "self":
                 continue
@@ -239,9 +247,11 @@ class GenericTestScenario(ABC):
                     arg_name,
                 )
             constructor_args[arg_name] = resource_pool[arg_name]
+            resource_origins[arg_name] = resource_pool[arg_name].resource_origin
 
         scenario = scenario_type(**constructor_args)
         scenario.declaration = declaration
+        scenario.resource_origins = resource_origins
         return scenario
 
     @abstractmethod
@@ -274,6 +284,7 @@ class GenericTestScenario(ABC):
             name=self.documentation.name,
             scenario_type=self.declaration.scenario_type,
             documentation_url=self.documentation.url,
+            resource_origins=self.resource_origins,
             start_time=StringBasedDateTime(datetime.now(UTC)),
             cases=[],
         )

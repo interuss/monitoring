@@ -72,11 +72,14 @@ class ForEachDSS(ActionGenerator[ForEachDSSSpecification]):
         dss_instances = dss_instances_resource.dss_instances
 
         self._actions = []
-        for dss_instance in dss_instances:
+        for i, dss_instance in enumerate(dss_instances):
             modified_resources = {k: v for k, v in resources.items()}
             modified_resources[
                 specification.dss_instance_id
-            ] = DSSInstanceResource.from_dss_instance(dss_instance)
+            ] = DSSInstanceResource.from_dss_instance(
+                dss_instance,
+                f"instance {i} in {dss_instances_resource.resource_origin}",
+            )
 
             self._actions.append(
                 TestSuiteAction(specification.action_to_repeat, modified_resources)

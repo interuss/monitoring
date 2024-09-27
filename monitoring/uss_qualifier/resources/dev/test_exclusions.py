@@ -18,7 +18,9 @@ class TestExclusionsResource(Resource[TestExclusionsSpecification]):
     def __init__(
         self,
         specification: TestExclusionsSpecification,
+        resource_origin: str,
     ):
+        super(TestExclusionsResource, self).__init__(specification, resource_origin)
         self._spec = specification
 
     @property

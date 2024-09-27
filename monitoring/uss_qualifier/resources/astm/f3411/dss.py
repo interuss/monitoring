@@ -60,8 +60,13 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     dss_instance: DSSInstance
 
     def __init__(
-        self, specification: DSSInstanceSpecification, auth_adapter: AuthAdapterResource
+        self,
+        specification: DSSInstanceSpecification,
+        resource_origin: str,
+        auth_adapter: AuthAdapterResource,
     ):
+        super(DSSInstanceResource, self).__init__(specification, resource_origin)
+
         # Note that the current implementation does not support acting as just a
         # SP accessing the DSS or just a DP accessing the DSS, but this could be
         # improved.
@@ -81,9 +86,12 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
         )
 
     @classmethod
-    def from_dss_instance(cls, dss_instance: DSSInstance) -> DSSInstanceResource:
+    def from_dss_instance(
+        cls, dss_instance: DSSInstance, resource_origin: str
+    ) -> DSSInstanceResource:
         self = cls.__new__(cls)
         self.dss_instance = dss_instance
+        self.resource_origin = resource_origin
         return self
 
 
@@ -97,9 +105,13 @@ class DSSInstancesResource(Resource[DSSInstancesSpecification]):
     def __init__(
         self,
         specification: DSSInstancesSpecification,
+        resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
+        super(DSSInstancesResource, self).__init__(specification, resource_origin)
         self.dss_instances = [
-            DSSInstanceResource(s, auth_adapter).dss_instance
-            for s in specification.dss_instances
+            DSSInstanceResource(
+                s, f"instance {i + 1} in {resource_origin}", auth_adapter
+            ).dss_instance
+            for i, s in enumerate(specification.dss_instances)
         ]

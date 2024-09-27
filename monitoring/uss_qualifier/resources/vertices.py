@@ -17,5 +17,6 @@ class VerticesSpecification(ImplicitDict):
 class VerticesResource(Resource[VerticesSpecification]):
     specification: VerticesSpecification
 
-    def __init__(self, specification: VerticesSpecification):
+    def __init__(self, specification: VerticesSpecification, resource_origin: str):
+        super(VerticesResource, self).__init__(specification, resource_origin)
         self.specification = specification

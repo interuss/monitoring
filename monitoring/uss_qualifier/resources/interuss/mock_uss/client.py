@@ -154,8 +154,10 @@ class MockUSSResource(Resource[MockUSSSpecification]):
     def __init__(
         self,
         specification: MockUSSSpecification,
+        resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
+        super(MockUSSResource, self).__init__(specification, resource_origin)
         self.mock_uss = MockUSSClient(
             specification.participant_id,
             specification.mock_uss_base_url,
@@ -172,8 +174,12 @@ class MockUSSsResource(Resource[MockUSSsSpecification]):
     mock_uss_instances: List[MockUSSClient]
 
     def __init__(
-        self, specification: MockUSSsSpecification, auth_adapter: AuthAdapterResource
+        self,
+        specification: MockUSSsSpecification,
+        resource_origin: str,
+        auth_adapter: AuthAdapterResource,
     ):
+        super(MockUSSsResource, self).__init__(specification, resource_origin)
         self.mock_uss_instances = [
             MockUSSClient(s.participant_id, s.mock_uss_base_url, auth_adapter.adapter)
             for s in specification.instances

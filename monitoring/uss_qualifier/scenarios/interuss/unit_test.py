@@ -12,6 +12,7 @@ class UnitTestScenario(GenericTestScenario):
             scenario_type="scenarios.interuss.unit_test.UnitTestScenario",
         )
         super().__init__()
+        self.resource_origins = {}
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)

@@ -16,6 +16,7 @@ from monitoring.uss_qualifier.reports.report import (
     FailedCheck,
     ErrorReport,
 )
+from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 
 
@@ -142,6 +143,7 @@ class TestedScenario(object):
     epochs: List[Epoch]
     participants: Dict[ParticipantID, TestedParticipant]
     execution_error: Optional[ErrorReport]
+    resource_origins: Dict[ResourceID, str]
 
     @property
     def rows(self) -> int:

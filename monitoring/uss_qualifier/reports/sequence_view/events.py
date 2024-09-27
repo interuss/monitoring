@@ -283,6 +283,9 @@ def compute_tested_scenario(
         scenario_index=action_indexer.index,
         participants=scenario_participants,
         execution_error=report.execution_error if "execution_error" in report else None,
+        resource_origins=report.resource_origins
+        if "resource_origins" in report and report.resource_origins is not None
+        else {},
     )
     action_indexer.index += 1
     return scenario

@@ -31,7 +31,8 @@ class FlightDataResource(Resource[FlightDataSpecification]):
     _flight_start_delay: timedelta
     flight_collection: FlightRecordCollection
 
-    def __init__(self, specification: FlightDataSpecification):
+    def __init__(self, specification: FlightDataSpecification, resource_origin: str):
+        super(FlightDataResource, self).__init__(specification, resource_origin)
         if "record_source" in specification:
             self.flight_collection = ImplicitDict.parse(
                 load_dict(specification.record_source),
@@ -99,5 +100,8 @@ class FlightDataStorageSpecification(ImplicitDict):
 class FlightDataStorageResource(Resource[FlightDataStorageSpecification]):
     storage_configuration: FlightDataStorageSpecification
 
-    def __init__(self, specification: FlightDataStorageSpecification):
+    def __init__(
+        self, specification: FlightDataStorageSpecification, resource_origin: str
+    ):
+        super(FlightDataStorageResource, self).__init__(specification, resource_origin)
         self.storage_configuration = specification

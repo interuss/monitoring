@@ -66,5 +66,6 @@ class ServiceAreaSpecification(ImplicitDict):
 class ServiceAreaResource(Resource[ServiceAreaSpecification]):
     specification: ServiceAreaSpecification
 
-    def __init__(self, specification: ServiceAreaSpecification):
+    def __init__(self, specification: ServiceAreaSpecification, resource_origin: str):
+        super(ServiceAreaResource, self).__init__(specification, resource_origin)
         self.specification = specification

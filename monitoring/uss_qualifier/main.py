@@ -115,7 +115,9 @@ def execute_test_run(
         and config.execution.stop_when_resource_not_created
     )
     resources = create_resources(
-        config.resources.resource_declarations, stop_when_not_created
+        config.resources.resource_declarations,
+        "top-level resource pool",
+        stop_when_not_created,
     )
 
     logger.info("Instantiating top-level test suite action")

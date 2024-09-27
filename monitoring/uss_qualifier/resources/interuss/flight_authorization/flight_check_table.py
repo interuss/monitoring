@@ -13,5 +13,8 @@ class FlightCheckTableSpecification(ImplicitDict):
 class FlightCheckTableResource(Resource[FlightCheckTableSpecification]):
     table: FlightCheckTable
 
-    def __init__(self, specification: FlightCheckTableSpecification):
+    def __init__(
+        self, specification: FlightCheckTableSpecification, resource_origin: str
+    ):
+        super(FlightCheckTableResource, self).__init__(specification, resource_origin)
         self.table = specification.table
