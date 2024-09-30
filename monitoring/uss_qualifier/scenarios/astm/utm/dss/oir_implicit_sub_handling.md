@@ -110,7 +110,7 @@ The implicit subscription attached to the mutated OIR should be able to be queri
 If it cannot, the DSS is either improperly managing implicit subscriptions for OIRs, or failing to report the subscriptions relevant to an OIR,
 in which case the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**, respectively.
 
-#### [Correct temporal bounds](fragments/sub/implicit_correct.md)
+#### [Correct temporal bounds](fragments/sub/implicit_correct_exact.md)
 
 #### 🛑 Non-mutated implicit subscription is deleted check
 
@@ -144,7 +144,7 @@ This test case verifies that implicit subscriptions are properly removed if they
 
 ### [Ensure clean workspace test step](clean_workspace.md)
 
-This test step resets the workspace for this test case.
+Reset the workspace for this test case.
 
 ### Create two OIRs with implicit subscription test step
 
@@ -185,6 +185,42 @@ This step updates the OIR to not use any subscription, and expects the implicit 
 
 If the implicit subscription that was attached to the OIR is still present after the OIR is updated to use another subscription,
 the DSS is failing to properly manage implicit subscriptions for OIRs, and is therefore in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+
+## Implicit subscriptions are expanded as needed test case
+
+This test case checks that a DSS will properly expand an implicit subscription to cover an OIR that is being attached to it.
+
+### [Ensure clean workspace test step](clean_workspace.md)
+
+Reset the workspace for this test case.
+
+### Create an OIR with implicit subscription test step
+
+Create an OIR with which interactions will be tested and request an implicit
+subscription to be created.
+
+#### [Create OIR](./fragments/oir/crud/create_query.md)
+
+#### [Valid Implicit Subscription](./fragments/sub/implicit_create.md)
+
+### Expand the OIR while keeping the same implicit subscription test step
+
+Expand the previously created OIR's duration while explicitly specifying the implicit subscription that
+was automatically created for it.
+
+#### [Mutate OIR](./fragments/oir/crud/update_query.md)
+
+#### 🛑 The implicit subscription can be queried check
+
+The implicit subscription attached to the mutated OIR should be able to be queried.
+
+If it cannot, the DSS is either improperly managing implicit subscriptions for OIRs, or failing to report the subscriptions relevant to an OIR,
+in which case the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**, respectively.
+
+#### [Correct temporal bounds](fragments/sub/implicit_correct_cover.md)
+
+Ensure that the attached implicit subscription has been expanded
+
 
 
 ## [Cleanup](./clean_workspace.md)
