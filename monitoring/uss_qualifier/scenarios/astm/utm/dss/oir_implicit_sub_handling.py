@@ -176,6 +176,20 @@ class OIRImplicitSubHandling(TestScenario):
 
         self.end_test_case()
 
+        self.begin_test_case("Implicit subscriptions are expanded as needed")
+        self._setup_case()
+        self.begin_test_step("Create an OIR with implicit subscription")
+        self._case_4_create_oir()
+        self.end_test_step()
+
+        self.begin_test_step(
+            "Expand the OIR while keeping the same implicit subscription"
+        )
+        self._case_4_expand_oir_same_implicit_sub()
+        self.end_test_step()
+
+        self.end_test_case()
+
         self.end_test_scenario()
 
         """
@@ -601,6 +615,79 @@ Clean up
                     summary="Previous implicit subscription still exists",
                     details=f"Subscription {self._implicit_sub_2.id} was not deleted after the OIR it was attached to was mutated to not have a subscription anymore.",
                     query_timestamps=[sub_exp_fail.request.timestamp],
+                )
+
+    def _case_4_create_oir(self):
+        oir_a, _, impl_sub_1, _ = self._create_oir(
+            self._oir_a_id, self._time_0, self._time_1, [], with_implicit_sub=True
+        )
+
+        self._oir_a_ovn = oir_a.ovn
+        self._implicit_sub_1 = impl_sub_1
+
+    def _case_4_expand_oir_same_implicit_sub(self):
+        # Mutate the OIR so it is slightly longer and
+        # specify the implicit sub previously created for that OIR
+        with self.check(
+            "Mutate operational intent reference query succeeds", self._pid
+        ) as check:
+            try:
+                oir, subs, q = self._dss.put_op_intent(
+                    extents=[
+                        self._planning_area.get_volume4d(
+                            self._time_0, self._time_2
+                        ).to_f3548v21()
+                    ],
+                    key=[],
+                    state=OperationalIntentState.Accepted,
+                    base_url=DUMMY_BASE_URL,
+                    oi_id=self._oir_a_id,
+                    ovn=self._oir_a_ovn,
+                    subscription_id=self._implicit_sub_1.id,
+                )
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                check.record_failed(
+                    summary="OIR Creation failed",
+                    details=str(e),
+                    query_timestamps=e.query_timestamps,
+                )
+
+        with self.check("The implicit subscription can be queried", self._pid) as check:
+            sub = self._dss.get_subscription(self._implicit_sub_1.id)
+            self.record_query(sub)
+            if sub.status_code != 200:
+                check.record_failed(
+                    summary="Subscription query failed",
+                    details=f"Failed to query previously created implicit subscription {oir.subscription_id} with code {sub.response.status_code}. Message: {sub.error_message}",
+                    query_timestamps=sub.query_timestamps,
+                )
+
+        with self.check(
+            "Implicit subscription has wide enough temporal parameters", self._pid
+        ) as check:
+            if (
+                abs(
+                    sub.subscription.time_start.value.datetime - self._time_0
+                ).total_seconds()
+                > TIME_TOLERANCE_SEC
+            ):
+                check.record_failed(
+                    summary="Subscription time_start does not match OIR",
+                    details=f"Subscription time_start is {sub.subscription.time_start.value.datetime}, expected {self._time_0}",
+                    query_timestamps=[sub.request.timestamp],
+                )
+            if (
+                abs(
+                    sub.subscription.time_end.value.datetime - self._time_2
+                ).total_seconds()
+                > TIME_TOLERANCE_SEC
+            ):
+                check.record_failed(
+                    summary="Subscription time_end does not match OIR",
+                    details=f"Subscription time_end is {sub.subscription.time_end.value.datetime}, expected {self._time_0}",
+                    query_timestamps=[sub.request.timestamp],
                 )
 
     def _setup_case(self):
