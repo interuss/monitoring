@@ -43,7 +43,8 @@ class QueryBehaviorResource(Resource[QueryBehaviorSpecification]):
                 raise ValueError("A negative connection timeout does not make sense")
             if specification.connect_timeout_seconds == 0:
                 settings.connect_timeout_seconds = None
-            settings.connect_timeout_seconds = specification.connect_timeout_seconds
+            else:
+                settings.connect_timeout_seconds = specification.connect_timeout_seconds
             logger.info(
                 f"QueryBehaviorResource: Fetch query connect timeout set to {settings.connect_timeout_seconds} seconds"
             )
@@ -56,7 +57,8 @@ class QueryBehaviorResource(Resource[QueryBehaviorSpecification]):
                 raise ValueError("A negative read timeout does not make sense")
             if specification.read_timeout_seconds == 0:
                 settings.read_timeout_seconds = None
-            settings.read_timeout_seconds = specification.read_timeout_seconds
+            else:
+                settings.read_timeout_seconds = specification.read_timeout_seconds
             logger.info(
                 f"QueryBehaviorResource: Fetch query read timeout set to {settings.read_timeout_seconds} seconds"
             )
