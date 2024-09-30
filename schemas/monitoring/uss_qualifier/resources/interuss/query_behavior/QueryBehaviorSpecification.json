@@ -1,0 +1,40 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/interuss/query_behavior/QueryBehaviorSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.interuss.query_behavior.QueryBehaviorSpecification, as defined in monitoring/uss_qualifier/resources/interuss/query_behavior.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "add_request_id": {
+      "description": "Whether to automatically add a `request_id` field to any request with a JSON body and no pre-existing `request_id` field",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "attempts": {
+      "description": "Number of attempts to query when experiencing a retryable error like a timeout",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "connect_timeout_seconds": {
+      "description": "Number of seconds to allow for establishing a connection.  Use 0 for no timeout.",
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "read_timeout_seconds": {
+      "description": "Number of seconds to allow for a request to complete after establishing a connection.  Use 0 for no timeout.",
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

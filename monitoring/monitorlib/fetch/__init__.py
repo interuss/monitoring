@@ -3,6 +3,7 @@ import json
 import os
 import traceback
 import uuid
+from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, Optional, List, Union, TypeVar, Type
 from urllib.parse import urlparse
@@ -20,10 +21,24 @@ from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
 
-TIMEOUTS = (5, 5)  # Timeouts of `connect` and `read` in seconds
-ATTEMPTS = (
-    2  # Number of attempts to query when experiencing a retryable error like a timeout
-)
+
+@dataclass
+class Settings:
+    connect_timeout_seconds: Optional[float] = 3.1
+    """Number of seconds to allow for establishing a connection."""
+
+    read_timeout_seconds: Optional[float] = 6.1
+    """Number of seconds to allow for a request to complete after establishing a connection."""
+
+    attempts: int = 2
+    """Number of attempts to query when experiencing a retryable error like a timeout"""
+
+    add_request_id: bool = True
+    """Whether to automatically add a `request_id` field to any request with a JSON body and no pre-existing `request_id` field"""
+
+
+settings = Settings()
+"""Singleton settings for queries made with this tool"""
 
 
 class RequestDescription(ImplicitDict):
@@ -579,11 +594,15 @@ def query_and_describe(
         utm_session = True
     req_kwargs = kwargs.copy()
     if "timeout" not in req_kwargs:
-        req_kwargs["timeout"] = TIMEOUTS
+        req_kwargs["timeout"] = (
+            settings.connect_timeout_seconds,
+            settings.read_timeout_seconds,
+        )
 
     # Attach a request_id field to the JSON body of any outgoing request with a JSON body that doesn't already have one
     if (
-        "json" in req_kwargs
+        settings.add_request_id
+        and "json" in req_kwargs
         and isinstance(req_kwargs["json"], dict)
         and "request_id" not in req_kwargs["json"]
     ):
@@ -595,7 +614,7 @@ def query_and_describe(
     # Note: retry logic could be attached to the `client` Session by `mount`ing an HTTPAdapter with custom
     # `max_retries`, however we do not want to mutate the provided Session.  Instead, retry only on errors we explicitly
     # consider retryable.
-    for attempt in range(ATTEMPTS):
+    for attempt in range(settings.attempts):
         t0 = datetime.datetime.now(datetime.UTC)
         try:
             return describe_query(

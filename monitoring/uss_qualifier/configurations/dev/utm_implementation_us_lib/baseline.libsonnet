@@ -60,6 +60,15 @@ function(env) {
       resources: {
         resource_declarations: env.resource_declarations + {
 
+          // Controls query behavior (but not provided explicitly to any test scenario)
+          query_behavior: {
+            resource_type: 'resources.interuss.QueryBehaviorResource',
+            specification: {
+              // Allow additional time for requests to complete
+              read_timeout_seconds: 30.0,
+            },
+          },
+
           // Controls tests behavior
           test_exclusions: {
             resource_type: 'resources.dev.TestExclusionsResource',
