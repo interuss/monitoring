@@ -1,3 +1,4 @@
+from monitoring.monitorlib.testing import make_fake_url
 from uas_standards.astm.f3548.v21.api import ExchangeRecord, OPERATIONS, OperationID
 from uas_standards.astm.f3548.v21.constants import (
     Scope,
@@ -42,7 +43,7 @@ class Report(TestScenario):
         def gen_record() -> ExchangeRecord:
             op = OPERATIONS[OperationID.GetOperationalIntentReference]
             query = query_and_describe(
-                infrastructure.UTMClientSession("https://dummy.interuss.org"),
+                infrastructure.UTMClientSession(make_fake_url("dss")),
                 op.verb,
                 op.path.format(entityid="dummy_op_intent_id"),
                 QueryType.F3548v21DSSGetOperationalIntentReference,

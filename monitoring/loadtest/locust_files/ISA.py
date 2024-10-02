@@ -9,6 +9,8 @@ from monitoring.monitorlib import rid_v1
 from monitoring.prober.rid.v1 import common
 from locust import task, between
 
+from monitoring.monitorlib.testing import make_fake_url
+
 
 class ISA(client.USS):
     wait_time = between(0.01, 1)
@@ -34,7 +36,7 @@ class ISA(client.USS):
                     "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                     "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
                 },
-                "flights_url": "https://example.interuss.org/dss",
+                "flights_url": make_fake_url(),
             },
         )
         if resp.status_code == 200:
@@ -63,7 +65,7 @@ class ISA(client.USS):
                     "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                     "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
                 },
-                "flights_url": "https://example.interuss.org/dss",
+                "flights_url": make_fake_url(),
             },
         )
         if resp.status_code == 200:

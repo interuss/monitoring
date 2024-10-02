@@ -16,6 +16,7 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     FlightPlanStatus,
 )
 from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.testing import make_fake_url
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentState,
     OperationalIntentReference,
@@ -211,7 +212,7 @@ class DownUSS(TestScenario):
                     conflicting_flight.basic_information.area.to_f3548v21(),
                     key,
                     target_state,
-                    "https://fake.uss/down",
+                    make_fake_url("down"),
                     oi_id,
                     oi_ovn,
                 )

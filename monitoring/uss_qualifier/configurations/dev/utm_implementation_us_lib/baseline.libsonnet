@@ -105,7 +105,6 @@ function(env) {
           planning_area: {
             resource_type: 'resources.astm.f3548.v21.PlanningAreaResource',
             specification: {
-              base_url: 'https://uss_qualifier.test.utm/dummy_base_url',
               volume: {
                 outline_polygon: {
                   vertices: [

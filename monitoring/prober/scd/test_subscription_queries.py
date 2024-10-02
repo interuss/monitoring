@@ -11,6 +11,7 @@ from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
+from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import for_api_versions, register_resource_type
 from monitoring.prober.scd import actions
 
@@ -36,7 +37,7 @@ def _make_sub1_req(scd_api):
         "extents": Volume4D.from_values(
             None, time_end, 0, 300, Circle.from_meters(lat, LNG0, 100)
         ).to_f3548v21(),
-        "uss_base_url": "https://example.interuss.org/foo",
+        "uss_base_url": make_fake_url(),
         "notify_for_constraints": False,
     }
     req.update({"notify_for_operational_intents": True})
@@ -51,7 +52,7 @@ def _make_sub2_req(scd_api):
             time_start, time_end, 350, 650, Circle.from_meters(LAT0, LNG0, 100)
         ).to_f3548v21(),
         "old_version": 0,
-        "uss_base_url": "https://example.interuss.org/foo",
+        "uss_base_url": make_fake_url(),
         "notify_for_operations": True,
         "notify_for_constraints": False,
     }
@@ -67,7 +68,7 @@ def _make_sub3_req(scd_api):
         "extents": Volume4D.from_values(
             time_start, time_end, 700, 1000, Circle.from_meters(lat, LNG0, 100)
         ).to_f3548v21(),
-        "uss_base_url": "https://example.interuss.org/foo",
+        "uss_base_url": make_fake_url(),
         "notify_for_constraints": False,
     }
     req.update({"notify_for_operational_intents": True})

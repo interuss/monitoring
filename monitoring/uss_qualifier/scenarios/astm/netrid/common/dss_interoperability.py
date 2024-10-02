@@ -11,6 +11,7 @@ import s2sphere
 
 from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch.rid import ISA
+from monitoring.monitorlib.testing import make_fake_url
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
     DSSInstancesResource,
@@ -39,7 +40,7 @@ def _default_params(duration: datetime.timedelta) -> Dict:
         alt_hi=400,
         start_time=now,
         end_time=now + duration,
-        uss_base_url="https://example.interuss.org",
+        uss_base_url=make_fake_url(),
     )
 
 

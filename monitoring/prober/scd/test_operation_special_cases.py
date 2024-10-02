@@ -14,6 +14,7 @@ import json
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
+from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import for_api_versions, register_resource_type
 from monitoring.prober.scd import actions
 
@@ -118,7 +119,7 @@ def test_id_conversion_bug(ids, scd_api, scd_session):
             "time_end": {"value": time_end.isoformat() + "Z", "format": "RFC3339"},
         },
         "old_version": 0,
-        "uss_base_url": "https://example.interuss.org/uss/v1/",
+        "uss_base_url": make_fake_url("uss/v1/"),
         "notify_for_constraints": True,
     }
     resp = scd_session.put("/subscriptions/{}".format(sub_uuid), json=req)

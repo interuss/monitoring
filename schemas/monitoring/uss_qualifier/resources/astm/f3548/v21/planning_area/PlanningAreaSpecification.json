@@ -8,8 +8,11 @@
       "type": "string"
     },
     "base_url": {
-      "description": "Base URL for the USS\n\nNote that this is the base URL for the F3548-21 USS API, not the flights or any other specific URL.\n\nThis URL will probably not identify a real resource in tests.",
-      "type": "string"
+      "description": "Base URL for the USS\n\nNote that this is the base URL for the F3548-21 USS API, not the flights or any other specific URL.\n\nThis URL will probably not identify a real resource in tests.\n\nIf not specified, a fake URL will be generated at runtime according to the test in which the resource is being\nused.",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "volume": {
       "$ref": "../../../../../../monitorlib/geo/Volume3D.json",
@@ -17,7 +20,6 @@
     }
   },
   "required": [
-    "base_url",
     "volume"
   ],
   "type": "object"

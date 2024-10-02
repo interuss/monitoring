@@ -2,6 +2,7 @@ import datetime
 from typing import List, Optional
 
 from implicitdict import ImplicitDict
+from monitoring.monitorlib.testing import make_fake_url
 from uas_standards.astm.f3548.v21.api import (
     EntityOVN,
     OperationalIntentState,
@@ -24,12 +25,15 @@ from monitoring.uss_qualifier.resources.resource import Resource
 class PlanningAreaSpecification(ImplicitDict):
     """Specifies an area and USS related information to create test resources that require them."""
 
-    base_url: str
+    base_url: Optional[str]
     """Base URL for the USS
 
     Note that this is the base URL for the F3548-21 USS API, not the flights or any other specific URL.
 
-    This URL will probably not identify a real resource in tests."""
+    This URL will probably not identify a real resource in tests.
+
+    If not specified, a fake URL will be generated at runtime according to the test in which the resource is being
+    used."""
 
     volume: Volume3D
     """3D volume of service area"""
@@ -42,6 +46,11 @@ class PlanningAreaSpecification(ImplicitDict):
             time_start=Time(time_start),
             time_end=Time(time_end),
         )
+
+    def get_base_url(self, frames_above: int = 1):
+        if "base_url" in self and self.base_url is not None:
+            return self.base_url
+        return make_fake_url(frames_above=frames_above + 1)
 
     def get_new_subscription_params(
         self,
@@ -66,7 +75,7 @@ class PlanningAreaSpecification(ImplicitDict):
             else self.volume.altitude_upper_wgs84_m(),
             start_time=start_time,
             end_time=start_time + duration,
-            base_url=self.base_url,
+            base_url=self.get_base_url(frames_above=2),
             notify_for_op_intents=notify_for_op_intents,
             notify_for_constraints=notify_for_constraints,
         )
@@ -119,7 +128,7 @@ class PlanningAreaSpecification(ImplicitDict):
         """
         return PutConstraintReferenceParameters(
             extents=[self.get_volume4d(time_start, time_end).to_f3548v21()],
-            uss_base_url=self.base_url,
+            uss_base_url=self.get_base_url(frames_above=2),
         )
 
 

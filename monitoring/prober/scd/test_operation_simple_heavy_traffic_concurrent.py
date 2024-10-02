@@ -21,7 +21,10 @@ from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
-from monitoring.monitorlib.testing import assert_datetimes_are_equal
+from monitoring.monitorlib.testing import (
+    assert_datetimes_are_equal,
+    make_fake_url,
+)
 from monitoring.prober.infrastructure import (
     depends_on,
     for_api_versions,
@@ -32,7 +35,7 @@ from monitoring.prober.infrastructure import (
 from monitoring.prober.scd import actions
 
 
-BASE_URL = "https://example.interuss.org/uss"
+BASE_URL = make_fake_url()
 # TODO(#742): Increase number of concurrent operations from 20 to 100
 OP_TYPES = [
     register_resource_type(110 + i, "Operational intent {}".format(i))
@@ -210,7 +213,7 @@ def _build_mutate_request(idx, op_id, op_map, scd_session, scd_api):
         "extents": req["extents"],
         "old_version": existing_op["version"],
         "state": "Activated",
-        "uss_base_url": "https://example.interuss.org/uss2",
+        "uss_base_url": make_fake_url("uss2"),
         "subscription_id": existing_op["subscription_id"],
     }
     return req
@@ -458,7 +461,7 @@ def test_mutate_ops_concurrent(ids, scd_api, scd_session, scd_session_async):
         data = resp["content"]
         op = data["operational_intent_reference"]
         assert op["id"] == op_id
-        assert op["uss_base_url"] == "https://example.interuss.org/uss2"
+        assert op["uss_base_url"] == make_fake_url("uss2")
         assert op["version"] == 2
         assert op["subscription_id"] == existing_op["subscription_id"]
 
