@@ -70,7 +70,7 @@ class OperationalIntentRefAuthValidator:
         self._oir_params = planning_area.get_new_operational_intent_ref_params(
             key=[],  # we expect the area to have been emptied
             state=OperationalIntentState.Accepted,
-            uss_base_url=planning_area.base_url,
+            uss_base_url=planning_area.get_base_url(),
             time_start=time_start,
             time_end=time_end,
             subscription_id=None,  # We provide no subscription for this intent

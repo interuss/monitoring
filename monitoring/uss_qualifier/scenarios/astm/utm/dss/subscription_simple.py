@@ -666,10 +666,10 @@ class SubscriptionSimple(TestScenario):
         with self.check(
             "Returned USS base URL has correct base URL", self._pid
         ) as check:
-            if sub_under_test.uss_base_url != self._planning_area.base_url:
+            if sub_under_test.uss_base_url != self._planning_area.get_base_url():
                 check.record_failed(
                     "Returned USS Base URL does not match provided one",
-                    details=f"Provided: {self._planning_area.base_url}, Returned: {sub_under_test.uss_base_url}",
+                    details=f"Provided: {self._planning_area.get_base_url()}, Returned: {sub_under_test.uss_base_url}",
                     query_timestamps=query_timestamps,
                 )
 

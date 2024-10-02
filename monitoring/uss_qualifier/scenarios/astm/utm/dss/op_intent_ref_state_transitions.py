@@ -1,6 +1,8 @@
 from typing import List, Dict
 
 import arrow
+
+from monitoring.monitorlib.testing import make_fake_url
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -15,7 +17,6 @@ from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
     DSSInstance,
-    DUMMY_USS_BASE_URL,
 )
 from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
@@ -25,6 +26,12 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation
 from monitoring.uss_qualifier.resources.interuss import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
+
+
+# A base URL for a USS that is not expected to be ever called
+# Used to mimic the behavior of a USS and need to provide a base URL.
+# As the area used for tests is cleared before the tests, there should be no need to have this URL be reachable.
+DUMMY_USS_BASE_URL = make_fake_url()
 
 
 class OpIntentReferenceStateTransitions(TestScenario):

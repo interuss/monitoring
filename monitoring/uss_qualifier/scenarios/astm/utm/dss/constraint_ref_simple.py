@@ -106,7 +106,7 @@ class CRSimple(TestScenario):
                 new_cr, subs, query = self._dss.put_constraint_ref(
                     cr_id=self._cr_id,
                     extents=cr_params.extents,
-                    uss_base_url=self._planning_area.base_url,
+                    uss_base_url=self._planning_area.get_base_url(),
                 )
                 self.record_query(query)
             except QueryError as qe:
@@ -194,7 +194,7 @@ class CRSimple(TestScenario):
                 _, _, q = self._dss.put_constraint_ref(
                     cr_id=self._cr_id,
                     extents=cr_params.extents,
-                    uss_base_url=self._planning_area.base_url,
+                    uss_base_url=self._planning_area.get_base_url(),
                     ovn="",
                 )
                 self.record_query(q)
@@ -233,7 +233,7 @@ class CRSimple(TestScenario):
                 _, _, q = self._dss.put_constraint_ref(
                     cr_id=self._cr_id,
                     extents=cr_params.extents,
-                    uss_base_url=self._planning_area.base_url,
+                    uss_base_url=self._planning_area.get_base_url(),
                     ovn="ThisIsAnIncorrectOVN",
                 )
                 self.record_query(q)

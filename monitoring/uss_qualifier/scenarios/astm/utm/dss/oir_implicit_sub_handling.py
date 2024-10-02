@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Set, Optional, Tuple
 
 import arrow
+
+from monitoring.monitorlib.testing import make_fake_url
 from uas_standards.astm.f3548.v21.api import (
     Subscription,
     SubscriptionID,
@@ -38,7 +40,7 @@ SUB_TYPE = register_resource_type(394, "Subscription for implicit sub handling")
 TIME_TOLERANCE_SEC = 1
 
 # A scenario-specific base URL which will be used to easily identify the qualifier's subscriptions
-DUMMY_BASE_URL = "example.interuss.org/uss_base_oir_implicit_sub_handling"
+DUMMY_BASE_URL = make_fake_url()
 
 
 class OIRImplicitSubHandling(TestScenario):

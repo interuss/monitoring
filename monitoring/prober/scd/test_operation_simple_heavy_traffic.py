@@ -16,7 +16,10 @@ from monitoring.monitorlib.geo import Circle
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.scd import SCOPE_SC
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib.testing import assert_datetimes_are_equal
+from monitoring.monitorlib.testing import (
+    assert_datetimes_are_equal,
+    make_fake_url,
+)
 from monitoring.prober.infrastructure import (
     for_api_versions,
     register_resource_type,
@@ -24,7 +27,7 @@ from monitoring.prober.infrastructure import (
 from monitoring.prober.scd import actions
 
 
-BASE_URL = "https://example.interuss.org/uss"
+BASE_URL = make_fake_url()
 OP_TYPES = [
     register_resource_type(10 + i, "Operational intent {}".format(i)) for i in range(20)
 ]
@@ -259,7 +262,7 @@ def test_mutate_ops(ids, scd_api, scd_session):
             "extents": req["extents"],
             "old_version": existing_op["version"],
             "state": "Activated",
-            "uss_base_url": "https://example.interuss.org/uss2",
+            "uss_base_url": make_fake_url("uss2"),
             "subscription_id": existing_op["subscription_id"],
         }
 
@@ -273,7 +276,7 @@ def test_mutate_ops(ids, scd_api, scd_session):
         data = resp.json()
         op = data["operational_intent_reference"]
         assert op["id"] == op_id
-        assert op["uss_base_url"] == "https://example.interuss.org/uss2"
+        assert op["uss_base_url"] == make_fake_url("uss2")
         assert op["uss_availability"] == "Unknown"
         assert op["version"] != existing_op["version"]
         assert op["subscription_id"] == existing_op["subscription_id"]

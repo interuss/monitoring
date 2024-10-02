@@ -7,6 +7,8 @@ import uuid
 from monitoring.monitorlib import rid_v1
 from locust import task, between
 
+from monitoring.monitorlib.testing import make_fake_url
+
 
 class Sub(client.USS):
     wait_time = between(0.01, 1)
@@ -42,9 +44,7 @@ class Sub(client.USS):
                     "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                     "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
                 },
-                "callbacks": {
-                    "identification_service_area_url": "https://example.interuss.org/foo"
-                },
+                "callbacks": {"identification_service_area_url": make_fake_url()},
             },
         )
         if resp.status_code == 200:
@@ -83,9 +83,7 @@ class Sub(client.USS):
                     "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
                     "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
                 },
-                "callbacks": {
-                    "identification_service_area_url": "https://example.interuss.org/foo"
-                },
+                "callbacks": {"identification_service_area_url": make_fake_url()},
             },
         )
         if resp.status_code == 200:

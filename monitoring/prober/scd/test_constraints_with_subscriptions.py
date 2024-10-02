@@ -16,15 +16,16 @@ from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_CM, SCOPE_SC, SCOPE_CP
+from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import for_api_versions, register_resource_type
 from monitoring.prober.scd import actions
 
 
-CONSTRAINT_BASE_URL_1 = "https://example.interuss.org/con1/uss"
-CONSTRAINT_BASE_URL_2 = "https://example.interuss.org/con2/uss"
-CONSTRAINT_BASE_URL_3 = "https://example.interuss.org/con3/uss"
-SUB_BASE_URL_A = "https://example.interuss.org/sub1/uss"
-SUB_BASE_URL_B = "https://example.interuss.org/sub2/uss"
+CONSTRAINT_BASE_URL_1 = make_fake_url("con1/uss")
+CONSTRAINT_BASE_URL_2 = make_fake_url("con2/uss")
+CONSTRAINT_BASE_URL_3 = make_fake_url("con3/uss")
+SUB_BASE_URL_A = make_fake_url("sub1/uss")
+SUB_BASE_URL_B = make_fake_url("sub2/uss")
 
 CONSTRAINT_TYPE = register_resource_type(2, "Single constraint")
 SUB1_TYPE = register_resource_type(3, "Constraint subscription 1")

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, UTC
 from typing import Dict, List
 
+from monitoring.monitorlib.testing import make_fake_url
 from uas_standards.astm.f3548.v21.api import (
     Subscription,
     SubscriptionID,
@@ -166,11 +167,11 @@ class SubscriptionInteractionsDeletion(TestScenario):
             oir = self._planning_area.get_new_operational_intent_ref_params(
                 key=[current_oir.ovn for current_oir in self._current_oirs.values()],
                 state=OperationalIntentState.Accepted,
-                uss_base_url="https://example.interuss.org/oir_base_url",
+                uss_base_url=make_fake_url("oir_base_url"),
                 time_start=self._time_start,
                 time_end=self._time_end,
                 subscription_id=None,
-                implicit_sub_base_url="https://example.interuss.org/sub_base_url",
+                implicit_sub_base_url=make_fake_url("sub_base_url"),
             )
 
             with self.check(
@@ -215,7 +216,9 @@ class SubscriptionInteractionsDeletion(TestScenario):
             oir = self._planning_area.get_new_operational_intent_ref_params(
                 key=[current_oir.ovn for current_oir in self._current_oirs.values()],
                 state=OperationalIntentState.Accepted,
-                uss_base_url="https://example.interuss.org/oir_base_url_bis",  # dummy modification of the OIR
+                uss_base_url=make_fake_url(
+                    "oir_base_url_bis"
+                ),  # dummy modification of the OIR
                 time_start=self._time_start,
                 time_end=self._time_end,
                 subscription_id=self._current_oirs[oir_id].subscription_id,

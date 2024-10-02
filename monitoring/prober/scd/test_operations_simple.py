@@ -17,15 +17,18 @@ from monitoring.monitorlib.geotemporal import Volume4D, Time
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
-from monitoring.monitorlib.testing import assert_datetimes_are_equal
+from monitoring.monitorlib.testing import (
+    assert_datetimes_are_equal,
+    make_fake_url,
+)
 from monitoring.prober.infrastructure import for_api_versions, register_resource_type
 from monitoring.prober.scd import actions
 
 
-URL_OP1 = "https://example.interuss.org/op1/dss"
-URL_SUB1 = "https://example.interuss.org/subs1/dss"
-URL_OP2 = "https://example.interuss.org/op2/dss"
-URL_SUB2 = "https://example.interuss.org/subs2/dss"
+URL_OP1 = make_fake_url("op1")
+URL_SUB1 = make_fake_url("subs1")
+URL_OP2 = make_fake_url("op2")
+URL_SUB2 = make_fake_url("subs2")
 
 OP1_TYPE = register_resource_type(213, "Operational intent 1")
 OP2_TYPE = register_resource_type(214, "Operational intent 2")

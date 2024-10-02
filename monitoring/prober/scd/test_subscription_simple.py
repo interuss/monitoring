@@ -20,7 +20,10 @@ from uas_standards.astm.f3548.v21 import api
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
-from monitoring.monitorlib.testing import assert_datetimes_are_equal
+from monitoring.monitorlib.testing import (
+    assert_datetimes_are_equal,
+    make_fake_url,
+)
 from monitoring.prober.infrastructure import for_api_versions, register_resource_type
 from monitoring.prober.scd import actions
 
@@ -40,7 +43,7 @@ def _make_sub1_req(scd_api):
         "extents": Volume4D.from_values(
             time_start, time_end, 0, 1000, Circle.from_meters(12, -34, 300)
         ).to_f3548v21(),
-        "uss_base_url": "https://example.interuss.org/foo",
+        "uss_base_url": make_fake_url(),
         "notify_for_constraints": False,
     }
     req.update({"notify_for_operational_intents": True})
@@ -52,7 +55,7 @@ def _check_sub1(data, sub_id, scd_api):
     assert ("notification_index" not in data["subscription"]) or (
         data["subscription"]["notification_index"] == 0
     )
-    assert data["subscription"]["uss_base_url"] == "https://example.interuss.org/foo"
+    assert data["subscription"]["uss_base_url"] == make_fake_url()
     assert data["subscription"]["time_start"]["format"] == api.TimeFormat.RFC3339
     assert data["subscription"]["time_end"]["format"] == api.TimeFormat.RFC3339
     assert ("notify_for_constraints" not in data["subscription"]) or (

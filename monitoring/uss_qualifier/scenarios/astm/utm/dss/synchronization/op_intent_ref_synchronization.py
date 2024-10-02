@@ -109,7 +109,7 @@ class OIRSynchronization(TestScenario):
         self._oir_params = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.base_url,
+            uss_base_url=self._planning_area.get_base_url(),
             time_start=datetime.now() - timedelta(seconds=10),
             time_end=datetime.now() + timedelta(minutes=45),
             subscription_id=None,

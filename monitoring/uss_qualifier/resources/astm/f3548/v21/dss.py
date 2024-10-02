@@ -51,11 +51,6 @@ from monitoring.monitorlib.mutate.scd import MutatedSubscription
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.resource import Resource
 
-# A base URL for a USS that is not expected to be ever called
-# Used in scenarios where we mimic the behavior of a USS and need to provide a base URL.
-# As the area used for tests is cleared before the tests, there is no need to have this URL be reachable.
-DUMMY_USS_BASE_URL = "https://dummy.uss"
-
 
 class DSSInstanceSpecification(ImplicitDict):
     participant_id: str
