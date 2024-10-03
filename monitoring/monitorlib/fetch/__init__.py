@@ -435,6 +435,12 @@ class Query(ImplicitDict):
     """If specified, the recognized type of this query."""
 
     @property
+    def timestamp(self) -> datetime.datetime:
+        """Safety property to prevent crashes when Query.timestamp is accessed.
+        For intentional access, request.timestamp should be used instead."""
+        return self.request.timestamp
+
+    @property
     def status_code(self) -> int:
         return self.response.status_code
 

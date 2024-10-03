@@ -131,8 +131,8 @@ class EvaluateSystemVersions(TestScenario):
         mismatch_timestamps = []
         for participant_id in mismatched_participants:
             timestamps = [
-                test_env_versions[participant_id].query.timestamp,
-                prod_env_versions[participant_id].query.timestamp,
+                test_env_versions[participant_id].query.request.timestamp,
+                prod_env_versions[participant_id].query.request.timestamp,
             ]
             with self.check(
                 "Test software version matches production", participants=participant_id
