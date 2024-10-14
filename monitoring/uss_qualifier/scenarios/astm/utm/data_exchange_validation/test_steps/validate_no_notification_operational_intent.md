@@ -5,6 +5,9 @@ This step verifies when a flight is not created, it is also not notified by chec
 ## 🛑 Mock USS interactions logs retrievable check
 **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
 
+## ℹ️ Mock USS interaction can be parsed check
+**[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+
 ## 🛑 Expect Notification not sent check
 
 **[interuss.f3548.notification_requirements.NoDssEntityNoNotification](../../../../../requirements/interuss/f3548/notification_requirements.md)**

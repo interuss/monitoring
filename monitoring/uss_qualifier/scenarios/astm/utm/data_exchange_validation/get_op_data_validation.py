@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, Set
 
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
@@ -57,13 +57,15 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     submit_flight,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
-from uas_standards.astm.f3548.v21.api import OperationID
+from uas_standards.astm.f3548.v21.api import OperationID, EntityID
 from uas_standards.astm.f3548.v21.constants import Scope
 
 
 class GetOpResponseDataValidationByUSS(TestScenario):
     flight_1: FlightInfoTemplate
     flight_2: FlightInfoTemplate
+
+    op_intent_ids: Set[EntityID]
 
     tested_uss_client: FlightPlannerClient
     mock_uss: MockUSSClient
@@ -128,6 +130,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             setattr(self, efi.intent_id, templates[efi.intent_id])
 
     def run(self, context: ExecutionContext):
+        self.op_intent_ids = set()
         times = {
             TimeDuringTest.StartOfTestRun: Time(context.start_time),
             TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
@@ -168,6 +171,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             )
 
             flight_2_oi_ref = validator.expect_shared(flight_2)
+            self.op_intent_ids.add(flight_2_oi_ref.id)
         self.end_test_step()
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
@@ -186,9 +190,8 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 self.tested_uss_client,
                 flight_1,
             )
-            validator.expect_shared(
-                flight_1,
-            )
+            flight_1_oi_ref = validator.expect_shared(flight_1)
+            self.op_intent_ids.add(flight_1_oi_ref.id)
         self.end_test_step()
 
         self.begin_test_step(
@@ -286,6 +289,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 validation_failure_type=OpIntentValidationFailureType.DataFormat,
                 invalid_fields=[modify_field1, modify_field2],
             )
+            self.op_intent_ids.add(flight_2_oi_ref.id)
         self.end_test_step()
 
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
@@ -357,6 +361,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self,
             self.mock_uss,
             flight_1_planning_time,
+            self.op_intent_ids,
             self.tested_uss_client.participant_id,
         )
         self.end_test_step()
