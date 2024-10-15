@@ -28,13 +28,64 @@ Verifies the behavior of a DSS for simple interactions pertaining to operational
 
 This step ensures that no entities with the known test IDs exists in the DSS.
 
+## OIR in ACCEPTED state can be created without subscription test case
+
+Checks that a DSS allows an OIR to be created in the accepted state without any subscription.
+
+### [Create an operational intent reference test step](./fragments/oir/crud/create_query.md)
+
+This step verifies that an OIR can be created in the ACCEPTED state without providing any subscription information (implicit or explicit) in the request.
+
+### [OIR is not attached to any subscription test step](./fragments/oir/oir_has_expected_subscription.md)
+
+This step verifies that the OIR is not attached to any subscription.
+
+#### 🛑 Referenced subscription does not exist check
+
+If the placeholder subscription contained in the OIR returned to the qualifier by the DSS references an existing subscription,
+then the DSS under test is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**, as the creation request
+did not specify any subscription.
+
+## Validate explicit subscription being attached to OIR without subscription test case
+
+Ensures that an explicit subscription can be attached to an OIR without subscription attached, and that the subscription is required to properly cover the OIR.
+
 ### [Create a subscription test step](./fragments/sub/crud/create_query.md)
 
-Create an explicit subscription to be used in this scenario.
+Create an explicit subscription to be used in this test cases.
+
+### Attempt to attach insufficient subscription to OIR test step
+
+This step verifies that the DSS refuses the request to attach an insufficient subscription to an OIR that currently has no subscription.
+
+#### 🛑 Request to attach insufficient subscription to OIR fails check
+
+If the DSS under test allows the qualifier to attach an insufficient explicit subscription to a subscription-free OIR,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
+
+### [OIR is not attached to any subscription test step](./fragments/oir/oir_has_expected_subscription.md)
+
+This step verifies that the OIR is not attached to any subscription.
+
+### [Attach explicit subscription to OIR test step](./fragments/oir/crud/update_query.md)
+
+This step verifies that an explicit subscription covering the OIR can be attached to an OIR that currently has no subscription.
+
+### [OIR is attached to expected subscription test step](./fragments/oir/oir_has_expected_subscription.md)
+
+This step verifies that the OIR is attached to the subscription provided upon creation.
 
 ## Validate explicit subscription on OIR creation test case
 
 Ensures that the explicit subscription provided upon creation of an OIR is properly validated and attached to the OIR.
+
+### [Ensure clean workspace test step](./clean_workspace.md)
+
+This step ensures that no entities with the known test IDs exists in the DSS.
+
+### [Create a subscription test step](./fragments/sub/crud/create_query.md)
+
+Create an explicit subscription to be used in this and the following test cases.
 
 ### Provide subscription not covering extent of OIR being created test step
 

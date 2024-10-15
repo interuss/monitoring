@@ -34,6 +34,14 @@ from monitoring.uss_qualifier.scenarios.scenario import (
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
+# The official DSS implementation will set an OIR's subscription ID to 00000000-0000-4000-8000-000000000000
+# when the OIR is not attached to any subscription, as the OpenAPI spec does not allow the value to be empty.
+# Other implementations may use a different value. One way to check that an OIR is not attached to any subscription
+# is to attempt to retrieve the subscription reportedly attached to it: if a 404 is returned then we may assume
+# no subscription is attached.
+# Note that this is only allowed for OIRs in the ACCEPTED state.
+NULL_SUBSCRIPTION_ID = "00000000-0000-4000-8000-000000000000"
+
 
 class OIRSimple(TestScenario):
     """
@@ -103,10 +111,37 @@ class OIRSimple(TestScenario):
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
         self.begin_test_case("Setup")
-        self._setup_case(create_explicit_sub=True)
+        self._setup_case()
+        self.end_test_case()
+
+        self.begin_test_case(
+            "OIR in ACCEPTED state can be created without subscription"
+        )
+        self._step_create_oir(
+            oir_params=self._planning_area.get_new_operational_intent_ref_params(
+                key=[],
+                state=OperationalIntentState.Accepted,
+                uss_base_url=self._planning_area.get_base_url(),
+                time_start=datetime.now() - timedelta(seconds=10),
+                time_end=datetime.now() + timedelta(minutes=20),
+                subscription_id=None,
+                implicit_sub_base_url=None,
+            ),
+        )
+        self._step_oir_has_correct_subscription(expected_sub_id=None)
+        self.end_test_case()
+
+        self.begin_test_case(
+            "Validate explicit subscription being attached to OIR without subscription"
+        )
+        self._step_update_oir_with_insufficient_explicit_sub(is_replacement=False)
+        self._step_oir_has_correct_subscription(expected_sub_id=None)
+        self._step_update_oir_with_sufficient_explicit_sub(is_replacement=False)
+        self._step_oir_has_correct_subscription(expected_sub_id=self._extra_sub_id)
         self.end_test_case()
 
         self.begin_test_case("Validate explicit subscription on OIR creation")
+        self._setup_case(create_explicit_sub=True)
         self._step_create_oir_insufficient_subscription()
         self._step_create_oir(
             oir_params=self._planning_area.get_new_operational_intent_ref_params(
@@ -124,9 +159,9 @@ class OIRSimple(TestScenario):
         self.begin_test_case(
             "Validate explicit subscription upon subscription replacement"
         )
-        self._step_update_oir_with_insufficient_explicit_sub()
+        self._step_update_oir_with_insufficient_explicit_sub(is_replacement=True)
         self._step_oir_has_correct_subscription(expected_sub_id=self._sub_id)
-        self._step_update_oir_with_sufficient_explicit_sub()
+        self._step_update_oir_with_sufficient_explicit_sub(is_replacement=True)
         self._step_oir_has_correct_subscription(expected_sub_id=self._extra_sub_id)
         self.end_test_case()
 
@@ -177,6 +212,10 @@ class OIRSimple(TestScenario):
             self._pid,
         ) as check:
             try:
+                no_implicit_sub = (
+                    "new_subscription" not in oir_params
+                    or "uss_base_url" not in oir_params.new_subscription
+                )
                 new_oir, subs, query = self._dss.put_op_intent(
                     extents=oir_params.extents,
                     key=oir_params.key,
@@ -184,6 +223,7 @@ class OIRSimple(TestScenario):
                     base_url=oir_params.uss_base_url,
                     oi_id=self._oir_id,
                     subscription_id=sub_id,
+                    force_no_implicit_subscription=no_implicit_sub,
                 )
                 self.record_query(query)
                 self._current_oir = new_oir
@@ -243,7 +283,7 @@ class OIRSimple(TestScenario):
 
         self.end_test_step()
 
-    def _step_update_oir_with_insufficient_explicit_sub(self):
+    def _step_update_oir_with_insufficient_explicit_sub(self, is_replacement: bool):
         # Create another subscription that is a few seconds short of covering the OIR:
         oir_duration = (
             self._current_oir.time_end.value.datetime
@@ -268,12 +308,19 @@ class OIRSimple(TestScenario):
             time_end=self._current_oir.time_end.value.datetime,
             subscription_id=self._extra_sub_id,
         )
-
-        self.begin_test_step(
+        step_name = (
             "Attempt to replace OIR's existing explicit subscription with an insufficient one"
+            if is_replacement
+            else "Attempt to attach insufficient subscription to OIR"
+        )
+        self.begin_test_step(step_name)
+        check_name = (
+            "Request to mutate OIR while providing an incorrect subscription fails"
+            if is_replacement
+            else "Request to attach insufficient subscription to OIR fails"
         )
         with self.check(
-            "Request to mutate OIR while providing an incorrect subscription fails",
+            check_name,
             self._pid,
         ) as check:
             try:
@@ -289,7 +336,7 @@ class OIRSimple(TestScenario):
                 self.record_query(q)
                 # We don't expect to reach this point:
                 check.record_failed(
-                    summary="OIR mutation with too short subscription was not expected to succeed",
+                    summary="Request for OIR with too short subscription was not expected to succeed",
                     details=f"Was expecting an HTTP 400 response because of an insufficient subscription, but got {q.status_code} instead",
                     query_timestamps=[q.request.timestamp],
                 )
@@ -299,14 +346,19 @@ class OIRSimple(TestScenario):
                     pass
                 else:
                     check.record_failed(
-                        summary="OIR mutation with too short subscription failed for unexpected reason",
+                        summary="Request for OIR with too short subscription failed for unexpected reason",
                         details=f"Was expecting an HTTP 400 response because of an insufficient subscription, but got {qe.cause_status_code} instead. {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
         self.end_test_step()
 
-    def _step_update_oir_with_sufficient_explicit_sub(self):
-        self.begin_test_step("Replace the OIR's explicit subscription")
+    def _step_update_oir_with_sufficient_explicit_sub(self, is_replacement: bool):
+        step_name = (
+            "Replace the OIR's explicit subscription"
+            if is_replacement
+            else "Attach explicit subscription to OIR"
+        )
+        self.begin_test_step(step_name)
         oir_update_params = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
@@ -340,8 +392,15 @@ class OIRSimple(TestScenario):
                 )
         self.end_test_step()
 
-    def _step_oir_has_correct_subscription(self, expected_sub_id: SubscriptionID):
-        self.begin_test_step("OIR is attached to expected subscription")
+    def _step_oir_has_correct_subscription(
+        self, expected_sub_id: Optional[SubscriptionID]
+    ):
+        step_check_name = (
+            "OIR is attached to expected subscription"
+            if expected_sub_id
+            else "OIR is not attached to any subscription"
+        )
+        self.begin_test_step(step_check_name)
         with self.check("Get operational intent reference by ID", self._pid) as check:
             try:
                 oir, q = self._dss.get_op_intent_reference(self._oir_id)
@@ -354,11 +413,48 @@ class OIRSimple(TestScenario):
                     query_timestamps=qe.query_timestamps,
                 )
 
-        with self.check("OIR is attached to expected subscription") as check:
-            if oir.subscription_id != expected_sub_id:
+        sub_is_as_expected = False
+        referenced_sub_was_found_when_non_expected = False
+        if expected_sub_id is None:
+            # The official DSS implementation will set the subscription ID to 00000000-0000-4000-8000-000000000000 when the OIR is not attached to any subscription.
+            # Other implementations may use a different value, as the OpenAPI spec does not allow the value to be empty
+            # We may at some point decide to tolerate accepting empty returned values here,
+            # but in the meantime we simply attempt to obtain the subscription and check that it does not exist
+            if oir.subscription_id == NULL_SUBSCRIPTION_ID:
+                # Sub ID explicitly set to the value representing the null subscription: all good
+                sub_is_as_expected = True
+            elif oir.subscription_id is None:
+                # Sub ID not set at all: not strictly compliant with the spec, but acceptable in this context
+                sub_is_as_expected = True
+            else:
+                # If the subscription ID is defined and not set to the known 'null' value, we assume that the DSS used another
+                # placeholder for the non-existing subscription, and we check that it does not exist.
+                with self.check("Get referenced Subscription") as check:
+                    sub = self._dss.get_subscription(oir.subscription_id)
+                    self.record_query(sub)
+                    if sub.status_code not in [200, 404]:
+                        check.record_failed(
+                            summary="Failed to try to obtain the subscription referenced by the OIR",
+                            details=f"Failed in an unexpected way while querying subscription with ID {oir.subscription_id}: expected a 404 or 200, but got {sub.status_code}",
+                            query_timestamps=[sub.request.timestamp],
+                        )
+                    if sub.status_code == 200:
+                        referenced_sub_was_found_when_non_expected = True
+        else:
+            sub_is_as_expected = oir.subscription_id == expected_sub_id
+
+        with self.check("OIR is attached to expected subscription", self._pid) as check:
+            if referenced_sub_was_found_when_non_expected:
+                check.record_failed(
+                    summary="OIR is attached to a subscription although it should not be",
+                    details=f"Expected OIR to not be attached to any subscription, but the referenced subscription {oir.subscription_id} does exist.",
+                    query_timestamps=[sub.request.timestamp],
+                )
+            if not sub_is_as_expected:
                 check.record_failed(
                     summary="OIR is not attached to the correct subscription",
                     details=f"Expected OIR to be attached to subscription {expected_sub_id}, but it is attached to {oir.subscription_id}",
+                    query_timestamps=[q.request.timestamp],
                 )
         self.end_test_step()
 
