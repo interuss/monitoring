@@ -153,7 +153,49 @@ class OIRExplicitSubHandling(TestScenario):
         self._step_update_oir_with_sufficient_explicit_sub(is_replacement=False)
         self._step_oir_has_correct_subscription(expected_sub_id=self._extra_sub_id)
         self.end_test_case()
+
+        self.begin_test_case("Remove explicit subscription from OIR")
+        self._step_remove_subscription_from_oir()
+        self._step_oir_has_correct_subscription(expected_sub_id=None)
+        self.end_test_case()
+
         self.end_test_scenario()
+
+    def _step_remove_subscription_from_oir(self):
+        self.begin_test_step("Remove explicit subscription from OIR")
+        oir_update_params = self._planning_area.get_new_operational_intent_ref_params(
+            key=[],
+            state=OperationalIntentState.Accepted,
+            uss_base_url=self._planning_area.get_base_url(),
+            time_start=self._current_oir.time_start.value.datetime,
+            time_end=self._current_oir.time_end.value.datetime,
+            subscription_id=None,
+        )
+        with self.check(
+            "Mutate operational intent reference query succeeds",
+            self._pid,
+        ) as check:
+            try:
+                mutated_oir, _, q = self._dss.put_op_intent(
+                    extents=oir_update_params.extents,
+                    key=oir_update_params.key,
+                    state=oir_update_params.state,
+                    base_url=oir_update_params.uss_base_url,
+                    oi_id=self._oir_id,
+                    subscription_id=None,
+                    ovn=self._current_oir.ovn,
+                    force_no_implicit_subscription=True,
+                )
+                self.record_query(q)
+                self._current_oir = mutated_oir
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                check.record_failed(
+                    summary="Removal of explicit subscription from OIR failed",
+                    details=f"Was expecting an HTTP 200 response for a mutation with valid parameters, but got {qe.cause_status_code} instead. {qe.msg}",
+                    query_timestamps=qe.query_timestamps,
+                )
+        self.end_test_step()
 
     def _step_create_explicit_sub(self):
         self._sub_params = self._planning_area.get_new_subscription_params(
