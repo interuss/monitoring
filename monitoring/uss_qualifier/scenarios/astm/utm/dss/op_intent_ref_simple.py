@@ -108,26 +108,14 @@ class OIRSimple(TestScenario):
 
         self.begin_test_case("Validate explicit subscription on OIR creation")
         self._step_create_oir_insufficient_subscription()
-        self._step_create_oir(
-            oir_params=self._planning_area.get_new_operational_intent_ref_params(
-                key=[],
-                state=OperationalIntentState.Accepted,
-                uss_base_url=self._planning_area.get_base_url(),
-                time_start=datetime.now() - timedelta(seconds=10),
-                time_end=self._sub_params.end_time,  # OIR ends at the same time as subscription
-                subscription_id=self._sub_id,
-            ),
-        )
-        self._step_oir_has_correct_subscription(expected_sub_id=self._sub_id)
+        self._step_create_oir_sufficient_subscription()
         self.end_test_case()
 
         self.begin_test_case(
             "Validate explicit subscription upon subscription replacement"
         )
         self._step_update_oir_with_insufficient_explicit_sub()
-        self._step_oir_has_correct_subscription(expected_sub_id=self._sub_id)
         self._step_update_oir_with_sufficient_explicit_sub()
-        self._step_oir_has_correct_subscription(expected_sub_id=self._extra_sub_id)
         self.end_test_case()
 
         self.begin_test_case("Deletion requires correct OVN")
@@ -212,7 +200,7 @@ class OIRSimple(TestScenario):
         )
 
         with self.check(
-            "Request to create OIR with incorrect subscription fails", self._pid
+            "Request to create OIR with too short subscription fails", self._pid
         ) as check:
             try:
                 _, _, q = self._dss.put_op_intent(
@@ -241,6 +229,42 @@ class OIRSimple(TestScenario):
                         query_timestamps=qe.query_timestamps,
                     )
 
+        self.end_test_step()
+
+    def _step_create_oir_sufficient_subscription(self):
+        oir_params = self._planning_area.get_new_operational_intent_ref_params(
+            key=[],
+            state=OperationalIntentState.Accepted,
+            uss_base_url=self._planning_area.get_base_url(),
+            time_start=datetime.now() - timedelta(seconds=10),
+            time_end=self._sub_params.end_time,  # OIR ends at the same time as subscription
+            subscription_id=self._sub_id,
+        )
+
+        self.begin_test_step("Create an OIR with correct explicit subscription")
+        with self.check(
+            "Create operational intent reference query succeeds",
+            self._pid,
+        ) as check:
+            try:
+                new_oir, subs, query = self._dss.put_op_intent(
+                    extents=oir_params.extents,
+                    key=oir_params.key,
+                    state=oir_params.state,
+                    base_url=oir_params.uss_base_url,
+                    oi_id=self._oir_id,
+                    subscription_id=oir_params.subscription_id,
+                )
+                self.record_query(query)
+                self._current_oir = new_oir
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                check.record_failed(
+                    summary="Could not create operational intent reference",
+                    details=f"Failed to create operational intent reference with error code {qe.cause_status_code}: {qe.msg}",
+                    query_timestamps=qe.query_timestamps,
+                )
+        self._check_oir_has_correct_subscription(expected_sub_id=self._sub_id)
         self.end_test_step()
 
     def _step_update_oir_with_insufficient_explicit_sub(self):
@@ -273,7 +297,7 @@ class OIRSimple(TestScenario):
             "Attempt to replace OIR's existing explicit subscription with an insufficient one"
         )
         with self.check(
-            "Request to mutate OIR while providing an incorrect subscription fails",
+            "Request to mutate OIR while providing a too short subscription fails",
             self._pid,
         ) as check:
             try:
@@ -303,6 +327,7 @@ class OIRSimple(TestScenario):
                         details=f"Was expecting an HTTP 400 response because of an insufficient subscription, but got {qe.cause_status_code} instead. {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
+        self._check_oir_has_correct_subscription(expected_sub_id=self._sub_id)
         self.end_test_step()
 
     def _step_update_oir_with_sufficient_explicit_sub(self):
@@ -338,10 +363,10 @@ class OIRSimple(TestScenario):
                     details=f"Was expecting an HTTP 200 response for a mutation with valid parameters, but got {qe.cause_status_code} instead. {qe.msg}",
                     query_timestamps=qe.query_timestamps,
                 )
+        self._check_oir_has_correct_subscription(expected_sub_id=self._extra_sub_id)
         self.end_test_step()
 
-    def _step_oir_has_correct_subscription(self, expected_sub_id: SubscriptionID):
-        self.begin_test_step("OIR is attached to expected subscription")
+    def _check_oir_has_correct_subscription(self, expected_sub_id: SubscriptionID):
         with self.check("Get operational intent reference by ID", self._pid) as check:
             try:
                 oir, q = self._dss.get_op_intent_reference(self._oir_id)
@@ -360,7 +385,6 @@ class OIRSimple(TestScenario):
                     summary="OIR is not attached to the correct subscription",
                     details=f"Expected OIR to be attached to subscription {expected_sub_id}, but it is attached to {oir.subscription_id}",
                 )
-        self.end_test_step()
 
     def _step_attempt_delete_missing_ovn(self):
 
