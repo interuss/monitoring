@@ -40,16 +40,16 @@ Ensures that the explicit subscription provided upon creation of an OIR is prope
 
 This step verifies that an OIR cannot be created when an explicit subscription that does not cover the extent of the OIR is specified.
 
-#### 🛑 Request to create OIR with incorrect subscription fails check
+#### 🛑 Request to create OIR with too short subscription fails check
 
 If the DSS under test allows the qualifier to create an OIR with an explicit subscription that does not cover the extent of the OIR,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
 
-### [Create an operational intent reference test step](./fragments/oir/crud/create_query.md)
+### [Create an OIR with correct explicit subscription test step](./fragments/oir/crud/create_query.md)
 
 When the provided subscription covers the extent of the OIR, the OIR can be created.
 
-### [OIR is attached to expected subscription test step](./fragments/oir/oir_has_expected_subscription.md)
+#### [OIR is attached to expected subscription](./fragments/oir/oir_has_expected_subscription.md)
 
 This step verifies that the OIR is attached to the subscription provided upon creation.
 
@@ -66,23 +66,19 @@ Create an additional explicit subscription to be used in this test case.
 
 This step verifies that an OIR's existing explicit subscription cannot be replaced with an explicit subscription that does not cover the extent of the OIR.
 
-#### 🛑 Request to mutate OIR while providing an incorrect subscription fails check
+#### 🛑 Request to mutate OIR while providing a too short subscription fails check
 
 If the DSS under test allows the qualifier to replace an OIR's existing explicit subscription with an explicit subscription that does not cover the extent of the OIR,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
 
-### [OIR is attached to expected subscription test step](./fragments/oir/oir_has_expected_subscription.md)
+#### [OIR is attached to expected subscription](./fragments/oir/oir_has_expected_subscription.md)
 
-This step verifies that the OIR is still attached to the previous, valid, subscription.
+Verify that the OIR is still attached to the previous, valid, subscription.
 
-### [Replace the OIR's explicit subscription test step](./fragments/oir/crud/update_query.md)
+### [Replace the OIR's explicit subscription test step](./fragments/oir/oir_subscription_update.md)
 
 This step verifies that an OIR attached to an explicit subscription can be mutated in order to be attached
 to another explicit subscription that properly covers the extent of the OIR.
-
-### [OIR is attached to expected subscription test step](./fragments/oir/oir_has_expected_subscription.md)
-
-This step verifies that the OIR is attached to the subscription provided upon mutation.
 
 ## Deletion requires correct OVN test case
 
@@ -94,7 +90,7 @@ This step resets the workspace for the present and following test cases by ensur
 
 ### [Create an operational intent reference test step](./fragments/oir/crud/create_query.md)
 
-Create an operational intent reference to be used in this and the following test cases.
+Create the operational intent reference that will be used for the deletion attempts that happen in the subsequent steps.
 
 ### Attempt deletion with missing OVN test step
 
