@@ -459,6 +459,8 @@ class SubscriptionInteractions(TestScenario):
         for sub_id in self._sub_ids:
             test_step_fragments.cleanup_sub(self, self._dss, sub_id)
 
+        test_step_fragments.cleanup_active_subs(self, self._dss, extents)
+
     def cleanup(self):
         self.begin_cleanup()
         self._clean_workspace()
