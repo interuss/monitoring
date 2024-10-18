@@ -71,7 +71,15 @@ class DSSInteroperability(TestScenario):
                 "DSS instance is publicly addressable", [dss.participant_id]
             ) as check:
                 parsed_url = urlparse(dss.base_url)
-                ip_addr = socket.gethostbyname(parsed_url.hostname)
+                try:
+                    ip_addr = socket.gethostbyname(parsed_url.hostname)
+                # We would typically get a socket.gaierror if the host does not resolve,
+                # but we catch its parent class socket.error to cover a possibly wider range of issues
+                except socket.error as e:
+                    check.record_failed(
+                        summary=f"Could not resolve DSS host {parsed_url.netloc}",
+                        details=f"Could not resolve DSS host {parsed_url.netloc}: {e}",
+                    )
 
                 if ipaddress.ip_address(ip_addr).is_private:
                     if self._allow_private_addresses:
