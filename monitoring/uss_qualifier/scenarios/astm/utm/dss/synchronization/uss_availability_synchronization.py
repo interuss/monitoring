@@ -258,7 +258,9 @@ class USSAvailabilitySynchronization(TestScenario):
         expected_availability: UssAvailabilityState,
         expected_version: str,
     ):
-        with self.check("USS Availability can be requested", participants) as check:
+        with self.check(
+            "USS Availability can be requested", dss.participant_id
+        ) as check:
             try:
                 availability, q = dss.get_uss_availability(
                     uss_id, Scope.StrategicCoordination
