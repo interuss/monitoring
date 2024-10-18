@@ -194,12 +194,6 @@ class OIRImplicitSubHandling(TestScenario):
 
         self.end_test_scenario()
 
-        """
-
-Create OI3 in DSS from t2 to t3, confirm no subscriptions beyond pre-existing subscriptions in step 2 are among subscribers
-Clean up
-        """
-
     def _case_1_step_create_oir_1(self):
         oir, subs, impl_sub, _ = self._create_oir(
             self._oir_a_id, self._time_2, self._time_3, [], True
