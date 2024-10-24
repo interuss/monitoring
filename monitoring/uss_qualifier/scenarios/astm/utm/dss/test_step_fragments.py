@@ -166,6 +166,7 @@ def cleanup_active_oirs(
     ) as check:
         try:
             oirs, query = dss.find_op_intent(volume)
+            scenario.record_query(query)
         except QueryError as qe:
             scenario.record_queries(qe.queries)
             check.record_failed(
@@ -190,6 +191,7 @@ def cleanup_op_intent(
     ) as check:
         try:
             oir, q = dss.get_op_intent_reference(oi_id)
+            scenario.record_query(q)
         except fetch.QueryError as e:
             scenario.record_queries(e.queries)
             if e.cause_status_code != 404:
