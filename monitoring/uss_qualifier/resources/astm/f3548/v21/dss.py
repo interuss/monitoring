@@ -38,6 +38,7 @@ from uas_standards.astm.f3548.v21.api import (
     ConstraintReference,
     QueryConstraintReferenceParameters,
     QueryConstraintReferencesResponse,
+    UUIDv7Format,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -257,6 +258,7 @@ class DSSInstance(object):
         subscription_id: Optional[str] = None,
         force_query_scopes: Optional[Scope] = None,
         force_no_implicit_subscription: bool = False,
+        requested_ovn_suffix: Optional[UUIDv7Format] = None,
     ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query,]:
         """
         Create or update an operational intent.
@@ -313,6 +315,7 @@ class DSSInstance(object):
             new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url)
             if subscription_id is None and force_no_implicit_subscription is False
             else None,
+            requested_ovn_suffix=requested_ovn_suffix,
         )
         query = query_and_describe(
             self.client,
