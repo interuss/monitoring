@@ -63,6 +63,9 @@ class DSSInstanceSpecification(ImplicitDict):
     base_url: str
     """Base URL for the DSS instance according to the ASTM F3548-21 API"""
 
+    supports_ovn_request: Optional[bool]
+    """Whether this DSS instance supports the optional extension not part of the original F3548 standard API allowing a USS to request a specific OVN when creating or updating an operational intent."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         try:
@@ -720,6 +723,15 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     @property
     def base_url(self) -> str:
         return self._specification.base_url
+
+    @property
+    def supports_ovn_request(self) -> bool:
+        return (
+            self._specification.supports_ovn_request
+            if self._specification.has_field_with_value("supports_ovn_request")
+            and self._specification.supports_ovn_request is not None
+            else False
+        )
 
     def get_authorized_scope_not_in(self, ignored_scopes: List[str]) -> Optional[Scope]:
         """Returns a scope that this DSS Resource is allowed to use but that is not any of the ones that are passed
