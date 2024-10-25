@@ -112,6 +112,14 @@ The identity of flights is determined by precisely matching the known injected p
 
 **[astm.f3411.v19.NET0260,Table1,16](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had a specified horizontal accuracy that was different from the reported one.
 
+#### ⚠️ Service Provider timestamp accuracy is present check
+
+If the timestamp accuracy is not present, the USS under test is not properly implementing the REST interface specified by the OpenAPI definition contained in Annex A4, and is therefore in violation of **[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)**.
+
+#### ⚠️ Service Provider timestamp accuracy is correct check
+
+**[astm.f3411.v19.NET0260,Table1,5](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  The observed timestamp accuracy differs from the injected one.
+
 #### Successful flight details query check
 
 **[astm.f3411.v19.NET0710,2](../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../requirements/astm/f3411/v19.md)** require a Service Provider to implement the GET flight details endpoint.  This check will fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
