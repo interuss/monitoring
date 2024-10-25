@@ -126,7 +126,7 @@ The identity of flights is determined by precisely matching the known injected p
 
 #### Area too large check
 
-**[astm.f3411.v19.NET0430](../../../../requirements/astm/f3411/v19.md)** requires that a NetRID Display Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
+**[astm.f3411.v19.NET0250](../../../../requirements/astm/f3411/v19.md)** requires that a NetRID Service Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
 
 ### Observer polling test step
 
