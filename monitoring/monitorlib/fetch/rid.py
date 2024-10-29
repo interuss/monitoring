@@ -11,7 +11,11 @@ import uas_standards.astm.f3411.v22a.constants
 import yaml
 from implicitdict import ImplicitDict, StringBasedDateTime
 from uas_standards.astm.f3411 import v19, v22a
-from uas_standards.astm.f3411.v22a.api import RIDHeight, VerticalAccuracy
+from uas_standards.astm.f3411.v22a.api import (
+    RIDHeight,
+    HorizontalAccuracy,
+    VerticalAccuracy,
+)
 from yaml.representer import Representer
 
 from monitoring.monitorlib import fetch, rid_v1, rid_v2, geo
@@ -158,6 +162,11 @@ class Position(ImplicitDict):
     ]  # Note: we use the enum defined in the v2 API as it is equivalent (and thus compatible) to the v19 one
     """Vertical error that is likely to be present in this reported position"""
 
+    accuracy_h: Optional[
+        HorizontalAccuracy
+    ]  # Note: we use the enum defined in the v2 API as it is equivalent (and thus compatible) to the v19 one
+    """Horizontal error that is likely to be present in this reported position."""
+
     @staticmethod
     def from_v19_rid_aircraft_position(
         p: v19.api.RIDAircraftPosition, t: v19.api.StringBasedDateTime
@@ -169,6 +178,7 @@ class Position(ImplicitDict):
             time=t.datetime,
             height=None,
             accuracy_v=p.accuracy_v if "accuracy_v" in p else None,
+            accuracy_h=p.accuracy_h if "accuracy_h" in p else None,
         )
 
     @staticmethod
@@ -182,6 +192,7 @@ class Position(ImplicitDict):
             time=t.datetime,
             height=p.get("height"),
             accuracy_v=p.accuracy_v if "accuracy_v" in p else None,
+            accuracy_h=p.accuracy_h if "accuracy_h" in p else None,
         )
 
 

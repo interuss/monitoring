@@ -939,6 +939,21 @@ class RIDObservationEvaluator(object):
                             details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with vertical accuracy {injected_position.accuracy_v}, but {observer.participant_id} observed vertical accuracy {observed_position.accuracy_v}",
                         )
 
+            if "accuracy_h" in injected_position:
+                with self._test_scenario.check(
+                    "Service Provider horizontal accuracy",
+                    [mapping.injected_flight.uss_participant_id],
+                ) as check:
+                    if (
+                        "accuracy_h" in observed_position
+                        and injected_position.accuracy_h.value
+                        != observed_position.accuracy_h.value
+                    ):
+                        check.record_failed(
+                            "Horizontal accuracy reported by Service Provider does not match injected horizontal accuracy",
+                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with accuracy_h={injected_telemetry.position.accuracy_h}, but Service Provider reported accuracy_h={observed_position.accuracy_h}",
+                        )
+
             if mapping.observed_flight.flight.raw.current_state is not None:
                 with self._test_scenario.check(
                     "Service Provider vertical speed",
