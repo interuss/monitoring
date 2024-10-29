@@ -52,15 +52,19 @@ def _rect_str(rect) -> str:
 @dataclass
 class DPObservedFlight(object):
     query: FetchedUSSFlights
-    flight: int
+    flight_index: int
 
     @property
     def id(self) -> str:
-        return self.query.flights[self.flight].id
+        return self.query.flights[self.flight_index].id
 
     @property
     def most_recent_position(self) -> Optional[Position]:
-        return self.query.flights[self.flight].most_recent_position
+        return self.query.flights[self.flight_index].most_recent_position
+
+    @property
+    def flight(self) -> fetch.rid.Flight:
+        return self.query.flights[self.flight_index]
 
 
 ObservationType = Union[Flight, DPObservedFlight]
@@ -156,7 +160,7 @@ def map_fetched_to_injected_flights(
     observed_flights = []
     for uss_query in fetched_flights:
         for f in range(len(uss_query.flights)):
-            observed_flights.append(DPObservedFlight(query=uss_query, flight=f))
+            observed_flights.append(DPObservedFlight(query=uss_query, flight_index=f))
 
     tel_mapping = map_observations_to_injected_flights(
         injected_flights, observed_flights
