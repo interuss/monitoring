@@ -962,6 +962,20 @@ class RIDObservationEvaluator(object):
                             details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with speed={injected_telemetry.speed}, but Service Provider reported speed={mapping.observed_flight.flight.raw.current_state.speed} at {mapping.observed_flight.query.query.request.initiated_at}",
                         )
 
+            if mapping.observed_flight.flight.raw.current_state is not None:
+                with self._test_scenario.check(
+                    "Service Provider speed accuracy",
+                    [mapping.injected_flight.uss_participant_id],
+                ) as check:
+                    if (
+                        injected_telemetry.speed_accuracy.value
+                        != mapping.observed_flight.flight.raw.current_state.speed_accuracy.value
+                    ):
+                        check.record_failed(
+                            summary="Speed accuracy reported by Service Provider does not match injected speed accuracy",
+                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with speed accuracy {injected_telemetry.speed_accuracy.value}, but Service Provider reported speed accuracy {mapping.observed_flight.flight.raw.current_state.speed_accuracy.value} at {mapping.observed_flight.query.query.request.initiated_at}",
+                        )
+
         # Verify that flight details queries succeeded and returned correctly-formatted data
         for mapping in mappings.values():
             details_queries = [
