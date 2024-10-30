@@ -215,7 +215,9 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 op_id=OperationID.GetOperationalIntentDetails,
                 direction=QueryDirection.Incoming,
                 since=flight_1_planning_time,
-                query_params={"entity_id": flight_2_oi_ref.id},
+                query_params=dict(
+                    entityid=flight_2_oi_ref.id,
+                ),
             )
             with self.check(
                 "Expect GET request when no notification",
@@ -337,7 +339,9 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 op_id=OperationID.GetOperationalIntentDetails,
                 direction=QueryDirection.Incoming,
                 since=flight_1_planning_time,
-                query_params={"entity_id": flight_2_oi_ref.id},
+                query_params=dict(
+                    entityid=flight_2_oi_ref.id,
+                ),
             )
             with self.check(
                 "Expect GET request when no notification",
