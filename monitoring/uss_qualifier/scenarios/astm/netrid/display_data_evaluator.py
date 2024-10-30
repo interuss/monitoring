@@ -50,6 +50,7 @@ def _rect_str(rect) -> str:
 
 
 VERTICAL_SPEED_PRECISION = 0.1
+SPEED_PRECISION = 0.05
 
 
 @dataclass
@@ -906,6 +907,10 @@ class RIDObservationEvaluator(object):
             ]
             observed_position = mapping.observed_flight.most_recent_position
             injected_position = injected_telemetry.position
+
+            # TODO all/most checks below (Not only 'alt' but also, speed, etc.) should be moved to the common dictionary evaluator
+            # The intent is to do so in a cleanup step once all fields have been checked.
+            # Tracked in issue https://github.com/interuss/monitoring/issues/842
             if "alt" in observed_position:
                 with self._test_scenario.check(
                     "Service Provider altitude",
@@ -936,6 +941,25 @@ class RIDObservationEvaluator(object):
                         check.record_failed(
                             "Vertical speed reported by Service Provider does not match injected vertical speed",
                             details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with vertical speed {injected_telemetry.vertical_speed}, but Service Provider reported vertical speed {mapping.observed_flight.flight.raw.current_state.vertical_speed} at {mapping.observed_flight.query.query.request.initiated_at}",
+                        )
+
+            if mapping.observed_flight.flight.raw.current_state is not None:
+                with self._test_scenario.check(
+                    "Service Provider speed",
+                    [mapping.injected_flight.uss_participant_id],
+                ) as check:
+                    # Based on the spec, expecting a precision of 0.05 m/s is reasonable: the sample value is '1.9'
+                    # and the maximal value is '254.25' (to be used if the speed is > 254.25 m/s).
+                    if (
+                        abs(
+                            injected_telemetry.speed
+                            - mapping.observed_flight.flight.raw.current_state.speed
+                        )
+                        > SPEED_PRECISION
+                    ):
+                        check.record_failed(
+                            "Speed reported by Service Provider does not match injected speed",
+                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with speed={injected_telemetry.speed}, but Service Provider reported speed={mapping.observed_flight.flight.raw.current_state.speed} at {mapping.observed_flight.query.query.request.initiated_at}",
                         )
 
         # Verify that flight details queries succeeded and returned correctly-formatted data
