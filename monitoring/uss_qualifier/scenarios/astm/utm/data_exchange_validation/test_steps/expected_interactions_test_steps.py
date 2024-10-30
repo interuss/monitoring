@@ -43,11 +43,11 @@ def expect_mock_uss_receives_op_intent_notification(
 
     # Check for 'notification found' will be done periodically by waiting for a duration till max_wait_time
     found, query = wait_in_intervals(mock_uss_interactions)(
-        scenario=scenario,
-        mock_uss=mock_uss,
-        op_id=OperationID.NotifyOperationalIntentDetailsChanged,
-        direction=QueryDirection.Incoming,
-        since=st,
+        scenario,
+        mock_uss,
+        st,
+        operation_filter(OperationID.NotifyOperationalIntentDetailsChanged),
+        direction_filter(QueryDirection.Incoming),
     )
 
     with scenario.check("Expect Notification sent", [participant_id]) as check:
@@ -78,11 +78,11 @@ def expect_no_interuss_post_interactions(
         "we have to wait the longest it may take a USS to send a notification before we can establish that they didn't send a notification",
     )
     interactions, query = mock_uss_interactions(
-        scenario=scenario,
-        mock_uss=mock_uss,
-        op_id=OperationID.NotifyOperationalIntentDetailsChanged,
-        direction=QueryDirection.Incoming,
-        since=st,
+        scenario,
+        mock_uss,
+        st,
+        operation_filter(OperationID.NotifyOperationalIntentDetailsChanged),
+        direction_filter(QueryDirection.Incoming),
     )
 
     for interaction in interactions:
@@ -117,19 +117,11 @@ def expect_no_interuss_post_interactions(
 def mock_uss_interactions(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
-    op_id: OperationID,
-    direction: QueryDirection,
     since: StringBasedDateTime,
-    query_params: Optional[Dict[str, str]] = None,
-    is_applicable: Optional[Callable[[Interaction], bool]] = None,
+    *is_applicable: Callable[[Interaction], bool],
 ) -> Tuple[List[Interaction], Query]:
-    """
-    Determine if mock_uss recorded an interaction for the specified operation in the specified direction.
+    """Retrieve mock_uss interactions given specific criteria."""
 
-    Raises:
-        KeyError: if query_params contains a non-existing parameter
-        IndexError: if query_params is missing a parameter
-    """
     with scenario.check(
         "Mock USS interactions logs retrievable", [mock_uss.participant_id]
     ) as check:
@@ -145,27 +137,16 @@ def mock_uss_interactions(
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
 
-    op = api.OPERATIONS[op_id]
-
-    if query_params is None:
-        query_params = {}  # avoid linting error due to immutable default argument
-    op_path = op.path.format(**query_params)  # raises KeyError, IndexError
-
-    if is_applicable is None:
-        is_applicable = lambda i: True
-    result = []
-    for interaction in interactions:
-        if (
-            interaction.direction == direction
-            and interaction.query.request.method == op.verb
-            and re.search(op_path, interaction.query.request.url)
-            and is_applicable(interaction)
-        ):
-            result.append(interaction)
-    return result, query
+    return filter_interactions(interactions, is_applicable), query
 
 
-def is_op_intent_notification_with_id(
+def filter_interactions(
+    interactions: List[Interaction], filters: Iterable[Callable[[Interaction], bool]]
+) -> List[Interaction]:
+    return list(filter(lambda x: all(f(x) for f in filters), interactions))
+
+
+def notif_op_intent_id_filter(
     op_intent_id: EntityID,
 ) -> Callable[[Interaction], bool]:
     """Returns an `is_applicable` function that detects whether an op intent notification refers to the specified operational intent."""
@@ -177,5 +158,50 @@ def is_op_intent_notification_with_id(
                 == op_intent_id
             )
         return False
+
+    return is_applicable
+
+
+def base_url_filter(
+    base_url: str,
+) -> Callable[[Interaction], bool]:
+    """Returns an `is_applicable` function that detects if the request in an interaction is sent to the given base url."""
+
+    def is_applicable(interaction: Interaction) -> bool:
+        return interaction.query.request.url.startswith(base_url)
+
+    return is_applicable
+
+
+def direction_filter(
+    direction: QueryDirection,
+) -> Callable[[Interaction], bool]:
+    """Returns an `is_applicable` filter that filters according to query direction."""
+
+    def is_applicable(interaction: Interaction) -> bool:
+        return interaction.direction == direction
+
+    return is_applicable
+
+
+def operation_filter(
+    op_id: OperationID,
+    **query_params: str,
+) -> Callable[[Interaction], bool]:
+    """
+    Returns an `is_applicable` filter that filters according to operation ID.
+    If the operation has query parameters, they must be provided through `**query_params`.
+
+    Raises:
+        KeyError: if query_params contains a non-existing parameter
+        IndexError: if query_params is missing a parameter
+    """
+    op = api.OPERATIONS[op_id]
+    op_path = op.path.format(**query_params)  # raises KeyError, IndexError
+
+    def is_applicable(interaction: Interaction) -> bool:
+        return interaction.query.request.method == op.verb and re.search(
+            op_path, interaction.query.request.url
+        )
 
     return is_applicable
