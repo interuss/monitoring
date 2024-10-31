@@ -7,8 +7,14 @@ resources:
   utm_client_identity: resources.communications.ClientIdentityResource
   isa: resources.netrid.ServiceAreaResource
   problematically_big_area: resources.VerticesResource
+  acceptable_search_area: resources.VerticesResource
   test_exclusions: resources.dev.TestExclusionsResource?
 actions:
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v22a.dss.EndpointEncryption
+      resources:
+        dss: dss
+        test_search_area: acceptable_search_area
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.dss.ISASimple
       resources:

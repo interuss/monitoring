@@ -4,16 +4,17 @@
 
 ## [Actions](../../../README.md#actions)
 
-1. Scenario: [ASTM NetRID DSS: Simple ISA](../../../../scenarios/astm/netrid/v22a/dss/isa_simple.md) ([`scenarios.astm.netrid.v22a.dss.ISASimple`](../../../../scenarios/astm/netrid/v22a/dss/isa_simple.py))
-2. Scenario: [ASTM NetRID DSS: Submitted ISA Validations](../../../../scenarios/astm/netrid/v22a/dss/isa_validation.md) ([`scenarios.astm.netrid.v22a.dss.ISAValidation`](../../../../scenarios/astm/netrid/v22a/dss/isa_validation.py))
-3. Scenario: [ASTM NetRID DSS: ISA Expiry](../../../../scenarios/astm/netrid/v22a/dss/isa_expiry.md) ([`scenarios.astm.netrid.v22a.dss.ISAExpiry`](../../../../scenarios/astm/netrid/v22a/dss/isa_expiry.py))
-4. Scenario: [ASTM NetRID DSS: ISA Subscription Interactions](../../../../scenarios/astm/netrid/v22a/dss/isa_subscription_interactions.md) ([`scenarios.astm.netrid.v22a.dss.ISASubscriptionInteractions`](../../../../scenarios/astm/netrid/v22a/dss/isa_subscription_interactions.py))
-5. Scenario: [ASTM NetRID DSS: Subscription Validation](../../../../scenarios/astm/netrid/v22a/dss/subscription_validation.md) ([`scenarios.astm.netrid.v22a.dss.SubscriptionValidation`](../../../../scenarios/astm/netrid/v22a/dss/subscription_validation.py))
-6. Scenario: [ASTM NetRID DSS: Subscription Simple](../../../../scenarios/astm/netrid/v22a/dss/subscription_simple.md) ([`scenarios.astm.netrid.v22a.dss.SubscriptionSimple`](../../../../scenarios/astm/netrid/v22a/dss/subscription_simple.py))
-7. Scenario: [ASTM F3411-22a NetRID DSS interoperability](../../../../scenarios/astm/netrid/v22a/dss_interoperability.md) ([`scenarios.astm.netrid.v22a.DSSInteroperability`](../../../../scenarios/astm/netrid/v22a/dss_interoperability.py))
-8. Scenario: [ASTM NetRID DSS: Token Validation](../../../../scenarios/astm/netrid/v22a/dss/token_validation.md) ([`scenarios.astm.netrid.v22a.dss.TokenValidation`](../../../../scenarios/astm/netrid/v22a/dss/token_validation.py))
-9. Scenario: [ASTM NetRID DSS: Direct CRDB access](../../../../scenarios/astm/netrid/v22a/dss/crdb_access.md) ([`scenarios.astm.netrid.v22a.dss.CRDBAccess`](../../../../scenarios/astm/netrid/v22a/dss/crdb_access.py))
-10. Scenario: [ASTM NetRID DSS: Concurrent Requests](../../../../scenarios/astm/netrid/v22a/dss/heavy_traffic_concurrent.md) ([`scenarios.astm.netrid.v22a.dss.HeavyTrafficConcurrent`](../../../../scenarios/astm/netrid/v22a/dss/heavy_traffic_concurrent.py))
+1. Scenario: [ASTM NetRID DSS: Endpoint encryption](../../../../scenarios/astm/netrid/v22a/dss/endpoint_encryption.md) ([`scenarios.astm.netrid.v22a.dss.EndpointEncryption`](../../../../scenarios/astm/netrid/v22a/dss/endpoint_encryption.py))
+2. Scenario: [ASTM NetRID DSS: Simple ISA](../../../../scenarios/astm/netrid/v22a/dss/isa_simple.md) ([`scenarios.astm.netrid.v22a.dss.ISASimple`](../../../../scenarios/astm/netrid/v22a/dss/isa_simple.py))
+3. Scenario: [ASTM NetRID DSS: Submitted ISA Validations](../../../../scenarios/astm/netrid/v22a/dss/isa_validation.md) ([`scenarios.astm.netrid.v22a.dss.ISAValidation`](../../../../scenarios/astm/netrid/v22a/dss/isa_validation.py))
+4. Scenario: [ASTM NetRID DSS: ISA Expiry](../../../../scenarios/astm/netrid/v22a/dss/isa_expiry.md) ([`scenarios.astm.netrid.v22a.dss.ISAExpiry`](../../../../scenarios/astm/netrid/v22a/dss/isa_expiry.py))
+5. Scenario: [ASTM NetRID DSS: ISA Subscription Interactions](../../../../scenarios/astm/netrid/v22a/dss/isa_subscription_interactions.md) ([`scenarios.astm.netrid.v22a.dss.ISASubscriptionInteractions`](../../../../scenarios/astm/netrid/v22a/dss/isa_subscription_interactions.py))
+6. Scenario: [ASTM NetRID DSS: Subscription Validation](../../../../scenarios/astm/netrid/v22a/dss/subscription_validation.md) ([`scenarios.astm.netrid.v22a.dss.SubscriptionValidation`](../../../../scenarios/astm/netrid/v22a/dss/subscription_validation.py))
+7. Scenario: [ASTM NetRID DSS: Subscription Simple](../../../../scenarios/astm/netrid/v22a/dss/subscription_simple.md) ([`scenarios.astm.netrid.v22a.dss.SubscriptionSimple`](../../../../scenarios/astm/netrid/v22a/dss/subscription_simple.py))
+8. Scenario: [ASTM F3411-22a NetRID DSS interoperability](../../../../scenarios/astm/netrid/v22a/dss_interoperability.md) ([`scenarios.astm.netrid.v22a.DSSInteroperability`](../../../../scenarios/astm/netrid/v22a/dss_interoperability.py))
+9. Scenario: [ASTM NetRID DSS: Token Validation](../../../../scenarios/astm/netrid/v22a/dss/token_validation.md) ([`scenarios.astm.netrid.v22a.dss.TokenValidation`](../../../../scenarios/astm/netrid/v22a/dss/token_validation.py))
+10. Scenario: [ASTM NetRID DSS: Direct CRDB access](../../../../scenarios/astm/netrid/v22a/dss/crdb_access.md) ([`scenarios.astm.netrid.v22a.dss.CRDBAccess`](../../../../scenarios/astm/netrid/v22a/dss/crdb_access.py))
+11. Scenario: [ASTM NetRID DSS: Concurrent Requests](../../../../scenarios/astm/netrid/v22a/dss/heavy_traffic_concurrent.md) ([`scenarios.astm.netrid.v22a.dss.HeavyTrafficConcurrent`](../../../../scenarios/astm/netrid/v22a/dss/heavy_traffic_concurrent.py))
 
 ## [Checked requirements](../../../README.md#checked-requirements)
 
@@ -29,6 +30,11 @@
     <td><a href="../../../../requirements/astm/f3411/v22a.md">DSS0010</a></td>
     <td>Implemented</td>
     <td><a href="../../../../scenarios/astm/netrid/v22a/dss/token_validation.md">ASTM NetRID DSS: Token Validation</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../../requirements/astm/f3411/v22a.md">DSS0020</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../../scenarios/astm/netrid/v22a/dss/endpoint_encryption.md">ASTM NetRID DSS: Endpoint encryption</a></td>
   </tr>
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v22a.md">DSS0030</a></td>

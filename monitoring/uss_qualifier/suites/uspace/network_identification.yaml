@@ -10,6 +10,7 @@ resources:
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
   problematically_big_area: resources.VerticesResource
+  acceptable_search_area: resources.VerticesResource
   test_exclusions: resources.dev.TestExclusionsResource?
 actions:
 - test_suite:
@@ -25,6 +26,7 @@ actions:
       id_generator: id_generator
       service_area: service_area
       problematically_big_area: problematically_big_area
+      acceptable_search_area: acceptable_search_area
       test_exclusions: test_exclusions?
   on_failure: Abort
 - test_scenario:
