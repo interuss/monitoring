@@ -1,24 +1,22 @@
 from implicitdict import StringBasedDateTime, ImplicitDict
-from typing import Callable, List, Tuple
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
-from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
-from datetime import datetime
-from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
-    mock_uss_interactions,
+from typing import List, Tuple
+
+from monitoring.uss_qualifier.scenarios.interuss.mock_uss.test_steps import (
+    get_mock_uss_interactions,
     operation_filter,
     direction_filter,
     notif_op_intent_id_filter,
     base_url_filter,
 )
+from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
+from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
+from datetime import datetime
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.wait import (
     wait_in_intervals,
 )
 from monitoring.monitorlib.clients.mock_uss.interactions import (
     Interaction,
     QueryDirection,
-)
-from monitoring.monitorlib.fetch import (
-    QueryType,
 )
 from uas_standards.astm.f3548.v21.api import (
     OperationID,
@@ -55,7 +53,7 @@ def expect_tested_uss_receives_notification_from_mock_uss(
         "Mock USS sends valid notification", mock_uss.participant_id
     ) as check:
         try:
-            interactions, query = wait_in_intervals(mock_uss_interactions)(
+            interactions, query = wait_in_intervals(get_mock_uss_interactions)(
                 scenario,
                 mock_uss,
                 StringBasedDateTime(interactions_since_time),

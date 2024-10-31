@@ -2,8 +2,7 @@
 
 This step verifies that a USS makes a GET request to get the intent_details of an existing operation when needed as per ASTM F3548-21 by checking the interuss interactions of mock uss
 
-## 🛑 Mock USS interactions logs retrievable check
-**[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+## [Get Mock USS interactions logs](../../../../interuss/mock_uss/get_mock_uss_interactions.md)
 
 ## 🛑 Expect GET request when no notification check
 **[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**

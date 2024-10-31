@@ -3,11 +3,9 @@
 This step verifies that a Tested USS successfully received a notification about a relevant operational intent from a Mock USS instance.
 This is done by checking the interactions of that Mock USS instance.
 
-## 🛑 Mock USS interactions logs retrievable check
-**[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+## [Get Mock USS interactions logs](../../../../interuss/mock_uss/get_mock_uss_interactions.md)
 Mock USS provides a GET endpoint to retrieve all the interactions that took place between Mock USS
 and other USSes after a particular time.
-If there is any error retrieving these interactions, this check will fail.
 These interactions also include the notifications sent and received by Mock USS.
 
 ## ⚠️ Mock USS sends valid notification check

@@ -51,7 +51,7 @@ mock_uss via a GET request.  This assertion is only valid, however, if tested_us
 intent details in a different way -- specifically, a notification due to a pre-existing subscription.  In this test
 step, we determine if tested_uss had a pre-existing subscription by:
 
-#### [checking if mock_uss sent a notification to tested_uss](test_steps/query_mock_uss_interactions.md)
+#### [checking if mock_uss sent a notification to tested_uss](../../../interuss/mock_uss/get_mock_uss_interactions.md)
 
 ### [Validate flight2 GET interaction, if no notification test step](test_steps/validate_get_operational_intent.md)
 This step is skipped if a notification to tested_uss was found in the previous step since tested_uss obtained the operational intent details of flight 2 without needing to perform a GET interaction.
@@ -99,7 +99,7 @@ mock_uss via a GET request.  This assertion is only valid, however, if tested_us
 intent details in a different way -- specifically, a notification due to a pre-existing subscription.  In this test
 step, we determine if tested_uss had a pre-existing subscription by:
 
-#### [Check if mock_uss sent a notification to tested_uss](test_steps/query_mock_uss_interactions.md)
+#### [Check if mock_uss sent a notification to tested_uss](../../../interuss/mock_uss/get_mock_uss_interactions.md)
 
 ### [Validate flight2 GET interaction, if no notification test step](test_steps/validate_get_operational_intent.md)
 This step is skipped if a notification to tested_uss was found in the previous step.
