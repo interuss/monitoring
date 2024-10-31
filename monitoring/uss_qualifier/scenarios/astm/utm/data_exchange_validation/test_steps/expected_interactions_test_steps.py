@@ -11,16 +11,17 @@ from uas_standards.astm.f3548.v21.api import (
 )
 
 from monitoring.monitorlib.clients.mock_uss.interactions import QueryDirection
-from monitoring.monitorlib.delay import sleep
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.wait import (
     wait_in_intervals,
-    MaxTimeToWaitForSubscriptionNotificationSeconds as max_wait_time,
 )
 from monitoring.uss_qualifier.scenarios.interuss.mock_uss.test_steps import (
     get_mock_uss_interactions,
     operation_filter,
     direction_filter,
+    filter_interactions,
+    notif_op_intent_id_filter,
+    status_code_filter,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
@@ -72,10 +73,6 @@ def expect_no_interuss_post_interactions(
         shared_op_intent_ids: the set of IDs of previously shared operational intents for which it is expected that notifications are present regardless of their timings
         participant_id: id of the participant responsible to send the notification
     """
-    sleep(
-        max_wait_time,
-        "we have to wait the longest it may take a USS to send a notification before we can establish that they didn't send a notification",
-    )
     interactions, query = get_mock_uss_interactions(
         scenario,
         mock_uss,
@@ -111,3 +108,61 @@ def expect_no_interuss_post_interactions(
                     details=f"Notification for operational intent ID {req.operational_intent_id} triggered by subscriptions {', '.join([sub.subscription_id for sub in req.subscriptions])} with timestamp {interaction.query.request.timestamp}.",
                     query_timestamps=[query.request.timestamp],
                 )
+
+
+def expect_uss_obtained_op_intent_details(
+    scenario: TestScenarioType,
+    mock_uss: MockUSSClient,
+    st: StringBasedDateTime,
+    op_intent_id: EntityID,
+    participant_id: str,
+):
+    """
+    This step verifies that a USS obtained operational intent details from a Mock USS by means of either a notification
+    from the Mock USS (push), or a GET request (operation *getOperationalIntentDetails*) to the Mock USS.
+
+    Implements the test step fragment in `validate_operational_intent_details_obtained.md`.
+
+    Args:
+        st: the earliest time a notification may have been sent
+        op_intent_id: the operational intent ID subject of the notification
+        participant_id: id of the participant responsible to obtain the details
+    """
+
+    all_interactions, query = get_mock_uss_interactions(
+        scenario,
+        mock_uss,
+        st,
+    )
+
+    notifications = filter_interactions(
+        all_interactions,
+        [
+            operation_filter(OperationID.NotifyOperationalIntentDetailsChanged),
+            direction_filter(QueryDirection.Outgoing),
+            notif_op_intent_id_filter(op_intent_id),
+            status_code_filter(204),
+        ],
+    )
+
+    get_requests = filter_interactions(
+        all_interactions,
+        [
+            operation_filter(
+                OperationID.GetOperationalIntentDetails, entityid=op_intent_id
+            ),
+            direction_filter(QueryDirection.Incoming),
+            status_code_filter(200),
+        ],
+    )
+
+    with scenario.check(
+        "USS obtained operational intent details by means of either notification or GET request",
+        [participant_id],
+    ) as check:
+        if not notifications and not get_requests:
+            check.record_failed(
+                summary=f"USS {participant_id} did not obtained details of operational intent {op_intent_id} from mock_uss",
+                details=f"operational intent {op_intent_id}: mock_uss did not notify successfully {participant_id} of the details and {participant_id} did not do a successful GET request to retrieve them either since {st}",
+                query_timestamps=[query.request.timestamp],
+            )
