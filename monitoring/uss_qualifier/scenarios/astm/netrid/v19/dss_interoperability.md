@@ -134,6 +134,16 @@ Qualitatively proves: Can retrieve specific Subscription emplaced in primary DSS
 
 **[astm.f3411.v19.DSS0130,2,f](../../../../requirements/astm/f3411/v19.md)**
 
+#### 🛑 Subscription[*n*] search returned with proper response check
+
+**[astm.f3411.v19.DSS0030,e](../../../../requirements/astm/f3411/v19.md)**
+
+**[astm.f3411.v19.DSS0130,A2-6-1,6](../../../../requirements/astm/f3411/v19.md)**
+
+#### 🛑 Subscription[*P*] cell ID is properly synchronized with all DSS check
+
+**[astm.f3411.v19.DSS0130,1](../../../../requirements/astm/f3411/v19.md)**
+
 ### S4 test step
 
 Action: USS2@DSS*n*: GET Subscriptions using ISA[*P*]’s area

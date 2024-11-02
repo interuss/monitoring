@@ -24,6 +24,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrappe
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
+# TODO pass a test resource specifying the test area instead
 VERTICES: List[s2sphere.LatLng] = [
     s2sphere.LatLng.from_degrees(lng=130.6205, lat=-23.6558),
     s2sphere.LatLng.from_degrees(lng=130.6301, lat=-23.6898),
@@ -60,6 +61,12 @@ class TestEntity(object):
 
 
 class DSSInteroperability(GenericTestScenario):
+    """
+    TODO additional improvements/extensions:
+     - cell ID synchronization checks can be improved further by search outside of the
+       subscription's footprint on the secondary DSS and confirming it is not returned
+    """
+
     _dss_primary: DSSWrapper
     _dss_others: List[DSSWrapper]
     _allow_private_addresses: bool = False
@@ -399,6 +406,29 @@ class DSSInteroperability(GenericTestScenario):
                             primary_sub.subscription.time_end,
                             other_sub.subscription.time_end,
                         )
+                    )
+            with self.check(
+                "Subscription[n] search returned with proper response",
+                [dss.participant_id],
+            ) as check:
+                searched_subs = dss.search_subs(check, VERTICES)
+                if not searched_subs.success:
+                    check.record_failed(
+                        summary="Subscription search on secondary DSS failed",
+                        details=f"Subscription search request on secondary DSS failed with HTTP code {searched_subs.status_code}: {searched_subs.errors}",
+                        query_timestamps=[searched_subs.query.request.timestamp],
+                    )
+
+            with self.check(
+                "Subscription[P] cell ID is properly synchronized with all DSS",
+                self._dss_primary.participant_id,
+            ) as check:
+                if primary_sub.subscription.id not in searched_subs.subscriptions:
+                    check.record_failed(
+                        summary=f"Subscription {primary_sub.subscription.id} not returned by search on secondary DSS",
+                        details=f"Subscription {primary_sub.subscription.id} was written to the primary DSS in a specific area and searched for in the same area on the secondary DSS, but was not found. "
+                        f"This may indicate that the primary DSS failed to properly synchronize the Cell ID to the DAR.",
+                        query_timestamps=[searched_subs.query.request.timestamp],
                     )
 
     def step4(self):
