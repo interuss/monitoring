@@ -494,6 +494,35 @@ class DSSInteroperability(GenericTestScenario):
                     details=f"Subscription {sub_1_0.uuid} was created on the primary DSS and should have been notified of the ISA modification that happened on the primary DSS, but was not.",
                 )
 
+        for sec_dss in self._dss_others:
+            with self.check(
+                "Can modify ISA on secondary DSS",
+                [sec_dss.participant_id],
+            ) as check:
+                mutated_isa_sec = sec_dss.put_isa(
+                    check,
+                    isa_id=isa_1.uuid,
+                    isa_version=isa_1.version,
+                    do_not_notify="https://testdummy.interuss.org",
+                    **_default_params(datetime.timedelta(seconds=SHORT_WAIT_SEC)),
+                )
+                isa_1.version = mutated_isa_sec.dss_query.isa.version
+
+            subs_to_notify_sec = []
+            for subscriber in mutated_isa_sec.subscribers:
+                for s in subscriber.raw.subscriptions:
+                    subs_to_notify_sec.append(s.subscription_id)
+
+            with self.check(
+                "ISA modification on secondary DSS triggers subscription notification requests",
+                [self._dss_primary.participant_id, sec_dss.participant_id],
+            ) as check:
+                if sub_1_0.uuid not in subs_to_notify_sec:
+                    check.record_failed(
+                        summary=f"Subscription {sub_1_0.uuid} was not notified of ISA modification",
+                        details=f"Subscription {sub_1_0.uuid} was created on the primary DSS (participant_id={self._dss_primary.participant_id}) and should have been notified of the ISA modification (ID={isa_1.uuid}, version={isa_1.version}) that happened on the secondary DSS (participant_id={sec_dss}), but was not.",
+                    )
+
     def step6(self):
         """Can delete all Subscription in primary DSS"""
 

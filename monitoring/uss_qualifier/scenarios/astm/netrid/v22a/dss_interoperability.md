@@ -173,6 +173,14 @@ Qualitatively proves: ISA[*P*] modified with proper response, all Subscription[i
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,3c](../../../../requirements/astm/f3411/v22a.md)**
 
+#### 🛑 Can modify ISA on secondary DSS check
+
+**[astm.f3411.v22a.DSS0130,A2-6-1,1b](../../../../requirements/astm/f3411/v22a.md)**
+
+#### ⚠️ ISA modification on secondary DSS triggers subscription notification requests check
+
+A failure of this check indicates that the DSS fails to implement either one or both of  **[astm.f3411.v22a.DSS0130,A2-6-1,3c](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.DSS0130,2,e](../../../../requirements/astm/f3411/v22a.md)**.
+
 ### S6 test step
 
 Action: USS2@DSS*P*: DELETE Subscription[*n*]
