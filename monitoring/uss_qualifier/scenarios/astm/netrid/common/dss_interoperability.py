@@ -1,8 +1,8 @@
+import datetime
 import ipaddress
 import socket
 import uuid
 from dataclasses import dataclass
-import datetime
 from enum import Enum
 from typing import List, Dict, Optional
 from urllib.parse import urlparse
@@ -429,6 +429,7 @@ class DSSInteroperability(GenericTestScenario):
         subscription notification requests"""
 
         isa_1 = self._context["isa_1"]
+        sub_1_0 = self._context["sub_1_0"]
 
         with self.check(
             "Can get ISA from primary DSS", [self._dss_primary.participant_id]
@@ -439,15 +440,29 @@ class DSSInteroperability(GenericTestScenario):
         with self.check(
             "Can modify ISA in primary DSS", [self._dss_primary.participant_id]
         ) as check:
-            mutated_isa = self._dss_primary.put_isa(
+            mutated_isa_primary = self._dss_primary.put_isa(
                 check,
                 isa_id=isa_1.uuid,
                 isa_version=isa_1.version,
+                do_not_notify="https://testdummy.interuss.org",
                 **_default_params(datetime.timedelta(seconds=SHORT_WAIT_SEC)),
             )
-            isa_1.version = mutated_isa.dss_query.isa.version
+            isa_1.version = mutated_isa_primary.dss_query.isa.version
 
-        # TODO: Implement "ISA modification triggers subscription notification requests check"
+        subs_to_notify_primary = []
+        for subscriber in mutated_isa_primary.subscribers:
+            for s in subscriber.raw.subscriptions:
+                subs_to_notify_primary.append(s.subscription_id)
+
+        with self.check(
+            "ISA modification on primary DSS triggers subscription notification requests",
+            [self._dss_primary.participant_id],
+        ) as check:
+            if sub_1_0.uuid not in subs_to_notify_primary:
+                check.record_failed(
+                    summary=f"Subscription {sub_1_0.uuid} was not notified of ISA modification",
+                    details=f"Subscription {sub_1_0.uuid} was created on the primary DSS and should have been notified of the ISA modification that happened on the primary DSS, but was not.",
+                )
 
     def step6(self):
         """Can delete all Subscription in primary DSS"""
