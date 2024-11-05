@@ -49,6 +49,9 @@ def _rect_str(rect) -> str:
     )
 
 
+VERTICAL_SPEED_PRECISION = 0.1
+
+
 @dataclass
 class DPObservedFlight(object):
     query: FetchedUSSFlights
@@ -916,6 +919,23 @@ class RIDObservationEvaluator(object):
                             "Altitude reported by Service Provider does not match injected altitude",
                             Severity.Medium,
                             details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}, alt={injected_telemetry.position.alt}, but Service Provider reported lat={observed_position.lat}, lng={observed_position.lng}, alt={observed_position.alt} at {mapping.observed_flight.query.query.request.initiated_at}",
+                        )
+
+            if mapping.observed_flight.flight.raw.current_state is not None:
+                with self._test_scenario.check(
+                    "Service Provider vertical speed",
+                    [mapping.injected_flight.uss_participant_id],
+                ) as check:
+                    if (
+                        abs(
+                            injected_telemetry.vertical_speed
+                            - mapping.observed_flight.flight.raw.current_state.vertical_speed
+                        )
+                        > VERTICAL_SPEED_PRECISION
+                    ):
+                        check.record_failed(
+                            "Vertical speed reported by Service Provider does not match injected vertical speed",
+                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with vertical speed {injected_telemetry.vertical_speed}, but Service Provider reported vertical speed {mapping.observed_flight.flight.raw.current_state.vertical_speed} at {mapping.observed_flight.query.query.request.initiated_at}",
                         )
 
         # Verify that flight details queries succeeded and returned correctly-formatted data
