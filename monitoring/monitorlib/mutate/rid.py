@@ -1,19 +1,15 @@
 import datetime
 from typing import Dict, List, Optional, Union, Set
 
-from implicitdict import ImplicitDict
 import s2sphere
-from uas_standards import Operation
-
-from monitoring.monitorlib.fetch import QueryType
-from monitoring.monitorlib.fetch.rid import RIDQuery, Subscription, ISA
-from monitoring.monitorlib.rid import RIDVersion
-from uas_standards.astm.f3411 import v19, v22a
 import uas_standards.astm.f3411.v19.api
 import uas_standards.astm.f3411.v19.constants
 import uas_standards.astm.f3411.v22a.api
 import uas_standards.astm.f3411.v22a.constants
 import yaml
+from implicitdict import ImplicitDict
+from uas_standards import Operation
+from uas_standards.astm.f3411 import v19, v22a
 from yaml.representer import Representer
 
 from monitoring.monitorlib import (
@@ -22,6 +18,9 @@ from monitoring.monitorlib import (
     rid_v1,
     rid_v2,
 )
+from monitoring.monitorlib.fetch import QueryType
+from monitoring.monitorlib.fetch.rid import RIDQuery, Subscription, ISA
+from monitoring.monitorlib.rid import RIDVersion
 
 
 class ChangedSubscription(RIDQuery):
@@ -449,6 +448,11 @@ class ISAChange(ImplicitDict):
 
     notifications: Dict[str, ISAChangeNotification]
     """Mapping from USS base URL to change notification query"""
+
+    @property
+    def subscribers(self) -> Optional[List[SubscriberToNotify]]:
+        """List of subscribers that required a notification for the change."""
+        return self.dss_query.subscribers
 
 
 def build_isa_request_body(
