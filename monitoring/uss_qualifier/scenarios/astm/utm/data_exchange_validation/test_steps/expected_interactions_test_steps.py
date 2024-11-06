@@ -123,8 +123,13 @@ def mock_uss_interactions(
     query_params: Optional[Dict[str, str]] = None,
     is_applicable: Optional[Callable[[Interaction], bool]] = None,
 ) -> Tuple[List[Interaction], Query]:
-    """Determine if mock_uss recorded an interaction for the specified operation in the specified direction."""
+    """
+    Determine if mock_uss recorded an interaction for the specified operation in the specified direction.
 
+    Raises:
+        KeyError: if query_params contains a non-existing parameter
+        IndexError: if query_params is missing a parameter
+    """
     with scenario.check(
         "Mock USS interactions logs retrievable", [mock_uss.participant_id]
     ) as check:
@@ -142,12 +147,9 @@ def mock_uss_interactions(
 
     op = api.OPERATIONS[op_id]
 
-    op_path = op.path
     if query_params is None:
-        query_params = {}
-    for m in re.findall(r"\{[^}]+\}", op_path):
-        param_name = m[1:-1]
-        op_path = op_path.replace(m, query_params.get(param_name, r"[^/]+"))
+        query_params = {}  # avoid linting error due to immutable default argument
+    op_path = op.path.format(**query_params)  # raises KeyError, IndexError
 
     if is_applicable is None:
         is_applicable = lambda i: True
