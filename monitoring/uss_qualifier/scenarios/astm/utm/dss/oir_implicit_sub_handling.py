@@ -221,7 +221,8 @@ class OIRImplicitSubHandling(TestScenario):
         )
 
         with self.check(
-            "New OIR creation response contains previous implicit subscription to notify"
+            "New OIR creation response contains previous implicit subscription to notify",
+            self._pid,
         ) as check:
             if self._implicit_sub_2.id not in to_sub_ids(subs):
                 check.record_failed(
