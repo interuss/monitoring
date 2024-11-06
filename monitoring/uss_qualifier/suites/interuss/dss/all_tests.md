@@ -173,7 +173,7 @@
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3411/v19.md">DSS0130,A2-6-1,3c</a></td>
-    <td>Implemented + TODO</td>
+    <td>Implemented</td>
     <td><a href="../../../scenarios/astm/netrid/v19/dss_interoperability.md">ASTM F3411-19 NetRID DSS interoperability</a></td>
   </tr>
   <tr>
@@ -369,7 +369,7 @@
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3411/v22a.md">DSS0130,A2-6-1,3c</a></td>
-    <td>Implemented + TODO</td>
+    <td>Implemented</td>
     <td><a href="../../../scenarios/astm/netrid/v22a/dss_interoperability.md">ASTM F3411-22a NetRID DSS interoperability</a></td>
   </tr>
   <tr>

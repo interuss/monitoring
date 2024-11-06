@@ -159,9 +159,7 @@ Qualitatively proves: ISA[*P*] modified with proper response, all Subscription[i
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,1b](../../../../requirements/astm/f3411/v22a.md)**
 
-#### ISA modification triggers subscription notification requests check
-
-TODO: Implement
+#### ⚠️ ISA modification on primary DSS triggers subscription notification requests check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,3c](../../../../requirements/astm/f3411/v22a.md)**
 
