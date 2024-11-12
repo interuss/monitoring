@@ -2,8 +2,7 @@
 
 This step verifies that, when creating or modifying an operational intent, a USS sent the required notification for a relevant subscription owned by a mock_uss instance by checking the interactions of that mock_uss instance.
 
-## 🛑 Mock USS interactions logs retrievable check
-**[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+## [Get Mock USS interactions logs](../../../../interuss/mock_uss/get_mock_uss_interactions.md)
 
 ## ⚠️ Expect Notification sent check
 As per **[astm.f3548.v21.SCD0085](../../../../../requirements/astm/f3548/v21.md)**, the notification should be sent by a

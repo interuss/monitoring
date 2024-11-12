@@ -40,13 +40,15 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
     expect_no_interuss_post_interactions,
     expect_mock_uss_receives_op_intent_notification,
-    mock_uss_interactions,
-    notif_op_intent_id_filter,
-    operation_filter,
-    direction_filter,
 )
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUssFlightBehavior,
+)
+from monitoring.uss_qualifier.scenarios.interuss.mock_uss.test_steps import (
+    get_mock_uss_interactions,
+    operation_filter,
+    direction_filter,
+    notif_op_intent_id_filter,
 )
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenario,
@@ -199,7 +201,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.begin_test_step(
             "Check for notification to tested_uss due to subscription in flight 2 area"
         )
-        tested_uss_notifications, _ = mock_uss_interactions(
+        tested_uss_notifications, _ = get_mock_uss_interactions(
             self,
             self.mock_uss,
             flight_2_planning_time,
@@ -211,7 +213,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
         self.begin_test_step("Validate flight2 GET interaction, if no notification")
         if not tested_uss_notifications:
-            tested_uss_get_requests, query = mock_uss_interactions(
+            tested_uss_get_requests, query = get_mock_uss_interactions(
                 self,
                 self.mock_uss,
                 flight_1_planning_time,
@@ -322,7 +324,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.begin_test_step(
             "Check for notification to tested_uss due to subscription in flight 2 area"
         )
-        tested_uss_notifications, _ = mock_uss_interactions(
+        tested_uss_notifications, _ = get_mock_uss_interactions(
             self,
             self.mock_uss,
             flight_2_planning_time,
@@ -334,7 +336,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
         self.begin_test_step("Validate flight2 GET interaction, if no notification")
         if not tested_uss_notifications:
-            tested_uss_get_requests, query = mock_uss_interactions(
+            tested_uss_get_requests, query = get_mock_uss_interactions(
                 self,
                 self.mock_uss,
                 flight_1_planning_time,

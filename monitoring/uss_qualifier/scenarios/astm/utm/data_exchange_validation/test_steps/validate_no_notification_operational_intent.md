@@ -2,8 +2,7 @@
 
 This step verifies when a flight is not created, it is also not notified by checking the interuss interactions of mock_uss instance.
 
-## 🛑 Mock USS interactions logs retrievable check
-**[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+## [Get Mock USS interactions logs](../../../../interuss/mock_uss/get_mock_uss_interactions.md)
 
 ## ℹ️ Mock USS interaction can be parsed check
 **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
