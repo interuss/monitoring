@@ -215,6 +215,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self,
             self.mock_uss,
             flight_1_planning_time,
+            flight_1_oi_ref.id,
             self.tested_uss_client.participant_id,
             plan_res.queries[0].request.timestamp,
         )

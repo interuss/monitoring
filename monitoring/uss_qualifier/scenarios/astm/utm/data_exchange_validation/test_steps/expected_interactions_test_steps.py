@@ -30,6 +30,7 @@ def expect_mock_uss_receives_op_intent_notification(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,
+    op_intent_id: EntityID,
     participant_id: str,
     plan_request_time: datetime,
 ):
@@ -37,6 +38,7 @@ def expect_mock_uss_receives_op_intent_notification(
 
     Args:
         st: the earliest time a notification may have been sent
+        op_intent_id: the operational intent ID subject of the notification
         participant_id: id of the participant responsible to send the notification
         plan_request_time: timestamp of the flight plan query that would lead to sending notification
     """
@@ -48,13 +50,15 @@ def expect_mock_uss_receives_op_intent_notification(
         st,
         operation_filter(OperationID.NotifyOperationalIntentDetailsChanged),
         direction_filter(QueryDirection.Incoming),
+        notif_op_intent_id_filter(op_intent_id),
+        status_code_filter(204),
     )
 
     with scenario.check("Expect Notification sent", [participant_id]) as check:
         if not found:
             check.record_failed(
-                summary=f"Notification not sent",
-                details=f"Notification to USS with pre-existing relevant operational intent not sent even though DSS instructed the planning USS to notify due to subscription.",
+                summary=f"Notification not sent for {op_intent_id}",
+                details=f"Notification from {participant_id} to USS for {op_intent_id} with pre-existing relevant operational intent not sent even though DSS instructed the planning USS to notify due to subscription.",
                 query_timestamps=[plan_request_time, query.request.timestamp],
             )
 
