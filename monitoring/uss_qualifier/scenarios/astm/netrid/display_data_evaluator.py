@@ -976,6 +976,38 @@ class RIDObservationEvaluator(object):
                             details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with speed accuracy {injected_telemetry.speed_accuracy.value}, but Service Provider reported speed accuracy {mapping.observed_flight.flight.raw.current_state.speed_accuracy.value} at {mapping.observed_flight.query.query.request.initiated_at}",
                         )
 
+            if mapping.observed_flight.flight.raw.current_state is not None:
+                with self._test_scenario.check(
+                    "Service Provider track",
+                    [mapping.injected_flight.uss_participant_id],
+                ) as check:
+                    # 361 is a special value, and if we injected it there is no reason we should see a value that could be rounded down to 360
+                    if math.isclose(injected_telemetry.track, 361):
+                        if (
+                            abs(
+                                injected_telemetry.track
+                                - mapping.observed_flight.flight.raw.current_state.track
+                            )
+                            > 0.5
+                        ):
+                            check.record_failed(
+                                "Special value for track reported by Service Provider does not match injected special value (361)",
+                                details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with track={injected_telemetry.track}, but Service Provider reported track={mapping.observed_flight.flight.raw.current_state.track} at {mapping.observed_flight.query.query.request.initiated_at}. If this special value is injected we expect it to be reported as is, and do not tolerate the usual track precision of +/- 1 degree.",
+                            )
+
+                    # For any 'normal' track, the resolution is 1 degree.
+                    if (
+                        abs(
+                            injected_telemetry.track
+                            - mapping.observed_flight.flight.raw.current_state.track
+                        )
+                        >= 1.0
+                    ):
+                        check.record_failed(
+                            "Track reported by Service Provider does not match injected track",
+                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with track={injected_telemetry.track}, but Service Provider reported track={mapping.observed_flight.flight.raw.current_state.track} at {mapping.observed_flight.query.query.request.initiated_at}",
+                        )
+
         # Verify that flight details queries succeeded and returned correctly-formatted data
         for mapping in mappings.values():
             details_queries = [
