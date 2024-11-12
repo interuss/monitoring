@@ -41,7 +41,9 @@ from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_s
     expect_no_interuss_post_interactions,
     expect_mock_uss_receives_op_intent_notification,
     mock_uss_interactions,
-    is_op_intent_notification_with_id,
+    notif_op_intent_id_filter,
+    operation_filter,
+    direction_filter,
 )
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUssFlightBehavior,
@@ -198,26 +200,25 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Check for notification to tested_uss due to subscription in flight 2 area"
         )
         tested_uss_notifications, _ = mock_uss_interactions(
-            scenario=self,
-            mock_uss=self.mock_uss,
-            op_id=OperationID.NotifyOperationalIntentDetailsChanged,
-            direction=QueryDirection.Outgoing,
-            since=flight_2_planning_time,
-            is_applicable=is_op_intent_notification_with_id(flight_2_oi_ref.id),
+            self,
+            self.mock_uss,
+            flight_2_planning_time,
+            operation_filter(OperationID.NotifyOperationalIntentDetailsChanged),
+            direction_filter(QueryDirection.Outgoing),
+            notif_op_intent_id_filter(flight_2_oi_ref.id),
         )
         self.end_test_step()
 
         self.begin_test_step("Validate flight2 GET interaction, if no notification")
         if not tested_uss_notifications:
             tested_uss_get_requests, query = mock_uss_interactions(
-                scenario=self,
-                mock_uss=self.mock_uss,
-                op_id=OperationID.GetOperationalIntentDetails,
-                direction=QueryDirection.Incoming,
-                since=flight_1_planning_time,
-                query_params=dict(
-                    entityid=flight_2_oi_ref.id,
+                self,
+                self.mock_uss,
+                flight_1_planning_time,
+                operation_filter(
+                    OperationID.GetOperationalIntentDetails, entityid=flight_2_oi_ref.id
                 ),
+                direction_filter(QueryDirection.Incoming),
             )
             with self.check(
                 "Expect GET request when no notification",
@@ -322,26 +323,25 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             "Check for notification to tested_uss due to subscription in flight 2 area"
         )
         tested_uss_notifications, _ = mock_uss_interactions(
-            scenario=self,
-            mock_uss=self.mock_uss,
-            op_id=OperationID.NotifyOperationalIntentDetailsChanged,
-            direction=QueryDirection.Outgoing,
-            since=flight_2_planning_time,
-            is_applicable=is_op_intent_notification_with_id(flight_2_oi_ref.id),
+            self,
+            self.mock_uss,
+            flight_2_planning_time,
+            operation_filter(OperationID.NotifyOperationalIntentDetailsChanged),
+            direction_filter(QueryDirection.Outgoing),
+            notif_op_intent_id_filter(flight_2_oi_ref.id),
         )
         self.end_test_step()
 
         self.begin_test_step("Validate flight2 GET interaction, if no notification")
         if not tested_uss_notifications:
             tested_uss_get_requests, query = mock_uss_interactions(
-                scenario=self,
-                mock_uss=self.mock_uss,
-                op_id=OperationID.GetOperationalIntentDetails,
-                direction=QueryDirection.Incoming,
-                since=flight_1_planning_time,
-                query_params=dict(
-                    entityid=flight_2_oi_ref.id,
+                self,
+                self.mock_uss,
+                flight_1_planning_time,
+                operation_filter(
+                    OperationID.GetOperationalIntentDetails, entityid=flight_2_oi_ref.id
                 ),
+                direction_filter(QueryDirection.Incoming),
             )
             with self.check(
                 "Expect GET request when no notification",
