@@ -77,7 +77,7 @@ class DSSOVNRequest(TestScenario):
 
         self.begin_test_step("Activate OIR with OVN suffix request")
         req_ovn_suffix = str(uuid7())
-        self._activate_oir(extents, oir.ovn, req_ovn_suffix)
+        oir = self._activate_oir(extents, oir.ovn, req_ovn_suffix)
         self._check_expected_ovn(req_ovn_suffix, oir)
         self.end_test_step()
 
@@ -164,6 +164,8 @@ class DSSOVNRequest(TestScenario):
                     details=qe.msg,
                     query_timestamps=qe.query_timestamps,
                 )
+
+        return oir
 
     def _create_invalid_oir_attempt(self, extents: List[Volume4D], req_ovn_suffix: str):
         with self.check(

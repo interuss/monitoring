@@ -88,6 +88,7 @@ function(participants) {
         // A USS that hosts a DSS instance is also a participant in the test, even if they don't fulfill any other roles
         participant_id: 'uss1_dss',
         base_url: 'http://dss.uss1.localutm',
+        supports_ovn_request: true,
       },
     },
 
