@@ -1,24 +1,11 @@
+import math
 from dataclasses import dataclass
 from typing import List, Optional, Dict, Union, Set, Tuple
 
 import arrow
-from loguru import logger
-import math
 import s2sphere
+from loguru import logger
 from s2sphere import LatLng, LatLngRect
-
-from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
-    RIDCommonDictionaryEvaluator,
-)
-
-from monitoring.monitorlib.fetch import Query
-from monitoring.monitorlib.fetch.rid import (
-    all_flights,
-    FetchedFlights,
-    FetchedUSSFlights,
-    Position,
-)
-from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     Flight,
     GetDisplayDataResponse,
@@ -26,18 +13,29 @@ from uas_standards.interuss.automated_testing.rid.v1.observation import (
 )
 
 from monitoring.monitorlib import fetch, geo, schema_validation
+from monitoring.monitorlib.fetch import Query
+from monitoring.monitorlib.fetch.rid import (
+    all_flights,
+    FetchedFlights,
+    FetchedUSSFlights,
+    Position,
+)
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
+from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.resources.netrid.observers import RIDSystemObserver
+from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
+    RIDCommonDictionaryEvaluator,
+)
 from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection import (
     InjectedFlightCollection,
 )
+from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFlight
 from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
-from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFlight
 
 
 def _rect_str(rect) -> str:
@@ -924,6 +922,21 @@ class RIDObservationEvaluator(object):
                             "Altitude reported by Service Provider does not match injected altitude",
                             Severity.Medium,
                             details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}, alt={injected_telemetry.position.alt}, but Service Provider reported lat={observed_position.lat}, lng={observed_position.lng}, alt={observed_position.alt} at {mapping.observed_flight.query.query.request.initiated_at}",
+                        )
+
+            if "accuracy_v" in injected_position:
+                with self._test_scenario.check(
+                    "Service Provider geodetic altitude accuracy",
+                    [mapping.injected_flight.uss_participant_id],
+                ) as check:
+                    if (
+                        "accuracy_v" in observed_position
+                        and injected_position.accuracy_v.value
+                        != observed_position.accuracy_v.value
+                    ):
+                        check.record_failed(
+                            "Injected and observed vertical accuracy do not match",
+                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with vertical accuracy {injected_position.accuracy_v}, but {observer.participant_id} observed vertical accuracy {observed_position.accuracy_v}",
                         )
 
             if mapping.observed_flight.flight.raw.current_state is not None:
