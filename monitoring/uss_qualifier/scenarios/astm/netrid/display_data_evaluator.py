@@ -1091,6 +1091,8 @@ class RIDObservationEvaluator(object):
         diagonal: float,
     ) -> None:
         for mapping in mappings.values():
+            # Note: we register the check only if we can fail it, because, in case of success, we are
+            # not able to properly determine which participant succeeded (in this context)
             with self._test_scenario.check(
                 "Area too large", [mapping.injected_flight.uss_participant_id]
             ) as check:

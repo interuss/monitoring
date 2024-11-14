@@ -158,7 +158,7 @@ If the Operational status reported for an observation does not correspond to the
 
 #### Area too large check
 
-**[astm.f3411.v22a.NET0430](../../../../requirements/astm/f3411/v22a.md)** requires that a NetRID Display Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
+**[astm.f3411.v22a.NET0250](../../../../requirements/astm/f3411/v22a.md)** requires that a NetRID Service Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
 
 ### Observer polling test step
 
