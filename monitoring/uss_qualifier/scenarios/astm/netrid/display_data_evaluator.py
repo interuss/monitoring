@@ -947,7 +947,7 @@ class RIDObservationEvaluator(object):
                     ):
                         check.record_failed(
                             "Injected and observed vertical accuracy do not match",
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with vertical accuracy {injected_position.accuracy_v}, but {observer.participant_id} observed vertical accuracy {observed_position.accuracy_v}",
+                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with accuracy_v={injected_position.accuracy_v}, but Service Provider reported accuracy_v={observed_position.accuracy_v}",
                         )
 
             if "accuracy_h" in injected_position:
