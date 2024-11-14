@@ -343,6 +343,21 @@ class Flight(ImplicitDict):
                 f"Cannot retrieve speed using RID version {self.rid_version}"
             )
 
+    @property
+    def timestamp_accuracy(self) -> Optional[float]:
+        if self.rid_version == RIDVersion.f3411_19:
+            if not self.v19_value.has_field_with_value("current_state"):
+                return None
+            return self.v19_value.current_state.timestamp_accuracy
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if not self.v22a_value.has_field_with_value("current_state"):
+                return None
+            return self.v22a_value.current_state.timestamp_accuracy
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve speed using RID version {self.rid_version}"
+            )
+
     def errors(self) -> List[str]:
         try:
             rid_version = self.rid_version

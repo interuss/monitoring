@@ -49,6 +49,7 @@ def _rect_str(rect) -> str:
 
 VERTICAL_SPEED_PRECISION = 0.1
 SPEED_PRECISION = 0.05
+TIMESTAMP_ACCURACY_PRECISION = 0.05
 
 
 @dataclass
@@ -67,6 +68,16 @@ class DPObservedFlight(object):
     @property
     def flight(self) -> fetch.rid.Flight:
         return self.query.flights[self.flight_index]
+
+    # TODO we may rather want to expose the whole flight object (self.query.flights[self.flight])
+    #  and let callers access subfields directly (will be handled in separate PR)
+    @property
+    def timestamp_accuracy(self) -> Optional[float]:
+        return self.query.flights[self.flight_index].timestamp_accuracy
+
+    @property
+    def raw_flight(self) -> dict:
+        return self.query.query.response.json["flights"][self.flight_index]
 
 
 ObservationType = Union[Flight, DPObservedFlight]
@@ -898,7 +909,7 @@ class RIDObservationEvaluator(object):
                 participants=[mapping.injected_flight.uss_participant_id],
             )
 
-        # Check that altitudes match for any observed flights matching injected flights
+        # Check that required fields are present and match for any observed flights matching injected flights
         for mapping in mappings.values():
             injected_telemetry = mapping.injected_flight.flight.telemetry[
                 mapping.telemetry_index
@@ -1034,6 +1045,47 @@ class RIDObservationEvaluator(object):
                         check.record_failed(
                             "Track reported by Service Provider does not match injected track",
                             details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with track={injected_telemetry.track}, but Service Provider reported track={mapping.observed_flight.flight.raw.current_state.track} at {mapping.observed_flight.query.query.request.initiated_at}",
+                        )
+
+            # Due to how implicit dicts are deserialized and the timestamp_accuracy is specified in the OpenAPI file for F3411-v22a,
+            # we need to look into the raw JSON response to determine if the field is present:
+            #
+            # Because the spec requires the field to be present while also specifying a default value, the implicit dict based class derived
+            # from the spec may not catch that a field is missing at deserialization time (because the RIDAircraftState class specifies a default
+            # value for the field, no ValueError will be thrown when ImplicitDict.parse() is called).
+            #
+            # This means that a missing json field will neither raise an exception nor cause the field to be set to None when we access it,
+            # meaning this part of the logic cannot rely on the deserialized value to determine if the field was present or not.
+            raw_flight = mapping.observed_flight.raw_flight
+            raw_state = (
+                raw_flight["current_state"] if "current_state" in raw_flight else {}
+            )
+            with self._test_scenario.check(
+                "Service Provider timestamp accuracy is present",
+                [mapping.injected_flight.uss_participant_id],
+            ) as check:
+                if "timestamp_accuracy" not in raw_state:
+                    check.record_failed(
+                        "Timestamp accuracy not present in Service Provider response",
+                        details=f"Timestamp accuracy not present in Service Provider {mapping.injected_flight.uss_participant_id}'s response for flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} with telemetry index {mapping.telemetry_index}",
+                    )
+
+            if "timestamp_accuracy" in raw_state:
+                # From this point on we can use the 'timestamp_accuracy' field of the deserialized object
+                with self._test_scenario.check(
+                    "Service Provider timestamp accuracy is correct",
+                    [mapping.injected_flight.uss_participant_id],
+                ) as check:
+                    if (
+                        abs(
+                            mapping.observed_flight.timestamp_accuracy
+                            - injected_telemetry.timestamp_accuracy
+                        )
+                        > TIMESTAMP_ACCURACY_PRECISION
+                    ):
+                        check.record_failed(
+                            "Timestamp accuracy in Service Provider response is incorrect",
+                            details=f"Timestamp accuracy in Service Provider {mapping.injected_flight.uss_participant_id}'s response for flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} with telemetry index {mapping.telemetry_index} is {mapping.observed_flight.timestamp_accuracy} which is not equal to the injected value of {injected_telemetry.timestamp_accuracy}",
                         )
 
         # Verify that flight details queries succeeded and returned correctly-formatted data
