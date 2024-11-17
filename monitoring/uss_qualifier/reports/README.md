@@ -21,3 +21,7 @@ The [tested requirements artifact](./tested_requirements) summarizes a test run'
 ### Sequence view
 
 The [sequence view artifact](./sequence_view) is a human-readable description/log of what happened during a test run.  This artifact is a good starting point to understand or debug what happened during a test run.
+
+### Globally-expanded report
+
+The [globally-expanded report artifact](./globally_expanded/README.md) assembles procedural information about the test run into a single, flat presentation, mimicking what might be seen as output had the automated test been performed manually.

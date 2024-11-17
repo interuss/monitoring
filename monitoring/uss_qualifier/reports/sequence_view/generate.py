@@ -109,7 +109,15 @@ def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
     return parent
 
 
-def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> ActionNode:
+def compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> ActionNode:
+    """Summarize the information in the provided report as an ActionNode.
+
+    Args:
+        report: Test report containing information to summarize.
+        indexer: Tracker for labeling executed test scenarios as they are discovered.
+
+    Returns: Report information summarized to support a sequence view artifact.
+    """
     (
         is_test_suite,
         is_test_scenario,
@@ -123,7 +131,7 @@ def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Act
             scenario=compute_tested_scenario(report.test_scenario, indexer),
         )
     elif is_test_suite:
-        children = [_compute_action_node(a, indexer) for a in report.test_suite.actions]
+        children = [compute_action_node(a, indexer) for a in report.test_suite.actions]
         return ActionNode(
             name=report.test_suite.name,
             node_type=ActionNodeType.Suite,
@@ -137,8 +145,7 @@ def _compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Act
             name=generator_type.get_name(),
             node_type=ActionNodeType.ActionGenerator,
             children=[
-                _compute_action_node(a, indexer)
-                for a in report.action_generator.actions
+                compute_action_node(a, indexer) for a in report.action_generator.actions
             ],
         )
     else:
@@ -257,7 +264,18 @@ def _generate_scenario_pages(
             _generate_scenario_pages(child, config, output_path)
 
 
-def _make_resources_config(config: TestConfiguration) -> dict:
+def make_resources_config(config: TestConfiguration) -> dict:
+    """Describe the resources in a TestConfiguration, broken down between Baseline and Environment.
+
+    Args:
+        config: TestConfiguration with resources to describe
+
+    Returns: Multi-level dict with levels:
+        * Baseline / Environment
+        * <Resource name>
+        * Specification -> <content of specification>
+        * Dependencies -> <content of dependencies>
+    """
     baseline = {}
     environment = {}
     non_baseline_inputs = (
@@ -289,9 +307,9 @@ def _make_resources_config(config: TestConfiguration) -> dict:
 def generate_sequence_view(
     report: TestRunReport, config: SequenceViewConfiguration, output_path: str
 ) -> None:
-    node = _compute_action_node(report.report, Indexer())
+    node = compute_action_node(report.report, Indexer())
 
-    resources_config = _make_resources_config(report.configuration.v1.test_run)
+    resources_config = make_resources_config(report.configuration.v1.test_run)
 
     os.makedirs(output_path, exist_ok=True)
     _generate_scenario_pages(node, config, output_path)
