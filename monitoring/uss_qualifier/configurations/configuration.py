@@ -213,6 +213,11 @@ class RawReportConfiguration(ImplicitDict):
     """To pretty-print JSON content, specify an indent level (generally 2), or omit or set to None to write compactly."""
 
 
+class GloballyExpandedReportConfiguration(ImplicitDict):
+    redact_access_tokens: bool = True
+    """When True, look for instances of "Authorization" keys in the report with values starting "Bearer " and redact the signature from those access tokens"""
+
+
 class ArtifactsConfiguration(ImplicitDict):
     raw_report: Optional[RawReportConfiguration] = None
     """Configuration for raw report generation"""
@@ -228,6 +233,9 @@ class ArtifactsConfiguration(ImplicitDict):
 
     sequence_view: Optional[SequenceViewConfiguration] = None
     """If specified, configuration describing a desired report describing the sequence of events that occurred during the test"""
+
+    globally_expanded_report: Optional[GloballyExpandedReportConfiguration] = None
+    """If specified, configuration describing a desired report mimicking what might be seen had the test run been conducted manually."""
 
 
 class USSQualifierConfigurationV1(ImplicitDict):

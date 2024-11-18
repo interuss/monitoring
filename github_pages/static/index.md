@@ -23,6 +23,7 @@ These reports were generated during continuous integration for the most recent P
 
 * [Sequence view](./artifacts/uss_qualifier/reports/f3548_self_contained/sequence)
 * [Tested requirements](./artifacts/uss_qualifier/reports/f3548_self_contained/gate3)
+* [Globally-expanded report](./artifacts/uss_qualifier/reports/f3548_self_contained/globally_expanded/report.html)
 
 ### [US UTM Implementation test configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/utm_implementation_us.yaml)
 

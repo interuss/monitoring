@@ -7,6 +7,17 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
+    "globally_expanded_report": {
+      "description": "If specified, configuration describing a desired report mimicking what might be seen had the test run been conducted manually.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "GloballyExpandedReportConfiguration.json"
+        }
+      ]
+    },
     "raw_report": {
       "description": "Configuration for raw report generation",
       "oneOf": [

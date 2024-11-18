@@ -7,6 +7,8 @@ import sys
 from implicitdict import ImplicitDict
 from loguru import logger
 
+from monitoring.monitorlib import inspection
+from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.uss_qualifier.configurations.configuration import (
     USSQualifierConfiguration,
     USSQualifierConfigurationV1,
@@ -60,6 +62,8 @@ def main() -> int:
             )
     else:
         config_names = [config_in_report] * len(report_paths)
+
+    inspection.import_submodules(uss_qualifier_module)
 
     for config_name, report_path in zip(config_names, report_paths):
         logger.info(

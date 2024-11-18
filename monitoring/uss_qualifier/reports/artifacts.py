@@ -7,6 +7,9 @@ from loguru import logger
 from implicitdict import ImplicitDict
 from monitoring.uss_qualifier.configurations.configuration import ArtifactsConfiguration
 from monitoring.uss_qualifier.reports.documents import make_report_html
+from monitoring.uss_qualifier.reports.globally_expanded.generate import (
+    generate_globally_expanded_report,
+)
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
 from monitoring.uss_qualifier.reports.sequence_view.generate import (
     generate_sequence_view,
@@ -87,3 +90,16 @@ def generate_artifacts(
             redacted_report if _should_redact(artifacts.sequence_view) else report
         )
         generate_sequence_view(report_to_write, artifacts.sequence_view, path)
+
+    if artifacts.globally_expanded_report:
+        # Globally-expanded report
+        path = os.path.join(output_path, "globally_expanded")
+        logger.info(f"Writing globally-expanded report to {path}")
+        report_to_write = (
+            redacted_report
+            if _should_redact(artifacts.globally_expanded_report)
+            else report
+        )
+        generate_globally_expanded_report(
+            report_to_write, artifacts.globally_expanded_report, path
+        )
