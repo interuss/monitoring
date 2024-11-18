@@ -81,7 +81,11 @@ A scenario must document at least one test case (otherwise the scenario is doing
 
 Each test case in the documentation must document at least one test step (otherwise nothing is happening in the test case).  Each test step must be documented via a subsection of the parent test case named with a " test step" suffix (example: `### Injection test step`).
 
-If the entire test step heading is enclosed in a link, the contents of that linked file will be used to pre-populate the test step (example: `### [Plan flight test step](plan_flight_fragment.md)`) before reading the content in this section.  The linked file must follow the format requirements for a test step, but with the first line being a top-level heading ending with " test step fragment" (example: `# Plan flight test step fragment`).
+#### Test step fragments
+
+Test step fragments are reusable Markdown documentation files describing part (or all) of a test step.
+
+If an entire test step heading is enclosed in a link to a test step fragment, the contents of that linked file will be used to pre-populate the test step (example: `### [Plan flight test step](plan_flight_fragment.md)`) before reading the content in the section.  The linked file must follow the format requirements for a test step, but with the first line being a top-level heading ending with " test step fragment" (example: `# Plan flight test step fragment`).  If the test step fragment has a description, it should generally be worded like "This test step fragment foos the bar" or "Foo the bar" or "uss_qualifier foos the bar" -- this description should read clearly if the full content (minus the top-level heading) were inserted into the test step under the heading linking to the test step fragment.
 
 Multiple test step fragments may be included in a test step by linking to the test step fragment in a heading one level lower than the test step itself, and these lower-level headings may be combined with [checks](#test-checks) specific to the test step; for instance:
 
@@ -98,6 +102,12 @@ If the system under test doesn't Foo, then requirement **Bar** will not be met.
 
 #### [Ensure flight baz](check_flight_baz_fragment.md)
 ```
+
+Test step fragments allow us to avoid duplication and redundancy in many situations, and are therefore desirable for those reasons.  However, levels of indirection reduce readability, so the default strategy should be to avoid using test step fragments -- the use of test step fragments is only justified when the same content would be repeated in multiple places.
+
+Moreover, the use of test step fragments should not change the documentation content appropriate for the test step if fragments were not being used.  That is, if the full content of the test step fragment were substituted for the link to the fragment, the test scenario documentation should still satisfy all expectations for test scenario documentation.  In particular, checks that will never be performed should never be documented in a test scenario (though an exception is if development for a test scenario is in progress).  If a test step fragment involves checks X, Y, and Z, and a test step only ever performs checks X and Y, that test step fragment should not be linked from that test step.  One alternative would be to split the test step fragment into a fragment that checks X and Y and a separate fragment that checks Z, and then link only to the first of the new fragments in the test step in question.
+
+If a test step fragment involves performing checks X and Y, and then check Z is only sometimes performed based on the results informing checks X and Y, it is fine to link to that test step fragment even though check Z is often not performed.  An example of this might be a test step fragment that checks for a straggling entity and then deletes it if found.  The check for the straggling entity would always be performed, but deletion would only be attempted sometimes, and therefore the check for successful deletion would only be performed sometimes.  It is still ok to link to this test fragment in a standard cleanup.
 
 ### Test checks
 
