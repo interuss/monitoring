@@ -102,12 +102,12 @@ it is in violation of the OpenAPI spec referenced by **[astm.f3548.v21.DSS0100,1
 
 ## Cleanup
 
-#### ⚠️ USS Availability can be requested check
+### ⚠️ USS Availability can be requested check
 
 If, when queried for the availability of a USS using valid credentials, the DSS does not return a valid 200 response,
 it is in violation of the OpenAPI spec referenced by **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
 
-#### ⚠️ USS Availability can be set to Unknown check
+### ⚠️ USS Availability can be set to Unknown check
 
 A valid request to set the availability of a USS to `Unknown` should be accepted by the DSS,
 otherwise it is failing to implement the OpenAPI spec referenced by **[astm.f3548.v21.DSS0100,1](../../../../../requirements/astm/f3548/v21.md)**.
