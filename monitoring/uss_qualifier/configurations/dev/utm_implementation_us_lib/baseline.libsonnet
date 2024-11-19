@@ -328,6 +328,7 @@ function(env) {
                 'interuss.automated_testing.flight_planning.ImplementAPI',
                 'interuss.automated_testing.flight_planning.Readiness',
                 'interuss.f3548.notification_requirements.NoDssEntityNoNotification',
+                'versioning.ReportSystemVersion',
               ],
             },
             'Basic SCD without DSS provision': {
@@ -360,6 +361,7 @@ function(env) {
                 'interuss.automated_testing.flight_planning.ImplementAPI',
                 'interuss.automated_testing.flight_planning.Readiness',
                 'interuss.f3548.notification_requirements.NoDssEntityNoNotification',
+                'versioning.ReportSystemVersion',
               ],
             },
           },
@@ -417,7 +419,7 @@ function(env) {
               count: {
                 // We currently expect this amount of skipped scenarios: making it an equality
                 // to make sure this is reduced if some scenarios start to be executed
-                equal_to: 13,
+                equal_to: 11,
               },
             },
           },
