@@ -66,7 +66,7 @@ def generate_globally_expanded_report(
 """
             )
             + "\n".join(
-                f"{str(s + 4)}. {section.title}" for s, section in enumerate(sections)
+                f"{str(s)}. {section.title}" for s, section in enumerate(sections, start=4)
             )
         )
         + "\n\n"
