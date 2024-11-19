@@ -28,10 +28,11 @@ Create and mutate subscriptions as well as entities, and verify that the DSS han
 
 ## Setup test case
 
-### [Ensure clean workspace test step](clean_workspace.md)
+### Ensure clean workspace test step
 
-This step ensures that no subscriptions and OIRs with the known test IDs exists in the DSS deployment.
+#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
 
+#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
 
 ## Subscription deletion is reflected on all DSS instances test case
 
@@ -114,4 +115,8 @@ OIR's extents. This does not include subscriptions deleted earlier.
 If the DSS includes a deleted subscription, it fails to implement **[astm.f3548.v21.DSS0210,A2-7-2,5c](../../../../requirements/astm/f3548/v21.md)**.
 
 
-## [Cleanup](./clean_workspace.md)
+## Cleanup
+
+### [Clean any straggling OIRs with known test IDs](clean_workspace_op_intents.md)
+
+### [Clean any straggling subscriptions with known test IDs](clean_workspace_subs.md)

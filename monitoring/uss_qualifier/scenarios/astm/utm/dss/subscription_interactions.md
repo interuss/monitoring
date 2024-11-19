@@ -28,7 +28,11 @@ Create and mutate subscriptions as well as entities, and verify that the DSS han
 
 ## Setup test case
 
-### [Ensure clean workspace test step](clean_workspace.md)
+### Ensure clean workspace test step
+
+#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
+
+#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
 
 This step ensures that no subscriptions and OIRs with the known test IDs exists in the DSS deployment.
 
@@ -155,4 +159,8 @@ The explicit subscription expired on a DSS instance must have been removed from 
 If the subscription still exists on one of the other DSS instances, one of the instances fails to comply with **[astm.f3548.v21.DSS0210,A2-7-2,4d](../../../../requirements/astm/f3548/v21.md)**.
 
 
-## [Cleanup](./clean_workspace.md)
+## Cleanup
+
+### [Clean any straggling OIRs with known test IDs](clean_workspace_op_intents.md)
+
+### [Clean any straggling subscriptions with known test IDs](clean_workspace_subs.md)
