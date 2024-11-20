@@ -44,6 +44,7 @@
           'mock_uss',  // mock_uss uses this DSS instance; it does not provide its own instance
         ],
         base_url: 'http://dss.uss1.localutm',
+        supports_ovn_request: true
       },
     ]
   }

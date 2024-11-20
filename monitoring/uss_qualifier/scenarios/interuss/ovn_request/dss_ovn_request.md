@@ -45,22 +45,22 @@ Check that the DSS has set the expected OVN correctly.
 This case validates the off-nominal behaviors of the OVN request.
 
 ### Attempt to create OIR with OVN suffix request not being a UUID test step
-#### [Attempt to create OIR with OVN suffix request not being a UUID rejected check](./invalid_ovn_suffix_fragment.md)
+#### [Attempt to create OIR with OVN suffix request not being a UUID rejected](./invalid_ovn_suffix_fragment.md)
 Check that the DSS rejects OVN suffix that are not UUIDs.
 If the DSS accepts the OVN suffix, or fails with an unexpected error, this check will fail.
 
 ### Attempt to create OIR with OVN suffix request empty test step
-#### [Attempt to create OIR with OVN suffix request empty rejected check](./invalid_ovn_suffix_fragment.md)
+#### [Attempt to create OIR with OVN suffix request empty rejected](./invalid_ovn_suffix_fragment.md)
 Check that the DSS rejects OVN suffix that are empty.
 If the DSS accepts the OVN suffix, or fails with an unexpected error, this check will fail.
 
 ### Attempt to create OIR with OVN suffix request being a UUID but not v7 test step
-#### [Attempt to create OIR with OVN suffix request being a UUID but not v7 rejected check](./invalid_ovn_suffix_fragment.md)
+#### [Attempt to create OIR with OVN suffix request being a UUID but not v7 rejected](./invalid_ovn_suffix_fragment.md)
 Check that the DSS rejects OVN suffix that are UUIDs but not v7.
 If the DSS accepts the OVN suffix, or fails with an unexpected error, this check will fail.
 
 ### Attempt to create OIR with OVN suffix request being an outdated UUIDv7 test step
-#### [Attempt to create OIR with OVN suffix request being an outdated UUIDv7 rejected check](./invalid_ovn_suffix_fragment.md)
+#### [Attempt to create OIR with OVN suffix request being an outdated UUIDv7 rejected](./invalid_ovn_suffix_fragment.md)
 Check that the DSS rejects OVN suffix that are outdated UUIDv7.
 If the DSS accepts the OVN suffix, or fails with an unexpected error, this check will fail.
 

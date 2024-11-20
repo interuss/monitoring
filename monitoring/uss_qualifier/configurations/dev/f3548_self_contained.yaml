@@ -134,6 +134,7 @@ v1:
             # A USS that hosts a DSS instance is also a participant in the test, even if they don't fulfill any other roles
             participant_id: uss1_dss
             base_url: http://dss.uss1.localutm
+            supports_ovn_request: true
 
         dss_instances:
           resource_type: resources.astm.f3548.v21.DSSInstancesResource
@@ -146,8 +147,10 @@ v1:
                   # Participants using a DSS instance they do not provide should be listed as users of that DSS (so that they can take credit for USS requirements enforced by the DSS)
                   - mock_uss  # mock_uss uses this DSS instance; it does not provide its own instance
                 base_url: http://dss.uss1.localutm
+                supports_ovn_request: true
               - participant_id: uss2_dss
                 base_url: http://dss.uss2.localutm
+                supports_ovn_request: true
 
         # Mock USS that can be used in tests for flight planning, modifying data sharing behavior and recording interactions
         mock_uss:
