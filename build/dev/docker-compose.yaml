@@ -25,8 +25,8 @@ services:
       start_interval: 5s
 
   rid_bootstrapper:
-    image: interuss/dss:v0.18.0-rc1
-    command: /usr/bin/db-manager --schemas_dir=/db-schemas/rid --db_version "latest" --cockroach_host crdb
+    image: interuss/dss:v0.19.0-rc2
+    command: /usr/bin/db-manager migrate --schemas_dir=/db-schemas/rid --db_version "latest" --cockroach_host crdb
     depends_on:
       crdb:
         condition: service_healthy
@@ -34,8 +34,8 @@ services:
       - dss_internal_network
 
   scd_bootstrapper:
-    image: interuss/dss:v0.18.0-rc1
-    command: /usr/bin/db-manager --schemas_dir=/db-schemas/scd --db_version "latest" --cockroach_host crdb
+    image: interuss/dss:v0.19.0-rc2
+    command: /usr/bin/db-manager migrate --schemas_dir=/db-schemas/scd --db_version "latest" --cockroach_host crdb
     depends_on:
       crdb:
         condition: service_healthy
@@ -44,7 +44,7 @@ services:
 
   dss:
     hostname: dss.uss1.localutm
-    image: interuss/dss:v0.18.0-rc1
+    image: interuss/dss:v0.19.0-rc2
     volumes:
       - $PWD/../test-certs:/var/test-certs:ro
       - $PWD/startup/core_service.sh:/startup/core_service.sh:ro
