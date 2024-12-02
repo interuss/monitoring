@@ -1,5 +1,5 @@
 import json
-from typing import List, Tuple, Any, Union
+from typing import List, Tuple, Any, Union, Iterator
 
 from implicitdict import ImplicitDict
 
@@ -60,6 +60,17 @@ def get_element(obj: dict, element: Union[JSONAddress, List[str]], pop=False) ->
         raise ValueError(f"{str(e)} at {element}")
     except ValueError as e:
         raise ValueError(f"{str(e)} at {element}")
+
+
+def get_element_or_default(
+    obj: dict, element: Union[JSONAddress, List[str]], default_value: Any
+) -> Any:
+    try:
+        return get_element(obj, element)
+    except KeyError:
+        return default_value
+    except TypeError:
+        return default_value
 
 
 class RemovedElement(ImplicitDict):

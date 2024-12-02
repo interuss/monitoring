@@ -88,7 +88,7 @@ def main() -> int:
                 output_path = default_output_path(report_name)
             else:
                 output_path = default_output_path(config_name)
-            generate_artifacts(report, config.artifacts, output_path)
+            generate_artifacts(report, config.artifacts, output_path, False)
         else:
             output_path = "nowhere"
             logger.warning(f"No artifacts to generate for {config_name}")
