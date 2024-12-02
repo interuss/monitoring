@@ -34,12 +34,18 @@ def generate_artifacts(
     report: TestRunReport,
     artifacts: ArtifactsConfiguration,
     output_path: str,
+    disallow_unredacted: bool,
 ):
     logger.debug(f"Writing artifacts to {os.path.abspath(output_path)}")
     os.makedirs(output_path, exist_ok=True)
 
     def _should_redact(cfg) -> bool:
-        return "redact_access_tokens" in cfg and cfg.redact_access_tokens
+        result = "redact_access_tokens" in cfg and cfg.redact_access_tokens
+        if disallow_unredacted and not result:
+            raise RuntimeError(
+                "The option to disallow unredacted information was set, but the configuration specified unredacted information any way"
+            )
+        return result
 
     logger.info(f"Redacting access tokens from report")
     redacted_report = ImplicitDict.parse(json.loads(json.dumps(report)), TestRunReport)
