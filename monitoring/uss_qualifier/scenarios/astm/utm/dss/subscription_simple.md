@@ -24,9 +24,9 @@ Perform basic operations on a single DSS instance to create, update and delete s
 
 ## Setup test case
 
-### [Ensure clean workspace test step](clean_workspace.md)
+### Ensure clean workspace test step
 
-This step ensures that no subscription with the known test ID exists in the DSS.
+#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
 
 ## Subscription Simple test case
 
@@ -193,4 +193,6 @@ If the DSS fails to let us search in the area for which the subscription was jus
 
 If the DSS returns the deleted subscription in a search that covers the area it was originally created for, the DSS is not properly implementing **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-## [Cleanup](./clean_workspace.md)
+## Cleanup
+
+### [Clean any straggling subscriptions with known test IDs](clean_workspace_subs.md)

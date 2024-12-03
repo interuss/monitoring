@@ -25,7 +25,9 @@ A `resources.interuss.IDGeneratorResource` that will be used to generate the IDs
 
 Makes sure that the DSS is in a clean and expected state before running the test, and that the passed resources work as required.
 
-### [Ensure clean workspace](clean_workspace.md) test step
+### Ensure clean workspace test step
+
+#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
 
 #### [No OIR exists](fragments/oir/cleanup_required.md)
 
@@ -122,4 +124,4 @@ If the DSS allows a client with the `utm.strategic_coordination` scope to transi
 it is in violation of **[astm.f3548.v21.SCD0100](../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 
-## [Cleanup](clean_workspace.md)
+## [Cleanup](clean_workspace_op_intents.md)

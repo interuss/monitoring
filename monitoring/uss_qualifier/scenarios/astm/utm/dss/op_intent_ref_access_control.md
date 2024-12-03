@@ -56,7 +56,9 @@ Makes sure that the DSS is in a clean and expected state before running the test
 
 The setup will create two separate operational intent references: one for each set of the available credentials.
 
-### [Ensure clean workspace](clean_workspace.md) test step
+### Ensure clean workspace test step
+
+#### [Clean any existing OIRs](clean_workspace_op_intents.md)
 
 #### ⚠️ Any existing operational intent reference has been removed check
 
@@ -110,4 +112,4 @@ in violation of **[astm.f3548.v21.OPIN0035](../../../../requirements/astm/f3548/
 If an operational intent reference can be deleted by a client which did not create it, the DSS implementation is
 in violation of **[astm.f3548.v21.OPIN0035](../../../../requirements/astm/f3548/v21.md)**.
 
-## [Cleanup](clean_workspace.md)
+## [Cleanup](clean_workspace_op_intents.md)

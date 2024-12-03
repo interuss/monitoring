@@ -19,8 +19,9 @@ This test validates that a DSS correctly implements the [OVN Request Optional Ex
 
 ## Setup test case
 
-### [Ensure clean workspace test step](../../astm/utm/dss/clean_workspace.md)
-This step ensures that no entities with the known test IDs exists in the DSS.
+### Ensure clean workspace test step
+
+#### [Ensure that no operational intents with the known test IDs exists in the DSS](../../astm/utm/dss/clean_workspace_op_intents.md)
 
 ## Request for OIR OVN with valid suffix test case
 This case validates the nominal behavior of the OVN request.
@@ -64,4 +65,4 @@ If the DSS accepts the OVN suffix, or fails with an unexpected error, this check
 Check that the DSS rejects OVN suffix that are outdated UUIDv7.
 If the DSS accepts the OVN suffix, or fails with an unexpected error, this check will fail.
 
-## [Cleanup](../../astm/utm/dss/clean_workspace.md)
+## [Cleanup](../../astm/utm/dss/clean_workspace_op_intents.md)

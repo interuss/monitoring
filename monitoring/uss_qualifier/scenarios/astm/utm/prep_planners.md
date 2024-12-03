@@ -70,7 +70,7 @@ In addition to foreign flight planners, uss_qualifier may have left operational 
 
 ### Remove uss_qualifier op intents test step
 
-#### [Remove op intents](./dss/clean_workspace.md)
+#### [Remove op intents](./dss/clean_workspace_op_intents.md)
 
 The operational intent references managed by uss_qualifier discovered in the previous test case are removed.
 

@@ -24,7 +24,7 @@ Verifies the behavior of a DSS for simple interactions pertaining to constraint 
 
 ## Setup test case
 
-### [Ensure clean workspace test step](./clean_workspace.md)
+### [Ensure clean workspace test step](./clean_workspace_constraints.md)
 
 This step ensures that no entities with the known test IDs exists in the DSS.
 
@@ -76,4 +76,4 @@ This step verifies that an existing CR cannot be mutated with an incorrect OVN.
 If the DSS under test allows the qualifier to mutate an existing CR with a request that provided an incorrect OVN,
 it is in violation of **[astm.f3548.v21.DSS0005,3](../../../../requirements/astm/f3548/v21.md)**
 
-## [Cleanup](./clean_workspace.md)
+## [Cleanup](./clean_workspace_constraints.md)

@@ -296,11 +296,6 @@ class OIRSimple(TestScenario):
         # Make sure the OIR IDs we are going to use are available
         test_step_fragments.cleanup_op_intent(self, self._dss, self._oir_id)
 
-        # Also drop any subs we might own and that could interfere
-        test_step_fragments.cleanup_active_subs(
-            self, self._dss, self._planning_area_volume4d.to_f3548v21()
-        )
-
     def cleanup(self):
         self.begin_cleanup()
         self._ensure_clean_workspace_step()

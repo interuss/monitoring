@@ -29,9 +29,9 @@ are properly propagated to every other DSS instance participating in the deploym
 
 ## Setup test case
 
-### [Ensure clean workspace test step](../clean_workspace.md)
+### Ensure clean workspace test step
 
-This step ensures that no constraint reference with the known test ID exists in the DSS.
+#### [Clean any existing constraint references with known test IDs](../clean_workspace_constraints.md)
 
 ## CR synchronization test case
 
@@ -204,4 +204,4 @@ If a DSS returns an constraint reference that was previously successfully delete
 either one of the primary DSS or the DSS that returned the constraint reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**, **[astm.f3548.v21.DSS0210,A2-7-2,3a](../../../../../requirements/astm/f3548/v21.md)**,
 **[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
 
-## [Cleanup](../clean_workspace.md)
+## [Cleanup](../clean_workspace_constraints.md)

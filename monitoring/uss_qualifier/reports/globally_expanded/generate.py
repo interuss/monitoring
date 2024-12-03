@@ -586,21 +586,28 @@ def _update_links(element: marko.element.Element, origin_filename: str) -> None:
 def _add_section_numbers(elements: Sequence[marko.element.Element]) -> None:
     heading_level = 2
     levels = [0]
+    headings = [None]
     prev_heading = None
     for i, element in enumerate(elements):
         if isinstance(element, marko.block.Heading):
             if element.level < heading_level:
                 levels = levels[0 : element.level - heading_level]
+                headings = headings[0 : element.level - heading_level]
                 heading_level = element.level
                 levels[-1] += 1
+                headings[-1] = text_of(element)
             elif element.level == heading_level:
                 levels[-1] += 1
+                headings[-1] = text_of(element)
             elif element.level == heading_level + 1:
                 levels.append(1)
+                headings.append(text_of(element))
                 heading_level += 1
             else:
+                headings.append(text_of(element))
+                heading_trace = " -> ".join(headings)
                 raise ValueError(
-                    f"Encountered a level {element.level} heading ({text_of(element)}) at element {i} following a level {heading_level} heading ({prev_heading}); expected heading levels to increase by 1 level at a time"
+                    f"Encountered a level {element.level} heading ({text_of(element)}) at element {i} following a level {heading_level} heading ({prev_heading}); expected heading levels to increase by 1 level at a time.  Trace: {heading_trace}"
                 )
             prev_heading = text_of(element)
             section_number = ".".join(str(level) for level in levels) + ". "

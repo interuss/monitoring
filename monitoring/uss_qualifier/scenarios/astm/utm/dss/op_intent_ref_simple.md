@@ -24,13 +24,13 @@ Verifies the behavior of a DSS for simple interactions pertaining to operational
 
 ## Setup test case
 
-### [Ensure clean workspace test step](./clean_workspace.md)
+### Ensure clean workspace test step
 
-This step ensures that no entities with the known test IDs exists in the DSS.
+#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
 
-### [Create an operational intent reference test step](./fragments/oir/crud/create_query.md)
+### Create an operational intent reference test step
 
-Create an operational intent reference to be used in this scenario.
+#### [Create an operational intent reference to be used in this scenario.](./fragments/oir/crud/create_query.md)
 
 ## Deletion requires correct OVN test case
 
@@ -76,4 +76,4 @@ This step verifies that an existing OIR cannot be mutated with an incorrect OVN.
 If the DSS under test allows the qualifier to mutate an existing OIR with a request that provided an incorrect OVN,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
 
-## [Cleanup](./clean_workspace.md)
+## [Cleanup](./clean_workspace_op_intents.md)
