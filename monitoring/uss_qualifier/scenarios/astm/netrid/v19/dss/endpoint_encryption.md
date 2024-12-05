@@ -10,42 +10,25 @@ Ensures that a DSS only exposes its endpoints via HTTPS.
 
 [`DSSInstanceResource`](../../../../../resources/astm/f3411/dss.py) to be tested in this scenario.
 
-### test_search_area
-
-[`VerticesResource`](../../../../../resources/vertices.py) to be used in this scenario for a search query.
-
-## Connect to HTTP port test case
+## Validate endpoint encryption test case
 
 Tries to connect to the http port (80) of the DSS instance, and expects either a refusal of the connection,
 or a redirection to the https port (443).
 
-Note: this test case will be skipped if the DSS instance is configured to use HTTP.
-
-### Attempt GET on root path via HTTP test step
-
-This test step attempts an HTTP GET request on the root path of the DSS instance, using plain HTTP,
-and expects either a connection refusal or a redirection to the equivalent HTTPS URL.
-
-#### 🛑 Connection fails or response redirects to HTTPS endpoint check
-
-If the DSS instance accepts the connection on the HTTP port and does not immediately redirect to the HTTPS port
-upon reception of an HTTP request, it is in violation of **[astm.f3411.v19.DSS0020](../../../../../requirements/astm/f3411/v19.md)**.
+Note that this test case will be skipped if the DSS instance is configured to use HTTP.
+Note that the requests made in this case are made without any form of authentication, as the completion of any form
+of communication over an unencrypted channel, even a 40X status response, is considered a failure.
 
 ### Attempt GET on a known valid path via HTTP test step
+Attempts the operation `GetIdentificationServiceArea` on the DSS through HTTP with a non-existing ID.
 
-This test step attempts an HTTP GET request on a known valid path by searching for ISAs in the configured planning area.
+#### 🛑 HTTP GET fails or redirects to HTTPS check
+If the DSS instance serves the request through unencrypted HTTP, it is in violation of **[astm.f3411.v19.DSS0020](../../../../../requirements/astm/f3411/v19.md)**.
+Only the last request after all redirections are followed is considered.
 
-#### 🛑 Connection fails or response redirects to HTTPS endpoint check
+### Attempt GET on a known valid path via HTTPS test step
+Attempts the operation `GetIdentificationServiceArea` on the DSS through HTTPS with a non-existing ID.
 
-If the DSS instance accepts the connection on the HTTP port and does not immediately redirect to the HTTPS port
-upon reception of an HTTP request, it is in violation of **[astm.f3411.v19.DSS0020](../../../../../requirements/astm/f3411/v19.md)**.
-
-## Connect to HTTPS port test case
-
-Try to connect to the DSS instance over HTTPS.
-
-### Attempt to connect to the DSS instance on the HTTPS port test step
-
-#### 🛑 A request can be sent over HTTPS check
-
-If the DSS instance cannot be reached over HTTPS, it is in violation of **[astm.f3411.v19.DSS0020](../../../../../requirements/astm/f3411/v19.md)**.
+#### 🛑 HTTPS GET succeeds check
+If the DSS instance does not serve the request through encrypted HTTPS, or redirects it to HTTP, it is in violation of **[astm.f3411.v19.DSS0020](../../../../../requirements/astm/f3411/v19.md)**.
+Only the last request after all redirections are followed is considered.
