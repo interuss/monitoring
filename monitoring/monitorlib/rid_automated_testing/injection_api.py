@@ -9,7 +9,10 @@ from uas_standards.interuss.automated_testing.rid.v1 import injection
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     RIDFlightDetails,
     RIDAircraftState,
+    UAType,
 )
+
+from monitoring.monitorlib.rid import RIDVersion
 
 SCOPE_RID_QUALIFIER_INJECT = "rid.inject_test_data"
 
@@ -49,6 +52,21 @@ class TestFlight(injection.TestFlight):
     def get_id(self, t_now: datetime.datetime) -> Optional[str]:
         details = self.get_details(t_now)
         return details.id if details else None
+
+    def get_aircraft_type(self, rid_version: RIDVersion) -> UAType:
+        if not self.has_field_with_value("aircraft_type"):
+            return UAType.NotDeclared
+
+        # there exists a small difference in the enums between both versions of RID, this ensures we always return the expected one
+        if (
+            rid_version == RIDVersion.f3411_19
+            and self.aircraft_type == UAType.HybridLift
+        ):
+            return UAType.VTOL
+        if rid_version == RIDVersion.f3411_22a and self.aircraft_type == UAType.VTOL:
+            return UAType.HybridLift
+
+        return self.aircraft_type
 
     def order_telemetry(self):
         self.telemetry = sorted(
