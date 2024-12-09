@@ -26,6 +26,7 @@ from uas_standards.astm.f3411.v19.constants import (
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 
 from monitoring.monitorlib import geo
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
@@ -70,7 +71,7 @@ def _get_report(
     recent_states.sort(key=lambda p: p.timestamp)
     result = RIDFlight(
         id=details.id,
-        aircraft_type="NotDeclared",  # TODO: Include aircraft_type in TestFlight API
+        aircraft_type=flight.get_aircraft_type(RIDVersion.f3411_19),
         current_state=_make_state(recent_states[-1]),
         simulated=True,
     )
