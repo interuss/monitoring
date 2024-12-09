@@ -29,9 +29,9 @@ are properly propagated to every other DSS instance participating in the deploym
 
 ## Setup test case
 
-### [Ensure clean workspace test step](../clean_workspace.md)
+### Ensure clean workspace test step
 
-This step ensures that no operational intent reference with the known test ID exists in the DSS.
+#### [Clean any existing operational intents references with known test IDs](../clean_workspace_op_intents.md)
 
 ## OIR synchronization test case
 
@@ -184,4 +184,4 @@ If a DSS returns an operational intent reference that was previously successfull
 either one of the primary DSS or the DSS that returned the operational intent reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**
 and **[astm.f3548.v21.DSS0210,A2-7-2,3a](../../../../../requirements/astm/f3548/v21.md)**.
 
-## [Cleanup](../clean_workspace.md)
+## [Cleanup](../clean_workspace_op_intents.md)

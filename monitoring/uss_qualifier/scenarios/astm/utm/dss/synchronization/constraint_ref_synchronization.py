@@ -45,8 +45,8 @@ class CRSynchronization(TestScenario):
      - deletion of an entity on a secondary DSS when it was created on the primary
     """
 
-    SUB_TYPE = register_resource_type(
-        390, "Operational Intent Reference for synchronization checks"
+    CR_TYPE = register_resource_type(
+        390, "Constraint Reference for synchronization checks"
     )
 
     _dss: DSSInstance
@@ -84,7 +84,6 @@ class CRSynchronization(TestScenario):
         """
         super().__init__()
         scopes_primary = {
-            Scope.StrategicCoordination: "cleanup leftover subscriptions and operational intent references",
             Scope.ConstraintManagement: "create and delete constraint references",
         }
         scopes_secondaries = {
@@ -99,7 +98,7 @@ class CRSynchronization(TestScenario):
             for sec_dss in other_instances.dss_instances
         ]
 
-        self._cr_id = id_generator.id_factory.make_id(self.SUB_TYPE)
+        self._cr_id = id_generator.id_factory.make_id(self.CR_TYPE)
         self._expected_manager = client_identity.subject()
         self._planning_area = planning_area.specification
 
@@ -194,12 +193,8 @@ class CRSynchronization(TestScenario):
             self._expected_manager,
         )
 
-        # Make sure the OIR ID we are going to use is available
+        # Make sure the CR ID we are going to use is available
         test_step_fragments.cleanup_constraint_ref(self, self._dss, self._cr_id)
-        # Drop any active subs we might own and that could interfere
-        test_step_fragments.cleanup_active_subs(
-            self, self._dss, self._planning_area_volume4d.to_f3548v21()
-        )
 
     def _create_cr_with_params(self, creation_params: PutConstraintReferenceParameters):
 
