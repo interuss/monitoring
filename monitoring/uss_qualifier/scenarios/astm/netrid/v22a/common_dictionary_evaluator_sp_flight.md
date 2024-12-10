@@ -1,6 +1,6 @@
 # ASTM NetRID v22a Service Provider flight consistency with Common Data Dictionary test step fragment
 
-This fragment is implemented in `common_dictionary_evaluator.py:RIDCommonDictionaryEvaluator.evaluate_sp_flights`.
+This fragment is implemented in `common_dictionary_evaluator.py:RIDCommonDictionaryEvaluator.evaluate_sp_flight`.
 
 ## Service Provider altitude check
 
