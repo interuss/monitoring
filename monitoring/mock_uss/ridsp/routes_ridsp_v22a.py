@@ -29,12 +29,12 @@ from uas_standards.astm.f3411.v22a.constants import (
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 
 from monitoring.monitorlib import geo
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
+from monitoring.monitorlib.rid_v2 import make_time
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
-from . import behavior
 from .database import db
-from ...monitorlib.rid_v2 import make_time
 
 
 def _make_position(p: injection.RIDAircraftPosition) -> RIDAircraftPosition:
@@ -124,7 +124,7 @@ def _get_report(
     recent_states.sort(key=lambda p: p.timestamp)
     result = RIDFlight(
         id=details.id,
-        aircraft_type="NotDeclared",  # TODO: Include aircraft_type in TestFlight API
+        aircraft_type=flight.get_aircraft_type(RIDVersion.f3411_22a),
         current_state=_make_state(recent_states[-1]),
         simulated=True,
     )
