@@ -489,6 +489,8 @@ class RIDObservationEvaluator(object):
         mapping_by_injection_id: Dict[str, TelemetryMapping],
         verified_sps: Set[str],
     ):
+        """Implements fragment documented in `display_data_evaluator_flight_presence.md`."""
+
         query_timestamps = [q.request.timestamp for q in observation_queries]
         observer_participants = (
             [observer_participant_id] if observer_participant_is_relevant else []
@@ -649,6 +651,8 @@ class RIDObservationEvaluator(object):
         observation: GetDisplayDataResponse,
         query: fetch.Query,
     ):
+        """Implements fragment documented in `display_data_evaluator_clustering.md`."""
+
         with self._test_scenario.check(
             "Minimal display area of clusters", [observer.participant_id]
         ) as check:

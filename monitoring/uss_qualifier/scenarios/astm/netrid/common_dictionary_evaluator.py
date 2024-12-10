@@ -60,6 +60,8 @@ class RIDCommonDictionaryEvaluator(object):
         observed_flights: FetchedFlights,
         participants: List[str],
     ):
+        """Implements fragment documented in `common_dictionary_evaluator_sp_flight.md`."""
+
         for url, uss_flights in observed_flights.uss_flight_queries.items():
             # For the timing checks, we want to look at the flights relative to the query
             # they came from, as they may be provided from different SP's.
@@ -87,6 +89,8 @@ class RIDCommonDictionaryEvaluator(object):
         observed_flight: observation_api.Flight,
         participants: List[str],
     ):
+        """Implements fragment documented in `common_dictionary_evaluator_dp_flight.md`."""
+
         # If the state is present, we do validate its content,
         # but its presence is optional
         if injected_flight.has_field_with_value("current_state"):
@@ -207,6 +211,8 @@ class RIDCommonDictionaryEvaluator(object):
                 fail_check()
 
     def evaluate_sp_details(self, details: FlightDetails, participants: List[str]):
+        """Implements fragment documented in `common_dictionary_evaluator_sp_flight_details.md`."""
+
         self._evaluate_uas_id(details.raw.get("uas_id"), participants)
         self._evaluate_operator_id(None, details.operator_id, participants)
         self._evaluate_operator_location(
@@ -225,6 +231,8 @@ class RIDCommonDictionaryEvaluator(object):
         observed_details: Optional[observation_api.GetDetailsResponse],
         participants: List[str],
     ):
+        """Implements fragment documented in `common_dictionary_evaluator_dp_flight_details.md`."""
+
         if not observed_details:
             return
 
