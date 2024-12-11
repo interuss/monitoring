@@ -22,6 +22,7 @@ from monitoring.mock_uss.auth import requires_scope
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     AltitudeReference,
     MSLAltitude,
+    UAType,
 )
 from . import clustering, database, utm_client
 from .behavior import DisplayProviderBehavior
@@ -79,6 +80,9 @@ def _make_flight_observation(
         h.distance = limit_resolution(h.distance, MinHeightResolution)
     return observation_api.Flight(
         id=flight.id,
+        aircraft_type=flight.aircraft_type
+        if flight.aircraft_type
+        else UAType.NotDeclared,
         most_recent_position=observation_api.Position(
             lat=p.lat,
             lng=p.lng,

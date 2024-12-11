@@ -358,6 +358,23 @@ class Flight(ImplicitDict):
                 f"Cannot retrieve speed using RID version {self.rid_version}"
             )
 
+    @property
+    def aircraft_type(
+        self,
+    ) -> Optional[Union[v19.api.RIDAircraftType, v22a.api.UAType]]:
+        if self.rid_version == RIDVersion.f3411_19:
+            if not self.v19_value.has_field_with_value("aircraft_type"):
+                return None
+            return self.v19_value.aircraft_type
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if not self.v22a_value.has_field_with_value("aircraft_type"):
+                return None
+            return self.v22a_value.aircraft_type
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve aircraft_type using RID version {self.rid_version}"
+            )
+
     def errors(self) -> List[str]:
         try:
             rid_version = self.rid_version
