@@ -25,9 +25,9 @@ provide all OVNs for all currently relevant entities.
 
 ## Setup test case
 
-### [Ensure clean workspace test step](./clean_workspace.md)
+### [Ensure clean workspace test step](./clean_workspace_op_intents.md)
 
-This step ensures that no entities with the known test IDs exists in the DSS.
+This step ensures that no operational intent references with the known test IDs exists in the DSS.
 
 ## Key validation on creation test case
 
@@ -141,4 +141,4 @@ The expectation is that the DSS will require the missing OVN.
 
 #### [Non de-conflicted mutation request fails](fragments/oir/crud/update_conflict.md)
 
-## [Cleanup](./clean_workspace.md)
+## [Cleanup](./clean_workspace_op_intents.md)

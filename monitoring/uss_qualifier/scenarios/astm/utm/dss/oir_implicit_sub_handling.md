@@ -24,9 +24,11 @@ Checks that implicit subscriptions are properly created, mutated and cleaned up.
 
 ## Setup test case
 
-### [Ensure clean workspace test step](clean_workspace.md)
+### Ensure clean workspace test step
 
-This step ensures that no OIRs with the known test IDs exists in the DSS.
+#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
+
+#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
 
 ## Single OIR implicit subscription is removed upon OIR deletion test case
 
@@ -142,9 +144,13 @@ the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements
 
 This test case verifies that implicit subscriptions are properly removed if they become unnecessary following the mutation of an OIR.
 
-### [Ensure clean workspace test step](clean_workspace.md)
+### Ensure clean workspace test step
 
-Reset the workspace for this test case.
+<!-- TODO(Shastick): Why do we need to reclean the workspace at this point?  We already ensured it was clean before starting the test; don't we know exactly what happened in the test and therefore know that it's already clean (or something failed)?  If a previous test case created something that we don't need/want in later test cases, the original test case should clean up at the end of the test case. -->
+
+#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
+
+#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
 
 ### Create two OIRs with implicit subscription test step
 
@@ -190,9 +196,13 @@ the DSS is failing to properly manage implicit subscriptions for OIRs, and is th
 
 This test case checks that a DSS will properly expand an implicit subscription to cover an OIR that is being attached to it.
 
-### [Ensure clean workspace test step](clean_workspace.md)
+### Ensure clean workspace test step
 
-Reset the workspace for this test case.
+<!-- TODO(Shastick): Why do we need to reclean the workspace at this point?  We already ensured it was clean before starting the test; don't we know exactly what happened in the test and therefore know that it's already clean (or something failed)?  If a previous test case created something that we don't need/want in later test cases, the original test case should clean up at the end of the test case. -->
+
+#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
+
+#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
 
 ### Create an OIR with implicit subscription test step
 
@@ -221,6 +231,8 @@ in which case the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../.
 
 Ensure that the attached implicit subscription has been expanded
 
+## Cleanup
 
+### [Remove OIRs created during this test](clean_workspace_op_intents.md)
 
-## [Cleanup](./clean_workspace.md)
+### [Remove subscriptions created during this test](clean_workspace_subs.md)

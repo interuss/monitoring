@@ -225,7 +225,6 @@ class DSSOVNRequest(TestScenario):
         )
 
         test_step_fragments.cleanup_op_intent(self, self._dss, self._oir_id)
-        test_step_fragments.cleanup_active_subs(self, self._dss, vol)
 
         self.end_test_step()
         self.end_test_case()
