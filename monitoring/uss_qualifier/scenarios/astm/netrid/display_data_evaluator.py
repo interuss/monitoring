@@ -485,9 +485,8 @@ class RIDObservationEvaluator(object):
                     self._common_dictionary_evaluator.evaluate_dp_details(
                         details_inj,
                         details_obs,
-                        participants=[
-                            observer.participant_id,
-                        ],
+                        observer.participant_id,
+                        query.request.timestamp,
                     )
 
     def _evaluate_flight_presence(

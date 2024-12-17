@@ -14,6 +14,30 @@ This fragment is implemented in `common_dictionary_evaluator.py:RIDCommonDiction
 
 If the UAS ID contained in flight details returned by a display provider does not correspond to the injected one, the DP is not providing accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
 
+## ⚠️ UA classification type is consistent with injected one check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary.
+The UA classification type is implicitly defined by the presence of an UA classification field, or left undefined by the absence of all of them.
+Considering this, this check will fail only if it is inconsistent with the injected value, as per **[astm.f3411.v22a.NET0470,Table1,4](../../../../requirements/astm/f3411/v22a.md)**.
+If the UA classification type reported for an observation does not correspond to the injected one, the DP is not providing timely and accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
+
+## ⚠️ UA classification type is consistent with Common Data Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary.
+The UA classification type is implicitly defined by the presence of an UA classification field, or left undefined by the absence of all of them.
+This check will fail if more than one UA classification types are defined as per **[astm.f3411.v22a.NET0470,Table1,4](../../../../requirements/astm/f3411/v22a.md)**.
+
+## ⚠️ UA classification for 'European Union' type is consistent with injected one check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary.
+The UA classification for 'European Union' type being an optional field, this check will fail only if it is inconsistent with the injected value, as per **[astm.f3411.v22a.NET0470,Table1,3](../../../../requirements/astm/f3411/v22a.md)**.
+In addition, if the UA classification for 'European Union' type reported for an observation does not correspond to the injected one, the DP is not providing timely and accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**.
+
+## ⚠️ UA classification for 'European Union' type is consistent with Common Data Dictionary check
+
+**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary.
+This check will fail if the observed UA type has an invalid value as per **[astm.f3411.v22a.NET0470,Table1,3](../../../../requirements/astm/f3411/v22a.md)**.
+
 ## Operator ID consistency with Common Dictionary check
 
 **[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall (NET0470) provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Operator ID, if present, is valid. (**[astm.f3411.v22a.NET0470,Table1,9](../../../../requirements/astm/f3411/v22a.md)**)

@@ -136,7 +136,8 @@ class RIDCommonDictionaryEvaluator(object):
         self,
         injected_details: injection.RIDFlightDetails,
         observed_details: Optional[observation_api.GetDetailsResponse],
-        participants: List[str],
+        participant_id: ParticipantID,
+        query_timestamp: datetime.datetime,
     ):
         """Implements fragment documented in `common_dictionary_evaluator_dp_flight_details.md`."""
 
@@ -148,13 +149,19 @@ class RIDCommonDictionaryEvaluator(object):
                 "uas_id", injected_details.get("serial_number", None)
             ),  # fall back on seria number if no UAS ID
             observed_details.get("uas", {}).get("id", None),
-            participants,
+            [participant_id],
+        )
+        self._evaluate_ua_classification(
+            _get_classification_fields(injected_details),
+            _get_classification_fields(observed_details.uas),
+            participant_id,
+            query_timestamp,
         )
 
         operator_obs = observed_details.get("operator", {})
 
         self._evaluate_operator_id(
-            injected_details.operator_id, operator_obs.get("id", None), participants
+            injected_details.operator_id, operator_obs.get("id", None), [participant_id]
         )
 
         operator_altitude_obs = operator_obs.get("altitude", {})
@@ -169,7 +176,7 @@ class RIDCommonDictionaryEvaluator(object):
             operator_obs.get("location", None),
             Altitude.w84m(value=operator_altitude_value_obs),
             operator_altitude_obs.get("altitude_type", None),
-            participants,
+            [participant_id],
         )
 
     def _evaluate_uas_id(self, value: Optional[UASID], participants: List[str]):
