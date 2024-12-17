@@ -217,6 +217,17 @@ def generate_flight_record(
         )
         flight_telemetry.append(rid_aircraft_state)
     flight_id_bytes = bytes(r.randint(0, 255) for _ in range(16))
+    eu_classification = None
+    if (
+        flight_description.get("eu_classification_category") is not None
+        and flight_description.get("eu_classification_class") is not None
+    ):
+        eu_classification = injection.UAClassificationEU(
+            {
+                "category": flight_description.get("eu_classification_category"),
+                "class": flight_description.get("eu_classification_class"),
+            }
+        )
     rid_details = injection.RIDFlightDetails(
         id=flight_description.get(
             "id", str(uuid.UUID(bytes=flight_id_bytes, version=4))
@@ -229,6 +240,7 @@ def generate_flight_record(
         ),
         operator_id=flight_description.get("operator_id"),
         registration_number=flight_description.get("registration_number"),
+        eu_classification=eu_classification,
     )
 
     return FullFlightRecord(
