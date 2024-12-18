@@ -85,33 +85,35 @@ def expect_no_interuss_post_interactions(
         direction_filter(QueryDirection.Incoming),
     )
 
-    for interaction in interactions:
-        with scenario.check(
-            "Mock USS interaction can be parsed", [mock_uss.participant_id]
-        ) as check:
-            try:
-                req = PutOperationalIntentDetailsParameters(
-                    ImplicitDict.parse(
-                        interaction.query.request.json,
-                        PutOperationalIntentDetailsParameters,
+    with scenario.check(
+        "Expect Notification not sent", [participant_id]
+    ) as no_notification_check:
+        for interaction in interactions:
+            with scenario.check(
+                "Mock USS interaction can be parsed", [mock_uss.participant_id]
+            ) as check:
+                try:
+                    req = PutOperationalIntentDetailsParameters(
+                        ImplicitDict.parse(
+                            interaction.query.request.json,
+                            PutOperationalIntentDetailsParameters,
+                        )
                     )
-                )
-            except (ValueError, TypeError, KeyError) as e:
-                check.record_failed(
-                    summary=f"Failed to parse request of a 'NotifyOperationalIntentDetailsChanged' interaction with mock_uss as a PutOperationalIntentDetailsParameters",
-                    details=f"{str(e)}\nRequest: {interaction.query.request.json}\n\nStack trace:\n{e.stacktrace}",
-                    query_timestamps=[query.request.timestamp],
-                )
-                continue  # low priority failure: continue checking interactions if one cannot be parsed
+                except (ValueError, TypeError, KeyError) as e:
+                    check.record_failed(
+                        summary=f"Failed to parse request of a 'NotifyOperationalIntentDetailsChanged' interaction with mock_uss as a PutOperationalIntentDetailsParameters",
+                        details=f"{str(e)}\nRequest: {interaction.query.request.json}\n\nStack trace:\n{e.stacktrace}",
+                        query_timestamps=[query.request.timestamp],
+                    )
+                    continue  # low priority failure: continue checking interactions if one cannot be parsed
 
-        with scenario.check("Expect Notification not sent", [participant_id]) as check:
-            op_intent_id = EntityID(req.operational_intent_id)
-            if op_intent_id not in shared_op_intent_ids:
-                check.record_failed(
-                    summary=f"Observed unexpected notification for operational intent ID {req.operational_intent_id}.",
-                    details=f"Notification for operational intent ID {req.operational_intent_id} triggered by subscriptions {', '.join([sub.subscription_id for sub in req.subscriptions])} with timestamp {interaction.query.request.timestamp}.",
-                    query_timestamps=[query.request.timestamp],
-                )
+                op_intent_id = EntityID(req.operational_intent_id)
+                if op_intent_id not in shared_op_intent_ids:
+                    no_notification_check.record_failed(
+                        summary=f"Observed unexpected notification for operational intent ID {req.operational_intent_id}.",
+                        details=f"Notification for operational intent ID {req.operational_intent_id} triggered by subscriptions {', '.join([sub.subscription_id for sub in req.subscriptions])} with timestamp {interaction.query.request.timestamp}.",
+                        query_timestamps=[query.request.timestamp],
+                    )
 
 
 def expect_uss_obtained_op_intent_details(
