@@ -1,3 +1,4 @@
+import datetime
 import math
 from typing import List, Optional
 
@@ -18,7 +19,6 @@ from uas_standards.interuss.automated_testing.rid.v1 import (
     injection,
 )
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
-    RIDAircraftState,
     RIDAircraftPosition,
 )
 
@@ -47,10 +47,19 @@ class RIDCommonDictionaryEvaluator(object):
 
     def evaluate_sp_flight(
         self,
+        injected_flight: injection.TestFlight,
         observed_flight: Flight,
         participant_id: ParticipantID,
+        query_timestamp: datetime.datetime,
     ):
         """Implements fragment documented in `common_dictionary_evaluator_sp_flight.md`."""
+
+        self._evaluate_ua_type(
+            injected_flight.get("aircraft_type"),
+            observed_flight.aircraft_type,
+            [participant_id],
+            query_timestamp,
+        )
 
         self._evaluate_operational_status(
             observed_flight.operational_status,
@@ -59,23 +68,36 @@ class RIDCommonDictionaryEvaluator(object):
 
     def evaluate_dp_flight(
         self,
-        injected_flight: RIDAircraftState,
+        injected_telemetry: injection.RIDAircraftState,
+        injected_flight: injection.TestFlight,
         observed_flight: observation_api.Flight,
         participants: List[str],
+        query_timestamp: datetime.datetime,
     ):
         """Implements fragment documented in `common_dictionary_evaluator_dp_flight.md`."""
 
+        self._evaluate_ua_type(
+            injected_flight.get("aircraft_type"),
+            observed_flight.get("aircraft_type"),
+            participants,
+            query_timestamp,
+        )
+
         # If the state is present, we do validate its content,
         # but its presence is optional
-        if injected_flight.has_field_with_value("current_state"):
+        if injected_telemetry.has_field_with_value("current_state"):
             self._evaluate_speed(
-                injected_flight.speed, observed_flight.current_state.speed, participants
+                injected_telemetry.speed,
+                observed_flight.current_state.speed,
+                participants,
             )
             self._evaluate_track(
-                injected_flight.track, observed_flight.current_state.track, participants
+                injected_telemetry.track,
+                observed_flight.current_state.track,
+                participants,
             )
             self._evaluate_timestamp(
-                injected_flight.timestamp,
+                injected_telemetry.timestamp,
                 observed_flight.current_state.timestamp,
                 participants,
             )
@@ -87,10 +109,12 @@ class RIDCommonDictionaryEvaluator(object):
             )
 
         self._evaluate_position(
-            injected_flight.position, observed_flight.most_recent_position, participants
+            injected_telemetry.position,
+            observed_flight.most_recent_position,
+            participants,
         )
         self._evaluate_height(
-            injected_flight.get("height"),
+            injected_telemetry.get("height"),
             observed_flight.most_recent_position.get("height"),
             participants,
         )
@@ -651,3 +675,77 @@ class RIDCommonDictionaryEvaluator(object):
                 key="skip_reason",
                 message=f"Unsupported version {self._rid_version}: skipping Operational Status evaluation",
             )
+
+    def _evaluate_ua_type(
+        self,
+        injected_val: Optional[str],
+        observed_val: Optional[str],
+        participants: List[ParticipantID],
+        query_timestamp: datetime.datetime,
+    ):
+        with self._test_scenario.check(
+            "UA type is present and consistent with injected one",
+            participants,
+        ) as check:
+            if observed_val is None:
+                check.record_failed(
+                    "UA type is missing",
+                    details="USS did not return any UA type",
+                    query_timestamps=[query_timestamp],
+                )
+            elif not observed_val:
+                check.record_failed(
+                    "UA type is empty",
+                    details="USS returned an empty UA type",
+                    query_timestamps=[query_timestamp],
+                )
+
+            equivalent = {injection.UAType.HybridLift, injection.UAType.VTOL}
+            if injected_val is None:
+                if observed_val != injection.UAType.NotDeclared:
+                    check.record_failed(
+                        "UA type is inconsistent, expected 'NotDeclared' since no value was injected",
+                        details=f"USS returned the UA type {observed_val}, yet no value was injected, which should have been mapped to 'NotDeclared'.",
+                        query_timestamps=[query_timestamp],
+                    )
+
+            elif injected_val in equivalent:
+                if observed_val not in equivalent:
+                    check.record_failed(
+                        "UA type is inconsistent with injected value",
+                        details=f"USS returned the UA type {observed_val}, yet the value {injected_val} was injected, given that {equivalent} are equivalent .",
+                        query_timestamps=[query_timestamp],
+                    )
+
+            elif injected_val != observed_val:
+                check.record_failed(
+                    "UA type is inconsistent with injected value",
+                    details=f"USS returned the UA type {observed_val}, yet the value {injected_val} was injected.",
+                    query_timestamps=[query_timestamp],
+                )
+
+        with self._test_scenario.check(
+            "UA type is consistent with Common Data Dictionary",
+            participants,
+        ) as check:
+            try:
+                injection.UAType(observed_val)
+            except ValueError:
+                check.record_failed(
+                    "UA type is invalid",
+                    details=f"USS returned an invalid UA type: {observed_val}.",
+                    query_timestamps=[query_timestamp],
+                )
+
+            if (
+                self._rid_version == RIDVersion.f3411_19
+                and observed_val == injection.UAType.HybridLift
+            ) or (
+                self._rid_version == RIDVersion.f3411_22a
+                and observed_val == injection.UAType.VTOL
+            ):
+                check.record_failed(
+                    "UA type is inconsistent RID version",
+                    details=f"USS returned the UA type {observed_val} which is not supported by the RID version used ({self._rid_version}).",
+                    query_timestamps=[query_timestamp],
+                )

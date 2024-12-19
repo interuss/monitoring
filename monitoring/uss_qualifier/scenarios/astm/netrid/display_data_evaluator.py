@@ -2,7 +2,7 @@ import datetime
 
 import math
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Union, Set, Tuple, cast
+from typing import List, Optional, Dict, Union, Set, Tuple
 
 import arrow
 import s2sphere
@@ -406,9 +406,11 @@ class RIDObservationEvaluator(object):
                         )
 
             self._common_dictionary_evaluator.evaluate_dp_flight(
-                injected_flight=injected_telemetry,
-                observed_flight=mapping.observed_flight,
-                participants=[observer.participant_id],
+                injected_telemetry,
+                mapping.injected_flight.flight,
+                mapping.observed_flight,
+                [observer.participant_id],
+                query.request.timestamp,
             )
 
         # Check that flights using telemetry are not using extrapolated position data
@@ -890,6 +892,7 @@ class RIDObservationEvaluator(object):
 
         for mapping in mappings.values():
             participant_id = mapping.injected_flight.uss_participant_id
+            injected_flight = mapping.injected_flight.flight
             observed_flight = mapping.observed_flight.flight
             flights_queries = [
                 q
@@ -901,6 +904,7 @@ class RIDObservationEvaluator(object):
                     f"Found {len(flights_queries)} flights queries (instead of the expected 1) for flight {mapping.observed_flight.id} corresponding to injection ID {mapping.injected_flight.flight.injection_id} for {participant_id}"
                 )
             flights_query = flights_queries[0]
+            query_timestamp = flights_query.query.request.timestamp
 
             # Verify that flights queries returned correctly-formatted data
             errors = schema_validation.validate(
@@ -920,7 +924,7 @@ class RIDObservationEvaluator(object):
                             f"At {e.json_path} in the response: {e.message}"
                             for e in errors
                         ),
-                        query_timestamps=[flights_query.query.request.timestamp],
+                        query_timestamps=[query_timestamp],
                     )
 
             # Check recent positions timings
@@ -935,8 +939,10 @@ class RIDObservationEvaluator(object):
 
             # Check flight consistency with common data dictionary
             self._common_dictionary_evaluator.evaluate_sp_flight(
+                injected_flight,
                 observed_flight,
                 participant_id,
+                query_timestamp,
             )
 
         # Check that required fields are present and match for any observed flights matching injected flights
