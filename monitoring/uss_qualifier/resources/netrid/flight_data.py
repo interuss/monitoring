@@ -3,17 +3,17 @@ from typing import List, Optional
 from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
 
 from monitoring.uss_qualifier.resources.files import ExternalFile
-from uas_standards.astm.f3411.v19.api import RIDAircraftState, RIDFlightDetails
+from uas_standards.interuss.automated_testing.rid.v1 import injection
 
 
 class FullFlightRecord(ImplicitDict):
     reference_time: StringBasedDateTime
     """The reference time of this flight (usually the time of first telemetry)"""
 
-    states: List[RIDAircraftState]
+    states: List[injection.RIDAircraftState]
     """All telemetry that will be/was received for this flight"""
 
-    flight_details: RIDFlightDetails
+    flight_details: injection.RIDFlightDetails
     """Details of this flight, as would be reported at the ASTM /details endpoint"""
 
     aircraft_type: str

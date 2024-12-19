@@ -1198,8 +1198,18 @@ class RIDObservationEvaluator(object):
                         query_timestamps=[details_query.query.request.timestamp],
                     )
 
+            # Get details that are expected to be valid for the present telemetry:
+            telemetry_inj = mapping.injected_flight.flight.telemetry[
+                mapping.telemetry_index
+            ]
+            details_inj = mapping.injected_flight.flight.get_details(
+                telemetry_inj.timestamp.datetime
+            )
             self._common_dictionary_evaluator.evaluate_sp_details(
-                details_query.details, [mapping.injected_flight.uss_participant_id]
+                details_inj,
+                details_query.details,
+                mapping.injected_flight.uss_participant_id,
+                details_query.query.request.timestamp,
             )
 
     def _evaluate_area_too_large_sp_observation(
