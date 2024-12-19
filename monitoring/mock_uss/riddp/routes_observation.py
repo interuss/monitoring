@@ -213,6 +213,7 @@ def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
         ),
         uas=observation_api.UAS(
             id=details.arbitrary_uas_id,
+            eu_classification=details.eu_classification,
         ),
     )
     if details.operator_location is not None:
