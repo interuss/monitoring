@@ -2,6 +2,16 @@
 
 This fragment is implemented in `common_dictionary_evaluator.py:RIDCommonDictionaryEvaluator.evaluate_sp_flight`.
 
+## ⚠️ UA type is present and consistent with injected one check
+
+**[astm.f3411.v19.NET0260,Table1,3](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.
+The UA type being a required field, this check will fail if it is missing or if it inconsistent with the injected value.
+
+## ⚠️ UA type is consistent with Common Data Dictionary check
+
+**[astm.f3411.v19.NET0260,Table1,3](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.
+This check will fail if the observed UA type has an invalid value.
+
 ## Service Provider altitude check
 
 **[astm.f3411.v19.NET0260,Table1,11](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had known altitudes, but the altitude reported by the Service Provider did not match those known altitudes.
