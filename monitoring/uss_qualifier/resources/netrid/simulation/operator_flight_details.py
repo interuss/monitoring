@@ -1,10 +1,9 @@
 from faker import Faker
 import string
 import random
-import uuid
 from uas_standards.ansi_cta_2063_a import SerialNumber
 
-from uas_standards.astm.f3411.v19.api import LatLngPoint
+from uas_standards.interuss.automated_testing.rid.v1 import injection
 
 
 class OperatorFlightDataGenerator:
@@ -38,7 +37,7 @@ class OperatorFlightDataGenerator:
 
     def generate_operator_location(self, centroid):
         # TODO: Inject operator location altitude
-        operator_location = LatLngPoint(lat=centroid.y, lng=centroid.x)
+        operator_location = injection.LatLngPoint(lat=centroid.y, lng=centroid.x)
         return operator_location
 
     def generate_operator_id(self, prefix="OP-"):
