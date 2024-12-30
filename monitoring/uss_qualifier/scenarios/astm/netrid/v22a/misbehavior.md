@@ -2,7 +2,7 @@
 
 ## Overview
 
-In this scenario, the service provider's endpoint are accessed directly with missing or incorrect credentials. Resources that exists as well as resources that are not expected to exist are queried.
+In this scenario, the service provider's endpoints are accessed directly to test missing credentials as well as invalid requests. Resources that exists as well as resources that are not expected to exist are queried.
 
 ## Resources
 
@@ -22,7 +22,7 @@ This [`EvaluationConfigurationResource`](../../../../resources/netrid/evaluation
 
 A [`DSSInstanceResource`](../../../../resources/astm/f3411/dss.py) is required for providing the qualifier with the flights URL of the service providers being tested.
 
-## Unauthenticated requests test case
+## Invalid requests test case
 
 ### Injection test step
 
@@ -38,6 +38,14 @@ This check will fail if the flight was not successfully injected.
 #### 🛑 Identifiable flights check
 
 This particular test requires each flight to be uniquely identifiable by its 2D telemetry position; the same (lat, lng) pair may not appear in two different telemetry points, even if the two points are in different injected flights.  This should generally be achieved by injecting appropriate data.
+
+### Invalid search area test step
+
+This step will attempt to search for flights in a rectangular area with a diagonal greater than [NetMaxDisplayAreaDiagonal] km.
+
+#### Area too large check
+
+**[astm.f3411.v22a.NET0250](../../../../requirements/astm/f3411/v22a.md)** requires that a NetRID Service Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received or the response contains Remote ID data, then this check will fail.
 
 ### Unauthenticated requests test step
 
