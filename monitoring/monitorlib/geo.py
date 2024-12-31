@@ -480,6 +480,7 @@ def make_latlng_rect(area) -> s2sphere.LatLngRect:
             f"make_latlng_rect does not support {type(area).__name__}"
         )
 
+
 def rect_str(rect: s2sphere.LatLngRect) -> str:
     return "({}, {})-({}, {})".format(
         rect.lo().lat().degrees,
