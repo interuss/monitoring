@@ -1,6 +1,5 @@
 from typing import List, Set, Callable
 
-import s2sphere
 from requests.exceptions import RequestException
 from s2sphere import LatLngRect, LatLng
 
@@ -21,7 +20,6 @@ from monitoring.uss_qualifier.scenarios.astm.netrid import (
     display_data_evaluator,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid.display_data_evaluator import (
-    _rect_str,
     TelemetryMapping,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection import (
@@ -148,7 +146,7 @@ class Misbehavior(GenericTestScenario):
             poll_func,
         )
 
-    def _fetch_flights_from_dss(self, rect: s2sphere.LatLngRect):
+    def _fetch_flights_from_dss(self, rect: LatLngRect):
         # We grab all flights from the SPs (which we know how to reach by first querying the DSS).
         # This is authenticated and is expected to succeed
         sp_observation = rid.all_flights(
@@ -171,7 +169,7 @@ class Misbehavior(GenericTestScenario):
 
     def _evaluate_and_test_invalid_requests(
         self,
-        rect: s2sphere.LatLngRect,
+        rect: LatLngRect,
     ) -> Set[str]:
         """Queries all flights in the expected way, then repeats the queries to SPs without credentials.
 
@@ -186,7 +184,7 @@ class Misbehavior(GenericTestScenario):
 
     def _evaluate_and_test_too_large_area_requests(
         self,
-        rect: s2sphere.LatLngRect,
+        rect: LatLngRect,
     ) -> Set[str]:
         """Queries all flights from the DSS to discover flights urls and query them using a larger area than allowed.
 
@@ -200,7 +198,7 @@ class Misbehavior(GenericTestScenario):
         return set(mapping_by_injection_id.keys())
 
     def _evaluate_too_large_area(
-        self, rect: s2sphere.LatLngRect, injection_id: str, mapping: TelemetryMapping
+        self, rect: LatLngRect, injection_id: str, mapping: TelemetryMapping
     ):
         participant_id = mapping.injected_flight.uss_participant_id
         flights_url = mapping.observed_flight.query.flights_url
@@ -233,7 +231,7 @@ class Misbehavior(GenericTestScenario):
                     check.record_failed(
                         summary="Did not receive expected error code for too-large area request",
                         severity=Severity.High,
-                        details=f"{participant_id} was queried for flights in {_rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The expected error code is 413, but instead code {uss_flights_query.status_code} was received.",
+                        details=f"{participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The expected error code is 413, but instead code {uss_flights_query.status_code} was received.",
                     )
 
                 if (
@@ -243,11 +241,11 @@ class Misbehavior(GenericTestScenario):
                     check.record_failed(
                         summary="Received Remote ID data while an empty response was expected because the requested area was too large",
                         severity=Severity.High,
-                        details=f"{participant_id} was queried for flights in {_rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The Remote ID data shall be empty, instead, the following payload was received: {uss_flights_query.query.response.content}",
+                        details=f"{participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The Remote ID data shall be empty, instead, the following payload was received: {uss_flights_query.query.response.content}",
                     )
 
     def _evaluate_unauthenticated(
-        self, rect: s2sphere.LatLngRect, injection_id: str, mapping: TelemetryMapping
+        self, rect: LatLngRect, injection_id: str, mapping: TelemetryMapping
     ):
         participant_id = mapping.injected_flight.uss_participant_id
         flights_url = mapping.observed_flight.query.flights_url
