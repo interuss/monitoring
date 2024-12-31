@@ -79,6 +79,14 @@ class Misbehavior(GenericTestScenario):
         self._inject_flights()
         self.end_test_step()
 
+        self.begin_test_step("Invalid search area")
+
+        self._poll_during_flights([
+            self._rid_version.max_diagonal_km * 1000 - 100, # valid diagonal required for sps urls discovery
+        ], self._evaluate_and_test_too_large_area_requests)
+
+        self.end_test_step()
+
         self.begin_test_step("Unauthenticated requests")
 
         self._poll_during_flights([
@@ -161,6 +169,66 @@ class Misbehavior(GenericTestScenario):
             self._evaluate_unauthenticated(rect, injection_id, mapping)
 
         return set(mapping_by_injection_id.keys())
+
+    def _evaluate_and_test_too_large_area_requests(
+        self,
+        rect: s2sphere.LatLngRect,
+    ) -> Set[str]:
+        """Queries all flights from the DSS to discover flights urls and query them using a larger area than allowed.
+
+        :returns: set of injection IDs that were encountered and tested
+        """
+
+        mapping_by_injection_id = self._fetch_flights_from_dss(rect)
+        for injection_id, mapping in mapping_by_injection_id.items():
+            self._evaluate_too_large_area(rect, injection_id, mapping)
+
+        return set(mapping_by_injection_id.keys())
+
+    def _evaluate_too_large_area(self, rect: s2sphere.LatLngRect, injection_id: str, mapping: TelemetryMapping):
+        participant_id = mapping.injected_flight.uss_participant_id
+        flights_url = mapping.observed_flight.query.flights_url
+        session = self._dss.client
+
+        scale = LatLng(0.01, 0.001)
+        invalid_rect = rect.expanded(scale)
+        diagonal_km = geo.get_latlngrect_diagonal_km(invalid_rect)
+
+        self.record_note(
+            f"{participant_id}/{injection_id}/area_too_large_query",
+            f"Will attempt to search an area too large at {flights_url} - (diagonal: {diagonal_km} km)",
+        )
+
+        if diagonal_km > self._rid_version.max_diagonal_km:
+            with self.check(
+                    "Area too large", [participant_id]
+            ) as check:
+
+                # check uss flights query
+                uss_flights_query = rid.uss_flights(
+                    flights_url,
+                    invalid_rect,
+                    True,
+                    self._rid_version,
+                    session,
+                    participant_id,
+                )
+                self.record_query(uss_flights_query.query)
+
+                if uss_flights_query.status_code not in (400, 413):
+                    check.record_failed(
+                        summary="Did not receive expected error code for too-large area request",
+                        severity=Severity.High,
+                        details=f"{participant_id} was queried for flights in {_rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The expected error code is 413, but instead code {uss_flights_query.status_code} was received.",
+                    )
+
+                if uss_flights_query.flights is not None and len(uss_flights_query.flights) != 0:
+                    check.record_failed(
+                        summary="Received Remote ID data while an empty response was expected because the requested area was too large",
+                        severity=Severity.High,
+                        details=f"{participant_id} was queried for flights in {_rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The Remote ID data shall be empty, instead, the following payload was received: {uss_flights_query.query.response.content}",
+                    )
+
 
     def _evaluate_unauthenticated(self, rect: s2sphere.LatLngRect, injection_id: str, mapping: TelemetryMapping):
         participant_id = mapping.injected_flight.uss_participant_id
