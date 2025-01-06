@@ -100,7 +100,7 @@ class Misbehavior(GenericTestScenario):
                 self._rid_version.max_diagonal_km * 1000 - 100,  # clustered
                 self._rid_version.max_details_diagonal_km * 1000 - 100,  # details
             ],
-            self._evaluate_and_test_invalid_requests,
+            self._evaluate_and_test_unauthenticated_requests,
         )
 
         self.end_test_step()
@@ -118,6 +118,13 @@ class Misbehavior(GenericTestScenario):
         diagonals_m: List[float],
         evaluation_func: Callable[[LatLngRect], Set[str]],
     ):
+        """
+        Poll until every injected flights have been observed.
+
+        :param diagonals_m: List of diagonals in meters used by the virtual observer to fetch flights.
+        :param evaluation_func: This method is called on each polling tick with the area to observe. It is responsible
+        to fetch flights and to return the list of observed injected ids.
+        """
         config = self._evaluation_configuration.configuration
         virtual_observer = VirtualObserver(
             injected_flights=InjectedFlightCollection(self._injected_flights),
@@ -167,21 +174,6 @@ class Misbehavior(GenericTestScenario):
 
         return mapping_by_injection_id
 
-    def _evaluate_and_test_invalid_requests(
-        self,
-        rect: LatLngRect,
-    ) -> Set[str]:
-        """Queries all flights in the expected way, then repeats the queries to SPs without credentials.
-
-        :returns: set of injection IDs that were encountered and tested
-        """
-
-        mapping_by_injection_id = self._fetch_flights_from_dss(rect)
-        for injection_id, mapping in mapping_by_injection_id.items():
-            self._evaluate_unauthenticated(rect, injection_id, mapping)
-
-        return set(mapping_by_injection_id.keys())
-
     def _evaluate_and_test_too_large_area_requests(
         self,
         rect: LatLngRect,
@@ -207,13 +199,13 @@ class Misbehavior(GenericTestScenario):
         scale = LatLng(0.01, 0.001)
         invalid_rect = rect.expanded(scale)
         diagonal_km = geo.get_latlngrect_diagonal_km(invalid_rect)
-
-        self.record_note(
-            f"{participant_id}/{injection_id}/area_too_large_query",
-            f"Will attempt to search an area too large at {flights_url} - (diagonal: {diagonal_km} km)",
-        )
-
         if diagonal_km > self._rid_version.max_diagonal_km:
+
+            self.record_note(
+                f"{participant_id}/{injection_id}/area_too_large_query",
+                f"Will attempt to search an area too large at {flights_url} - (diagonal: {diagonal_km} km)",
+            )
+
             with self.check("Area too large", [participant_id]) as check:
 
                 # check uss flights query
@@ -243,6 +235,21 @@ class Misbehavior(GenericTestScenario):
                         severity=Severity.High,
                         details=f"{participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The Remote ID data shall be empty, instead, the following payload was received: {uss_flights_query.query.response.content}",
                     )
+
+    def _evaluate_and_test_unauthenticated_requests(
+        self,
+        rect: LatLngRect,
+    ) -> Set[str]:
+        """Queries all flights in the expected way, then repeats the queries to SPs without credentials.
+
+        :returns: set of injection IDs that were encountered and tested
+        """
+
+        mapping_by_injection_id = self._fetch_flights_from_dss(rect)
+        for injection_id, mapping in mapping_by_injection_id.items():
+            self._evaluate_unauthenticated(rect, injection_id, mapping)
+
+        return set(mapping_by_injection_id.keys())
 
     def _evaluate_unauthenticated(
         self, rect: LatLngRect, injection_id: str, mapping: TelemetryMapping
