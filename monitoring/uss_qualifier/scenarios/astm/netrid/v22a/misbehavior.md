@@ -2,7 +2,7 @@
 
 ## Overview
 
-In this scenario, the service provider's endpoints are accessed directly to test missing or incorrect credentials as well as invalid requests. Resources that exists as well as resources that are not expected to exist are queried.
+In this scenario, the service provider's endpoints are accessed directly to test missing credentials as well as invalid requests. Resources that exists as well as resources that are not expected to exist are queried.
 
 ## Resources
 
