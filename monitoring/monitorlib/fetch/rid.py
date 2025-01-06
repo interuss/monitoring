@@ -504,6 +504,22 @@ class FlightDetails(ImplicitDict):
             )
 
     @property
+    def eu_classification(
+        self,
+    ) -> Optional[v22a.api.UAClassificationEU]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return None
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if self.v22a_value.has_field_with_value("eu_classification"):
+                return self.v22a_value.eu_classification
+            else:
+                return None
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve UA classification using RID version {self.rid_version}"
+            )
+
+    @property
     def operator_location(
         self,
     ) -> Optional[geo.LatLngPoint]:
