@@ -458,7 +458,7 @@ class RIDCommonDictionaryEvaluator(object):
         if self._rid_version == RIDVersion.f3411_22a:
             if height_obs is not None:
                 with self._test_scenario.check(
-                    "Height Type consistency with Common Dictionary", participants
+                    "Height consistency with Common Dictionary", participants
                 ) as check:
                     if (
                         height_obs.reference
@@ -475,19 +475,43 @@ class RIDCommonDictionaryEvaluator(object):
                 with self._test_scenario.check(
                     "Height is consistent with injected one", participants
                 ) as check:
-                    if (
-                        height_obs.reference != height_inj.reference
-                        or abs(height_obs.distance - height_inj.distance) > 1.0
+                    if not math.isclose(
+                        height_obs.distance, height_inj.distance, abs_tol=1.0
                     ):
                         check.record_failed(
                             "Observed Height is inconsistent with injected one",
                             details=f"Observed height: {height_obs} - injected: {height_inj}",
                             severity=Severity.Medium,
                         )
+
+                with self._test_scenario.check(
+                    "Height Type consistency with Common Dictionary", participants
+                ) as check:
+                    if (
+                        height_obs.reference
+                        != observation_api.RIDHeightReference.TakeoffLocation
+                        and height_obs.reference
+                        != observation_api.RIDHeightReference.GroundLevel
+                    ):
+                        check.record_failed(
+                            f"Invalid height type: {height_obs.reference}",
+                            details=f"The height type reference shall be either {observation_api.RIDHeightReference.TakeoffLocation} or {observation_api.RIDHeightReference.GroundLevel}",
+                            severity=Severity.Medium,
+                        )
+
+                with self._test_scenario.check(
+                    "Height Type is consistent with injected one", participants
+                ) as check:
+                    if height_obs.reference != height_inj.reference:
+                        check.record_failed(
+                            "Observed Height type is inconsistent with injected one",
+                            details=f"Observed height: {height_obs} - injected: {height_inj}",
+                            severity=Severity.Medium,
+                        )
         else:
             self._test_scenario.record_note(
                 key="skip_reason",
-                message=f"Unsupported version {self._rid_version}: skipping Height evaluation",
+                message=f"Unsupported version {self._rid_version}: skipping Height and Height Type evaluation",
             )
 
     def _evaluate_operator_location(
