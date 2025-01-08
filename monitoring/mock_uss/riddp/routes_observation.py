@@ -89,6 +89,8 @@ def _make_flight_observation(
             alt=p.alt,
             height=h,
             msl_alt=msl_alt,
+            accuracy_v=p.accuracy_v,
+            accuracy_h=p.accuracy_h,
         ),
         recent_paths=[observation_api.Path(positions=path) for path in paths],
         current_state=current_state,
