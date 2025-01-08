@@ -71,9 +71,12 @@ def _make_flight_observation(
     msl_alt = MSLAltitude(meters=msl_alt_m, reference_datum=AltitudeReference.EGM96)
     current_state = observation_api.CurrentState(
         timestamp=p.time.isoformat(),
+        timestamp_accuracy=flight.timestamp_accuracy,
         operational_status=flight.operational_status,
         track=limit_resolution(flight.track, MinTrackDirectionResolution),
         speed=limit_resolution(flight.speed, MinSpeedResolution),
+        speed_accuracy=flight.speed_accuracy,
+        vertical_speed=flight.vertical_speed,
     )
     h = p.get("height")
     if h:
