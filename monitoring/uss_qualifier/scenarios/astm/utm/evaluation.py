@@ -28,9 +28,11 @@ def validate_op_intent_details(
     # Check that the USS is providing reasonable volume 4D
     resp_vol4s = op_intent_details.volumes + op_intent_details.off_nominal_volumes
     if len(resp_vol4s) == 0:
-        errors_text.append('OperationalIntentResponse did not return required volumes or off nominal volumes.')
+        errors_text.append(
+            "OperationalIntentResponse did not return required volumes or off nominal volumes."
+        )
         return "; ".join(errors_text) if len(errors_text) > 0 else None
-    
+
     vol4c = Volume4DCollection.from_f3548v21(resp_vol4s)
     resp_alts = vol4c.meter_altitude_bounds
     resp_start = vol4c.time_start.datetime
