@@ -1,12 +1,13 @@
+import datetime
+
 import math
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Union, Set, Tuple
+from typing import List, Optional, Dict, Union, Set, Tuple, cast
 
 import arrow
 import s2sphere
 from loguru import logger
 from s2sphere import LatLng, LatLngRect
-from uas_standards.astm.f3411.v22a.api import RIDHeightReference
 
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     Flight,
@@ -24,6 +25,7 @@ from monitoring.monitorlib.fetch.rid import (
 )
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.resources.netrid.observers import RIDSystemObserver
@@ -53,6 +55,13 @@ VERTICAL_SPEED_PRECISION = 0.1
 SPEED_PRECISION = 0.05
 TIMESTAMP_ACCURACY_PRECISION = 0.05
 HEIGHT_PRECISION_M = 1
+
+# SP responses to /flights endpoint's p99 should be below this:
+SP_FLIGHTS_RESPONSE_TIME_TOLERANCE_SEC = 3
+NET_MAX_NEAR_REAL_TIME_DATA_PERIOD_SEC = 60
+_POSITION_TIMESTAMP_MAX_AGE_SEC = (
+    NET_MAX_NEAR_REAL_TIME_DATA_PERIOD_SEC + SP_FLIGHTS_RESPONSE_TIME_TOLERANCE_SEC
+)
 
 
 @dataclass
@@ -489,6 +498,8 @@ class RIDObservationEvaluator(object):
         mapping_by_injection_id: Dict[str, TelemetryMapping],
         verified_sps: Set[str],
     ):
+        """Implements fragment documented in `display_data_evaluator_flight_presence.md`."""
+
         query_timestamps = [q.request.timestamp for q in observation_queries]
         observer_participants = (
             [observer_participant_id] if observer_participant_is_relevant else []
@@ -649,6 +660,8 @@ class RIDObservationEvaluator(object):
         observation: GetDisplayDataResponse,
         query: fetch.Query,
     ):
+        """Implements fragment documented in `display_data_evaluator_clustering.md`."""
+
         with self._test_scenario.check(
             "Minimal display area of clusters", [observer.participant_id]
         ) as check:
@@ -875,8 +888,9 @@ class RIDObservationEvaluator(object):
             set(),
         )
 
-        # Verify that flights queries returned correctly-formatted data
         for mapping in mappings.values():
+            participant_id = mapping.injected_flight.uss_participant_id
+            observed_flight = mapping.observed_flight.flight
             flights_queries = [
                 q
                 for flight_url, q in sp_observation.uss_flight_queries.items()
@@ -884,16 +898,18 @@ class RIDObservationEvaluator(object):
             ]
             if len(flights_queries) != 1:
                 raise RuntimeError(
-                    f"Found {len(flights_queries)} flights queries (instead of the expected 1) for flight {mapping.observed_flight.id} corresponding to injection ID {mapping.injected_flight.flight.injection_id} for {mapping.injected_flight.uss_participant_id}"
+                    f"Found {len(flights_queries)} flights queries (instead of the expected 1) for flight {mapping.observed_flight.id} corresponding to injection ID {mapping.injected_flight.flight.injection_id} for {participant_id}"
                 )
             flights_query = flights_queries[0]
+
+            # Verify that flights queries returned correctly-formatted data
             errors = schema_validation.validate(
                 self._rid_version.openapi_path,
                 self._rid_version.openapi_flights_response_path,
                 flights_query.query.response.json,
             )
             with self._test_scenario.check(
-                "Flights data format", [mapping.injected_flight.uss_participant_id]
+                "Flights data format", participant_id
             ) as check:
                 if errors:
                     check.record_failed(
@@ -906,10 +922,21 @@ class RIDObservationEvaluator(object):
                         ),
                         query_timestamps=[flights_query.query.request.timestamp],
                     )
-            self._common_dictionary_evaluator.evaluate_sp_flights(
-                requested_area,
-                sp_observation,
-                participants=[mapping.injected_flight.uss_participant_id],
+
+            # Check recent positions timings
+            self._evaluate_sp_flight_recent_positions_times(
+                observed_flight,
+                flights_query.query.response.reported.datetime,
+                participant_id,
+            )
+            self._evaluate_sp_flight_recent_positions_crossing_area_boundary(
+                requested_area, observed_flight, participant_id
+            )
+
+            # Check flight consistency with common data dictionary
+            self._common_dictionary_evaluator.evaluate_sp_flight(
+                observed_flight,
+                participant_id,
             )
 
         # Check that required fields are present and match for any observed flights matching injected flights
@@ -1195,3 +1222,87 @@ class RIDObservationEvaluator(object):
                         mapping.observed_flight.query.query.request.timestamp
                     ],
                 )
+
+    def _evaluate_sp_flight_recent_positions_times(
+        self, f: Flight, query_time: datetime.datetime, participant: ParticipantID
+    ):
+        with self._test_scenario.check(
+            "Recent positions timestamps", participant
+        ) as check:
+            for p in f.recent_positions:
+                # check that the position's timestamp is at most 60 seconds before the request time
+                if (
+                    query_time - p.time
+                ).total_seconds() > _POSITION_TIMESTAMP_MAX_AGE_SEC:
+                    check.record_failed(
+                        "A Position timestamp was older than the tolerance.",
+                        details=f"Position timestamp: {p.time}, query time: {query_time}",
+                        severity=Severity.Medium,
+                    )
+
+    def _evaluate_sp_flight_recent_positions_crossing_area_boundary(
+        self, requested_area: s2sphere.LatLngRect, f: Flight, participant: ParticipantID
+    ):
+        with self._test_scenario.check(
+            "Recent positions for aircraft crossing the requested area boundary show only one position before or after crossing",
+            participant,
+        ) as check:
+
+            def fail_check():
+                check.record_failed(
+                    "A position outside the area was neither preceded nor followed by a position inside the area.",
+                    details=f"Positions: {f.recent_positions}, requested_area: {requested_area}",
+                    severity=Severity.Medium,
+                )
+
+            positions = _chronological_positions(f)
+            if len(positions) < 2:
+                # Check does not apply in this case
+                return
+
+            if len(positions) == 2:
+                # Only one of the positions can be outside the area. If both are, we fail.
+                if not requested_area.contains(
+                    positions[0]
+                ) and not requested_area.contains(positions[1]):
+                    fail_check()
+                return
+
+            # For each sliding triple we check that if the middle position is outside the area, then either
+            # the first or the last position is inside the area. This means checking for any point that is inside the
+            # area in the triple and failing otherwise
+            for triple in _sliding_triples(_chronological_positions(f)):
+                if not (
+                    requested_area.contains(triple[0])
+                    or requested_area.contains(triple[1])
+                    or requested_area.contains(triple[2])
+                ):
+                    fail_check()
+
+            # Finally we need to check for the forbidden corner cases of having the two first or two last positions being outside.
+            # (These won't be caught by the iteration on the triples above)
+            if (
+                not requested_area.contains(positions[0])
+                and not requested_area.contains(positions[1])
+            ) or (
+                not requested_area.contains(positions[-1])
+                and not requested_area.contains(positions[-2])
+            ):
+                fail_check()
+
+
+def _chronological_positions(f: Flight) -> List[s2sphere.LatLng]:
+    """
+    Returns the recent positions of the flight, ordered by time with the oldest first, and the most recent last.
+    """
+    return [
+        s2sphere.LatLng.from_degrees(p.lat, p.lng)
+        for p in sorted(f.recent_positions, key=lambda p: p.time)
+    ]
+
+
+def _sliding_triples(points: List[s2sphere.LatLng]) -> List[List[s2sphere.LatLng]]:
+    """
+    Returns a list of triples of consecutive positions in passed the list.
+    """
+    return [[points[i], points[i + 1], points[i + 2]] for i in range(len(points) - 2)]

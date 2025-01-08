@@ -54,6 +54,22 @@ This particular test requires each flight to be uniquely identifiable by its 2D 
 
 If a DSS was provided to this test scenario, uss_qualifier acts as a Display Provider to query Service Providers under test in this step.
 
+#### ISA query check
+
+**[interuss.f3411.dss_endpoints.SearchISAs](../../../../requirements/interuss/f3411/dss_endpoints.md)** requires a USS providing a DSS instance to implement the DSS endpoints of the OpenAPI specification.  If uss_qualifier is unable to query the DSS for ISAs, this check will fail.
+
+#### Area too large check
+
+**[astm.f3411.v19.NET0250](../../../../requirements/astm/f3411/v19.md)** requires that a NetRID Service Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
+
+#### [Flight presence checks](./display_data_evaluator_flight_presence.md)
+
+#### Flights data format check
+
+**[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../requirements/astm/f3411/v19.md)** require a Service Provider to implement the P2P portion of the OpenAPI specification.  This check will fail if the response to the /flights endpoint does not validate against the OpenAPI-specified schema.
+
+#### [Flight consistency with Common Data Dictionary checks](./common_dictionary_evaluator_sp_flight.md)
+
 #### Recent positions timestamps check
 **[astm.f3411.v19.NET0270](../../../../requirements/astm/f3411/v19.md)** requires all recent positions to be within the NetMaxNearRealTimeDataPeriod. This check will fail if any of the reported positions are older than the maximally allowed period plus NetSpDataResponseTime99thPercentile.
 
@@ -64,66 +80,6 @@ This implies that any recent position outside the area must be either preceded o
 
 (This check validates NET0270 b and c).
 
-#### Flights data format check
-
-**[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../requirements/astm/f3411/v19.md)** require a Service Provider to implement the P2P portion of the OpenAPI specification.  This check will fail if the response to the /flights endpoint does not validate against the OpenAPI-specified schema.
-
-#### ISA query check
-
-**[interuss.f3411.dss_endpoints.SearchISAs](../../../../requirements/interuss/f3411/dss_endpoints.md)** requires a USS providing a DSS instance to implement the DSS endpoints of the OpenAPI specification.  If uss_qualifier is unable to query the DSS for ISAs, this check will fail.
-
-#### Premature flight check
-
-The timestamps of the injected telemetry usually start in the future.  If a flight with injected telemetry only in the future is observed prior to the timestamp of the first telemetry point, this check will fail because the SP does not satisfy **[interuss.automated_testing.rid.injection.ExpectedBehavior](../../../../requirements/interuss/automated_testing/rid/injection.md)**.
-
-#### Missing flight check
-
-**[astm.f3411.v19.NET0610](../../../../requirements/astm/f3411/v19.md)** requires that SPs make all UAS operations discoverable over the duration of the flight plus *NetMaxNearRealTimeDataPeriod*, so each injected flight should be observable during this time.  If a flight is not observed during its appropriate time period, this check will fail.
-
-**[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../requirements/astm/f3411/v19.md)** require a Service Provider to implement the GET flights endpoint.  This check will also fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
-
-The identity of flights is determined by precisely matching the known injected positions.  If the flight can be found, the USS may not have met **[astm.f3411.v19.NET0260,Table1,9](../../../../requirements/astm/f3411/v19.md)** or **[astm.f3411.v19.NET0260,Table1,10](../../../../requirements/astm/f3411/v19.md)** prescribing provision of position data consistent with the common data dictionary.
-
-#### Service Provider altitude check
-
-**[astm.f3411.v19.NET0260,Table1,11](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had known altitudes, but the altitude reported by the Service Provider did not match those known altitudes.
-
-#### ⚠️ Service Provider vertical speed check
-
-**[astm.f3411.v19.NET0260,Table1,20](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. Injected flight data had a specified vertical speed that was different from the reported one.
-
-#### ⚠️ Service Provider speed check
-
-**[astm.f3411.v19.NET0260,Table1,19](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. Injected flight data had a specified speed that was different from the reported one.
-
-#### ⚠️ Service Provider speed accuracy check
-
-**[astm.f3411.v19.NET0260,Table1,17](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had a specified speed accuracy that was different from the reported one.
-
-#### ⚠️ Service Provider track check
-
-**[astm.f3411.v19.NET0260,Table1,18](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had a specified track that was different from the reported one.
-
-#### ⚠️ Service Provider geodetic altitude accuracy check
-
-**[astm.f3411.v19.NET0260,Table1,15](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had a specified geodetic altitude accuracy that was different from the reported one.
-
-#### ⚠️ Service Provider horizontal accuracy check
-
-**[astm.f3411.v19.NET0260,Table1,16](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had a specified horizontal accuracy that was different from the reported one.
-
-#### ⚠️ Service Provider timestamp accuracy is present check
-
-If the timestamp accuracy is not present, the USS under test is not properly implementing the REST interface specified by the OpenAPI definition contained in Annex A4, and is therefore in violation of **[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)**.
-
-#### ⚠️ Service Provider timestamp accuracy is correct check
-
-**[astm.f3411.v19.NET0260,Table1,5](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  The observed timestamp accuracy differs from the injected one.
-
-#### ⚠️ Service Provider height check
-
-**[astm.f3411.v19.NET0260,Table1,13](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  The reported height of the flight is unrealistic or otherwise not consistent with the injected data.
-
 #### Successful flight details query check
 
 **[astm.f3411.v19.NET0710,2](../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../requirements/astm/f3411/v19.md)** require a Service Provider to implement the GET flight details endpoint.  This check will fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
@@ -132,75 +88,31 @@ If the timestamp accuracy is not present, the USS under test is not properly imp
 
 **[astm.f3411.v19.NET0710,2](../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../requirements/astm/f3411/v19.md)** require a Service Provider to implement the P2P portion of the OpenAPI specification.  This check will fail if the response to the flight details endpoint does not validate against the OpenAPI-specified schema.
 
-#### Lingering flight check
-
-**[astm.f3411.v19.NET0270](../../../../requirements/astm/f3411/v19.md)** requires a SP to provide flights up to *NetMaxNearRealTimeDataPeriod* in the past, but an SP should preserve privacy and ensure relevancy by not sharing flights that are further in the past than this window.
-
-#### Area too large check
-
-**[astm.f3411.v19.NET0250](../../../../requirements/astm/f3411/v19.md)** requires that a NetRID Service Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
-
 ### Observer polling test step
 
 In this step, all observers are queried for the flights they observe.  Based on the known flights that were injected into the SPs in the first step, these observations are checked against expected behavior/data.  Observation rectangles are chosen to encompass the known flights when possible.
-
-#### Successful observation check
-
-Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the call to each observer is expected to succeed since a valid view was provided by uss_qualifier.
-
-#### Duplicate flights check
-
-Per **[interuss.automated_testing.rid.observation.UniqueFlights](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the same flight ID may not be reported by a Display Provider for two flights in the same observation.
-
-#### Premature flight check
-
-The timestamps of the injected telemetry usually start in the future.  If a flight with injected telemetry only in the future is observed prior to the timestamp of the first telemetry point, this check will fail because the SP does not satisfy **[interuss.automated_testing.rid.injection.ExpectedBehavior](../../../../requirements/interuss/automated_testing/rid/injection.md)**.
-
-#### Missing flight check
-
-**[astm.f3411.v19.NET0610](../../../../requirements/astm/f3411/v19.md)** require that SPs make all UAS operations discoverable over the duration of the flight plus *NetMaxNearRealTimeDataPeriod*, so each injected flight should be observable during this time.  If one of the flights is not observed during its appropriate time period, this check will fail.
-
-#### Lingering flight check
-
-**[astm.f3411.v19.NET0270](../../../../requirements/astm/f3411/v19.md)** requires a SP to provide flights up to *NetMaxNearRealTimeDataPeriod* in the past, but an SP should preserve privacy and ensure relevancy by not sharing flights that are further in the past than this window.
-
-#### Telemetry being used when present check
-
-**[astm.f3411.v19.NET0290](../../../../requirements/astm/f3411/v19.md)** requires a SP uses Telemetry vs extrapolation when telemetry is present.
-
-#### Correct up-to-date altitude if present check
-
-If the observed altitude of a flight is reported, but it does not match the altitude of the injected telemetry, the display provider is not providing precise and up-to-date information, and thus does not respect **[astm.f3411.v19.NET0450](../../../../requirements/astm/f3411/v19.md)**.
 
 #### Area too large check
 
 **[astm.f3411.v19.NET0430](../../../../requirements/astm/f3411/v19.md)** require that a NetRID Display Provider reject a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
 
-#### Minimal obfuscation distance of individual flights check
+#### Successful observation check
 
-For a display area with a diagonal greater than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v19.NET0490](../../../../requirements/astm/f3411/v19.md)** requires that a Display provider shall obfuscate individual UAs within a cluster.
-If a cluster with a single flight has a width or height smaller than 2 * *NetMinObfuscationDistance* (meaning that the USS did not buffer the single point by *NetMinObfuscationDistance* in all directions when forming the cluster bounds), this test will fail.
+Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the call to each observer is expected to succeed since a valid view was provided by uss_qualifier.
 
-#### Individual flights obfuscation check
+#### [Clustering checks](./display_data_evaluator_clustering.md)
 
-For a display area with a diagonal greater than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v19.NET0490](../../../../requirements/astm/f3411/v19.md)** requires that a Display provider shall obfuscate individual UAs within a cluster.
-If a cluster with a single flight has its center equal to the position of the flight, this test will fail.
-If a cluster with a single flight does not actually encompass the flight, this test will fail.
+#### Duplicate flights check
 
-#### Minimal obfuscation distance of multiple flights clusters check
+Per **[interuss.automated_testing.rid.observation.UniqueFlights](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the same flight ID may not be reported by a Display Provider for two flights in the same observation.
 
-For a display area with a diagonal greater than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v19.NET0480](../../../../requirements/astm/f3411/v19.md)** requires that a Display provider shall cluster UAs in close proximity to each other using a circular or polygonal area.
-If a cluster with multiples flights has a width or height smaller than 2 * *NetMinObfuscationDistance*, this test will fail. A larger width or height might still be incorrect, but the test cannot at the moment determine this.
+#### [Flight presence checks](./display_data_evaluator_flight_presence.md)
 
-#### Clustering count check
+#### [Flight consistency with Common Data Dictionary checks](./common_dictionary_evaluator_dp_flight.md)
 
-For a display area with a diagonal greater than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v19.NET0480](../../../../requirements/astm/f3411/v19.md)** requires that a Display provider shall cluster UAs in close proximity to each other using a circular or polygonal area.
-Taking into account the propagation time of the injected flights, if the total number of clustered UAs when this value is expected to be stable is not correct, this test will fail.
+#### Telemetry being used when present check
 
-#### Minimal display area of clusters check
-
-For a display area with a diagonal greather than *NetDetailsMaxDisplayAreaDiagonal* and less than *NetMaxDisplayAreaDiagonal*, **[astm.f3411.v19.NET0480](../../../../requirements/astm/f3411/v19.md)** requires that a Display provider shall cluster UAs in close proximity to each other using a circular or polygonal area covering no less than *NetMinClusterSize* percent of the display area size.
-This check validates that the display area of a cluster, measured and provided in square meters by the test harness, is no less than *NetMinClusterSize* percent of the display area.
+**[astm.f3411.v19.NET0290](../../../../requirements/astm/f3411/v19.md)** requires a SP uses Telemetry vs extrapolation when telemetry is present.
 
 #### Successful details observation check
 

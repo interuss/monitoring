@@ -22,6 +22,7 @@ from monitoring.mock_uss.auth import requires_scope
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     AltitudeReference,
     MSLAltitude,
+    UAType,
 )
 from . import clustering, database, utm_client
 from .behavior import DisplayProviderBehavior
@@ -70,21 +71,29 @@ def _make_flight_observation(
     msl_alt = MSLAltitude(meters=msl_alt_m, reference_datum=AltitudeReference.EGM96)
     current_state = observation_api.CurrentState(
         timestamp=p.time.isoformat(),
+        timestamp_accuracy=flight.timestamp_accuracy,
         operational_status=flight.operational_status,
         track=limit_resolution(flight.track, MinTrackDirectionResolution),
         speed=limit_resolution(flight.speed, MinSpeedResolution),
+        speed_accuracy=flight.speed_accuracy,
+        vertical_speed=flight.vertical_speed,
     )
     h = p.get("height")
     if h:
         h.distance = limit_resolution(h.distance, MinHeightResolution)
     return observation_api.Flight(
         id=flight.id,
+        aircraft_type=flight.aircraft_type
+        if flight.aircraft_type
+        else UAType.NotDeclared,
         most_recent_position=observation_api.Position(
             lat=p.lat,
             lng=p.lng,
             alt=p.alt,
             height=h,
             msl_alt=msl_alt,
+            accuracy_v=p.accuracy_v,
+            accuracy_h=p.accuracy_h,
         ),
         recent_paths=[observation_api.Path(positions=path) for path in paths],
         current_state=current_state,
@@ -209,6 +218,7 @@ def riddp_flight_details(flight_id: str) -> Tuple[str, int]:
         ),
         uas=observation_api.UAS(
             id=details.arbitrary_uas_id,
+            eu_classification=details.eu_classification,
         ),
     )
     if details.operator_location is not None:

@@ -75,7 +75,6 @@ class FlightDataResource(Resource[FlightDataSpecification]):
             details = TestFlightDetails(
                 effective_after=StringBasedDateTime(t0),
                 details=flight.flight_details,
-                aircraft_type=flight.aircraft_type,
             )
 
             test_flights.append(
@@ -83,6 +82,7 @@ class FlightDataResource(Resource[FlightDataSpecification]):
                     injection_id=str(uuid.uuid4()),
                     telemetry=telemetry,
                     details_responses=[details],
+                    aircraft_type=flight.aircraft_type,
                 )
             )
 

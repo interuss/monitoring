@@ -358,6 +358,55 @@ class Flight(ImplicitDict):
                 f"Cannot retrieve speed using RID version {self.rid_version}"
             )
 
+    @property
+    def speed_accuracy(
+        self,
+    ) -> Optional[Union[v19.api.SpeedAccuracy, v22a.api.SpeedAccuracy]]:
+        if self.rid_version == RIDVersion.f3411_19:
+            if not self.v19_value.has_field_with_value("current_state"):
+                return None
+            return self.v19_value.current_state.speed_accuracy
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if not self.v22a_value.has_field_with_value("current_state"):
+                return None
+            return self.v22a_value.current_state.speed_accuracy
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve speed accuracy using RID version {self.rid_version}"
+            )
+
+    @property
+    def vertical_speed(self) -> Optional[float]:
+        if self.rid_version == RIDVersion.f3411_19:
+            if not self.v19_value.has_field_with_value("current_state"):
+                return None
+            return self.v19_value.current_state.vertical_speed
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if not self.v22a_value.has_field_with_value("current_state"):
+                return None
+            return self.v22a_value.current_state.vertical_speed
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve vertical speed using RID version {self.rid_version}"
+            )
+
+    @property
+    def aircraft_type(
+        self,
+    ) -> Optional[Union[v19.api.RIDAircraftType, v22a.api.UAType]]:
+        if self.rid_version == RIDVersion.f3411_19:
+            if not self.v19_value.has_field_with_value("aircraft_type"):
+                return None
+            return self.v19_value.aircraft_type
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if not self.v22a_value.has_field_with_value("aircraft_type"):
+                return None
+            return self.v22a_value.aircraft_type
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve aircraft_type using RID version {self.rid_version}"
+            )
+
     def errors(self) -> List[str]:
         try:
             rid_version = self.rid_version
@@ -484,6 +533,22 @@ class FlightDetails(ImplicitDict):
         else:
             raise NotImplementedError(
                 f"Cannot retrieve plain_uas_id using RID version {self.rid_version}"
+            )
+
+    @property
+    def eu_classification(
+        self,
+    ) -> Optional[v22a.api.UAClassificationEU]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return None
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if self.v22a_value.has_field_with_value("eu_classification"):
+                return self.v22a_value.eu_classification
+            else:
+                return None
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve UA classification using RID version {self.rid_version}"
             )
 
     @property

@@ -40,7 +40,15 @@ Optional scopes that will allow the scenario to provide additional coverage:
 
 ## Setup test case
 
-### [Ensure clean workspace test step](../clean_workspace.md)
+To perform this scenario, the area must be clear of test entities with the IDs we intend to use.
+
+### Ensure clean workspace test step
+
+#### [Clean any existing OIRs with known test IDs](../clean_workspace_op_intents.md)
+
+#### [Clean any existing subscriptions with known test IDs](../clean_workspace_subs.md)
+
+#### [Clean any existing constraint references with known test IDs](../clean_workspace_constraints.md)
 
 This step ensures that the availability for the test identifier is set to `Unknown`.
 
@@ -540,7 +548,13 @@ it is in violation of **[astm.f3548.v21.DSS0005,4](../../../../../requirements/a
 
 Check response format of a search.
 
-## [Cleanup](../clean_workspace.md)
+## Cleanup
+
+### [Clean any existing OIRs with known test IDs](../clean_workspace_op_intents.md)
+
+### [Clean any existing subscriptions with known test IDs](../clean_workspace_subs.md)
+
+### [Clean any existing constraint references with known test IDs](../clean_workspace_constraints.md)
 
 ### [Availability can be requested](../fragments/availability/read.md)
 

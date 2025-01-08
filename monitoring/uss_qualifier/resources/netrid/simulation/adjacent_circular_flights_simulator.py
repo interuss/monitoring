@@ -16,14 +16,8 @@ from monitoring.uss_qualifier.resources.netrid.flight_data import (
 from monitoring.uss_qualifier.resources.netrid.simulation import (
     operator_flight_details,
 )
-from uas_standards.astm.f3411.v19.api import (
-    HorizontalAccuracy,
-    VerticalAccuracy,
-    RIDAircraftPosition,
-    RIDAircraftState,
-    RIDHeight,
-    RIDFlightDetails,
-)
+from uas_standards.interuss.automated_testing.rid.v1 import injection
+
 from .utils import (
     QueryBoundingBox,
     FlightPoint,
@@ -254,7 +248,7 @@ class AdjacentCircularFlightsSimulator:
 
         self.grid_cells_flight_tracks = all_grid_cell_tracks
 
-    def generate_flight_details(self, id: str) -> RIDFlightDetails:
+    def generate_flight_details(self, id: str) -> injection.RIDFlightDetails:
         """This class generates details of flights and operator details for a flight, this data is required for identifying flight, operator and operation"""
 
         my_flight_details_generator = (
@@ -262,7 +256,7 @@ class AdjacentCircularFlightsSimulator:
         )
 
         # TODO: Put operator_location in center of circle rather than stacking operators of all flights on top of each other
-        return RIDFlightDetails(
+        return injection.RIDFlightDetails(
             id=id,
             serial_number=my_flight_details_generator.generate_serial_number(),
             operation_description=my_flight_details_generator.generate_operation_description(),
@@ -280,7 +274,7 @@ class AdjacentCircularFlightsSimulator:
 
 
         """
-        all_flight_telemetry: List[List[RIDAircraftState]] = []
+        all_flight_telemetry: List[List[injection.RIDAircraftState]] = []
         flight_track_details = {}  # Develop a index of flight length and their index
         # Store where on the track the current index is, since the tracks are circular, once the end of the track is reached, the index is reset to 0 to indicate beginning of the track again.
         flight_current_index = {}
@@ -320,19 +314,19 @@ class AdjacentCircularFlightsSimulator:
                     flight_point = self.grid_cells_flight_tracks[k].track[
                         flight_current_index[k]
                     ]
-                    aircraft_position = RIDAircraftPosition(
+                    aircraft_position = injection.RIDAircraftPosition(
                         lat=flight_point.lat,
                         lng=flight_point.lng,
                         alt=flight_point.alt,
-                        accuracy_h=HorizontalAccuracy.HAUnknown,
-                        accuracy_v=VerticalAccuracy.VAUnknown,
+                        accuracy_h=injection.HorizontalAccuracy.HAUnknown,
+                        accuracy_v=injection.VerticalAccuracy.VAUnknown,
                         extrapolated=False,
                     )
-                    aircraft_height = RIDHeight(
+                    aircraft_height = injection.RIDHeight(
                         distance=self.altitude_agl, reference="TakeoffLocation"
                     )
 
-                    rid_aircraft_state = RIDAircraftState(
+                    rid_aircraft_state = injection.RIDAircraftState(
                         timestamp=timestamp_isoformat,
                         operational_status="Airborne",
                         position=aircraft_position,

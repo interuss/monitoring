@@ -1,8 +1,6 @@
-import datetime
 import math
 from typing import List, Optional
 
-import s2sphere
 from arrow import ParserError
 from implicitdict import StringBasedDateTime
 from uas_standards.ansi_cta_2063_a import SerialNumber
@@ -25,22 +23,15 @@ from uas_standards.interuss.automated_testing.rid.v1.injection import (
 )
 
 from monitoring.monitorlib.fetch.rid import (
-    FetchedFlights,
     FlightDetails,
 )
 from monitoring.monitorlib.fetch.rid import Flight, Position
 from monitoring.monitorlib.geo import validate_lat, validate_lng, Altitude, LatLngPoint
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType, PendingCheck
-
-# SP responses to /flights endpoint's p99 should be below this:
-SP_FLIGHTS_RESPONSE_TIME_TOLERANCE_SEC = 3
-NET_MAX_NEAR_REAL_TIME_DATA_PERIOD_SEC = 60
-_POSITION_TIMESTAMP_MAX_AGE_SEC = (
-    NET_MAX_NEAR_REAL_TIME_DATA_PERIOD_SEC + SP_FLIGHTS_RESPONSE_TIME_TOLERANCE_SEC
-)
+from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 
 class RIDCommonDictionaryEvaluator(object):
@@ -54,32 +45,17 @@ class RIDCommonDictionaryEvaluator(object):
         self._test_scenario = test_scenario
         self._rid_version = rid_version
 
-    def evaluate_sp_flights(
+    def evaluate_sp_flight(
         self,
-        requested_area: s2sphere.LatLngRect,
-        observed_flights: FetchedFlights,
-        participants: List[str],
+        observed_flight: Flight,
+        participant_id: ParticipantID,
     ):
-        for url, uss_flights in observed_flights.uss_flight_queries.items():
-            # For the timing checks, we want to look at the flights relative to the query
-            # they came from, as they may be provided from different SP's.
-            for f in uss_flights.flights:
-                self.evaluate_sp_flight_recent_positions_times(
-                    f,
-                    uss_flights.query.response.reported.datetime,
-                    participants,
-                )
+        """Implements fragment documented in `common_dictionary_evaluator_sp_flight.md`."""
 
-                self.evaluate_sp_flight_recent_positions_crossing_area_boundary(
-                    requested_area, f, participants
-                )
-
-        for f in observed_flights.flights:
-            # Evaluate on all flights regardless of where they came from
-            self._evaluate_operational_status(
-                f.operational_status,
-                participants,
-            )
+        self._evaluate_operational_status(
+            observed_flight.operational_status,
+            [participant_id],
+        )
 
     def evaluate_dp_flight(
         self,
@@ -87,6 +63,8 @@ class RIDCommonDictionaryEvaluator(object):
         observed_flight: observation_api.Flight,
         participants: List[str],
     ):
+        """Implements fragment documented in `common_dictionary_evaluator_dp_flight.md`."""
+
         # If the state is present, we do validate its content,
         # but its presence is optional
         if injected_flight.has_field_with_value("current_state"):
@@ -117,96 +95,9 @@ class RIDCommonDictionaryEvaluator(object):
             participants,
         )
 
-    def _evaluate_recent_position_time(
-        self, p: Position, query_time: datetime.datetime, check: PendingCheck
-    ):
-        """Check that the position's timestamp is at most 60 seconds before the request time."""
-        if (query_time - p.time).total_seconds() > _POSITION_TIMESTAMP_MAX_AGE_SEC:
-            check.record_failed(
-                "A Position timestamp was older than the tolerance.",
-                details=f"Position timestamp: {p.time}, query time: {query_time}",
-                severity=Severity.Medium,
-            )
-
-    def evaluate_sp_flight_recent_positions_times(
-        self, f: Flight, query_time: datetime.datetime, participants: List[str]
-    ):
-        with self._test_scenario.check(
-            "Recent positions timestamps", participants
-        ) as check:
-            for p in f.recent_positions:
-                self._evaluate_recent_position_time(p, query_time, check)
-
-    def _chronological_positions(self, f: Flight) -> List[s2sphere.LatLng]:
-        """
-        Returns the recent positions of the flight, ordered by time with the oldest first, and the most recent last.
-        """
-        return [
-            s2sphere.LatLng.from_degrees(p.lat, p.lng)
-            for p in sorted(f.recent_positions, key=lambda p: p.time)
-        ]
-
-    def _sliding_triples(
-        self, points: List[s2sphere.LatLng]
-    ) -> List[List[s2sphere.LatLng]]:
-        """
-        Returns a list of triples of consecutive positions in passed the list.
-        """
-        return [
-            (points[i], points[i + 1], points[i + 2]) for i in range(len(points) - 2)
-        ]
-
-    def evaluate_sp_flight_recent_positions_crossing_area_boundary(
-        self, requested_area: s2sphere.LatLngRect, f: Flight, participants: List[str]
-    ):
-        with self._test_scenario.check(
-            "Recent positions for aircraft crossing the requested area boundary show only one position before or after crossing",
-            participants,
-        ) as check:
-
-            def fail_check():
-                check.record_failed(
-                    "A position outside the area was neither preceded nor followed by a position inside the area.",
-                    details=f"Positions: {f.recent_positions}, requested_area: {requested_area}",
-                    severity=Severity.Medium,
-                )
-
-            positions = self._chronological_positions(f)
-            if len(positions) < 2:
-                # Check does not apply in this case
-                return
-
-            if len(positions) == 2:
-                # Only one of the positions can be outside the area. If both are, we fail.
-                if not requested_area.contains(
-                    positions[0]
-                ) and not requested_area.contains(positions[1]):
-                    fail_check()
-                return
-
-            # For each sliding triple we check that if the middle position is outside the area, then either
-            # the first or the last position is inside the area. This means checking for any point that is inside the
-            # area in the triple and failing otherwise
-            for triple in self._sliding_triples(self._chronological_positions(f)):
-                if not (
-                    requested_area.contains(triple[0])
-                    or requested_area.contains(triple[1])
-                    or requested_area.contains(triple[2])
-                ):
-                    fail_check()
-
-            # Finally we need to check for the forbidden corner cases of having the two first or two last positions being outside.
-            # (These won't be caught by the iteration on the triples above)
-            if (
-                not requested_area.contains(positions[0])
-                and not requested_area.contains(positions[1])
-            ) or (
-                not requested_area.contains(positions[-1])
-                and not requested_area.contains(positions[-2])
-            ):
-                fail_check()
-
     def evaluate_sp_details(self, details: FlightDetails, participants: List[str]):
+        """Implements fragment documented in `common_dictionary_evaluator_sp_flight_details.md`."""
+
         self._evaluate_uas_id(details.raw.get("uas_id"), participants)
         self._evaluate_operator_id(None, details.operator_id, participants)
         self._evaluate_operator_location(
@@ -225,6 +116,8 @@ class RIDCommonDictionaryEvaluator(object):
         observed_details: Optional[observation_api.GetDetailsResponse],
         participants: List[str],
     ):
+        """Implements fragment documented in `common_dictionary_evaluator_dp_flight_details.md`."""
+
         if not observed_details:
             return
 
@@ -565,7 +458,7 @@ class RIDCommonDictionaryEvaluator(object):
         if self._rid_version == RIDVersion.f3411_22a:
             if height_obs is not None:
                 with self._test_scenario.check(
-                    "Height Type consistency with Common Dictionary", participants
+                    "Height consistency with Common Dictionary", participants
                 ) as check:
                     if (
                         height_obs.reference
@@ -582,19 +475,43 @@ class RIDCommonDictionaryEvaluator(object):
                 with self._test_scenario.check(
                     "Height is consistent with injected one", participants
                 ) as check:
-                    if (
-                        height_obs.reference != height_inj.reference
-                        or abs(height_obs.distance - height_inj.distance) > 1.0
+                    if not math.isclose(
+                        height_obs.distance, height_inj.distance, abs_tol=1.0
                     ):
                         check.record_failed(
                             "Observed Height is inconsistent with injected one",
                             details=f"Observed height: {height_obs} - injected: {height_inj}",
                             severity=Severity.Medium,
                         )
+
+                with self._test_scenario.check(
+                    "Height Type consistency with Common Dictionary", participants
+                ) as check:
+                    if (
+                        height_obs.reference
+                        != observation_api.RIDHeightReference.TakeoffLocation
+                        and height_obs.reference
+                        != observation_api.RIDHeightReference.GroundLevel
+                    ):
+                        check.record_failed(
+                            f"Invalid height type: {height_obs.reference}",
+                            details=f"The height type reference shall be either {observation_api.RIDHeightReference.TakeoffLocation} or {observation_api.RIDHeightReference.GroundLevel}",
+                            severity=Severity.Medium,
+                        )
+
+                with self._test_scenario.check(
+                    "Height Type is consistent with injected one", participants
+                ) as check:
+                    if height_obs.reference != height_inj.reference:
+                        check.record_failed(
+                            "Observed Height type is inconsistent with injected one",
+                            details=f"Observed height: {height_obs} - injected: {height_inj}",
+                            severity=Severity.Medium,
+                        )
         else:
             self._test_scenario.record_note(
                 key="skip_reason",
-                message=f"Unsupported version {self._rid_version}: skipping Height evaluation",
+                message=f"Unsupported version {self._rid_version}: skipping Height and Height Type evaluation",
             )
 
     def _evaluate_operator_location(

@@ -18,12 +18,8 @@ from monitoring.uss_qualifier.resources.netrid.flight_data import (
 )
 from typing import List
 
-from uas_standards.astm.f3411.v19.api import (
-    LatLngPoint,
-    RIDFlightDetails,
-    RIDAircraftPosition,
-    RIDAircraftState,
-)
+from uas_standards.interuss.automated_testing.rid.v1 import injection
+
 
 STATE_INCREMENT_SECONDS = 1
 
@@ -191,13 +187,13 @@ def generate_flight_record(
         r = random.Random(x=random_seed)
     now_isoformat = timestamp.isoformat()
 
-    flight_telemetry: List[RIDAircraftState] = []
+    flight_telemetry: List[injection.RIDAircraftState] = []
     for coordinates, speed, angle in zip(
         state_coordinates, flight_state_speeds, flight_track_angles
     ):
         timestamp = timestamp + timedelta(0, STATE_INCREMENT_SECONDS)
         timestamp_isoformat = timestamp.isoformat()
-        aircraft_position = RIDAircraftPosition(
+        aircraft_position = injection.RIDAircraftPosition(
             lng=coordinates[0],
             lat=coordinates[1],
             alt=coordinates[2],
@@ -206,7 +202,7 @@ def generate_flight_record(
             extrapolated=False,
         )
         aircraft_height = None
-        rid_aircraft_state = RIDAircraftState(
+        rid_aircraft_state = injection.RIDAircraftState(
             timestamp=StringBasedDateTime(timestamp_isoformat),
             operational_status="Airborne",
             position=aircraft_position,
@@ -221,18 +217,30 @@ def generate_flight_record(
         )
         flight_telemetry.append(rid_aircraft_state)
     flight_id_bytes = bytes(r.randint(0, 255) for _ in range(16))
-    rid_details = RIDFlightDetails(
+    eu_classification = None
+    if (
+        flight_description.get("eu_classification_category") is not None
+        and flight_description.get("eu_classification_class") is not None
+    ):
+        eu_classification = injection.UAClassificationEU(
+            {
+                "category": flight_description.get("eu_classification_category"),
+                "class": flight_description.get("eu_classification_class"),
+            }
+        )
+    rid_details = injection.RIDFlightDetails(
         id=flight_description.get(
             "id", str(uuid.UUID(bytes=flight_id_bytes, version=4))
         ),
         serial_number=flight_description.get("serial_number"),
         operation_description=flight_description.get("operation_description"),
-        operator_location=LatLngPoint(
+        operator_location=injection.LatLngPoint(
             lat=float(operator_location.get("lat")),
             lng=float(operator_location.get("lng")),
         ),
         operator_id=flight_description.get("operator_id"),
         registration_number=flight_description.get("registration_number"),
+        eu_classification=eu_classification,
     )
 
     return FullFlightRecord(
