@@ -1,3 +1,4 @@
+import datetime
 import math
 from typing import List, Optional
 
@@ -47,10 +48,20 @@ class RIDCommonDictionaryEvaluator(object):
 
     def evaluate_sp_flight(
         self,
+        injected_flight: injection.TestFlight,
         observed_flight: Flight,
         participant_id: ParticipantID,
+        query_timestamp: datetime.datetime,
     ):
         """Implements fragment documented in `common_dictionary_evaluator_sp_flight.md`."""
+
+        self._evaluate_ua_type(
+            injected_flight,
+            observed_flight,
+            None,
+            participant_id,
+            query_timestamp,
+        )
 
         self._evaluate_operational_status(
             observed_flight.operational_status,
@@ -675,3 +686,115 @@ class RIDCommonDictionaryEvaluator(object):
                 key="skip_reason",
                 message=f"Unsupported version {self._rid_version}: skipping Operational Status evaluation",
             )
+
+    def _evaluate_ua_type(
+        self,
+        injected_flight: injection.TestFlight,
+        sp_observed_flight: Optional[Flight],
+        dp_observed_flight: Optional[observation_api.Flight],
+        participant: ParticipantID,
+        query_timestamp: datetime.datetime,
+    ):
+        """
+        Evaluates UA type. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        See as well `common_dictionary_evaluator.md`.
+
+        Args:
+            injected_flight: injected flight as returned by the injection API.
+            sp_observed_flight: flight observed through the SP API.
+            dp_observed_flight: flight observed through the observation API.
+            participant: participant providing the API through which the value was observed.
+            query_timestamp: timestamp of the observation query.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        injected_val: Optional[injection.UAType] = injected_flight.get("aircraft_type")
+        if injected_val is not None:
+            try:
+                injected_val = injection.UAType(injected_val)
+            except ValueError as e:
+                raise ValueError(f"Invalid UA type {injected_val} injected", e)
+
+        observed_val: Optional[injection.UAType]
+        if sp_observed_flight is not None:
+            observed_val = sp_observed_flight.aircraft_type
+        elif dp_observed_flight is not None:
+            observed_val = dp_observed_flight.get("aircraft_type")
+        else:
+            raise ValueError("No observed flight provided.")
+
+        with self._test_scenario.check(
+            "UA type is exposed correctly",
+            participant,
+        ) as check:
+            if sp_observed_flight is not None:
+                if observed_val is None:  # C3
+                    check.record_failed(
+                        "UA type is missing",
+                        details="SP did not return any UA type",
+                        query_timestamps=[query_timestamp],
+                    )
+
+            if observed_val is not None:  # C5 / C9
+                try:
+                    injection.UAType(observed_val)
+                except ValueError:
+                    check.record_failed(
+                        "UA type is invalid",
+                        details=f"USS returned an invalid UA type: {observed_val}.",
+                        query_timestamps=[query_timestamp],
+                    )
+
+                if (
+                    self._rid_version == RIDVersion.f3411_19
+                    and observed_val == injection.UAType.HybridLift
+                ) or (
+                    self._rid_version == RIDVersion.f3411_22a
+                    and observed_val == injection.UAType.VTOL
+                ):
+                    check.record_failed(
+                        "UA type is inconsistent with RID version",
+                        details=f"USS returned the UA type {observed_val} which is not supported by the RID version used ({self._rid_version}).",
+                        query_timestamps=[query_timestamp],
+                    )
+
+        with self._test_scenario.check(
+            "UA type is consistent with injected value",
+            participant,
+        ) as check:
+            equivalent = {injection.UAType.HybridLift, injection.UAType.VTOL}
+
+            if injected_val is None:
+                if (
+                    sp_observed_flight is not None
+                    and observed_val != injection.UAType.NotDeclared
+                ):  # C6
+                    check.record_failed(
+                        "UA type is inconsistent, expected 'NotDeclared' since no value was injected",
+                        details=f"SP returned the UA type {observed_val}, yet no value was injected, which should have been mapped to 'NotDeclared'.",
+                        query_timestamps=[query_timestamp],
+                    )
+
+                if dp_observed_flight is not None and observed_val is not None:  # C10
+                    check.record_failed(
+                        "UA type is inconsistent, expected no value since none was injected",
+                        details=f"DP returned the UA type {observed_val}, yet no value was injected.",
+                        query_timestamps=[query_timestamp],
+                    )
+
+            elif injected_val in equivalent:
+                if observed_val not in equivalent:  # C7 / C10
+                    check.record_failed(
+                        "UA type is inconsistent with injected value",
+                        details=f"USS returned the UA type {observed_val}, yet the value {injected_val} was injected, given that {equivalent} are equivalent .",
+                        query_timestamps=[query_timestamp],
+                    )
+
+            elif injected_val != observed_val:  # C7 / C10
+                check.record_failed(
+                    "UA type is inconsistent with injected value",
+                    details=f"USS returned the UA type {observed_val}, yet the value {injected_val} was injected.",
+                    query_timestamps=[query_timestamp],
+                )
