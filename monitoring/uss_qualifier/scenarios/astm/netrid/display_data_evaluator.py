@@ -22,6 +22,7 @@ from monitoring.monitorlib.fetch.rid import (
     Position,
 )
 from monitoring.monitorlib.rid import RIDVersion
+from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
@@ -53,6 +54,7 @@ VERTICAL_SPEED_PRECISION = 0.1
 SPEED_PRECISION = 0.05
 TIMESTAMP_ACCURACY_PRECISION = 0.05
 HEIGHT_PRECISION_M = 1
+TIMESTAMP_DISCONNECT_TOLERANCE_SEC = 1
 
 # SP responses to /flights endpoint's p99 should be below this:
 SP_FLIGHTS_RESPONSE_TIME_TOLERANCE_SEC = 3
@@ -1194,6 +1196,199 @@ class RIDObservationEvaluator(object):
                 and not requested_area.contains(positions[-2])
             ):
                 fail_check()
+
+
+class DisconnectedUASObservationEvaluator(object):
+    """Evaluates observations of an RID system over time.
+
+    This evaluator observes a set of provided RIDSystemObservers in
+    evaluate_system by repeatedly polling them according to the expected data
+    provided to DisconnectedUASObservationEvaluator upon construction.  During these
+    evaluations, DisconnectedUASObservationEvaluator mutates provided findings object to add
+    additional findings.
+    """
+
+    def __init__(
+        self,
+        test_scenario: TestScenario,
+        injected_flights: List[InjectedFlight],
+        config: EvaluationConfiguration,
+        rid_version: RIDVersion,
+        dss: DSSInstance,
+    ):
+        self._test_scenario = test_scenario
+        self._common_dictionary_evaluator = RIDCommonDictionaryEvaluator(
+            config, self._test_scenario, rid_version
+        )
+        self._injected_flights = injected_flights
+        self._config = config
+        self._rid_version = rid_version
+        self._dss = dss
+        if dss and dss.rid_version != rid_version:
+            raise ValueError(
+                f"Cannot evaluate a system using RID version {rid_version} with a DSS using RID version {dss.rid_version}"
+            )
+        self._retrieved_flight_details: Set[
+            str
+        ] = (
+            set()
+        )  # Contains the observed IDs of the flights whose details were retrieved.
+
+        # Keep track of the flights that we have observed as having been 'disconnected'
+        # (last observed telemetry corresponds to last injected one within the window where data is returned)
+        self._observed_disconnections: Set[str] = set()
+
+    def remaining_disconnections_to_observe(self) -> Dict[str, str]:
+        return {
+            f.flight.injection_id: f.uss_participant_id
+            for f in self._injected_flights
+            if f.flight.injection_id not in self._observed_disconnections
+        }
+
+    def evaluate_disconnected_flights(
+        self,
+        rect: s2sphere.LatLngRect,
+    ) -> bool:
+        """
+        Polls service providers relevant to the injected test flights and verifies that,
+        for any flight that is not sending telemetry data anymore (ie, the last injected telemetry data lies in the past),
+        service providers are accurately reporting that no more telemetry data is being received.
+
+        This is expected to be reflected by SP's simply reporting the last known position of the flight up to one minute after it was received.
+
+        returns true once all terminated flights have been evaluated.
+        """
+
+        self._test_scenario.begin_test_step("Service Provider polling")
+
+        # Observe Service Provider with uss_qualifier acting as a Display Provider
+        sp_observation = all_flights(
+            rect,
+            include_recent_positions=True,
+            get_details=True,
+            rid_version=self._rid_version,
+            session=self._dss.client,
+            dss_participant_id=self._dss.participant_id,
+        )
+
+        # map observed flights to injected flight and attribute participant ID
+        mapping_by_injection_id = map_fetched_to_injected_flights(
+            self._injected_flights, list(sp_observation.uss_flight_queries.values())
+        )
+        for q in sp_observation.queries:
+            self._test_scenario.record_query(q)
+
+        # Evaluate observations
+        self._evaluate_sp_observation(sp_observation, mapping_by_injection_id)
+
+        self._test_scenario.end_test_step()
+
+        return False
+
+    def _evaluate_sp_observation(
+        self,
+        sp_observation: FetchedFlights,
+        mappings: Dict[str, TelemetryMapping],
+    ) -> None:
+        # Note: This step currently uses the DSS endpoint to perform a one-time query for ISAs, but this
+        # endpoint is not strictly required.  The PUT Subscription endpoint, followed immediately by the
+        # DELETE Subscription would produce the same result, but because uss_qualifier does not expose any
+        # endpoints (and therefore cannot provide a callback/base URL), calling the one-time query endpoint
+        # is currently much cleaner.  If this test is applied to a DSS that does not implement the one-time
+        # ISA query endpoint, this check can be adapted.
+        with self._test_scenario.check(
+            "ISA query", [self._dss.participant_id]
+        ) as check:
+            if not sp_observation.dss_isa_query.success:
+                check.record_failed(
+                    summary="Could not query ISAs from DSS",
+                    severity=Severity.Medium,
+                    details=f"Query to {self._dss.participant_id}'s DSS at {sp_observation.dss_isa_query.query.request.url} failed {sp_observation.dss_isa_query.query.status_code}",
+                    query_timestamps=[
+                        sp_observation.dss_isa_query.query.request.initiated_at.datetime
+                    ],
+                )
+                return
+
+        self._evaluate_sp_observation_of_disconnected_flights(sp_observation, mappings)
+
+    def _evaluate_sp_observation_of_disconnected_flights(
+        self,
+        sp_observation: FetchedFlights,
+        mappings: Dict[str, TelemetryMapping],
+    ) -> None:
+
+        # TODO we will want to reuse the code in RIDObservationEvaluator rather than copy-pasting it
+        _evaluate_flight_presence(
+            "uss_qualifier, acting as Display Provider",
+            sp_observation.queries,
+            False,
+            mappings,
+            set(),
+            self._test_scenario,
+            self._injected_flights,
+            self._rid_version,
+            self._config,
+        )
+
+        # For any flight that has the last telemetry in the past ~minute, we expect to observe data with that timestamp.
+        # No need to duplicate work done in _evaluate_flight_presence, we can just focus on flights that have ended in the last minute.
+        for expected_flight in self._injected_flights:
+            t_response = max(
+                q.response.reported.datetime for q in sp_observation.queries
+            )
+            query_timestamps = [q.request.timestamp for q in sp_observation.queries]
+            timestamps = [
+                arrow.get(t.timestamp) for t in expected_flight.flight.telemetry
+            ]
+
+            last_expected_telemetry = max(timestamps).datetime
+
+            # Only check when we are within the window where we expect to see the last telemetry
+            if (
+                last_expected_telemetry
+                < t_response
+                < last_expected_telemetry + self._rid_version.realtime_period
+            ):
+                with self._test_scenario.check(
+                    "Disconnected flight is shown as such",
+                    [expected_flight.uss_participant_id],
+                ) as check:
+                    if not expected_flight.flight.injection_id in mappings:
+                        check.record_failed(
+                            summary="Expected flight not observed",
+                            details="A flight for which telemetry was injected was not observed by the Service Provider",
+                            query_timestamps=query_timestamps,
+                        )
+                        continue
+
+                    if expected_flight.flight.injection_id in mappings:
+                        observed_telemetry_timestamp = Time(
+                            mappings[
+                                expected_flight.flight.injection_id
+                            ].observed_flight.flight.timestamp.datetime
+                        )
+
+                        # We don't expect the SP's systems to update the injected timestamp value,
+                        # but accept that it might do some reasonable roundings.
+                        # We can revisit this if some USS make a compelling case that we should increase this tolerance
+                        # or take the timestamp accuracy field into account here.
+                        if (
+                            abs(
+                                arrow.get(last_expected_telemetry)
+                                - arrow.get(observed_telemetry_timestamp)
+                            ).seconds
+                            > TIMESTAMP_DISCONNECT_TOLERANCE_SEC
+                        ):
+                            check.record_failed(
+                                summary="Last observed telemetry timestamp not consistent with last injected telemetry",
+                                details=f"Expected last telemetry timestamp: {last_expected_telemetry}, observed last telemetry timestamp: {observed_telemetry_timestamp}",
+                                query_timestamps=query_timestamps,
+                            )
+                        else:
+                            self._observed_disconnections.add(
+                                expected_flight.flight.injection_id
+                            )
 
 
 def _chronological_positions(f: Flight) -> List[s2sphere.LatLng]:
