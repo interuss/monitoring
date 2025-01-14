@@ -79,9 +79,15 @@ class Misbehavior(GenericTestScenario):
         self.end_test_step()
 
         self.begin_test_step("Unauthenticated requests")
+        self._poll_unauthenticated_during_flights(
+            auth.NoAuth(aud_override=""), "Missing credentials", "no"
+        )
+        self.end_test_step()
 
-        self._poll_unauthenticated_during_flights()
-
+        self.begin_test_step("Incorrectly authenticated requests")
+        self._poll_unauthenticated_during_flights(
+            auth.InvalidTokenSignatureAuth(), "Invalid credentials", "invalid"
+        )
         self.end_test_step()
 
         self.end_test_case()
@@ -92,7 +98,9 @@ class Misbehavior(GenericTestScenario):
             self, self._flights_data, self._service_providers
         )
 
-    def _poll_unauthenticated_during_flights(self):
+    def _poll_unauthenticated_during_flights(
+        self, auth: auth.AuthAdapter, check_name: str, credentials_type_description: str
+    ):
         config = self._evaluation_configuration.configuration
         virtual_observer = VirtualObserver(
             injected_flights=InjectedFlightCollection(self._injected_flights),
@@ -109,7 +117,9 @@ class Misbehavior(GenericTestScenario):
         def poll_fct(rect: LatLngRect) -> bool:
             nonlocal remaining_injection_ids
 
-            tested_inj_ids = self._evaluate_and_test_authentication(rect)
+            tested_inj_ids = self._evaluate_and_test_authentication(
+                auth, check_name, credentials_type_description, rect
+            )
             remaining_injection_ids -= tested_inj_ids
 
             # interrupt polling if there are no more injection IDs to cover
@@ -127,6 +137,9 @@ class Misbehavior(GenericTestScenario):
 
     def _evaluate_and_test_authentication(
         self,
+        auth: auth.AuthAdapter,
+        check_name: str,
+        credentials_type_description: str,
         rect: s2sphere.LatLngRect,
     ) -> Set[str]:
         """Queries all flights in the expected way, then repeats the queries to SPs without credentials.
@@ -159,16 +172,15 @@ class Misbehavior(GenericTestScenario):
         for injection_id, mapping in mapping_by_injection_id.items():
             participant_id = mapping.injected_flight.uss_participant_id
             flights_url = mapping.observed_flight.query.flights_url
-            unauthenticated_session = UTMClientSession(
-                flights_url, auth.NoAuth(aud_override="")
-            )
+
+            invalid_session = UTMClientSession(flights_url, auth)
 
             self.record_note(
                 f"{participant_id}/{injection_id}/missing_credentials_queries",
-                f"Will attempt querying with missing credentials at flights URL {flights_url} for a flights list and {len(mapping.observed_flight.query.flights)} flight details.",
+                f"Will attempt querying with {credentials_type_description} credentials at flights URL {flights_url} for a flights list and {len(mapping.observed_flight.query.flights)} flight details.",
             )
 
-            with self.check("Missing credentials", [participant_id]) as check:
+            with self.check(check_name, [participant_id]) as check:
 
                 # check uss flights query
                 uss_flights_query = rid.uss_flights(
@@ -176,7 +188,7 @@ class Misbehavior(GenericTestScenario):
                     rect,
                     True,
                     self._rid_version,
-                    unauthenticated_session,
+                    invalid_session,
                     participant_id,
                 )
                 self.record_query(uss_flights_query.query)
@@ -185,13 +197,13 @@ class Misbehavior(GenericTestScenario):
                     check.record_failed(
                         "Unauthenticated request for flights to USS was fulfilled",
                         severity=Severity.Medium,
-                        details=f"Queried flights on {flights_url} for USS {participant_id} with no credentials, expected a failure but got a success reply.",
+                        details=f"Queried flights on {flights_url} for USS {participant_id} with {credentials_type_description} credentials, expected a failure but got a success reply.",
                     )
                 elif uss_flights_query.status_code != 401:
                     check.record_failed(
                         "Unauthenticated request for flights failed with wrong HTTP code",
                         severity=Severity.Medium,
-                        details=f"Queried flights on {flights_url} for USS {participant_id} with no credentials, expected an HTTP 401 but got an HTTP {uss_flights_query.status_code}.",
+                        details=f"Queried flights on {flights_url} for USS {participant_id} with {credentials_type_description} credentials, expected an HTTP 401 but got an HTTP {uss_flights_query.status_code}.",
                     )
 
                 # check flight details query
@@ -201,7 +213,7 @@ class Misbehavior(GenericTestScenario):
                         flight.id,
                         False,
                         self._rid_version,
-                        unauthenticated_session,
+                        invalid_session,
                         participant_id,
                     )
                     self.record_query(uss_flight_details_query.query)
@@ -210,13 +222,13 @@ class Misbehavior(GenericTestScenario):
                         check.record_failed(
                             "Unauthenticated request for flight details to USS was fulfilled",
                             severity=Severity.Medium,
-                            details=f"Queried flight details on {flights_url} for USS {participant_id} for flight {flight.id} with no credentials, expected a failure but got a success reply.",
+                            details=f"Queried flight details on {flights_url} for USS {participant_id} for flight {flight.id} with {credentials_type_description} credentials, expected a failure but got a success reply.",
                         )
                     elif uss_flight_details_query.status_code != 401:
                         check.record_failed(
                             "Unauthenticated request for flight details failed with wrong HTTP code",
                             severity=Severity.Medium,
-                            details=f"Queried flight details on {flights_url} for USS {participant_id} for flight {flight.id} with no credentials, expected an HTTP 401 but got an HTTP {uss_flight_details_query.status_code}.",
+                            details=f"Queried flight details on {flights_url} for USS {participant_id} for flight {flight.id} with {credentials_type_description} credentials, expected an HTTP 401 but got an HTTP {uss_flight_details_query.status_code}.",
                         )
 
         return set(mapping_by_injection_id.keys())
