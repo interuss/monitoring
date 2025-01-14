@@ -85,7 +85,7 @@ If the DSS allows a user to extend an existing, valid subscription to a duration
 
 To clean up after itself, the test deletes the subscription created in the previous step.
 
-#### Subscription deleted check
+#### 🛑 Subscription deleted check
 
 The ability to delete an existing subscription is required in **[astm.f3411.v22a.DSS0030,d](../../../../../requirements/astm/f3411/v22a.md)**.
 

@@ -306,7 +306,6 @@ class DSSWrapper(object):
             q=mutated_isa.dss_query,
             fail_msg="ISA Put succeeded when expecting a failure",
             required_status_code=expected_error_codes,
-            severity=Severity.High,
             fail_details=f"The submitted query was expected to fail. Payload: {mutated_isa.dss_query.query.request.json}",
         )
         return mutated_isa
@@ -890,7 +889,6 @@ class DSSWrapper(object):
             if sub_version != del_sub.subscription.version:
                 check.record_failed(
                     summary=f"Deleted subscription did not match",
-                    severity=Severity.High,
                     details=f"DSS reported deletion of version {sub_version} while expecting {del_sub.subscription.version}",
                     query_timestamps=[del_sub.query.request.timestamp],
                 )
