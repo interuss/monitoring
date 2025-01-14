@@ -3,6 +3,7 @@ resources:
   flights_data: resources.netrid.FlightDataResource
   service_providers: resources.netrid.NetRIDServiceProviders?
   observers: resources.netrid.NetRIDObserversResource
+  mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
   evaluation_configuration: resources.netrid.EvaluationConfigurationResource
   dss_instances: resources.astm.f3411.DSSInstancesResource?
   dss_crdb_cluster: resources.interuss.crdb.CockroachDBClusterResource?
@@ -46,7 +47,9 @@ actions:
         flights_data: flights_data
         service_providers: service_providers
         observers: observers
+        mock_uss: mock_uss?
         evaluation_configuration: evaluation_configuration
+        id_generator: id_generator
         dss_pool: dss_instances?
     on_failure: Continue
   - test_scenario:
