@@ -360,7 +360,6 @@ class DSSWrapper(object):
             if mutated_isa.dss_query.query.status_code == 201:
                 sub_check.record_failed(
                     summary=f"PUT ISA returned technically-incorrect 201",
-                    severity=Severity.Low,
                     details="DSS should return 200 from PUT ISA, but instead returned the reasonable-but-technically-incorrect code 201",
                     query_timestamps=[t_dss],
                 )
