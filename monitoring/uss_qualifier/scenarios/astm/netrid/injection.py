@@ -12,7 +12,6 @@ from monitoring.monitorlib.rid_automated_testing.injection_api import (
     TestFlight,
     CreateTestParameters,
 )
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.netrid import (
     FlightDataResource,
     NetRIDServiceProviders,
