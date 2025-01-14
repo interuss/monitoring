@@ -4,3 +4,4 @@ from .networked_uas_disconnect import NetworkedUASDisconnect
 from .misbehavior import Misbehavior
 from .aggregate_checks import AggregateChecks
 from .operator_interactions import OperatorInteractions
+from .sp_notification_behavior import ServiceProviderNotificationBehavior

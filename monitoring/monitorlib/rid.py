@@ -228,6 +228,14 @@ class RIDVersion(str, Enum):
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
+    @property
+    def min_altitude_api(self) -> int:
+        return -8000
+
+    @property
+    def max_altitude_api(self) -> int:
+        return 100000
+
     def flights_url_of(self, base_url: str) -> str:
         if self == RIDVersion.f3411_19:
             flights_path = v19.api.OPERATIONS[v19.api.OperationID.SearchFlights].path
