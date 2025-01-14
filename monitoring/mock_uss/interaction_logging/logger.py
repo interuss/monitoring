@@ -3,7 +3,6 @@ import json
 import os
 
 import flask
-import arrow
 
 from monitoring.mock_uss import webapp, require_config_value
 from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_DIR
@@ -53,6 +52,12 @@ class InteractionLoggingHook(QueryHook):
         if "query_type" in query and query.query_type in {
             QueryType.F3548v21USSGetOperationalIntentDetails,
             QueryType.F3548v21USSNotifyOperationalIntentDetailsChanged,
+            QueryType.F3411v19USSGetFlightDetails,
+            QueryType.F3411v19USSPostIdentificationServiceArea,
+            QueryType.F3411v19USSSearchFlights,
+            QueryType.F3411v22aUSSSearchFlights,
+            QueryType.F3411v22aUSSGetFlightDetails,
+            QueryType.F3411v22aUSSPostIdentificationServiceArea,
         }:
             log_interaction(QueryDirection.Outgoing, query)
 
@@ -72,7 +77,11 @@ def interaction_log_after_request(response):
         datetime.datetime.now(datetime.UTC) - flask.current_app.custom_profiler["start"]
     ).total_seconds()
     # TODO: Make this configurable instead of hardcoding exactly these query types
-    if "/uss/v1/" in flask.request.url:
+    if (
+        "/uss/v1/" in flask.request.url
+        or "/uss/identification_service_areas/" in flask.request.url
+        or "/uss/flights/" in flask.request.url
+    ):
         query = describe_flask_query(flask.request, response, elapsed_s)
         log_interaction(QueryDirection.Incoming, query)
     return response
