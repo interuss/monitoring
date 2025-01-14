@@ -5,7 +5,6 @@ from s2sphere import LatLngRect
 
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
     FlightDataResource,
@@ -139,7 +138,6 @@ class NominalBehavior(GenericTestScenario):
                 stacktrace = stacktrace_string(e)
                 check.record_failed(
                     summary="Error while trying to delete test flight",
-                    severity=Severity.Medium,
                     details=f"While trying to delete a test flight from {sp.participant_id}, encountered error:\n{stacktrace}",
                 )
         self.end_cleanup()

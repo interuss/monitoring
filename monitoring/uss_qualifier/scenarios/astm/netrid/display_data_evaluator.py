@@ -325,7 +325,6 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     summary="Observation failed",
                     details=f"When queried for an observation in {_rect_str(rect)}, {observer.participant_id} returned code {query.status_code}",
-                    severity=Severity.Medium,
                     query_timestamps=[query.request.timestamp],
                 )
                 return
@@ -362,7 +361,6 @@ class RIDObservationEvaluator(object):
             if duplicates:
                 check.record_failed(
                     "Duplicate flight IDs in observation",
-                    Severity.Medium,
                     details="Duplicate flight IDs observed: " + ", ".join(duplicates),
                     query_timestamps=[query.request.timestamp],
                 )
@@ -442,7 +440,6 @@ class RIDObservationEvaluator(object):
                 ):
                     check.record_failed(
                         "Position Data is using extrapolation when Telemetry is available.",
-                        Severity.Medium,
                         details=(
                             f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID "
                             f"{mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} "
@@ -472,7 +469,6 @@ class RIDObservationEvaluator(object):
                     check.record_failed(
                         summary=f"Observation of details failed for {mapping.observed_flight.id}",
                         details=f"When queried for details of observation (ID {mapping.observed_flight.id}), {observer.participant_id} returned code {query.status_code}",
-                        severity=Severity.Medium,
                         query_timestamps=[query.request.timestamp],
                     )
                 else:
@@ -601,7 +597,6 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     summary="Did not receive expected error code for too-large area request",
                     details=f"{observer.participant_id} was queried for flights in {_rect_str(rect)} with a diagonal of {diagonal} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The expected error code is 413, but instead code {query.status_code} was received.",
-                    severity=Severity.High,
                     query_timestamps=[query.request.timestamp],
                 )
 
@@ -853,7 +848,6 @@ class RIDObservationEvaluator(object):
             if not sp_observation.dss_isa_query.success:
                 check.record_failed(
                     summary="Could not query ISAs from DSS",
-                    severity=Severity.Medium,
                     details=f"Query to {self._dss.participant_id}'s DSS at {sp_observation.dss_isa_query.query.request.url} failed {sp_observation.dss_isa_query.query.status_code}",
                     query_timestamps=[
                         sp_observation.dss_isa_query.query.request.initiated_at.datetime
@@ -918,7 +912,6 @@ class RIDObservationEvaluator(object):
                 if errors:
                     check.record_failed(
                         summary="/flights response failed schema validation",
-                        severity=Severity.Medium,
                         details="The response received from querying the /flights endpoint failed validation against the required OpenAPI schema:\n"
                         + "\n".join(
                             f"At {e.json_path} in the response: {e.message}"
@@ -1179,7 +1172,6 @@ class RIDObservationEvaluator(object):
                 if not details_query.success:
                     check.record_failed(
                         summary="Flight details query not successful",
-                        severity=Severity.Medium,
                         details=f"Flight details query to {details_query.query.request.url} failed {details_query.status_code}",
                         query_timestamps=[details_query.query.request.timestamp],
                     )
@@ -1195,7 +1187,6 @@ class RIDObservationEvaluator(object):
                 if errors:
                     check.record_failed(
                         summary="Flight details response failed schema validation",
-                        severity=Severity.Medium,
                         details="The response received from querying the flight details endpoint failed validation against the required OpenAPI schema:\n"
                         + "\n".join(
                             f"At {e.json_path} in the response: {e.message}"
@@ -1223,7 +1214,6 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     summary="Flight discovered using too-large area request",
                     details=f"{mapping.injected_flight.uss_participant_id} was queried for flights in {_rect_str(rect)} with a diagonal of {diagonal} km which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km} km.  The expected error code is 413, but instead a valid response containing the expected flight was received.",
-                    severity=Severity.High,
                     query_timestamps=[
                         mapping.observed_flight.query.query.request.timestamp
                     ],
@@ -1243,7 +1233,6 @@ class RIDObservationEvaluator(object):
                     check.record_failed(
                         "A Position timestamp was older than the tolerance.",
                         details=f"Position timestamp: {p.time}, query time: {query_time}",
-                        severity=Severity.Medium,
                     )
 
     def _evaluate_sp_flight_recent_positions_crossing_area_boundary(
@@ -1258,7 +1247,6 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     "A position outside the area was neither preceded nor followed by a position inside the area.",
                     details=f"Positions: {f.recent_positions}, requested_area: {requested_area}",
-                    severity=Severity.Medium,
                 )
 
             positions = _chronological_positions(f)
