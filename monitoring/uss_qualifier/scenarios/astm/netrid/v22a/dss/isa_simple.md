@@ -142,7 +142,7 @@ The ISA search parameters cover the resource ISA, as such the resource ISA that 
 
 This step attempts an ISA search at the DSS with an empty search area.
 
-#### 🛑 Search request rejected check
+#### ⚠️ Search request rejected check
 
 The search request contained invalid parameters (empty search area), as such the DSS should reject it with a 400 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
@@ -150,7 +150,7 @@ The search request contained invalid parameters (empty search area), as such the
 
 This step attempts an ISA search at the DSS with a too large search area.
 
-#### 🛑 Search request rejected check
+#### ⚠️ Search request rejected check
 
 The search request contained invalid parameters (too large search area), as such the DSS should reject it with a 413 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
@@ -158,7 +158,7 @@ The search request contained invalid parameters (too large search area), as such
 
 This step attempts an ISA search at the DSS with a polygon defining the area that forms a loop.
 
-#### 🛑 Search request rejected check
+#### ⚠️ Search request rejected check
 
 The search request contained invalid parameters (area polygon is a loop, which is not allowed), as such the DSS should reject it with a 400 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 

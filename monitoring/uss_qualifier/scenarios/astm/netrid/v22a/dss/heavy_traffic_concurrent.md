@@ -59,7 +59,7 @@ This test step searches the area in which the ISAs were concurrently created, an
 
 The ISA search parameters are valid, as such the search should be successful. If the request is not successful, this check will fail per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
-#### 🛑 Correct ISAs returned by search check
+#### ⚠️ Correct ISAs returned by search check
 
 The ISA search parameters cover the resource ISA, as such the resource ISA that exists at the DSS should be returned by the search. If it is not returned, this check will fail.
 

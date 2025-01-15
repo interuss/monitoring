@@ -58,7 +58,7 @@ If a DSS was provided to this test scenario, uss_qualifier acts as a Display Pro
 
 **[interuss.f3411.dss_endpoints.SearchISAs](../../../../requirements/interuss/f3411/dss_endpoints.md)** requires a USS providing a DSS instance to implement the DSS endpoints of the OpenAPI specification.  If uss_qualifier is unable to query the DSS for ISAs, this check will fail.
 
-#### 🛑 Area too large check
+#### ⚠️ Area too large check
 
 **[astm.f3411.v19.NET0250](../../../../requirements/astm/f3411/v19.md)** requires that a NetRID Service Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
 
@@ -94,7 +94,7 @@ This implies that any recent position outside the area must be either preceded o
 
 In this step, all observers are queried for the flights they observe.  Based on the known flights that were injected into the SPs in the first step, these observations are checked against expected behavior/data.  Observation rectangles are chosen to encompass the known flights when possible.
 
-#### 🛑 Area too large check
+#### ⚠️ Area too large check
 
 **[astm.f3411.v19.NET0430](../../../../requirements/astm/f3411/v19.md)** require that a NetRID Display Provider reject a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
 
