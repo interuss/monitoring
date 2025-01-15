@@ -14,6 +14,8 @@ on:
       # be the one found in scripts/tag.sh.
       # [1] https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
       - "interuss/monitoring/v[0-9]+.[0-9]+.[0-9]+-?*"
+permissions:
+  contents: read
 jobs:
   docker-hub-push:
     name: Build and Push to Docker Hub
