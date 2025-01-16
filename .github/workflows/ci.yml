@@ -7,6 +7,7 @@ on:
 jobs:
   hygiene-tests:
     name: Repository hygiene
+    # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#permissions
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -34,6 +35,8 @@ jobs:
 
   mock_uss-test:
     name: mock_uss tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: mock_uss
@@ -43,6 +46,8 @@ jobs:
 
   uss_qualifier-noop-test:
     name: uss_qualifier configurations.dev.noop tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-noop-test
@@ -54,6 +59,8 @@ jobs:
 
   uss_qualifier-geoawareness_cis-test:
     name: uss_qualifier configurations.dev.geoawareness_cis tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-geoawareness_cis-test
@@ -65,6 +72,8 @@ jobs:
 
   uss_qualifier-generate_rid_test_data-test:
     name: uss_qualifier configurations.dev.generate_rid_test_data tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-generate_rid_test_data-test
@@ -76,6 +85,8 @@ jobs:
 
   uss_qualifier-geospatial_comprehension-test:
     name: uss_qualifier configurations.dev.geospatial_comprehension tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-geospatial_comprehension-test
@@ -87,6 +98,8 @@ jobs:
 
   uss_qualifier-general_flight_auth-test:
     name: uss_qualifier configurations.dev.general_flight_auth tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-general_flight_auth-test
@@ -98,6 +111,8 @@ jobs:
 
   uss_qualifier-message_signing-test:
     name: uss_qualifier configurations.dev.message_signing tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-message_signing-test
@@ -109,6 +124,8 @@ jobs:
 
   uss_qualifier-dss_probing-test:
     name: uss_qualifier configurations.dev.dss_probing tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-dss_probing-test
@@ -120,6 +137,8 @@ jobs:
 
   uss_qualifier-f3548_self_contained-test:
     name: uss_qualifier configurations.dev.f3548_self_contained tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-f3548_self_contained-test
@@ -131,6 +150,8 @@ jobs:
 
   uss_qualifier-utm_implementation_us-test:
     name: uss_qualifier configurations.dev.utm_implementation_us tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-utm_implementation_us-test
@@ -142,6 +163,8 @@ jobs:
 
   uss_qualifier-netrid_v22a-test:
     name: uss_qualifier configurations.dev.netrid_v22a tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-netrid_v22a-test
@@ -153,6 +176,8 @@ jobs:
 
   uss_qualifier-netrid_v19-test:
     name: uss_qualifier configurations.dev.netrid_v19 tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-netrid_v19-test
@@ -164,6 +189,8 @@ jobs:
 
   uss_qualifier-uspace-test:
     name: uss_qualifier configurations.dev.uspace tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-uspace-test
@@ -175,6 +202,8 @@ jobs:
 
   prober-test:
     name: prober tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/monitoring-test.yml
     with:
       name: prober
