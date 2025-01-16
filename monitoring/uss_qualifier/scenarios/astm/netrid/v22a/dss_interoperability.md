@@ -187,7 +187,7 @@ Action: USS2@DSS*P*: DELETE Subscription[*n*]
 
 Qualitatively proves: Can delete Subscriptions in primary DSS
 
-#### Subscription[*n*] deleted with proper response check
+#### 🛑 Subscription[*n*] deleted with proper response check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,4a](../../../../requirements/astm/f3411/v22a.md)**
 
@@ -339,7 +339,7 @@ Qualitatively proves: Deleted ISA removed from all DSSs
 
 Action: USS2@DSS*P*: DELETE Subscription[*n*]
 
-#### Subscription[*n*] deleted with proper response check
+#### 🛑 Subscription[*n*] deleted with proper response check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,4a](../../../../requirements/astm/f3411/v22a.md)**
 

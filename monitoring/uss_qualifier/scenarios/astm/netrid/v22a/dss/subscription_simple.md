@@ -293,7 +293,7 @@ An attempt to delete a subscription without providing a version should fail, oth
 
 An attempt to delete a subscription while providing an incorrect version should fail, otherwise the DSS is in violation of **[astm.f3411.v22a.DSS0030,d](../../../../../requirements/astm/f3411/v22a.md)**.
 
-#### Subscription can be deleted check
+#### 🛑 Subscription can be deleted check
 
 An attempt to delete a subscription when the correct version is provided should succeed, otherwise the DSS is in violation of **[astm.f3411.v22a.DSS0030,d](../../../../../requirements/astm/f3411/v22a.md)**.
 

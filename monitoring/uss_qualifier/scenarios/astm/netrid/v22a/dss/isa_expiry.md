@@ -30,7 +30,7 @@ This test case creates an ISA with a short lifetime and verifies that it is not 
 
 ### ISA Expiry test step
 
-#### Create short-lived ISA check
+#### 🛑 Create short-lived ISA check
 
 Not allowing an ISA to be created violates **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**
 
