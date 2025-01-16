@@ -12,6 +12,14 @@ resources:
   problematically_big_area: resources.VerticesResource
   test_exclusions: resources.dev.TestExclusionsResource?
 actions:
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v19.NetworkedUASDisconnect
+      resources:
+        flights_data: flights_data
+        service_providers: service_providers
+        evaluation_configuration: evaluation_configuration
+        dss_pool: dss_instances
+    on_failure: Continue
   - action_generator:
       generator_type: action_generators.astm.f3411.ForEachDSS
       resources:
