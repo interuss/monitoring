@@ -12,7 +12,6 @@ from monitoring.monitorlib.rid_automated_testing.injection_api import (
     TestFlight,
     CreateTestParameters,
 )
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.netrid import (
     FlightDataResource,
     NetRIDServiceProviders,
@@ -60,7 +59,6 @@ def inject_flights(
             if query.status_code != 200:
                 check.record_failed(
                     summary="Error while trying to inject test flight",
-                    severity=Severity.High,
                     details=f"Expected response code 200 from {target.participant_id} but received {query.status_code} while trying to inject a test flight",
                     query_timestamps=[query.request.timestamp],
                 )
@@ -68,7 +66,6 @@ def inject_flights(
             if "json" not in query.response or query.response.json is None:
                 check.record_failed(
                     summary="Response to test flight injection request did not contain a JSON body",
-                    severity=Severity.High,
                     details=f"Expected a JSON body in response to flight injection request",
                     query_timestamps=[query.request.timestamp],
                 )
@@ -115,7 +112,6 @@ def inject_flights(
         if errors:
             check.record_failed(
                 summary="Injected flights not suitable for test",
-                severity=Severity.High,
                 details="When checking the suitability of the flights (as injected) for the test, found:\n"
                 + "\n".join(errors),
                 query_timestamps=[f.query_timestamp for f in injected_flights],

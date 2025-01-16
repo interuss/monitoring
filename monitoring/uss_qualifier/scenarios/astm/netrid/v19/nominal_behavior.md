@@ -32,7 +32,7 @@ If specified, uss_qualifier will act as a Display Provider and check a DSS insta
 
 In this step, uss_qualifier injects a single nominal flight into each SP under test, usually with a start time in the future.  Each SP is expected to queue the provided telemetry and later simulate that telemetry coming from an aircraft at the designated timestamps.
 
-#### Successful injection check
+#### 🛑 Successful injection check
 
 Per **[interuss.automated_testing.rid.injection.UpsertTestSuccess](../../../../requirements/interuss/automated_testing/rid/injection.md)**, the injection attempt of the valid flight should succeed for every NetRID Service Provider under test.
 
@@ -46,7 +46,7 @@ TODO: Validate injected flights, especially to make sure they contain the specif
 Per **[interuss.automated_testing.rid.injection.UpsertTestResult](../../../../requirements/interuss/automated_testing/rid/injection.md)**, the NetRID Service Provider under test should only make valid modifications to the injected flights.  This includes:
 * A flight with the specified injection ID must be returned.
 
-#### Identifiable flights check
+#### 🛑 Identifiable flights check
 
 This particular test requires each flight to be uniquely identifiable by its 2D telemetry position; the same (lat, lng) pair may not appear in two different telemetry points, even if the two points are in different injected flights.  This should generally be achieved by injecting appropriate data.
 
@@ -54,37 +54,39 @@ This particular test requires each flight to be uniquely identifiable by its 2D 
 
 If a DSS was provided to this test scenario, uss_qualifier acts as a Display Provider to query Service Providers under test in this step.
 
-#### ISA query check
+#### ⚠️ ISA query check
 
 **[interuss.f3411.dss_endpoints.SearchISAs](../../../../requirements/interuss/f3411/dss_endpoints.md)** requires a USS providing a DSS instance to implement the DSS endpoints of the OpenAPI specification.  If uss_qualifier is unable to query the DSS for ISAs, this check will fail.
 
-#### Area too large check
+#### ⚠️ Area too large check
 
 **[astm.f3411.v19.NET0250](../../../../requirements/astm/f3411/v19.md)** requires that a NetRID Service Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
 
 #### [Flight presence checks](./display_data_evaluator_flight_presence.md)
 
-#### Flights data format check
+#### ⚠️ Flights data format check
 
 **[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../requirements/astm/f3411/v19.md)** require a Service Provider to implement the P2P portion of the OpenAPI specification.  This check will fail if the response to the /flights endpoint does not validate against the OpenAPI-specified schema.
 
 #### [Flight consistency with Common Data Dictionary checks](./common_dictionary_evaluator_sp_flight.md)
 
-#### Recent positions timestamps check
+#### ⚠️ Recent positions timestamps check
+
 **[astm.f3411.v19.NET0270](../../../../requirements/astm/f3411/v19.md)** requires all recent positions to be within the NetMaxNearRealTimeDataPeriod. This check will fail if any of the reported positions are older than the maximally allowed period plus NetSpDataResponseTime99thPercentile.
 
-#### Recent positions for aircraft crossing the requested area boundary show only one position before or after crossing check
+#### ⚠️ Recent positions for aircraft crossing the requested area boundary show only one position before or after crossing check
+
 **[astm.f3411.v19.NET0270](../../../../requirements/astm/f3411/v19.md)** requires that when an aircraft enters or leaves the queried area, the last or first reported position outside the area is provided in the recent positions, as long as it is not older than NetMaxNearRealTimeDataPeriod.
 
 This implies that any recent position outside the area must be either preceded or followed by a position inside the area.
 
 (This check validates NET0270 b and c).
 
-#### Successful flight details query check
+#### ⚠️ Successful flight details query check
 
 **[astm.f3411.v19.NET0710,2](../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../requirements/astm/f3411/v19.md)** require a Service Provider to implement the GET flight details endpoint.  This check will fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
 
-#### Flight details data format check
+#### ⚠️ Flight details data format check
 
 **[astm.f3411.v19.NET0710,2](../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../requirements/astm/f3411/v19.md)** require a Service Provider to implement the P2P portion of the OpenAPI specification.  This check will fail if the response to the flight details endpoint does not validate against the OpenAPI-specified schema.
 
@@ -92,17 +94,17 @@ This implies that any recent position outside the area must be either preceded o
 
 In this step, all observers are queried for the flights they observe.  Based on the known flights that were injected into the SPs in the first step, these observations are checked against expected behavior/data.  Observation rectangles are chosen to encompass the known flights when possible.
 
-#### Area too large check
+#### ⚠️ Area too large check
 
 **[astm.f3411.v19.NET0430](../../../../requirements/astm/f3411/v19.md)** require that a NetRID Display Provider reject a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
 
-#### Successful observation check
+#### ⚠️ Successful observation check
 
 Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the call to each observer is expected to succeed since a valid view was provided by uss_qualifier.
 
 #### [Clustering checks](./display_data_evaluator_clustering.md)
 
-#### Duplicate flights check
+#### ⚠️ Duplicate flights check
 
 Per **[interuss.automated_testing.rid.observation.UniqueFlights](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the same flight ID may not be reported by a Display Provider for two flights in the same observation.
 
@@ -110,11 +112,11 @@ Per **[interuss.automated_testing.rid.observation.UniqueFlights](../../../../req
 
 #### [Flight consistency with Common Data Dictionary checks](./common_dictionary_evaluator_dp_flight.md)
 
-#### Telemetry being used when present check
+#### ⚠️ Telemetry being used when present check
 
 **[astm.f3411.v19.NET0290](../../../../requirements/astm/f3411/v19.md)** requires a SP uses Telemetry vs extrapolation when telemetry is present.
 
-#### Successful details observation check
+#### ⚠️ Successful details observation check
 
 Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the call for flight details is expected to succeed since a valid ID was provided by uss_qualifier.
 
@@ -122,6 +124,6 @@ Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../.
 
 The cleanup phase of this test scenario attempts to remove injected data from all SPs.
 
-### Successful test deletion check
+### ⚠️ Successful test deletion check
 
 **[interuss.automated_testing.rid.injection.DeleteTestSuccess](../../../../requirements/interuss/automated_testing/rid/injection.md)**
