@@ -453,11 +453,11 @@ class GenericTestScenario(ABC):
         else:
             check_list = ", ".join(available_checks)
             if self._allow_undocumented_checks:
-                # We create a dunny TestCheckDocumentation to continue.
+                # We create a dummy TestCheckDocumentation to continue.
                 # The severity is unknown since we don't have documentation,
                 # but we default to a medium severity (so a failure won't stop
                 # tests).
-                # Thoses undocumented checks are primary used for unit testing,
+                # These undocumented checks are primary used for unit testing,
                 # this shouldn't have any impact on normal testing.
                 check_documentation = TestCheckDocumentation(
                     name=name,
