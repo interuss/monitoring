@@ -108,6 +108,10 @@ if SERVICE_INTERACTION_LOGGING in webapp.config[config.KEY_SERVICES]:
     from monitoring.mock_uss.interaction_logging import logger as interactions_logger
     from monitoring.mock_uss.interaction_logging import routes_interactions_log
 
+    logger.info("Interaction logging enabled")
+else:
+    logger.info("Interaction logging disabled")
+
 if SERVICE_TRACER in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_TRACER)
     from monitoring.mock_uss import tracer

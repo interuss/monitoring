@@ -28,14 +28,14 @@ A [`DSSInstanceResource`](../../../../resources/astm/f3411/dss.py) is required f
 
 In this step, uss_qualifier injects a single nominal flight into each SP under test, usually with a start time in the future.  Each SP is expected to queue the provided telemetry and later simulate that telemetry coming from an aircraft at the designated timestamps.
 
-#### Successful injection check
+#### 🛑 Successful injection check
 
 Per **[interuss.automated_testing.rid.injection.UpsertTestSuccess](../../../../requirements/interuss/automated_testing/rid/injection.md)**, the injection attempt of the valid flight should succeed for every NetRID Service Provider under test.
 
 **[astm.f3411.v19.NET0500](../../../../requirements/astm/f3411/v19.md)** requires a Service Provider to provide a persistently supported test instance of their implementation.
 This check will fail if the flight was not successfully injected.
 
-#### Identifiable flights check
+#### 🛑 Identifiable flights check
 
 This particular test requires each flight to be uniquely identifiable by its 2D telemetry position; the same (lat, lng) pair may not appear in two different telemetry points, even if the two points are in different injected flights.  This should generally be achieved by injecting appropriate data.
 
@@ -44,12 +44,20 @@ This particular test requires each flight to be uniquely identifiable by its 2D 
 In order to properly test whether the SP handles authentication correctly, this step will first attempt to do a request with the proper credentials
 to confirm that the requested data is indeed available to any authorized query.
 
-It then repeats the exact same request with incorrect credentials, and expects this to fail.
+It then repeats the exact same request without credentials, and expects this to fail.
 
 #### Missing credentials check
 
 This check ensures that all requests are properly authenticated, as required by **[astm.f3411.v19.NET0210](../../../../requirements/astm/f3411/v19.md)**,
-and that requests for existing flights that are executed with missing or incorrect credentials fail.
+and that requests for existing flights that are executed with missing credentials fail.
+
+### Incorrectly authenticated requests test step
+
+This step is similar to unauthenticated requests, but uses incorrectly-authenticated requests instead.
+
+#### ⚠️ Invalid credentials check
+This check ensures that all requests are properly authenticated, as required by **[astm.f3411.v19.NET0210](../../../../requirements/astm/f3411/v19.md)**,
+and that requests for existing flights that are executed with incorrect credentials fail.
 
 ## Cleanup
 

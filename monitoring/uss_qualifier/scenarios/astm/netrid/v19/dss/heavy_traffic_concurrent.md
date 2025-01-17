@@ -39,7 +39,7 @@ This test case will:
 
 This step attempts to concurrently create multiple ISAs, as specified in this scenario's resource, at the configured DSS.
 
-#### Concurrent ISAs creation check
+#### 🛑 Concurrent ISAs creation check
 
 If any of the concurrent ISA creation requests fail or leads to the creation of an incorrect ISA, the PUT DSS endpoint in **[astm.f3411.v19.DSS0030,a](../../../../../requirements/astm/f3411/v19.md)** is likely not implemented correctly.
 
@@ -47,7 +47,7 @@ If any of the concurrent ISA creation requests fail or leads to the creation of 
 
 This step attempts to concurrently retrieve the previously created ISAs from the DSS.
 
-#### Successful Concurrent ISA query check
+#### 🛑 Successful Concurrent ISA query check
 
 If any of the ISAs cannot be queried, the GET ISA DSS endpoint in **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** is likely not implemented correctly.
 
@@ -55,11 +55,11 @@ If any of the ISAs cannot be queried, the GET ISA DSS endpoint in **[interuss.f3
 
 This test step searches the area in which the ISAs were concurrently created, and expects to find all of them.
 
-#### Successful ISAs search check
+#### 🛑 Successful ISAs search check
 
 The ISA search parameters are valid, as such the search should be successful. If the request is not successful, this check will fail per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
-#### Correct ISAs returned by search check
+#### ⚠️ Correct ISAs returned by search check
 
 The ISA search parameters cover the resource ISA, as such the resource ISA that exists at the DSS should be returned by the search. If it is not returned, this check will fail.
 
@@ -67,7 +67,7 @@ The ISA search parameters cover the resource ISA, as such the resource ISA that 
 
 This step attempts to concurrently delete the earlier created ISAs.
 
-#### ISAs deletion query success check
+#### 🛑 ISAs deletion query success check
 
 If an ISA cannot be deleted, the PUT DSS endpoint in **[astm.f3411.v19.DSS0030,b](../../../../../requirements/astm/f3411/v19.md)** is likely not implemented correctly.
 
@@ -75,7 +75,7 @@ If an ISA cannot be deleted, the PUT DSS endpoint in **[astm.f3411.v19.DSS0030,b
 
 This step attempts to concurrently access the previously deleted ISAs from the DSS.
 
-#### ISAs not found check
+#### 🛑 ISAs not found check
 
 The ISA fetch request was about a deleted ISA, as such the DSS should reject it with a 404 HTTP code. If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
@@ -83,11 +83,11 @@ The ISA fetch request was about a deleted ISA, as such the DSS should reject it 
 
 This step issues a search for active ISAs in the area of the previously deleted ISAs from the DSS.
 
-#### Successful ISAs search check
+#### 🛑 Successful ISAs search check
 
 The ISA search parameters are valid, as such the search should be successful. If the request is not successful, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
-#### ISAs not returned by search check
+#### 🛑 ISAs not returned by search check
 
 The ISA search area parameter cover the resource ISA, but it has been previously deleted, as such the ISA should not be returned by the search. If it is returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 

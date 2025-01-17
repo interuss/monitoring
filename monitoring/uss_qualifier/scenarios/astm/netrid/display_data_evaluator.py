@@ -1,5 +1,4 @@
 import datetime
-
 import math
 from dataclasses import dataclass
 from typing import List, Optional, Dict, Union, Set, Tuple
@@ -8,7 +7,6 @@ import arrow
 import s2sphere
 from loguru import logger
 from s2sphere import LatLng, LatLngRect
-
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     Flight,
     GetDisplayDataResponse,
@@ -325,7 +323,6 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     summary="Observation failed",
                     details=f"When queried for an observation in {_rect_str(rect)}, {observer.participant_id} returned code {query.status_code}",
-                    severity=Severity.Medium,
                     query_timestamps=[query.request.timestamp],
                 )
                 return
@@ -362,7 +359,6 @@ class RIDObservationEvaluator(object):
             if duplicates:
                 check.record_failed(
                     "Duplicate flight IDs in observation",
-                    Severity.Medium,
                     details="Duplicate flight IDs observed: " + ", ".join(duplicates),
                     query_timestamps=[query.request.timestamp],
                 )
@@ -371,12 +367,16 @@ class RIDObservationEvaluator(object):
             self._injected_flights, observation.flights
         )
 
-        self._evaluate_flight_presence(
+        _evaluate_flight_presence(
             observer.participant_id,
             [query],
             True,
             mapping_by_injection_id,
             verified_sps,
+            self._test_scenario,
+            self._injected_flights,
+            self._rid_version,
+            self._config,
         )
 
         # Check that altitudes match for any observed flights matching injected flights
@@ -442,7 +442,6 @@ class RIDObservationEvaluator(object):
                 ):
                     check.record_failed(
                         "Position Data is using extrapolation when Telemetry is available.",
-                        Severity.Medium,
                         details=(
                             f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID "
                             f"{mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} "
@@ -472,7 +471,6 @@ class RIDObservationEvaluator(object):
                     check.record_failed(
                         summary=f"Observation of details failed for {mapping.observed_flight.id}",
                         details=f"When queried for details of observation (ID {mapping.observed_flight.id}), {observer.participant_id} returned code {query.status_code}",
-                        severity=Severity.Medium,
                         query_timestamps=[query.request.timestamp],
                     )
                 else:
@@ -492,101 +490,6 @@ class RIDObservationEvaluator(object):
                         ],
                     )
 
-    def _evaluate_flight_presence(
-        self,
-        observer_participant_id: str,
-        observation_queries: List[Query],
-        observer_participant_is_relevant: bool,
-        mapping_by_injection_id: Dict[str, TelemetryMapping],
-        verified_sps: Set[str],
-    ):
-        """Implements fragment documented in `display_data_evaluator_flight_presence.md`."""
-
-        query_timestamps = [q.request.timestamp for q in observation_queries]
-        observer_participants = (
-            [observer_participant_id] if observer_participant_is_relevant else []
-        )
-        for expected_flight in self._injected_flights:
-            t_initiated = min(q.request.timestamp for q in observation_queries)
-            t_response = max(q.response.reported.datetime for q in observation_queries)
-            timestamps = [
-                arrow.get(t.timestamp) for t in expected_flight.flight.telemetry
-            ]
-            t_min = min(timestamps).datetime
-            t_max = max(timestamps).datetime
-
-            if t_response < t_min:
-                # This flight should definitely not have been observed (it starts in the future)
-                with self._test_scenario.check(
-                    "Premature flight", [expected_flight.uss_participant_id]
-                ) as check:
-                    if expected_flight.flight.injection_id in mapping_by_injection_id:
-                        check.record_failed(
-                            summary="Flight observed before it started",
-                            details=f"Flight {expected_flight.flight.injection_id} injected into {expected_flight.uss_participant_id} was observed by {observer_participant_id} at {t_response.isoformat()} before that flight should have started at {t_min.isoformat()}",
-                            severity=Severity.Medium,
-                            query_timestamps=query_timestamps
-                            + [expected_flight.query_timestamp],
-                        )
-                    # TODO: attempt to observe flight details
-                    continue
-            elif (
-                t_response
-                > t_max
-                + self._rid_version.realtime_period
-                + self._config.max_propagation_latency.timedelta
-            ):
-                # This flight should not have been observed (it was too far in the past)
-                participants = observer_participants
-                if (
-                    expected_flight.uss_participant_id not in verified_sps
-                    or not participants
-                ):
-                    participants.append(expected_flight.uss_participant_id)
-                with self._test_scenario.check(
-                    "Lingering flight", participants
-                ) as check:
-                    if expected_flight.flight.injection_id in mapping_by_injection_id:
-                        check.record_failed(
-                            summary="Flight still observed long after it ended",
-                            details=f"Flight {expected_flight.flight.injection_id} injected into {expected_flight.uss_participant_id} was observed by {observer_participant_id} at {t_response.isoformat()} after it ended at {t_max.isoformat()}",
-                            severity=Severity.Medium,
-                            query_timestamps=query_timestamps
-                            + [expected_flight.query_timestamp],
-                        )
-                        continue
-            elif (
-                t_min + self._config.max_propagation_latency.timedelta
-                < t_initiated
-                < t_max
-                + self._rid_version.realtime_period
-                - self._config.max_propagation_latency.timedelta
-            ):
-                # This flight should definitely have been observed
-                participants = observer_participants
-                if (
-                    expected_flight.uss_participant_id not in verified_sps
-                    or not participants
-                ):
-                    participants.append(expected_flight.uss_participant_id)
-                with self._test_scenario.check("Missing flight", participants) as check:
-                    if (
-                        expected_flight.flight.injection_id
-                        not in mapping_by_injection_id
-                    ):
-                        check.record_failed(
-                            summary="Expected flight not observed",
-                            details=f"Flight {expected_flight.flight.injection_id} injected into {expected_flight.uss_participant_id} was not found in the observation by {observer_participant_id} at {t_response.isoformat()} even though it should have been active from {t_min.isoformat()} to {t_max.isoformat()}",
-                            severity=Severity.Medium,
-                            query_timestamps=query_timestamps
-                            + [expected_flight.query_timestamp],
-                        )
-                        continue
-                # TODO: observe flight details
-            elif t_initiated > t_min:
-                # If this flight was not observed, there may be propagation latency
-                pass  # TODO: findings propagation latency
-
     def _evaluate_area_too_large_observation(
         self,
         observer: RIDSystemObserver,
@@ -601,7 +504,6 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     summary="Did not receive expected error code for too-large area request",
                     details=f"{observer.participant_id} was queried for flights in {_rect_str(rect)} with a diagonal of {diagonal} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The expected error code is 413, but instead code {query.status_code} was received.",
-                    severity=Severity.High,
                     query_timestamps=[query.request.timestamp],
                 )
 
@@ -853,7 +755,6 @@ class RIDObservationEvaluator(object):
             if not sp_observation.dss_isa_query.success:
                 check.record_failed(
                     summary="Could not query ISAs from DSS",
-                    severity=Severity.Medium,
                     details=f"Query to {self._dss.participant_id}'s DSS at {sp_observation.dss_isa_query.query.request.url} failed {sp_observation.dss_isa_query.query.status_code}",
                     query_timestamps=[
                         sp_observation.dss_isa_query.query.request.initiated_at.datetime
@@ -882,12 +783,16 @@ class RIDObservationEvaluator(object):
         mappings: Dict[str, TelemetryMapping],
     ) -> None:
 
-        self._evaluate_flight_presence(
+        _evaluate_flight_presence(
             "uss_qualifier, acting as Display Provider",
             sp_observation.queries,
             False,
             mappings,
             set(),
+            self._test_scenario,
+            self._injected_flights,
+            self._rid_version,
+            self._config,
         )
 
         for mapping in mappings.values():
@@ -918,7 +823,6 @@ class RIDObservationEvaluator(object):
                 if errors:
                     check.record_failed(
                         summary="/flights response failed schema validation",
-                        severity=Severity.Medium,
                         details="The response received from querying the /flights endpoint failed validation against the required OpenAPI schema:\n"
                         + "\n".join(
                             f"At {e.json_path} in the response: {e.message}"
@@ -1179,7 +1083,6 @@ class RIDObservationEvaluator(object):
                 if not details_query.success:
                     check.record_failed(
                         summary="Flight details query not successful",
-                        severity=Severity.Medium,
                         details=f"Flight details query to {details_query.query.request.url} failed {details_query.status_code}",
                         query_timestamps=[details_query.query.request.timestamp],
                     )
@@ -1195,7 +1098,6 @@ class RIDObservationEvaluator(object):
                 if errors:
                     check.record_failed(
                         summary="Flight details response failed schema validation",
-                        severity=Severity.Medium,
                         details="The response received from querying the flight details endpoint failed validation against the required OpenAPI schema:\n"
                         + "\n".join(
                             f"At {e.json_path} in the response: {e.message}"
@@ -1223,7 +1125,6 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     summary="Flight discovered using too-large area request",
                     details=f"{mapping.injected_flight.uss_participant_id} was queried for flights in {_rect_str(rect)} with a diagonal of {diagonal} km which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km} km.  The expected error code is 413, but instead a valid response containing the expected flight was received.",
-                    severity=Severity.High,
                     query_timestamps=[
                         mapping.observed_flight.query.query.request.timestamp
                     ],
@@ -1243,7 +1144,6 @@ class RIDObservationEvaluator(object):
                     check.record_failed(
                         "A Position timestamp was older than the tolerance.",
                         details=f"Position timestamp: {p.time}, query time: {query_time}",
-                        severity=Severity.Medium,
                     )
 
     def _evaluate_sp_flight_recent_positions_crossing_area_boundary(
@@ -1258,7 +1158,6 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     "A position outside the area was neither preceded nor followed by a position inside the area.",
                     details=f"Positions: {f.recent_positions}, requested_area: {requested_area}",
-                    severity=Severity.Medium,
                 )
 
             positions = _chronological_positions(f)
@@ -1312,3 +1211,95 @@ def _sliding_triples(points: List[s2sphere.LatLng]) -> List[List[s2sphere.LatLng
     Returns a list of triples of consecutive positions in passed the list.
     """
     return [[points[i], points[i + 1], points[i + 2]] for i in range(len(points) - 2)]
+
+
+def _evaluate_flight_presence(
+    observer_participant_id: str,
+    observation_queries: List[Query],
+    observer_participant_is_relevant: bool,
+    mapping_by_injection_id: Dict[str, TelemetryMapping],
+    verified_sps: Set[str],
+    test_scenario: TestScenario,
+    injected_flights: List[InjectedFlight],
+    rid_version: RIDVersion,
+    evaluation_config: EvaluationConfiguration,
+):
+    """Implements fragment documented in `display_data_evaluator_flight_presence.md`."""
+
+    query_timestamps = [q.request.timestamp for q in observation_queries]
+    observer_participants = (
+        [observer_participant_id] if observer_participant_is_relevant else []
+    )
+    for expected_flight in injected_flights:
+        t_initiated = min(q.request.timestamp for q in observation_queries)
+        t_response = max(q.response.reported.datetime for q in observation_queries)
+        timestamps = [arrow.get(t.timestamp) for t in expected_flight.flight.telemetry]
+        t_min = min(timestamps).datetime
+        t_max = max(timestamps).datetime
+
+        if t_response < t_min:
+            # This flight should definitely not have been observed (it starts in the future)
+            with test_scenario.check(
+                "Premature flight", [expected_flight.uss_participant_id]
+            ) as check:
+                if expected_flight.flight.injection_id in mapping_by_injection_id:
+                    check.record_failed(
+                        summary="Flight observed before it started",
+                        details=f"Flight {expected_flight.flight.injection_id} injected into {expected_flight.uss_participant_id} was observed by {observer_participant_id} at {t_response.isoformat()} before that flight should have started at {t_min.isoformat()}",
+                        severity=Severity.Medium,
+                        query_timestamps=query_timestamps
+                        + [expected_flight.query_timestamp],
+                    )
+                # TODO: attempt to observe flight details
+                continue
+        elif (
+            t_response
+            > t_max
+            + rid_version.realtime_period
+            + evaluation_config.max_propagation_latency.timedelta
+        ):
+            # This flight should not have been observed (it was too far in the past)
+            participants = observer_participants
+            if (
+                expected_flight.uss_participant_id not in verified_sps
+                or not participants
+            ):
+                participants.append(expected_flight.uss_participant_id)
+            with test_scenario.check("Lingering flight", participants) as check:
+                if expected_flight.flight.injection_id in mapping_by_injection_id:
+                    check.record_failed(
+                        summary="Flight still observed long after it ended",
+                        details=f"Flight {expected_flight.flight.injection_id} injected into {expected_flight.uss_participant_id} was observed by {observer_participant_id} at {t_response.isoformat()} after it ended at {t_max.isoformat()}",
+                        severity=Severity.Medium,
+                        query_timestamps=query_timestamps
+                        + [expected_flight.query_timestamp],
+                    )
+                    continue
+        elif (
+            t_min + evaluation_config.max_propagation_latency.timedelta
+            < t_initiated
+            < t_max
+            + rid_version.realtime_period
+            - evaluation_config.max_propagation_latency.timedelta
+        ):
+            # This flight should definitely have been observed
+            participants = observer_participants
+            if (
+                expected_flight.uss_participant_id not in verified_sps
+                or not participants
+            ):
+                participants.append(expected_flight.uss_participant_id)
+            with test_scenario.check("Missing flight", participants) as check:
+                if expected_flight.flight.injection_id not in mapping_by_injection_id:
+                    check.record_failed(
+                        summary="Expected flight not observed",
+                        details=f"Flight {expected_flight.flight.injection_id} injected into {expected_flight.uss_participant_id} was not found in the observation by {observer_participant_id} at {t_response.isoformat()} even though it should have been active from {t_min.isoformat()} to {t_max.isoformat()}",
+                        severity=Severity.Medium,
+                        query_timestamps=query_timestamps
+                        + [expected_flight.query_timestamp],
+                    )
+                    continue
+            # TODO: observe flight details
+        elif t_initiated > t_min:
+            # If this flight was not observed, there may be propagation latency
+            pass  # TODO: findings propagation latency

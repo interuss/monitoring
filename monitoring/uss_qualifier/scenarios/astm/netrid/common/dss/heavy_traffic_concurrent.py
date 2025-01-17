@@ -19,7 +19,6 @@ from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
@@ -163,7 +162,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 if fetched_isa.status_code != 200:
                     main_check.record_failed(
                         f"ISA retrieval query failed for {isa_id}",
-                        severity=Severity.High,
                         details=f"ISA retrieval query for {isa_id} yielded code {fetched_isa.status_code}",
                     )
 
@@ -312,7 +310,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 if changed_isa.query.response.code != 200:
                     main_check.record_failed(
                         f"ISA creation failed for {isa_id}",
-                        severity=Severity.High,
                         details=f"ISA creation for {isa_id} returned {changed_isa.query.response.code}",
                     )
                 else:
@@ -347,7 +344,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                     if isa_id not in isas.isas.keys():
                         sub_check.record_failed(
                             f"ISAs search did not return ISA {isa_id} that was just created",
-                            severity=Severity.High,
                             details=f"Search in area {self._isa_area} returned ISAs {isas.isas.keys()} and is missing some of the created ISAs",
                             query_timestamps=[isas.dss_query.query.request.timestamp],
                         )
@@ -387,7 +383,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 if deleted_isa.query.response.code != 200:
                     main_check.record_failed(
                         f"ISA deletion failed for {isa_id}",
-                        severity=Severity.High,
                         details=f"ISA deletion for {isa_id} returned {deleted_isa.query.response.code}",
                     )
 
@@ -421,7 +416,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 if fetched_isa.status_code != 404:
                     check.record_failed(
                         f"ISA retrieval succeeded for {isa_id}",
-                        severity=Severity.High,
                         details=f"ISA retrieval for {isa_id} returned {fetched_isa.status_code}",
                         query_timestamps=[fetched_isa.query.request.timestamp],
                     )
@@ -442,7 +436,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 if isa_id in isas.isas.keys():
                     check.record_failed(
                         f"ISAs search returned deleted ISA {isa_id}",
-                        severity=Severity.High,
                         details=f"Search in area {self._isa_area} returned ISAs {isas.isas.keys()} that contained some of the ISAs we had previously deleted.",
                         query_timestamps=[isas.dss_query.query.request.timestamp],
                     )
