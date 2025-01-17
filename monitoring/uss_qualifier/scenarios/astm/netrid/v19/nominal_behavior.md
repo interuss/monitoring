@@ -18,15 +18,37 @@ A set of [`NetRIDServiceProviders`](../../../../resources/netrid/service_provide
 
 A set of [`NetRIDObserversResource`](../../../../resources/netrid/observers.py) to be tested via checking their observations of the NetRID system and comparing the observations against expectations.  An observer generally represents a "Display Application", in ASTM F3411 terminology.  This scenario requires at least one observer.
 
+### mock_uss
+
+(Optional) MockUSSResource for testing notification delivery. If left unspecified, the scenario will not run any notification-related checks.
+
 ### evaluation_configuration
 
 This [`EvaluationConfigurationResource`](../../../../resources/netrid/evaluation.py) defines how to gauge success when observing the injected flights.
+
+### id_generator
+
+[`IDGeneratorResource`](../../../../resources/interuss/id_generator.py) providing the Subscription ID for this scenario.
 
 ### dss_pool
 
 If specified, uss_qualifier will act as a Display Provider and check a DSS instance from this [`DSSInstanceResource`](../../../../resources/astm/f3411/dss.py) for appropriate identification service areas and then query the corresponding USSs with flights using the same session.
 
+## Setup test case
+
+### [Clean workspace test step](./dss/test_steps/clean_workspace.md)
+
 ## Nominal flight test case
+
+### Mock USS Subscription test step
+
+Before injecting the test flights, a subscription is created on the DSS for the configured mock USS to allow it
+to validate that Servie Providers under test correctly send out notifications.
+
+#### ⚠️ Subscription creation succeeds check
+
+As per **[astm.f3411.v19.DSS0030,c](../../../../requirements/astm/f3411/v19.md)**, the DSS API must allow callers to create a subscription with either onr or both of the
+start and end time missing, provided all the required parameters are valid.
 
 ### Injection test step
 
@@ -120,6 +142,25 @@ Per **[interuss.automated_testing.rid.observation.UniqueFlights](../../../../req
 
 Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the call for flight details is expected to succeed since a valid ID was provided by uss_qualifier.
 
+### Validate Mock USS received notification test step
+
+This test step verifies that the mock_uss for which a subscription was registered before flight injection properly received a notification from each Service Provider
+at which a flight was injected.
+
+#### ℹ️ Service Provider issued a notification check
+
+This check validates that each Service Provider at which a test flight was injected properly notified the mock_uss.
+
+ASTM F3411 V19 has no explicit requirement for this check, so failing it will raise an informational warning.
+
+#### ⚠️ Service Provider notification was received within delay check
+
+This check validates that the notification from each Service Provider was received by the mock_uss within the specified delay.
+
+ASTM F3411 V19 has no explicit requirement for this check, so failing it will raise an informational warning.
+
+This check will be failed if it takes longer than 3 seconds between the injection of the flight and the notification being received by the mock_uss.
+
 ## Cleanup
 
 The cleanup phase of this test scenario attempts to remove injected data from all SPs.
@@ -127,3 +168,7 @@ The cleanup phase of this test scenario attempts to remove injected data from al
 ### ⚠️ Successful test deletion check
 
 **[interuss.automated_testing.rid.injection.DeleteTestSuccess](../../../../requirements/interuss/automated_testing/rid/injection.md)**
+
+### [Clean Subscriptions](./dss/test_steps/clean_workspace.md)
+
+Remove all created subscriptions from the DSS.
