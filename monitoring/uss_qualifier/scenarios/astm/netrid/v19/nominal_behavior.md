@@ -28,41 +28,17 @@ If specified, uss_qualifier will act as a Display Provider and check a DSS insta
 
 ## Nominal flight test case
 
-### Injection test step
+### [Injection test step](./fragments/flight_injection.md)
 
 In this step, uss_qualifier injects a single nominal flight into each SP under test, usually with a start time in the future.  Each SP is expected to queue the provided telemetry and later simulate that telemetry coming from an aircraft at the designated timestamps.
 
-#### 🛑 Successful injection check
-
-Per **[interuss.automated_testing.rid.injection.UpsertTestSuccess](../../../../requirements/interuss/automated_testing/rid/injection.md)**, the injection attempt of the valid flight should succeed for every NetRID Service Provider under test.
-
-**[astm.f3411.v19.NET0500](../../../../requirements/astm/f3411/v19.md)** requires a Service Provider to provide a persistently supported test instance of their implementation.
-This check will fail if the flight was not successfully injected.
-
-#### Valid flight check
-
-TODO: Validate injected flights, especially to make sure they contain the specified injection IDs
-
-Per **[interuss.automated_testing.rid.injection.UpsertTestResult](../../../../requirements/interuss/automated_testing/rid/injection.md)**, the NetRID Service Provider under test should only make valid modifications to the injected flights.  This includes:
-* A flight with the specified injection ID must be returned.
-
-#### 🛑 Identifiable flights check
-
-This particular test requires each flight to be uniquely identifiable by its 2D telemetry position; the same (lat, lng) pair may not appear in two different telemetry points, even if the two points are in different injected flights.  This should generally be achieved by injecting appropriate data.
-
-### Service Provider polling test step
+### [Service Provider polling test step](./fragments/sp_polling.md)
 
 If a DSS was provided to this test scenario, uss_qualifier acts as a Display Provider to query Service Providers under test in this step.
-
-#### ⚠️ ISA query check
-
-**[interuss.f3411.dss_endpoints.SearchISAs](../../../../requirements/interuss/f3411/dss_endpoints.md)** requires a USS providing a DSS instance to implement the DSS endpoints of the OpenAPI specification.  If uss_qualifier is unable to query the DSS for ISAs, this check will fail.
 
 #### ⚠️ Area too large check
 
 **[astm.f3411.v19.NET0250](../../../../requirements/astm/f3411/v19.md)** requires that a NetRID Service Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received, then this check will fail.
-
-#### [Flight presence checks](./display_data_evaluator_flight_presence.md)
 
 #### ⚠️ Flights data format check
 
@@ -81,10 +57,6 @@ If a DSS was provided to this test scenario, uss_qualifier acts as a Display Pro
 This implies that any recent position outside the area must be either preceded or followed by a position inside the area.
 
 (This check validates NET0270 b and c).
-
-#### ⚠️ Successful flight details query check
-
-**[astm.f3411.v19.NET0710,2](../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../requirements/astm/f3411/v19.md)** require a Service Provider to implement the GET flight details endpoint.  This check will fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
 
 #### ⚠️ Flight details data format check
 
