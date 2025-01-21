@@ -228,7 +228,6 @@ class Misbehavior(GenericTestScenario):
                 if uss_flights_query.status_code not in (400, 413):
                     check.record_failed(
                         summary="Did not receive expected error code for too-large area request",
-                        severity=Severity.High,
                         details=f"{participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The expected error code is 413, but instead code {uss_flights_query.status_code} was received.",
                     )
 
@@ -238,7 +237,6 @@ class Misbehavior(GenericTestScenario):
                 ):
                     check.record_failed(
                         summary="Received Remote ID data while an empty response was expected because the requested area was too large",
-                        severity=Severity.High,
                         details=f"{participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The Remote ID data shall be empty, instead, the following payload was received: {uss_flights_query.query.response.content}",
                     )
 
