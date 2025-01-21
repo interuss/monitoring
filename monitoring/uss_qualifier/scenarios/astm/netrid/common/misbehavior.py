@@ -20,7 +20,9 @@ from monitoring.uss_qualifier.scenarios.astm.netrid import (
     injection,
     display_data_evaluator,
 )
-from monitoring.uss_qualifier.scenarios.astm.netrid.display_data_evaluator import TelemetryMapping
+from monitoring.uss_qualifier.scenarios.astm.netrid.display_data_evaluator import (
+    TelemetryMapping,
+)
 from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection import (
     InjectedFlightCollection,
 )
@@ -33,6 +35,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
 )
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
+
 
 class Misbehavior(GenericTestScenario):
     """
@@ -85,27 +88,39 @@ class Misbehavior(GenericTestScenario):
                 - 100,  # valid diagonal required for sps urls discovery
             ],
             self._evaluate_and_test_too_large_area_requests,
-            dict()
+            dict(),
         )
         self.end_test_step()
 
         self.begin_test_step("Unauthenticated requests")
-        self._poll_during_flights([
+        self._poll_during_flights(
+            [
                 self._rid_version.max_diagonal_km * 1000 + 500,  # too large
                 self._rid_version.max_diagonal_km * 1000 - 100,  # clustered
                 self._rid_version.max_details_diagonal_km * 1000 - 100,  # details
-            ], self._evaluate_and_test_authentication,
-        {"auth": auth.NoAuth(aud_override=""), "check_name": "Missing credentials", "credentials_type_description": "no"}
+            ],
+            self._evaluate_and_test_authentication,
+            {
+                "auth": auth.NoAuth(aud_override=""),
+                "check_name": "Missing credentials",
+                "credentials_type_description": "no",
+            },
         )
         self.end_test_step()
 
         self.begin_test_step("Incorrectly authenticated requests")
-        self._poll_during_flights([
+        self._poll_during_flights(
+            [
                 self._rid_version.max_diagonal_km * 1000 + 500,  # too large
                 self._rid_version.max_diagonal_km * 1000 - 100,  # clustered
                 self._rid_version.max_details_diagonal_km * 1000 - 100,  # details
-        ], self._evaluate_and_test_authentication,
-          {"auth": auth.InvalidTokenSignatureAuth(), "check_name": "Invalid credentials", "credentials_type_description": "invalid"}
+            ],
+            self._evaluate_and_test_authentication,
+            {
+                "auth": auth.InvalidTokenSignatureAuth(),
+                "check_name": "Invalid credentials",
+                "credentials_type_description": "invalid",
+            },
         )
         self.end_test_step()
 
@@ -120,8 +135,10 @@ class Misbehavior(GenericTestScenario):
     def _poll_during_flights(
         self,
         diagonals_m: List[float],
-        evaluation_func: Callable[[LatLngRect, Unpack[dict[str, auth.AuthAdapter | str]]], Set[str]],
-        evaluation_kwargs: dict[str, auth.AuthAdapter | str]
+        evaluation_func: Callable[
+            [LatLngRect, Unpack[dict[str, auth.AuthAdapter | str]]], Set[str]
+        ],
+        evaluation_kwargs: dict[str, auth.AuthAdapter | str],
     ):
         """
         Poll until every injected flights have been observed.
@@ -157,7 +174,6 @@ class Misbehavior(GenericTestScenario):
             diagonals_m,
             poll_func,
         )
-
 
     def _fetch_flights_from_dss(self, rect: LatLngRect):
         # We grab all flights from the SPs (which we know how to reach by first querying the DSS).
