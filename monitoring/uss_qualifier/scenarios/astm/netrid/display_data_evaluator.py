@@ -495,7 +495,6 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     summary="Did not receive expected error code for too-large area request",
                     details=f"{observer.participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The expected error code is 413, but instead code {query.status_code} was received.",
-                    severity=Severity.High,
                     query_timestamps=[query.request.timestamp],
                 )
 
@@ -1117,7 +1116,6 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     summary="Flight discovered using too-large area request",
                     details=f"{mapping.injected_flight.uss_participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal} km which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km} km.  The expected error code is 413, but instead a valid response containing the expected flight was received.",
-                    severity=Severity.High,
                     query_timestamps=[
                         mapping.observed_flight.query.query.request.timestamp
                     ],
