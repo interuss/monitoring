@@ -87,7 +87,7 @@ This step issues a search for active ISAs in the area of the previously deleted 
 
 The ISA search parameters are valid, as such the search should be successful. If the request is not successful, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
-#### 🛑 ISAs not returned by search check
+#### ⚠️ ISAs not returned by search check
 
 The ISA search area parameter cover the resource ISA, but it has been previously deleted, as such the ISA should not be returned by the search. If it is returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
