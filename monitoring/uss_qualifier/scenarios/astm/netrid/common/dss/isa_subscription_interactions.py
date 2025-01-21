@@ -141,7 +141,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             ]:
                 check.record_failed(
                     summary="Subscription response does not include the freshly created ISA",
-                    severity=Severity.High,
                     details=f"The subscription created for the area {self._isa_area} is expected to contain the ISA created for this same area. The returned subscription did not mention it.",
                     query_timestamps=[
                         created_isa.dss_query.query.request.timestamp,
@@ -156,7 +155,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             if created_subscription.subscription.notification_index != 0:
                 check.record_failed(
                     summary="Subscription notification_index is not 0",
-                    severity=Severity.High,
                     details=f"The subscription created for the area {self._isa_area} is expected to have a notification_index of 0. The returned subscription has a notification_index of {created_subscription.subscription.notification_index}.",
                     query_timestamps=[created_subscription.query.request.timestamp],
                 )
@@ -192,7 +190,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             if created_subscription.subscription.id not in subs_to_mutated_isa.keys():
                 check.record_failed(
                     summary="ISA mutation response does not contain expected subscription ID",
-                    severity=Severity.High,
                     details="Mutating an ISA to which a subscription was made, the DSS failed to return the subscription ID in the response.",
                     query_timestamps=[
                         created_isa.dss_query.query.request.timestamp,
@@ -213,7 +210,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 if sub_to_mutated_isa.notification_index <= 0:
                     check.record_failed(
                         summary="Subscription notification_index has not been increased",
-                        severity=Severity.High,
                         details=f"The subscription created for the area {self._isa_area} is expected to have a notification_index of 1 or more. The returned subscription has a notification_index of {subs_to_mutated_isa[created_subscription.subscription.id].notification_index}.",
                         query_timestamps=[created_subscription.query.request.timestamp],
                     )
@@ -247,7 +243,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             if created_subscription.subscription.id not in subs_to_deleted_isa:
                 check.record_failed(
                     summary="ISA deletion response does not contain expected subscription ID",
-                    severity=Severity.High,
                     details="Deleting an ISA to which a subscription was made, the DSS failed to return the subscription ID in the response.",
                     query_timestamps=[
                         created_isa.dss_query.query.request.timestamp,
@@ -270,8 +265,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 if not notification.success:
                     check.record_failed(
                         "Could not notify ISA subscriber",
-                        Severity.Medium,
-                        f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
+                        details=f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
                         query_timestamps=[notification.query.request.timestamp],
                     )
 
@@ -289,7 +283,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 ):
                     check.record_failed(
                         summary="Subscription notification_index has not been incremented",
-                        severity=Severity.High,
                         details=f"The subscription created for the area {self._isa_area} is expected to have its notification increased after the subscription was deleted."
                         f"The returned subscription has a notification_index of {subs_after_deletion.notification_index}, whilte the previous notification_index for that subscription was {sub_to_mutated_isa.notification_index}",
                         query_timestamps=[created_subscription.query.request.timestamp],
@@ -357,7 +350,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             if self._isa_id not in [isa.id for isa in mutated_subscription.isas]:
                 check.record_failed(
                     summary="Subscription response does not include the freshly created ISA",
-                    severity=Severity.High,
                     details=f"The subscription created for the area {self._isa_area} is expected to contain the ISA created for this same area. The returned subscription did not mention it.",
                     query_timestamps=[
                         created_isa.dss_query.query.request.timestamp,
@@ -372,7 +364,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             if created_subscription.subscription.notification_index != 0:
                 check.record_failed(
                     summary="Subscription notification_index is not 0",
-                    severity=Severity.High,
                     details=f"The subscription created for the area {self._isa_area} is expected to have a notification_index of 0. The returned subscription has a notification_index of {created_subscription.subscription.notification_index}.",
                     query_timestamps=[created_subscription.query.request.timestamp],
                 )
@@ -408,7 +399,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             if created_subscription.subscription.id not in subs_to_mutated_isa.keys():
                 check.record_failed(
                     summary="ISA mutation response does not contain expected subscription ID",
-                    severity=Severity.High,
                     details="Mutating an ISA to which a subscription was made and then subsequently moved to the ISA's boundary,"
                     " the DSS failed to return the subscription ID in the response.",
                     query_timestamps=[
@@ -431,7 +421,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 if sub_to_mutated_isa.notification_index <= 0:
                     check.record_failed(
                         summary="Subscription notification_index has not been increased",
-                        severity=Severity.High,
                         details=f"The subscription created for the area {self._isa_area} is expected to have a notification_index of 1 or more. The returned subscription has a notification_index of {subs_to_mutated_isa[created_subscription.subscription.id].notification_index}.",
                         query_timestamps=[created_subscription.query.request.timestamp],
                     )
@@ -465,7 +454,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             if created_subscription.subscription.id not in subs_to_deleted_isa:
                 check.record_failed(
                     summary="ISA deletion response does not contain expected subscription ID",
-                    severity=Severity.High,
                     details="Deleting an ISA to which a subscription was made, the DSS failed to return the subscription ID in the response.",
                     query_timestamps=[
                         created_isa.dss_query.query.request.timestamp,
@@ -486,8 +474,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                     if not notification.success:
                         check.record_failed(
                             "Could not notify ISA subscriber",
-                            Severity.Medium,
-                            f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
+                            details=f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
                             query_timestamps=[notification.query.request.timestamp],
                         )
 
@@ -505,7 +492,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 ):
                     check.record_failed(
                         summary="Subscription notification_index has not been incremented",
-                        severity=Severity.High,
                         details=f"The subscription created for the area {self._isa_area} is expected to have its notification increased after the subscription was deleted."
                         f"The returned subscription has a notification_index of {subs_after_deletion.notification_index}, whilte the previous notification_index for that subscription was {sub_to_mutated_isa.notification_index}",
                         query_timestamps=[created_subscription.query.request.timestamp],
