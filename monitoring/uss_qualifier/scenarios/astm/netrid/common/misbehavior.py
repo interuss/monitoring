@@ -206,12 +206,6 @@ class Misbehavior(GenericTestScenario):
         invalid_rect = rect.expanded(scale)
         diagonal_km = geo.get_latlngrect_diagonal_km(invalid_rect)
         if diagonal_km > self._rid_version.max_diagonal_km:
-
-            self.record_note(
-                f"{participant_id}/{injection_id}/area_too_large_query",
-                f"Will attempt to search an area too large at {flights_url} - (diagonal: {diagonal_km} km)",
-            )
-
             with self.check("Area too large", [participant_id]) as check:
 
                 # check uss flights query
