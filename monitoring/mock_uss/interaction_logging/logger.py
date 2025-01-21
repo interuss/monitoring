@@ -80,7 +80,7 @@ def interaction_log_after_request(response):
     if (
         "/uss/v1/" in flask.request.url
         or "/uss/identification_service_areas/" in flask.request.url
-        or "/uss/flights/" in flask.request.url
+        or "/uss/flights" in flask.request.url
     ):
         query = describe_flask_query(flask.request, response, elapsed_s)
         log_interaction(QueryDirection.Incoming, query)

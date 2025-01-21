@@ -644,6 +644,17 @@ def egm96_geoid_offset(p: s2sphere.LatLng) -> float:
     return _egm96.ev(-lat, lng)
 
 
+def center_of_mass(in_points: List[LatLng]) -> LatLng:
+    """Compute the center of mass of a polygon defined by a list of points."""
+    if len(in_points) == 0:
+        raise ValueError("Cannot compute center of mass of empty polygon")
+
+    return LatLng.from_degrees(
+        sum([point.lat().degrees for point in in_points]) / len(in_points),
+        sum([point.lng().degrees for point in in_points]) / len(in_points),
+    )
+
+
 def generate_slight_overlap_area(in_points: List[LatLng]) -> List[LatLng]:
     """
     Takes a list of LatLng points and returns a list of LatLng points that represents
@@ -656,10 +667,7 @@ def generate_slight_overlap_area(in_points: List[LatLng]) -> List[LatLng]:
     overlap_corner = in_points[0]  # the spot that will have a tiny overlap
 
     # Compute the center of mass of the input polygon
-    center = LatLng.from_degrees(
-        sum([point.lat().degrees for point in in_points]) / len(in_points),
-        sum([point.lng().degrees for point in in_points]) / len(in_points),
-    )
+    center = center_of_mass(in_points)
 
     delta_lat = center.lat().degrees - overlap_corner.lat().degrees
     delta_lng = center.lng().degrees - overlap_corner.lng().degrees
