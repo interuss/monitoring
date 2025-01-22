@@ -175,7 +175,7 @@ class Misbehavior(GenericTestScenario):
             poll_func,
         )
 
-    def _fetch_flights_from_dss(self, rect: LatLngRect):
+    def _fetch_flights_from_dss(self, rect: LatLngRect) -> dict[str, TelemetryMapping]:
         # We grab all flights from the SPs (which we know how to reach by first querying the DSS).
         # This is authenticated and is expected to succeed
         sp_observation = rid.all_flights(
@@ -221,34 +221,32 @@ class Misbehavior(GenericTestScenario):
         scale = LatLng(0.01, 0.001)
         invalid_rect = rect.expanded(scale)
         diagonal_km = geo.get_latlngrect_diagonal_km(invalid_rect)
-        if diagonal_km > self._rid_version.max_diagonal_km:
-            with self.check("Area too large", [participant_id]) as check:
+        with self.check("Area too large", [participant_id]) as check:
+            # check uss flights query
+            uss_flights_query = rid.uss_flights(
+                flights_url,
+                invalid_rect,
+                True,
+                self._rid_version,
+                session,
+                participant_id,
+            )
+            self.record_query(uss_flights_query.query)
 
-                # check uss flights query
-                uss_flights_query = rid.uss_flights(
-                    flights_url,
-                    invalid_rect,
-                    True,
-                    self._rid_version,
-                    session,
-                    participant_id,
+            if uss_flights_query.status_code not in (400, 413):
+                check.record_failed(
+                    summary="Did not receive expected error code for too-large area request",
+                    details=f"{participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The expected error code is 400 or 413, but instead code {uss_flights_query.status_code} was received.",
                 )
-                self.record_query(uss_flights_query.query)
 
-                if uss_flights_query.status_code not in (400, 413):
-                    check.record_failed(
-                        summary="Did not receive expected error code for too-large area request",
-                        details=f"{participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The expected error code is 400 or 413, but instead code {uss_flights_query.status_code} was received.",
-                    )
-
-                if (
-                    uss_flights_query.flights is not None
-                    and len(uss_flights_query.flights) != 0
-                ):
-                    check.record_failed(
-                        summary="Received Remote ID data while an empty response was expected because the requested area was too large",
-                        details=f"{participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The Remote ID data shall be empty, instead, the following payload was received: {uss_flights_query.query.response.content}",
-                    )
+            if (
+                uss_flights_query.flights is not None
+                and len(uss_flights_query.flights) != 0
+            ):
+                check.record_failed(
+                    summary="Received Remote ID data while an empty response was expected because the requested area was too large",
+                    details=f"{participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The Remote ID data shall be empty, instead, the following payload was received: {uss_flights_query.query.response.content}",
+                )
 
     def _evaluate_and_test_authentication(
         self,
