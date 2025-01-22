@@ -481,6 +481,15 @@ def make_latlng_rect(area) -> s2sphere.LatLngRect:
         )
 
 
+def rect_str(rect: s2sphere.LatLngRect) -> str:
+    return "({}, {})-({}, {})".format(
+        rect.lo().lat().degrees,
+        rect.lo().lng().degrees,
+        rect.hi().lat().degrees,
+        rect.hi().lng().degrees,
+    )
+
+
 def shift_rect_lng(rect: s2sphere.LatLngRect, shift: float) -> s2sphere.LatLngRect:
     """Shift a rect's longitude by the given amount of degrees"""
     return s2sphere.LatLngRect(
