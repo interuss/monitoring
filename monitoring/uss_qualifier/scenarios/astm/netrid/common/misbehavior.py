@@ -238,7 +238,7 @@ class Misbehavior(GenericTestScenario):
                 if uss_flights_query.status_code not in (400, 413):
                     check.record_failed(
                         summary="Did not receive expected error code for too-large area request",
-                        details=f"{participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The expected error code is 413, but instead code {uss_flights_query.status_code} was received.",
+                        details=f"{participant_id} was queried for flights in {geo.rect_str(rect)} with a diagonal of {diagonal_km} which is larger than the maximum allowed diagonal of {self._rid_version.max_diagonal_km}.  The expected error code is 400 or 413, but instead code {uss_flights_query.status_code} was received.",
                     )
 
                 if (

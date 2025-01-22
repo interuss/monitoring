@@ -45,7 +45,7 @@ This step will attempt to search for flights in a rectangular area with a diagon
 
 #### ⚠️ Area too large check
 
-**[astm.f3411.v22a.NET0250](../../../../requirements/astm/f3411/v22a.md)** requires that a NetRID Service Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 413 error code is not received or the response contains Remote ID data, then this check will fail.
+**[astm.f3411.v22a.NET0250](../../../../requirements/astm/f3411/v22a.md)** requires that a NetRID Service Provider rejects a request for a very large view area with a diagonal greater than *NetMaxDisplayAreaDiagonal*.  If such a large view is requested and a 400 or 413 error code is not received or the response contains Remote ID data, then this check will fail.
 
 ### Unauthenticated requests test step
 
