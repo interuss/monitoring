@@ -178,6 +178,7 @@ class Misbehavior(GenericTestScenario):
     def _fetch_flights_from_dss(self, rect: LatLngRect) -> dict[str, TelemetryMapping]:
         # We grab all flights from the SPs (which we know how to reach by first querying the DSS).
         # This is authenticated and is expected to succeed
+        # TODO: Add the following requests to the documentation. Possibly split it as a test step.
         sp_observation = rid.all_flights(
             rect,
             include_recent_positions=True,
