@@ -263,24 +263,7 @@ class Misbehavior(GenericTestScenario):
         :returns: set of injection IDs that were encountered and tested
         """
 
-        # We grab all flights from the SP's (which we know how to reach by first querying the DSS).
-        # This is authenticated and is expected to succeed
-        sp_observation = rid.all_flights(
-            rect,
-            include_recent_positions=True,
-            get_details=True,
-            rid_version=self._rid_version,
-            session=self._dss.client,
-            dss_participant_id=self._dss.participant_id,
-        )
-
-        mapping_by_injection_id = (
-            display_data_evaluator.map_fetched_to_injected_flights(
-                self._injected_flights, list(sp_observation.uss_flight_queries.values())
-            )
-        )
-        for q in sp_observation.queries:
-            self.record_query(q)
+        mapping_by_injection_id = self._fetch_flights_from_dss(rect)
 
         for injection_id, mapping in mapping_by_injection_id.items():
             participant_id = mapping.injected_flight.uss_participant_id
