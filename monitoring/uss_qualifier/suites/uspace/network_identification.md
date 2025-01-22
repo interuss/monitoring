@@ -546,7 +546,7 @@
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">UpsertTestResult</a></td>
     <td>TODO</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">UpsertTestSuccess</a></td>
