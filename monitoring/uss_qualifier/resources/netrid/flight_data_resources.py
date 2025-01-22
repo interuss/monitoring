@@ -1,11 +1,11 @@
+import copy
 import json
-from datetime import timedelta
-from typing import List, Optional
 import uuid
+from datetime import timedelta
+from typing import List, Optional, Self
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
-from monitoring.uss_qualifier.resources.files import load_dict, load_content
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     TestFlightDetails,
     RIDAircraftState,
@@ -14,7 +14,7 @@ from uas_standards.interuss.automated_testing.rid.v1.injection import (
 from monitoring.monitorlib.rid_automated_testing.injection_api import (
     TestFlight,
 )
-from monitoring.uss_qualifier.resources.resource import Resource
+from monitoring.uss_qualifier.resources.files import load_dict, load_content
 from monitoring.uss_qualifier.resources.netrid.flight_data import (
     FlightDataSpecification,
     FlightRecordCollection,
@@ -25,6 +25,7 @@ from monitoring.uss_qualifier.resources.netrid.simulation.adjacent_circular_flig
 from monitoring.uss_qualifier.resources.netrid.simulation.kml_flights import (
     get_flight_records,
 )
+from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class FlightDataResource(Resource[FlightDataSpecification]):
@@ -87,6 +88,25 @@ class FlightDataResource(Resource[FlightDataSpecification]):
             )
 
         return test_flights
+
+    def truncate_flights_duration(self, duration: timedelta) -> Self:
+        """
+        Ensures that the injected flight data will only contain telemetry for at most the specified duration.
+
+        Returns a new, updated instance. The original instance remains unchanged.
+
+        Intended to be used for simulating the disconnection of a networked UAS.
+        """
+        self_copy = copy.deepcopy(self)
+        for flight in self_copy.flight_collection.flights:
+            latest_allowed_end = flight.reference_time.datetime + duration
+            # Keep only the states within the allowed duration
+            flight.states = [
+                state
+                for state in flight.states
+                if state.timestamp.datetime <= latest_allowed_end
+            ]
+        return self_copy
 
 
 class FlightDataStorageSpecification(ImplicitDict):
