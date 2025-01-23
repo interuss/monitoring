@@ -46,6 +46,17 @@ If the Geodetic Vertical Accuracy value exposed by the SP API is missing or inva
 If the Geodetic Vertical Accuracy value exposed by the SP API is inconsistent with the injected value this check will fail per:
 **[astm.f3411.v19.NET0260,Table1,15](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the valid injected value.
 
+## ⚠️ Speed Accuracy is exposed correctly check
+
+If the Speed Accuracy value exposed by the SP API is missing or invalid this check will fail per:
+**[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)** because the SP violates the SP API contract;
+**[astm.f3411.v19.NET0260,Table1,17](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Speed Accuracy is consistent with injected value check
+
+If the Speed Accuracy value exposed by the SP API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v19.NET0260,Table1,17](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the valid injected value.
+
 ## Service Provider altitude check
 
 **[astm.f3411.v19.NET0260,Table1,11](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had known altitudes, but the altitude reported by the Service Provider did not match those known altitudes.
