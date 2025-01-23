@@ -789,6 +789,9 @@ class RIDObservationEvaluator(object):
         )
 
         for mapping in mappings.values():
+            injected_telemetry = mapping.injected_flight.flight.telemetry[
+                mapping.telemetry_index
+            ]
             participant_id = mapping.injected_flight.uss_participant_id
             injected_flight = mapping.injected_flight.flight
             observed_flight = mapping.observed_flight.flight
@@ -836,6 +839,7 @@ class RIDObservationEvaluator(object):
 
             # Check flight consistency with common data dictionary
             self._common_dictionary_evaluator.evaluate_sp_flight(
+                injected_telemetry,
                 injected_flight,
                 observed_flight,
                 participant_id,
