@@ -1,6 +1,7 @@
 import datetime
 import math
-from typing import List, Optional
+from typing import List, Optional, TypeVar, Any
+from collections.abc import Callable
 
 from arrow import ParserError
 from implicitdict import StringBasedDateTime
@@ -26,15 +27,29 @@ from monitoring.monitorlib.fetch.rid import (
     FlightDetails,
 )
 from monitoring.monitorlib.fetch.rid import Flight, Position
-from monitoring.monitorlib.geo import validate_lat, validate_lng, Altitude, LatLngPoint
+from monitoring.monitorlib.geo import (
+    validate_lat,
+    validate_lng,
+    Altitude,
+    LatLngPoint,
+)
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
+from monitoring.uss_qualifier.scenarios.scenario import (
+    PendingCheck,
+)
+
+T = TypeVar("T")
+
 
 class RIDCommonDictionaryEvaluator(object):
+
+    generics_evaluators = ["_evaluate_ua_type", "_evaluate_timestamp_accuracy"]
+
     def __init__(
         self,
         config: EvaluationConfiguration,
@@ -47,6 +62,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def evaluate_sp_flight(
         self,
+        injected_telemetry: injection.RIDAircraftState,
         injected_flight: injection.TestFlight,
         observed_flight: Flight,
         participant_id: ParticipantID,
@@ -54,13 +70,15 @@ class RIDCommonDictionaryEvaluator(object):
     ):
         """Implements fragment documented in `common_dictionary_evaluator_sp_flight.md`."""
 
-        self._evaluate_ua_type(
-            injected_flight,
-            observed_flight,
-            None,
-            participant_id,
-            query_timestamp,
-        )
+        for generics_evaluator in self.generics_evaluators:
+            getattr(self, generics_evaluator)(
+                injected_telemetry=injected_telemetry,
+                injected_flight=injected_flight,
+                sp_observed_flight=observed_flight,
+                dp_observed_flight=None,
+                participant=participant_id,
+                query_timestamp=query_timestamp,
+            )
 
         self._evaluate_operational_status(
             observed_flight.operational_status,
@@ -77,15 +95,17 @@ class RIDCommonDictionaryEvaluator(object):
     ):
         """Implements fragment documented in `common_dictionary_evaluator_dp_flight.md`."""
 
-        self._evaluate_ua_type(
-            injected_flight,
-            None,
-            observed_flight,
-            participants[
-                0
-            ],  # TODO: flatten 'participants', it always has a single value
-            query_timestamp,
-        )
+        for generics_evaluator in self.generics_evaluators:
+            getattr(self, generics_evaluator)(
+                injected_telemetry=injected_telemetry,
+                injected_flight=injected_flight,
+                sp_observed_flight=None,
+                dp_observed_flight=observed_flight,
+                participant=participants[
+                    0
+                ],  # TODO: flatten 'participants', it always has a single value
+                query_timestamp=query_timestamp,
+            )
 
         # If the state is present, we do validate its content,
         # but its presence is optional
@@ -706,17 +726,129 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_ua_type(
         self,
+        query_timestamp: datetime.datetime,
+        **generic_kwargs,
+    ):
+        """
+        Evaluates UA type. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        See as well `common_dictionary_evaluator.md`.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        def value_validator(val: injection.UAType) -> injection.UAType:
+            return injection.UAType(val)
+
+        def observed_value_validator(check, observed_val: injection.UAType):
+
+            if (
+                self._rid_version == RIDVersion.f3411_19
+                and observed_val == injection.UAType.HybridLift
+            ) or (
+                self._rid_version == RIDVersion.f3411_22a
+                and observed_val == injection.UAType.VTOL
+            ):
+                check.record_failed(
+                    "Timestamp accuracy is inconsistent with RID version",
+                    details=f"USS returned the Timestamp accuracy {observed_val} which is not supported by the RID version used ({self._rid_version}).",
+                    query_timestamps=[query_timestamp],
+                )
+
+        def value_comparator(
+            v1: Optional[injection.UAType], v2: Optional[injection.UAType]
+        ) -> bool:
+            equivalent = {injection.UAType.HybridLift, injection.UAType.VTOL}
+
+            if v1 in equivalent:
+                return v2 in equivalent
+
+            return v1 == v2
+
+        self._generic_evaluator(
+            "aircraft_type",
+            "aircraft_type",
+            "aircraft_type",
+            "UA type",
+            value_validator,
+            observed_value_validator,
+            False,
+            injection.UAType.NotDeclared,
+            value_comparator,
+            query_timestamp=query_timestamp,
+            **generic_kwargs,
+        )
+
+    def _evaluate_timestamp_accuracy(self, **generic_kwargs):
+        """
+        Evaluates Timestamp accuracy. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        See as well `common_dictionary_evaluator.md`.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        TIMESTAMP_ACCURACY_PRECISION = 0.05
+
+        def value_validator(val: float) -> float:
+            if val < 0:
+                raise ValueError("Timestamp accurary is less than 0")
+            return val
+
+        def value_comparator(v1: Optional[float], v2: Optional[float]) -> bool:
+
+            if v1 is None or v2 is None:
+                return False
+
+            return abs(v1 - v2) < TIMESTAMP_ACCURACY_PRECISION
+
+        self._generic_evaluator(
+            "telemetry.timestamp_accuracy",
+            "raw.current_state.timestamp_accuracy",
+            "current_state.timestamp_accuracy",
+            "Timestamp accuracy",
+            value_validator,
+            None,
+            True,
+            None,
+            value_comparator,
+            **generic_kwargs,
+        )
+
+    def _generic_evaluator(
+        self,
+        injected_field_name: str,
+        sp_field_name: str,
+        dp_field_name: str,
+        field_human_name: str,
+        value_validator: Optional[Callable[[T], T]],
+        observed_value_validator: Optional[Callable[[PendingCheck, T], None]],
+        injection_required_field: bool,
+        unknown_value: Optional[T],
+        value_comparator: Callable[[Optional[T], Optional[T]], bool],
+        injected_telemetry: injection.RIDAircraftState,
         injected_flight: injection.TestFlight,
         sp_observed_flight: Optional[Flight],
         dp_observed_flight: Optional[observation_api.Flight],
         participant: ParticipantID,
         query_timestamp: datetime.datetime,
     ):
+
         """
-        Evaluates UA type. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        Generic evaluator of a field. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
         See as well `common_dictionary_evaluator.md`.
 
         Args:
+            injected_field_name: The name of the field on the injected flight object to test. If starts with telemetry, current telemetry is used
+            sp_field_name: The name of the field on the sp observed flight object to test
+            dp_field_name: The name of the field on the dp observed flight object to test
+            field_human_name: The display name of the field to test
+            value_validator: If not None, pass values through this function. You may raise ValueError to indicate errors.
+            observed_value_validator: If not None, will be called with check and observed value, for additionnal verifications
+            injection_required_field: Boolean to indicate we need to check the case where nothing has been injected (C6)
+            unknown_value: The default value that needs to be returned when nothing has been injected
+            value_comparator: Function that need to return True if both paramaters are equal
+            injected_telemetry: injected telemetry
             injected_flight: injected flight as returned by the injection API.
             sp_observed_flight: flight observed through the SP API.
             dp_observed_flight: flight observed through the observation API.
@@ -727,84 +859,94 @@ class RIDCommonDictionaryEvaluator(object):
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
 
-        injected_val: Optional[injection.UAType] = injected_flight.get("aircraft_type")
-        if injected_val is not None:
-            try:
-                injected_val = injection.UAType(injected_val)
-            except ValueError as e:
-                raise ValueError(f"Invalid UA type {injected_val} injected", e)
+        def dotted_get(obj: Any, key: str) -> Optional[T]:
+            val: Any = obj
+            for k in key.split("."):
+                val = val.get(k)
+            return val
 
-        observed_val: Optional[injection.UAType]
+        def dotted_getter(obj: Flight, key: str) -> Optional[T]:
+            val: Any = obj
+            for k in key.split("."):
+                if val is None:
+                    return val
+                val = getattr(val, k)
+            return val
+
+        injected_val: Optional[T] = (
+            dotted_get(injected_telemetry, injected_field_name[len("telemetry.") :])
+            if injected_field_name.startswith("telemetry.")
+            else dotted_get(injected_flight, injected_field_name)
+        )
+        if injected_val is not None:
+
+            if value_validator is not None:
+                try:
+                    injected_val = value_validator(injected_val)
+                except ValueError as e:
+                    raise ValueError(
+                        f"Invalid {field_human_name} {injected_val} injected", e
+                    )
+
+        observed_val: Optional[T]
         if sp_observed_flight is not None:
-            observed_val = sp_observed_flight.aircraft_type
+            observed_val = dotted_getter(sp_observed_flight, sp_field_name)
         elif dp_observed_flight is not None:
-            observed_val = dp_observed_flight.get("aircraft_type")
+            observed_val = dotted_get(dp_observed_flight, dp_field_name)
         else:
             raise ValueError("No observed flight provided.")
 
         with self._test_scenario.check(
-            "UA type is exposed correctly",
+            f"{field_human_name} is exposed correctly",
             participant,
         ) as check:
             if sp_observed_flight is not None:
                 if observed_val is None:  # C3
                     check.record_failed(
-                        "UA type is missing",
-                        details="SP did not return any UA type",
+                        f"{field_human_name} is missing",
+                        details=f"SP did not return any {field_human_name}",
                         query_timestamps=[query_timestamp],
                     )
 
             if observed_val is not None:  # C5 / C9
-                try:
-                    injection.UAType(observed_val)
-                except ValueError:
-                    check.record_failed(
-                        "UA type is invalid",
-                        details=f"USS returned an invalid UA type: {observed_val}.",
-                        query_timestamps=[query_timestamp],
-                    )
+                if value_validator is not None:
+                    try:
+                        value_validator(observed_val)
+                    except ValueError:
+                        check.record_failed(
+                            f"{field_human_name} is invalid",
+                            details=f"USS returned an invalid {field_human_name}: {observed_val}.",
+                            query_timestamps=[query_timestamp],
+                        )
 
-                if (
-                    self._rid_version == RIDVersion.f3411_19
-                    and observed_val == injection.UAType.HybridLift
-                ) or (
-                    self._rid_version == RIDVersion.f3411_22a
-                    and observed_val == injection.UAType.VTOL
-                ):
-                    check.record_failed(
-                        "UA type is inconsistent with RID version",
-                        details=f"USS returned the UA type {observed_val} which is not supported by the RID version used ({self._rid_version}).",
-                        query_timestamps=[query_timestamp],
-                    )
+                if observed_value_validator is not None:
+                    observed_value_validator(check, observed_val)
 
         with self._test_scenario.check(
-            "UA type is consistent with injected value",
+            f"{field_human_name} is consistent with injected value",
             participant,
         ) as check:
-            equivalent = {injection.UAType.HybridLift, injection.UAType.VTOL}
 
             if dp_observed_flight is not None and observed_val is None:
                 pass  # C8
 
             elif injected_val is None:
-                if observed_val != injection.UAType.NotDeclared:  # C6 / C10
+
+                if injection_required_field:
+                    raise ValueError(
+                        f"Invalid {field_human_name} value injected. Injection is marked as required, but we injected a None value. This should have been caught by the injection api."
+                    )
+
+                if observed_val != unknown_value:  # C6 / C10
                     check.record_failed(
-                        "UA type is inconsistent, expected 'NotDeclared' since no value was injected",
-                        details=f"USS returned the UA type {observed_val} yet no value was injected. Since 'aircraft_type' is a required field of SP API, the SP should map this to 'NotDeclared' and the DP should expose the same value.",
+                        f"{field_human_name} is inconsistent, expected '{unknown_value}' since no value was injected",
+                        details=f"USS returned the UA type {observed_val} yet no value was injected. Since '{field_human_name}' is a required field of SP API, the SP should map this to '{unknown_value}' and the DP should expose the same value.",
                         query_timestamps=[query_timestamp],
                     )
 
-            elif injected_val in equivalent:
-                if observed_val not in equivalent:  # C7 / C10
-                    check.record_failed(
-                        "UA type is inconsistent with injected value",
-                        details=f"USS returned the UA type {observed_val}, yet the value {injected_val} was injected, given that {equivalent} are equivalent .",
-                        query_timestamps=[query_timestamp],
-                    )
-
-            elif injected_val != observed_val:  # C7 / C10
+            elif not value_comparator(injected_val, observed_val):  # C7 / C10
                 check.record_failed(
-                    "UA type is inconsistent with injected value",
-                    details=f"USS returned the UA type {observed_val}, yet the value {injected_val} was injected.",
+                    f"{field_human_name} is inconsistent with injected value",
+                    details=f"USS returned the {field_human_name} {observed_val}, yet the value {injected_val} was injected.",
                     query_timestamps=[query_timestamp],
                 )
