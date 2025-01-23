@@ -44,7 +44,7 @@ All subscriptions are left on the DSS when this step ends, as they are expected 
 
 #### Create subscription check
 
-As per **[astm.f3411.v22a.DSS0030,c](../../../../../requirements/astm/f3411/v22a.md)**, the DSS API must allow callers to create a subscription with either onr or both of the
+As per **[astm.f3411.v22a.DSS0030,c](../../../../../requirements/astm/f3411/v22a.md)**, the DSS API must allow callers to create a subscription with either one or both of the
 start and end time missing, provided all the required parameters are valid.
 
 #### Response to subscription creation contains a subscription check
