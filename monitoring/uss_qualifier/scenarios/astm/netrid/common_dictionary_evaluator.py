@@ -783,21 +783,14 @@ class RIDCommonDictionaryEvaluator(object):
         ) as check:
             equivalent = {injection.UAType.HybridLift, injection.UAType.VTOL}
 
-            if injected_val is None:
-                if (
-                    sp_observed_flight is not None
-                    and observed_val != injection.UAType.NotDeclared
-                ):  # C6
+            if dp_observed_flight is not None and observed_val is None:
+                pass  # C8
+
+            elif injected_val is None:
+                if observed_val != injection.UAType.NotDeclared:  # C6 / C10
                     check.record_failed(
                         "UA type is inconsistent, expected 'NotDeclared' since no value was injected",
-                        details=f"SP returned the UA type {observed_val}, yet no value was injected, which should have been mapped to 'NotDeclared'.",
-                        query_timestamps=[query_timestamp],
-                    )
-
-                if dp_observed_flight is not None and observed_val is not None:  # C10
-                    check.record_failed(
-                        "UA type is inconsistent, expected no value since none was injected",
-                        details=f"DP returned the UA type {observed_val}, yet no value was injected.",
+                        details=f"USS returned the UA type {observed_val} yet no value was injected. Since 'aircraft_type' is a required field of SP API, the SP should map this to 'NotDeclared' and the DP should expose the same value.",
                         query_timestamps=[query_timestamp],
                     )
 
