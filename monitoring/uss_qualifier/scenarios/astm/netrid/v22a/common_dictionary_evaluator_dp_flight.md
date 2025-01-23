@@ -54,6 +54,19 @@ If the Geodetic Vertical Accuracy value exposed by the observer API is inconsist
 **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
 **[astm.f3411.v22a.NET0470,Table1,16](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
 
+## ⚠️ Speed Accuracy is exposed correctly check
+
+If the Speed Accuracy value exposed by the observation API is invalid this check will fail per:
+**[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)** because the DP violates the observation API contract;
+**[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v22a.NET0470,Table1,18](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Speed Accuracy is consistent with injected value check
+
+If the Speed Accuracy value exposed by the observer API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v22a.NET0470,Table1,18](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
+
 ## Correct up-to-date altitude if present check
 
 If the observed altitude of a flight is reported, but it does not match the altitude of the injected telemetry, the display provider is not providing precise and up-to-date information, and thus does not respect **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**.
