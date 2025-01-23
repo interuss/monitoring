@@ -32,6 +32,7 @@ from monitoring.monitorlib.geo import (
     validate_lng,
     Altitude,
     LatLngPoint,
+    DISTANCE_TOLERANCE_M,
 )
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
@@ -48,7 +49,11 @@ T = TypeVar("T")
 
 class RIDCommonDictionaryEvaluator(object):
 
-    generics_evaluators = ["_evaluate_ua_type", "_evaluate_timestamp_accuracy"]
+    generics_evaluators = [
+        "_evaluate_ua_type",
+        "_evaluate_timestamp_accuracy",
+        "_evaluate_alt",
+    ]
 
     def __init__(
         self,
@@ -808,6 +813,35 @@ class RIDCommonDictionaryEvaluator(object):
             "current_state.timestamp_accuracy",
             "Timestamp accuracy",
             value_validator,
+            None,
+            True,
+            None,
+            value_comparator,
+            **generic_kwargs,
+        )
+
+    def _evaluate_alt(self, **generic_kwargs):
+        """
+        Evaluates Geodetic Altitude. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        See as well `common_dictionary_evaluator.md`.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        def value_comparator(v1: Optional[float], v2: Optional[float]) -> bool:
+
+            if v1 is None or v2 is None:
+                return False
+
+            return abs(v1 - v2) < DISTANCE_TOLERANCE_M
+
+        self._generic_evaluator(
+            "telemetry.position.alt",
+            "raw.current_state.position.alt",
+            "most_recent_position.alt",
+            "Geodetic Altitude",
+            None,
             None,
             True,
             None,

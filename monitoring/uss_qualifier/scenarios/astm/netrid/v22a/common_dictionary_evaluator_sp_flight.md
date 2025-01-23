@@ -24,6 +24,17 @@ If the Timestamp accuracy value exposed by the SP API is missing or invalid this
 If the Timestamp accuracy value exposed by the SP API is inconsistent with the injected value this check will fail per:
 **[astm.f3411.v22a.NET0260,Table1,6](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the valid injected value.
 
+## ⚠️ Geodetic Altitude is exposed correctly check
+
+If the Geodetic Altitude value exposed by the SP API is missing or invalid this check will fail per:
+**[astm.f3411.v22a.NET0710,1](../../../../requirements/astm/f3411/v22a.md)** because the SP violates the SP API contract;
+**[astm.f3411.v22a.NET0260,Table1,12](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Geodetic Altitude is consistent with injected value check
+
+If the Geodetic Altitude value exposed by the SP API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v22a.NET0260,Table1,12](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the valid injected value.
+
 ## Service Provider altitude check
 
 **[astm.f3411.v22a.NET0260,Table1,12](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had known altitudes, but the altitude reported by the Service Provider did not match those known altitudes.
