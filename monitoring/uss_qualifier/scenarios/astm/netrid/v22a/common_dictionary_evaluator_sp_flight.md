@@ -83,37 +83,13 @@ If the Vertical Speed value exposed by the SP API is inconsistent with the injec
 
 **[astm.f3411.v22a.NET0260,Table1,12](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had known altitudes, but the altitude reported by the Service Provider did not match those known altitudes.
 
-## ⚠️ Service Provider vertical speed check
-
-**[astm.f3411.v22a.NET0260,Table1,21](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. Injected flight data had a specified vertical speed that was different from the reported one.
-
 ## ⚠️ Service Provider speed check
 
 **[astm.f3411.v22a.NET0260,Table1,20](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. Injected flight data had a specified speed that was different from the reported one.
 
-## ⚠️ Service Provider speed accuracy check
-
-**[astm.f3411.v22a.NET0260,Table1,18](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had a specified speed accuracy that was different from the reported one.
-
 ## ⚠️ Service Provider track check
 
 **[astm.f3411.v22a.NET0260,Table1,19](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had a specified track that was different from the reported one.
-
-## ⚠️ Service Provider geodetic altitude accuracy check
-
-**[astm.f3411.v22a.NET0260,Table1,16](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had a specified geodetic altitude accuracy that was different from the reported one.
-
-## ⚠️ Service Provider horizontal accuracy check
-
-**[astm.f3411.v22a.NET0260,Table1,17](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had a specified horizontal accuracy that was different from the reported one.
-
-## ⚠️ Service Provider timestamp accuracy is present check
-
-If the timestamp accuracy is not present, the USS under test is not properly implementing the REST interface specified by the OpenAPI definition contained in Annex A4, and is therefore in violation of **[astm.f3411.v22a.NET0710,1](../../../../requirements/astm/f3411/v22a.md)**.
-
-## ⚠️ Service Provider timestamp accuracy is correct check
-
-**[astm.f3411.v22a.NET0260,Table1,6](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  The observed timestamp accuracy differs from the injected one.
 
 ## ⚠️ Service Provider height check
 
