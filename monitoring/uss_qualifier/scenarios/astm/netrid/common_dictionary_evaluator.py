@@ -44,6 +44,10 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     PendingCheck,
 )
 
+from uas_standards.astm.f3411.v22a.api import (
+    VerticalAccuracy,
+)
+
 T = TypeVar("T")
 
 
@@ -53,6 +57,7 @@ class RIDCommonDictionaryEvaluator(object):
         "_evaluate_ua_type",
         "_evaluate_timestamp_accuracy",
         "_evaluate_alt",
+        "_evaluate_accuracy_v",
     ]
 
     def __init__(
@@ -842,6 +847,40 @@ class RIDCommonDictionaryEvaluator(object):
             "most_recent_position.alt",
             "Geodetic Altitude",
             None,
+            None,
+            True,
+            None,
+            value_comparator,
+            **generic_kwargs,
+        )
+
+    def _evaluate_accuracy_v(self, **generic_kwargs):
+        """
+        Evaluates Geodetic Vertical Accuracy. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        See as well `common_dictionary_evaluator.md`.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        def value_validator(val: VerticalAccuracy) -> VerticalAccuracy:
+            return VerticalAccuracy(val)
+
+        def value_comparator(
+            v1: Optional[VerticalAccuracy], v2: Optional[VerticalAccuracy]
+        ) -> bool:
+
+            if v1 is None or v2 is None:
+                return False
+
+            return v1 == v2
+
+        self._generic_evaluator(
+            "telemetry.position.accuracy_v",
+            "raw.current_state.position.accuracy_v",
+            "most_recent_position.accuracy_v",
+            "Geodetic Vertical Accuracy",
+            value_validator,
             None,
             True,
             None,
