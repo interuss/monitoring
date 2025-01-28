@@ -1,14 +1,10 @@
-import base64
-import json
 import math
 from datetime import datetime, timedelta
 from typing import Optional, List
 from urllib.parse import urlparse, parse_qs
 
 import arrow
-import jwt
 import s2sphere
-from loguru import logger
 from s2sphere import LatLngRect, Angle
 
 from monitoring.monitorlib import geo
@@ -36,7 +32,6 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrappe
 from monitoring.uss_qualifier.scenarios.interuss.mock_uss.test_steps import (
     get_mock_uss_interactions,
     direction_filter,
-    status_code_filter,
 )
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -122,30 +117,34 @@ class DisplayProviderBehavior(GenericTestScenario):
         self.end_test_step()
         self.end_test_case()
 
-        self.begin_test_case("Display Provider Behavior")
+        for obs in self._observers:
+            test_case_start_time = arrow.utcnow().datetime
+            # We run the entire test case for each provided observer
+            # (Otherwise we can't differentiate which queries are from which observer)
+            self.begin_test_case("Display Provider Behavior")
 
-        self.begin_test_step("Query acceptable diagonal area")
-        # Query the DP for the exact area of the ISA
-        self._step_query_ok_diagonal()
-        self.end_test_step()
+            self.begin_test_step("Query acceptable diagonal area")
+            # Query the DP for the exact area of the ISA
+            self._step_query_ok_diagonal(obs)
+            self.end_test_step()
 
-        self.begin_test_step("Query maximum diagonal area")
-        # Query the DP with the maximum diagonal area
-        self._step_query_maximum_diagonal()
-        self.end_test_step()
+            self.begin_test_step("Query maximum diagonal area")
+            # Query the DP with the maximum diagonal area
+            self._step_query_maximum_diagonal(obs)
+            self.end_test_step()
 
-        self.begin_test_step("Query too long diagonal")
-        self._step_query_too_big_diagonal()
-        self.end_test_step()
+            self.begin_test_step("Query too long diagonal")
+            self._step_query_too_big_diagonal(obs)
+            self.end_test_step()
 
-        self.begin_test_step("Verify query to SP")
-        self._step_validate_queries_to_sp(context.start_time)
-        self.end_test_step()
+            self.begin_test_step("Verify query to SP")
+            self._step_validate_queries_to_sp(obs, test_case_start_time)
+            self.end_test_step()
 
         self.end_test_case()
         self.end_test_scenario()
 
-    def _mock_dp_base_url(self):
+    def _mock_sp_base_url(self):
         if self._rid_version == RIDVersion.f3411_19:
             return self._mock_uss.base_url + "/mock/ridsp"
         elif self._rid_version == RIDVersion.f3411_22a:
@@ -162,8 +161,7 @@ class DisplayProviderBehavior(GenericTestScenario):
                 area_vertices=self._isa_area,
                 start_time=start_time,
                 end_time=end_time,
-                # TODO this is version-specific, adapt to work with v19 too
-                uss_base_url=self._mock_dp_base_url(),
+                uss_base_url=self._mock_sp_base_url(),
                 isa_id=self._isa_id,
                 alt_lo=self._isa.altitude_min,
                 alt_hi=self._isa.altitude_max,
@@ -171,51 +169,48 @@ class DisplayProviderBehavior(GenericTestScenario):
             )
             self._isa_version = isa_change.dss_query.isa.version
 
-    def _step_query_ok_diagonal(self):
-        # TODO check how we can differentiate observers querying the mock_uss
-        # One option is looking at the subject of the JWT
-        for obs in self._observers:
-            with self.check(
-                "Observation query succeeds",
-                [obs.participant_id],
-            ) as check:
-                observation, query = obs.observe_system(self._small_rect)
-                if query.status_code != 200:
-                    check.record_failed(
-                        summary="Query to display provider failed",
-                        details=f"Valid observation query failed with status code {query.status_code}: {query.error_message}",
-                        query_timestamps=[query.timestamp],
-                    )
+    def _step_query_ok_diagonal(self, observer: RIDSystemObserver):
+        with self.check(
+            "Observation query succeeds",
+            [observer.participant_id],
+        ) as check:
+            observation, query = observer.observe_system(self._small_rect)
+            if query.status_code != 200:
+                check.record_failed(
+                    summary="Query to display provider failed",
+                    details=f"Valid observation query failed with status code {query.status_code}: {query.error_message}",
+                    query_timestamps=[query.timestamp],
+                )
 
-    def _step_query_maximum_diagonal(self):
-        for obs in self._observers:
-            with self.check(
-                "Maximum diagonal area query succeeds",
-                [obs.participant_id],
-            ) as check:
-                observation, query = obs.observe_system(self._limit_rect)
-                if query.status_code != 200:
-                    check.record_failed(
-                        summary="Query to display provider failed",
-                        details=f"Valid observation query failed with status code {query.status_code}: {query.error_message}",
-                        query_timestamps=[query.timestamp],
-                    )
+    def _step_query_maximum_diagonal(self, observer: RIDSystemObserver):
+        with self.check(
+            "Maximum diagonal area query succeeds",
+            [observer.participant_id],
+        ) as check:
+            observation, query = observer.observe_system(self._limit_rect)
+            if query.status_code != 200:
+                check.record_failed(
+                    summary="Query to display provider failed",
+                    details=f"Valid observation query failed with status code {query.status_code}: {query.error_message}",
+                    query_timestamps=[query.timestamp],
+                )
 
-    def _step_query_too_big_diagonal(self):
-        for obs in self._observers:
-            with self.check(
-                "Too long diagonal query fails",
-                [obs.participant_id],
-            ) as check:
-                observation, query = obs.observe_system(self._too_big_rect)
-                if query.status_code != 413:
-                    check.record_failed(
-                        summary="Query to display provider succeeded",
-                        details=f"Invalid observation query succeeded with status code {query.status_code}: {query.error_message}",
-                        query_timestamps=[query.timestamp],
-                    )
+    def _step_query_too_big_diagonal(self, observer: RIDSystemObserver):
+        with self.check(
+            "Too long diagonal query fails",
+            [observer.participant_id],
+        ) as check:
+            observation, query = observer.observe_system(self._too_big_rect)
+            if not (400 <= query.status_code < 500):
+                check.record_failed(
+                    summary="Query to display provider succeeded",
+                    details=f"Invalid observation query succeeded with status code {query.status_code}: {query.error_message}",
+                    query_timestamps=[query.timestamp],
+                )
 
-    def _step_validate_queries_to_sp(self, scenario_start_time: datetime):
+    def _step_validate_queries_to_sp(
+        self, observer: RIDSystemObserver, test_case_start_time: datetime
+    ):
         def flight_search_filter(interaction: Interaction) -> bool:
             return (
                 "/uss/flights?view=" in interaction.query.request.url
@@ -225,61 +220,45 @@ class DisplayProviderBehavior(GenericTestScenario):
         interactions, q = get_mock_uss_interactions(
             self,
             self._mock_uss,
-            Time(scenario_start_time),
+            Time(test_case_start_time),
             direction_filter(QueryDirection.Incoming),
-            status_code_filter(200),
             flight_search_filter,
         )
 
-        interactions_by_observer = {}
-        for i in interactions:
-            # Extract the subject of the JWT:
-            decoded_jwt = jwt.decode(
-                i.query.request.headers["Authorization"][len("Bearer") :],
-                options={"verify_signature": False},
-            )
-            participant = decoded_jwt.get("sub")
-            if participant not in interactions_by_observer:
-                interactions_by_observer[participant] = [i]
-            else:
-                interactions_by_observer[participant].append(i)
+        with self.check("DP queried SP", observer.participant_id) as check:
+            if len(interactions) == 0:
+                check.record_failed(
+                    summary="No queries to SP",
+                    details=f"No queries to SP were found from the observer under test for participant {observer.participant_id}",
+                    query_timestamps=[q.timestamp],
+                )
+                return
 
-        for obs in self._observers:
-            with self.check("DP queried SP", obs.participant_id) as check:
-                if obs.participant_id not in interactions_by_observer:
+            if len(interactions) < 2:
+                check.record_failed(
+                    summary="Expected at least two queries to SP",
+                    details=f"Found less than two queries to SP from observer under test for participant {observer.participant_id}",
+                    query_timestamps=[q.timestamp],
+                )
+
+        with self.check(
+            "No query to SP exceeded the maximum diagonal", observer.participant_id
+        ) as check:
+            # The requested are is url-encoded, eg:
+            # <base_url>/uss/flights?view=37.17781782172688,-80.60691130981752,37.22228217827311,-80.55108869018248&recent_positions_duration=60"
+            for fq in interactions:
+                parsed_url = urlparse(fq.query.request.url)
+                query_params = parse_qs(parsed_url.query)
+                view_rect = geo.make_latlng_rect(query_params["view"][0])
+                if (
+                    geo.get_latlngrect_diagonal_km(view_rect)
+                    > self._rid_version.max_diagonal_km
+                ):
                     check.record_failed(
-                        summary="No queries to SP",
-                        details=f"No queries to SP were found from the observer under test for participant {obs.participant_id}",
+                        summary="Query to SP exceeded the maximum diagonal",
+                        details=f"Query to SP from observer under test for participant {observer.participant_id} exceeded the maximum diagonal.",
                         query_timestamps=[q.timestamp],
                     )
-                    continue
-
-                obs_interactions = interactions_by_observer[obs.participant_id]
-                if len(obs_interactions) < 2:
-                    check.record_failed(
-                        summary="Expected at least two queries to SP",
-                        details=f"Found less than two queries to SP from observer under test for participant {obs.participant_id}",
-                        query_timestamps=[q.timestamp],
-                    )
-
-            with self.check(
-                "No query to SP exceeded the maximum diagonal", obs.participant_id
-            ) as check:
-                # The requested are is url-encoded, eg:
-                # <base_url>/uss/flights?view=37.17781782172688,-80.60691130981752,37.22228217827311,-80.55108869018248&recent_positions_duration=60"
-                for fq in obs_interactions:
-                    parsed_url = urlparse(fq.query.request.url)
-                    query_params = parse_qs(parsed_url.query)
-                    view_rect = geo.make_latlng_rect(query_params["view"][0])
-                    if (
-                        geo.get_latlngrect_diagonal_km(view_rect)
-                        > self._rid_version.max_diagonal_km
-                    ):
-                        check.record_failed(
-                            summary="Query to SP exceeded the maximum diagonal",
-                            details=f"Query to SP from observer under test for participant {obs.participant_id} exceeded the maximum diagonal.",
-                            query_timestamps=[q.timestamp],
-                        )
 
     def _clean_isa(self):
         with self.check(

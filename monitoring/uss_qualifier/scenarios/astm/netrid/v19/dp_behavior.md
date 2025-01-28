@@ -32,9 +32,11 @@ The set of [`NetRIDObserversResource`](../../../../resources/netrid/observers.py
 
 ### [Create ISA test step](./dss/test_steps/put_isa.md)
 
-#### 🛑 Create an ISA check
+Create an ISA in the area specified by the `isa` resource, valid from the moment the scenario runs and for a duration of 5 minutes.
 
-TODO: should be moved to fragment above (and other scenarios doing this be adapted)
+The USS base URL will be the one specified by the passed `mock_uss` resource.
+
+#### 🛑 Create an ISA check
 
 If the ISA cannot be created, the PUT DSS endpoint in **[astm.f3411.v19.DSS0030,a](../../../../requirements/astm/f3411/v19.md)** is likely not implemented correctly.
 
@@ -46,13 +48,13 @@ This test step queries the Display Provider for the exact area of the ISA.
 
 #### 🛑 Observation query succeeds check
 
-**[astm.f3411.v19.NET0240](../../../../requirements/astm/f3411/v19.md)** requires that the Display Provider provides data for queries for an area with a diagonal no greater than `NetMaxDisplayAreaDiagonal` (3,6).
+**[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)** requires that the Display Provider provides data for queries for an area with a diagonal no greater than `NetMaxDisplayAreaDiagonal` (3,6).
 
 ### Query maximum diagonal area test step
 
 #### 🛑 Maximum diagonal area query succeeds check
 
-**[astm.f3411.v19.NET0240](../../../../requirements/astm/f3411/v19.md)** requires that the Display Provider provides data for queries for an area with a diagonal no greater than `NetMaxDisplayAreaDiagonal` (3,6).
+**[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)** requires that the Display Provider provides data for queries for an area with a diagonal no greater than `NetMaxDisplayAreaDiagonal` (3,6).
 
 If the Display Provider does not respond to a request for data in an area with a diagonal of `NetMaxDisplayAreaDiagonal`, it is in violation of this requirement.
 
@@ -60,7 +62,7 @@ If the Display Provider does not respond to a request for data in an area with a
 
 #### 🛑 Too long diagonal query fails check
 
-**[astm.f3411.v19.NET0240](../../../../requirements/astm/f3411/v19.md)** requires that the Display Provider provides data for queries for an area with a diagonal no greater than `NetMaxDisplayAreaDiagonal` (3,6).
+**[astm.f3411.v19.NET0430](../../../../requirements/astm/f3411/v19.md)** requires that the Display Provider provides data for queries for an area with a diagonal no greater than `NetMaxDisplayAreaDiagonal` (3,6).
 
 If the Display Provider responds with anything else than an error, it is in violation of this requirement.
 
@@ -70,13 +72,13 @@ Validate that the Display Provider queried the SP and behaved correctly while do
 
 #### 🛑 DP queried SP check
 
-**[astm.f3411.v19.NET0240](../../../../requirements/astm/f3411/v19.md)** requires that a Display Provider queries a Service Provider for areas with a diagonal no greater than `NetMaxSpAreaDiagonal` (3,6).
+**[astm.f3411.v19.NET0240](../../../../requirements/astm/f3411/v19.md)** requires that a Display Provider queries a Service Provider for areas with a diagonal no greater than `NetMaxDisplayAreaDiagonal` (3,6).
 
 If the Display Provider failed to issue requests when it was queried for valid areas, it is in violation of this requirement.
 
 #### 🛑 No query to SP exceeded the maximum diagonal check
 
-**[astm.f3411.v19.NET0240](../../../../requirements/astm/f3411/v19.md)** requires that a Display Provider queries a Service Provider for areas with a diagonal no greater than `NetMaxSpAreaDiagonal` (3,6).
+**[astm.f3411.v19.NET0240](../../../../requirements/astm/f3411/v19.md)** requires that a Display Provider queries a Service Provider for areas with a diagonal no greater than `NetMaxDisplayAreaDiagonal` (3,6).
 
 If the Display Provider has issued such requests, it is in violation of this requirement.
 
