@@ -60,6 +60,7 @@ class RIDCommonDictionaryEvaluator(object):
         "_evaluate_alt",
         "_evaluate_accuracy_v",
         "_evaluate_speed_accuracy",
+        "_evaluate_vertical_speed",
     ]
 
     def __init__(
@@ -916,6 +917,48 @@ class RIDCommonDictionaryEvaluator(object):
             "raw.current_state.speed_accuracy",
             "current_state.speed_accuracy",
             "Speed Accuracy",
+            value_validator,
+            None,
+            True,
+            None,
+            value_comparator,
+            **generic_kwargs,
+        )
+
+    def _evaluate_vertical_speed(self, **generic_kwargs):
+        """
+        Evaluates Vertical Speed. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        See as well `common_dictionary_evaluator.md`.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        VERTICAL_SPEED_PRECISION = 0.1
+
+        def value_validator(val: float) -> float:
+            if val < -63:
+                raise ValueError("Vertical speed is less than -63")
+            if -63 > val > -62:
+                raise ValueError("Vertical speed is between -63 and -62, exclusive")
+            if val > 63:
+                raise ValueError("Vertical speed is greather than 63")
+            if 62 < val < 63:
+                raise ValueError("Vertical speed is between 62 and 63, exclusive")
+            return val
+
+        def value_comparator(v1: Optional[float], v2: Optional[float]) -> bool:
+
+            if v1 is None or v2 is None:
+                return False
+
+            return abs(v1 - v2) < VERTICAL_SPEED_PRECISION
+
+        self._generic_evaluator(
+            "telemetry.vertical_speed",
+            "raw.current_state.vertical_speed",
+            "current_state.vertical_speed",
+            "Vertical Speed",
             value_validator,
             None,
             True,
