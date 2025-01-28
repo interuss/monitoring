@@ -46,6 +46,7 @@ from monitoring.uss_qualifier.scenarios.scenario import (
 
 from uas_standards.astm.f3411.v22a.api import (
     VerticalAccuracy,
+    HorizontalAccuracy,
     SpeedAccuracy,
 )
 
@@ -59,6 +60,7 @@ class RIDCommonDictionaryEvaluator(object):
         "_evaluate_timestamp_accuracy",
         "_evaluate_alt",
         "_evaluate_accuracy_v",
+        "_evaluate_accuracy_h",
         "_evaluate_speed_accuracy",
         "_evaluate_vertical_speed",
     ]
@@ -883,6 +885,40 @@ class RIDCommonDictionaryEvaluator(object):
             "raw.current_state.position.accuracy_v",
             "most_recent_position.accuracy_v",
             "Geodetic Vertical Accuracy",
+            value_validator,
+            None,
+            True,
+            None,
+            value_comparator,
+            **generic_kwargs,
+        )
+
+    def _evaluate_accuracy_h(self, **generic_kwargs):
+        """
+        Evaluates Horizontal Accuracy. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        See as well `common_dictionary_evaluator.md`.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        def value_validator(val: HorizontalAccuracy) -> HorizontalAccuracy:
+            return HorizontalAccuracy(val)
+
+        def value_comparator(
+            v1: Optional[HorizontalAccuracy], v2: Optional[HorizontalAccuracy]
+        ) -> bool:
+
+            if v1 is None or v2 is None:
+                return False
+
+            return v1 == v2
+
+        self._generic_evaluator(
+            "telemetry.position.accuracy_h",
+            "raw.current_state.position.accuracy_h",
+            "most_recent_position.accuracy_h",
+            "Horizontal Accuracy",
             value_validator,
             None,
             True,
