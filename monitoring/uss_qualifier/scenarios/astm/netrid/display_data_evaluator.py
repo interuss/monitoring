@@ -40,9 +40,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
-VERTICAL_SPEED_PRECISION = 0.1
 SPEED_PRECISION = 0.05
-TIMESTAMP_ACCURACY_PRECISION = 0.05
 HEIGHT_PRECISION_M = 1
 TIMESTAMP_DISCONNECT_TOLERANCE_SEC = 1
 
@@ -377,26 +375,6 @@ class RIDObservationEvaluator(object):
             injected_telemetry = mapping.injected_flight.flight.telemetry[
                 mapping.telemetry_index
             ]
-            observed_position = mapping.observed_flight.most_recent_position
-            injected_position = injected_telemetry.position
-
-            if "alt" in observed_position:
-                with self._test_scenario.check(
-                    "Correct up-to-date altitude if present",
-                    [
-                        observer.participant_id,
-                        mapping.injected_flight.uss_participant_id,
-                    ],
-                ) as check:
-                    if (
-                        abs(observed_position.alt - injected_position.alt)
-                        > geo.DISTANCE_TOLERANCE_M
-                    ):
-                        check.record_failed(
-                            "Observed altitude does not match injected altitude",
-                            Severity.Medium,
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}, alt={injected_telemetry.position.alt}, but {observer.participant_id} observed lat={observed_position.lat}, lng={observed_position.lng}, alt={observed_position.alt} at {query.request.initiated_at}",
-                        )
 
             self._common_dictionary_evaluator.evaluate_dp_flight(
                 injected_telemetry,
@@ -872,53 +850,6 @@ class RIDObservationEvaluator(object):
                             details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}, alt={injected_telemetry.position.alt}, but Service Provider reported lat={observed_position.lat}, lng={observed_position.lng}, alt={observed_position.alt} at {mapping.observed_flight.query.query.request.initiated_at}",
                         )
 
-            if "accuracy_v" in injected_position:
-                with self._test_scenario.check(
-                    "Service Provider geodetic altitude accuracy",
-                    [mapping.injected_flight.uss_participant_id],
-                ) as check:
-                    if (
-                        "accuracy_v" in observed_position
-                        and injected_position.accuracy_v.value
-                        != observed_position.accuracy_v.value
-                    ):
-                        check.record_failed(
-                            "Injected and observed vertical accuracy do not match",
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with accuracy_v={injected_position.accuracy_v}, but Service Provider reported accuracy_v={observed_position.accuracy_v}",
-                        )
-
-            if "accuracy_h" in injected_position:
-                with self._test_scenario.check(
-                    "Service Provider horizontal accuracy",
-                    [mapping.injected_flight.uss_participant_id],
-                ) as check:
-                    if (
-                        "accuracy_h" in observed_position
-                        and injected_position.accuracy_h.value
-                        != observed_position.accuracy_h.value
-                    ):
-                        check.record_failed(
-                            "Horizontal accuracy reported by Service Provider does not match injected horizontal accuracy",
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with accuracy_h={injected_telemetry.position.accuracy_h}, but Service Provider reported accuracy_h={observed_position.accuracy_h}",
-                        )
-
-            if mapping.observed_flight.flight.raw.current_state is not None:
-                with self._test_scenario.check(
-                    "Service Provider vertical speed",
-                    [mapping.injected_flight.uss_participant_id],
-                ) as check:
-                    if (
-                        abs(
-                            injected_telemetry.vertical_speed
-                            - mapping.observed_flight.flight.raw.current_state.vertical_speed
-                        )
-                        > VERTICAL_SPEED_PRECISION
-                    ):
-                        check.record_failed(
-                            "Vertical speed reported by Service Provider does not match injected vertical speed",
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with vertical speed {injected_telemetry.vertical_speed}, but Service Provider reported vertical speed {mapping.observed_flight.flight.raw.current_state.vertical_speed} at {mapping.observed_flight.query.query.request.initiated_at}",
-                        )
-
             if mapping.observed_flight.flight.raw.current_state is not None:
                 with self._test_scenario.check(
                     "Service Provider speed",
@@ -936,20 +867,6 @@ class RIDObservationEvaluator(object):
                         check.record_failed(
                             "Speed reported by Service Provider does not match injected speed",
                             details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with speed={injected_telemetry.speed}, but Service Provider reported speed={mapping.observed_flight.flight.raw.current_state.speed} at {mapping.observed_flight.query.query.request.initiated_at}",
-                        )
-
-            if mapping.observed_flight.flight.raw.current_state is not None:
-                with self._test_scenario.check(
-                    "Service Provider speed accuracy",
-                    [mapping.injected_flight.uss_participant_id],
-                ) as check:
-                    if (
-                        injected_telemetry.speed_accuracy.value
-                        != mapping.observed_flight.flight.raw.current_state.speed_accuracy.value
-                    ):
-                        check.record_failed(
-                            summary="Speed accuracy reported by Service Provider does not match injected speed accuracy",
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with speed accuracy {injected_telemetry.speed_accuracy.value}, but Service Provider reported speed accuracy {mapping.observed_flight.flight.raw.current_state.speed_accuracy.value} at {mapping.observed_flight.query.query.request.initiated_at}",
                         )
 
             if mapping.observed_flight.flight.raw.current_state is not None:
@@ -997,33 +914,6 @@ class RIDObservationEvaluator(object):
             raw_state = (
                 raw_flight["current_state"] if "current_state" in raw_flight else {}
             )
-            with self._test_scenario.check(
-                "Service Provider timestamp accuracy is present",
-                [mapping.injected_flight.uss_participant_id],
-            ) as check:
-                if "timestamp_accuracy" not in raw_state:
-                    check.record_failed(
-                        "Timestamp accuracy not present in Service Provider response",
-                        details=f"Timestamp accuracy not present in Service Provider {mapping.injected_flight.uss_participant_id}'s response for flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} with telemetry index {mapping.telemetry_index}",
-                    )
-
-            if "timestamp_accuracy" in raw_state:
-                # From this point on we can use the 'timestamp_accuracy' field of the deserialized object
-                with self._test_scenario.check(
-                    "Service Provider timestamp accuracy is correct",
-                    [mapping.injected_flight.uss_participant_id],
-                ) as check:
-                    if (
-                        abs(
-                            mapping.observed_flight.timestamp_accuracy
-                            - injected_telemetry.timestamp_accuracy
-                        )
-                        > TIMESTAMP_ACCURACY_PRECISION
-                    ):
-                        check.record_failed(
-                            "Timestamp accuracy in Service Provider response is incorrect",
-                            details=f"Timestamp accuracy in Service Provider {mapping.injected_flight.uss_participant_id}'s response for flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} with telemetry index {mapping.telemetry_index} is {mapping.observed_flight.timestamp_accuracy} which is not equal to the injected value of {injected_telemetry.timestamp_accuracy}",
-                        )
 
             if "height" in injected_position:
                 # We injected a height so expect to observe one

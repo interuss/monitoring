@@ -93,10 +93,6 @@ If the Vertical Speed value exposed by the observer API is inconsistent with the
 **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
 **[astm.f3411.v22a.NET0470,Table1,21](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
 
-## Correct up-to-date altitude if present check
-
-If the observed altitude of a flight is reported, but it does not match the altitude of the injected telemetry, the display provider is not providing precise and up-to-date information, and thus does not respect **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**.
-
 ## Timestamp consistency with Common Dictionary check
 
 **[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that timestamps are relative to UTC. (**[astm.f3411.v22a.NET0470,Table1,5](../../../../requirements/astm/f3411/v22a.md)**)
