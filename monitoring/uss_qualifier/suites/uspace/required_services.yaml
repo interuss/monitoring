@@ -11,6 +11,7 @@ resources:
   flight_planners: resources.flight_planning.FlightPlannersResource?
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
   mock_uss_dp: resources.interuss.mock_uss.client.MockUSSResource?
+  mock_uss_sp: resources.interuss.mock_uss.client.MockUSSResource?
   scd_dss: resources.astm.f3548.v21.DSSInstanceResource
   scd_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_crdb_cluster: resources.interuss.crdb.CockroachDBClusterResource?
@@ -77,7 +78,8 @@ actions:
       service_area: service_area
       problematically_big_area: problematically_big_area
       test_exclusions: test_exclusions?
-      mock_uss: mock_uss_dp?
+      mock_uss_dp: mock_uss_dp?
+      mock_uss_sp: mock_uss_sp?
   on_failure: Continue
 participant_verifiable_capabilities:
     - id: required_services
