@@ -118,10 +118,9 @@ restart-all: stop-uss-mocks down-locally start-locally start-uss-mocks
 .PHONY: restart-uss-mocks
 restart-uss-mocks: stop-uss-mocks start-uss-mocks
 
-# To be run locally whenever a direct dependency has been updated in requirements.in
+# Legacy target To be run locally whenever a direct dependency has been updated in requirements.in
 .PHONY: update-pinned-dependencies
-update-pinned-dependencies:
-	./scripts/pip_tools/pip_compile.sh --generate-hashes --output-file=requirements.txt requirements.in
+update-pinned-dependencies: requirements.txt
 
 define finalize_requirements_txt
 	awk 'BEGIN { RS = ""; FS = "\n" } { gsub("# by the following command:\n#\n#    pip-compile --generate-hashes --output-file=requirements.txt requirements.in\n#\n", "#\n# See requirements.in to update.\n\n"); print }' requirements.txt > requirements.txt.new && mv requirements.txt.new requirements.txt
