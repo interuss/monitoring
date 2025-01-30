@@ -1103,7 +1103,7 @@ class RIDCommonDictionaryEvaluator(object):
             for k in key.split("."):
                 if val is None:
                     return val
-                if k in val:
+                if isinstance(val, dict) and k in val:
                     val = val[k]
                 else:
                     val = getattr(val, k)
