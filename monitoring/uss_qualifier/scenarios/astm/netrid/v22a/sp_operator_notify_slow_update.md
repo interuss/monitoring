@@ -10,7 +10,7 @@ The SP is expected to properly notify the operator.
 
 ### flights_data
 
-A [`FlightDataResource`](../../../../resources/netrid/flight_data.py) containing 1 nominal flight per SP under test. Note that trimming the telemtry down to 0.5Hz happens in the scenario implementation.
+A [`FlightDataResource`](../../../../resources/netrid/flight_data.py) containing 1 nominal flight per SP under test. Note that trimming the telemetry down to 0.5Hz happens in the scenario implementation.
 
 ### service_providers
 
