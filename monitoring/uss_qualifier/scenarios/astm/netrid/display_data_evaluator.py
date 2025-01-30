@@ -29,8 +29,13 @@ from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
+from monitoring.uss_qualifier.resources.netrid import NetRIDServiceProviders
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.resources.netrid.observers import RIDSystemObserver
+from monitoring.uss_qualifier.resources.netrid.service_providers import (
+    NetRIDServiceProvider,
+)
+from monitoring.uss_qualifier.scenarios.astm.netrid import injection
 from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
     RIDCommonDictionaryEvaluator,
 )
@@ -283,7 +288,7 @@ class RIDObservationEvaluator(object):
             perform_observation = True
             verified_sps = set()
 
-        if perform_observation:
+        if perform_observation and observers:
             self._test_scenario.begin_test_step("Observer polling")
             for observer in observers:
                 (observation, query) = observer.observe_system(rect)

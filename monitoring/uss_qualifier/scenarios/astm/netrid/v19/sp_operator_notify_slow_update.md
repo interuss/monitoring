@@ -48,11 +48,11 @@ This scenario assumes that there are no other notifications being sent to the op
 
 If notifications are reported to have been sent after the scenario's start but before the flight's injection, the assumptions don't hold and the scenario cannot proceed.
 
-### [Injection test step](../v22a/fragments/flight_injection.md)
+### [Injection test step](../v19/fragments/flight_injection.md)
 
 Inject flight with a 0.5Hz update rate
 
-### [Service Provider polling test step](../v22a/fragments/sp_polling.md)
+### [Service Provider polling test step](../v19/fragments/sp_polling.md)
 
 Poll the service providers until all of them have generated a new notification to the operator.
 
@@ -70,7 +70,7 @@ Confirm that every service provider has returned a notification
 
 #### ⚠️ Operator notification present check
 
-**[astm.f3411.v22a.NET0040](../../../../requirements/astm/f3411/v22a.md)** requires that the Service Provider notifies the operator if a UAS is not sending telemetry at the proper rate.
+**[astm.f3411.v19.NET0040](../../../../requirements/astm/f3411/v19.md)** requires that the Service Provider notifies the operator if a UAS is not sending telemetry at the proper rate.
 
 `uss_qualifier` injected a flight that provided telemetry at a rate of 0.5Hz, which is expected to trigger a notification to the operator. If such a notification is not detected, the Service Provider will fail this requirement.
 
