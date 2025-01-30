@@ -6,6 +6,15 @@ import flask
 from implicitdict import ImplicitDict
 from loguru import logger
 from uas_standards.interuss.automated_testing.rid.v1.injection import ChangeTestResponse
+import datetime
+import arrow
+
+from uas_standards.astm.f3411.v19.api import ErrorResponse
+from uas_standards.interuss.automated_testing.rid.v1.injection import (
+    OPERATIONS,
+    OperationID,
+    QueryUserNotificationsResponse,
+)
 
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.rid import RIDVersion
@@ -157,3 +166,58 @@ def ridsp_delete_test(test_id: str, version: str) -> Tuple[str, int]:
     with db as tx:
         del tx.tests[test_id]
     return flask.jsonify(result)
+
+
+@webapp.route(
+    f"/ridsp/injection{OPERATIONS[OperationID.QueryUserNotifications].path}",
+    methods=["GET"],
+)
+@requires_scope(injection_api.SCOPE_RID_QUALIFIER_INJECT)
+def ridsp_get_user_notifications() -> Tuple[str, int]:
+    """Returns the list of user notifications observed by the virtual user"""
+
+    if "after" not in flask.request.args:
+        return (
+            flask.jsonify(ErrorResponse(message='Missing required "after" parameter')),
+            400,
+        )
+    try:
+        after = arrow.get(flask.request.args["after"])
+    except ValueError as e:
+        return (
+            flask.jsonify(ErrorResponse(message=f"Error parsing after: {e}")),
+            400,
+        )
+
+    if "before" not in flask.request.args:
+        before = arrow.utcnow()
+    else:
+        try:
+            before = arrow.get(flask.request.args["before"])
+        except ValueError as e:
+            return (
+                flask.jsonify(ErrorResponse(message=f"Error parsing before: {e}")),
+                400,
+            )
+
+    if before < after:
+        return (
+            flask.jsonify(
+                ErrorResponse(message=f"'Before' ({before}) is after 'after' ({after})")
+            ),
+            400,
+        )
+
+    final_list = []
+
+    for user_notification in db.value.notifications.user_notifications:
+        if (
+            after.datetime
+            <= user_notification.observed_at.value.datetime
+            <= before.datetime
+        ):
+            final_list.append(user_notification)
+
+    r = QueryUserNotificationsResponse(user_notifications=final_list)
+
+    return flask.jsonify(r)
