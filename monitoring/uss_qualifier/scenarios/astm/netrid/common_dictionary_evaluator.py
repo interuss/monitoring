@@ -812,8 +812,8 @@ class RIDCommonDictionaryEvaluator(object):
                 and observed_val == injection.UAType.VTOL
             ):
                 check.record_failed(
-                    "Timestamp accuracy is inconsistent with RID version",
-                    details=f"USS returned the Timestamp accuracy {observed_val} which is not supported by the RID version used ({self._rid_version}).",
+                    "UA Type is inconsistent with RID version",
+                    details=f"USS returned the UA Type {observed_val} which is not supported by the RID version used ({self._rid_version}).",
                     query_timestamps=[query_timestamp],
                 )
 
