@@ -53,7 +53,7 @@ json-schema-lint:
 hygiene-tests: check-hygiene
 
 .PHONY: image
-image:
+image: requirements.txt
 	cd monitoring && make image
 
 tag:
@@ -123,4 +123,16 @@ restart-uss-mocks: stop-uss-mocks start-uss-mocks
 update-pinned-dependencies:
 	./scripts/pip_tools/pip_compile.sh --generate-hashes --output-file=requirements.txt requirements.in
 
+define finalize_requirements_txt
+	awk 'BEGIN { RS = ""; FS = "\n" } { gsub("# by the following command:\n#\n#    pip-compile --generate-hashes --output-file=requirements.txt requirements.in\n#\n", "#\n# See requirements.in to update.\n\n"); print }' requirements.txt > requirements.txt.new && mv requirements.txt.new requirements.txt
+	echo The WARNING above is expected: https://github.com/jazzband/pip-tools/issues/2160
+endef
 
+requirements.txt: requirements.in
+	docker container run -u ${USER_GROUP} -v $(CURDIR):/app/monitoring interuss/monitoring pip-compile --cache-dir /tmp/.pip-cache --generate-hashes --output-file=requirements.txt requirements.in
+	$(call finalize_requirements_txt)
+
+.PHONY: upgrade-requirements
+upgrade-requirements:
+	docker container run -u ${USER_GROUP} -v $(CURDIR):/app/monitoring interuss/monitoring pip-compile --cache-dir /tmp/.pip-cache --upgrade --generate-hashes --output-file=requirements.txt requirements.in
+	$(call finalize_requirements_txt)
