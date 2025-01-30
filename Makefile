@@ -52,8 +52,9 @@ json-schema-lint:
 .PHONY: hygiene-tests
 hygiene-tests: check-hygiene
 
+# TODO: Add dependency on requirements.txt after we are sufficiently sure most users won't encounter a circular dependency
 .PHONY: image
-image: requirements.txt
+image:
 	cd monitoring && make image
 
 tag:
