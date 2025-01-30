@@ -942,7 +942,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_accuracy_h(self, **generic_kwargs):
         """
-        Evaluates Horizontal Accuracy. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        Evaluates Horizontal Accuracy. Exactly one of sp_observed or dp_observed must be provided.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
@@ -1010,7 +1010,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_vertical_speed(self, **generic_kwargs):
         """
-        Evaluates Vertical Speed. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        Evaluates Vertical Speed. Exactly one of sp_observed or dp_observed must be provided.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
@@ -1152,7 +1152,7 @@ class RIDCommonDictionaryEvaluator(object):
                             query_timestamps=[query_timestamp],
                             additional_data={
                                 "RIDCommonDictionaryEvaluatorCheckID": "C5"
-                                if sp_observed_flight
+                                if sp_observed
                                 else "C9"
                             },
                         )
@@ -1182,7 +1182,7 @@ class RIDCommonDictionaryEvaluator(object):
                         query_timestamps=[query_timestamp],
                         additional_data={
                             "RIDCommonDictionaryEvaluatorCheckID": "C6"
-                            if sp_observed_flight
+                            if sp_observed
                             else "C10"
                         },
                     )
@@ -1194,7 +1194,7 @@ class RIDCommonDictionaryEvaluator(object):
                     query_timestamps=[query_timestamp],
                     additional_data={
                         "RIDCommonDictionaryEvaluatorCheckID": "C7"
-                        if sp_observed_flight
+                        if sp_observed
                         else "C10"
                     },
                 )

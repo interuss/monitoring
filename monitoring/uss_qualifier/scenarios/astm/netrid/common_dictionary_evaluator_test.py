@@ -456,12 +456,8 @@ def _assert_generic_evaluator(testcase: GenericEvaluatorTestCase, outcome: bool)
     def value_comparator(v1: str, v2: str) -> bool:
         return v1 == v2
 
-    dummy_injected_flight = {"test": testcase.injected_value}
-
-    class DummySP:
-        def __init__(self):
-            self.test = testcase.sp_value
-
+    dummy_injected = {"test": testcase.injected_value}
+    dummy_sp = {"test": testcase.sp_value}
     dummy_dp = {"test": testcase.dp_value}
 
     def step_under_test(self: UnitTestScenario):
@@ -482,10 +478,9 @@ def _assert_generic_evaluator(testcase: GenericEvaluatorTestCase, outcome: bool)
             injection_required_field=False,
             unknown_value="default",
             value_comparator=value_comparator,
-            injected_telemetry=None,
-            injected_flight=dummy_injected_flight,
-            sp_observed_flight=DummySP(),
-            dp_observed_flight=None,
+            injected=dummy_injected,
+            sp_observed=dummy_sp,
+            dp_observed=None,
             participant=0,
             query_timestamp=datetime.now(),
         )
@@ -503,10 +498,9 @@ def _assert_generic_evaluator(testcase: GenericEvaluatorTestCase, outcome: bool)
                 injection_required_field=False,
                 unknown_value="default",
                 value_comparator=value_comparator,
-                injected_telemetry=None,
-                injected_flight=dummy_injected_flight,
-                sp_observed_flight=None,
-                dp_observed_flight=dummy_dp,
+                injected=dummy_injected,
+                sp_observed=None,
+                dp_observed=dummy_dp,
                 participant=0,
                 query_timestamp=datetime.now(),
             )
