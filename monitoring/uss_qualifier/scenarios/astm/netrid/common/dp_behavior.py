@@ -110,7 +110,11 @@ class DisplayProviderBehavior(GenericTestScenario):
         self.begin_test_step("Clean workspace")
         self._clean_isa()
         self.end_test_step()
+        self.end_test_case()
 
+        # TODO: Implement Subscription priming test case
+
+        self.begin_test_case("Create flight")
         self.begin_test_step("Create ISA")
         # Create an ISA that points to the mock_uss playing the role of an SP
         self._step_create_isa()
