@@ -63,7 +63,7 @@ class DisplayProviderBehavior(GenericTestScenario):
         id_generator: IDGeneratorResource,  # provides the ISA IS to be used
         dss_pool: DSSInstancesResource,
         isa: ServiceAreaResource,  # area for which the ISA is created
-        uss_identification: Optional[USSIdentificationResource],
+        uss_identification: Optional[USSIdentificationResource] = None,
     ):
         super().__init__()
         self._observers = observers.observers
