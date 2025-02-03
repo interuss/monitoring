@@ -1,0 +1,32 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/interuss/uss_identification/USSIdentifiers.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.interuss.uss_identification.USSIdentifiers, as defined in monitoring/uss_qualifier/resources/interuss/uss_identification.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "access_tokens": {
+      "description": "If an access token matches one of these identifiers, assume the participant is responsible for that access token",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "astm_url_regexes": {
+      "description": "If a URL to an ASTM (F3411, F3548, etc) endpoint matches one of these regular expressions, assume the participant is responsible for that server",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

@@ -29,6 +29,7 @@ resources:
   problematically_big_area: resources.VerticesResource
 
   test_exclusions: resources.dev.TestExclusionsResource?
+  uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
 local_resources:
   system_identity:
     resource_type: resources.versioning.SystemIdentityResource
@@ -80,6 +81,7 @@ actions:
       test_exclusions: test_exclusions?
       mock_uss_dp: mock_uss_dp?
       mock_uss_sp: mock_uss_sp?
+      uss_identification: uss_identification?
   on_failure: Continue
 participant_verifiable_capabilities:
     - id: required_services

@@ -13,6 +13,7 @@ resources:
   service_area: resources.netrid.ServiceAreaResource
   problematically_big_area: resources.VerticesResource
   test_exclusions: resources.dev.TestExclusionsResource?
+  uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
 actions:
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.DisplayProviderBehavior
@@ -22,6 +23,7 @@ actions:
         id_generator: id_generator
         dss_pool: dss_instances
         isa: service_area
+        uss_identification: uss_identification?
     on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.NetworkedUASDisconnect
