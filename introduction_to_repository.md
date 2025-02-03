@@ -52,5 +52,5 @@ Direct dependencies are declared in `requirements.in`. This file may be modified
 When `requirements.in` is updated, the pinned dependencies must be updated by running:
 
 ```bash
-make update-pinned-dependencies
+make requirements.txt
 ```
