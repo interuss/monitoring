@@ -595,6 +595,32 @@ class LatLngBoundingBox(ImplicitDict):
     lng_max: float
     """Upper longitude bound (degrees)"""
 
+    @staticmethod
+    def from_latlng_rect(rect: s2sphere.LatLngRect) -> LatLngBoundingBox:
+        return LatLngBoundingBox(
+            lat_min=rect.lat_lo().degrees,
+            lat_max=rect.lat_hi().degrees,
+            lng_min=rect.lng_lo().degrees,
+            lng_max=rect.lng_hi().degrees,
+        )
+
+    def expand(
+        self,
+        north_meters: float,
+        east_meters: float,
+        south_meters: float,
+        west_meters: float,
+    ) -> LatLngBoundingBox:
+        longitude_length = EARTH_CIRCUMFERENCE_M * math.cos(
+            0.5 * math.radians(self.lat_min + self.lat_max)
+        )
+        return LatLngBoundingBox(
+            lat_min=self.lat_min - south_meters * 360 / EARTH_CIRCUMFERENCE_M,
+            lat_max=self.lat_max + north_meters * 360 / EARTH_CIRCUMFERENCE_M,
+            lng_min=self.lng_min - west_meters * 360 / longitude_length,
+            lng_max=self.lng_max + east_meters * 360 / longitude_length,
+        )
+
     def to_vertices(self) -> List[s2sphere.LatLng]:
         return [
             s2sphere.LatLng.from_degrees(self.lat_min, self.lng_min),
@@ -602,6 +628,15 @@ class LatLngBoundingBox(ImplicitDict):
             s2sphere.LatLng.from_degrees(self.lat_max, self.lng_max),
             s2sphere.LatLng.from_degrees(self.lat_min, self.lng_max),
         ]
+
+    def to_view_str(self) -> str:
+        return f"{self.lat_min},{self.lng_min},{self.lat_max},{self.lng_max}"
+
+    def to_latlngrect(self) -> s2sphere.LatLngRect:
+        return s2sphere.LatLngRect.from_point_pair(
+            s2sphere.LatLng.from_degrees(self.lat_min, self.lng_min),
+            s2sphere.LatLng.from_degrees(self.lat_max, self.lng_max),
+        )
 
 
 def latitude_degrees(distance_meters: float) -> float:

@@ -1,3 +1,5 @@
+import uuid
+from datetime import timedelta
 from typing import Dict, List, Optional, Tuple
 import arrow
 import flask
@@ -12,13 +14,16 @@ from uas_standards.astm.f3411.v22a.constants import (
 )
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch import rid as fetch
-from monitoring.monitorlib.fetch.rid import Flight, FetchedISAs
+from monitoring.monitorlib.fetch.rid import Flight
+from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.rid import RIDVersion
 from uas_standards.interuss.automated_testing.rid.v1 import (
     observation as observation_api,
 )
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
+from monitoring.mock_uss.config import KEY_BASE_URL
+from monitoring.mock_uss.riddp.database import ObservationSubscription
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     AltitudeReference,
     MSLAltitude,
@@ -102,7 +107,7 @@ def _make_flight_observation(
 
 @webapp.route("/riddp/observation/display_data", methods=["GET"])
 @requires_scope(Scope.Read)
-def riddp_display_data() -> Tuple[str, int]:
+def riddp_display_data() -> Tuple[flask.Response, int]:
     """Implements retrieval of current display data per automated testing API."""
 
     if "view" not in flask.request.args:
@@ -128,17 +133,56 @@ def riddp_display_data() -> Tuple[str, int]:
             413,
         )
 
-    # Get ISAs in the DSS
-    t = arrow.utcnow().datetime
-    isa_list: FetchedISAs = fetch.isas(
-        geo.get_latlngrect_vertices(view), t, t, rid_version, utm_client
-    )
-    if not isa_list.success:
-        msg = f"Error fetching ISAs from DSS: {isa_list.errors}"
-        logger.error(msg)
-        response = ErrorResponse(message=msg)
-        response["fetched_isas"] = isa_list
-        return flask.jsonify(response), 412
+    with db as tx:
+        # Find an existing subscription to serve this request
+        subscription: Optional[ObservationSubscription] = None
+        t_max = (
+            arrow.utcnow() + timedelta(seconds=1)
+        ).datetime  # Don't rely on subscriptions very near their expiration
+        tx.subscriptions = [
+            s for s in tx.subscriptions if s.upsert_result.subscription.time_end > t_max
+        ]
+        for existing_subscription in tx.subscriptions:
+            assert isinstance(existing_subscription, ObservationSubscription)
+            sub_rect = existing_subscription.bounds.to_latlngrect()
+            if sub_rect.contains(view):
+                subscription = existing_subscription
+                logger.debug(
+                    f"Existing subscription {subscription.upsert_result.subscription.id} indicates ISAs: {','.join(isa.id for isa in subscription.get_isas())}"
+                )
+                break
+
+        # No existing subscription suffices; create a new one
+        if subscription is None:
+            buffer_m = 1000  # meters beyond the view box triggering creation of this subscription
+            dt = timedelta(seconds=30)  # duration of new subscription
+            sub_bounds = geo.LatLngBoundingBox.from_latlng_rect(view).expand(
+                buffer_m, buffer_m, buffer_m, buffer_m
+            )
+            upsert_result = mutate.upsert_subscription(
+                area_vertices=sub_bounds.to_vertices(),
+                alt_lo=0,
+                alt_hi=100000,
+                start_time=None,
+                end_time=(arrow.utcnow() + dt).datetime,
+                uss_base_url=webapp.config[KEY_BASE_URL] + "/mock/riddp",
+                subscription_id=str(uuid.uuid4()),
+                rid_version=rid_version,
+                utm_client=utm_client,
+            )
+            if not upsert_result.success:
+                msg = f"Error establishing ISA subscription in DSS: {upsert_result.errors}"
+                logger.error(msg)
+                response = ErrorResponse(message=msg)
+                response["upsert_subscription"] = upsert_result
+                return flask.jsonify(response), 412
+            logger.debug(
+                f"New subscription indicated ISAs: {','.join(isa.id for isa in upsert_result.isas)}"
+            )
+            subscription = ObservationSubscription(
+                bounds=sub_bounds, upsert_result=upsert_result, updates=[]
+            )
+            tx.subscriptions.append(subscription)
 
     # Fetch flights from each unique flights URL
     validated_flights: List[Flight] = []
@@ -146,7 +190,7 @@ def riddp_display_data() -> Tuple[str, int]:
     flight_info: Dict[str, database.FlightInfo] = {k: v for k, v in tx.flights.items()}
     behavior: DisplayProviderBehavior = tx.behavior
 
-    for flights_url, uss in isa_list.flights_urls.items():
+    for flights_url, uss in subscription.flights_urls.items():
         if uss in behavior.do_not_display_flights_from:
             continue
         flights_response = fetch.uss_flights(
@@ -192,7 +236,7 @@ def riddp_display_data() -> Tuple[str, int]:
         # Construct clusters response
         clusters = clustering.make_clusters(flights, view.lo(), view.hi(), rid_version)
         response = observation_api.GetDisplayDataResponse(clusters=clusters)
-    return flask.jsonify(response)
+    return flask.jsonify(response), 200
 
 
 @webapp.route("/riddp/observation/display_data/<flight_id>", methods=["GET"])
