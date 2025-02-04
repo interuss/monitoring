@@ -5,7 +5,7 @@ from monitoring.monitorlib.scd import SCOPE_CM, SCOPE_SC, SCOPE_CP
 
 def _read_both_scope(scd_api: str) -> str:
     if scd_api == scd.API_0_3_17:
-        return "{} {}".format(SCOPE_SC, SCOPE_CP)
+        return f"{str(SCOPE_SC)} {str(SCOPE_CP)}"
     else:
         raise NotImplementedError("Unsupported API version {}".format(scd_api))
 
