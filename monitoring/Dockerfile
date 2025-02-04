@@ -50,7 +50,7 @@ WORKDIR /app/monitoring
 RUN mkdir -p /app/uss-host-files
 
 # This script indicates the status of the container
-HEALTHCHECK CMD sh /app/health_check.sh
+HEALTHCHECK --interval=3s CMD sh /app/health_check.sh
 
 # Discover `monitoring` module in Python
 ENV PYTHONPATH=/app

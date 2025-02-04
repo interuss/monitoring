@@ -69,7 +69,11 @@ class RIDCommonDictionaryEvaluator(object):
         "_evaluate_speed_accuracy",
         "_evaluate_vertical_speed",
     ]
-    details_evaluators = []
+    details_evaluators = [
+        "_evaluate_ua_classification",
+        "_evaluate_ua_classification_eu_category",
+        "_evaluate_ua_classification_eu_class",
+    ]
 
     def __init__(
         self,
@@ -1050,6 +1054,161 @@ class RIDCommonDictionaryEvaluator(object):
             **generic_kwargs,
         )
 
+    def _evaluate_ua_classification(
+        self,
+        injected: injection.RIDFlightDetails,
+        sp_observed: Optional[FlightDetails],
+        dp_observed: Optional[observation_api.GetDetailsResponse],
+        participant: ParticipantID,
+        query_timestamp: datetime.datetime,
+    ):
+        """
+        Evaluates UA classification type. Exactly one of sp_observed or dp_observed must be provided.
+        See as well `common_dictionary_evaluator.md`.
+        Note that the classification type is defined implicitly by presence of field 'eu_classification' or not:
+            > When this field is specified, the Classification Type is "European Union".  If no other classification
+            > field is specified, the Classification Type is "Undeclared".
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        if self._rid_version == RIDVersion.f3411_19:
+            self._test_scenario.record_note(
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping UA classification type evaluation",
+            )
+            return
+
+        injected_ua_classification: Optional[str] = None
+        if "eu_classification" in injected:
+            injected_ua_classification = "eu_classification"
+
+        observed_ua_classification: Optional[str] = None
+        if sp_observed is not None:
+            if sp_observed.raw.has_field_with_value("eu_classification"):
+                observed_ua_classification = "eu_classification"
+        elif dp_observed is not None:
+            if dp_observed.has_field_with_value(
+                "uas"
+            ) and dp_observed.uas.has_field_with_value("eu_classification"):
+                observed_ua_classification = "eu_classification"
+        else:
+            raise ValueError("No observed flight provided.")
+
+        with self._test_scenario.check(
+            "UA classification type is consistent with injected value",
+            participant,
+        ) as check:
+            if dp_observed is not None and observed_ua_classification is None:
+                pass  # C8
+
+            elif injected_ua_classification != observed_ua_classification:  # C7 / C10
+                check.record_failed(
+                    "UA classification type is inconsistent with injected value.",
+                    details=f"USS returned UA classification type {observed_ua_classification} yet the type injected was {injected_ua_classification}.",
+                    query_timestamps=[query_timestamp],
+                )
+
+    def _evaluate_ua_classification_eu_category(
+        self, injected: injection.RIDFlightDetails, **generic_kwargs
+    ):
+        """
+        Evaluates UA classification 'category' field for 'European Union' type. Exactly one of sp_observed or dp_observed must be provided.
+        See as well `common_dictionary_evaluator.md`.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        if self._rid_version == RIDVersion.f3411_19:
+            self._test_scenario.record_note(
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping UA classification 'category' field for 'European Union' type",
+            )
+            return
+        if not injected.has_field_with_value("eu_classification"):
+            # skip if UA classification type is not 'European Union' type
+            return
+
+        def cat_value_validator(
+            val: UAClassificationEUCategory,
+        ) -> UAClassificationEUCategory:
+            return UAClassificationEUCategory(val)
+
+        def cat_value_comparator(
+            v1: Optional[UAClassificationEUCategory],
+            v2: Optional[UAClassificationEUCategory],
+        ) -> bool:
+
+            if v1 is None or v2 is None:
+                return False
+
+            return v1 == v2
+
+        self._generic_evaluator(
+            "eu_classification.category",
+            "raw.eu_classification.category",
+            "uas.eu_classification.category",
+            "UA classification 'category' field for 'European Union' type",
+            cat_value_validator,
+            None,
+            False,
+            UAClassificationEUCategory.EUCategoryUndefined,
+            cat_value_comparator,
+            injected,
+            **generic_kwargs,
+        )
+
+    def _evaluate_ua_classification_eu_class(
+        self, injected: injection.RIDFlightDetails, **generic_kwargs
+    ):
+        """
+        Evaluates UA classification 'class' field for 'European Union' type. Exactly one of sp_observed or dp_observed must be provided.
+        See as well `common_dictionary_evaluator.md`.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        if self._rid_version == RIDVersion.f3411_19:
+            self._test_scenario.record_note(
+                key="skip_reason",
+                message=f"Unsupported version {self._rid_version}: skipping UA classification 'class' field for 'European Union' type",
+            )
+            return
+        if not injected.has_field_with_value("eu_classification"):
+            # skip if UA classification type is not 'European Union' type
+            return
+
+        def class_value_validator(
+            val: UAClassificationEUClass,
+        ) -> UAClassificationEUClass:
+            return UAClassificationEUClass(val)
+
+        def class_value_comparator(
+            v1: Optional[UAClassificationEUClass], v2: Optional[UAClassificationEUClass]
+        ) -> bool:
+
+            if v1 is None or v2 is None:
+                return False
+
+            return v1 == v2
+
+        self._generic_evaluator(
+            "eu_classification.class",
+            "raw.eu_classification.class",
+            "uas.eu_classification.class",
+            "UA classification 'class' field for 'European Union' type",
+            class_value_validator,
+            None,
+            False,
+            UAClassificationEUClass.EUClassUndefined,
+            class_value_comparator,
+            injected,
+            **generic_kwargs,
+        )
+
     def _generic_evaluator(
         self,
         injected_field_name: str,
@@ -1103,7 +1262,7 @@ class RIDCommonDictionaryEvaluator(object):
             for k in key.split("."):
                 if val is None:
                     return val
-                if k in val:
+                if isinstance(val, dict) and k in val:
                     val = val[k]
                 else:
                     val = getattr(val, k)

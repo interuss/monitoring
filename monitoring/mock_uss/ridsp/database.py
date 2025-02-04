@@ -5,6 +5,7 @@ from monitoring.monitorlib.multiprocessing import SynchronizedValue
 from monitoring.monitorlib.rid_automated_testing import injection_api
 from implicitdict import ImplicitDict
 from .behavior import ServiceProviderBehavior
+from .user_notifications import ServiceProviderUserNotifications
 
 
 class TestRecord(ImplicitDict):
@@ -29,6 +30,7 @@ class Database(ImplicitDict):
 
     tests: Dict[str, TestRecord] = {}
     behavior: ServiceProviderBehavior = ServiceProviderBehavior()
+    notifications: ServiceProviderUserNotifications = ServiceProviderUserNotifications()
 
 
 db = SynchronizedValue(

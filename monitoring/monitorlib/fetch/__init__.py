@@ -366,6 +366,10 @@ class QueryType(str, Enum):
         "interuss.automated_testing.rid.v1.injection.deleteTest"
     )
 
+    InterussRIDAutomatedTestingV1UserNotifications = (
+        "interuss.automated_testing.rid.v1.injection.UserNotifications"
+    )
+
     # InterUSS mock_uss
     InterUSSMockUSSGetLogs = "interuss.mock_uss.logging.interaction_logs"
     InterUSSMockUSSGetLocality = "interuss.mock_uss.locality.locality_get"
