@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Any, Callable, TypeVar
 from dataclasses import dataclass
+from itertools import permutations
 
 from implicitdict import StringBasedDateTime
 from uas_standards.astm.f3411 import v22a
@@ -624,3 +625,456 @@ def test_generic_evaluator():
         _assert_generic_evaluator(test, False)
     for test in success_tests:
         _assert_generic_evaluator(test, True)
+
+
+T = TypeVar("T")
+
+
+def _assert_generic_evaluator_call(
+    fct: str,
+    injected: Any,
+    sp_observed: Any,
+    dp_observed: Any,
+    outcome: bool,
+    rid_version: Optional[RIDVersion] = RIDVersion.f3411_22a,
+    wanted_fail: Optional[list[str]] = None,
+):
+    """
+    Verify that the 'fct' function on the RIDCommonDictionaryEvaluator is returning the expected result.
+
+    Args:
+        fct: name of the function to test
+        injected: injected data
+        sp_observed: flight observed through the SP API.
+        dp_observed: flight observed through the observation API.
+        outcome: Expected outcome of the test
+        rid_version: RIDVersion to use, default to 22a
+        wanted_fail: A list of specific C-code that should fail. If not set, not tested.
+    """
+
+    def step_under_test(self: UnitTestScenario):
+        evaluator = RIDCommonDictionaryEvaluator(
+            config=EvaluationConfiguration(),
+            test_scenario=self,
+            rid_version=rid_version,
+        )
+
+        # SP Check
+        getattr(evaluator, fct)(
+            injected=injected,
+            sp_observed=sp_observed,
+            dp_observed=None,
+            participant=0,
+            query_timestamp=datetime.now(),
+        )
+
+        # DP Check
+        getattr(evaluator, fct)(
+            injected=injected,
+            sp_observed=None,
+            dp_observed=dp_observed,
+            participant=0,
+            query_timestamp=datetime.now(),
+        )
+
+    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+
+    assert unit_test_scenario.get_report().successful == outcome
+
+    if wanted_fail:
+
+        found_correct_reason = False
+
+        for c in unit_test_scenario.get_report().cases:
+            for step in c.steps:
+                for failed_check in step.failed_checks:
+                    if (
+                        failed_check.additional_data[
+                            "RIDCommonDictionaryEvaluatorCheckID"
+                        ]
+                        in wanted_fail
+                    ):
+                        found_correct_reason = True
+
+        assert found_correct_reason
+
+
+def _assert_generic_evaluator_result(
+    fct: str,
+    *setters_and_values: list[Any],
+    outcome: bool,
+    wanted_fail: Optional[list[str]] = None,
+    rid_version: Optional[RIDVersion] = None
+):
+    """
+    Helper to call _assert_generic_evaluator_call that build mocked objects first and do the call.
+
+    Args:
+        fct: name of the function to test
+        injected_field_setter: See _build_generic_evaluator_objects's doc
+        sp_field_setter: See _build_generic_evaluator_objects's doc
+        dp_field_setter: See _build_generic_evaluator_objects's doc
+        injected_value: See _build_generic_evaluator_objects's doc
+        sp_value: See _build_generic_evaluator_objects's doc
+        dp_value: See _build_generic_evaluator_objects's doc
+        outcome: See _assert_generic_evaluator_call's doc
+        wanted_fail: See _assert_generic_evaluator_call's doc
+        rid_version: See _assert_generic_evaluator_call's doc
+    """
+
+    mocks = _build_generic_evaluator_objects(*setters_and_values)
+    _assert_generic_evaluator_call(
+        fct, *mocks, outcome=outcome, wanted_fail=wanted_fail, rid_version=rid_version
+    )
+
+
+def _build_generic_evaluator_objects(
+    injected_field_setter: Callable[[Any, T], list[Any]],
+    sp_field_setter: Callable[[Any, T], Any],
+    dp_field_setter: Callable[[Any, T], Any],
+    injected_value: T,
+    sp_value: T,
+    dp_value: T,
+):
+    """
+    Helper to build mock objects passed to _assert_generic_evaluator_call, using mock functions and values.
+
+    Args:
+        injected_field_setter: Function taking a mocked injected object and the injected_value, who needs to return return the object with the value set
+        sp_field_setter: Function taking a mocked sp_observed object and the sp_value, who needs to return the object with the value set
+        dp_field_setter: Function taking a mocked dp_observed object and the dp_value, who needs to return the object with the value set
+        injected_value: The value that should be insered into the mock objects as injected
+        sp_value: The value that should be insered into the mock objects as the sp value
+        dp_value: The value that should be insered into the mock objects as the dp value
+    """
+
+    injected = injected_field_setter({}, injected_value)
+    sp_observed = sp_field_setter({}, sp_value)
+    dp_observed = dp_field_setter({}, dp_value)
+
+    return injected, sp_observed, dp_observed
+
+
+def _assert_generic_evaluator_correct_field_is_used(
+    *fct_and_setters: list[Any], valid_value: T, valid_value_2: T
+):
+    """
+    Test that a _evaluate function is comparing the correct fields by doing some basic calls.
+
+    Args:
+        fct: name of the function to test
+        injected_field_setter: See _build_generic_evaluator_objects's doc
+        sp_field_setter: See _build_generic_evaluator_objects's doc
+        dp_field_setter: See _build_generic_evaluator_objects's doc
+        injected_value: See _build_generic_evaluator_objects's doc
+        sp_value: See _build_generic_evaluator_objects's doc
+        dp_value: See _build_generic_evaluator_objects's doc
+        valid_value: A usable value that should be valid in every case (injected/sp/dp).
+        valid_value_2: Another usable value that should be valid in every case (injected/sp/dp), different from valid_value.
+    """
+
+    _assert_generic_evaluator_result(
+        *fct_and_setters, valid_value, valid_value, valid_value, outcome=True
+    )
+    _assert_generic_evaluator_result(
+        *fct_and_setters, valid_value_2, valid_value, valid_value, outcome=False
+    )
+    _assert_generic_evaluator_result(
+        *fct_and_setters, valid_value, valid_value_2, valid_value, outcome=False
+    )
+    _assert_generic_evaluator_result(
+        *fct_and_setters, valid_value, valid_value, valid_value_2, outcome=False
+    )
+
+
+def _assert_generic_evaluator_valid_value(
+    *fct_and_setters: list[Any],
+    valid_value: T,
+    rid_version: Optional[RIDVersion] = None
+):
+    """
+    Test that a _evaluate function is handeling a specifc value as valid.
+
+    Args:
+        fct: name of the function to test
+        injected_field_setter: See _build_generic_evaluator_objects's doc
+        sp_field_setter: See _build_generic_evaluator_objects's doc
+        dp_field_setter: See _build_generic_evaluator_objects's doc
+        injected_value: See _build_generic_evaluator_objects's doc
+        sp_value: See _build_generic_evaluator_objects's doc
+        dp_value: See _build_generic_evaluator_objects's doc
+        valid_value: A usable value that should be valid in every case (injected/sp/dp).
+        rid_version: Optional rid version to perform the test.
+    """
+
+    _assert_generic_evaluator_result(
+        *fct_and_setters,
+        valid_value,
+        valid_value,
+        valid_value,
+        outcome=True,
+        rid_version=rid_version
+    )
+
+
+def _assert_generic_evaluator_invalid_value(
+    *fct_and_setters: list[Any],
+    invalid_value: T,
+    valid_value: T,
+    rid_version: Optional[RIDVersion] = None
+):
+    """
+    Test that a _evaluate function is handeling a specifc value as invalid.
+
+    Args:
+        fct: name of the function to test
+        injected_field_setter: See _build_generic_evaluator_objects's doc
+        sp_field_setter: See _build_generic_evaluator_objects's doc
+        dp_field_setter: See _build_generic_evaluator_objects's doc
+        injected_value: See _build_generic_evaluator_objects's doc
+        sp_value: See _build_generic_evaluator_objects's doc
+        dp_value: See _build_generic_evaluator_objects's doc
+        invalid_value: A non-valid value that shouldn't be accepeted in all cases (injected/sp/dp)
+        valid_value: A usable value that should be valid in every case (injected/sp/dp).
+        rid_version: Optional rid version to perform the test.
+    """
+    try:
+        _assert_generic_evaluator_result(
+            *fct_and_setters,
+            invalid_value,
+            valid_value,
+            valid_value,
+            outcome=False,
+            rid_version=rid_version
+        )
+        raised = False
+    except Exception:
+        raised = True
+
+    assert raised, "Exception should have been raised"
+
+    _assert_generic_evaluator_result(
+        *fct_and_setters,
+        valid_value,
+        invalid_value,
+        invalid_value,
+        outcome=False,
+        rid_version=rid_version,
+        wanted_fail=["C5", "C9"]
+    )
+
+
+def _assert_generic_evaluator_invalid_observed_value(
+    *fct_and_setters: list[Any],
+    invalid_value: T,
+    rid_version: Optional[RIDVersion] = None
+):
+    """
+    Test that a _evaluate function is handeling a specifc value as invalid when observed.
+
+    Args:
+        fct: name of the function to test
+        injected_field_setter: See _build_generic_evaluator_objects's doc
+        sp_field_setter: See _build_generic_evaluator_objects's doc
+        dp_field_setter: See _build_generic_evaluator_objects's doc
+        injected_value: See _build_generic_evaluator_objects's doc
+        sp_value: See _build_generic_evaluator_objects's doc
+        dp_value: See _build_generic_evaluator_objects's doc
+        invalid_value: A valid value that shouldn't be accepeted in observable cases (sp/dp).
+        rid_version: Optional rid version to perform the test.
+    """
+    _assert_generic_evaluator_result(
+        *fct_and_setters,
+        invalid_value,
+        invalid_value,
+        invalid_value,
+        outcome=False,
+        rid_version=rid_version
+    )
+
+
+def _assert_generic_evaluator_defaults(
+    *fct_and_setters: list[Any], default_value: T, valid_value: T
+):
+    """
+    Test that a _evaluate function is using a specifc value as the default value.
+
+    Args:
+        fct: name of the function to test
+        injected_field_setter: See _build_generic_evaluator_objects's doc
+        sp_field_setter: See _build_generic_evaluator_objects's doc
+        dp_field_setter: See _build_generic_evaluator_objects's doc
+        injected_value: See _build_generic_evaluator_objects's doc
+        sp_value: See _build_generic_evaluator_objects's doc
+        dp_value: See _build_generic_evaluator_objects's doc
+        default: A valid value that should be used as default value when no value is injected.
+        valid_value: A usable value that should be valid in every case (injected/sp/dp), different from the default value.
+    """
+    _assert_generic_evaluator_result(
+        *fct_and_setters,
+        None,
+        valid_value,
+        valid_value,
+        outcome=False,
+        wanted_fail=["C6", "C10"]
+    )
+    _assert_generic_evaluator_result(
+        *fct_and_setters, None, default_value, default_value, outcome=True
+    )
+
+
+def _assert_generic_evaluator_equivalent(
+    *fct_and_setters: list[Any], v1: T, v2: T, rid_version: Optional[RIDVersion] = None
+):
+    """
+    Test that a _evaluate function is considering two value as equivalent.
+
+    Args:
+        fct: name of the function to test
+        injected_field_setter: See _build_generic_evaluator_objects's doc
+        sp_field_setter: See _build_generic_evaluator_objects's doc
+        dp_field_setter: See _build_generic_evaluator_objects's doc
+        injected_value: See _build_generic_evaluator_objects's doc
+        sp_value: See _build_generic_evaluator_objects's doc
+        dp_value: See _build_generic_evaluator_objects's doc
+        v1: A valid value that should be considered equal to v2.
+        v2: A valid value that should be considered equal to v1.
+        rid_version: Optional rid version to perform the test.
+    """
+    _assert_generic_evaluator_result(
+        *fct_and_setters, v1, v2, v2, outcome=True, rid_version=rid_version
+    )
+
+
+def _assert_generic_evaluator_not_equivalent(
+    *fct_and_setters: list[Any], v1: T, v2: T, rid_version: Optional[RIDVersion] = None
+):
+    """
+    Test that a _evaluate function is considering two value as not equivalent.
+
+    Args:
+        fct: name of the function to test
+        injected_field_setter: See _build_generic_evaluator_objects's doc
+        sp_field_setter: See _build_generic_evaluator_objects's doc
+        dp_field_setter: See _build_generic_evaluator_objects's doc
+        injected_value: See _build_generic_evaluator_objects's doc
+        sp_value: See _build_generic_evaluator_objects's doc
+        dp_value: See _build_generic_evaluator_objects's doc
+        v1: A valid value that shouldn't be considered equal to v2.
+        v2: A valid value that shouldn't be considered equal to v1.
+        rid_version: Optional rid version to perform the test.
+    """
+    _assert_generic_evaluator_result(
+        *fct_and_setters, v1, v2, v2, outcome=False, rid_version=rid_version
+    )
+
+
+def test_evaluate_ua_type():
+    """Test the evaluate_ua_type function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["aircraft_type"] = value
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["aircraft_type"] = value
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["aircraft_type"] = value
+        return flight
+
+    base_args = (
+        "_evaluate_ua_type",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=injection.UAType.Helicopter,
+        valid_value_2=injection.UAType.Glider
+    )
+
+    for valid_value in [
+        "NotDeclared",
+        "Aeroplane",
+        "Helicopter",
+        "Gyroplane",
+        "Ornithopter",
+        "Glider",
+        "Kite",
+        "FreeBalloon",
+        "CaptiveBalloon",
+        "Airship",
+        "FreeFallOrParachute",
+        "Rocket",
+        "TetheredPoweredAircraft",
+        "GroundObstacle",
+        "Other",
+    ]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in ["Spaceship", "FlyingBroom"]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args,
+            invalid_value=invalid_value,
+            valid_value=injection.UAType.Helicopter
+        )
+
+    # HybridLift and VTOl are version specific
+    _assert_generic_evaluator_valid_value(
+        *base_args, valid_value="HybridLift", rid_version=RIDVersion.f3411_22a
+    )
+    _assert_generic_evaluator_valid_value(
+        *base_args, valid_value="VTOL", rid_version=RIDVersion.f3411_19
+    )
+
+    _assert_generic_evaluator_invalid_observed_value(
+        *base_args, invalid_value="HybridLift", rid_version=RIDVersion.f3411_19
+    )
+    _assert_generic_evaluator_invalid_observed_value(
+        *base_args, invalid_value="VTOL", rid_version=RIDVersion.f3411_22a
+    )
+
+    _assert_generic_evaluator_defaults(
+        *base_args,
+        default_value=injection.UAType.NotDeclared,
+        valid_value=injection.UAType.Helicopter
+    )
+
+    for v1, v2 in permutations(
+        [
+            "NotDeclared",
+            "Aeroplane",
+            "Helicopter",
+            "Gyroplane",
+            "Ornithopter",
+            "Glider",
+            "Kite",
+            "FreeBalloon",
+            "CaptiveBalloon",
+            "Airship",
+            "FreeFallOrParachute",
+            "Rocket",
+            "TetheredPoweredAircraft",
+            "GroundObstacle",
+            "Other",
+            "HybridLift",
+            "VTOL",
+        ],
+        2,
+    ):
+        rid_version = (
+            RIDVersion.f3411_19 if v2 == "VTOL" else RIDVersion.f3411_22a
+        )  # VTOL is only valid as observed value in v19
+
+        if v1 in ["VTOL", "HybridLift"] and v2 in ["VTOL", "HybridLift"]:
+            _assert_generic_evaluator_equivalent(
+                *base_args, v1=v1, v2=v2, rid_version=rid_version
+            )
+        else:
+            _assert_generic_evaluator_not_equivalent(
+                *base_args, v1=v1, v2=v2, rid_version=rid_version
+            )
