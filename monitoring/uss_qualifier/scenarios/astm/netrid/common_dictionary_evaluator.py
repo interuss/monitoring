@@ -946,7 +946,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_accuracy_h(self, **generic_kwargs):
         """
-        Evaluates Horizontal Accuracy. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        Evaluates Horizontal Accuracy. Exactly one of sp_observed or dp_observed must be provided.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
@@ -1014,7 +1014,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_vertical_speed(self, **generic_kwargs):
         """
-        Evaluates Vertical Speed. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        Evaluates Vertical Speed. Exactly one of sp_observed or dp_observed must be provided.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
@@ -1262,7 +1262,7 @@ class RIDCommonDictionaryEvaluator(object):
             for k in key.split("."):
                 if val is None:
                     return val
-                if k in val:
+                if isinstance(val, dict) and k in val:
                     val = val[k]
                 else:
                     val = getattr(val, k)
@@ -1297,6 +1297,7 @@ class RIDCommonDictionaryEvaluator(object):
                         f"{field_human_name} is missing",
                         details=f"SP did not return any {field_human_name}",
                         query_timestamps=[query_timestamp],
+                        additional_data={"RIDCommonDictionaryEvaluatorCheckID": "C3"},
                     )
 
             if observed_val is not None:  # C5 / C9
@@ -1308,6 +1309,11 @@ class RIDCommonDictionaryEvaluator(object):
                             f"{field_human_name} is invalid",
                             details=f"USS returned an invalid {field_human_name}: {observed_val}.",
                             query_timestamps=[query_timestamp],
+                            additional_data={
+                                "RIDCommonDictionaryEvaluatorCheckID": "C5"
+                                if sp_observed
+                                else "C9"
+                            },
                         )
 
                 if observed_value_validator is not None:
@@ -1333,6 +1339,11 @@ class RIDCommonDictionaryEvaluator(object):
                         f"{field_human_name} is inconsistent, expected '{unknown_value}' since no value was injected",
                         details=f"USS returned the UA type {observed_val} yet no value was injected. Since '{field_human_name}' is a required field of SP API, the SP should map this to '{unknown_value}' and the DP should expose the same value.",
                         query_timestamps=[query_timestamp],
+                        additional_data={
+                            "RIDCommonDictionaryEvaluatorCheckID": "C6"
+                            if sp_observed
+                            else "C10"
+                        },
                     )
 
             elif not value_comparator(injected_val, observed_val):  # C7 / C10
@@ -1340,4 +1351,9 @@ class RIDCommonDictionaryEvaluator(object):
                     f"{field_human_name} is inconsistent with injected value",
                     details=f"USS returned the {field_human_name} {observed_val}, yet the value {injected_val} was injected.",
                     query_timestamps=[query_timestamp],
+                    additional_data={
+                        "RIDCommonDictionaryEvaluatorCheckID": "C7"
+                        if sp_observed
+                        else "C10"
+                    },
                 )

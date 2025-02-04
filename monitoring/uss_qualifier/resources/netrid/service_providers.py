@@ -1,8 +1,11 @@
 import datetime
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from urllib.parse import urlparse
 
 from implicitdict import ImplicitDict
+from uas_standards.interuss.automated_testing.rid.v1.injection import (
+    QueryUserNotificationsResponse,
+)
 
 from monitoring.monitorlib import fetch, infrastructure
 from monitoring.monitorlib.rid import RIDVersion
@@ -72,6 +75,29 @@ class NetRIDServiceProvider(object):
             participant_id=self.participant_id,
             query_type=fetch.QueryType.InterussRIDAutomatedTestingV1DeleteTest,
         )
+
+    def get_user_notifications(
+        self,
+        after: datetime.datetime,
+        before: datetime.datetime,
+    ) -> Tuple[QueryUserNotificationsResponse, fetch.Query]:
+        q = fetch.query_and_describe(
+            self.injection_client,
+            "GET",
+            url=f"/user_notifications",
+            scope=SCOPE_RID_QUALIFIER_INJECT,
+            participant_id=self.participant_id,
+            query_type=fetch.QueryType.InterussRIDAutomatedTestingV1UserNotifications,
+            params={
+                "after": after,
+                "before": before,
+            },
+        )
+
+        if q.error_message:
+            return QueryUserNotificationsResponse(user_notifications=[]), q
+
+        return ImplicitDict.parse(q.response.json, QueryUserNotificationsResponse), q
 
 
 class NetRIDServiceProviders(Resource[NetRIDServiceProvidersSpecification]):

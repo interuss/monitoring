@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Tuple, Optional
+from dataclasses import dataclass
 
 from implicitdict import StringBasedDateTime
 from uas_standards.astm.f3411 import v22a
@@ -435,3 +436,191 @@ def to_positions(
         )
         for i in range(len(coords))
     ]
+
+
+@dataclass
+class GenericEvaluatorTestCase:
+    test_name: str
+    injected_value: str
+    sp_value: str
+    dp_value: str = None
+    ignore_dp_test: bool = False
+
+
+def _assert_generic_evaluator(testcase: GenericEvaluatorTestCase, outcome: bool):
+    def value_validator(v: str) -> str:
+        if v == "invalid":
+            raise ValueError
+        return v
+
+    def value_comparator(v1: str, v2: str) -> bool:
+        return v1 == v2
+
+    dummy_injected = {"test": testcase.injected_value}
+    dummy_sp = {"test": testcase.sp_value}
+    dummy_dp = {"test": testcase.dp_value}
+
+    def step_under_test(self: UnitTestScenario):
+        evaluator = RIDCommonDictionaryEvaluator(
+            config=EvaluationConfiguration(),
+            test_scenario=self,
+            rid_version=RIDVersion.f3411_22a,
+        )
+
+        # SP Check
+        evaluator._generic_evaluator(
+            injected_field_name="test",
+            sp_field_name="test",
+            dp_field_name="test",
+            field_human_name="test",
+            value_validator=value_validator,
+            observed_value_validator=None,
+            injection_required_field=False,
+            unknown_value="default",
+            value_comparator=value_comparator,
+            injected=dummy_injected,
+            sp_observed=dummy_sp,
+            dp_observed=None,
+            participant=0,
+            query_timestamp=datetime.now(),
+        )
+
+        if not testcase.ignore_dp_test:
+
+            # DP Check
+            evaluator._generic_evaluator(
+                injected_field_name="test",
+                sp_field_name="test",
+                dp_field_name="test",
+                field_human_name="test",
+                value_validator=value_validator,
+                observed_value_validator=None,
+                injection_required_field=False,
+                unknown_value="default",
+                value_comparator=value_comparator,
+                injected=dummy_injected,
+                sp_observed=None,
+                dp_observed=dummy_dp,
+                participant=0,
+                query_timestamp=datetime.now(),
+            )
+
+    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+
+    assert unit_test_scenario.get_report().successful == outcome
+
+    if not outcome:
+
+        found_correct_reason = False
+
+        for c in unit_test_scenario.get_report().cases:
+            for step in c.steps:
+                for failed_check in step.failed_checks:
+                    if (
+                        failed_check.additional_data[
+                            "RIDCommonDictionaryEvaluatorCheckID"
+                        ]
+                        == testcase.test_name
+                    ):
+                        found_correct_reason = True
+
+        assert found_correct_reason, testcase
+
+
+def test_generic_evaluator():
+    """Test various generic evaluator cases"""
+
+    failling_tests = [
+        GenericEvaluatorTestCase(
+            test_name="C3",
+            injected_value="valid",
+            sp_value=None,
+            ignore_dp_test=True,
+        ),
+        GenericEvaluatorTestCase(
+            test_name="C5",
+            injected_value="valid",
+            sp_value="invalid",
+            ignore_dp_test=True,
+        ),
+        GenericEvaluatorTestCase(
+            test_name="C6",
+            injected_value=None,
+            sp_value="something-else",
+            ignore_dp_test=True,
+        ),
+        GenericEvaluatorTestCase(
+            test_name="C6",
+            injected_value=None,
+            sp_value=None,
+            ignore_dp_test=True,
+        ),
+        GenericEvaluatorTestCase(
+            test_name="C6",
+            injected_value=None,
+            sp_value="valid",
+            ignore_dp_test=True,
+        ),
+        GenericEvaluatorTestCase(
+            test_name="C6",
+            injected_value=None,
+            sp_value="invalid",
+            ignore_dp_test=True,
+        ),
+        GenericEvaluatorTestCase(
+            test_name="C7",
+            injected_value="valid",
+            sp_value="valid2",
+            ignore_dp_test=True,
+        ),
+        GenericEvaluatorTestCase(
+            test_name="C9",
+            injected_value="valid",
+            sp_value="valid",
+            dp_value="invalid",
+        ),
+        GenericEvaluatorTestCase(
+            test_name="C10",
+            injected_value="valid",
+            sp_value="valid",
+            dp_value="valid2",
+        ),
+    ]
+
+    success_tests = [
+        GenericEvaluatorTestCase(
+            test_name="C6 (But ok)",
+            injected_value=None,
+            sp_value="default",
+            ignore_dp_test=True,
+        ),
+        GenericEvaluatorTestCase(
+            test_name="C8",
+            injected_value="valid",
+            sp_value="valid",
+            dp_value=None,
+        ),
+        GenericEvaluatorTestCase(
+            test_name="C8",
+            injected_value="valid2",
+            sp_value="valid2",
+            dp_value=None,
+        ),
+        GenericEvaluatorTestCase(
+            test_name="General",
+            injected_value="valid",
+            sp_value="valid",
+            dp_value="valid",
+        ),
+        GenericEvaluatorTestCase(
+            test_name="General",
+            injected_value="valid2",
+            sp_value="valid2",
+            dp_value="valid2",
+        ),
+    ]
+
+    for test in failling_tests:
+        _assert_generic_evaluator(test, False)
+    for test in success_tests:
+        _assert_generic_evaluator(test, True)
