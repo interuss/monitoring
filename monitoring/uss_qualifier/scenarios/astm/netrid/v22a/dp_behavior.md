@@ -64,8 +64,6 @@ If the ISA cannot be created, the PUT DSS endpoint in **[astm.f3411.v22a.DSS0030
 
 Prior to ISA creation, the Display Providers of one or more observers may have established subscriptions for the area due to subscription priming above.  If a subscription was present but the managing Display Provider did not acknowledge a notification correctly, the Display Provider will have failed to meet **[astm.f3411.v22a.NET0730](../../../../requirements/astm/f3411/v22a.md)**.  If a Display Provider did not establish a subscription, this check cannot be evaluated as no notification was sent.
 
-TODO: Implement this check
-
 ## Display Provider Behavior test case
 
 ### Query acceptable diagonal area test step
