@@ -1,0 +1,28 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/interuss/uss_identification/USSIdentificationSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.interuss.uss_identification.USSIdentificationSpecification, as defined in monitoring/uss_qualifier/resources/interuss/uss_identification.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "uss_identifiers": {
+      "additionalProperties": {
+        "$ref": "USSIdentifiers.json"
+      },
+      "description": "For each specified participant, a set of information that allows actions, resources, etc to be associated with that participant.",
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "required": [
+    "uss_identifiers"
+  ],
+  "type": "object"
+}

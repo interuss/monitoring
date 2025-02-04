@@ -13,6 +13,7 @@ resources:
   test_exclusions: resources.dev.TestExclusionsResource?
   mock_uss_dp: resources.interuss.mock_uss.client.MockUSSResource?
   mock_uss_sp: resources.interuss.mock_uss.client.MockUSSResource?
+  uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
 actions:
 - test_suite:
     suite_type: suites.astm.netrid.f3411_22a
@@ -30,6 +31,7 @@ actions:
       test_exclusions: test_exclusions?
       mock_uss_dp: mock_uss_dp?
       mock_uss_sp: mock_uss_sp?
+      uss_identification: uss_identification?
   on_failure: Abort
 - test_scenario:
     scenario_type: scenarios.uspace.netrid.msl.MSLAltitude

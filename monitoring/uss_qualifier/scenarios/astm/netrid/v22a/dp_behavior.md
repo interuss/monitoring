@@ -26,6 +26,10 @@ The set of [`NetRIDObserversResource`](../../../../resources/netrid/observers.py
 
 [`ServiceAreaResource`](../../../../resources/netrid/service_area.py) defining the area for which an ISA will be created and around which the queries to the display provider under test will be built.
 
+### uss_identification
+
+Optional [`USSIdentificationResource`](../../../../resources/interuss/uss_identification.py) used to determine which participant is responsible for receiving which mock_uss ISA notification.
+
 ## Setup test case
 
 ### [Clean workspace test step](./dss/test_steps/clean_workspace.md)

@@ -23,6 +23,9 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSResource,
     MockUSSClient,
 )
+from monitoring.uss_qualifier.resources.interuss.uss_identification import (
+    USSIdentificationResource,
+)
 from monitoring.uss_qualifier.resources.netrid import (
     NetRIDObserversResource,
     ServiceAreaResource,
@@ -51,6 +54,8 @@ class DisplayProviderBehavior(GenericTestScenario):
     _isa_id: str
     _isa_area: List[s2sphere.LatLng]
 
+    _identification: Optional[USSIdentificationResource]
+
     def __init__(
         self,
         observers: NetRIDObserversResource,  # Display providers being tested
@@ -58,6 +63,7 @@ class DisplayProviderBehavior(GenericTestScenario):
         id_generator: IDGeneratorResource,  # provides the ISA IS to be used
         dss_pool: DSSInstancesResource,
         isa: ServiceAreaResource,  # area for which the ISA is created
+        uss_identification: Optional[USSIdentificationResource] = None,
     ):
         super().__init__()
         self._observers = observers.observers
@@ -66,6 +72,7 @@ class DisplayProviderBehavior(GenericTestScenario):
         self._isa_id = id_generator.id_factory.make_id(self.SUB_TYPE)
         self._isa = isa.specification
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._identification = uss_identification
 
         isa_center = geo.center_of_mass(self._isa_area)
         degree_per_km = 360 / geo.EARTH_CIRCUMFERENCE_KM
