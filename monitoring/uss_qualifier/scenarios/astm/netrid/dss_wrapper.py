@@ -443,7 +443,6 @@ class DSSWrapper(object):
 
             _sub_check.record_failed(
                 summary=_summary,
-                severity=Severity.Medium,
                 details=_details,
                 query_timestamps=[t_dss],
             )

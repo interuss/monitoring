@@ -47,7 +47,6 @@ class ISAValidator(object):
 
         _sub_check.record_failed(
             summary=_summary,
-            severity=Severity.Medium,
             details=_details,
             query_timestamps=[t_dss],
         )
@@ -203,9 +202,8 @@ class ISAValidator(object):
             if errors:
                 details = "\n".join(f"[{e.json_path}] {e.message}" for e in errors)
                 sub_check.record_failed(
-                    "PUT ISA response format was invalid",
-                    Severity.Medium,
-                    "Found the following schema validation errors in the DSS response:\n"
+                    summary="PUT ISA response format was invalid",
+                    details="Found the following schema validation errors in the DSS response:\n"
                     + details,
                     query_timestamps=[t_dss],
                 )
@@ -236,9 +234,8 @@ class ISAValidator(object):
             if errors:
                 details = "\n".join(f"[{e.json_path}] {e.message}" for e in errors)
                 sub_check.record_failed(
-                    "PUT ISA response format was invalid",
-                    Severity.Medium,
-                    "Found the following schema validation errors in the DSS response:\n"
+                    summary="PUT ISA response format was invalid",
+                    details="Found the following schema validation errors in the DSS response:\n"
                     + details,
                     query_timestamps=[t_dss],
                 )
