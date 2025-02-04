@@ -1,13 +1,17 @@
 import datetime
 import math
-from typing import List, Optional, TypeVar, Any
+from typing import List, Optional, TypeVar, Any, Union
 from collections.abc import Callable
 
 from arrow import ParserError
 from implicitdict import StringBasedDateTime
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
-from uas_standards.astm.f3411.v22a.api import UASID
+from uas_standards.astm.f3411.v22a.api import (
+    UASID,
+    UAClassificationEUCategory,
+    UAClassificationEUClass,
+)
 from uas_standards.astm.f3411.v22a.constants import (
     SpecialSpeed,
     MaxSpeed,
@@ -39,7 +43,6 @@ from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
-
 from monitoring.uss_qualifier.scenarios.scenario import (
     PendingCheck,
 )
@@ -55,8 +58,10 @@ T = TypeVar("T")
 
 class RIDCommonDictionaryEvaluator(object):
 
-    generics_evaluators = [
+    flight_evaluators = [
         "_evaluate_ua_type",
+    ]
+    telemetry_evaluators = [
         "_evaluate_timestamp_accuracy",
         "_evaluate_alt",
         "_evaluate_accuracy_v",
@@ -64,6 +69,7 @@ class RIDCommonDictionaryEvaluator(object):
         "_evaluate_speed_accuracy",
         "_evaluate_vertical_speed",
     ]
+    details_evaluators = []
 
     def __init__(
         self,
@@ -85,12 +91,19 @@ class RIDCommonDictionaryEvaluator(object):
     ):
         """Implements fragment documented in `common_dictionary_evaluator_sp_flight.md`."""
 
-        for generics_evaluator in self.generics_evaluators:
+        for generics_evaluator in self.flight_evaluators:
             getattr(self, generics_evaluator)(
-                injected_telemetry=injected_telemetry,
-                injected_flight=injected_flight,
-                sp_observed_flight=observed_flight,
-                dp_observed_flight=None,
+                injected=injected_flight,
+                sp_observed=observed_flight,
+                dp_observed=None,
+                participant=participant_id,
+                query_timestamp=query_timestamp,
+            )
+        for generics_evaluator in self.telemetry_evaluators:
+            getattr(self, generics_evaluator)(
+                injected=injected_telemetry,
+                sp_observed=observed_flight,
+                dp_observed=None,
                 participant=participant_id,
                 query_timestamp=query_timestamp,
             )
@@ -110,12 +123,21 @@ class RIDCommonDictionaryEvaluator(object):
     ):
         """Implements fragment documented in `common_dictionary_evaluator_dp_flight.md`."""
 
-        for generics_evaluator in self.generics_evaluators:
+        for generics_evaluator in self.flight_evaluators:
             getattr(self, generics_evaluator)(
-                injected_telemetry=injected_telemetry,
-                injected_flight=injected_flight,
-                sp_observed_flight=None,
-                dp_observed_flight=observed_flight,
+                injected=injected_flight,
+                sp_observed=None,
+                dp_observed=observed_flight,
+                participant=participants[
+                    0
+                ],  # TODO: flatten 'participants', it always has a single value
+                query_timestamp=query_timestamp,
+            )
+        for generics_evaluator in self.telemetry_evaluators:
+            getattr(self, generics_evaluator)(
+                injected=injected_telemetry,
+                sp_observed=None,
+                dp_observed=observed_flight,
                 participant=participants[
                     0
                 ],  # TODO: flatten 'participants', it always has a single value
@@ -158,28 +180,53 @@ class RIDCommonDictionaryEvaluator(object):
             participants,
         )
 
-    def evaluate_sp_details(self, details: FlightDetails, participants: List[str]):
+    def evaluate_sp_details(
+        self,
+        injected_details: injection.RIDFlightDetails,
+        observed_details: FlightDetails,
+        participant_id: ParticipantID,
+        query_timestamp: datetime.datetime,
+    ):
         """Implements fragment documented in `common_dictionary_evaluator_sp_flight_details.md`."""
 
-        self._evaluate_uas_id(details.raw.get("uas_id"), participants)
-        self._evaluate_operator_id(None, details.operator_id, participants)
+        for generics_evaluator in self.details_evaluators:
+            getattr(self, generics_evaluator)(
+                injected=injected_details,
+                sp_observed=observed_details,
+                dp_observed=None,
+                participant=participant_id,
+                query_timestamp=query_timestamp,
+            )
+
+        self._evaluate_uas_id(observed_details.raw.get("uas_id"), [participant_id])
+        self._evaluate_operator_id(None, observed_details.operator_id, [participant_id])
         self._evaluate_operator_location(
             None,
             None,
             None,
-            details.operator_location,
-            details.operator_altitude,
-            details.operator_altitude_type,
-            participants,
+            observed_details.operator_location,
+            observed_details.operator_altitude,
+            observed_details.operator_altitude_type,
+            [participant_id],
         )
 
     def evaluate_dp_details(
         self,
         injected_details: injection.RIDFlightDetails,
         observed_details: Optional[observation_api.GetDetailsResponse],
-        participants: List[str],
+        participant_id: ParticipantID,
+        query_timestamp: datetime.datetime,
     ):
         """Implements fragment documented in `common_dictionary_evaluator_dp_flight_details.md`."""
+
+        for generics_evaluator in self.details_evaluators:
+            getattr(self, generics_evaluator)(
+                injected=injected_details,
+                sp_observed=None,
+                dp_observed=observed_details,
+                participant=participant_id,
+                query_timestamp=query_timestamp,
+            )
 
         if not observed_details:
             return
@@ -189,13 +236,13 @@ class RIDCommonDictionaryEvaluator(object):
                 "uas_id", injected_details.get("serial_number", None)
             ),  # fall back on seria number if no UAS ID
             observed_details.get("uas", {}).get("id", None),
-            participants,
+            [participant_id],
         )
 
         operator_obs = observed_details.get("operator", {})
 
         self._evaluate_operator_id(
-            injected_details.operator_id, operator_obs.get("id", None), participants
+            injected_details.operator_id, operator_obs.get("id", None), [participant_id]
         )
 
         operator_altitude_obs = operator_obs.get("altitude", {})
@@ -210,7 +257,7 @@ class RIDCommonDictionaryEvaluator(object):
             operator_obs.get("location", None),
             Altitude.w84m(value=operator_altitude_value_obs),
             operator_altitude_obs.get("altitude_type", None),
-            participants,
+            [participant_id],
         )
 
     def _evaluate_uas_id(self, value: Optional[UASID], participants: List[str]):
@@ -745,7 +792,7 @@ class RIDCommonDictionaryEvaluator(object):
         **generic_kwargs,
     ):
         """
-        Evaluates UA type. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        Evaluates UA type. Exactly one of sp_observed or dp_observed must be provided.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
@@ -796,7 +843,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_timestamp_accuracy(self, **generic_kwargs):
         """
-        Evaluates Timestamp accuracy. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        Evaluates Timestamp accuracy. Exactly one of sp_observed or dp_observed must be provided.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
@@ -818,7 +865,7 @@ class RIDCommonDictionaryEvaluator(object):
             return abs(v1 - v2) < TIMESTAMP_ACCURACY_PRECISION
 
         self._generic_evaluator(
-            "telemetry.timestamp_accuracy",
+            "timestamp_accuracy",
             "raw.current_state.timestamp_accuracy",
             "current_state.timestamp_accuracy",
             "Timestamp accuracy",
@@ -832,7 +879,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_alt(self, **generic_kwargs):
         """
-        Evaluates Geodetic Altitude. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        Evaluates Geodetic Altitude. Exactly one of sp_observed or dp_observed must be provided.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
@@ -847,7 +894,7 @@ class RIDCommonDictionaryEvaluator(object):
             return abs(v1 - v2) < DISTANCE_TOLERANCE_M
 
         self._generic_evaluator(
-            "telemetry.position.alt",
+            "position.alt",
             "raw.current_state.position.alt",
             "most_recent_position.alt",
             "Geodetic Altitude",
@@ -861,7 +908,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_accuracy_v(self, **generic_kwargs):
         """
-        Evaluates Geodetic Vertical Accuracy. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        Evaluates Geodetic Vertical Accuracy. Exactly one of sp_observed or dp_observed must be provided.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
@@ -881,7 +928,7 @@ class RIDCommonDictionaryEvaluator(object):
             return v1 == v2
 
         self._generic_evaluator(
-            "telemetry.position.accuracy_v",
+            "position.accuracy_v",
             "raw.current_state.position.accuracy_v",
             "most_recent_position.accuracy_v",
             "Geodetic Vertical Accuracy",
@@ -895,7 +942,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_accuracy_h(self, **generic_kwargs):
         """
-        Evaluates Horizontal Accuracy. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        Evaluates Horizontal Accuracy. Exactly one of sp_observed or dp_observed must be provided.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
@@ -915,7 +962,7 @@ class RIDCommonDictionaryEvaluator(object):
             return v1 == v2
 
         self._generic_evaluator(
-            "telemetry.position.accuracy_h",
+            "position.accuracy_h",
             "raw.current_state.position.accuracy_h",
             "most_recent_position.accuracy_h",
             "Horizontal Accuracy",
@@ -929,7 +976,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_speed_accuracy(self, **generic_kwargs):
         """
-        Evaluates Speed Accuracy. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        Evaluates Speed Accuracy. Exactly one of sp_observed or dp_observed must be provided.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
@@ -949,7 +996,7 @@ class RIDCommonDictionaryEvaluator(object):
             return v1 == v2
 
         self._generic_evaluator(
-            "telemetry.speed_accuracy",
+            "speed_accuracy",
             "raw.current_state.speed_accuracy",
             "current_state.speed_accuracy",
             "Speed Accuracy",
@@ -963,7 +1010,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_vertical_speed(self, **generic_kwargs):
         """
-        Evaluates Vertical Speed. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
+        Evaluates Vertical Speed. Exactly one of sp_observed or dp_observed must be provided.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
@@ -991,7 +1038,7 @@ class RIDCommonDictionaryEvaluator(object):
             return abs(v1 - v2) < VERTICAL_SPEED_PRECISION
 
         self._generic_evaluator(
-            "telemetry.vertical_speed",
+            "vertical_speed",
             "raw.current_state.vertical_speed",
             "current_state.vertical_speed",
             "Vertical Speed",
@@ -1014,17 +1061,22 @@ class RIDCommonDictionaryEvaluator(object):
         injection_required_field: bool,
         unknown_value: Optional[T],
         value_comparator: Callable[[Optional[T], Optional[T]], bool],
-        injected_telemetry: injection.RIDAircraftState,
-        injected_flight: injection.TestFlight,
-        sp_observed_flight: Optional[Flight],
-        dp_observed_flight: Optional[observation_api.Flight],
+        injected: Union[
+            injection.TestFlight,
+            injection.RIDAircraftState,
+            injection.RIDFlightDetails,
+        ],
+        sp_observed: Optional[Union[Flight, FlightDetails]],
+        dp_observed: Optional[
+            Union[observation_api.Flight, observation_api.GetDetailsResponse]
+        ],
         participant: ParticipantID,
         query_timestamp: datetime.datetime,
     ):
 
         """
-        Generic evaluator of a field. Exactly one of sp_observed_flight or dp_observed_flight must be provided.
-        See as well `common_dictionary_evaluator.md`.
+        Generic evaluator of a field. Exactly one of sp_observed or dp_observed must be provided.
+        See as well `common_dictionary_evaluator.md` for an overview of the different cases 'Cn' referred to in this function.
 
         Args:
             injected_field_name: The name of the field on the injected flight object to test. If starts with telemetry, current telemetry is used
@@ -1032,14 +1084,13 @@ class RIDCommonDictionaryEvaluator(object):
             dp_field_name: The name of the field on the dp observed flight object to test
             field_human_name: The display name of the field to test
             value_validator: If not None, pass values through this function. You may raise ValueError to indicate errors.
-            observed_value_validator: If not None, will be called with check and observed value, for additionnal verifications
+            observed_value_validator: If not None, will be called with check and observed value, for additional verifications
             injection_required_field: Boolean to indicate we need to check the case where nothing has been injected (C6)
             unknown_value: The default value that needs to be returned when nothing has been injected
-            value_comparator: Function that need to return True if both paramaters are equal
-            injected_telemetry: injected telemetry
-            injected_flight: injected flight as returned by the injection API.
-            sp_observed_flight: flight observed through the SP API.
-            dp_observed_flight: flight observed through the observation API.
+            value_comparator: Function that need to return True if both parameters are equal
+            injected: injected data (flight, telemetry or details).
+            sp_observed: flight (or details) observed through the SP API.
+            dp_observed: flight (or details) observed through the observation API.
             participant: participant providing the API through which the value was observed.
             query_timestamp: timestamp of the observation query.
 
@@ -1050,22 +1101,15 @@ class RIDCommonDictionaryEvaluator(object):
         def dotted_get(obj: Any, key: str) -> Optional[T]:
             val: Any = obj
             for k in key.split("."):
-                val = val.get(k)
-            return val
-
-        def dotted_getter(obj: Flight, key: str) -> Optional[T]:
-            val: Any = obj
-            for k in key.split("."):
                 if val is None:
                     return val
-                val = getattr(val, k)
+                if isinstance(val, dict) and k in val:
+                    val = val[k]
+                else:
+                    val = getattr(val, k)
             return val
 
-        injected_val: Optional[T] = (
-            dotted_get(injected_telemetry, injected_field_name[len("telemetry.") :])
-            if injected_field_name.startswith("telemetry.")
-            else dotted_get(injected_flight, injected_field_name)
-        )
+        injected_val: Optional[T] = dotted_get(injected, injected_field_name)
         if injected_val is not None:
 
             if value_validator is not None:
@@ -1077,10 +1121,10 @@ class RIDCommonDictionaryEvaluator(object):
                     )
 
         observed_val: Optional[T]
-        if sp_observed_flight is not None:
-            observed_val = dotted_getter(sp_observed_flight, sp_field_name)
-        elif dp_observed_flight is not None:
-            observed_val = dotted_get(dp_observed_flight, dp_field_name)
+        if sp_observed is not None:
+            observed_val = dotted_get(sp_observed, sp_field_name)
+        elif dp_observed is not None:
+            observed_val = dotted_get(dp_observed, dp_field_name)
         else:
             raise ValueError("No observed flight provided.")
 
@@ -1088,7 +1132,7 @@ class RIDCommonDictionaryEvaluator(object):
             f"{field_human_name} is exposed correctly",
             participant,
         ) as check:
-            if sp_observed_flight is not None:
+            if sp_observed is not None:
                 if observed_val is None:  # C3
                     check.record_failed(
                         f"{field_human_name} is missing",
@@ -1108,7 +1152,7 @@ class RIDCommonDictionaryEvaluator(object):
                             query_timestamps=[query_timestamp],
                             additional_data={
                                 "RIDCommonDictionaryEvaluatorCheckID": "C5"
-                                if sp_observed_flight
+                                if sp_observed
                                 else "C9"
                             },
                         )
@@ -1121,7 +1165,7 @@ class RIDCommonDictionaryEvaluator(object):
             participant,
         ) as check:
 
-            if dp_observed_flight is not None and observed_val is None:
+            if dp_observed is not None and observed_val is None:
                 pass  # C8
 
             elif injected_val is None:
@@ -1138,7 +1182,7 @@ class RIDCommonDictionaryEvaluator(object):
                         query_timestamps=[query_timestamp],
                         additional_data={
                             "RIDCommonDictionaryEvaluatorCheckID": "C6"
-                            if sp_observed_flight
+                            if sp_observed
                             else "C10"
                         },
                     )
@@ -1150,7 +1194,7 @@ class RIDCommonDictionaryEvaluator(object):
                     query_timestamps=[query_timestamp],
                     additional_data={
                         "RIDCommonDictionaryEvaluatorCheckID": "C7"
-                        if sp_observed_flight
+                        if sp_observed
                         else "C10"
                     },
                 )
