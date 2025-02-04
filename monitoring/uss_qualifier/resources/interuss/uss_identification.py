@@ -18,7 +18,7 @@ class USSIdentifiers(ImplicitDict):
     astm_url_regexes: Optional[List[str]]
     """If a URL to an ASTM (F3411, F3548, etc) endpoint matches one of these regular expressions, assume the participant is responsible for that server"""
 
-    access_tokens: Optional[List[str]]
+    access_tokens: Optional[List[AccessTokenIdentifier]]
     """If an access token matches one of these identifiers, assume the participant is responsible for that access token"""
 
 
