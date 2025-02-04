@@ -640,7 +640,7 @@ def _assert_generic_evaluator_call(
     wanted_fail: Optional[list[str]] = None,
 ):
     """
-    Verify that the 'fct' function on the RIDCommonDictionaryEvaluator is returing the expected result.
+    Verify that the 'fct' function on the RIDCommonDictionaryEvaluator is returning the expected result.
 
     Args:
         fct: name of the function to test
@@ -649,7 +649,7 @@ def _assert_generic_evaluator_call(
         dp_observed: flight observed through the observation API.
         outcome: Expected outcome of the test
         rid_version: RIDVersion to use, default to 22a
-        wanted_fail: A list of specifc C-code that should fail. If not set, not tested.
+        wanted_fail: A list of specific C-code that should fail. If not set, not tested.
     """
 
     def step_under_test(self: UnitTestScenario):
