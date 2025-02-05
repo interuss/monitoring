@@ -5,11 +5,15 @@
 
 {% macro collapseable(v) %}{% if v is mapping or (v is iterable and v is not string) %}collapseable{% else %}not_collapseable{% endif %}{% endmacro %}
 
+{% macro render_string_value(s) %}
+  {{ s | replace('\n', '<br>') | safe }}
+{% endmacro %}
+
 {% macro draw_value(v) %}
   {% if v is mapping %}
     {{ draw_node(v) }}
   {% elif v is string %}
-    {{ v }}
+    {{ render_string_value(v) }}
   {% elif v is iterable %}
     {{ draw_list(v) }}
   {% else %}
