@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import arrow
 from implicitdict import ImplicitDict
@@ -149,3 +149,32 @@ def injected_flights_errors(injected_flights: List[InjectedFlight]) -> List[str]
                             f"{injected_flight.uss_participant_id}'s flight with injection ID {injected_flight.flight.injection_id} in test {injected_flight.test_id} has telemetry at index {t1} that can be mistaken for telemetry index {t2} in {other_flight.uss_participant_id}'s flight with injection ID {other_flight.flight.injection_id} in test {other_flight.test_id}; (lat={injected_telemetry.position.lat}, lng={injected_telemetry.position.lng}) and (lat={other_telemetry.position.lat}, lng={other_telemetry.position.lng}) respectively"
                         )
     return errors
+
+
+def get_user_notifications(
+    test_scenario: TestScenario,
+    service_providers_res: NetRIDServiceProviders,
+    after: datetime,
+    before: datetime,
+) -> dict[str, List[str]]:
+    service_providers = service_providers_res.service_providers
+
+    notifications = {}
+
+    for target in service_providers:
+        with test_scenario.check(
+            "Successful user notifications retrieval", [target.participant_id]
+        ) as check:
+            response, query = target.get_user_notifications(before=before, after=after)
+            test_scenario.record_query(query)
+
+            if query.status_code != 200:
+                check.record_failed(
+                    summary="Error while trying to retrieve user notifications",
+                    details=f"Expected response code 200 from {target.participant_id} but received {query.status_code} while trying to retrieve user notifications",
+                    query_timestamps=[query.request.timestamp],
+                )
+
+            notifications[target.participant_id] = response.user_notifications
+
+    return notifications

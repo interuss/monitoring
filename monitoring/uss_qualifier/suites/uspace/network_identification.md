@@ -224,8 +224,8 @@
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0030</a></td>
-    <td>TODO</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
+    <td>Implemented + TODO</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_missing_fields.md">ASTM NetRID Service Provider operator notification on missing fields</a><br><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0040</a></td>
@@ -560,7 +560,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0500</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/sp_notification_behavior.md">ASTM NetRID Service Provider notification behavior</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/sp_notification_behavior.md">ASTM NetRID Service Provider notification behavior</a><br><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_missing_fields.md">ASTM NetRID Service Provider operator notification on missing fields</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0610</a></td>
@@ -593,10 +593,10 @@
     <td><a href="../../scenarios/astm/netrid/v22a/sp_notification_behavior.md">ASTM NetRID Service Provider notification behavior</a></td>
   </tr>
   <tr>
-    <td rowspan="4" style="vertical-align:top;"><a href="../../requirements/interuss/automated_testing/rid/injection.md">interuss<br>.automated_testing<br>.rid<br>.injection</a></td>
+    <td rowspan="5" style="vertical-align:top;"><a href="../../requirements/interuss/automated_testing/rid/injection.md">interuss<br>.automated_testing<br>.rid<br>.injection</a></td>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">DeleteTestSuccess</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/sp_notification_behavior.md">ASTM NetRID Service Provider notification behavior</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/sp_notification_behavior.md">ASTM NetRID Service Provider notification behavior</a><br><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_missing_fields.md">ASTM NetRID Service Provider operator notification on missing fields</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">ExpectedBehavior</a></td>
@@ -606,12 +606,17 @@
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">UpsertTestResult</a></td>
     <td>TODO</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/sp_notification_behavior.md">ASTM NetRID Service Provider notification behavior</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/sp_notification_behavior.md">ASTM NetRID Service Provider notification behavior</a><br><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_missing_fields.md">ASTM NetRID Service Provider operator notification on missing fields</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">UpsertTestSuccess</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/sp_notification_behavior.md">ASTM NetRID Service Provider notification behavior</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/sp_notification_behavior.md">ASTM NetRID Service Provider notification behavior</a><br><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_missing_fields.md">ASTM NetRID Service Provider operator notification on missing fields</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">UserNotificationsSuccess</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_missing_fields.md">ASTM NetRID Service Provider operator notification on missing fields</a></td>
   </tr>
   <tr>
     <td rowspan="2" style="vertical-align:top;"><a href="../../requirements/interuss/automated_testing/rid/observation.md">interuss<br>.automated_testing<br>.rid<br>.observation</a></td>

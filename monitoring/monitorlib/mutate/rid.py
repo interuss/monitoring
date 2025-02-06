@@ -663,6 +663,59 @@ def delete_isa(
     return ISAChange(dss_query=dss_response, notifications=notifications)
 
 
+class UpdatedISA(RIDQuery):
+    """Version-independent representation of an updated (via notification) F3411 identification service area."""
+
+    @property
+    def _v19_request(
+        self,
+    ) -> v19.api.PutIdentificationServiceAreaNotificationParameters:
+        return ImplicitDict.parse(
+            self.v19_query.request.json,
+            v19.api.PutIdentificationServiceAreaNotificationParameters,
+        )
+
+    @property
+    def _v22a_request(
+        self,
+    ) -> v22a.api.PutIdentificationServiceAreaNotificationParameters:
+        return ImplicitDict.parse(
+            self.v22a_query.request.json,
+            v22a.api.PutIdentificationServiceAreaNotificationParameters,
+        )
+
+    @property
+    def isa(self) -> Optional[ISA]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return ISA(
+                v19_value=self._v19_request.service_area
+                if "service_area" in self._v19_request
+                else None
+            )
+        elif self.rid_version == RIDVersion.f3411_22a:
+            return ISA(
+                v22a_value=self._v22a_request.service_area
+                if "service_area" in self._v22a_request
+                else None
+            )
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve ISA using RID version {self.rid_version}"
+            )
+
+    @property
+    def isa_id(self) -> str:
+        if self.rid_version == RIDVersion.f3411_19:
+            url = self.v19_query.request.url
+        elif self.rid_version == RIDVersion.f3411_22a:
+            url = self.v22a_query.request.url
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve ISA ID using RID version {self.rid_version}"
+            )
+        return url.split("?")[0].split("/")[-1]
+
+
 yaml.add_representer(ChangedSubscription, Representer.represent_dict)
 yaml.add_representer(ChangedISA, Representer.represent_dict)
 yaml.add_representer(ISAChange, Representer.represent_dict)

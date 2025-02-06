@@ -32,6 +32,9 @@ class FlightDataResource(Resource[FlightDataSpecification]):
     _flight_start_delay: timedelta
     flight_collection: FlightRecordCollection
 
+    # If set, this field will be removed from the first telemetry frame
+    _field_to_clean = None
+
     def __init__(self, specification: FlightDataSpecification, resource_origin: str):
         super(FlightDataResource, self).__init__(specification, resource_origin)
         if "record_source" in specification:
@@ -66,11 +69,29 @@ class FlightDataResource(Resource[FlightDataSpecification]):
             dt = t0 - flight.reference_time.datetime
 
             telemetry: List[RIDAircraftState] = []
+
+            removed_field = False
+
             for state in flight.states:
                 shifted_state = RIDAircraftState(state)
                 shifted_state.timestamp = StringBasedDateTime(
                     state.timestamp.datetime + dt
                 )
+
+                if not removed_field and self._field_to_clean:
+                    shifted_state = copy.deepcopy(shifted_state)
+
+                    if self._field_to_clean.startswith("position."):
+                        target = shifted_state["position"]
+                        field_to_clean = self._field_to_clean[len("position.") :]
+                    else:
+                        target = shifted_state
+                        field_to_clean = self._field_to_clean
+
+                    if getattr(target, field_to_clean, None) is not None:
+                        setattr(target, field_to_clean, None)
+                        removed_field = True  # We only remove data in one frame, stop further removal
+
                 telemetry.append(shifted_state)
 
             details = TestFlightDetails(
@@ -84,6 +105,9 @@ class FlightDataResource(Resource[FlightDataSpecification]):
                     telemetry=telemetry,
                     details_responses=[details],
                     aircraft_type=flight.aircraft_type,
+                    filter_invalid_telemetry=not bool(
+                        self._field_to_clean
+                    ),  # If we wanted to remove a field, disable telemetry data validation
                 )
             )
 
@@ -106,6 +130,42 @@ class FlightDataResource(Resource[FlightDataSpecification]):
                 for state in flight.states
                 if state.timestamp.datetime <= latest_allowed_end
             ]
+        return self_copy
+
+    def truncate_flights_field(self, field_name: str) -> Self:
+        """
+        Ensures that the injected flight data are missing telemetric data for the field specified.
+
+        Only the first telemetry with a valid data for the field is edited.
+
+        Returns a new, updated instance. The original instance remains unchanged.
+
+        Intended to be used for simulating missing field scenario.
+        """
+        self_copy = copy.deepcopy(self)
+        self_copy._field_to_clean = field_name  # Cleanup is done in get_test_flights
+
+        return self_copy
+
+    def freeze_flights(self) -> Self:
+        """
+        Ensures that the injected flight data are generated now and won't be changed in the futur.
+
+        Returns a new, updated instance. The original instance remains unchanged.
+
+        Intended to be used for having the boundaries of the flight's span available before injection.
+        """
+        self_copy = copy.deepcopy(self)
+
+        flights = self_copy.get_test_flights()
+
+        def new_test_flights(self):
+            return flights
+
+        self_copy.get_test_flights = new_test_flights.__get__(
+            self_copy, FlightDataResource
+        )
+
         return self_copy
 
 

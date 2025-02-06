@@ -18,6 +18,65 @@ SCOPE_RID_QUALIFIER_INJECT = "rid.inject_test_data"
 
 
 class TestFlight(injection.TestFlight):
+
+    MANDATORY_TELEMETRY_FIELDS = [
+        "timestamp",
+        "timestamp_accuracy",
+        "position",
+        "track",
+        "speed",
+        "speed_accuracy",
+        "vertical_speed",
+    ]
+
+    # TODO: Handle accuracy_h and accuracy_v
+    MANDATORY_POSITION_FIELDS = ["lat", "lng", "alt"]
+
+    raw_telemetry: Optional[List[RIDAircraftState]]
+    """Copy of original telemetry with potential invalid data"""
+
+    def __init__(self, *args, **kwargs):
+        """Build a new test flight instance
+
+        Args:
+            filter_invalid_telemetry: If enabled, the constructor will filter out any invalid telemetry data. A copy of initial data is kept in the raw_telemetry field. Default to true.
+            Any other argument is passed to the parent injection.TestFlight class.
+        """
+
+        super().__init__(*args, **kwargs)
+
+        # We filter out bad telemetry but keep a copy in raw_telemetry
+        self.raw_telemetry = self.telemetry
+
+        filter_invalid_telemetry = kwargs.pop("filter_invalid_telemetry", True)
+
+        if filter_invalid_telemetry:
+            filtered_telemetry = []
+
+            for telemetry in self.telemetry:
+
+                is_ok = True
+
+                for mandatory_field in self.MANDATORY_TELEMETRY_FIELDS:
+                    if telemetry.get(mandatory_field, None) is None:
+                        is_ok = False
+                        break
+
+                if not is_ok:
+                    continue
+
+                for mandatory_field in self.MANDATORY_POSITION_FIELDS:
+                    if telemetry.position.get(mandatory_field, None) is None:
+                        is_ok = False
+                        break
+
+                if not is_ok:
+                    continue
+
+                filtered_telemetry.append(telemetry)
+
+            self.telemetry = filtered_telemetry
+
     def get_span(
         self,
     ) -> Tuple[Optional[datetime.datetime], Optional[datetime.datetime]]:
@@ -106,6 +165,18 @@ class TestFlight(injection.TestFlight):
         return geo.bounding_rect(
             [(t.position.lat, t.position.lng) for t in self.telemetry]
         )
+
+    def get_mean_update_rate_hz(self) -> Optional[float]:
+        """
+        Calculate the mean update rate of the telemetry in Hz
+        """
+        if not self.telemetry or len(self.telemetry) == 1:
+            return None
+        # TODO check if required or not (may have been called earlier?)
+        self.order_telemetry()
+        start = self.telemetry[0].timestamp.datetime
+        end = self.telemetry[-1].timestamp.datetime
+        return (len(self.telemetry) - 1) / (end - start).seconds
 
 
 class CreateTestParameters(injection.CreateTestParameters):

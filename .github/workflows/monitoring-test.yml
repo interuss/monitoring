@@ -16,6 +16,8 @@ jobs:
   monitoring-test:
     runs-on: ubuntu-latest
     name: ${{ inputs.name }} test
+    permissions:
+      contents: read
     steps:
     - name: Job information
       run: |
