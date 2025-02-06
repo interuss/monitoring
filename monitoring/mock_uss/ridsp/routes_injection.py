@@ -114,6 +114,7 @@ def ridsp_create_test(test_id: str) -> Tuple[str, int]:
 
     with db as tx:
         tx.tests[test_id] = record
+        tx.notifications.create_notifications_if_needed(record)
     return flask.jsonify(
         ChangeTestResponse(version=record.version, injected_flights=record.flights)
     )
