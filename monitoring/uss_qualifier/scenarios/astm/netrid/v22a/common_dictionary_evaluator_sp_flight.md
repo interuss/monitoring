@@ -95,10 +95,10 @@ If the Vertical Speed value exposed by the SP API is inconsistent with the injec
 
 **[astm.f3411.v22a.NET0260,Table1,14](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  The reported height of the flight is unrealistic or otherwise not consistent with the injected data.
 
-## Operational Status consistency with Common Dictionary check
+## ⚠️ Operational Status consistency with Common Dictionary check
 
 NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the Operational Status, if present, is valid. (**[astm.f3411.v22a.NET0260,Table1,7](../../../../requirements/astm/f3411/v22a.md)**)
 
-## Operational Status is consistent with injected one check
+## ⚠️ Operational Status is consistent with injected one check
 
 If the Operational status reported for an observation does not correspond to the injected one, the DP is not providing timely and accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
