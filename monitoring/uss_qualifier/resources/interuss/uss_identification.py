@@ -1,6 +1,8 @@
+import re
 from typing import Optional, List, Dict
 
 from implicitdict import ImplicitDict
+from monitoring.monitorlib.fetch import Query
 
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.resource import Resource
@@ -38,3 +40,35 @@ class USSIdentificationResource(Resource[USSIdentificationSpecification]):
     ):
         super(USSIdentificationResource, self).__init__(specification, resource_origin)
         self.identifiers = specification.uss_identifiers or {}
+
+    def attribute_query(self, query: Query) -> None:
+        claims = query.request.token
+        if "error" in claims and len(claims) == 1:
+            claims = None
+
+        for participant_id, identifiers in self.identifiers.items():
+            attribute_to_participant = False
+
+            if "astm_url_regexes" in identifiers and identifiers.astm_url_regexes:
+                for url_regex in identifiers.astm_url_regexes:
+                    if re.fullmatch(url_regex, query.request.url):
+                        attribute_to_participant = True
+
+            if "access_tokens" in identifiers and identifiers.access_tokens:
+                for access_token_identifier in identifiers.access_tokens:
+                    if (
+                        "issuer" in access_token_identifier
+                        and access_token_identifier.issuer
+                        and access_token_identifier.issuer != claims["iss"]
+                    ):
+                        continue
+                    if (
+                        "subject" in access_token_identifier
+                        and access_token_identifier.subject
+                        and access_token_identifier.subject != claims["sub"]
+                    ):
+                        continue
+                    attribute_to_participant = True
+
+            if attribute_to_participant:
+                query.participant_id = participant_id

@@ -1,4 +1,5 @@
 import math
+import re
 from datetime import datetime, timedelta
 from typing import Optional, List
 from urllib.parse import urlparse, parse_qs
@@ -119,7 +120,12 @@ class DisplayProviderBehavior(GenericTestScenario):
         self.end_test_step()
         self.end_test_case()
 
-        # TODO: Implement Subscription priming test case
+        self.begin_test_case("Subscription priming")
+        self.begin_test_step("Query observers")
+        for observer in self._observers:
+            self._step_query_ok_diagonal(observer)
+        self.end_test_step()
+        self.end_test_case()
 
         self.begin_test_case("Create flight")
         self.begin_test_step("Create ISA")
@@ -180,12 +186,32 @@ class DisplayProviderBehavior(GenericTestScenario):
             )
             self._isa_version = isa_change.dss_query.isa.version
 
+        if self._identification is not None:
+            # Attribute notifications to participants when possible
+            for base_url, notification in isa_change.notifications.items():
+                self._identification.attribute_query(notification.query)
+
+            # For any attributed notifications, check that the recipient acknowledged them correctly
+            for base_url, notification in isa_change.notifications.items():
+                if notification.participant_id is None:
+                    continue  # Could not attribute this notification to a participant
+                with self.check(
+                    "DP accepted ISA notification", notification.participant_id
+                ) as check:
+                    if notification.status_code not in (204, 200):
+                        check.record_failed(
+                            summary=f"ISA change notification failed {notification.status_code}",
+                            details=f"Expected 204 response from notification that ISA changed, but instead received {notification.status_code}",
+                            query_timestamps=[notification.query.timestamp],
+                        )
+
     def _step_query_ok_diagonal(self, observer: RIDSystemObserver):
         with self.check(
             "Observation query succeeds",
             [observer.participant_id],
         ) as check:
             observation, query = observer.observe_system(self._small_rect)
+            self.record_query(query)
             if query.status_code != 200:
                 check.record_failed(
                     summary="Query to display provider failed",
@@ -199,6 +225,7 @@ class DisplayProviderBehavior(GenericTestScenario):
             [observer.participant_id],
         ) as check:
             observation, query = observer.observe_system(self._limit_rect)
+            self.record_query(query)
             if query.status_code != 200:
                 check.record_failed(
                     summary="Query to display provider failed",
@@ -212,6 +239,7 @@ class DisplayProviderBehavior(GenericTestScenario):
             [observer.participant_id],
         ) as check:
             observation, query = observer.observe_system(self._too_big_rect)
+            self.record_query(query)
             if not (400 <= query.status_code < 500):
                 check.record_failed(
                     summary="Query to display provider succeeded",
