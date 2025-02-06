@@ -48,7 +48,7 @@ def ridsp_notify_isa_v19(id: str):
             for subscription in tx.subscriptions:
                 if subscription.upsert_result.subscription.id in subscription_ids:
                     query = describe_flask_query(flask.request, flask.jsonify(None), 0)
-                    subscription.updates.append(UpdatedISA(v22a_query=query))
+                    subscription.updates.append(UpdatedISA(v19_query=query))
                     logger.debug(
                         f"Updated subscription {subscription.upsert_result.subscription.id} with ISA {id}"
                     )
