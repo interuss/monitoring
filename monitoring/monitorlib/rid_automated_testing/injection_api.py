@@ -166,6 +166,18 @@ class TestFlight(injection.TestFlight):
             [(t.position.lat, t.position.lng) for t in self.telemetry]
         )
 
+    def get_mean_update_rate_hz(self) -> Optional[float]:
+        """
+        Calculate the mean update rate of the telemetry in Hz
+        """
+        if not self.telemetry or len(self.telemetry) == 1:
+            return None
+        # TODO check if required or not (may have been called earlier?)
+        self.order_telemetry()
+        start = self.telemetry[0].timestamp.datetime
+        end = self.telemetry[-1].timestamp.datetime
+        return (len(self.telemetry) - 1) / (end - start).seconds
+
 
 class CreateTestParameters(injection.CreateTestParameters):
     def get_span(
