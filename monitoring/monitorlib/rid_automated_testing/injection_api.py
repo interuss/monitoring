@@ -18,6 +18,65 @@ SCOPE_RID_QUALIFIER_INJECT = "rid.inject_test_data"
 
 
 class TestFlight(injection.TestFlight):
+
+    MANDATORY_TELEMETRY_FIELDS = [
+        "timestamp",
+        "timestamp_accuracy",
+        "position",
+        "track",
+        "speed",
+        "speed_accuracy",
+        "vertical_speed",
+    ]
+
+    # TODO: Handle accuracy_h and accuracy_v
+    MANDATORY_POSITION_FIELDS = ["lat", "lng", "alt"]
+
+    raw_telemetry: Optional[List[RIDAircraftState]]
+    """Copy of original telemetry with potential invalid data"""
+
+    def __init__(self, *args, **kwargs):
+        """Build a new test flight instance
+
+        Args:
+            filter_invalid_telemetry: If enabled, the constructor will filter out any invalid telemetry data. A copy of initial data is kept in the raw_telemetry field. Default to true.
+            Any other argument is passed to the parent injection.TestFlight class.
+        """
+
+        super().__init__(*args, **kwargs)
+
+        # We filter out bad telemetry but keep a copy in raw_telemetry
+        self.raw_telemetry = self.telemetry
+
+        filter_invalid_telemetry = kwargs.pop("filter_invalid_telemetry", True)
+
+        if filter_invalid_telemetry:
+            filtered_telemetry = []
+
+            for telemetry in self.telemetry:
+
+                is_ok = True
+
+                for mandatory_field in self.MANDATORY_TELEMETRY_FIELDS:
+                    if telemetry.get(mandatory_field, None) is None:
+                        is_ok = False
+                        break
+
+                if not is_ok:
+                    continue
+
+                for mandatory_field in self.MANDATORY_POSITION_FIELDS:
+                    if telemetry.position.get(mandatory_field, None) is None:
+                        is_ok = False
+                        break
+
+                if not is_ok:
+                    continue
+
+                filtered_telemetry.append(telemetry)
+
+            self.telemetry = filtered_telemetry
+
     def get_span(
         self,
     ) -> Tuple[Optional[datetime.datetime], Optional[datetime.datetime]]:
