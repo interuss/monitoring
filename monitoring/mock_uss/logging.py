@@ -42,7 +42,7 @@ class RequestLogger(object):
     def get_response(self, resp: Response) -> Response:
         if self._report_log and resp.is_json and self.messages:
             body = resp.json
-            if "log_messages" not in body:
+            if body is not None and "log_messages" not in body:
                 body["log_messages"] = self.messages
             resp.data = json.dumps(body)
         return resp
