@@ -4,6 +4,9 @@ from dataclasses import dataclass
 from typing import List, Optional, Dict, Union, Set, Tuple
 
 import arrow
+from monitoring.uss_qualifier.resources.netrid.service_providers import (
+    NetRIDServiceProvider,
+)
 import s2sphere
 from loguru import logger
 from s2sphere import LatLng, LatLngRect
@@ -39,6 +42,14 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+
+from monitoring.uss_qualifier.scenarios.astm.netrid import (
+    injection,
+)
+
+from monitoring.uss_qualifier.resources.netrid import (
+    NetRIDServiceProviders,
+)
 
 SPEED_PRECISION = 0.05
 HEIGHT_PRECISION_M = 1
@@ -1283,6 +1294,78 @@ class DisconnectedUASObservationEvaluator(object):
                             self._observed_disconnections.add(
                                 expected_flight.flight.injection_id
                             )
+
+
+class NotificationsEvaluator(object):
+    """Evaluates observations of an RID system over time.
+
+    This evaluator observes a set of provided RIDSystemObservers in
+    evaluate_system by repeatedly polling them according to the expected data
+    provided to NotificationsEvaluator upon construction.
+    """
+
+    def __init__(
+        self,
+        test_scenario: TestScenario,
+        service_providers: NetRIDServiceProviders,
+        config: EvaluationConfiguration,
+        rid_version: RIDVersion,
+        initial_notifications: dict[str, List[str]],
+        notification_before: datetime.datetime,
+        notification_after: datetime.datetime,
+    ):
+        self._test_scenario = test_scenario
+        self._common_dictionary_evaluator = RIDCommonDictionaryEvaluator(
+            config, self._test_scenario, rid_version
+        )
+        self._service_providers = service_providers
+        self._config = config
+        self._rid_version = rid_version
+        self._initial_notifications = initial_notifications
+        self._notifications_before = notification_before
+        self._notifications_after = notification_after
+
+        self._current_notifications = {}
+
+    def remaining_notifications_to_observe(self) -> list[NetRIDServiceProvider]:
+        result = []
+
+        for service_provider in self._service_providers.service_providers:
+            if len(self._current_notifications[service_provider.participant_id]) == len(
+                self._initial_notifications[service_provider.participant_id]
+            ):
+                result.append(service_provider)
+
+        return result
+
+    def evaluate_new_notifications(
+        self,
+        rect: s2sphere.LatLngRect,
+    ) -> bool:
+        """
+        Polls service providers relevant to the injected test flights and verifies that,
+        for any flight injected, at least one user notification has been created.
+
+        returns true once all terminated flights have been evaluated.
+        """
+
+        self._test_scenario.begin_test_step("Service Provider polling")
+
+        # Evaluate observations
+        self._retrieve_notifications()
+
+        self._test_scenario.end_test_step()
+
+        return not self.remaining_notifications_to_observe()
+
+    def _retrieve_notifications(self):
+
+        self._current_notifications = injection.get_user_notifications(
+            self._test_scenario,
+            self._service_providers,
+            before=self._notifications_before,
+            after=self._notifications_after,
+        )
 
 
 def _chronological_positions(f: Flight) -> List[s2sphere.LatLng]:
