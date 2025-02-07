@@ -352,7 +352,7 @@ class RIDCommonDictionaryEvaluator(object):
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
-                "Timestamp consistency with Common Dictionary", participants
+                "Timestamp field is present", participants
             ) as check:
                 if timestamp_obs is None:
                     check.record_failed(
@@ -360,19 +360,22 @@ class RIDCommonDictionaryEvaluator(object):
                         details=f"The timestamp must be specified.",
                     )
 
-                try:
-                    t_obs = StringBasedDateTime(timestamp_obs)
-                    if t_obs.datetime.utcoffset().seconds != 0:
-                        check.record_failed(
-                            f"Timestamp must be relative to UTC: {t_obs}",
-                        )
-                except ParserError as e:
-                    check.record_failed(
-                        f"Unable to parse timestamp: {timestamp_obs}",
-                        details=f"Reason:  {e}",
-                    )
-
             if timestamp_obs:
+                with self._test_scenario.check(
+                    "Timestamp consistency with Common Dictionary", participants
+                ) as check:
+
+                    try:
+                        t_obs = StringBasedDateTime(timestamp_obs)
+                        if t_obs.datetime.utcoffset().seconds != 0:
+                            check.record_failed(
+                                f"Timestamp must be relative to UTC: {t_obs}",
+                            )
+                    except ParserError as e:
+                        check.record_failed(
+                            f"Unable to parse timestamp: {timestamp_obs}",
+                            details=f"Reason:  {e}",
+                        )
                 with self._test_scenario.check(
                     "Observed timestamp is consistent with injected one", participants
                 ) as check:
@@ -428,7 +431,7 @@ class RIDCommonDictionaryEvaluator(object):
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
-                "Speed consistency with Common Dictionary", participants
+                "Speed field is present", participants
             ) as check:
                 if speed_obs is None:
                     check.record_failed(
@@ -436,15 +439,24 @@ class RIDCommonDictionaryEvaluator(object):
                         details=f"The speed must be specified.",
                     )
 
-                if not (
-                    0 <= speed_obs <= MaxSpeed or math.isclose(speed_obs, SpecialSpeed)
-                ):
-                    check.record_failed(
-                        f"Invalid speed: {speed_obs}",
-                        details=f"The speed shall be greater than 0 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
-                    )
-
             if speed_obs is not None:
+                with self._test_scenario.check(
+                    "Speed consistency with Common Dictionary", participants
+                ) as check:
+                    if speed_obs is None:
+                        check.record_failed(
+                            f"Speed not present",
+                            details=f"The speed must be specified.",
+                        )
+
+                    if not (
+                        0 <= speed_obs <= MaxSpeed
+                        or math.isclose(speed_obs, SpecialSpeed)
+                    ):
+                        check.record_failed(
+                            f"Invalid speed: {speed_obs}",
+                            details=f"The speed shall be greater than 0 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
+                        )
                 with self._test_scenario.check(
                     "Observed speed is consistent with injected one", participants
                 ) as check:
@@ -465,7 +477,7 @@ class RIDCommonDictionaryEvaluator(object):
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
-                "Track Direction consistency with Common Dictionary", participants
+                "Track Direction field is present", participants
             ) as check:
                 if track_obs is None:
                     check.record_failed(
@@ -473,16 +485,18 @@ class RIDCommonDictionaryEvaluator(object):
                         details=f"The track direction must be specified.",
                     )
 
-                if not (
-                    MinTrackDirection <= track_obs <= MaxTrackDirection
-                    or round(track_obs) == SpecialTrackDirection
-                ):
-                    check.record_failed(
-                        f"Invalid track direction: {track_obs}",
-                        details=f"The track direction shall be greater than -360 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
-                    )
-
             if track_obs is not None:
+                with self._test_scenario.check(
+                    "Track Direction consistency with Common Dictionary", participants
+                ) as check:
+                    if not (
+                        MinTrackDirection <= track_obs <= MaxTrackDirection
+                        or round(track_obs) == SpecialTrackDirection
+                    ):
+                        check.record_failed(
+                            f"Invalid track direction: {track_obs}",
+                            details=f"The track direction shall be greater than -360 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
+                        )
                 with self._test_scenario.check(
                     "Observed track is consistent with injected one", participants
                 ) as check:
