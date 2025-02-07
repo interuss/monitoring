@@ -168,6 +168,19 @@ class FlightDataResource(Resource[FlightDataSpecification]):
 
         return self_copy
 
+    def drop_every_n_state(self, n: int) -> Self:
+        """
+        Drops every n-th state from each flight in the collection.
+
+        Returns a new, updated instance. The original instance remains unchanged.
+
+        Intended to be used for simulating slow updates from a networked UAS.
+        """
+        self_copy = copy.deepcopy(self)
+        for flight in self_copy.flight_collection.flights:
+            flight.states = flight.states[::n]
+        return self_copy
+
 
 class FlightDataStorageSpecification(ImplicitDict):
     flight_record_collection_path: Optional[str]

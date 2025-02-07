@@ -5,5 +5,6 @@ from .misbehavior import Misbehavior
 from .aggregate_checks import AggregateChecks
 from .operator_interactions import OperatorInteractions
 from .sp_notification_behavior import ServiceProviderNotificationBehavior
+from .sp_operator_notify_slow_update import ServiceProviderNotifiesSlowUpdates
 from .dp_behavior import DisplayProviderBehavior
 from .sp_operator_notify_missing_fields import SpOperatorNotifyMissingFields
