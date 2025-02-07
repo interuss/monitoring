@@ -148,30 +148,27 @@ class RIDCommonDictionaryEvaluator(object):
                 query_timestamp=query_timestamp,
             )
 
-        # If the state is present, we do validate its content,
-        # but its presence is optional
-        if injected_telemetry.has_field_with_value("current_state"):
-            self._evaluate_speed(
-                injected_telemetry.speed,
-                observed_flight.current_state.speed,
-                participants,
-            )
-            self._evaluate_track(
-                injected_telemetry.track,
-                observed_flight.current_state.track,
-                participants,
-            )
-            self._evaluate_timestamp(
-                injected_telemetry.timestamp,
-                observed_flight.current_state.timestamp,
-                participants,
-            )
+        self._evaluate_speed(
+            injected_telemetry.speed,
+            observed_flight.current_state.speed,
+            participants,
+        )
+        self._evaluate_track(
+            injected_telemetry.track,
+            observed_flight.current_state.track,
+            participants,
+        )
+        self._evaluate_timestamp(
+            injected_telemetry.timestamp,
+            observed_flight.current_state.timestamp,
+            participants,
+        )
 
-            # TODO check if worth adding correctness check here, it requires some slight (possibly non-trivial)
-            #  changes in evaluate_sp_flights as well
-            self._evaluate_operational_status(
-                observed_flight.current_state.operational_status, participants
-            )
+        # TODO check if worth adding correctness check here, it requires some slight (possibly non-trivial)
+        #  changes in evaluate_sp_flights as well
+        self._evaluate_operational_status(
+            observed_flight.current_state.operational_status, participants
+        )
 
         self._evaluate_position(
             injected_telemetry.position,
