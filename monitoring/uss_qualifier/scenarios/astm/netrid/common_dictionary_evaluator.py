@@ -283,7 +283,6 @@ class RIDCommonDictionaryEvaluator(object):
                 if formats_count == 0:
                     check.record_failed(
                         f"UAS ID not present as required by the Common Dictionary definition: {value}",
-                        severity=Severity.Medium,
                     )
                     return
 
@@ -295,8 +294,7 @@ class RIDCommonDictionaryEvaluator(object):
                 ) as check:
                     if not SerialNumber(serial_number).valid:
                         check.record_failed(
-                            f"Invalid uas_id serial number: {serial_number}",
-                            severity=Severity.Medium,
+                            f"Invalid uas_id serial number: {serial_number}"
                         )
                     else:
                         check.record_passed()
@@ -320,7 +318,6 @@ class RIDCommonDictionaryEvaluator(object):
                 if value_obs is None:
                     check.record_failed(
                         f"UAS ID not present as required by the Common Dictionary definition: {value_obs}",
-                        severity=Severity.Medium,
                     )
                     return
 
@@ -338,7 +335,6 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             "Observed UAS ID not consistent with injected one",
                             details=f"Observed: {value_obs} - injected: {value_inj}",
-                            severity=Severity.Medium,
                         )
 
         # TODO: Add registration id format check
@@ -356,30 +352,30 @@ class RIDCommonDictionaryEvaluator(object):
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
-                "Timestamp consistency with Common Dictionary", participants
+                "Timestamp field is present", participants
             ) as check:
                 if timestamp_obs is None:
                     check.record_failed(
                         f"Timestamp not present",
                         details=f"The timestamp must be specified.",
-                        severity=Severity.High,
-                    )
-
-                try:
-                    t_obs = StringBasedDateTime(timestamp_obs)
-                    if t_obs.datetime.utcoffset().seconds != 0:
-                        check.record_failed(
-                            f"Timestamp must be relative to UTC: {t_obs}",
-                            severity=Severity.Medium,
-                        )
-                except ParserError as e:
-                    check.record_failed(
-                        f"Unable to parse timestamp: {timestamp_obs}",
-                        details=f"Reason:  {e}",
-                        severity=Severity.Medium,
                     )
 
             if timestamp_obs:
+                with self._test_scenario.check(
+                    "Timestamp consistency with Common Dictionary", participants
+                ) as check:
+
+                    try:
+                        t_obs = StringBasedDateTime(timestamp_obs)
+                        if t_obs.datetime.utcoffset().seconds != 0:
+                            check.record_failed(
+                                f"Timestamp must be relative to UTC: {t_obs}",
+                            )
+                    except ParserError as e:
+                        check.record_failed(
+                            f"Unable to parse timestamp: {timestamp_obs}",
+                            details=f"Reason:  {e}",
+                        )
                 with self._test_scenario.check(
                     "Observed timestamp is consistent with injected one", participants
                 ) as check:
@@ -388,7 +384,6 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             "Observed timestamp inconsistent with injected one",
                             details=f"Injected timestamp: {timestamp_inj} - Observed one: {timestamp_obs}",
-                            severity=Severity.Medium,
                         )
         else:
             self._test_scenario.record_note(
@@ -436,25 +431,32 @@ class RIDCommonDictionaryEvaluator(object):
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
-                "Speed consistency with Common Dictionary", participants
+                "Speed field is present", participants
             ) as check:
                 if speed_obs is None:
                     check.record_failed(
                         f"Speed not present",
                         details=f"The speed must be specified.",
-                        severity=Severity.High,
-                    )
-
-                if not (
-                    0 <= speed_obs <= MaxSpeed or math.isclose(speed_obs, SpecialSpeed)
-                ):
-                    check.record_failed(
-                        f"Invalid speed: {speed_obs}",
-                        details=f"The speed shall be greater than 0 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
-                        severity=Severity.Medium,
                     )
 
             if speed_obs is not None:
+                with self._test_scenario.check(
+                    "Speed consistency with Common Dictionary", participants
+                ) as check:
+                    if speed_obs is None:
+                        check.record_failed(
+                            f"Speed not present",
+                            details=f"The speed must be specified.",
+                        )
+
+                    if not (
+                        0 <= speed_obs <= MaxSpeed
+                        or math.isclose(speed_obs, SpecialSpeed)
+                    ):
+                        check.record_failed(
+                            f"Invalid speed: {speed_obs}",
+                            details=f"The speed shall be greater than 0 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
+                        )
                 with self._test_scenario.check(
                     "Observed speed is consistent with injected one", participants
                 ) as check:
@@ -463,7 +465,6 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             "Observed speed different from injected speed",
                             details=f"Injected speed was {speed_inj} - observed speed is {speed_obs}",
-                            severity=Severity.Medium,
                         )
         else:
             self._test_scenario.record_note(
@@ -476,26 +477,26 @@ class RIDCommonDictionaryEvaluator(object):
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
-                "Track Direction consistency with Common Dictionary", participants
+                "Track Direction field is present", participants
             ) as check:
                 if track_obs is None:
                     check.record_failed(
                         f"Track direction not present",
                         details=f"The track direction must be specified.",
-                        severity=Severity.High,
-                    )
-
-                if not (
-                    MinTrackDirection <= track_obs <= MaxTrackDirection
-                    or round(track_obs) == SpecialTrackDirection
-                ):
-                    check.record_failed(
-                        f"Invalid track direction: {track_obs}",
-                        details=f"The track direction shall be greater than -360 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
-                        severity=Severity.Medium,
                     )
 
             if track_obs is not None:
+                with self._test_scenario.check(
+                    "Track Direction consistency with Common Dictionary", participants
+                ) as check:
+                    if not (
+                        MinTrackDirection <= track_obs <= MaxTrackDirection
+                        or round(track_obs) == SpecialTrackDirection
+                    ):
+                        check.record_failed(
+                            f"Invalid track direction: {track_obs}",
+                            details=f"The track direction shall be greater than -360 and less than {MaxSpeed}. The Special Value {SpecialSpeed} is allowed.",
+                        )
                 with self._test_scenario.check(
                     "Observed track is consistent with injected one", participants
                 ) as check:
@@ -507,7 +508,6 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             "Observed track direction different from injected one",
                             details=f"Inject track was {track_inj} - observed one is {track_obs}",
-                            severity=Severity.Medium,
                         )
 
         else:
@@ -533,7 +533,6 @@ class RIDCommonDictionaryEvaluator(object):
                     check.record_failed(
                         "Current Position contains an invalid latitude",
                         details=f"Invalid latitude: {lat}",
-                        severity=Severity.Medium,
                     )
                 lng = position_obs.lng
                 try:
@@ -542,7 +541,6 @@ class RIDCommonDictionaryEvaluator(object):
                     check.record_failed(
                         "Current Position contains an invalid longitude",
                         details=f"Invalid longitude: {lng}",
-                        severity=Severity.Medium,
                     )
             with self._test_scenario.check(
                 "Observed Position is consistent with injected one", participants
@@ -555,7 +553,6 @@ class RIDCommonDictionaryEvaluator(object):
                     check.record_failed(
                         "Observed position inconsistent with injected one",
                         details=f"Injected Position: {position_inj} - Observed Position: {position_obs}",
-                        severity=Severity.Medium,
                     )
         else:
             self._test_scenario.record_note(
@@ -583,7 +580,6 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             f"Invalid height type: {height_obs.reference}",
                             details=f"The height type reference shall be either {observation_api.RIDHeightReference.TakeoffLocation} or {observation_api.RIDHeightReference.GroundLevel}",
-                            severity=Severity.Medium,
                         )
 
                 with self._test_scenario.check(
@@ -595,7 +591,6 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             "Observed Height is inconsistent with injected one",
                             details=f"Observed height: {height_obs} - injected: {height_inj}",
-                            severity=Severity.Medium,
                         )
 
                 with self._test_scenario.check(
@@ -610,7 +605,6 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             f"Invalid height type: {height_obs.reference}",
                             details=f"The height type reference shall be either {observation_api.RIDHeightReference.TakeoffLocation} or {observation_api.RIDHeightReference.GroundLevel}",
-                            severity=Severity.Medium,
                         )
 
                 with self._test_scenario.check(
@@ -620,7 +614,6 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             "Observed Height type is inconsistent with injected one",
                             details=f"Observed height: {height_obs} - injected: {height_inj}",
-                            severity=Severity.Medium,
                         )
         else:
             self._test_scenario.record_note(
@@ -768,7 +761,6 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             "Operational Status is invalid",
                             details=f"Invalid Operational Status: {value_obs}",
-                            severity=Severity.Medium,
                         )
                 # We only check if an injected value: when SP values are evaluated we don't compare with the injected
                 # value, for example.
@@ -780,7 +772,6 @@ class RIDCommonDictionaryEvaluator(object):
                         if not value_obs == value_inj:
                             check.record_failed(
                                 "Observed operational status inconsistent with injected one",
-                                severity=Severity.Medium,
                                 details=f"Injected operational status: {value_inj} - Observed {value_obs}",
                             )
 

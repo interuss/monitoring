@@ -2,11 +2,11 @@
 
 This fragment is implemented in `common_dictionary_evaluator.py:RIDCommonDictionaryEvaluator.evaluate_sp_details`.
 
-## UAS ID presence in flight details check
+## ⚠️ UAS ID presence in flight details check
 
 NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the UAS ID is present in the information sent by the Service Provider. (**[astm.f3411.v22a.NET0260,Table1,1](../../../../requirements/astm/f3411/v22a.md)**)
 
-## UAS ID (Serial Number format) consistency with Common Dictionary check
+## ⚠️ UAS ID (Serial Number format) consistency with Common Dictionary check
 
 NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the UAS ID is in serial number format. (**[astm.f3411.v22a.NET0260,Table1,1a](../../../../requirements/astm/f3411/v22a.md)**)
 
