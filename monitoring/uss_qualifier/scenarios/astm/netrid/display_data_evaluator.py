@@ -930,41 +930,42 @@ class RIDObservationEvaluator(object):
                 raw_flight["current_state"] if "current_state" in raw_flight else {}
             )
 
-            if "height" in injected_position:
-                # We injected a height so expect to observe one
-                if "height" not in observed_position:
-                    check.record_failed(
-                        "A value was injected for the height field, but none was returned in Service Provider response",
-                        details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had a height injected, but Service Provider did not return a height at {mapping.observed_flight.query.query.request.initiated_at}",
-                    )
+            if self._rid_version == RIDVersion.f3411_22a:
+                if "height" in injected_position:
+                    # We injected a height so expect to observe one
+                    if "height" not in observed_position:
+                        check.record_failed(
+                            "A value was injected for the height field, but none was returned in Service Provider response",
+                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had a height injected, but Service Provider did not return a height at {mapping.observed_flight.query.query.request.initiated_at}",
+                        )
+                    else:
+                        if (
+                            injected_position.height.reference.value
+                            != observed_position.height.reference.value
+                        ):
+                            check.record_failed(
+                                "Height reference reported by Service Provider does not match injected height reference",
+                                details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with height={injected_position.height.distance} {injected_position.height.reference.value}, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
+                            )
+                        if not math.isclose(
+                            injected_position.height.distance,
+                            observed_position.height.distance,
+                            abs_tol=HEIGHT_PRECISION_M,
+                        ):
+                            check.record_failed(
+                                "Height reported by Service Provider does not match injected height",
+                                details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with height={injected_position.height.distance} {injected_position.height.reference.value}, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
+                            )
                 else:
-                    if (
-                        injected_position.height.reference.value
-                        != observed_position.height.reference.value
-                    ):
-                        check.record_failed(
-                            "Height reference reported by Service Provider does not match injected height reference",
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with height={injected_position.height.distance} {injected_position.height.reference.value}, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
-                        )
-                    if not math.isclose(
-                        injected_position.height.distance,
-                        observed_position.height.distance,
-                        abs_tol=HEIGHT_PRECISION_M,
-                    ):
-                        check.record_failed(
-                            "Height reported by Service Provider does not match injected height",
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with height={injected_position.height.distance} {injected_position.height.reference.value}, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
-                        )
-            else:
-                # We did not inject a height, but a height returning the magic 'unknown' value would still be seen as valid
-                if "height" in observed_position:
-                    if not math.isclose(
-                        observed_position.height.distance, -1000, abs_tol=1
-                    ):
-                        check.record_failed(
-                            "Injected no height, but Service Provider reported a height",
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had no height injected, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
-                        )
+                    # We did not inject a height, but a height returning the magic 'unknown' value would still be seen as valid
+                    if "height" in observed_position:
+                        if not math.isclose(
+                            observed_position.height.distance, -1000, abs_tol=1
+                        ):
+                            check.record_failed(
+                                "Injected no height, but Service Provider reported a height",
+                                details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had no height injected, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
+                            )
 
         # Verify that flight details queries succeeded and returned correctly-formatted data
         for mapping in mappings.values():

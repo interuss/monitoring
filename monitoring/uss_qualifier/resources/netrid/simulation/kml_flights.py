@@ -187,12 +187,19 @@ def generate_flight_record(
         r = random.Random(x=random_seed)
     now_isoformat = timestamp.isoformat()
 
+    # We get the minimum altitude to simulate height
+    minimum_altitude = min(c[2] for c in state_coordinates)
+
     flight_telemetry: List[injection.RIDAircraftState] = []
     for coordinates, speed, angle in zip(
         state_coordinates, flight_state_speeds, flight_track_angles
     ):
         timestamp = timestamp + timedelta(0, STATE_INCREMENT_SECONDS)
         timestamp_isoformat = timestamp.isoformat()
+
+        aircraft_height = injection.RIDHeight(
+            distance=coordinates[2] - minimum_altitude, reference="TakeoffLocation"
+        )
         aircraft_position = injection.RIDAircraftPosition(
             lng=coordinates[0],
             lat=coordinates[1],
@@ -200,8 +207,8 @@ def generate_flight_record(
             accuracy_h=flight_description.get("accuracy_h"),
             accuracy_v=flight_description.get("accuracy_v"),
             extrapolated=False,
+            height=aircraft_height,
         )
-        aircraft_height = None
         rid_aircraft_state = injection.RIDAircraftState(
             timestamp=StringBasedDateTime(timestamp_isoformat),
             operational_status="Airborne",
