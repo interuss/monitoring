@@ -262,7 +262,11 @@ class DSSInstance(object):
         force_query_scopes: Optional[Scope] = None,
         force_no_implicit_subscription: bool = False,
         requested_ovn_suffix: Optional[UUIDv7Format] = None,
-    ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query,]:
+    ) -> Tuple[
+        OperationalIntentReference,
+        List[SubscriberToNotify],
+        Query,
+    ]:
         """
         Create or update an operational intent.
 
@@ -315,9 +319,11 @@ class DSSInstance(object):
             state=state,
             uss_base_url=base_url,
             subscription_id=subscription_id,
-            new_subscription=ImplicitSubscriptionParameters(uss_base_url=base_url)
-            if subscription_id is None and force_no_implicit_subscription is False
-            else None,
+            new_subscription=(
+                ImplicitSubscriptionParameters(uss_base_url=base_url)
+                if subscription_id is None and force_no_implicit_subscription is False
+                else None
+            ),
             requested_ovn_suffix=requested_ovn_suffix,
         )
         query = query_and_describe(
@@ -775,10 +781,12 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
         )
         return DSSInstance(
             self._specification.participant_id,
-            self._specification.user_participant_ids
-            if "user_participant_ids" in self._specification
-            and self._specification.user_participant_ids
-            else [],
+            (
+                self._specification.user_participant_ids
+                if "user_participant_ids" in self._specification
+                and self._specification.user_participant_ids
+                else []
+            ),
             self._specification.base_url,
             self._auth_adapter.adapter,
             list(scopes_required),

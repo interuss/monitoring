@@ -117,10 +117,10 @@ def generate_tested_requirements(
         system_version = get_system_version(
             find_participant_system_versions(report.report, matching_participants)
         )
-        verification_report.participant_verifications[
-            participant_id
-        ] = ParticipantVerificationInfo(
-            status=overall_status, system_version=system_version
+        verification_report.participant_verifications[participant_id] = (
+            ParticipantVerificationInfo(
+                status=overall_status, system_version=system_version
+            )
         )
         participant_file = os.path.join(output_path, f"{participant_id}.html")
         other_participants = ", ".join(

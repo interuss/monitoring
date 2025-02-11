@@ -183,9 +183,9 @@ class ISASubscriptionInteractions(GenericTestScenario):
             subs_to_mutated_isa = {}
             for returned_subscriber in mutated_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:
-                    subs_to_mutated_isa[
-                        sub_in_subscriber.subscription_id
-                    ] = sub_in_subscriber
+                    subs_to_mutated_isa[sub_in_subscriber.subscription_id] = (
+                        sub_in_subscriber
+                    )
 
             if created_subscription.subscription.id not in subs_to_mutated_isa.keys():
                 check.record_failed(
@@ -236,9 +236,9 @@ class ISASubscriptionInteractions(GenericTestScenario):
             subs_to_deleted_isa = {}
             for returned_subscriber in deleted_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:
-                    subs_to_deleted_isa[
-                        sub_in_subscriber.subscription_id
-                    ] = sub_in_subscriber
+                    subs_to_deleted_isa[sub_in_subscriber.subscription_id] = (
+                        sub_in_subscriber
+                    )
 
             if created_subscription.subscription.id not in subs_to_deleted_isa:
                 check.record_failed(
@@ -392,9 +392,9 @@ class ISASubscriptionInteractions(GenericTestScenario):
             subs_to_mutated_isa = {}
             for returned_subscriber in mutated_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:
-                    subs_to_mutated_isa[
-                        sub_in_subscriber.subscription_id
-                    ] = sub_in_subscriber
+                    subs_to_mutated_isa[sub_in_subscriber.subscription_id] = (
+                        sub_in_subscriber
+                    )
 
             if created_subscription.subscription.id not in subs_to_mutated_isa.keys():
                 check.record_failed(
@@ -447,9 +447,9 @@ class ISASubscriptionInteractions(GenericTestScenario):
             subs_to_deleted_isa = {}
             for returned_subscriber in deleted_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:
-                    subs_to_deleted_isa[
-                        sub_in_subscriber.subscription_id
-                    ] = sub_in_subscriber
+                    subs_to_deleted_isa[sub_in_subscriber.subscription_id] = (
+                        sub_in_subscriber
+                    )
 
             if created_subscription.subscription.id not in subs_to_deleted_isa:
                 check.record_failed(

@@ -45,9 +45,11 @@ def make_exchange_record(query: Query, msg_problem: str) -> ExchangeRecord:
         method=query.request.method,
         headers=str_headers(query.request.headers)
         + str_headers(query.response.headers),
-        recorder_role=ExchangeRecordRecorderRole.Client
-        if query.request.outgoing
-        else ExchangeRecordRecorderRole.Server,
+        recorder_role=(
+            ExchangeRecordRecorderRole.Client
+            if query.request.outgoing
+            else ExchangeRecordRecorderRole.Server
+        ),
         request_time=Time(value=StringBasedDateTime(query.request.timestamp)),
         response_time=Time(value=StringBasedDateTime(query.response.reported)),
         response_code=query.status_code,

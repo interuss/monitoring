@@ -1,11 +1,11 @@
 """Basic Constraint tests:
 
-  - make sure the Constraint doesn't exist with get or query
-  - create the Constraint with a 60 minute length
-  - get by ID
-  - search with earliest_time and latest_time
-  - mutate
-  - delete
+- make sure the Constraint doesn't exist with get or query
+- create the Constraint with a 60 minute length
+- get by ID
+- search with earliest_time and latest_time
+- mutate
+- delete
 """
 
 import datetime

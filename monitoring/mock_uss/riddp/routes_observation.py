@@ -91,9 +91,9 @@ def _make_flight_observation(
         h.distance = limit_resolution(h.distance, MinHeightResolution)
     return observation_api.Flight(
         id=flight.id,
-        aircraft_type=flight.aircraft_type
-        if flight.aircraft_type
-        else UAType.NotDeclared,
+        aircraft_type=(
+            flight.aircraft_type if flight.aircraft_type else UAType.NotDeclared
+        ),
         most_recent_position=observation_api.Position(
             lat=p.lat,
             lng=p.lng,

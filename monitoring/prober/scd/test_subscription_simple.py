@@ -1,14 +1,15 @@
 """Basic strategic conflict detection Subscription tests:
 
-  - make sure Subscription doesn't exist by ID
-  - make sure Subscription doesn't exist by search
-  - create the Subscription with a 60 minute expiry
-  - get by ID
-  - get by searching a circular area
-  - delete
-  - make sure Subscription can't be found by ID
-  - make sure Subscription can't be found by search
+- make sure Subscription doesn't exist by ID
+- make sure Subscription doesn't exist by search
+- create the Subscription with a 60 minute expiry
+- get by ID
+- get by searching a circular area
+- delete
+- make sure Subscription can't be found by ID
+- make sure Subscription can't be found by search
 """
+
 # MIGRATION NOTE: has been migrated to uss_qualifier under subscription_simple
 
 import datetime

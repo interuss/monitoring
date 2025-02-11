@@ -248,9 +248,9 @@ class SubscriptionSimple(GenericTestScenario):
                 )
 
         # Store the version of the subscription
-        self._current_subscriptions[
-            creation_params["sub_id"]
-        ] = newly_created.subscription
+        self._current_subscriptions[creation_params["sub_id"]] = (
+            newly_created.subscription
+        )
         # Store the parameters we used for that subscription
         self._sub_params_by_sub_id[creation_params["sub_id"]] = creation_params
 

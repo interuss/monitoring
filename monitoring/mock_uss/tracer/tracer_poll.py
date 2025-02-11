@@ -85,9 +85,9 @@ def _log_poll_start(logger):
 def poll_observation_areas() -> None:
     logger = context.tracer_logger
     _log_poll_start(logger)
-    observation_areas: Dict[
-        ObservationAreaID, ObservationArea
-    ] = db.value.observation_areas
+    observation_areas: Dict[ObservationAreaID, ObservationArea] = (
+        db.value.observation_areas
+    )
     for observation_area in observation_areas.values():
         if observation_area.f3411 is not None and observation_area.f3411.poll:
             poll_isas(observation_area, logger)

@@ -18,7 +18,7 @@ isort-image:
 
 .PHONY: format
 format: isort-image json-schema
-	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:22.10.0 black --exclude=$(BLACK_EXCLUDES) .
+	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:25.1.0 black --exclude=$(BLACK_EXCLUDES) .
 	docker run --rm -v "$(CURDIR):/code" -w /code interuss/isort --profile black ${ISORT_EXCLUDES} .
 	cd monitoring && make format
 
@@ -32,7 +32,7 @@ check-hygiene: python-lint hygiene validate-uss-qualifier-docs shell-lint json-s
 
 .PHONY: python-lint
 python-lint: isort-image
-	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:22.10.0 black --check --exclude=$(BLACK_EXCLUDES) . || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
+	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:25.1.0 black --check --exclude=$(BLACK_EXCLUDES) . || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
 	docker run --rm -v "$(CURDIR):/code" -w /code interuss/isort --check-only --profile black ${ISORT_EXCLUDES} . || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
 
 .PHONY: hygiene

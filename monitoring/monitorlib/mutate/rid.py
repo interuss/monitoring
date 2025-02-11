@@ -683,15 +683,19 @@ class UpdatedISA(RIDQuery):
     def isa(self) -> Optional[ISA]:
         if self.rid_version == RIDVersion.f3411_19:
             return ISA(
-                v19_value=self._v19_request.service_area
-                if "service_area" in self._v19_request
-                else None
+                v19_value=(
+                    self._v19_request.service_area
+                    if "service_area" in self._v19_request
+                    else None
+                )
             )
         elif self.rid_version == RIDVersion.f3411_22a:
             return ISA(
-                v22a_value=self._v22a_request.service_area
-                if "service_area" in self._v22a_request
-                else None
+                v22a_value=(
+                    self._v22a_request.service_area
+                    if "service_area" in self._v22a_request
+                    else None
+                )
             )
         else:
             raise NotImplementedError(

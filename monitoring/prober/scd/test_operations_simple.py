@@ -1,12 +1,12 @@
 """Basic multi-Operation tests:
 
-  - create op1 by uss1
-  - create sub2 by uss2
-  - use sub2 to create op2 by uss2
-  - mutate op1
-  - delete op1
-  - delete op2
-  - delete sub2
+- create op1 by uss1
+- create sub2 by uss2
+- use sub2 to create op2 by uss2
+- mutate op1
+- delete op1
+- delete op2
+- delete sub2
 """
 
 import datetime

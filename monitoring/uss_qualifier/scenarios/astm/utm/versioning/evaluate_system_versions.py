@@ -52,7 +52,7 @@ class EvaluateSystemVersions(TestScenario):
         test_env_versions: Dict[ParticipantID, _VersionInfo] = {}
         prod_env_versions: Dict[ParticipantID, _VersionInfo] = {}
 
-        for (test_step, version_providers, env_versions) in (
+        for test_step, version_providers, env_versions in (
             (
                 "Get test environment test versions",
                 self._test_env_version_providers,

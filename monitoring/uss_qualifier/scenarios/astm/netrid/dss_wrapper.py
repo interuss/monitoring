@@ -107,10 +107,11 @@ class DSSWrapper(object):
             check.record_failed(
                 summary=fail_msg,
                 severity=severity,
-                details=f"{fail_details}\n{q.status_code} response: "
-                + "\n".join(q.errors)
-                if fail_details is not None
-                else f"{q.status_code} response: " + "\n".join(q.errors),
+                details=(
+                    f"{fail_details}\n{q.status_code} response: " + "\n".join(q.errors)
+                    if fail_details is not None
+                    else f"{q.status_code} response: " + "\n".join(q.errors)
+                ),
                 query_timestamps=[q.query.request.timestamp],
             )
 

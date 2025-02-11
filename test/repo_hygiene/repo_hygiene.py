@@ -4,6 +4,7 @@ This script examines the repository content for good hygiene practices.
 It will complete without error if no hygiene issues are found, or otherwise
 exit with an error.
 """
+
 import argparse
 import os
 import sys

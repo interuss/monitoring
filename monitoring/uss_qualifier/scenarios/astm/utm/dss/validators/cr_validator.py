@@ -309,7 +309,8 @@ class ConstraintReferenceValidator:
         self, expected_cr_id: EntityID, new_cr: fetch.Query
     ) -> None:
         """Validate a CR that was just explicitly created, meaning
-        we don't have a previous version to compare to, and we expect it to not be an implicit one."""
+        we don't have a previous version to compare to, and we expect it to not be an implicit one.
+        """
 
         t_dss = new_cr.request.timestamp
 

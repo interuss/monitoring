@@ -88,9 +88,9 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities and retrieve operational intent details"
         }
         if dss.can_use_scope(Scope.ConformanceMonitoringForSituationalAwareness):
-            scopes[
-                Scope.ConformanceMonitoringForSituationalAwareness
-            ] = "query for telemetry for off-nominal operational intents"
+            scopes[Scope.ConformanceMonitoringForSituationalAwareness] = (
+                "query for telemetry for off-nominal operational intents"
+            )
 
         self.dss = dss.get_instance(scopes)
 

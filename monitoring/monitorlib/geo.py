@@ -69,7 +69,7 @@ class LatLngPoint(ImplicitDict):
             f3411v19.RIDAircraftPosition,
             f3411v22a.RIDAircraftPosition,
             f3411testing_injection.RIDAircraftPosition,
-        ]
+        ],
     ):
         return LatLngPoint(
             lat=position.lat,
@@ -555,7 +555,7 @@ def bounding_rect(latlngs: List[Tuple[float, float]]) -> s2sphere.LatLngRect:
     lat_max = -90
     lng_min = 360
     lng_max = -360
-    for (lat, lng) in latlngs:
+    for lat, lng in latlngs:
         lat_min = min(lat_min, lat)
         lat_max = max(lat_max, lat)
         lng_min = min(lng_min, lng)

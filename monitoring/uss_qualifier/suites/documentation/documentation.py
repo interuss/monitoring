@@ -343,7 +343,7 @@ def _collect_requirements_from_suite_def(
 
 
 def _collect_requirements_from_action(
-    action: Union[TestSuiteActionDeclaration, PotentialGeneratedAction]
+    action: Union[TestSuiteActionDeclaration, PotentialGeneratedAction],
 ) -> Dict[RequirementID, RequirementInSuite]:
     action_type = action.get_action_type()
     if action_type == ActionType.TestScenario:
@@ -398,7 +398,7 @@ def _collect_requirements_from_scenario(
 
 
 def _collect_requirements_from_action_generator(
-    generator_def: Union[ActionGeneratorDefinition, PotentialActionGeneratorAction]
+    generator_def: Union[ActionGeneratorDefinition, PotentialActionGeneratorAction],
 ) -> Dict[RequirementID, RequirementInSuite]:
     potential_actions = list_potential_actions_for_action_generator_definition(
         generator_def

@@ -1,5 +1,4 @@
-"""Operation References corner cases error tests:
-"""
+"""Operation References corner cases error tests:"""
 
 import json
 import uuid

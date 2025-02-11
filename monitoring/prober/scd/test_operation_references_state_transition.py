@@ -1,5 +1,4 @@
-"""Operation References state transition tests:
-"""
+"""Operation References state transition tests:"""
 
 import json
 

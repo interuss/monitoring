@@ -316,7 +316,8 @@ class OIRKeyValidation(TestScenario):
         self, conflicting_ids: List[EntityID], query: fetch.Query
     ):
         """Checks that the conflict response body is as specified.
-        If the missing_operational_intents field is defined, its content is checked against the list of passed conflicting ids."""
+        If the missing_operational_intents field is defined, its content is checked against the list of passed conflicting ids.
+        """
 
         with self.check(
             "Failure response due to conflict has proper format", self._pid

@@ -190,7 +190,7 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
                     )
                     for i in interactions
                 ]
-                for (received_at, notification) in sub_notif_interactions:
+                for received_at, notification in sub_notif_interactions:
                     for sub in notification.subscriptions:
                         if (
                             sub.subscription_id == self._subscription_id

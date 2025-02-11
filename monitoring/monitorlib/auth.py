@@ -487,13 +487,13 @@ class SignedRequest(AuthAdapter):
             for k, v in signature_content.items():
                 if k[0] != "@":
                     request_headers[k] = v
-            request_headers[
-                "x-utm-message-signature"
-            ] = "utm-message-signature=:{}:".format(signature)
-            request_headers[
-                "x-utm-message-signature-input"
-            ] = "utm-message-signature={}".format(
-                signature_content["@signature-params"]
+            request_headers["x-utm-message-signature"] = (
+                "utm-message-signature=:{}:".format(signature)
+            )
+            request_headers["x-utm-message-signature-input"] = (
+                "utm-message-signature={}".format(
+                    signature_content["@signature-params"]
+                )
             )
         else:
             raise ValueError("Invalid signature style")

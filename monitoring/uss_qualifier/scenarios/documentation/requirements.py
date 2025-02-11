@@ -71,9 +71,9 @@ def _add_check(
         participants = check.participants if check.participants else [""]
         for participant_id in participants:
             if participant_id not in requirement.participant_performance:
-                requirement.participant_performance[
-                    participant_id
-                ] = ParticipantRequirementPerformance(successes=[], failures=[])
+                requirement.participant_performance[participant_id] = (
+                    ParticipantRequirementPerformance(successes=[], failures=[])
+                )
             performance = requirement.participant_performance[participant_id]
             if isinstance(check, PassedCheck):
                 performance.successes.append(path)

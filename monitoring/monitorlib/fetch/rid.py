@@ -1130,9 +1130,9 @@ def uss_flights(
                     area.lat_hi().degrees,
                     area.lng_hi().degrees,
                 ),
-                "include_recent_positions": "true"
-                if include_recent_positions
-                else "false",
+                "include_recent_positions": (
+                    "true" if include_recent_positions else "false"
+                ),
             },
             scope=v19.constants.Scope.Read,
             query_type=QueryType.F3411v19USSSearchFlights,

@@ -231,9 +231,7 @@ class RIDObservationEvaluator(object):
             raise ValueError(
                 f"Cannot evaluate a system using RID version {rid_version} with a DSS using RID version {dss.rid_version}"
             )
-        self._retrieved_flight_details: Set[
-            str
-        ] = (
+        self._retrieved_flight_details: Set[str] = (
             set()
         )  # Contains the observed IDs of the flights whose details were retrieved.
 
@@ -632,9 +630,11 @@ class RIDObservationEvaluator(object):
 
         for c_idx, cluster_rect in enumerate(cluster_rects):
             with self._test_scenario.check(
-                "Minimal obfuscation distance of individual flights"
-                if clusters[0].number_of_flights == 1
-                else "Minimal obfuscation distance of multiple flights clusters",
+                (
+                    "Minimal obfuscation distance of individual flights"
+                    if clusters[0].number_of_flights == 1
+                    else "Minimal obfuscation distance of multiple flights clusters"
+                ),
                 [observer.participant_id],
             ) as check:
                 cluster_width, cluster_height = geo.flatten(
@@ -1128,9 +1128,7 @@ class DisconnectedUASObservationEvaluator(object):
             raise ValueError(
                 f"Cannot evaluate a system using RID version {rid_version} with a DSS using RID version {dss.rid_version}"
             )
-        self._retrieved_flight_details: Set[
-            str
-        ] = (
+        self._retrieved_flight_details: Set[str] = (
             set()
         )  # Contains the observed IDs of the flights whose details were retrieved.
 

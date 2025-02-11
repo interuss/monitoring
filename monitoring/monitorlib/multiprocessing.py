@@ -85,9 +85,9 @@ class SynchronizedValue(object):
         self._shared_memory.buf[0 : self.SIZE_BYTES] = content_len.to_bytes(
             self.SIZE_BYTES, "big"
         )
-        self._shared_memory.buf[
-            self.SIZE_BYTES : content_len + self.SIZE_BYTES
-        ] = content
+        self._shared_memory.buf[self.SIZE_BYTES : content_len + self.SIZE_BYTES] = (
+            content
+        )
 
     @property
     def value(self):
