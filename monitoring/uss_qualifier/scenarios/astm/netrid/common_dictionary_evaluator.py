@@ -12,6 +12,8 @@ from uas_standards.astm.f3411.v22a.api import (
     UASID,
     HorizontalAccuracy,
     SpeedAccuracy,
+    Time,
+    TimeFormat,
     UAClassificationEUCategory,
     UAClassificationEUClass,
     VerticalAccuracy,
@@ -39,6 +41,7 @@ from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfi
 from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenarioType
 
 T = TypeVar("T")
+T2 = TypeVar("T2")
 
 
 class RIDCommonDictionaryEvaluator(object):
@@ -47,6 +50,7 @@ class RIDCommonDictionaryEvaluator(object):
         "_evaluate_ua_type",
     ]
     telemetry_evaluators = [
+        "_evaluate_timestamp",
         "_evaluate_timestamp_accuracy",
         "_evaluate_alt",
         "_evaluate_accuracy_v",
@@ -138,12 +142,6 @@ class RIDCommonDictionaryEvaluator(object):
         # If the state is present, we do validate its content,
         # but its presence is optional
         if injected_telemetry.has_field_with_value("current_state"):
-            self._evaluate_timestamp(
-                injected_telemetry.timestamp,
-                observed_flight.current_state.timestamp,
-                participants,
-            )
-
             # TODO check if worth adding correctness check here, it requires some slight (possibly non-trivial)
             #  changes in evaluate_sp_flights as well
             self._evaluate_operational_status(
@@ -324,49 +322,59 @@ class RIDCommonDictionaryEvaluator(object):
                 message=f"Unsupported version {self._rid_version}: skipping arbitrary uas id evaluation",
             )
 
-    def _evaluate_timestamp(
-        self, timestamp_inj: str, timestamp_obs: Optional[str], participants: List[str]
-    ):
-        if self._rid_version == RIDVersion.f3411_22a:
-            with self._test_scenario.check(
-                "Timestamp field is present", participants
-            ) as check:
-                if timestamp_obs is None:
-                    check.record_failed(
-                        f"Timestamp not present",
-                        details=f"The timestamp must be specified.",
-                    )
+    def _evaluate_timestamp(self, **generic_kwargs):
+        """
+        Evaluates timestamp. Exactly one of sp_observed or dp_observed must be provided.
+        See as well `common_dictionary_evaluator.md`.
 
-            if timestamp_obs:
-                with self._test_scenario.check(
-                    "Timestamp consistency with Common Dictionary", participants
-                ) as check:
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
 
-                    try:
-                        t_obs = StringBasedDateTime(timestamp_obs)
-                        if t_obs.datetime.utcoffset().seconds != 0:
-                            check.record_failed(
-                                f"Timestamp must be relative to UTC: {t_obs}",
-                            )
-                    except ParserError as e:
-                        check.record_failed(
-                            f"Unable to parse timestamp: {timestamp_obs}",
-                            details=f"Reason:  {e}",
-                        )
-                with self._test_scenario.check(
-                    "Observed timestamp is consistent with injected one", participants
-                ) as check:
-                    t_inj = StringBasedDateTime(timestamp_inj)
-                    if abs(t_inj.datetime - t_obs.datetime).total_seconds() > 1.0:
-                        check.record_failed(
-                            "Observed timestamp inconsistent with injected one",
-                            details=f"Injected timestamp: {timestamp_inj} - Observed one: {timestamp_obs}",
-                        )
-        else:
-            self._test_scenario.record_note(
-                key="skip_reason",
-                message=f"Unsupported version {self._rid_version}: skipping timestamp evaluation",
-            )
+        def value_validator(val: str | Time) -> StringBasedDateTime:
+
+            if self._rid_version == RIDVersion.f3411_22a and isinstance(val, Time):
+
+                if val.format != TimeFormat.RFC3339:
+                    raise ValueError(f"{val} is not in RFC3339 format.")
+
+                val = val.value
+
+            else:
+
+                try:
+                    val = StringBasedDateTime(val)
+                except ParserError as e:
+                    raise ValueError(f"Unable to parse timestamp: {e}")
+
+            if val.datetime.utcoffset().seconds != 0:
+                raise ValueError(f"Timestamp must be relative to UTC: {val}")
+
+            return val
+
+        def value_comparator(
+            v1: Optional[StringBasedDateTime], v2: Optional[StringBasedDateTime]
+        ) -> bool:
+
+            if v1 is None or v2 is None:
+                return False
+
+            return (
+                abs(v1.datetime - v2.datetime).total_seconds() < 0.1
+            )  # TODO: Not a constant right now, waiting on PR in uas_standards
+
+        self._generic_evaluator(
+            "timestamp",
+            "raw.current_state.timestamp",
+            "current_state.timestamp",
+            "Timestamp",
+            value_validator,
+            None,
+            True,
+            None,
+            value_comparator,
+            **generic_kwargs,
+        )
 
     def _evaluate_operator_id(
         self,
@@ -1183,11 +1191,11 @@ class RIDCommonDictionaryEvaluator(object):
         sp_field_name: str,
         dp_field_name: str,
         field_human_name: str,
-        value_validator: Optional[Callable[[T], T]],
-        observed_value_validator: Optional[Callable[[PendingCheck, T], None]],
+        value_validator: Optional[Callable[[T], T2]],
+        observed_value_validator: Optional[Callable[[PendingCheck, T2], None]],
         injection_required_field: bool,
-        unknown_value: Optional[T],
-        value_comparator: Callable[[Optional[T], Optional[T]], bool],
+        unknown_value: Optional[T2],
+        value_comparator: Callable[[Optional[T2], Optional[T2]], bool],
         injected: Union[
             injection.TestFlight,
             injection.RIDAircraftState,
@@ -1273,7 +1281,7 @@ class RIDCommonDictionaryEvaluator(object):
             if observed_val is not None:  # C5 / C9
                 if value_validator is not None:
                     try:
-                        value_validator(observed_val)
+                        observed_val = value_validator(observed_val)
                     except ValueError:
                         check.record_failed(
                             f"{field_human_name} is invalid",
@@ -1285,6 +1293,7 @@ class RIDCommonDictionaryEvaluator(object):
                                 )
                             },
                         )
+                        return  # Don't continue the test
 
                 if observed_value_validator is not None:
                     observed_value_validator(check, observed_val)

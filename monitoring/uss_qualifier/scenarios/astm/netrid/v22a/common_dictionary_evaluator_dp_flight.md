@@ -15,6 +15,19 @@ If the UA type value exposed by the observer API is inconsistent with the inject
 **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
 **[astm.f3411.v22a.NET0470,Table1,2](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
 
+## ⚠️ Timestamp is exposed correctly check
+
+If the Timestamp value exposed by the observation API is invalid this check will fail per:
+**[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)** because the DP violates the observation API contract;
+**[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v22a.NET0470,Table1,5](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Timestamp is consistent with injected value check
+
+If the Timestamp value exposed by the observer API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v22a.NET0470,Table1,5](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
+
 ## ⚠️ Timestamp accuracy is exposed correctly check
 
 If the Timestamp accuracy value exposed by the observation API is invalid this check will fail per:
@@ -118,18 +131,6 @@ If the Vertical Speed value exposed by the observation API is invalid this check
 If the Vertical Speed value exposed by the observer API is inconsistent with the injected value this check will fail per:
 **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
 **[astm.f3411.v22a.NET0470,Table1,21](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
-
-## ⚠️ Timestamp field is present check
-
-**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the timestamp field is actually provided. (**[astm.f3411.v22a.NET0470,Table1,5](../../../../requirements/astm/f3411/v22a.md)**)
-
-## ⚠️ Timestamp consistency with Common Dictionary check
-
-**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that timestamps are relative to UTC. (**[astm.f3411.v22a.NET0470,Table1,5](../../../../requirements/astm/f3411/v22a.md)**)
-
-## ⚠️ Observed timestamp is consistent with injected one check
-
-If the timestamp reported for an observation does not correspond to the injected one, the DP is not providing timely and accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
 
 ## ⚠️ Operational Status consistency with Common Dictionary check
 
