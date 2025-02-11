@@ -7,10 +7,14 @@ from arrow import ParserError
 from implicitdict import StringBasedDateTime
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
+from uas_standards.astm.f3411.v19.api import (
+    RIDOperationalStatus as RIDOperationalStatusv19,
+)
 from uas_standards.astm.f3411.v22a import constants
 from uas_standards.astm.f3411.v22a.api import (
     UASID,
     HorizontalAccuracy,
+    RIDOperationalStatus,
     SpeedAccuracy,
     Time,
     TimeFormat,
@@ -52,6 +56,7 @@ class RIDCommonDictionaryEvaluator(object):
     telemetry_evaluators = [
         "_evaluate_timestamp",
         "_evaluate_timestamp_accuracy",
+        "_evaluate_operational_status",
         "_evaluate_alt",
         "_evaluate_accuracy_v",
         "_evaluate_accuracy_h",
@@ -103,11 +108,6 @@ class RIDCommonDictionaryEvaluator(object):
                 query_timestamp=query_timestamp,
             )
 
-        self._evaluate_operational_status(
-            observed_flight.operational_status,
-            [participant_id],
-        )
-
     def evaluate_dp_flight(
         self,
         injected_telemetry: injection.RIDAircraftState,
@@ -137,15 +137,6 @@ class RIDCommonDictionaryEvaluator(object):
                     0
                 ],  # TODO: flatten 'participants', it always has a single value
                 query_timestamp=query_timestamp,
-            )
-
-        # If the state is present, we do validate its content,
-        # but its presence is optional
-        if injected_telemetry.has_field_with_value("current_state"):
-            # TODO check if worth adding correctness check here, it requires some slight (possibly non-trivial)
-            #  changes in evaluate_sp_flights as well
-            self._evaluate_operational_status(
-                observed_flight.current_state.operational_status, participants
             )
 
         self._evaluate_position(
@@ -730,41 +721,43 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_operational_status(
         self,
-        value_obs: Optional[str],
-        participants: List[str],
-        value_inj: Optional[str] = None,
+        query_timestamp: datetime.datetime,
+        **generic_kwargs,
     ):
-        if self._rid_version == RIDVersion.f3411_22a:
-            if value_obs is not None:
-                with self._test_scenario.check(
-                    "Operational Status consistency with Common Dictionary",
-                    participants,
-                ) as check:
-                    try:
-                        v22a.api.RIDOperationalStatus(value_obs)
-                    except ValueError:
-                        check.record_failed(
-                            "Operational Status is invalid",
-                            details=f"Invalid Operational Status: {value_obs}",
-                        )
-                # We only check if an injected value: when SP values are evaluated we don't compare with the injected
-                # value, for example.
-                if value_inj is not None:
-                    with self._test_scenario.check(
-                        "Operational Status is consistent with injected one",
-                        participants,
-                    ) as check:
-                        if not value_obs == value_inj:
-                            check.record_failed(
-                                "Observed operational status inconsistent with injected one",
-                                details=f"Injected operational status: {value_inj} - Observed {value_obs}",
-                            )
+        """
+        Evaluates Operational status. Exactly one of sp_observed or dp_observed must be provided.
+        See as well `common_dictionary_evaluator.md`.
 
-        else:
-            self._test_scenario.record_note(
-                key="skip_reason",
-                message=f"Unsupported version {self._rid_version}: skipping Operational Status evaluation",
-            )
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        def value_validator(val: str) -> RIDOperationalStatusv19 | RIDOperationalStatus:
+
+            if self._rid_version == RIDVersion.f3411_19:
+                return RIDOperationalStatusv19(val)
+
+            return RIDOperationalStatus(val)
+
+        def value_comparator(
+            v1: Optional[injection.UAType], v2: Optional[injection.UAType]
+        ) -> bool:
+
+            return v1 == v2
+
+        self._generic_evaluator(
+            "operational_status",
+            "raw.current_state.operational_status",
+            "current_state.operational_status",
+            "Operational status",
+            value_validator,
+            None,
+            False,
+            RIDOperationalStatus.Undeclared,
+            value_comparator,
+            query_timestamp=query_timestamp,
+            **generic_kwargs,
+        )
 
     def _evaluate_ua_type(
         self,

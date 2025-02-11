@@ -35,6 +35,17 @@ If the Timestamp accuracy value exposed by the SP API is missing or invalid this
 If the Timestamp accuracy value exposed by the SP API is inconsistent with the injected value this check will fail per:
 **[astm.f3411.v19.NET0260,Table1,5](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the valid injected value.
 
+## ⚠️ Operational status is exposed correctly check
+
+If the Operational status value exposed by the SP API is missing or invalid this check will fail per:
+**[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)** because the SP violates the SP API contract;
+**[astm.f3411.v19.NET0260,Table1,6](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Operational status is consistent with injected value check
+
+If the Operational status value exposed by the SP API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v19.NET0260,Table1,6](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the valid injected value.
+
 ## ⚠️ Geodetic Altitude is exposed correctly check
 
 If the Geodetic Altitude value exposed by the SP API is missing or invalid this check will fail per:

@@ -41,6 +41,19 @@ If the Timestamp accuracy value exposed by the observer API is inconsistent with
 **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
 **[astm.f3411.v22a.NET0470,Table1,6](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
 
+## ⚠️ Operational status is exposed correctly check
+
+If the Operational status value exposed by the observation API is invalid this check will fail per:
+**[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)** because the DP violates the observation API contract;
+**[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v22a.NET0470,Table1,7](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Operational status is consistent with injected value check
+
+If the Operational status value exposed by the observer API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v22a.NET0470,Table1,7](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
+
 ## ⚠️ Geodetic Altitude is exposed correctly check
 
 If the Geodetic Altitude value exposed by the observation API is invalid this check will fail per:
@@ -131,10 +144,6 @@ If the Vertical Speed value exposed by the observation API is invalid this check
 If the Vertical Speed value exposed by the observer API is inconsistent with the injected value this check will fail per:
 **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
 **[astm.f3411.v22a.NET0470,Table1,21](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
-
-## ⚠️ Operational Status consistency with Common Dictionary check
-
-**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Operational Status, if present, is valid. (**[astm.f3411.v22a.NET0470,Table1,7](../../../../requirements/astm/f3411/v22a.md)**)
 
 ## ⚠️ Current Position consistency with Common Dictionary check
 
