@@ -17,10 +17,11 @@ isort-image:
 	cd test/isort && docker image build . -t interuss/isort
 
 .PHONY: format
-format: isort-image json-schema
+format: isort-image
 	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:25.1.0 black --exclude=$(BLACK_EXCLUDES) .
 	docker run --rm -v "$(CURDIR):/code" -w /code interuss/isort --profile black ${ISORT_EXCLUDES} .
 	cd monitoring && make format
+	cd schemas && make format
 
 .PHONY: lint
 lint: shell-lint python-lint
@@ -28,16 +29,13 @@ lint: shell-lint python-lint
 	cd schemas && make lint
 
 .PHONY: check-hygiene
-check-hygiene: python-lint hygiene validate-uss-qualifier-docs shell-lint json-schema-lint
+check-hygiene: lint validate-uss-qualifier-docs
+	test/repo_hygiene/repo_hygiene.sh
 
 .PHONY: python-lint
 python-lint: isort-image
 	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:25.1.0 black --check --exclude=$(BLACK_EXCLUDES) . || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
 	docker run --rm -v "$(CURDIR):/code" -w /code interuss/isort --check-only --profile black ${ISORT_EXCLUDES} . || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
-
-.PHONY: hygiene
-hygiene:
-	test/repo_hygiene/repo_hygiene.sh
 
 .PHONY: validate-uss-qualifier-docs
 validate-uss-qualifier-docs:
@@ -47,17 +45,9 @@ validate-uss-qualifier-docs:
 shell-lint:
 	find . -name '*.sh' ! -path "./interfaces/*" | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck
 
-.PHONY: json-schema
-json-schema:
-	cd schemas && make format
-
-.PHONY: json-schema-lint
-json-schema-lint:
-	cd schemas && make lint
-
-# This mirrors the hygiene-tests continuous integration workflow job (.github/workflows/ci.yml)
-.PHONY: hygiene-tests
-hygiene-tests: check-hygiene
+.PHONY: unit-test
+unit-test:
+	cd monitoring && make unit-test
 
 # TODO: Add dependency on requirements.txt after we are sufficiently sure most users won't encounter a circular dependency
 .PHONY: image
@@ -116,7 +106,7 @@ monitoring-tests: check-monitoring
 
 # This reproduces the entire continuous integration workflow (.github/workflows/ci.yml)
 .PHONY: presubmit
-presubmit: hygiene-tests monitoring-tests
+presubmit: check-hygiene monitoring-tests
 
 # For local development when restarts are frequently required (such as when testing changes on the DSS)
 .PHONY: restart-all

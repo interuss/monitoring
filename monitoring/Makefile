@@ -6,6 +6,10 @@ lint:
 format:
 	cd uss_qualifier && make format
 
+.PHONY: unit-test
+unit-test:
+	cd uss_qualifier && make unit_test
+
 image: ../requirements.txt $(shell find . -type f ! -path "*/output/*" ! -name image ! -name *.pyc) $(shell find ../interfaces -type f)
 	# Building image due to changes in the following files: $?
 	./build.sh
