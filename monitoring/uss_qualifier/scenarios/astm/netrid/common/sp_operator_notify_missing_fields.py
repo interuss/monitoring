@@ -1,20 +1,17 @@
-import datetime
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 
-import arrow
-from future.backports.datetime import timedelta
 from requests.exceptions import RequestException
 from s2sphere import LatLngRect
 
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
+from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
     FlightDataResource,
     NetRIDServiceProviders,
+    NetRIDObserversResource,
     EvaluationConfigurationResource,
-)
-from monitoring.uss_qualifier.resources.netrid.service_providers import (
-    NetRIDServiceProvider,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid import (
     display_data_evaluator,
@@ -30,23 +27,22 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.injection import (
 from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
+
+from monitoring.monitorlib.rid_automated_testing.injection_api import (
+    TestFlight,
+)
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
+import arrow
 
 
-class ServiceProviderNotifiesSlowUpdates(GenericTestScenario):
+class SpOperatorNotifyMissingFields(GenericTestScenario):
     _flights_data: FlightDataResource
     _service_providers: NetRIDServiceProviders
     _evaluation_configuration: EvaluationConfigurationResource
 
     _injected_flights: List[InjectedFlight]
     _injected_tests: List[InjectedTest]
-
-    _pre_injection_notifications: dict[str, List[str]] = {}
-    _notifications_before: datetime
-    _notifications_after: datetime
-
-    _unobserved_notifications: list[NetRIDServiceProvider]
 
     def __init__(
         self,
@@ -55,79 +51,76 @@ class ServiceProviderNotifiesSlowUpdates(GenericTestScenario):
         evaluation_configuration: EvaluationConfigurationResource,
     ):
         super().__init__()
-
-        self._flights_data = flights_data.drop_every_n_state(2).freeze_flights()
+        self._flights_data = flights_data
         self._service_providers = service_providers
         self._evaluation_configuration = evaluation_configuration
         self._injected_tests = []
 
-        # default bounds if test flights have no data (in which case the scenario won't work anyway)
-        after = arrow.utcnow().datetime
-        before = arrow.utcnow().datetime + timedelta(hours=1)
-        for tf in self._flights_data.get_test_flights():
-            start, end = tf.get_span()
-            after = min(after, start)
-            before = max(before, end)
-
-        self._notifications_after = after
-        self._notifications_before = before
-
     @property
     def _rid_version(self) -> RIDVersion:
         raise NotImplementedError(
-            "ServiceProviderNotifiesSlowUpdates test scenario subclass must specify _rid_version"
+            "SpOperatorNotifyMissingFields test scenario subclass must specify _rid_version"
         )
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
 
-        for flight in self._flights_data.flight_collection.flights:
-            duration = (
-                flight.states[-1].timestamp.datetime
-                - flight.states[0].timestamp.datetime
+        self.begin_test_case("Missing fields flight")
+
+        for field in TestFlight.MANDATORY_TELEMETRY_FIELDS + [
+            f"position.{f}" for f in TestFlight.MANDATORY_POSITION_FIELDS
+        ]:
+            self._frozen_flights_data = self._flights_data.truncate_flights_field(
+                field
+            ).freeze_flights()
+            start_time, end_time = self._compute_notification_boundaries(
+                self._frozen_flights_data
             )
-            if duration.seconds < 61:
-                self.record_note(
-                    "flight_duration",
-                    f"Flight {flight.flight_details.id} is relatively short ({duration.seconds} seconds), "
-                    f"must be at least 61 seconds to match scenario expectations: this flight might cause the "
-                    f"scenario to fail depending on how Service Providers diagnose a too slow telemetry rate.",
-                )
+            self._notifications_before = end_time
+            self._notifications_after = start_time
 
-        self.begin_test_case("Slow updates flight")
+            self.begin_test_step("Retrieve pre-existing operator notification")
+            self._retrieve_notifications()
+            self.end_test_step()
 
-        self.begin_test_step("Establish notification baseline")
-        self._step_check_current_notifs()
-        self.end_test_step()
+            self.begin_test_step("Injection")
+            self._inject_flights()
+            self.end_test_step()
 
-        self.begin_test_step("Injection")
-        self._inject_flights()
-        self.end_test_step()
-
-        self._poll_during_flights()
-
-        self.begin_test_step("Verify operator notification")
-        self._step_verify_operator_notification()
-        self.end_test_step()
+            self._poll_during_flights()
 
         self.end_test_case()
         self.end_test_scenario()
 
-    def _step_check_current_notifs(self):
+    def _compute_notification_boundaries(self, flights_data):
+        start_time = arrow.utcnow()
+        end_time = arrow.utcnow()
+
+        for flight in flights_data.get_test_flights():
+            for telemetry in flight.telemetry:
+                timestamp = telemetry.get("timestamp", None)
+                if timestamp:
+                    start_time = min(start_time, timestamp.datetime)
+                    end_time = max(start_time, timestamp.datetime)
+
+        return start_time, end_time
+
+    def _retrieve_notifications(self):
         self._pre_injection_notifications = injection.get_user_notifications(
             self,
             self._service_providers,
-            after=self._notifications_after,
             before=self._notifications_before,
+            after=self._notifications_after,
         )
 
     def _inject_flights(self):
-        (self._injected_flights, self._injected_tests) = injection.inject_flights(
-            self, self._flights_data, self._service_providers
+        self._injected_flights, new_injected_tests = injection.inject_flights(
+            self, self._frozen_flights_data, self._service_providers
         )
 
-    def _poll_during_flights(self):
+        self._injected_tests += new_injected_tests
 
+    def _poll_during_flights(self):
         config = self._evaluation_configuration.configuration
 
         virtual_observer = VirtualObserver(
@@ -137,15 +130,14 @@ class ServiceProviderNotifiesSlowUpdates(GenericTestScenario):
             relevant_past_data_period=self._rid_version.realtime_period
             + config.max_propagation_latency.timedelta,
         )
-
         evaluator = display_data_evaluator.NotificationsEvaluator(
-            test_scenario=self,
-            service_providers=self._service_providers,
-            config=config,
-            rid_version=self._rid_version,
-            initial_notifications=self._pre_injection_notifications,
-            notification_before=self._notifications_before,
-            notification_after=self._notifications_after,
+            self,
+            self._service_providers,
+            config,
+            self._rid_version,
+            self._pre_injection_notifications,
+            self._notifications_before,
+            self._notifications_after,
         )
 
         def poll_fct(rect: LatLngRect) -> bool:
@@ -154,27 +146,27 @@ class ServiceProviderNotifiesSlowUpdates(GenericTestScenario):
         virtual_observer.start_polling(
             config.min_polling_interval.timedelta,
             [
+                self._rid_version.max_diagonal_km * 1000 - 100,  # clustered
                 self._rid_version.max_details_diagonal_km * 1000 - 100,  # details
             ],
             poll_fct,
         )
 
-        self._unobserved_notifications = evaluator.remaining_notifications_to_observe()
+        self.begin_test_step("Verify operator notification")
+        unobserved_notifications = evaluator.remaining_notifications_to_observe()
 
-    def _step_verify_operator_notification(self):
-        no_notif_participants = [
-            sp.participant_id for sp in self._unobserved_notifications
-        ]
-        for sp in self._service_providers.service_providers:
+        for service_provider in self._service_providers.service_providers:
+
             with self.check(
-                "Operator notification present",
-                sp.participant_id,
+                "All injected flights have generated user notifications",
+                [service_provider.participant_id],
             ) as check:
-                if sp.participant_id in no_notif_participants:
+                if service_provider in unobserved_notifications:
                     check.record_failed(
-                        summary="No operator notification found",
-                        details=f"No operator notification was found when at least one would have been expected due to the too low update rate of the injected telemetry.",
+                        summary="Some notifications were not observed",
+                        details=f"The following service provider didn't generated notifications even when flights data had missing field injected: {service_provider}",
                     )
+        self.end_test_step()
 
     def cleanup(self):
         self.begin_cleanup()

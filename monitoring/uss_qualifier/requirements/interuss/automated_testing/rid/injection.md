@@ -23,3 +23,7 @@ The USS under test must treat injected flights as similarly to real flights as p
 ### <tt>DeleteTestSuccess</tt>
 
 In order to rapidly conduct sequences of automated tests, uss_qualifier (as test director) must be able to "clear the airspace" after the completion of a test so that the simulated/injected flights from this test run do not affect future test runs.  A Service Provider USS must successfully cancel/land/remove/delete the flights in a specified test upon deletion request for that test and indicate success for the deletion request.
+
+### <tt>UserNotificationsSuccess</tt>
+
+When notifications are retrieved with a properly-authorized valid request, the USS under test must handle this request and indicate success.

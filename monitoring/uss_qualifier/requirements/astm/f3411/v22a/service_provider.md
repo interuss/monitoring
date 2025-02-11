@@ -82,21 +82,25 @@ All Service Provider Role requirements can be verified by automation.
 
 #### Operator ID provider
 
-  * **astm.f3411.v22a.NET0260,Table1,9**
+* **astm.f3411.v22a.NET0260,Table1,9**
 
 #### UAS ID Serial Number provider
 
-  * **astm.f3411.v22a.NET0260,Table1,1a**
+* **astm.f3411.v22a.NET0260,Table1,1a**
 
 #### Height provider
 
-  * **astm.f3411.v22a.NET0260,Table1,14**
+* **astm.f3411.v22a.NET0260,Table1,14**
+
+#### Height Type provider
+
+* **astm.f3411.v22a.NET0260,Table1,15**
 
 #### Operator Position provider
 
-  * **astm.f3411.v22a.NET0260,Table1,23**
-  * **astm.f3411.v22a.NET0260,Table1,24**
+* **astm.f3411.v22a.NET0260,Table1,23**
+* **astm.f3411.v22a.NET0260,Table1,24**
 
 #### Operational Status provider
 
-  * **astm.f3411.v22a.NET0260,Table1,7**
+* **astm.f3411.v22a.NET0260,Table1,7**

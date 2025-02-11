@@ -231,8 +231,54 @@ in which case the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../.
 
 Ensure that the attached implicit subscription has been expanded
 
+## Existing implicit subscription can replace an OIR's explicit subscription test case
+
+This test case verifies that an implicit subscription can be used to replace an explicit subscription attached to an OIR.
+
+### Ensure clean workspace test step
+
+Reset the workspace for this test case.
+
+#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
+
+#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
+
+### [Create an explicit subscription test step](./fragments/sub/crud/create_query.md)
+
+Create an explicit subscription to be initially set on the first OIR created in this test case
+
+### Create first OIR with an explicit subscription test step
+
+Create an OIR bound to the explicit subscription created in the previous step.
+
+#### [Create OIR](./fragments/oir/crud/create_query.md)
+
+### Create second OIR with an implicit subscription test step
+
+Create a second OIR with an implicit subscription, which will then be used in the next step.
+
+#### [Create OIR](./fragments/oir/crud/create_query.md)
+
+#### [Valid Implicit Subscription](./fragments/sub/implicit_create.md)
+
+Confirm that an implicit subscription was created.
+
+### Replace first OIR's explicit subscription with implicit subscription test step
+
+Replace the first OIR's explicit subscription with the implicit one created in the previous step.
+
+#### [Mutate OIR](./fragments/oir/crud/update_query.md)
+
+Confirm that the query to replace the second OIR's explicit subscription with the second OIR's implicit subscription succeeds.
+
+#### 🛑 The first OIR is now attached to the specified implicit subscription check
+
+If the OIR is not attached to the implicit subscription specified in a successful mutation query,
+the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+
 ## Cleanup
 
 ### [Remove OIRs created during this test](clean_workspace_op_intents.md)
 
 ### [Remove subscriptions created during this test](clean_workspace_subs.md)
+

@@ -1156,7 +1156,7 @@ def uss_flights(
             flights_url,
             params=params,
             scope=v22a.constants.Scope.DisplayProvider,
-            query_type=QueryType.F3411v19USSSearchFlights,
+            query_type=QueryType.F3411v22aUSSSearchFlights,
             participant_id=participant_id,
         )
         return FetchedUSSFlights(v22a_query=query)
