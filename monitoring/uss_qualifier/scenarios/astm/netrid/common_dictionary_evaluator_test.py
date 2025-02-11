@@ -254,33 +254,6 @@ def test_operational_status():
     _assert_operational_status("Invalid", False)  # Invalid
 
 
-def _assert_timestamp(value_inj: str, value_obs: str, outcome: bool):
-    def step_under_test(self: UnitTestScenario):
-        evaluator = RIDCommonDictionaryEvaluator(
-            config=EvaluationConfiguration(),
-            test_scenario=self,
-            rid_version=RIDVersion.f3411_22a,
-        )
-
-        evaluator._evaluate_timestamp(
-            StringBasedDateTime(value_inj), StringBasedDateTime(value_obs), []
-        )
-
-    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
-    assert unit_test_scenario.get_report().successful == outcome
-
-
-def test_timestamp():
-    _assert_timestamp("2023-09-13T04:43:00.1Z", "2023-09-13T04:43:00.1Z", True)  # Ok
-    _assert_timestamp("2023-09-13T04:43:00Z", "2023-09-13T04:43:00Z", True)  # Ok
-    _assert_timestamp(
-        "2023-09-13T04:43:00.501Z", "2023-09-13T04:43:00.501Z", True
-    )  # Ok
-    _assert_timestamp(
-        "2023-09-13T04:43:00.1+07:00", "2023-09-13T04:43:00.1+07:00", False
-    )  # Wrong timezone
-
-
 def _assert_height(value_inj: injection.RIDHeight, value_obs: RIDHeight, outcome: bool):
     def step_under_test(self: UnitTestScenario):
         evaluator = RIDCommonDictionaryEvaluator(
@@ -506,7 +479,7 @@ def test_generic_evaluator():
             ignore_dp_test=True,
         ),
         GenericEvaluatorTestCase(
-            test_name="C6",
+            test_name="C5",
             injected_value=None,
             sp_value="invalid",
             ignore_dp_test=True,
@@ -571,6 +544,7 @@ def test_generic_evaluator():
 
 
 T = TypeVar("T")
+T2 = TypeVar("T2")
 
 
 def _assert_generic_evaluator_call(
@@ -840,7 +814,7 @@ def _assert_generic_evaluator_invalid_observed_value(
 
 
 def _assert_generic_evaluator_defaults(
-    *fct_and_setters: list[Any], default_value: T, valid_value: T
+    *fct_and_setters: list[Any], default_value: T2, valid_value: T
 ):
     """
     Test that a _evaluate function is using a specifc value as the default value.
@@ -1322,3 +1296,68 @@ def test_evaluate_track():
     _assert_generic_evaluator_not_equivalent(*base_args, v1=361, v2=1)
     # Ensure special value is equal
     _assert_generic_evaluator_equivalent(*base_args, v1=361, v2=361)
+
+
+def test_evaluate_timestamp():
+    """Test the evaluate_timestamp function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["timestamp"] = value
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["raw"] = {"current_state": {"timestamp": value}}
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["current_state"] = {"timestamp": value}
+        return flight
+
+    base_args = (
+        "_evaluate_timestamp",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value="2025-01-01T12:00:00.0Z",
+        valid_value_2="2025-02-02T14:00:00.0Z",
+    )
+
+    # Random valid timestamps
+    for valid_value in [
+        "2025-01-01T12:00:00.0Z",
+        "2025-02-02T14:00:00.0Z",
+        "2025-03-03T16:00:00Z",
+        "2025-04-04T18:18:18.18Z",
+    ]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in ["2000-01-01T12:00:00.0+07:00", "what time is it?"]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args, invalid_value=invalid_value, valid_value=42
+        )
+
+    _assert_generic_evaluator_dont_have_default(
+        *base_args,
+        valid_value="2025-01-01T12:00:00.0Z",
+        valid_value_2="2025-02-02T14:00:00.0Z",
+    )
+
+    _assert_generic_evaluator_equivalent(
+        *base_args, v1="2025-01-01T12:00:00Z", v2="2025-01-01T12:00:00.05Z"
+    )
+    _assert_generic_evaluator_not_equivalent(
+        *base_args, v1="2025-01-01T12:00:00Z", v2="2025-01-01T12:00:00.1Z"
+    )
+    _assert_generic_evaluator_not_equivalent(
+        *base_args, v1="2025-01-01T12:00:00Z", v2="2025-01-01T12:00:01Z"
+    )
+    _assert_generic_evaluator_not_equivalent(
+        *base_args, v1="2025-01-01T12:00:00Z", v2="2025-01-01T14:00:00Z"
+    )
+    _assert_generic_evaluator_not_equivalent(
+        *base_args, v1="2025-01-01T12:00:00Z", v2="2025-01-02T12:00:00Z"
+    )
