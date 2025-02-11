@@ -3,10 +3,8 @@
 # A file to generate Flight Records from KML.
 import math
 import random
-from collections import namedtuple
-
-
 import uuid
+from collections import namedtuple
 from datetime import timedelta
 from typing import List
 
