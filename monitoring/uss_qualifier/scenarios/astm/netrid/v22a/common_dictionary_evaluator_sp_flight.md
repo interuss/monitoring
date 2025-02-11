@@ -68,6 +68,17 @@ If the Speed Accuracy value exposed by the SP API is missing or invalid this che
 If the Speed Accuracy value exposed by the SP API is inconsistent with the injected value this check will fail per:
 **[astm.f3411.v22a.NET0260,Table1,18](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the valid injected value.
 
+## ⚠️ Speed is exposed correctly check
+
+If the Speed value exposed by the SP API is missing or invalid this check will fail per:
+**[astm.f3411.v22a.NET0710,1](../../../../requirements/astm/f3411/v22a.md)** because the SP violates the SP API contract;
+**[astm.f3411.v22a.NET0260,Table1,20](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Speed is consistent with injected value check
+
+If the Speed value exposed by the SP API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v22a.NET0260,Table1,20](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the valid injected value.
+
 ## ⚠️ Vertical Speed is exposed correctly check
 
 If the Vertical Speed value exposed by the SP API is missing or invalid this check will fail per:
