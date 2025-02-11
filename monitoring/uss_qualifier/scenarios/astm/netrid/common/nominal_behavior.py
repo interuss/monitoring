@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import List, Optional
 
 from requests.exceptions import RequestException
@@ -86,7 +87,9 @@ class NominalBehavior(GenericTestScenario):
             repeat_query_rect_period=config.repeat_query_rect_period,
             min_query_diagonal_m=config.min_query_diagonal,
             relevant_past_data_period=self._rid_version.realtime_period
-            + config.max_propagation_latency.timedelta,
+            + config.max_propagation_latency.timedelta
+            # add two 'min_polling_interval' to make sure we poll at least once after flights are over
+            + (config.min_polling_interval.timedelta * 2),
         )
         evaluator = display_data_evaluator.RIDObservationEvaluator(
             self,
