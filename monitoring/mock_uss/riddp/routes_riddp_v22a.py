@@ -1,5 +1,6 @@
-import flask
-from implicitdict import ImplicitDict
+from monitoring.mock_uss.riddp.database import db
+from monitoring.monitorlib.fetch import describe_flask_query
+from monitoring.monitorlib.mutate.rid import UpdatedISA
 from uas_standards.astm.f3411.v22a.api import (
     OperationID,
     OPERATIONS,
@@ -11,6 +12,10 @@ from uas_standards.astm.f3411.v22a.constants import (
 
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
+
+import flask
+from implicitdict import ImplicitDict
+from loguru import logger
 
 
 def rid_v22a_operation(op_id: OperationID):
@@ -26,12 +31,32 @@ def ridsp_notify_isa_v22a(id: str):
         json = flask.request.json
         if json is None:
             raise ValueError("Request did not contain a JSON payload")
-        ImplicitDict.parse(json, PutIdentificationServiceAreaNotificationParameters)
+        put_params: PutIdentificationServiceAreaNotificationParameters = (
+            ImplicitDict.parse(json, PutIdentificationServiceAreaNotificationParameters)
+        )
     except ValueError as e:
         msg = "Unable to parse PutIdentificationServiceAreaNotificationParameters JSON request: {}".format(
             e
         )
         return msg, 400
+
+    subscription_ids = [s.subscription_id for s in put_params.subscriptions]
+    if subscription_ids:
+        with db as tx:
+            updated = False
+
+            for subscription in tx.subscriptions:
+                if subscription.upsert_result.subscription.id in subscription_ids:
+                    query = describe_flask_query(flask.request, flask.jsonify(None), 0)
+                    subscription.updates.append(UpdatedISA(v22a_query=query))
+                    logger.debug(
+                        f"Updated subscription {subscription.upsert_result.subscription.id} with ISA {id}"
+                    )
+                    updated = True
+            if not updated:
+                logger.warning(
+                    f"Update for ISA {id} specified non-existent subscriptions {','.join(subscription_ids)}"
+                )
 
     return (
         flask.jsonify(None),

@@ -16,6 +16,13 @@ resources:
   uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
 actions:
   - test_scenario:
+      scenario_type: scenarios.astm.netrid.v22a.ServiceProviderNotifiesSlowUpdates
+      resources:
+        flights_data: flights_data
+        service_providers: service_providers
+        evaluation_configuration: evaluation_configuration
+    on_failure: Continue
+  - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.DisplayProviderBehavior
       resources:
         observers: observers
@@ -32,6 +39,13 @@ actions:
         service_providers: service_providers
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances
+    on_failure: Continue
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v22a.SpOperatorNotifyMissingFields
+      resources:
+        flights_data: flights_data
+        service_providers: service_providers
+        evaluation_configuration: evaluation_configuration
     on_failure: Continue
   - action_generator:
       generator_type: action_generators.astm.f3411.ForEachDSS

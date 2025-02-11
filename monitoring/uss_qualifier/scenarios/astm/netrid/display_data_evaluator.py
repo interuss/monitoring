@@ -4,6 +4,9 @@ from dataclasses import dataclass
 from typing import List, Optional, Dict, Union, Set, Tuple
 
 import arrow
+from monitoring.uss_qualifier.resources.netrid.service_providers import (
+    NetRIDServiceProvider,
+)
 import s2sphere
 from loguru import logger
 from s2sphere import LatLng, LatLngRect
@@ -26,8 +29,13 @@ from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
+from monitoring.uss_qualifier.resources.netrid import NetRIDServiceProviders
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.resources.netrid.observers import RIDSystemObserver
+from monitoring.uss_qualifier.resources.netrid.service_providers import (
+    NetRIDServiceProvider,
+)
+from monitoring.uss_qualifier.scenarios.astm.netrid import injection
 from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
     RIDCommonDictionaryEvaluator,
 )
@@ -39,6 +47,14 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+
+from monitoring.uss_qualifier.scenarios.astm.netrid import (
+    injection,
+)
+
+from monitoring.uss_qualifier.resources.netrid import (
+    NetRIDServiceProviders,
+)
 
 SPEED_PRECISION = 0.05
 HEIGHT_PRECISION_M = 1
@@ -272,7 +288,7 @@ class RIDObservationEvaluator(object):
             perform_observation = True
             verified_sps = set()
 
-        if perform_observation:
+        if perform_observation and observers:
             self._test_scenario.begin_test_step("Observer polling")
             for observer in observers:
                 (observation, query) = observer.observe_system(rect)
@@ -914,41 +930,42 @@ class RIDObservationEvaluator(object):
                 raw_flight["current_state"] if "current_state" in raw_flight else {}
             )
 
-            if "height" in injected_position:
-                # We injected a height so expect to observe one
-                if "height" not in observed_position:
-                    check.record_failed(
-                        "A value was injected for the height field, but none was returned in Service Provider response",
-                        details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had a height injected, but Service Provider did not return a height at {mapping.observed_flight.query.query.request.initiated_at}",
-                    )
+            if self._rid_version == RIDVersion.f3411_22a:
+                if "height" in injected_position:
+                    # We injected a height so expect to observe one
+                    if "height" not in observed_position:
+                        check.record_failed(
+                            "A value was injected for the height field, but none was returned in Service Provider response",
+                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had a height injected, but Service Provider did not return a height at {mapping.observed_flight.query.query.request.initiated_at}",
+                        )
+                    else:
+                        if (
+                            injected_position.height.reference.value
+                            != observed_position.height.reference.value
+                        ):
+                            check.record_failed(
+                                "Height reference reported by Service Provider does not match injected height reference",
+                                details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with height={injected_position.height.distance} {injected_position.height.reference.value}, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
+                            )
+                        if not math.isclose(
+                            injected_position.height.distance,
+                            observed_position.height.distance,
+                            abs_tol=HEIGHT_PRECISION_M,
+                        ):
+                            check.record_failed(
+                                "Height reported by Service Provider does not match injected height",
+                                details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with height={injected_position.height.distance} {injected_position.height.reference.value}, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
+                            )
                 else:
-                    if (
-                        injected_position.height.reference.value
-                        != observed_position.height.reference.value
-                    ):
-                        check.record_failed(
-                            "Height reference reported by Service Provider does not match injected height reference",
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with height={injected_position.height.distance} {injected_position.height.reference.value}, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
-                        )
-                    if not math.isclose(
-                        injected_position.height.distance,
-                        observed_position.height.distance,
-                        abs_tol=HEIGHT_PRECISION_M,
-                    ):
-                        check.record_failed(
-                            "Height reported by Service Provider does not match injected height",
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with height={injected_position.height.distance} {injected_position.height.reference.value}, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
-                        )
-            else:
-                # We did not inject a height, but a height returning the magic 'unknown' value would still be seen as valid
-                if "height" in observed_position:
-                    if not math.isclose(
-                        observed_position.height.distance, -1000, abs_tol=1
-                    ):
-                        check.record_failed(
-                            "Injected no height, but Service Provider reported a height",
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had no height injected, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
-                        )
+                    # We did not inject a height, but a height returning the magic 'unknown' value would still be seen as valid
+                    if "height" in observed_position:
+                        if not math.isclose(
+                            observed_position.height.distance, -1000, abs_tol=1
+                        ):
+                            check.record_failed(
+                                "Injected no height, but Service Provider reported a height",
+                                details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had no height injected, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
+                            )
 
         # Verify that flight details queries succeeded and returned correctly-formatted data
         for mapping in mappings.values():
@@ -1283,6 +1300,78 @@ class DisconnectedUASObservationEvaluator(object):
                             self._observed_disconnections.add(
                                 expected_flight.flight.injection_id
                             )
+
+
+class NotificationsEvaluator(object):
+    """Evaluates observations of an RID system over time.
+
+    This evaluator observes a set of provided RIDSystemObservers in
+    evaluate_system by repeatedly polling them according to the expected data
+    provided to NotificationsEvaluator upon construction.
+    """
+
+    def __init__(
+        self,
+        test_scenario: TestScenario,
+        service_providers: NetRIDServiceProviders,
+        config: EvaluationConfiguration,
+        rid_version: RIDVersion,
+        initial_notifications: dict[str, List[str]],
+        notification_before: datetime.datetime,
+        notification_after: datetime.datetime,
+    ):
+        self._test_scenario = test_scenario
+        self._common_dictionary_evaluator = RIDCommonDictionaryEvaluator(
+            config, self._test_scenario, rid_version
+        )
+        self._service_providers = service_providers
+        self._config = config
+        self._rid_version = rid_version
+        self._initial_notifications = initial_notifications
+        self._notifications_before = notification_before
+        self._notifications_after = notification_after
+
+        self._current_notifications = {}
+
+    def remaining_notifications_to_observe(self) -> list[NetRIDServiceProvider]:
+        result = []
+
+        for service_provider in self._service_providers.service_providers:
+            if len(self._current_notifications[service_provider.participant_id]) == len(
+                self._initial_notifications[service_provider.participant_id]
+            ):
+                result.append(service_provider)
+
+        return result
+
+    def evaluate_new_notifications(
+        self,
+        rect: s2sphere.LatLngRect,
+    ) -> bool:
+        """
+        Polls service providers relevant to the injected test flights and verifies that,
+        for any flight injected, at least one user notification has been created.
+
+        returns true once all terminated flights have been evaluated.
+        """
+
+        self._test_scenario.begin_test_step("Service Provider polling")
+
+        # Evaluate observations
+        self._retrieve_notifications()
+
+        self._test_scenario.end_test_step()
+
+        return not self.remaining_notifications_to_observe()
+
+    def _retrieve_notifications(self):
+
+        self._current_notifications = injection.get_user_notifications(
+            self._test_scenario,
+            self._service_providers,
+            before=self._notifications_before,
+            after=self._notifications_after,
+        )
 
 
 def _chronological_positions(f: Flight) -> List[s2sphere.LatLng]:

@@ -2,15 +2,15 @@
 
 This fragment is implemented in `common_dictionary_evaluator.py:RIDCommonDictionaryEvaluator.evaluate_dp_details`.
 
-## UAS ID presence in flight details check
+## ⚠️ UAS ID presence in flight details check
 
 **[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the UAS ID is present in the information sent by the Display Provider. (**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)**)
 
-## UAS ID (Serial Number format) consistency with Common Dictionary check
+## ⚠️ UAS ID (Serial Number format) consistency with Common Dictionary check
 
 **[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that if the UAS ID is in serial number format, its format is valid. (**[astm.f3411.v22a.NET0470,Table1,1a](../../../../requirements/astm/f3411/v22a.md)**)
 
-## UAS ID is consistent with injected one check
+## ⚠️ UAS ID is consistent with injected one check
 
 If the UAS ID contained in flight details returned by a display provider does not correspond to the injected one, the DP is not providing accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
 

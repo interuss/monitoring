@@ -286,31 +286,6 @@ def test_timestamp():
     )  # Wrong timezone
 
 
-def _assert_speed(value_inj: float, value_obs: float, outcome: bool):
-    def step_under_test(self: UnitTestScenario):
-        evaluator = RIDCommonDictionaryEvaluator(
-            config=EvaluationConfiguration(),
-            test_scenario=self,
-            rid_version=RIDVersion.f3411_22a,
-        )
-
-        evaluator._evaluate_speed(value_inj, value_obs, [])
-
-    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
-    assert unit_test_scenario.get_report().successful == outcome
-
-
-def test_speed():
-    _assert_speed(1, 1, True)  # Ok
-    _assert_speed(20.75, 20.75, True)  # Ok
-    _assert_speed(400, 400, False)  # Fail, above MaxSpeed
-    _assert_speed(23.3, 23.3, True)  # Ok
-    _assert_speed(23.13, 23.25, True)  # Ok
-    _assert_speed(23.12, 23.0, True)  # Ok
-    _assert_speed(23.13, 23.0, False)  # Ok
-    _assert_speed(23.13, 23.5, False)  # Ok
-
-
 def _assert_track(value_inj: float, value_obs: float, outcome: bool):
     def step_under_test(self: UnitTestScenario):
         evaluator = RIDCommonDictionaryEvaluator(
@@ -652,6 +627,9 @@ def _assert_generic_evaluator_call(
         wanted_fail: A list of specific C-code that should fail. If not set, not tested.
     """
 
+    if rid_version is None:
+        rid_version = RIDVersion.f3411_22a
+
     def step_under_test(self: UnitTestScenario):
         evaluator = RIDCommonDictionaryEvaluator(
             config=EvaluationConfiguration(),
@@ -813,7 +791,7 @@ def _assert_generic_evaluator_valid_value(
         valid_value,
         valid_value,
         outcome=True,
-        rid_version=rid_version
+        rid_version=rid_version,
     )
 
 
@@ -845,7 +823,7 @@ def _assert_generic_evaluator_invalid_value(
             valid_value,
             valid_value,
             outcome=False,
-            rid_version=rid_version
+            rid_version=rid_version,
         )
         raised = False
     except Exception:
@@ -860,7 +838,7 @@ def _assert_generic_evaluator_invalid_value(
         invalid_value,
         outcome=False,
         rid_version=rid_version,
-        wanted_fail=["C5", "C9"]
+        wanted_fail=["C5", "C9"],
     )
 
 
@@ -889,7 +867,7 @@ def _assert_generic_evaluator_invalid_observed_value(
         invalid_value,
         invalid_value,
         outcome=False,
-        rid_version=rid_version
+        rid_version=rid_version,
     )
 
 
@@ -916,10 +894,64 @@ def _assert_generic_evaluator_defaults(
         valid_value,
         valid_value,
         outcome=False,
-        wanted_fail=["C6", "C10"]
+        wanted_fail=["C6", "C10"],
     )
     _assert_generic_evaluator_result(
         *fct_and_setters, None, default_value, default_value, outcome=True
+    )
+
+
+def _assert_generic_evaluator_dont_have_default(
+    *fct_and_setters: list[Any], valid_value: T, valid_value_2: T
+):
+    """
+    Test that a _evaluate function isn't providing a default value.
+
+    Args:
+        fct: name of the function to test
+        injected_field_setter: See _build_generic_evaluator_objects's doc
+        sp_field_setter: See _build_generic_evaluator_objects's doc
+        dp_field_setter: See _build_generic_evaluator_objects's doc
+        injected_value: See _build_generic_evaluator_objects's doc
+        sp_value: See _build_generic_evaluator_objects's doc
+        dp_value: See _build_generic_evaluator_objects's doc
+        valid_value: A usable value that should be valid in every case (injected/sp/dp).
+        valid_value_2: Another usable value that should be valid in every case (injected/sp/dp), different from valid_value.
+    """
+
+    # The test should fail, because the generic evaluator disallow empty
+    # mandatory value for the programmer
+    got_exception = False
+
+    try:
+        _assert_generic_evaluator_result(
+            *fct_and_setters, None, valid_value, valid_value, outcome=False
+        )
+    except:
+        got_exception = True
+
+    assert got_exception
+
+    # We test with two valid values that we get a fail from C3 (missing value)
+    # and C7 (value not equal), to ensure the function is not providing a
+    # default valid value (that could, by chance, be equal to valid_value,
+    # hence the two valid values)
+    _assert_generic_evaluator_result(
+        *fct_and_setters,
+        valid_value,
+        None,
+        None,
+        outcome=False,
+        wanted_fail=["C3", "C7"],
+    )
+
+    _assert_generic_evaluator_result(
+        *fct_and_setters,
+        valid_value_2,
+        None,
+        None,
+        outcome=False,
+        wanted_fail=["C3", "C7"],
     )
 
 
@@ -994,7 +1026,7 @@ def test_evaluate_ua_type():
     _assert_generic_evaluator_correct_field_is_used(
         *base_args,
         valid_value=injection.UAType.Helicopter,
-        valid_value_2=injection.UAType.Glider
+        valid_value_2=injection.UAType.Glider,
     )
 
     for valid_value in [
@@ -1020,7 +1052,7 @@ def test_evaluate_ua_type():
         _assert_generic_evaluator_invalid_value(
             *base_args,
             invalid_value=invalid_value,
-            valid_value=injection.UAType.Helicopter
+            valid_value=injection.UAType.Helicopter,
         )
 
     # HybridLift and VTOl are version specific
@@ -1041,7 +1073,7 @@ def test_evaluate_ua_type():
     _assert_generic_evaluator_defaults(
         *base_args,
         default_value=injection.UAType.NotDeclared,
-        valid_value=injection.UAType.Helicopter
+        valid_value=injection.UAType.Helicopter,
     )
 
     for v1, v2 in permutations(
@@ -1078,3 +1110,154 @@ def test_evaluate_ua_type():
             _assert_generic_evaluator_not_equivalent(
                 *base_args, v1=v1, v2=v2, rid_version=rid_version
             )
+
+
+def test_evaluate_timestamp_accuracy():
+    """Test the evaluate_timestamp_accuracy function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["timestamp_accuracy"] = value
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["raw"] = {"current_state": {"timestamp_accuracy": value}}
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["current_state"] = {"timestamp_accuracy": value}
+        return flight
+
+    base_args = (
+        "_evaluate_timestamp_accuracy",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    # Value should be >= 0
+    for valid_value in [0, 0.01, 42, 3.14, 10000]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in [-1, -0.01, -0.05, -10000]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args, invalid_value=invalid_value, valid_value=42
+        )
+
+    _assert_generic_evaluator_dont_have_default(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    # Resolution is in steps of 0.05
+    for v1 in [0, 0.01, 42, 3.14, 10000]:
+        for valid_delta in [
+            0,
+            0.01,
+            0.02,
+            0.03,
+            0.04,
+            0.045,
+            0.049,
+            -0.01,
+            -0.02,
+            -0.03,
+            -0.04,
+            -0.045,
+            -0.049,
+        ]:
+            v2 = v1 + valid_delta
+
+            if v2 > 0:  # Ensure value stays valid
+                _assert_generic_evaluator_equivalent(*base_args, v1=v1, v2=v2)
+        for invalid_delta in [
+            0.051,
+            1,
+            42,
+            -0.051,
+            -1,
+            -42,
+        ]:  # Float values are funny, we cannot test 0.05 because check may 'round' that to 0.04999999999999716
+            v2 = v1 + invalid_delta
+
+            if v2 > 0:  # Ensure value stays valid
+                _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
+
+
+def test_evaluate_speed():
+    """Test the evaluate_speed function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["speed"] = value
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["raw"] = {"current_state": {"speed": value}}
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["current_state"] = {"speed": value}
+        return flight
+
+    base_args = (
+        "_evaluate_speed",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    # Value should be between -254.25, 254.25 or the special 255 value
+    for valid_value in [0, 0.01, 42, 3.14, 254.25, 255]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in [-255, 254.5, -254.5, -1000, 1000, -0.01, -42, -3.14, -254.25]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args, invalid_value=invalid_value, valid_value=42
+        )
+
+    _assert_generic_evaluator_dont_have_default(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    # Resolution is in steps of 0.25
+    # Float values are funny, we cannot test 0.25 because check may 'round' that to 0.04999999999999716
+    for v1 in [0, 0.01, 42, 3.14]:
+        for valid_delta in [
+            0,
+            0.1,
+            0.2,
+            0.24,
+            -0.1,
+            -0.2,
+            -0.24,
+        ]:
+            v2 = v1 + valid_delta
+
+            if v2 > 0:  # Ensure value stays valid
+                _assert_generic_evaluator_equivalent(*base_args, v1=v1, v2=v2)
+        for invalid_delta in [
+            0.26,
+            1,
+            42,
+            -0.26,
+            -1,
+            -42,
+        ]:
+            v2 = v1 + invalid_delta
+
+            if v2 > 0:  # Ensure value stays valid
+                _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
