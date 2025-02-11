@@ -80,6 +80,19 @@ If the Speed Accuracy value exposed by the observer API is inconsistent with the
 **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
 **[astm.f3411.v22a.NET0470,Table1,18](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
 
+## ⚠️ Track Direction is exposed correctly check
+
+If the Track Direction value exposed by the observation API is invalid this check will fail per:
+**[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)** because the DP violates the observation API contract;
+**[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v22a.NET0470,Table1,19](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Track Direction is consistent with injected value check
+
+If the Track Direction value exposed by the observer API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v22a.NET0470,Table1,19](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
+
 ## ⚠️ Speed is exposed correctly check
 
 If the Speed value exposed by the observation API is invalid this check will fail per:
@@ -146,15 +159,3 @@ If the Height reported for an observation does not correspond to the injected on
 ## ⚠️ Height Type is consistent with injected one check
 
 If the Height Type reported for an observation does not correspond to the injected one, the DP is not providing timely and accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
-
-## ⚠️ Track Direction field is present
-
-**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Track Direction (**[astm.f3411.v22a.NET0470,Table1,19](../../../../requirements/astm/f3411/v22a.md)**) is present.
-
-## ⚠️ Track Direction consistency with Common Dictionary check
-
-**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the Track Direction (**[astm.f3411.v22a.NET0470,Table1,19](../../../../requirements/astm/f3411/v22a.md)**) is valid. If the observed Track Direction is less than -359 or is greater than 359, except for the special value 361, this check will fail.
-
-## ⚠️ Observed track is consistent with injected one check
-
-If the track reported for an observation does not correspond to the injected one, the DP is not providing timely and accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**

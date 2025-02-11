@@ -54,6 +54,7 @@ class RIDCommonDictionaryEvaluator(object):
         "_evaluate_speed_accuracy",
         "_evaluate_vertical_speed",
         "_evaluate_speed",
+        "_evaluate_track",
     ]
     details_evaluators = [
         "_evaluate_ua_classification",
@@ -137,11 +138,6 @@ class RIDCommonDictionaryEvaluator(object):
         # If the state is present, we do validate its content,
         # but its presence is optional
         if injected_telemetry.has_field_with_value("current_state"):
-            self._evaluate_track(
-                injected_telemetry.track,
-                observed_flight.current_state.track,
-                participants,
-            )
             self._evaluate_timestamp(
                 injected_telemetry.timestamp,
                 observed_flight.current_state.timestamp,
@@ -446,51 +442,56 @@ class RIDCommonDictionaryEvaluator(object):
             **generic_kwargs,
         )
 
-    def _evaluate_track(
-        self, track_inj: float, track_obs: Optional[float], participants: List[str]
-    ):
-        if self._rid_version == RIDVersion.f3411_22a:
-            with self._test_scenario.check(
-                "Track Direction field is present", participants
-            ) as check:
-                if track_obs is None:
-                    check.record_failed(
-                        f"Track direction not present",
-                        details=f"The track direction must be specified.",
-                    )
+    def _evaluate_track(self, **generic_kwargs):
+        """
+        Evaluates track direction. Exactly one of sp_observed or dp_observed must be provided.
+        See as well `common_dictionary_evaluator.md`.
 
-            if track_obs is not None:
-                with self._test_scenario.check(
-                    "Track Direction consistency with Common Dictionary", participants
-                ) as check:
-                    if not (
-                        constants.MinTrackDirection
-                        <= track_obs
-                        <= constants.MaxTrackDirection
-                        or round(track_obs) == constants.SpecialTrackDirection
-                    ):
-                        check.record_failed(
-                            f"Invalid track direction: {track_obs}",
-                            details=f"The track direction shall be greater than -360 and less than {constants.MaxSpeed}. The Special Value {constants.SpecialSpeed} is allowed.",
-                        )
-                with self._test_scenario.check(
-                    "Observed track is consistent with injected one", participants
-                ) as check:
-                    # Track seems rounded to nearest integer.
-                    abs_track_diff = min(
-                        (track_inj - track_obs) % 360, (track_obs - track_inj) % 360
-                    )
-                    if abs_track_diff > 0.5:
-                        check.record_failed(
-                            "Observed track direction different from injected one",
-                            details=f"Inject track was {track_inj} - observed one is {track_obs}",
-                        )
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
 
-        else:
-            self._test_scenario.record_note(
-                key="skip_reason",
-                message=f"Unsupported version {self._rid_version}: skipping track direction evaluation",
-            )
+        def value_validator(val: float) -> float:
+            if math.isclose(val, constants.SpecialTrackDirection):
+                return val
+
+            # TODO: Until https://github.com/interuss/uas_standards/pull/22 is
+            # merged, thoses are harcoded. Replace 0 with
+            # constants.MinTrackDirection and 360 with constants.MaxTrackDirection
+
+            if val < 0:
+                raise ValueError(f"Track direction is less than 0")
+            if val >= 360:
+                raise ValueError(f"Track direction is greater or equal than 360")
+
+            return val
+
+        def value_comparator(v1: Optional[float], v2: Optional[float]) -> bool:
+
+            if v1 is None or v2 is None:
+                return False
+
+            if math.isclose(v1, constants.SpecialTrackDirection) or math.isclose(
+                v2, constants.SpecialTrackDirection
+            ):
+                return math.isclose(
+                    v1, constants.SpecialTrackDirection
+                ) and math.isclose(v2, constants.SpecialTrackDirection)
+
+            return abs(v1 - v2) < constants.MinTrackDirectionResolution
+
+        self._generic_evaluator(
+            "track",
+            "raw.current_state.track",
+            "current_state.track",
+            "Track Direction",
+            value_validator,
+            None,
+            True,
+            None,
+            value_comparator,
+            **generic_kwargs,
+        )
 
     def _evaluate_position(
         self,

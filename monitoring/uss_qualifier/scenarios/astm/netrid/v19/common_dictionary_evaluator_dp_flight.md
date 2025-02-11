@@ -80,6 +80,19 @@ If the Speed Accuracy value exposed by the observer API is inconsistent with the
 **[astm.f3411.v19.NET0450](../../../../requirements/astm/f3411/v19.md)** because the DP fails to provide accurate data;
 **[astm.f3411.v19.NET0470,Table1,17](../../../../requirements/astm/f3411/v19.md)**  because the DP fails to expose data consistent with the valid injected value.
 
+## ⚠️ Track Direction is exposed correctly check
+
+If the Track Direction value exposed by the observation API is invalid this check will fail per:
+**[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)** because the DP violates the observation API contract;
+**[astm.f3411.v19.NET0450](../../../../requirements/astm/f3411/v19.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v19.NET0470,Table1,18](../../../../requirements/astm/f3411/v19.md)** because the DP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Track Direction is consistent with injected value check
+
+If the Track Direction value exposed by the observer API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v19.NET0450](../../../../requirements/astm/f3411/v19.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v19.NET0470,Table1,18](../../../../requirements/astm/f3411/v19.md)**  because the DP fails to expose data consistent with the valid injected value.
+
 ## ⚠️ Speed is exposed correctly check
 
 If the Speed value exposed by the observation API is invalid this check will fail per:

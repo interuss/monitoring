@@ -6,7 +6,6 @@ from typing import Any, Callable, List, Optional, Tuple, TypeVar
 from implicitdict import StringBasedDateTime
 from uas_standards.astm.f3411 import v22a
 from uas_standards.astm.f3411.v22a.api import Altitude, LatLngPoint, UAType
-from uas_standards.astm.f3411.v22a.constants import SpecialTrackDirection
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     OperatorAltitudeAltitudeType,
@@ -280,33 +279,6 @@ def test_timestamp():
     _assert_timestamp(
         "2023-09-13T04:43:00.1+07:00", "2023-09-13T04:43:00.1+07:00", False
     )  # Wrong timezone
-
-
-def _assert_track(value_inj: float, value_obs: float, outcome: bool):
-    def step_under_test(self: UnitTestScenario):
-        evaluator = RIDCommonDictionaryEvaluator(
-            config=EvaluationConfiguration(),
-            test_scenario=self,
-            rid_version=RIDVersion.f3411_22a,
-        )
-
-        evaluator._evaluate_track(value_inj, value_obs, [])
-
-    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
-    assert unit_test_scenario.get_report().successful == outcome
-
-
-def test_track():
-    _assert_track(1, 1, True)  # Ok
-    _assert_track(-359, -359, True)  # Ok
-    _assert_track(359.5, 0, True)  # Ok
-    _assert_track(359.9, 0, True)  # Ok
-    _assert_track(359.4, 0, False)  # Rounded the wrong way
-    _assert_track(359.4, 359.0, True)  # Ok
-    _assert_track(400, 400, False)  # Fail, above MaxTrackDirection
-    _assert_track(-360, -360, False)  # Fail, below MinTrackDirection
-    _assert_track(23.3, 23.3, True)  # Wrong resolution
-    _assert_track(SpecialTrackDirection, SpecialTrackDirection, True)
 
 
 def _assert_height(value_inj: injection.RIDHeight, value_obs: RIDHeight, outcome: bool):
@@ -1257,3 +1229,96 @@ def test_evaluate_speed():
 
             if v2 > 0:  # Ensure value stays valid
                 _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
+
+
+def test_evaluate_track():
+    """Test the evaluate_track function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["track"] = value
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["raw"] = {"current_state": {"track": value}}
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["current_state"] = {"track": value}
+        return flight
+
+    base_args = (
+        "_evaluate_track",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    # Value should be in [0;360[ or the special 361 value
+    for valid_value in [0, 0.01, 42, 3.14, 359, 361]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in [
+        -0.01,
+        -42,
+        -3.14,
+        -359,
+        -361,
+        -362,
+        -1000,
+        360,
+        -360,
+        377,
+        1000,
+    ]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args, invalid_value=invalid_value, valid_value=42
+        )
+
+    _assert_generic_evaluator_dont_have_default(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    # Resolution is in steps of 1
+    # Float values are funny, we cannot test 0.25 because check may 'round' that to 0.04999999999999716
+    for v1 in [0, 42, 3.14, 100]:
+        for valid_delta in [
+            0,
+            0.1,
+            0.2,
+            0.5,
+            0.9,
+            0.95,
+            -0.1,
+            -0.2,
+            -0.5,
+            -0.9,
+            -0.95,
+        ]:
+            v2 = v1 + valid_delta
+
+            if 0 <= v2 < 360:  # Ensure value stays valid
+                _assert_generic_evaluator_equivalent(*base_args, v1=v1, v2=v2)
+        for invalid_delta in [
+            1.1,
+            2,
+            10,
+            100,
+        ]:
+            v2 = v1 + invalid_delta
+
+            if 0 <= v2 < 360:  # Ensure value stays valid
+                _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
+
+    # Ensure special value doesn't interfer
+    _assert_generic_evaluator_not_equivalent(*base_args, v1=1, v2=361)
+    _assert_generic_evaluator_not_equivalent(*base_args, v1=361, v2=1)
+    # Ensure special value is equal
+    _assert_generic_evaluator_equivalent(*base_args, v1=361, v2=361)
