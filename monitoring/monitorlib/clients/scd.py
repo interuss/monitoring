@@ -1,13 +1,13 @@
 from typing import List, Optional, Tuple
 
+from implicitdict import ImplicitDict
+from uas_standards.astm.f3548.v21 import api
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 
 from monitoring.monitorlib import fetch, scd
 from monitoring.monitorlib.clients import call_query_hooks
-from monitoring.monitorlib.fetch import QueryError, Query, QueryType
+from monitoring.monitorlib.fetch import Query, QueryError, QueryType
 from monitoring.monitorlib.infrastructure import UTMClientSession
-from implicitdict import ImplicitDict
-from uas_standards.astm.f3548.v21 import api
 
 
 def _scopes_for_state(state: OperationalIntentState) -> List[str]:

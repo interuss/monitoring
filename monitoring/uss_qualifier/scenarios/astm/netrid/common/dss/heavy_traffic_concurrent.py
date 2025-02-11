@@ -1,17 +1,17 @@
 import asyncio
 import typing
-from datetime import datetime, UTC
-from typing import List, Dict
+from datetime import UTC, datetime
+from typing import Dict, List
 
 import arrow
 import requests
 from uas_standards.astm.f3411 import v19, v22a
 
 from monitoring.monitorlib.fetch import (
-    describe_request,
     Query,
-    describe_aiohttp_response,
     QueryType,
+    describe_aiohttp_response,
+    describe_request,
 )
 from monitoring.monitorlib.fetch.rid import FetchedISA
 from monitoring.monitorlib.infrastructure import AsyncUTMTestSession

@@ -1,18 +1,17 @@
 import math
 import random
 from typing import List
-from loguru import logger
 
 import s2sphere
-from s2sphere import LatLngRect
-
-from monitoring.monitorlib import geo
 from implicitdict import ImplicitDict
-
-from monitoring.monitorlib.rid import RIDVersion
+from loguru import logger
+from s2sphere import LatLngRect
 from uas_standards.interuss.automated_testing.rid.v1 import (
     observation as observation_api,
 )
+
+from monitoring.monitorlib import geo
+from monitoring.monitorlib.rid import RIDVersion
 
 
 class Point(object):

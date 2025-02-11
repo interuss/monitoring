@@ -1,7 +1,7 @@
 from typing import Optional
 
-from monitoring.monitorlib.fetch import rid, scd, summarize
 from monitoring.monitorlib import formatting
+from monitoring.monitorlib.fetch import rid, scd, summarize
 
 
 def isa_diff_text(a: Optional[rid.FetchedISAs], b: Optional[rid.FetchedISAs]) -> str:

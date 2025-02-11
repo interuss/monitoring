@@ -7,14 +7,12 @@ from typing import List, Optional, Self
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
-    TestFlightDetails,
     RIDAircraftState,
+    TestFlightDetails,
 )
 
-from monitoring.monitorlib.rid_automated_testing.injection_api import (
-    TestFlight,
-)
-from monitoring.uss_qualifier.resources.files import load_dict, load_content
+from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
+from monitoring.uss_qualifier.resources.files import load_content, load_dict
 from monitoring.uss_qualifier.resources.netrid.flight_data import (
     FlightDataSpecification,
     FlightRecordCollection,

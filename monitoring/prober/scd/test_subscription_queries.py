@@ -6,15 +6,14 @@
 
 import datetime
 
-from monitoring.monitorlib.geo import latitude_degrees, Circle
+from monitoring.monitorlib import scd
+from monitoring.monitorlib.geo import Circle, latitude_degrees
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import for_api_versions, register_resource_type
 from monitoring.prober.scd import actions
-
 
 SUB1_TYPE = register_resource_type(216, "Subscription 1")
 SUB2_TYPE = register_resource_type(217, "Subscription 2")

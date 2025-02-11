@@ -1,9 +1,9 @@
-from typing import Dict, List, Optional
-import s2sphere
 import datetime
+from typing import Dict, List, Optional
 
-from uas_standards.astm.f3411.v19.api import Volume4D
+import s2sphere
 from implicitdict import ImplicitDict, StringBasedDateTime
+from uas_standards.astm.f3411.v19.api import Volume4D
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 

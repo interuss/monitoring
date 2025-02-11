@@ -18,17 +18,13 @@ from monitoring.monitorlib.geo import Circle
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib.scd import SCOPE_SC
-from monitoring.monitorlib.testing import (
-    assert_datetimes_are_equal,
-    make_fake_url,
-)
+from monitoring.monitorlib.testing import assert_datetimes_are_equal, make_fake_url
 from monitoring.prober.infrastructure import (
     depends_on,
     for_api_versions,
     register_resource_type,
 )
 from monitoring.prober.scd import actions
-
 
 BASE_URL = make_fake_url()
 OP_TYPE = register_resource_type(221, "Operational intent")

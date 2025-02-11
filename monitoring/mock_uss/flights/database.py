@@ -2,15 +2,14 @@ import json
 from datetime import timedelta
 from typing import Dict, Optional
 
-from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
-from monitoring.monitorlib.multiprocessing import SynchronizedValue
 from implicitdict import ImplicitDict
-from uas_standards.astm.f3548.v21.api import (
-    OperationalIntent,
-)
+from uas_standards.astm.f3548.v21.api import OperationalIntent
+
+from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUssFlightBehavior,
 )
+from monitoring.monitorlib.multiprocessing import SynchronizedValue
 
 DEADLOCK_TIMEOUT = timedelta(seconds=5)
 

@@ -1,18 +1,16 @@
 from typing import Optional
 
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
-    BasicFlightPlanInformationUsageState,
     BasicFlightPlanInformationUasState,
+    BasicFlightPlanInformationUsageState,
 )
 
-from monitoring.monitorlib.clients.flight_planning.flight_info import (
-    FlightInfo,
-)
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
+from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 from monitoring.monitorlib.clients.flight_planning.planning import (
+    FlightPlanStatus,
     PlanningActivityResponse,
     PlanningActivityResult,
-    FlightPlanStatus,
 )
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     expect_flight_intent_state,

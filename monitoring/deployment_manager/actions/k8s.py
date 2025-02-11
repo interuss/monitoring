@@ -1,7 +1,6 @@
 from kubernetes.client import V1IngressClass
 
-from monitoring.deployment_manager.infrastructure import deployment_action
-from monitoring.deployment_manager.infrastructure import Context
+from monitoring.deployment_manager.infrastructure import Context, deployment_action
 
 
 @deployment_action("list_pods")

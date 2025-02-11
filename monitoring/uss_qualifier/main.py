@@ -6,11 +6,11 @@ import os
 import sys
 from typing import Optional
 
+import yaml
 from implicitdict import ImplicitDict
 from loguru import logger
-import yaml
 
-from monitoring.monitorlib.dicts import remove_elements, get_element_or_default
+from monitoring.monitorlib.dicts import get_element_or_default, remove_elements
 from monitoring.monitorlib.versioning import get_code_version, get_commit_hash
 from monitoring.uss_qualifier.configurations.configuration import (
     USSQualifierConfiguration,
@@ -18,8 +18,8 @@ from monitoring.uss_qualifier.configurations.configuration import (
 )
 from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.artifacts import (
-    generate_artifacts,
     default_output_path,
+    generate_artifacts,
 )
 from monitoring.uss_qualifier.reports.report import TestRunReport
 from monitoring.uss_qualifier.reports.validation.report_validation import (
@@ -27,10 +27,10 @@ from monitoring.uss_qualifier.reports.validation.report_validation import (
 )
 from monitoring.uss_qualifier.resources.resource import create_resources
 from monitoring.uss_qualifier.signatures import (
-    compute_signature,
     compute_baseline_signature,
+    compute_signature,
 )
-from monitoring.uss_qualifier.suites.suite import TestSuiteAction, ExecutionContext
+from monitoring.uss_qualifier.suites.suite import ExecutionContext, TestSuiteAction
 from monitoring.uss_qualifier.validation import validate_config
 
 

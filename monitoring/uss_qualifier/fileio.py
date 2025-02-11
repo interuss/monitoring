@@ -2,13 +2,13 @@ import base64
 import json
 import os
 import re
-from typing import Tuple, Optional, Dict, List, Union
+from typing import Dict, List, Optional, Tuple, Union
 
-import bc_jsonpath_ng
 import _jsonnet
-from loguru import logger
+import bc_jsonpath_ng
 import requests
 import yaml
+from loguru import logger
 
 FILE_PREFIX = "file://"
 HTTP_PREFIX = "http://"

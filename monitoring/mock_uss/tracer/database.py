@@ -1,13 +1,14 @@
-from datetime import timedelta
 import json
+from datetime import timedelta
 from typing import Dict
 
+from implicitdict import ImplicitDict, StringBasedTimeDelta
+
 from monitoring.mock_uss.tracer.observation_areas import (
-    ObservationAreaID,
     ObservationArea,
+    ObservationAreaID,
 )
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
-from implicitdict import ImplicitDict, StringBasedTimeDelta
 
 
 class Database(ImplicitDict):

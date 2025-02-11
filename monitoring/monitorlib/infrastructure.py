@@ -1,13 +1,13 @@
 import asyncio
 import datetime
 import functools
+import urllib.parse
 from enum import Enum
 from typing import Dict, List, Optional
-import urllib.parse
-from aiohttp import ClientSession, ClientResponse
 
 import jwt
 import requests
+from aiohttp import ClientResponse, ClientSession
 
 ALL_SCOPES = [
     "dss.write.identification_service_areas",

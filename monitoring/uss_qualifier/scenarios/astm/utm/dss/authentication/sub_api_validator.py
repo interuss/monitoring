@@ -20,7 +20,7 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.generic import (
     GenericAuthValidator,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenario, PendingCheck
+from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenario
 
 TIME_TOLERANCE_SEC = 1
 

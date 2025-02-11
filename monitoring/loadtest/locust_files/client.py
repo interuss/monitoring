@@ -3,9 +3,11 @@
 import os
 import time
 import typing
+
 from locust import User
-from monitoring.monitorlib import auth, infrastructure, rid_v1
 from uas_standards.astm.f3411.v19.constants import Scope
+
+from monitoring.monitorlib import auth, infrastructure, rid_v1
 
 
 class DSSClient(infrastructure.UTMClientSession):

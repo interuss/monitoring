@@ -1,62 +1,55 @@
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 import arrow
+from uas_standards.astm.f3548.v21.api import OperationalIntentReference
+from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
-    UasState,
     FlightInfo,
+    UasState,
 )
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
-    PlanningActivityResult,
     FlightPlanStatus,
+    PlanningActivityResult,
 )
-from monitoring.monitorlib.temporal import TimeDuringTest, Time
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
-    validate_flight_intent_templates,
-    ExpectedFlightIntent,
-)
-from monitoring.uss_qualifier.scenarios.astm.utm.clear_area_validation import (
-    validate_clear_area,
-)
-from monitoring.uss_qualifier.suites.suite import ExecutionContext
-from uas_standards.astm.f3548.v21.api import (
-    OperationalIntentReference,
-)
-from uas_standards.astm.f3548.v21.constants import Scope
-
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
-from monitoring.uss_qualifier.resources.flight_planning import (
-    FlightIntentsResource,
+from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
+    ExpectedFlightIntent,
+    validate_flight_intent_templates,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
-from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
-    OpIntentValidator,
+from monitoring.uss_qualifier.scenarios.astm.utm.clear_area_validation import (
+    validate_clear_area,
 )
+from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import OpIntentValidator
 from monitoring.uss_qualifier.scenarios.flight_planning.prioritization_test_steps import (
-    plan_conflict_flight,
     activate_conflict_flight,
-    modify_planned_conflict_flight,
     modify_activated_conflict_flight,
-)
-from monitoring.uss_qualifier.scenarios.scenario import (
-    TestScenario,
-    ScenarioCannotContinueError,
+    modify_planned_conflict_flight,
+    plan_conflict_flight,
 )
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
-    plan_flight,
     activate_flight,
-    delete_flight,
-    submit_flight,
     cleanup_flights,
+    delete_flight,
+    plan_flight,
+    submit_flight,
 )
+from monitoring.uss_qualifier.scenarios.scenario import (
+    ScenarioCannotContinueError,
+    TestScenario,
+)
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class ConflictEqualPriorityNotPermitted(TestScenario):

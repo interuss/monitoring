@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, List
+from typing import List, Optional
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 from uas_standards.interuss.automated_testing.geospatial_map.v1 import (

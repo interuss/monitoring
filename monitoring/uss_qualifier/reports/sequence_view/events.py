@@ -1,32 +1,29 @@
 from __future__ import annotations
 
-import math
 import html
+import math
 from datetime import datetime
-from typing import List, Dict, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
 from implicitdict import ImplicitDict
 
-from monitoring.uss_qualifier.configurations.configuration import (
-    ParticipantID,
-)
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.reports.report import (
-    TestScenarioReport,
     Severity,
+    TestScenarioReport,
     TestStepReport,
 )
 from monitoring.uss_qualifier.reports.sequence_view.summary_types import (
-    TestedScenario,
-    Indexer,
-    Event,
-    NoteEvent,
     Epoch,
-    TestedParticipant,
+    Event,
     EventType,
-    TestedStep,
+    Indexer,
+    NoteEvent,
     TestedCase,
+    TestedParticipant,
+    TestedScenario,
+    TestedStep,
 )
-
 
 UNATTRIBUTED_PARTICIPANT = "unattributed"
 

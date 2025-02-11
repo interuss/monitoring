@@ -1,8 +1,8 @@
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.dp_behavior import (
     DisplayProviderBehavior as CommonDisplayProviderBehavior,
 )
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
 
 class DisplayProviderBehavior(TestScenario, CommonDisplayProviderBehavior):

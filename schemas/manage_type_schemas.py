@@ -4,11 +4,11 @@ import inspect
 import json
 import os
 import sys
-from typing import Optional, Set, Dict, Type, get_type_hints, get_args, get_origin
+from typing import Dict, Optional, Set, Type, get_args, get_origin, get_type_hints
 
 import implicitdict
-from implicitdict import ImplicitDict
 import implicitdict.jsonschema
+from implicitdict import ImplicitDict
 from implicitdict.jsonschema import SchemaVars, SchemaVarsResolver
 from loguru import logger
 

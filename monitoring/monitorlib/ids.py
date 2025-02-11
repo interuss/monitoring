@@ -1,7 +1,6 @@
 import hashlib
 import uuid
 
-
 mac = uuid.getnode()
 
 

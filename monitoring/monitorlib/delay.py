@@ -1,9 +1,8 @@
-from datetime import timedelta
 import time
+from datetime import timedelta
 from typing import Union
 
 from loguru import logger
-
 
 MAX_SILENT_DELAY_S = 0.4
 """Number of seconds to delay above which a reasoning message should be displayed."""

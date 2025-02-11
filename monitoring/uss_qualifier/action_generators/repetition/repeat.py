@@ -1,6 +1,7 @@
-from typing import Dict, List, Iterator
+from typing import Dict, Iterator, List
 
 from implicitdict import ImplicitDict
+
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
     PotentialGeneratedAction,
 )
@@ -9,12 +10,8 @@ from monitoring.uss_qualifier.action_generators.documentation.documentation impo
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.resource import ResourceType
-
 from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
-from monitoring.uss_qualifier.suites.suite import (
-    ActionGenerator,
-    TestSuiteAction,
-)
+from monitoring.uss_qualifier.suites.suite import ActionGenerator, TestSuiteAction
 
 
 class RepeatSpecification(ImplicitDict):

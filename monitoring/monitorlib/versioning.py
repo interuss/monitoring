@@ -5,7 +5,6 @@ from typing import Optional
 
 import monitoring
 
-
 _commit_hash: Optional[str] = None
 _code_version: Optional[str] = None
 _github_base_url: Optional[str] = None

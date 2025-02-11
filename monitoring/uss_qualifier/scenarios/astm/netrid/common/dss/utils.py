@@ -5,9 +5,7 @@ from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
-from monitoring.uss_qualifier.scenarios.scenario import (
-    GenericTestScenario,
-)
+from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 
 
 def delete_isa_if_exists(

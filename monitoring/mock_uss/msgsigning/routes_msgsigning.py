@@ -1,10 +1,11 @@
+import os
+
 import flask
+from loguru import logger
 
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.msgsigning import config
 from monitoring.mock_uss.msgsigning.database import db
-from loguru import logger
-import os
 
 
 @webapp.route(

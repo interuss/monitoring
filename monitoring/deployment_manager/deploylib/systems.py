@@ -3,12 +3,12 @@ from typing import Any, List
 from kubernetes.client import V1Deployment, V1Ingress, V1Namespace, V1Service
 from structlog import BoundLogger
 
-from monitoring.deployment_manager.infrastructure import Clients
-from monitoring.deployment_manager import deploylib
 import monitoring.deployment_manager.deploylib.deployments
 import monitoring.deployment_manager.deploylib.ingresses
 import monitoring.deployment_manager.deploylib.namespaces
 import monitoring.deployment_manager.deploylib.services
+from monitoring.deployment_manager import deploylib
+from monitoring.deployment_manager.infrastructure import Clients
 
 
 def upsert_resources(

@@ -1,6 +1,6 @@
 from implicitdict import ImplicitDict
 
-from monitoring.monitorlib.locality import LocalityCode, Locality
+from monitoring.monitorlib.locality import Locality, LocalityCode
 from monitoring.uss_qualifier.resources.resource import Resource
 
 

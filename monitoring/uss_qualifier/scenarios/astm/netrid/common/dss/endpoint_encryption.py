@@ -1,16 +1,15 @@
 import errno
-import requests
 import socket
+from urllib.parse import urlparse
+
+import requests
 import uas_standards.astm.f3411.v19.api
 import uas_standards.astm.f3411.v22a.api
 from uas_standards.astm.f3411 import v19, v22a
-from urllib.parse import urlparse
 
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
-from monitoring.uss_qualifier.scenarios.scenario import (
-    GenericTestScenario,
-)
+from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 

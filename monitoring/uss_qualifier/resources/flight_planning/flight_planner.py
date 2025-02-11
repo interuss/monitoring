@@ -1,10 +1,10 @@
 from typing import Optional
 from urllib.parse import urlparse
+
 from implicitdict import ImplicitDict
+
 from monitoring.monitorlib import infrastructure
-from monitoring.monitorlib.clients.flight_planning.client import (
-    FlightPlannerClient,
-)
+from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.monitorlib.clients.flight_planning.client_scd import (
     SCDFlightPlannerClient,
 )

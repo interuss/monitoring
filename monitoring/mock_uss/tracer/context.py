@@ -1,24 +1,22 @@
-from typing import Optional, Dict
+from typing import Dict, Optional
 
-from implicitdict import StringBasedDateTime
 import yaml
+from implicitdict import StringBasedDateTime
 from yaml.representer import Representer
 
-from monitoring.mock_uss.config import KEY_AUTH_SPEC, KEY_DSS_URL
-from monitoring.mock_uss.tracer.observation_areas import (
-    ObservationAreaID,
-)
-from monitoring.mock_uss.tracer.config import (
-    KEY_TRACER_KML_SERVER,
-    KEY_TRACER_KML_FOLDER,
-    KEY_TRACER_OUTPUT_FOLDER,
-)
-from monitoring.mock_uss.tracer.tracerlog import Logger
-from monitoring.monitorlib import fetch, infrastructure
 import monitoring.monitorlib.fetch.scd
 from monitoring.mock_uss import webapp
+from monitoring.mock_uss.config import KEY_AUTH_SPEC, KEY_DSS_URL
+from monitoring.mock_uss.tracer.config import (
+    KEY_TRACER_KML_FOLDER,
+    KEY_TRACER_KML_SERVER,
+    KEY_TRACER_OUTPUT_FOLDER,
+)
+from monitoring.mock_uss.tracer.observation_areas import ObservationAreaID
+from monitoring.mock_uss.tracer.tracerlog import Logger
+from monitoring.monitorlib import fetch, infrastructure
 from monitoring.monitorlib.auth import make_auth_adapter
-from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession, AuthSpec
+from monitoring.monitorlib.infrastructure import AuthAdapter, AuthSpec, UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
 
 yaml.add_representer(StringBasedDateTime, Representer.represent_str)

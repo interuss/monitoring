@@ -1,8 +1,8 @@
-from typing import TypeVar, Dict
+from typing import Dict, TypeVar
 
 from implicitdict import ImplicitDict
-from monitoring.uss_qualifier.resources.definitions import ResourceID
 
+from monitoring.uss_qualifier.resources.definitions import ResourceID
 
 GeneratorTypeName = str
 """This plain string represents a type of action generator, expressed as a Python class name qualified relative to the `uss_qualifier` module"""

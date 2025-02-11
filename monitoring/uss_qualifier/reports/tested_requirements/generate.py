@@ -1,14 +1,14 @@
 import json
 import os
-from typing import Dict, Set, Optional
+from typing import Dict, Optional, Set
 
 from monitoring.monitorlib.inspection import import_submodules
 from monitoring.monitorlib.versioning import get_code_version
-from monitoring.uss_qualifier import scenarios, suites, action_generators
+from monitoring.uss_qualifier import action_generators, scenarios, suites
 from monitoring.uss_qualifier.configurations.configuration import (
     ParticipantID,
-    TestedRequirementsConfiguration,
     TestedRequirementsCollectionIdentifier,
+    TestedRequirementsConfiguration,
 )
 from monitoring.uss_qualifier.reports import jinja_env
 from monitoring.uss_qualifier.reports.report import TestRunReport
@@ -16,13 +16,13 @@ from monitoring.uss_qualifier.reports.tested_requirements.breakdown import (
     make_breakdown,
 )
 from monitoring.uss_qualifier.reports.tested_requirements.data_types import (
-    RequirementsVerificationReport,
     ParticipantVerificationInfo,
     ParticipantVerificationStatus,
+    RequirementsVerificationReport,
 )
 from monitoring.uss_qualifier.reports.tested_requirements.summaries import (
-    compute_test_run_information,
     compute_overall_status,
+    compute_test_run_information,
     find_participant_system_versions,
     get_system_version,
 )

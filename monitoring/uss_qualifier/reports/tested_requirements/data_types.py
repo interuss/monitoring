@@ -1,14 +1,11 @@
 from enum import Enum
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict
 
-from monitoring.uss_qualifier.configurations.configuration import (
-    ParticipantID,
-)
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.requirements.definitions import PackageID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
-
 
 PASS_CLASS = "pass_result"
 NOT_TESTED_CLASS = "not_tested"

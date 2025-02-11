@@ -2,6 +2,10 @@ from typing import Optional
 from urllib.parse import urlparse
 
 from implicitdict import ImplicitDict
+from uas_standards.interuss.automated_testing.geospatial_map.v1.constants import (
+    Scope as ScopeGeospatialMap,
+)
+
 from monitoring.monitorlib.clients.geospatial_info.client import GeospatialInfoClient
 from monitoring.monitorlib.clients.geospatial_info.client_geospatial_map import (
     GeospatialMapClient,
@@ -10,9 +14,6 @@ from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.resource import Resource
-from uas_standards.interuss.automated_testing.geospatial_map.v1.constants import (
-    Scope as ScopeGeospatialMap,
-)
 
 
 class GeospatialInfoProviderConfiguration(ImplicitDict):

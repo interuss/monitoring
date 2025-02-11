@@ -1,16 +1,15 @@
 import base64
 import hashlib
-from functools import wraps
 import json
-from typing import Callable, Optional, Dict
+from functools import wraps
+from typing import Callable, Dict, Optional
 
 import arrow
 import flask
+from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 
-from implicitdict import ImplicitDict, StringBasedDateTime
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
-
 
 _max_request_buffer_size = int(10e6)
 """Number of bytes to dedicate to caching responses"""

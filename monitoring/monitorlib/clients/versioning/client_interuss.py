@@ -1,17 +1,17 @@
 from typing import Optional
 
 from implicitdict import ImplicitDict
-from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from uas_standards.interuss.automated_testing.versioning import api
 from uas_standards.interuss.automated_testing.versioning.constants import Scope
 
 from monitoring.monitorlib.clients.versioning.client import (
+    GetVersionResponse,
     VersioningClient,
     VersionQueryError,
-    GetVersionResponse,
 )
-from monitoring.monitorlib.fetch import query_and_describe, QueryType
+from monitoring.monitorlib.fetch import QueryType, query_and_describe
 from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 
 
 class InterUSSVersioningClient(VersioningClient):

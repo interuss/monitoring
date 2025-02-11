@@ -12,18 +12,14 @@
 import datetime
 from typing import Dict, Tuple
 
-from monitoring.monitorlib.geo import Circle, Altitude
-from monitoring.monitorlib.geotemporal import Volume4D, Time
-from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
+from monitoring.monitorlib.geo import Altitude, Circle
+from monitoring.monitorlib.geotemporal import Time, Volume4D
+from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib.scd import SCOPE_SC
-from monitoring.monitorlib.testing import (
-    assert_datetimes_are_equal,
-    make_fake_url,
-)
+from monitoring.monitorlib.testing import assert_datetimes_are_equal, make_fake_url
 from monitoring.prober.infrastructure import for_api_versions, register_resource_type
 from monitoring.prober.scd import actions
-
 
 URL_OP1 = make_fake_url("op1")
 URL_SUB1 = make_fake_url("subs1")

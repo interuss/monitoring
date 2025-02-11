@@ -3,8 +3,10 @@ from datetime import datetime
 from typing import Dict, Optional, Tuple
 
 from implicitdict import ImplicitDict
+from uas_standards.interuss.automated_testing.versioning.api import GetVersionResponse
+
 from monitoring.monitorlib.clients.versioning.client import VersionQueryError
-from monitoring.monitorlib.fetch import QueryType, Query
+from monitoring.monitorlib.fetch import Query, QueryType
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.versioning import SystemIdentityResource
 from monitoring.uss_qualifier.resources.versioning.client import (
@@ -12,7 +14,6 @@ from monitoring.uss_qualifier.resources.versioning.client import (
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
-from uas_standards.interuss.automated_testing.versioning.api import GetVersionResponse
 
 
 @dataclass

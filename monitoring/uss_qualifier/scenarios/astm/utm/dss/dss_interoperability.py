@@ -3,21 +3,21 @@ import socket
 from typing import List, Optional
 from urllib.parse import urlparse
 
-from monitoring.monitorlib.fetch import QueryError
-from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
-from monitoring.uss_qualifier.resources.dev.test_exclusions import (
-    TestExclusionsResource,
-)
-from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3548.v21.api import Volume4D
 from uas_standards.astm.f3548.v21.constants import Scope
 
+from monitoring.monitorlib.fetch import QueryError
+from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
-    DSSInstancesResource,
-    DSSInstanceResource,
     DSSInstance,
+    DSSInstanceResource,
+    DSSInstancesResource,
+)
+from monitoring.uss_qualifier.resources.dev.test_exclusions import (
+    TestExclusionsResource,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class DSSInteroperability(TestScenario):

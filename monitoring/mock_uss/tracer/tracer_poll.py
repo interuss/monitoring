@@ -1,37 +1,35 @@
 import datetime
 import json
 import sys
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
 
+from monitoring.mock_uss import webapp
+from monitoring.mock_uss.tracer import context, diff, tracerlog
 from monitoring.mock_uss.tracer.config import (
-    KEY_TRACER_OUTPUT_FOLDER,
-    KEY_TRACER_KML_SERVER,
     KEY_TRACER_KML_FOLDER,
+    KEY_TRACER_KML_SERVER,
+    KEY_TRACER_OUTPUT_FOLDER,
 )
+from monitoring.mock_uss.tracer.database import db
 from monitoring.mock_uss.tracer.log_types import (
-    PollOperationalIntents,
     PollConstraints,
     PollISAs,
+    PollOperationalIntents,
     PollStart,
 )
 from monitoring.mock_uss.tracer.observation_areas import (
-    ObservationAreaID,
     ObservationArea,
+    ObservationAreaID,
 )
-from monitoring.monitorlib import versioning, fetch
-from monitoring.mock_uss import webapp
-from monitoring.mock_uss.tracer import diff, tracerlog
-from monitoring.mock_uss.tracer.database import db
-from monitoring.mock_uss.tracer import context
+from monitoring.monitorlib import fetch, versioning
 from monitoring.monitorlib.fetch.rid import FetchedISAs
 from monitoring.monitorlib.fetch.scd import FetchedEntities
-from monitoring.monitorlib.geo import make_latlng_rect, get_latlngrect_vertices
+from monitoring.monitorlib.geo import get_latlngrect_vertices, make_latlng_rect
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
-
 
 TASK_POLL_OBSERVATION_AREAS = "tracer poll observation areas"
 

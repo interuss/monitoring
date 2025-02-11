@@ -1,6 +1,7 @@
-from typing import Dict, List, Iterator
+from typing import Dict, Iterator, List
 
 from implicitdict import ImplicitDict
+
 from monitoring.monitorlib.inspection import fullname
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
     PotentialGeneratedAction,
@@ -23,12 +24,11 @@ from monitoring.uss_qualifier.scenarios.interuss.mock_uss.unconfigure_locality i
     UnconfigureLocality,
 )
 from monitoring.uss_qualifier.scenarios.scenario import get_scenario_type_name
-
 from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
 from monitoring.uss_qualifier.suites.suite import (
     ActionGenerator,
-    TestSuiteAction,
     ReactionToFailure,
+    TestSuiteAction,
 )
 
 

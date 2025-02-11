@@ -1,15 +1,16 @@
 import datetime
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
-    UserNotification,
     Time,
+    UserNotification,
 )
 
 from monitoring.monitorlib.rid_automated_testing import injection_api
 from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
+
 from . import database
 
 

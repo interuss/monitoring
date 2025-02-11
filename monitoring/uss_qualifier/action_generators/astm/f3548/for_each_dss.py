@@ -1,4 +1,4 @@
-from typing import Dict, List, Iterator
+from typing import Dict, Iterator, List
 
 from implicitdict import ImplicitDict
 
@@ -10,20 +10,16 @@ from monitoring.uss_qualifier.action_generators.documentation.documentation impo
     list_potential_actions_for_action_declaration,
 )
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import (
-    DSSInstancesResource,
     DSSInstanceResource,
+    DSSInstancesResource,
 )
-
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.resource import (
-    ResourceType,
     MissingResourceError,
+    ResourceType,
 )
 from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
-from monitoring.uss_qualifier.suites.suite import (
-    ActionGenerator,
-    TestSuiteAction,
-)
+from monitoring.uss_qualifier.suites.suite import ActionGenerator, TestSuiteAction
 
 
 class ForEachDSSSpecification(ImplicitDict):

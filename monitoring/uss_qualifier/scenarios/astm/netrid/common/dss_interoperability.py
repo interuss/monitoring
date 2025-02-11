@@ -4,7 +4,7 @@ import socket
 import uuid
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
 import s2sphere
@@ -14,8 +14,8 @@ from monitoring.monitorlib.fetch.rid import ISA
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
-    DSSInstancesResource,
     DSSInstanceResource,
+    DSSInstancesResource,
 )
 from monitoring.uss_qualifier.resources.dev.test_exclusions import (
     TestExclusionsResource,

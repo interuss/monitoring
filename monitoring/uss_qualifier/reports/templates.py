@@ -1,8 +1,14 @@
+import fileinput
+import hashlib
+import io
 import json
-import shutil
 import os
+import pathlib
+import shutil
+import zipfile
 from typing import List
 
+import requests
 from loguru import logger
 
 from monitoring.uss_qualifier.configurations.configuration import (
@@ -11,10 +17,6 @@ from monitoring.uss_qualifier.configurations.configuration import (
     TemplatedReportInjectedConfiguration,
 )
 from monitoring.uss_qualifier.reports.report import TestRunReport
-import requests, zipfile, io
-import pathlib
-import hashlib
-import fileinput
 
 CACHE_TEMPLATE_PATH = ".templates_cache/"
 TEMPLATE_CONFIGURATION_MARK = "<!-- Configuration goes here -->"

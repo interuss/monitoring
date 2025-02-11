@@ -1,19 +1,19 @@
 import datetime
-from typing import Optional, Dict, List
+from typing import Dict, List, Optional
 
 import arrow
 import s2sphere
 from uas_standards.astm.f3411 import v19, v22a
 
-from monitoring.monitorlib import fetch, infrastructure
-from monitoring.monitorlib import rid_v1, rid_v2
+from monitoring.monitorlib import fetch, infrastructure, rid_v1, rid_v2
 from monitoring.monitorlib.auth import InvalidTokenSignatureAuth
-from monitoring.monitorlib.fetch import rid as rid_fetch, QueryType
+from monitoring.monitorlib.fetch import QueryType
+from monitoring.monitorlib.fetch import rid as rid_fetch
 from monitoring.monitorlib.fetch.rid import FetchedISA, FetchedISAs
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.mutate.rid import (
-    ISAChange,
     ChangedISA,
+    ISAChange,
     ISAChangeNotification,
 )
 from monitoring.monitorlib.rid import RIDVersion

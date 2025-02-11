@@ -1,11 +1,11 @@
-from . import config
-from monitoring.mock_uss import webapp, require_config_value
-from monitoring.mock_uss.config import KEY_DSS_URL, KEY_AUTH_SPEC
+from monitoring.mock_uss import require_config_value, webapp
+from monitoring.mock_uss.config import KEY_AUTH_SPEC, KEY_DSS_URL
 from monitoring.mock_uss.riddp.config import KEY_RID_VERSION
 from monitoring.monitorlib import auth
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
 
+from . import config
 
 require_config_value(KEY_DSS_URL)
 require_config_value(KEY_AUTH_SPEC)

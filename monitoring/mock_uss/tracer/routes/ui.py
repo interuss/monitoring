@@ -7,10 +7,11 @@ import zipfile
 import arrow
 import flask
 import flask_login
+import yaml
 from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
-import yaml
 
+import monitoring.monitorlib.fetch.rid
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.database import db
@@ -19,7 +20,6 @@ from monitoring.mock_uss.tracer.log_types import PollFlights, TracerLogEntry
 from monitoring.mock_uss.tracer.observation_areas import ObservationArea
 from monitoring.mock_uss.ui import auth as ui_auth
 from monitoring.monitorlib import fetch, geo, infrastructure
-import monitoring.monitorlib.fetch.rid
 
 
 @webapp.route("/tracer/logs", methods=["GET"])
