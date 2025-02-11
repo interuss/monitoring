@@ -740,7 +740,8 @@ class RIDCommonDictionaryEvaluator(object):
             return RIDOperationalStatus(val)
 
         def value_comparator(
-            v1: Optional[RIDOperationalStatusv19 | RIDOperationalStatus], v2: Optional[RIDOperationalStatusv19 | RIDOperationalStatus]
+            v1: Optional[RIDOperationalStatusv19 | RIDOperationalStatus],
+            v2: Optional[RIDOperationalStatusv19 | RIDOperationalStatus],
         ) -> bool:
 
             return v1 == v2
