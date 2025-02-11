@@ -421,7 +421,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0450</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0460</a></td>
