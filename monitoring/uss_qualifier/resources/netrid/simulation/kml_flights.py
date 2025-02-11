@@ -19,6 +19,7 @@ from monitoring.uss_qualifier.resources.netrid.flight_data import (
 from typing import List
 
 from uas_standards.interuss.automated_testing.rid.v1 import injection
+from uas_standards.astm.f3411.v22a import constants
 
 
 STATE_INCREMENT_SECONDS = 1
@@ -190,16 +191,30 @@ def generate_flight_record(
     # We get the minimum altitude to simulate height
     minimum_altitude = min(c[2] for c in state_coordinates)
 
+    # Reference used to compute vertical speed
+    last_alt = state_coordinates[0][2] if state_coordinates else 0
+
     flight_telemetry: List[injection.RIDAircraftState] = []
     for coordinates, speed, angle in zip(
         state_coordinates, flight_state_speeds, flight_track_angles
     ):
-        timestamp = timestamp + timedelta(0, STATE_INCREMENT_SECONDS)
+        timestamp = timestamp + timedelta(seconds=STATE_INCREMENT_SECONDS)
         timestamp_isoformat = timestamp.isoformat()
 
         aircraft_height = injection.RIDHeight(
             distance=coordinates[2] - minimum_altitude, reference="TakeoffLocation"
         )
+
+        vertical_speed = (coordinates[2] - last_alt) / STATE_INCREMENT_SECONDS
+        # Let's ensure we stay in [-MaxAbsVerticalSpeed, MaxAbsVerticalSpeed]
+        # boundaries
+        vertical_speed = min(vertical_speed, constants.MaxAbsVerticalSpeed)
+        vertical_speed = max(vertical_speed, -constants.MaxAbsVerticalSpeed)
+        # Round to 0.01 (not stricly needed, but display better values)
+        vertical_speed = round(vertical_speed, 2)
+
+        last_alt = coordinates[2]
+
         aircraft_position = injection.RIDAircraftPosition(
             lng=coordinates[0],
             lat=coordinates[1],
@@ -220,7 +235,7 @@ def generate_flight_record(
                 flight_description.get("timestamp_accuracy", "0.0")
             ),
             speed_accuracy=flight_description["speed_accuracy"],
-            vertical_speed=0.0,
+            vertical_speed=vertical_speed,
         )
         flight_telemetry.append(rid_aircraft_state)
     flight_id_bytes = bytes(r.randint(0, 255) for _ in range(16))
