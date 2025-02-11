@@ -663,7 +663,8 @@ class SubscriptionSynchronization(TestScenario):
 
     def _repeat_steps_mutate_subscriptions_secondaries_shift_time(self):
         """Mutate the subscription on every secondary DSS by adding 10 seconds to its start and end times,
-        then checking on every DSS that the response is valid and corresponds to the expected parameters."""
+        then checking on every DSS that the response is valid and corresponds to the expected parameters.
+        """
 
         for secondary_dss in self._dss_read_instances:
             # Mutate the subscription on the secondary DSS
@@ -758,7 +759,8 @@ class SubscriptionSynchronization(TestScenario):
         self, sub_id: str, deleted_on_participant_id: str
     ):
         """Confirm that no secondary DSS has the subscription.
-        deleted_on_participant_id specifies the participant_id of the DSS where the subscription was deleted."""
+        deleted_on_participant_id specifies the participant_id of the DSS where the subscription was deleted.
+        """
         for secondary_dss in self._dss_read_instances:
             self._confirm_dss_has_no_sub(
                 secondary_dss, sub_id, deleted_on_participant_id

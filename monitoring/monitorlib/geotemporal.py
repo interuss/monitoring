@@ -434,7 +434,7 @@ def end_time_of(
         Volume4D,
         List[Union[f3548v21.Volume4D, Volume4D]],
         Volume4DCollection,
-    ]
+    ],
 ) -> Optional[Time]:
     """Retrieve the end time of a volume or list of volumes."""
     if isinstance(volume_or_volumes, f3548v21.Volume4D):

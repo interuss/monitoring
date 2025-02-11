@@ -1,14 +1,14 @@
 """Subscription update validation tests:
 
-  - make sure Operation doesn't exist by ID
-  - create Operation with implicit Subscription
-  - make sure implicit Subscription is created
-  - try mutate Subscription by shrinking 2d area which does not cover Operation
-  - try mutate Subscription by shrinking altitude range which does not cover Operation
-  - try mutate Subscription by shrinking time range  which does not cover Operation
-  - mutate Subscription with the same 2d area
-  - delete Operation
-  - delete Subscription
+- make sure Operation doesn't exist by ID
+- create Operation with implicit Subscription
+- make sure implicit Subscription is created
+- try mutate Subscription by shrinking 2d area which does not cover Operation
+- try mutate Subscription by shrinking altitude range which does not cover Operation
+- try mutate Subscription by shrinking time range  which does not cover Operation
+- mutate Subscription with the same 2d area
+- delete Operation
+- delete Subscription
 """
 
 import datetime

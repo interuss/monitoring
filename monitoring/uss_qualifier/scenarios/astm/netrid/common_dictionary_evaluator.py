@@ -1209,7 +1209,6 @@ class RIDCommonDictionaryEvaluator(object):
         participant: ParticipantID,
         query_timestamp: datetime.datetime,
     ):
-
         """
         Generic evaluator of a field. Exactly one of sp_observed or dp_observed must be provided.
         See as well `common_dictionary_evaluator.md` for an overview of the different cases 'Cn' referred to in this function.
@@ -1290,9 +1289,9 @@ class RIDCommonDictionaryEvaluator(object):
                             details=f"USS returned an invalid {field_human_name}: {observed_val}.",
                             query_timestamps=[query_timestamp],
                             additional_data={
-                                "RIDCommonDictionaryEvaluatorCheckID": "C5"
-                                if sp_observed
-                                else "C9"
+                                "RIDCommonDictionaryEvaluatorCheckID": (
+                                    "C5" if sp_observed else "C9"
+                                )
                             },
                         )
 
@@ -1320,9 +1319,9 @@ class RIDCommonDictionaryEvaluator(object):
                         details=f"USS returned the UA type {observed_val} yet no value was injected. Since '{field_human_name}' is a required field of SP API, the SP should map this to '{unknown_value}' and the DP should expose the same value.",
                         query_timestamps=[query_timestamp],
                         additional_data={
-                            "RIDCommonDictionaryEvaluatorCheckID": "C6"
-                            if sp_observed
-                            else "C10"
+                            "RIDCommonDictionaryEvaluatorCheckID": (
+                                "C6" if sp_observed else "C10"
+                            )
                         },
                     )
 
@@ -1332,8 +1331,8 @@ class RIDCommonDictionaryEvaluator(object):
                     details=f"USS returned the {field_human_name} {observed_val}, yet the value {injected_val} was injected.",
                     query_timestamps=[query_timestamp],
                     additional_data={
-                        "RIDCommonDictionaryEvaluatorCheckID": "C7"
-                        if sp_observed
-                        else "C10"
+                        "RIDCommonDictionaryEvaluatorCheckID": (
+                            "C7" if sp_observed else "C10"
+                        )
                     },
                 )

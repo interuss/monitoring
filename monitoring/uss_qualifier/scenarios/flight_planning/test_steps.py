@@ -433,9 +433,11 @@ def cleanup_flights(
                 else:
                     check.record_failed(
                         summary="Failed to delete flight",
-                        details=f"USS indicated {resp.activity_result} with flight plan status {resp.flight_plan_status} rather than the expected Completed with flight plan status Closed.  Its notes were: {resp.notes}"
-                        if "notes" in resp
-                        else "See query",
+                        details=(
+                            f"USS indicated {resp.activity_result} with flight plan status {resp.flight_plan_status} rather than the expected Completed with flight plan status Closed.  Its notes were: {resp.notes}"
+                            if "notes" in resp
+                            else "See query"
+                        ),
                         severity=Severity.Medium,
                         query_timestamps=[query.request.timestamp],
                     )

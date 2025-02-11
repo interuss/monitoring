@@ -302,7 +302,8 @@ class OIRValidator:
         self, expected_oir_id: EntityID, new_oir: fetch.Query
     ) -> None:
         """Validate an OIR that was just explicitly created, meaning
-        we don't have a previous version to compare to, and we expect it to not be an implicit one."""
+        we don't have a previous version to compare to, and we expect it to not be an implicit one.
+        """
 
         t_dss = new_oir.request.timestamp
 
@@ -406,7 +407,8 @@ class OIRValidator:
         """Validate an OIR that was retrieved through search.
         Note that the callers need to pass the entire response from the DSS, as the schema check
         will be performed on the entire response, not just the OIR itself.
-        However, only the expected OIR is checked for the correctness of its contents."""
+        However, only the expected OIR is checked for the correctness of its contents.
+        """
 
         t_dss = search_response.request.timestamp
 

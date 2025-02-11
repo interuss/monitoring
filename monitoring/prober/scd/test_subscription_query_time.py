@@ -1,6 +1,6 @@
 """Strategic conflict detection Subscription put query tests:
 
-  - query with different time formats.
+- query with different time formats.
 """
 
 import datetime

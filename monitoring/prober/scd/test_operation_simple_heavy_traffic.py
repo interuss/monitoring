@@ -1,12 +1,12 @@
 """Basic Operation tests with hundreds of operations created SEQUENTIALLY in the SAME area:
 
-  - make sure operations do not exist with get or query
-  - create 100 operations sequentially, with each covers non-overlapping area that are close to others
-  - get by IDs
-  - search with earliest_time and latest_time
-  - mutate
-  - delete
-  - confirm deletion by get and query
+- make sure operations do not exist with get or query
+- create 100 operations sequentially, with each covers non-overlapping area that are close to others
+- get by IDs
+- search with earliest_time and latest_time
+- mutate
+- delete
+- confirm deletion by get and query
 """
 
 import datetime

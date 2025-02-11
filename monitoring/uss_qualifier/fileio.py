@@ -112,9 +112,9 @@ def _get_web_content(url: str) -> str:
 
             if token is not None:
                 # This request is for a resource in a private GitHub repo that we have a personal access token for.
-                headers[
-                    "Authorization"
-                ] = f"Basic {base64.b64encode(token.encode()).decode()}"
+                headers["Authorization"] = (
+                    f"Basic {base64.b64encode(token.encode()).decode()}"
+                )
 
     resp = requests.get(url, headers=headers)
     resp.raise_for_status()
