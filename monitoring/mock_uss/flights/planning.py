@@ -1,8 +1,8 @@
 import time
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Callable, Optional
 
-from monitoring.mock_uss.flights.database import FlightRecord, db, DEADLOCK_TIMEOUT
+from monitoring.mock_uss.flights.database import DEADLOCK_TIMEOUT, FlightRecord, db
 from monitoring.monitorlib.delay import sleep
 
 

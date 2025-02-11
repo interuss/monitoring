@@ -1,14 +1,15 @@
 from http.client import HTTPConnection
-from urllib3 import PoolManager, HTTPConnectionPool, HTTPSConnectionPool
+
 import urllib3
+from urllib3 import HTTPConnectionPool, HTTPSConnectionPool, PoolManager
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-import urllib3.connection
 from typing import Tuple
 
-from kubernetes.client import CoreV1Api
 import kubernetes.stream
 import requests
+import urllib3.connection
+from kubernetes.client import CoreV1Api
 from requests.adapters import HTTPAdapter
 
 

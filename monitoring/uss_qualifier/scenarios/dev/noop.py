@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 from monitoring.monitorlib.delay import sleep
 from monitoring.uss_qualifier.resources.dev import NoOpResource

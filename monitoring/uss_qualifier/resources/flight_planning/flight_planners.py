@@ -1,19 +1,19 @@
-from typing import List, Iterable, Dict, Optional
+from typing import Dict, Iterable, List, Optional
 
 from implicitdict import ImplicitDict
-from uas_standards.interuss.automated_testing.scd.v1.constants import Scope as ScopeSCD
 from uas_standards.interuss.automated_testing.flight_planning.v1.constants import (
     Scope as ScopeFlightPlanning,
 )
+from uas_standards.interuss.automated_testing.scd.v1.constants import Scope as ScopeSCD
 
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.uss_qualifier.reports.report import ParticipantID
-from monitoring.uss_qualifier.resources.definitions import ResourceID
-from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
+from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlannerConfiguration,
 )
+from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class FlightPlannerSpecification(ImplicitDict):

@@ -1,7 +1,7 @@
-from monitoring.deployment_manager import deploylib
 import monitoring.deployment_manager.deploylib.namespaces
 import monitoring.deployment_manager.deploylib.systems
-from monitoring.deployment_manager.infrastructure import deployment_action, Context
+from monitoring.deployment_manager import deploylib
+from monitoring.deployment_manager.infrastructure import Context, deployment_action
 from monitoring.deployment_manager.systems.test import hello_world
 from monitoring.monitorlib.delay import sleep
 

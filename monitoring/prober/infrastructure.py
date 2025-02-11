@@ -7,7 +7,6 @@ import pytest
 
 from monitoring.prober import utils
 
-
 _test_results = dict()
 
 

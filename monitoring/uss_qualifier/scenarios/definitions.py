@@ -1,9 +1,9 @@
 from typing import Dict, Optional
 
 from implicitdict import ImplicitDict
+
 from monitoring.uss_qualifier.fileio import FileReference
 from monitoring.uss_qualifier.resources.definitions import ResourceID
-
 
 TestScenarioTypeName = str
 """This plain string represents a type of test scenario, expressed as a Python class name qualified relative to the `uss_qualifier` module"""

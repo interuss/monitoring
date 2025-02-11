@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass
-from typing import Iterator, Sequence, List
+from typing import Iterator, List, Sequence
 
 import marko
 import marko.element
@@ -19,14 +19,14 @@ from monitoring.uss_qualifier.reports.sequence_view.generate import (
     make_resources_config,
 )
 from monitoring.uss_qualifier.reports.sequence_view.summary_types import (
-    Indexer,
     ActionNode,
     ActionNodeType,
-    TestedScenario,
     EpochType,
-    TestedCase,
-    TestedStep,
     EventType,
+    Indexer,
+    TestedCase,
+    TestedScenario,
+    TestedStep,
 )
 from monitoring.uss_qualifier.reports.tested_requirements.summaries import (
     compute_test_run_information,

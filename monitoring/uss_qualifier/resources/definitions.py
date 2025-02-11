@@ -2,7 +2,6 @@ from typing import Dict, TypeVar
 
 from implicitdict import ImplicitDict
 
-
 ResourceID = str
 """This plain string represents the ID/name of a resource"""
 

@@ -1,6 +1,6 @@
 import inspect
 import os
-from typing import Any, Optional, Callable
+from typing import Any, Callable, Optional
 
 # Because mock_uss uses gevent, we need to monkey-patch before anything else is loaded.
 # https://www.gevent.org/intro.html#monkey-patching
@@ -74,9 +74,8 @@ def require_config_value(config_key: str) -> None:
         )
 
 
-from monitoring.mock_uss import config
+from monitoring.mock_uss import config, logging
 from monitoring.mock_uss import routes as basic_routes
-from monitoring.mock_uss import logging
 
 if SERVICE_GEOAWARENESS in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_GEOAWARENESS)

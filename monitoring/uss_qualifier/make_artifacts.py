@@ -7,16 +7,16 @@ import sys
 from implicitdict import ImplicitDict
 from loguru import logger
 
-from monitoring.monitorlib import inspection
 from monitoring import uss_qualifier as uss_qualifier_module
+from monitoring.monitorlib import inspection
 from monitoring.uss_qualifier.configurations.configuration import (
     USSQualifierConfiguration,
     USSQualifierConfigurationV1,
 )
 from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.artifacts import (
-    generate_artifacts,
     default_output_path,
+    generate_artifacts,
 )
 from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
 

@@ -1,8 +1,8 @@
 from typing import Optional
 
+from implicitdict import ImplicitDict
 from loguru import logger
 
-from implicitdict import ImplicitDict
 from monitoring.monitorlib.fetch import settings
 from monitoring.uss_qualifier.resources.resource import Resource
 

@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from monitoring.monitorlib.clients.geospatial_info.querying import (
-    GeospatialFeatureQueryResponse,
     GeospatialFeatureCheck,
+    GeospatialFeatureQueryResponse,
 )
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID

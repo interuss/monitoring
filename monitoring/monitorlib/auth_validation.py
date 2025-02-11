@@ -1,6 +1,6 @@
 import json
-from typing import List, NamedTuple
 from functools import wraps
+from typing import List, NamedTuple
 
 import flask
 import jwcrypto.jwk

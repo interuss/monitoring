@@ -1,10 +1,11 @@
 from __future__ import annotations
-from typing import Optional, List
+
+from typing import List, Optional
 
 from implicitdict import ImplicitDict
+
 from monitoring.monitorlib.dicts import JSONAddress
 from monitoring.uss_qualifier.common_data_definitions import Severity
-
 
 # ===== Shared logic =====
 

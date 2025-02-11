@@ -3,18 +3,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List, Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.fetch import Query
-from monitoring.uss_qualifier.configurations.configuration import (
-    ParticipantID,
-)
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.reports.report import (
-    PassedCheck,
-    FailedCheck,
     ErrorReport,
+    FailedCheck,
+    PassedCheck,
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName

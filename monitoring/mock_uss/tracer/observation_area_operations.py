@@ -1,11 +1,12 @@
 from implicitdict import ImplicitDict
+
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.observation_areas import (
-    ObservationArea,
-    ObservationAreaRequest,
     F3411ObservationArea,
     F3548ObservationArea,
+    ObservationArea,
     ObservationAreaID,
+    ObservationAreaRequest,
 )
 from monitoring.mock_uss.tracer.subscriptions import (
     subscribe_rid,

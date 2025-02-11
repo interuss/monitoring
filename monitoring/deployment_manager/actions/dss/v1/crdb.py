@@ -1,23 +1,22 @@
 import base64
 import os
 
-from kubernetes.client import V1Secret
-import pem
-import yaml
-
-from monitoring.deployment_manager.deploylib.crdb_cluster_api import ClusterAPI
-from monitoring.deployment_manager.deploylib import crdb_sql
-from monitoring.deployment_manager.deploylib.port_forwarding import (
-    get_requests_session_for_pod,
-)
-from monitoring.deployment_manager.infrastructure import deployment_action, Context
-from monitoring.deployment_manager.actions.dss.v1.common import requires_v1_dss
-
 import cryptography.exceptions
 import cryptography.hazmat.backends
 import cryptography.hazmat.primitives.hashes
 import cryptography.hazmat.primitives.serialization
 import cryptography.x509
+import pem
+import yaml
+from kubernetes.client import V1Secret
+
+from monitoring.deployment_manager.actions.dss.v1.common import requires_v1_dss
+from monitoring.deployment_manager.deploylib import crdb_sql
+from monitoring.deployment_manager.deploylib.crdb_cluster_api import ClusterAPI
+from monitoring.deployment_manager.deploylib.port_forwarding import (
+    get_requests_session_for_pod,
+)
+from monitoring.deployment_manager.infrastructure import Context, deployment_action
 
 
 def _public_key_bytes(public_key) -> bytes:

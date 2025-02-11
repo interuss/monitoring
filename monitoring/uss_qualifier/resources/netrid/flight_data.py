@@ -1,9 +1,9 @@
 from typing import List, Optional
 
 from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
+from uas_standards.interuss.automated_testing.rid.v1 import injection
 
 from monitoring.uss_qualifier.resources.files import ExternalFile
-from uas_standards.interuss.automated_testing.rid.v1 import injection
 
 
 class FullFlightRecord(ImplicitDict):

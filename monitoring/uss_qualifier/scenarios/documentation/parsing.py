@@ -1,6 +1,6 @@
 import inspect
 import os
-from typing import List, Dict, Type, Any, Optional
+from typing import Any, Dict, List, Optional, Type
 
 import marko
 import marko.element
@@ -14,10 +14,10 @@ from monitoring.uss_qualifier.documentation import text_of
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
-    TestStepDocumentation,
-    TestCheckDocumentation,
     TestCaseDocumentation,
+    TestCheckDocumentation,
     TestScenarioDocumentation,
+    TestStepDocumentation,
 )
 
 RESOURCES_HEADING = "resources"

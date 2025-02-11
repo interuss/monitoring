@@ -2,7 +2,6 @@ from typing import Any, List
 
 from kubernetes import client as k8s
 
-
 DEPLOYMENT_NAME = "webserver-deployment"
 CONTAINER_PORT = 8001
 APP_NAME = "webbserver-app"

@@ -1,12 +1,12 @@
-import sys
 import json
+import sys
 
 from implicitdict import ImplicitDict
 
 from monitoring.uss_qualifier.reports.report import (
     TestRunReport,
-    TestSuiteReport,
     TestScenarioReport,
+    TestSuiteReport,
 )
 
 

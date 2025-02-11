@@ -1,13 +1,15 @@
 import json
 from typing import List
+
 from implicitdict import ImplicitDict, StringBasedDateTime
+from uas_standards.eurocae_ed269 import UASZoneVersion
+
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.eurocae.ed269.source_document import (
     SourceDocument,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
-from uas_standards.eurocae_ed269 import UASZoneVersion
 
 
 # TODO: When the format is confirmed, this should be moved to uas_standards.eurocae_ed269

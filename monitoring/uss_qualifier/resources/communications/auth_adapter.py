@@ -1,13 +1,12 @@
 import os
 from enum import Enum
-from typing import Optional, List, Set, Dict
+from typing import Dict, List, Optional, Set
 
 from implicitdict import ImplicitDict
 
-from monitoring.monitorlib.auth import make_auth_adapter
 from monitoring.monitorlib import infrastructure
-from monitoring.uss_qualifier.resources.resource import MissingResourceError
-from monitoring.uss_qualifier.resources.resource import Resource
+from monitoring.monitorlib.auth import make_auth_adapter
+from monitoring.uss_qualifier.resources.resource import MissingResourceError, Resource
 
 
 class AuthAdapterSpecification(ImplicitDict):

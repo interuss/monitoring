@@ -9,20 +9,16 @@ from loguru import logger
 from monitoring.uss_qualifier.action_generators.definitions import (
     ActionGeneratorDefinition,
 )
-
-from monitoring.uss_qualifier.fileio import load_dict_with_references, FileReference
+from monitoring.uss_qualifier.fileio import FileReference, load_dict_with_references
 from monitoring.uss_qualifier.reports.capability_definitions import (
     ParticipantCapabilityDefinition,
 )
 from monitoring.uss_qualifier.resources.definitions import (
+    ResourceDeclaration,
     ResourceID,
     ResourceTypeName,
-    ResourceDeclaration,
 )
-from monitoring.uss_qualifier.scenarios.definitions import (
-    TestScenarioDeclaration,
-)
-
+from monitoring.uss_qualifier.scenarios.definitions import TestScenarioDeclaration
 
 TestSuiteTypeName = FileReference
 

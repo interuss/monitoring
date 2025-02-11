@@ -1,8 +1,8 @@
-from faker import Faker
-import string
 import random
-from uas_standards.ansi_cta_2063_a import SerialNumber
+import string
 
+from faker import Faker
+from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 
 

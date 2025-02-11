@@ -1,9 +1,9 @@
 import re
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict
-from monitoring.monitorlib.fetch import Query
 
+from monitoring.monitorlib.fetch import Query
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.resource import Resource
 

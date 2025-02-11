@@ -1,12 +1,12 @@
 import flask
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.geospatial_map.v1.api import (
-    OperationID,
     OPERATIONS,
-    GeospatialMapQueryRequest,
-    GeospatialMapQueryReply,
     GeospatialMapCheckResult,
     GeospatialMapCheckResultFeaturesSelectionOutcome,
+    GeospatialMapQueryReply,
+    GeospatialMapQueryRequest,
+    OperationID,
 )
 from uas_standards.interuss.automated_testing.geospatial_map.v1.constants import Scope
 

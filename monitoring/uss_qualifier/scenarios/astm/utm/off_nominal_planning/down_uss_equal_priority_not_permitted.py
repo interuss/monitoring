@@ -2,9 +2,10 @@ from typing import List
 
 import arrow
 from uas_standards.astm.f3548.v21.api import (
-    OperationalIntentState,
     OperationalIntentReference,
+    OperationalIntentState,
 )
+
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
@@ -13,23 +14,20 @@ from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
-    PlanningActivityResult,
     FlightPlanStatus,
+    PlanningActivityResult,
 )
-from monitoring.monitorlib.temporal import TimeDuringTest, Time
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
     ExpectedFlightIntent,
 )
-
 from monitoring.uss_qualifier.scenarios.astm.utm import DownUSS
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     OpIntentValidator,
-    set_uss_down,
     set_uss_available,
+    set_uss_down,
 )
-from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
-    submit_flight,
-)
+from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import submit_flight
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 

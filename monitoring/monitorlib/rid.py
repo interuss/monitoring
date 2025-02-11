@@ -2,13 +2,13 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 import arrow
-
-from monitoring.monitorlib import schema_validation
-from uas_standards.astm.f3411 import v19, v22a
 import uas_standards.astm.f3411.v19.api
 import uas_standards.astm.f3411.v19.constants
 import uas_standards.astm.f3411.v22a.api
 import uas_standards.astm.f3411.v22a.constants
+from uas_standards.astm.f3411 import v19, v22a
+
+from monitoring.monitorlib import schema_validation
 
 
 class RIDVersion(str, Enum):

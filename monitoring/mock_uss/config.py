@@ -1,7 +1,6 @@
 from monitoring.mock_uss import import_environment_variable
 from monitoring.monitorlib import auth_validation
 
-
 KEY_TOKEN_PUBLIC_KEY = "MOCK_USS_PUBLIC_KEY"
 KEY_TOKEN_AUDIENCE = "MOCK_USS_TOKEN_AUDIENCE"
 KEY_BASE_URL = "MOCK_USS_BASE_URL"

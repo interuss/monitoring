@@ -1,52 +1,42 @@
 import datetime
 import math
-from typing import List, Optional, TypeVar, Any, Union
 from collections.abc import Callable
+from typing import Any, List, Optional, TypeVar, Union
 
 from arrow import ParserError
 from implicitdict import StringBasedDateTime
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
+from uas_standards.astm.f3411.v22a import constants
 from uas_standards.astm.f3411.v22a.api import (
     UASID,
+    HorizontalAccuracy,
+    SpeedAccuracy,
     UAClassificationEUCategory,
     UAClassificationEUClass,
+    VerticalAccuracy,
 )
-from uas_standards.astm.f3411.v22a import constants
-
+from uas_standards.interuss.automated_testing.rid.v1 import injection
 from uas_standards.interuss.automated_testing.rid.v1 import (
     observation as observation_api,
-    injection,
 )
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     RIDAircraftPosition,
 )
 
-from monitoring.monitorlib.fetch.rid import (
-    FlightDetails,
-)
-from monitoring.monitorlib.fetch.rid import Flight, Position
+from monitoring.monitorlib.fetch.rid import Flight, FlightDetails, Position
 from monitoring.monitorlib.geo import (
-    validate_lat,
-    validate_lng,
+    DISTANCE_TOLERANCE_M,
     Altitude,
     LatLngPoint,
-    DISTANCE_TOLERANCE_M,
+    validate_lat,
+    validate_lng,
 )
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
-from monitoring.uss_qualifier.scenarios.scenario import (
-    PendingCheck,
-)
-
-from uas_standards.astm.f3411.v22a.api import (
-    VerticalAccuracy,
-    HorizontalAccuracy,
-    SpeedAccuracy,
-)
+from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenarioType
 
 T = TypeVar("T")
 

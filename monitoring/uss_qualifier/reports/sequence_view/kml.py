@@ -1,12 +1,23 @@
 from dataclasses import dataclass
-from typing import Dict, List, Type, Optional, get_type_hints, Protocol
+from typing import Dict, List, Optional, Protocol, Type, get_type_hints
 
 from implicitdict import ImplicitDict
 from loguru import logger
 from lxml import etree
 from pykml.factory import KML_ElementMaker as kml
 from pykml.util import format_xml_with_cdata
+from uas_standards.astm.f3548.v21.api import (
+    GetOperationalIntentDetailsResponse,
+    QueryOperationalIntentReferenceParameters,
+    QueryOperationalIntentReferenceResponse,
+)
+from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
+    UpsertFlightPlanRequest,
+    UpsertFlightPlanResponse,
+)
 
+from monitoring.monitorlib.errors import stacktrace_string
+from monitoring.monitorlib.fetch import Query, QueryType
 from monitoring.monitorlib.kml.f3548v21 import (
     f3548v21_styles,
     full_op_intent,
@@ -18,18 +29,6 @@ from monitoring.monitorlib.kml.flight_planning import (
 )
 from monitoring.monitorlib.kml.generation import query_styles
 from monitoring.uss_qualifier.reports.sequence_view.summary_types import TestedScenario
-from uas_standards.astm.f3548.v21.api import (
-    QueryOperationalIntentReferenceParameters,
-    QueryOperationalIntentReferenceResponse,
-    GetOperationalIntentDetailsResponse,
-)
-
-from monitoring.monitorlib.errors import stacktrace_string
-from monitoring.monitorlib.fetch import QueryType, Query
-from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
-    UpsertFlightPlanRequest,
-    UpsertFlightPlanResponse,
-)
 
 
 class QueryKMLRenderer(Protocol):

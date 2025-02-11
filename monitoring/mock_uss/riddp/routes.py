@@ -1,5 +1,6 @@
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.riddp.config import KEY_RID_VERSION
+
 from ...monitorlib.rid import RIDVersion
 
 rid_version: RIDVersion = webapp.config[KEY_RID_VERSION]
@@ -19,5 +20,4 @@ else:
         f"Mock USS does not yet support RID version {rid_version}"
     )
 
-from . import routes_observation
-from . import routes_behavior
+from . import routes_behavior, routes_observation

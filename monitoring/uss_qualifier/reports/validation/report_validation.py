@@ -1,33 +1,32 @@
 import json
 from dataclasses import dataclass
-from typing import Iterator, Union, List
+from typing import Iterator, List, Union
 
-from loguru import logger
 import yaml
+from loguru import logger
 
 from monitoring.monitorlib.dicts import JSONAddress
 from monitoring.monitorlib.inspection import fullname
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.reports.report import (
-    TestRunReport,
-    TestSuiteActionReport,
-    FailedCheck,
-    TestSuiteReport,
     ActionGeneratorReport,
+    FailedCheck,
     SkippedActionReport,
+    TestRunReport,
     TestScenarioReport,
+    TestSuiteActionReport,
+    TestSuiteReport,
 )
 from monitoring.uss_qualifier.reports.validation.definitions import (
-    ValidationConfiguration,
-    ValidationCriterion,
-    ValidationCriterionApplicability,
-    SeverityComparison,
-    PassCondition,
     EachElementCondition,
     ElementGroupCondition,
     NumericComparison,
+    PassCondition,
+    SeverityComparison,
+    ValidationConfiguration,
+    ValidationCriterion,
+    ValidationCriterionApplicability,
 )
-
 
 # ===== Shared logic =====
 

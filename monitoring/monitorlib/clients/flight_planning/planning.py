@@ -1,16 +1,17 @@
 from __future__ import annotations
+
 from enum import Enum
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    AirspaceUsageState,
     FlightID,
     FlightInfo,
     UasState,
-    AirspaceUsageState,
 )
 from monitoring.monitorlib.fetch import Query
 

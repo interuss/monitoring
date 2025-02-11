@@ -1,16 +1,16 @@
-from typing import Optional, List
+import datetime
+from typing import List, Optional
 
 import arrow
 import s2sphere
-import datetime
 
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.prober.infrastructure import register_resource_type
+from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
-from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext

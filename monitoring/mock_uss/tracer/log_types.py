@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from abc import abstractmethod
 import sys
+from abc import abstractmethod
 from typing import Optional, Type
 
 from implicitdict import ImplicitDict, StringBasedDateTime
-from monitoring.monitorlib.fetch import rid as rid_fetch, RequestDescription, summarize
+
+from monitoring.monitorlib.fetch import RequestDescription
+from monitoring.monitorlib.fetch import rid as rid_fetch
 from monitoring.monitorlib.fetch import scd as scd_fetch
+from monitoring.monitorlib.fetch import summarize
 from monitoring.monitorlib.fetch.rid import FetchedISAs
 from monitoring.monitorlib.mutate import rid as rid_mutate
 from monitoring.monitorlib.mutate import scd as scd_mutate

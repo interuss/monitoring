@@ -1,9 +1,9 @@
-from typing import List, Dict
+from typing import Dict, List
 
 from uas_standards.astm.f3548.v21 import constants
 
 from monitoring.monitorlib import fetch
-from monitoring.monitorlib.fetch import evaluation, QueryType
+from monitoring.monitorlib.fetch import QueryType, evaluation
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.flight_planning import FlightPlannersResource
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario

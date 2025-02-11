@@ -2,20 +2,20 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from uas_standards.astm.f3548.v21.api import (
+    ConstraintReference,
     EntityID,
     PutConstraintReferenceParameters,
-    ConstraintReference,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
-from monitoring.monitorlib.fetch import QueryError, Query
+from monitoring.monitorlib.fetch import Query, QueryError
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
+    DSSInstance,
     DSSInstanceResource,
     DSSInstancesResource,
-    DSSInstance,
 )
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
@@ -27,8 +27,8 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators.oir_validator im
     TIME_TOLERANCE_SEC,
 )
 from monitoring.uss_qualifier.scenarios.scenario import (
-    TestScenario,
     ScenarioCannotContinueError,
+    TestScenario,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 

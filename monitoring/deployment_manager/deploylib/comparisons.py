@@ -1,14 +1,13 @@
 from typing import Any, Callable, Dict, List, Optional, Type
 
 from kubernetes.client import (
-    V1ObjectMeta,
     V1Deployment,
     V1Ingress,
     V1Namespace,
-    V1Service,
+    V1ObjectMeta,
     V1Secret,
+    V1Service,
 )
-
 
 _special_comparisons: Dict[Type, Callable[[Any, Any], bool]] = {}
 

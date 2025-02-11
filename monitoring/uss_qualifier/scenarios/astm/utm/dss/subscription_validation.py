@@ -1,9 +1,9 @@
-from datetime import datetime, timedelta, UTC
-from typing import Dict, Any
+from datetime import UTC, datetime, timedelta
+from typing import Any, Dict
 
 from uas_standards.astm.f3548.v21.constants import (
-    Scope,
     DSSMaxSubscriptionDurationHours,
+    Scope,
 )
 
 from monitoring.monitorlib.geotemporal import Volume4D
@@ -16,10 +16,7 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
 )
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
-from monitoring.uss_qualifier.scenarios.scenario import (
-    TestScenario,
-    PendingCheck,
-)
+from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 _SECONDS_PER_HOUR = 60 * 60

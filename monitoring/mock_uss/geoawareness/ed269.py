@@ -5,25 +5,25 @@ from datetime import datetime
 from typing import List, Optional, Union
 
 import s2sphere
+from implicitdict import StringBasedDateTime
 from s2sphere import LatLng
 from shapely.geometry import Point, Polygon
-
-from implicitdict import StringBasedDateTime
-from monitoring.mock_uss.geoawareness.database import SourceRecord
-from monitoring.monitorlib.geo import flatten
+from uas_standards.eurocae_ed269 import (
+    YESNO,
+    HorizontalProjectionType,
+    UASZoneVersion,
+    UomDimensions,
+)
 from uas_standards.interuss.automated_testing.geo_awareness.v1.api import (
-    GeozonesFilterSet,
-    Position,
     ED269Filters,
     GeozonesCheckResultGeozone,
+    GeozonesFilterSet,
     GeozoneSourceResponseResult,
+    Position,
 )
-from uas_standards.eurocae_ed269 import (
-    UASZoneVersion,
-    HorizontalProjectionType,
-    UomDimensions,
-    YESNO,
-)
+
+from monitoring.mock_uss.geoawareness.database import SourceRecord
+from monitoring.monitorlib.geo import flatten
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

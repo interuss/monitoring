@@ -1,17 +1,19 @@
 from __future__ import annotations
-from abc import ABC, abstractmethod
+
 import inspect
-from typing import Generic, Dict, Optional, TypeVar, List, Type, Iterator, Any
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Generic, Iterator, List, Optional, Type, TypeVar
 
 from implicitdict import ImplicitDict
+
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib.inspection import (
-    import_submodules,
     get_module_object_by_name,
+    import_submodules,
 )
 from monitoring.uss_qualifier.action_generators.definitions import (
-    ActionGeneratorSpecificationType,
     ActionGeneratorDefinition,
+    ActionGeneratorSpecificationType,
     GeneratorTypeName,
 )
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
@@ -108,9 +110,7 @@ ActionGeneratorType = TypeVar("ActionGeneratorType", bound=ActionGenerator)
 def action_generator_type_from_name(
     action_generator_type_name: GeneratorTypeName,
 ) -> Type[ActionGenerator]:
-    from monitoring.uss_qualifier import (
-        action_generators as action_generators_module,
-    )
+    from monitoring.uss_qualifier import action_generators as action_generators_module
 
     import_submodules(action_generators_module)
     action_generator_type = get_module_object_by_name(
