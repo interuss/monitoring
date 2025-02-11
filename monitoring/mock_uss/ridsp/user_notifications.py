@@ -50,14 +50,13 @@ def check_and_generate_missing_fields_notifications(
 
     for flight in injected_flights:
 
-        default_timestamp = None
+        # Default to now if we don't find anything
+        default_timestamp = arrow.utcnow()
 
+        # We try to use the start of the flight as a better default
         f_start, _ = flight.get_span()
-        if f_start:  # get_span may fail to find a start
+        if f_start is None:  # get_span may fail to find a start
             default_timestamp = arrow.get(f_start)
-
-        if not default_timestamp:  # If we didn't find anything, default to now
-            default_timestamp = arrow.utcnow()
 
         for tpos, telemetry in enumerate(flight.raw_telemetry):
 
