@@ -1,22 +1,23 @@
 from typing import List, Union
 
 from implicitdict import ImplicitDict
+
 from monitoring.uss_qualifier.action_generators.action_generator import (
-    action_generator_type_from_name,
     action_generator_specification_type,
+    action_generator_type_from_name,
 )
 from monitoring.uss_qualifier.action_generators.definitions import (
     ActionGeneratorDefinition,
 )
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
+    PotentialActionGeneratorAction,
     PotentialGeneratedAction,
     PotentialTestScenarioAction,
     PotentialTestSuiteAction,
-    PotentialActionGeneratorAction,
 )
 from monitoring.uss_qualifier.suites.definitions import (
-    TestSuiteActionDeclaration,
     ActionType,
+    TestSuiteActionDeclaration,
 )
 
 

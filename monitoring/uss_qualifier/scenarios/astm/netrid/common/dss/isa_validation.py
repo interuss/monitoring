@@ -1,14 +1,12 @@
 import copy
 import datetime
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
 
 import arrow
 import s2sphere
-
-from monitoring.uss_qualifier.suites.suite import ExecutionContext
 from uas_standards.astm.f3411 import v19, v22a
 
-from monitoring.monitorlib.fetch import query_and_describe, QueryType
+from monitoring.monitorlib.fetch import QueryType, query_and_describe
 from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.prober.infrastructure import register_resource_type
@@ -20,6 +18,7 @@ from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaRe
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss import utils
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class ISAValidation(GenericTestScenario):

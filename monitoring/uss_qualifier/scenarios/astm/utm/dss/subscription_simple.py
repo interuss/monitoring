@@ -23,9 +23,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.sub.crud import (
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators.subscription_validator import (
     SubscriptionValidator,
 )
-from monitoring.uss_qualifier.scenarios.scenario import (
-    TestScenario,
-)
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 TIME_TOLERANCE_SEC = 1

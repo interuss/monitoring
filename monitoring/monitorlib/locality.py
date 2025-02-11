@@ -1,7 +1,8 @@
 from __future__ import annotations
-from abc import ABC, abstractmethod
+
 import inspect
 import sys
+from abc import ABC, abstractmethod
 from typing import TypeVar
 
 LocalityCode = str

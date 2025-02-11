@@ -1,1 +1,1 @@
-from .crdb import CockroachDBNodeResource, CockroachDBClusterResource, CockroachDBNode
+from .crdb import CockroachDBClusterResource, CockroachDBNode, CockroachDBNodeResource

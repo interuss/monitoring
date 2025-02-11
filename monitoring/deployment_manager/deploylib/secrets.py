@@ -1,6 +1,6 @@
 from typing import Optional
 
-from kubernetes.client import CoreV1Api, V1Secret, V1Namespace
+from kubernetes.client import CoreV1Api, V1Namespace, V1Secret
 from structlog import BoundLogger
 
 from monitoring.deployment_manager.deploylib import common_k8s

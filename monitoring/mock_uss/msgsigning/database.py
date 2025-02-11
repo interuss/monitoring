@@ -1,7 +1,8 @@
 import json
 
-from monitoring.monitorlib.multiprocessing import SynchronizedValue
 from implicitdict import ImplicitDict
+
+from monitoring.monitorlib.multiprocessing import SynchronizedValue
 
 # TODO Use this database to dynamically alter which key pair to use for message signing activities.
 

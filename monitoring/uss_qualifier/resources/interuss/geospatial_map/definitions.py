@@ -2,6 +2,7 @@ from enum import Enum
 from typing import List, Optional
 
 from implicitdict import ImplicitDict
+
 from monitoring.monitorlib.geotemporal import Volume4DTemplateCollection
 
 

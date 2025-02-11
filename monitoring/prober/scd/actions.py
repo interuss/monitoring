@@ -1,6 +1,6 @@
-from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib import scd
-from monitoring.monitorlib.scd import SCOPE_CM, SCOPE_SC, SCOPE_CP
+from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.monitorlib.scd import SCOPE_CM, SCOPE_CP, SCOPE_SC
 
 
 def _read_both_scope(scd_api: str) -> str:

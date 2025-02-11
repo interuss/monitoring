@@ -1,28 +1,26 @@
-from typing import List, Dict, Union
+from typing import Dict, List, Union
 
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.dicts import JSONPath
-from monitoring.monitorlib.inspection import (
-    import_submodules,
-)
+from monitoring.monitorlib.inspection import import_submodules
 from monitoring.uss_qualifier import scenarios as scenarios_module
 from monitoring.uss_qualifier.reports.report import (
-    TestRunReport,
-    TestSuiteReport,
     ActionGeneratorReport,
-    TestSuiteActionReport,
-    TestScenarioReport,
-    RequirementID,
-    ParticipantID,
-    TestCaseReport,
-    TestStepReport,
-    PassedCheck,
     FailedCheck,
+    ParticipantID,
+    PassedCheck,
+    RequirementID,
+    TestCaseReport,
+    TestRunReport,
+    TestScenarioReport,
+    TestStepReport,
+    TestSuiteActionReport,
+    TestSuiteReport,
 )
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
-    TestScenarioDocumentation,
     TestCaseDocumentation,
+    TestScenarioDocumentation,
     TestStepDocumentation,
 )
 from monitoring.uss_qualifier.scenarios.documentation.parsing import (

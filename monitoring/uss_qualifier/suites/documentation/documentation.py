@@ -1,11 +1,13 @@
 from __future__ import annotations
+
 import glob
 import inspect
 import os
 from dataclasses import dataclass
-from typing import Iterator, Optional, List, Union, Dict
+from typing import Dict, Iterator, List, Optional, Union
 
 from implicitdict import ImplicitDict
+
 from monitoring.uss_qualifier.action_generators.action_generator import (
     action_generator_type_from_name,
 )
@@ -13,24 +15,23 @@ from monitoring.uss_qualifier.action_generators.definitions import (
     ActionGeneratorDefinition,
 )
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
-    PotentialGeneratedAction,
     PotentialActionGeneratorAction,
+    PotentialGeneratedAction,
 )
 from monitoring.uss_qualifier.action_generators.documentation.documentation import (
     list_potential_actions_for_action_generator_definition,
 )
-
 from monitoring.uss_qualifier.fileio import (
-    load_dict_with_references,
-    get_package_name,
-    resolve_filename,
     FileReference,
+    get_package_name,
+    load_dict_with_references,
+    resolve_filename,
 )
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
-    TestScenarioDocumentation,
     TestCheckDocumentation,
+    TestScenarioDocumentation,
 )
 from monitoring.uss_qualifier.scenarios.documentation.parsing import (
     get_documentation,
@@ -39,9 +40,9 @@ from monitoring.uss_qualifier.scenarios.documentation.parsing import (
 from monitoring.uss_qualifier.scenarios.scenario import get_scenario_type_by_name
 from monitoring.uss_qualifier.suites import suite as suite_module
 from monitoring.uss_qualifier.suites.definitions import (
-    TestSuiteDefinition,
     ActionType,
     TestSuiteActionDeclaration,
+    TestSuiteDefinition,
     TestSuiteTypeName,
 )
 

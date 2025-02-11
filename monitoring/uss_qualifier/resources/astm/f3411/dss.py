@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import List, Optional
 from urllib.parse import urlparse
 
@@ -7,8 +8,8 @@ from implicitdict import ImplicitDict
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.reports.report import ParticipantID
-from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
+from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class DSSInstanceSpecification(ImplicitDict):

@@ -1,4 +1,4 @@
-from monitoring.mock_uss import config, SERVICE_MESSAGESIGNING
+from monitoring.mock_uss import SERVICE_MESSAGESIGNING, config
 
 if not config.Config.CERT_BASE_PATH:
     raise ValueError(

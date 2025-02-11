@@ -4,8 +4,8 @@ from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.resources.astm.f3411 import DSSInstancesResource
 from monitoring.uss_qualifier.resources.dev import TestExclusionsResource
 from monitoring.uss_qualifier.resources.netrid import (
-    NetRIDServiceProviders,
     NetRIDObserversResource,
+    NetRIDServiceProviders,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.aggregate_checks import (
     AggregateChecks as CommonAggregateChecks,

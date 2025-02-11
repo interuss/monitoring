@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Optional, List
+from typing import List, Optional
 
 import flask
-from flask import Request, Response
 import loguru
+from flask import Request, Response
 from loguru import logger
 
 from monitoring.mock_uss import webapp

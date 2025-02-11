@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 
 import loguru
 from uas_standards.astm.f3548.v21.api import Subscription, SubscriptionID
@@ -13,9 +13,9 @@ from monitoring.monitorlib.schema_validation import F3548_21
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
+    DSSInstance,
     DSSInstanceResource,
     DSSInstancesResource,
-    DSSInstance,
 )
 from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
     SubscriptionParams,
@@ -32,9 +32,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators import (
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators.subscription_validator import (
     SubscriptionValidator,
 )
-from monitoring.uss_qualifier.scenarios.scenario import (
-    TestScenario,
-)
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 

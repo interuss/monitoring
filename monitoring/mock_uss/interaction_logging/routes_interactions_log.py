@@ -1,9 +1,9 @@
 import json
 import os
 from datetime import datetime
-from typing import Tuple, List
+from typing import List, Tuple
 
-from flask import request, jsonify, Response
+from flask import Response, jsonify, request
 from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 

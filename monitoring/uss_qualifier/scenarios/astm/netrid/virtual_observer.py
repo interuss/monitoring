@@ -1,8 +1,8 @@
-from datetime import timedelta, datetime
-from typing import Optional, Callable, List
-from loguru import logger
+from datetime import datetime, timedelta
+from typing import Callable, List, Optional
 
 import arrow
+from loguru import logger
 from s2sphere import LatLngRect
 
 from monitoring.monitorlib.delay import sleep

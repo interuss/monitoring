@@ -1,8 +1,7 @@
 import json
-from typing import Any, Callable, Optional
-
 import multiprocessing
 import multiprocessing.shared_memory
+from typing import Any, Callable, Optional
 
 
 class SynchronizedValue(object):

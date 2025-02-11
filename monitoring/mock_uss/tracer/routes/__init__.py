@@ -3,10 +3,10 @@ from typing import Tuple
 
 import arrow
 import flask
+from implicitdict import StringBasedDateTime
 from loguru import logger
 from termcolor import colored
 
-from implicitdict import StringBasedDateTime
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.log_types import BadRoute
@@ -19,10 +19,7 @@ def tracer_status():
     return "Tracer ok {}".format(versioning.get_code_version())
 
 
-from monitoring.mock_uss.tracer.routes import ui
-from monitoring.mock_uss.tracer.routes import scd
-from monitoring.mock_uss.tracer.routes import rid
-from monitoring.mock_uss.tracer.routes import observation_areas
+from monitoring.mock_uss.tracer.routes import observation_areas, rid, scd, ui
 
 
 @webapp.route("/tracer/<path:u_path>", methods=["GET", "PUT", "POST", "DELETE"])

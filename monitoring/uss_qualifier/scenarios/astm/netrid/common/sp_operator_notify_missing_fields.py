@@ -1,17 +1,19 @@
 from datetime import datetime
 from typing import List, Optional
 
+import arrow
 from requests.exceptions import RequestException
 from s2sphere import LatLngRect
 
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
+from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
-    FlightDataResource,
-    NetRIDServiceProviders,
-    NetRIDObserversResource,
     EvaluationConfigurationResource,
+    FlightDataResource,
+    NetRIDObserversResource,
+    NetRIDServiceProviders,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid import (
     display_data_evaluator,
@@ -27,13 +29,8 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.injection import (
 from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
-
-from monitoring.monitorlib.rid_automated_testing.injection_api import (
-    TestFlight,
-)
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
-import arrow
 
 
 class SpOperatorNotifyMissingFields(GenericTestScenario):

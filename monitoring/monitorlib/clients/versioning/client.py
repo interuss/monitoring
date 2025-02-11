@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
-from monitoring.monitorlib.fetch import QueryError, Query
+from monitoring.monitorlib.fetch import Query, QueryError
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 
 

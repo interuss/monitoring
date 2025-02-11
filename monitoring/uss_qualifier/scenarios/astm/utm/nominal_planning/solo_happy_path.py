@@ -1,6 +1,7 @@
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 import arrow
+from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
@@ -10,28 +11,22 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
-from monitoring.monitorlib.temporal import TimeDuringTest, Time
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
-    validate_flight_intent_templates,
-    ExpectedFlightIntent,
-)
-from monitoring.uss_qualifier.suites.suite import ExecutionContext
-from uas_standards.astm.f3548.v21.constants import Scope
-
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
-from monitoring.uss_qualifier.resources.flight_planning import (
-    FlightIntentsResource,
+from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
+    ExpectedFlightIntent,
+    validate_flight_intent_templates,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
-from monitoring.uss_qualifier.scenarios.scenario import (
-    TestScenario,
-)
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights,
 )
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class SoloHappyPath(TestScenario):

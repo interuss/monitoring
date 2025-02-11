@@ -1,24 +1,24 @@
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Optional, List, Dict, Iterator
+from typing import Dict, Iterator, List, Optional
 
 import arrow
 from implicitdict import StringBasedTimeDelta
 
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
-    UasState,
     FlightInfo,
+    UasState,
 )
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
-from monitoring.monitorlib.geotemporal import Volume4DCollection, Volume4D
-from monitoring.monitorlib.temporal import TimeDuringTest, Time
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
+from monitoring.monitorlib.uspace import problems_with_flight_authorisation
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntentID,
 )
-from monitoring.monitorlib.uspace import problems_with_flight_authorisation
 
 FlightIntentName = str
 

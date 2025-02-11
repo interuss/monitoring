@@ -11,13 +11,12 @@
 import datetime
 import json
 
-from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib import scd
+from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib.scd import SCOPE_SC
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import for_api_versions, register_resource_type
 from monitoring.prober.scd import actions
-
 
 OP1_TYPE = register_resource_type(210, "Operational intent 1")
 OP2_TYPE = register_resource_type(211, "Operational intent 2")

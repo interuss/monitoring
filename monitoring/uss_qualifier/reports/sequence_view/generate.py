@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import List, Iterator
+from typing import Iterator, List
 
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -19,24 +19,24 @@ from monitoring.uss_qualifier.configurations.configuration import (
 from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports import jinja_env
 from monitoring.uss_qualifier.reports.report import (
-    TestRunReport,
-    TestSuiteActionReport,
     Severity,
     SkippedActionReport,
+    TestRunReport,
+    TestSuiteActionReport,
 )
 from monitoring.uss_qualifier.reports.sequence_view.events import (
     compute_tested_scenario,
 )
 from monitoring.uss_qualifier.reports.sequence_view.kml import make_scenario_kml
 from monitoring.uss_qualifier.reports.sequence_view.summary_types import (
-    Indexer,
     ActionNode,
     ActionNodeType,
-    SkippedAction,
-    OverviewRow,
-    SuiteCell,
     EpochType,
     EventType,
+    Indexer,
+    OverviewRow,
+    SkippedAction,
+    SuiteCell,
 )
 from monitoring.uss_qualifier.reports.tested_requirements.generate import (
     compute_test_run_information,
@@ -45,7 +45,6 @@ from monitoring.uss_qualifier.scenarios.documentation.parsing import (
     get_documentation_by_name,
 )
 from monitoring.uss_qualifier.suites.definitions import ActionType, TestSuiteDefinition
-
 
 UNATTRIBUTED_PARTICIPANT = "unattributed"
 

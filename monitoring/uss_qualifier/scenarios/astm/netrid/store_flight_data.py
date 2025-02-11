@@ -2,7 +2,7 @@ import json
 import os
 
 import shapely.geometry
-from shapely.geometry import Point, LineString
+from shapely.geometry import LineString, Point
 
 from monitoring.uss_qualifier.resources.netrid import (
     FlightDataResource,

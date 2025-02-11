@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import Dict, List, Optional, Any, Union
+from typing import Any, Dict, List, Optional, Union
 
 import s2sphere
 import uas_standards.astm.f3411.v19.api
@@ -12,13 +12,13 @@ import yaml
 from implicitdict import ImplicitDict, StringBasedDateTime
 from uas_standards.astm.f3411 import v19, v22a
 from uas_standards.astm.f3411.v22a.api import (
-    RIDHeight,
     HorizontalAccuracy,
+    RIDHeight,
     VerticalAccuracy,
 )
 from yaml.representer import Representer
 
-from monitoring.monitorlib import fetch, rid_v1, rid_v2, geo
+from monitoring.monitorlib import fetch, geo, rid_v1, rid_v2
 from monitoring.monitorlib.fetch import Query, QueryType
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion

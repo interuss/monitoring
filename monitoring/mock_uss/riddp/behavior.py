@@ -2,7 +2,6 @@ from typing import List, Optional
 
 from implicitdict import ImplicitDict
 
-
 ServiceProviderID = str
 
 

@@ -1,6 +1,6 @@
-from typing import Tuple, List
+from typing import List, Tuple
 
-from uas_standards.astm.f3548.v21.api import Subscription, OperationalIntentReference
+from uas_standards.astm.f3548.v21.api import OperationalIntentReference, Subscription
 
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance

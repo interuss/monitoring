@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Optional, List
+from typing import List, Optional
 
 from implicitdict import ImplicitDict
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.en4709_02 import OperatorRegistrationNumber
-from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api as fp_api
+from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 

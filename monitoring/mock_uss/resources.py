@@ -1,7 +1,7 @@
+from monitoring.mock_uss import require_config_value, webapp
 from monitoring.monitorlib import auth, infrastructure
-from monitoring.mock_uss import webapp, require_config_value
-from . import config
 
+from . import config
 
 require_config_value(config.KEY_DSS_URL)
 require_config_value(config.KEY_AUTH_SPEC)

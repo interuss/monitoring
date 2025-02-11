@@ -2,6 +2,7 @@ from enum import Enum
 from typing import List
 
 from implicitdict import ImplicitDict
+
 from monitoring.monitorlib.clients.flight_planning.flight_info import ExecutionStyle
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntentID,

@@ -1,38 +1,36 @@
-from typing import List, Dict
+from typing import Dict, List
 
 import arrow
 
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
-    UasState,
     FlightInfo,
+    UasState,
 )
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
-    PlanningActivityResult,
     FlightPlanStatus,
+    PlanningActivityResult,
 )
-from monitoring.monitorlib.temporal import TimeDuringTest, Time
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
+from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
     ExpectedFlightIntent,
     validate_flight_intent_templates,
 )
-from monitoring.uss_qualifier.suites.suite import ExecutionContext
-from monitoring.uss_qualifier.resources.flight_planning import (
-    FlightIntentsResource,
-)
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
-    submit_flight,
     cleanup_flights,
     plan_flight,
+    submit_flight,
 )
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class Validation(TestScenario):

@@ -1,10 +1,11 @@
 from typing import List
 
+from uas_standards.astm.f3548.v21.api import OperationalIntentReference
+
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
-from uas_standards.astm.f3548.v21.api import OperationalIntentReference
 
 
 def validate_clear_area(

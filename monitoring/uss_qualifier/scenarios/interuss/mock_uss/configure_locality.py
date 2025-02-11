@@ -3,8 +3,8 @@ from typing import List
 from monitoring.monitorlib.locality import LocalityCode
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
-    MockUSSsResource,
     MockUSSClient,
+    MockUSSsResource,
 )
 from monitoring.uss_qualifier.resources.interuss.mock_uss.locality import (
     LocalityResource,

@@ -1,6 +1,7 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from implicitdict import ImplicitDict
+
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.reports.report import RequirementID
 

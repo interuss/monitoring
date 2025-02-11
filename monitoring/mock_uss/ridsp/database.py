@@ -1,9 +1,11 @@
 import json
 from typing import Dict, List, Optional
 
+from implicitdict import ImplicitDict
+
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 from monitoring.monitorlib.rid_automated_testing import injection_api
-from implicitdict import ImplicitDict
+
 from .behavior import ServiceProviderBehavior
 from .user_notifications import ServiceProviderUserNotifications
 

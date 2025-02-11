@@ -6,13 +6,12 @@ import uuid
 import arrow
 import yaml
 
+from monitoring.monitorlib import scd
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
 from monitoring.prober.infrastructure import for_api_versions, register_resource_type
 from monitoring.prober.scd import actions
-
 
 OP_TYPE = register_resource_type(342, "Primary operational intent")
 OP_TYPE2 = register_resource_type(343, "Conflicting operational intent")

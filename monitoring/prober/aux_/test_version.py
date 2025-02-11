@@ -1,7 +1,8 @@
 """Test version can be queried."""
 
-from monitoring.monitorlib import rid_v1
 from uas_standards.astm.f3411 import v19
+
+from monitoring.monitorlib import rid_v1
 
 
 def test_version(aux_session):

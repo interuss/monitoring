@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List, Optional, Union, Set
+from typing import Dict, List, Optional, Set, Union
 
 import s2sphere
 import uas_standards.astm.f3411.v19.api
@@ -12,14 +12,9 @@ from uas_standards import Operation
 from uas_standards.astm.f3411 import v19, v22a
 from yaml.representer import Representer
 
-from monitoring.monitorlib import (
-    fetch,
-    infrastructure,
-    rid_v1,
-    rid_v2,
-)
+from monitoring.monitorlib import fetch, infrastructure, rid_v1, rid_v2
 from monitoring.monitorlib.fetch import QueryType
-from monitoring.monitorlib.fetch.rid import RIDQuery, Subscription, ISA
+from monitoring.monitorlib.fetch.rid import ISA, RIDQuery, Subscription
 from monitoring.monitorlib.rid import RIDVersion
 
 

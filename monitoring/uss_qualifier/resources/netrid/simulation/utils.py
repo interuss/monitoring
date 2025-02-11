@@ -1,7 +1,8 @@
-from typing import List, NamedTuple
-from shapely.geometry import Polygon
-import shapely.geometry
 from datetime import datetime
+from typing import List, NamedTuple
+
+import shapely.geometry
+from shapely.geometry import Polygon
 
 
 class QueryBoundingBox(NamedTuple):

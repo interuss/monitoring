@@ -1,8 +1,8 @@
 from typing import List, Optional, Tuple
 
-from loguru import logger
 import s2sphere
 from implicitdict import ImplicitDict
+from loguru import logger
 from uas_standards.interuss.automated_testing.rid.v1 import (
     observation as observation_api,
 )
@@ -12,8 +12,8 @@ from monitoring.monitorlib import fetch, infrastructure
 from monitoring.monitorlib.fetch import QueryType
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
+from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class RIDSystemObserver(object):

@@ -1,36 +1,33 @@
 import datetime
-from typing import Optional, List, Set, Dict, Any, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 import s2sphere
 from implicitdict import StringBasedDateTime
 
 from monitoring.monitorlib import schema_validation
 from monitoring.monitorlib.fetch import (
-    QueryError,
     Query,
+    QueryError,
     RequestDescription,
     ResponseDescription,
 )
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.fetch.rid import (
+    FetchedISA,
+    FetchedISAs,
     FetchedSubscription,
     FetchedSubscriptions,
     RIDQuery,
-    FetchedISA,
-    FetchedISAs,
 )
 from monitoring.monitorlib.mutate import rid as mutate
-from monitoring.monitorlib.mutate.rid import ISAChange, ChangedSubscription
+from monitoring.monitorlib.mutate.rid import ChangedSubscription, ISAChange
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss.isa_validator import (
     ISAValidator,
 )
-from monitoring.uss_qualifier.scenarios.scenario import (
-    PendingCheck,
-    TestScenario,
-)
+from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenario
 
 MAX_SKEW = 1e-6  # seconds maximum difference between expected and actual timestamps
 

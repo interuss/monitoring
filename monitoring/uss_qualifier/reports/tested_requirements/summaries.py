@@ -1,15 +1,16 @@
-from typing import Optional, List, Union, Iterable
+from typing import Iterable, List, Optional, Union
 
 from implicitdict import StringBasedDateTime
+
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.reports.report import TestRunReport, TestSuiteActionReport
 from monitoring.uss_qualifier.reports.tested_requirements.data_types import (
-    TestRunInformation,
-    TestedBreakdown,
-    ParticipantVerificationStatus,
     FAIL_CLASS,
     NOT_TESTED_CLASS,
     PASS_CLASS,
+    ParticipantVerificationStatus,
+    TestedBreakdown,
+    TestRunInformation,
 )
 from monitoring.uss_qualifier.signatures import compute_signature
 

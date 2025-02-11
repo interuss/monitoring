@@ -1,9 +1,8 @@
 import math
-import requests
 from typing import Dict, List, Optional, Tuple
 
 import arrow
-
+import requests
 from implicitdict import ImplicitDict
 
 

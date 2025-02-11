@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Dict, Set
+from typing import Dict, List, Set
 
-from implicitdict import ImplicitDict
 import s2sphere
-
+from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     AltitudeReference,
     GetDisplayDataResponse,
@@ -18,7 +17,6 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.common.nominal_behavior impo
     NominalBehavior,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
-
 
 MAXIMUM_MSL_ERROR_M = 0.5  # meters maximum difference between expected MSL altitude and reported MSL altitude
 ACCEPTABLE_DATUMS = {AltitudeReference.EGM96, AltitudeReference.EGM2008}

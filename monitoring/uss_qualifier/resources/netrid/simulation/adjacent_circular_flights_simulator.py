@@ -3,26 +3,20 @@ from datetime import timedelta
 from typing import List
 
 import arrow
-from pyproj import Geod, Transformer, Proj
 import shapely.geometry
-from shapely.geometry import Point, Polygon
-
 from implicitdict import ImplicitDict
-from monitoring.uss_qualifier.resources.netrid.flight_data import (
-    FullFlightRecord,
-    FlightRecordCollection,
-    AdjacentCircularFlightsSimulatorConfiguration,
-)
-from monitoring.uss_qualifier.resources.netrid.simulation import (
-    operator_flight_details,
-)
+from pyproj import Geod, Proj, Transformer
+from shapely.geometry import Point, Polygon
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 
-from .utils import (
-    QueryBoundingBox,
-    FlightPoint,
-    GridCellFlight,
+from monitoring.uss_qualifier.resources.netrid.flight_data import (
+    AdjacentCircularFlightsSimulatorConfiguration,
+    FlightRecordCollection,
+    FullFlightRecord,
 )
+from monitoring.uss_qualifier.resources.netrid.simulation import operator_flight_details
+
+from .utils import FlightPoint, GridCellFlight, QueryBoundingBox
 
 
 class AdjacentCircularFlightsSimulator:

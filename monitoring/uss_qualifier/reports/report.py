@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime, UTC
-from typing import List, Optional, Dict, Tuple, Any, Union, Set, Iterator, Callable
+from datetime import UTC, datetime
+from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Tuple, Union
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 

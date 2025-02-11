@@ -5,11 +5,11 @@ from typing import List, Optional
 
 import flask
 import flask_login
+import requests
 from flask_login import LoginManager
 from loguru import logger
 from oauthlib.oauth2 import WebApplicationClient
-import requests
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from monitoring.mock_uss import import_environment_variable, webapp
 

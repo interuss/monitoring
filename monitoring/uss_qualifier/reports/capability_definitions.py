@@ -1,9 +1,10 @@
 from __future__ import annotations
-from typing import Optional, List
+
+from typing import List, Optional
 
 from implicitdict import ImplicitDict
-from monitoring.uss_qualifier.requirements.definitions import RequirementCollection
 
+from monitoring.uss_qualifier.requirements.definitions import RequirementCollection
 
 CapabilityID = str
 """Identifier of a capability that uss_qualifier can verify."""

@@ -22,12 +22,12 @@ from monitoring.uss_qualifier.resources.interuss.geospatial_map import (
     FeatureCheckTableResource,
 )
 from monitoring.uss_qualifier.resources.interuss.geospatial_map.definitions import (
-    FeatureCheckTable,
     ExpectedFeatureCheckResult,
+    FeatureCheckTable,
 )
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
-    TestStepDocumentation,
     TestCheckDocumentation,
+    TestStepDocumentation,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext

@@ -1,12 +1,14 @@
 import json
 from typing import Dict, List
 
-from .behavior import DisplayProviderBehavior
 from implicitdict import ImplicitDict
+
+from monitoring.monitorlib.fetch.rid import ISA
+from monitoring.monitorlib.geo import LatLngBoundingBox
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 from monitoring.monitorlib.mutate.rid import ChangedSubscription, UpdatedISA
-from monitoring.monitorlib.geo import LatLngBoundingBox
-from monitoring.monitorlib.fetch.rid import ISA
+
+from .behavior import DisplayProviderBehavior
 
 
 class FlightInfo(ImplicitDict):

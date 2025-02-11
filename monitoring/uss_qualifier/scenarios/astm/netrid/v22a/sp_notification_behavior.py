@@ -1,8 +1,8 @@
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.sp_notification_behavior import (
     ServiceProviderNotificationBehavior as CommonServiceProviderNotificationBehavior,
 )
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
 
 class ServiceProviderNotificationBehavior(

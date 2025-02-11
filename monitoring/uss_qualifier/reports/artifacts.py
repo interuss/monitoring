@@ -2,9 +2,9 @@ import json
 import os
 from typing import Optional
 
+from implicitdict import ImplicitDict
 from loguru import logger
 
-from implicitdict import ImplicitDict
 from monitoring.uss_qualifier.configurations.configuration import ArtifactsConfiguration
 from monitoring.uss_qualifier.reports.documents import make_report_html
 from monitoring.uss_qualifier.reports.globally_expanded.generate import (

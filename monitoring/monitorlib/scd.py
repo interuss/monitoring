@@ -1,11 +1,11 @@
 import base64
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
 from implicitdict import StringBasedDateTime
 from uas_standards.astm.f3548.v21.api import (
-    OperationalIntentDetails,
     ExchangeRecord,
     ExchangeRecordRecorderRole,
+    OperationalIntentDetails,
     Time,
 )
 from uas_standards.astm.f3548.v21.constants import Scope

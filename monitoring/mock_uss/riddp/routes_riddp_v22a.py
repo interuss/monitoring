@@ -1,21 +1,18 @@
-from monitoring.mock_uss.riddp.database import db
-from monitoring.monitorlib.fetch import describe_flask_query
-from monitoring.monitorlib.mutate.rid import UpdatedISA
-from uas_standards.astm.f3411.v22a.api import (
-    OperationID,
-    OPERATIONS,
-    PutIdentificationServiceAreaNotificationParameters,
-)
-from uas_standards.astm.f3411.v22a.constants import (
-    Scope,
-)
-
-from monitoring.mock_uss import webapp
-from monitoring.mock_uss.auth import requires_scope
-
 import flask
 from implicitdict import ImplicitDict
 from loguru import logger
+from uas_standards.astm.f3411.v22a.api import (
+    OPERATIONS,
+    OperationID,
+    PutIdentificationServiceAreaNotificationParameters,
+)
+from uas_standards.astm.f3411.v22a.constants import Scope
+
+from monitoring.mock_uss import webapp
+from monitoring.mock_uss.auth import requires_scope
+from monitoring.mock_uss.riddp.database import db
+from monitoring.monitorlib.fetch import describe_flask_query
+from monitoring.monitorlib.mutate.rid import UpdatedISA
 
 
 def rid_v22a_operation(op_id: OperationID):

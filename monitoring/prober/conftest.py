@@ -1,22 +1,20 @@
 import argparse
 from typing import Callable, Optional
 
-from uas_standards.astm import f3411, f3548
+import pytest
 import uas_standards.astm.f3411.v19.constants
 import uas_standards.astm.f3411.v22a.constants
 import uas_standards.astm.f3548.v21.constants
+from uas_standards.astm import f3411, f3548
 
-from monitoring.monitorlib.infrastructure import UTMClientSession, AsyncUTMTestSession
 from monitoring.monitorlib import auth, rid_v1, scd
+from monitoring.monitorlib.infrastructure import AsyncUTMTestSession, UTMClientSession
 from monitoring.prober.infrastructure import (
-    add_test_result,
     IDFactory,
     ResourceType,
     VersionString,
+    add_test_result,
 )
-
-import pytest
-
 
 OPT_RID_AUTH = "rid_auth"
 OPT_RID_V2_AUTH = "rid_v2_auth"

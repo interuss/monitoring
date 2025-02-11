@@ -1,8 +1,8 @@
-from typing import List, Set, Callable, TypedDict, Unpack, Optional
+from typing import Callable, List, Optional, Set, TypedDict, Unpack
 
 import s2sphere
 from requests.exceptions import RequestException
-from s2sphere import LatLngRect, LatLng
+from s2sphere import LatLng, LatLngRect
 
 from monitoring.monitorlib import auth, geo
 from monitoring.monitorlib.errors import stacktrace_string
@@ -12,13 +12,13 @@ from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
+    EvaluationConfigurationResource,
     FlightDataResource,
     NetRIDServiceProviders,
-    EvaluationConfigurationResource,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid import (
-    injection,
     display_data_evaluator,
+    injection,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid.display_data_evaluator import (
     TelemetryMapping,

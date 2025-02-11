@@ -1,26 +1,24 @@
 import inspect
-from typing import Optional, Tuple, Iterable, Set, Dict
+from typing import Dict, Iterable, Optional, Set, Tuple
 
 import arrow
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
-    BasicFlightPlanInformationUsageState,
     BasicFlightPlanInformationUasState,
+    BasicFlightPlanInformationUsageState,
 )
 
 from monitoring.monitorlib.clients.flight_planning.client import PlanningActivityError
-from monitoring.monitorlib.clients.flight_planning.client_v1 import (
-    FlightPlannerClient,
-)
+from monitoring.monitorlib.clients.flight_planning.client_v1 import FlightPlannerClient
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
-    FlightInfo,
     ExecutionStyle,
+    FlightInfo,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
+    FlightPlanStatus,
     PlanningActivityResponse,
     PlanningActivityResult,
-    FlightPlanStatus,
 )
-from monitoring.monitorlib.fetch import QueryError, Query
+from monitoring.monitorlib.fetch import Query, QueryError
 from monitoring.monitorlib.geotemporal import end_time_of
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType

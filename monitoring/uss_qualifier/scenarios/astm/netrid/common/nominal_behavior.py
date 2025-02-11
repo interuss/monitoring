@@ -8,10 +8,10 @@ from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
-    FlightDataResource,
-    NetRIDServiceProviders,
-    NetRIDObserversResource,
     EvaluationConfigurationResource,
+    FlightDataResource,
+    NetRIDObserversResource,
+    NetRIDServiceProviders,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid import (
     display_data_evaluator,

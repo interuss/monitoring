@@ -1,6 +1,5 @@
 import math
 
-
 ID_CHAR_SET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
 MAX_OWNER_LENGTH = 12  # characters
 
