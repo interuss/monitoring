@@ -1,19 +1,19 @@
 from typing import List
 
 from pykml.factory import KML_ElementMaker as kml
+from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
+    UpsertFlightPlanRequest,
+    UpsertFlightPlanResponse,
+)
 
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.kml.generation import (
     GREEN,
+    RED,
     TRANSLUCENT_GRAY,
     TRANSLUCENT_GREEN,
     YELLOW,
-    RED,
     make_placemark_from_volume,
-)
-from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
-    UpsertFlightPlanRequest,
-    UpsertFlightPlanResponse,
 )
 
 

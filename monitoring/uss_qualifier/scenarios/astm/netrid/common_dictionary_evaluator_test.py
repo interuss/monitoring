@@ -1,15 +1,11 @@
-from datetime import datetime, timedelta
-from typing import List, Tuple, Optional, Any, Callable, TypeVar
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from itertools import permutations
+from typing import Any, Callable, List, Optional, Tuple, TypeVar
 
 from implicitdict import StringBasedDateTime
 from uas_standards.astm.f3411 import v22a
-from uas_standards.astm.f3411.v22a.api import (
-    Altitude,
-    LatLngPoint,
-    UAType,
-)
+from uas_standards.astm.f3411.v22a.api import Altitude, LatLngPoint, UAType
 from uas_standards.astm.f3411.v22a.constants import SpecialTrackDirection
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 from uas_standards.interuss.automated_testing.rid.v1.observation import (

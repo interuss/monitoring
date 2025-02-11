@@ -9,9 +9,9 @@ from s2sphere import LatLngRect
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.resources.netrid import (
+    EvaluationConfigurationResource,
     FlightDataResource,
     NetRIDServiceProviders,
-    EvaluationConfigurationResource,
 )
 from monitoring.uss_qualifier.resources.netrid.service_providers import (
     NetRIDServiceProvider,

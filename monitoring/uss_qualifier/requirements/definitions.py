@@ -1,6 +1,7 @@
 from __future__ import annotations
+
 import os
-from typing import Optional, List
+from typing import List, Optional
 
 from implicitdict import ImplicitDict
 

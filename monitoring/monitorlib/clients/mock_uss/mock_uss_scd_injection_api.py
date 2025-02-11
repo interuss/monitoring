@@ -1,6 +1,6 @@
-from implicitdict import ImplicitDict
 from typing import List, Optional
 
+from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     UpsertFlightPlanRequest,
 )

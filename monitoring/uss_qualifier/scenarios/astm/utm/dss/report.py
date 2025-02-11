@@ -1,22 +1,17 @@
+from uas_standards.astm.f3548.v21.api import OPERATIONS, ExchangeRecord, OperationID
+from uas_standards.astm.f3548.v21.constants import Scope
+
+from monitoring.monitorlib import infrastructure
+from monitoring.monitorlib import scd as scd_lib
+from monitoring.monitorlib.fetch import QueryError, QueryType, query_and_describe
 from monitoring.monitorlib.testing import make_fake_url
-from uas_standards.astm.f3548.v21.api import ExchangeRecord, OPERATIONS, OperationID
-from uas_standards.astm.f3548.v21.constants import (
-    Scope,
-)
-
-from monitoring.monitorlib.fetch import QueryError, query_and_describe, QueryType
-from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
-    DSSInstanceResource,
-)
+from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstanceResource
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import make_dss_report
-
 from monitoring.uss_qualifier.scenarios.scenario import (
-    TestScenario,
     ScenarioCannotContinueError,
+    TestScenario,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
-
-from monitoring.monitorlib import scd as scd_lib, infrastructure
 
 
 class Report(TestScenario):

@@ -1,6 +1,7 @@
 from typing import List
 
 from implicitdict import ImplicitDict
+
 from monitoring.monitorlib.schema_validation import (
     ValidationError,
     validate_implicitdict_object,

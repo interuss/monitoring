@@ -1,34 +1,31 @@
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
 import arrow
+from uas_standards.astm.f3548.v21.api import (
+    OperationalIntentReference,
+    OperationalIntentState,
+)
+from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
-    UasState,
     FlightInfo,
+    UasState,
 )
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
-    PlanningActivityResult,
     FlightPlanStatus,
+    PlanningActivityResult,
 )
 from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.monitorlib.testing import make_fake_url
-from uas_standards.astm.f3548.v21.api import (
-    OperationalIntentState,
-    OperationalIntentReference,
-)
-from uas_standards.astm.f3548.v21.constants import Scope
-
-from monitoring.monitorlib.temporal import TimeDuringTest, Time
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
-from monitoring.uss_qualifier.resources.flight_planning import (
-    FlightIntentsResource,
-)
+from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
     ExpectedFlightIntent,
     validate_flight_intent_templates,
@@ -44,11 +41,11 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     set_uss_available,
     set_uss_down,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
-    submit_flight,
     cleanup_flights,
+    submit_flight,
 )
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Optional, Dict, List
+from typing import Dict, List, Optional
 
 import arrow
 
@@ -7,18 +7,16 @@ from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
     PlanningActivityError,
 )
-from monitoring.monitorlib.geotemporal import Volume4DCollection, Volume4D
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.flight_planning import (
-    FlightPlannersResource,
     FlightIntentsResource,
+    FlightPlannersResource,
 )
+from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSResource
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
-from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
-    MockUSSResource,
-)
 
 MAX_TEST_DURATION = timedelta(minutes=45)
 """The maximum time the tests depending on the area being clear might last."""

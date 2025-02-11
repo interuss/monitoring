@@ -1,13 +1,14 @@
 from typing import List
 from urllib.parse import urlparse
 
-from monitoring.monitorlib.clients.flight_planning.flight_info import (
-    FlightAuthorisationData,
-    UASClass,
-    FlightAuthorisationDataOperationCategory,
-)
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.en4709_02 import OperatorRegistrationNumber
+
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    FlightAuthorisationData,
+    FlightAuthorisationDataOperationCategory,
+    UASClass,
+)
 
 
 def problems_with_flight_authorisation(

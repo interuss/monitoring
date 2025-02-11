@@ -1,25 +1,23 @@
 import re
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
+
+from loguru import logger
 
 from monitoring.monitorlib import fetch
-from monitoring.monitorlib.fetch import evaluation, QueryType
+from monitoring.monitorlib.fetch import QueryType, evaluation
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411 import DSSInstancesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
 from monitoring.uss_qualifier.resources.dev import TestExclusionsResource
-
 from monitoring.uss_qualifier.resources.netrid import (
-    NetRIDServiceProviders,
     NetRIDObserversResource,
+    NetRIDServiceProviders,
 )
 from monitoring.uss_qualifier.resources.netrid.observers import RIDSystemObserver
 from monitoring.uss_qualifier.resources.netrid.service_providers import (
     NetRIDServiceProvider,
 )
-
-from loguru import logger
-
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 

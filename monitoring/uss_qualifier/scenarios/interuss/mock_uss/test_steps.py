@@ -1,18 +1,16 @@
 import re
-from typing import Callable, List, Tuple, Iterable
+from typing import Callable, Iterable, List, Tuple
 
 from implicitdict import StringBasedDateTime
 from uas_standards.astm.f3548.v21 import api
-from uas_standards.astm.f3548.v21.api import (
-    OperationID,
-    EntityID,
+from uas_standards.astm.f3548.v21.api import EntityID, OperationID
+
+from monitoring.monitorlib.clients.mock_uss.interactions import (
+    Interaction,
+    QueryDirection,
 )
-
-from monitoring.monitorlib.clients.mock_uss.interactions import Interaction
-from monitoring.monitorlib.clients.mock_uss.interactions import QueryDirection
-from monitoring.monitorlib.fetch import QueryError, Query
+from monitoring.monitorlib.fetch import Query, QueryError
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
-
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 

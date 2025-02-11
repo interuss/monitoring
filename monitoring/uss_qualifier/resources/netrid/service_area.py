@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Optional, Dict, List
+from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict
 

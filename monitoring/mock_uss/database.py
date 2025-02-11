@@ -1,9 +1,9 @@
 import json
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
-from monitoring.monitorlib.errors import stacktrace_string
 
+from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 
 

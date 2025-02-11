@@ -1,4 +1,4 @@
-from typing import Union, Set, Optional, Tuple, List, Iterable
+from typing import Iterable, List, Optional, Set, Tuple, Union
 
 from implicitdict import ImplicitDict
 
@@ -9,27 +9,25 @@ from monitoring.uss_qualifier.action_generators.documentation.definitions import
 from monitoring.uss_qualifier.action_generators.documentation.documentation import (
     list_potential_actions_for_action_generator_definition,
 )
-from monitoring.uss_qualifier.configurations.configuration import (
-    ParticipantID,
-)
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.report import (
-    TestRunReport,
-    TestSuiteActionReport,
-    TestScenarioReport,
-    PassedCheck,
     FailedCheck,
+    PassedCheck,
     TestCaseReport,
+    TestRunReport,
+    TestScenarioReport,
     TestStepReport,
+    TestSuiteActionReport,
 )
 from monitoring.uss_qualifier.reports.tested_requirements.data_types import (
     TestedBreakdown,
+    TestedCase,
+    TestedCheck,
     TestedPackage,
     TestedRequirement,
     TestedScenario,
-    TestedCase,
     TestedStep,
-    TestedCheck,
 )
 from monitoring.uss_qualifier.reports.tested_requirements.sorting import sort_breakdown
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
@@ -37,8 +35,8 @@ from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
 from monitoring.uss_qualifier.scenarios.scenario import get_scenario_type_by_name
 from monitoring.uss_qualifier.suites.definitions import (
-    TestSuiteActionDeclaration,
     ActionType,
+    TestSuiteActionDeclaration,
     TestSuiteDefinition,
 )
 

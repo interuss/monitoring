@@ -6,10 +6,10 @@ import os
 import sys
 
 from implicitdict import ImplicitDict
-from monitoring.deployment_manager import actions
-from monitoring.deployment_manager.systems.configuration import DeploymentSpec
+
+from monitoring.deployment_manager import actions, infrastructure
 from monitoring.deployment_manager.infrastructure import make_context
-from monitoring.deployment_manager import infrastructure
+from monitoring.deployment_manager.systems.configuration import DeploymentSpec
 from monitoring.monitorlib.inspection import import_submodules
 
 

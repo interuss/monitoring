@@ -1,5 +1,10 @@
-from typing import Optional, Dict, Set
+from typing import Dict, Optional, Set
 
+import arrow
+from uas_standards.astm.f3548.v21.api import EntityID
+from uas_standards.astm.f3548.v21.constants import Scope
+
+from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
@@ -8,22 +13,17 @@ from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
-    PlanningActivityResult,
     FlightPlanStatus,
+    PlanningActivityResult,
 )
-from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.wait import (
-    MaxTimeToWaitForSubscriptionNotificationSeconds as max_wait_time,
+from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
+    MockUssFlightBehavior,
 )
 from monitoring.monitorlib.delay import sleep
-from monitoring.monitorlib.temporal import TimeDuringTest
-import arrow
-from monitoring.monitorlib.temporal import Time
-from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
-from monitoring.uss_qualifier.resources.flight_planning import (
-    FlightIntentsResource,
-)
+from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
     ExpectedFlightIntent,
     validate_flight_intent_templates,
@@ -31,36 +31,33 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
-
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
     MockUSSResource,
 )
-from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
-    OpIntentValidator,
-    OpIntentValidationFailureType,
-)
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
-    expect_no_interuss_post_interactions,
     expect_mock_uss_receives_op_intent_notification,
+    expect_no_interuss_post_interactions,
     expect_uss_obtained_op_intent_details,
 )
-from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
-    MockUssFlightBehavior,
+from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.wait import (
+    MaxTimeToWaitForSubscriptionNotificationSeconds as max_wait_time,
 )
-from monitoring.uss_qualifier.scenarios.scenario import (
-    TestScenario,
-    ScenarioCannotContinueError,
+from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
+    OpIntentValidationFailureType,
+    OpIntentValidator,
 )
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights,
-    plan_flight,
     delete_flight,
+    plan_flight,
     submit_flight,
 )
+from monitoring.uss_qualifier.scenarios.scenario import (
+    ScenarioCannotContinueError,
+    TestScenario,
+)
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
-from uas_standards.astm.f3548.v21.api import EntityID
-from uas_standards.astm.f3548.v21.constants import Scope
 
 
 class GetOpResponseDataValidationByUSS(TestScenario):

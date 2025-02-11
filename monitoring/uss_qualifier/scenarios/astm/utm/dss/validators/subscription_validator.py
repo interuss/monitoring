@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
 
-from uas_standards.astm.f3548.v21.api import SubscriptionID, Subscription
+from uas_standards.astm.f3548.v21.api import Subscription, SubscriptionID
 
 from monitoring.monitorlib import schema_validation
 from monitoring.monitorlib.fetch.scd import FetchedSubscription, FetchedSubscriptions

@@ -1,8 +1,8 @@
 import copy
 import json
 from typing import TypeVar
-from implicitdict import ImplicitDict
 
+from implicitdict import ImplicitDict
 
 ImplicitDictType = TypeVar("ImplicitDictType", bound=ImplicitDict)
 

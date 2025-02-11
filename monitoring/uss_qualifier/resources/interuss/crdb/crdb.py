@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Tuple, List, Optional
+from typing import List, Optional, Tuple
 
-from implicitdict import ImplicitDict
-from monitoring.uss_qualifier.resources.resource import Resource
 import psycopg.errors
+from implicitdict import ImplicitDict
 from psycopg import crdb
+
+from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class CockroachDBNodeSpecification(ImplicitDict):

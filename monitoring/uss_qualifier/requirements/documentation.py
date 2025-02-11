@@ -1,17 +1,17 @@
 import os
-from typing import Dict, Set, List, Optional
+from typing import Dict, List, Optional, Set
 
-from implicitdict import ImplicitDict
 import marko
 import marko.element
 import marko.inline
+from implicitdict import ImplicitDict
 
 from monitoring.uss_qualifier.documentation import text_of
 from monitoring.uss_qualifier.requirements.definitions import (
+    PackageID,
     RequirementCollection,
     RequirementID,
     RequirementSetID,
-    PackageID,
 )
 
 

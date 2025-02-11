@@ -3,26 +3,23 @@
 # A file to generate Flight Records from KML.
 import math
 import random
-from collections import namedtuple
-
-
-import s2sphere
 import uuid
+from collections import namedtuple
 from datetime import timedelta
-from shapely.geometry import LineString, Point, Polygon
-
-from implicitdict import StringBasedDateTime
-from monitoring.monitorlib.geo import flatten, unflatten
-from monitoring.monitorlib.kml.parsing import get_polygon_speed, get_kml_content
-from monitoring.uss_qualifier.resources.netrid.flight_data import (
-    FullFlightRecord,
-    FlightRecordCollection,
-)
 from typing import List
 
-from uas_standards.interuss.automated_testing.rid.v1 import injection
+import s2sphere
+from implicitdict import StringBasedDateTime
+from shapely.geometry import LineString, Point, Polygon
 from uas_standards.astm.f3411.v22a import constants
+from uas_standards.interuss.automated_testing.rid.v1 import injection
 
+from monitoring.monitorlib.geo import flatten, unflatten
+from monitoring.monitorlib.kml.parsing import get_kml_content, get_polygon_speed
+from monitoring.uss_qualifier.resources.netrid.flight_data import (
+    FlightRecordCollection,
+    FullFlightRecord,
+)
 
 STATE_INCREMENT_SECONDS = 1
 

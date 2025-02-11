@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.versioning.constants import Scope

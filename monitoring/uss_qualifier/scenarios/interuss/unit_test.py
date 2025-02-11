@@ -1,4 +1,5 @@
 from typing import Callable
+
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioDeclaration
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext

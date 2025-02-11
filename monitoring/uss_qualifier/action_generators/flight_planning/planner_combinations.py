@@ -1,4 +1,4 @@
-from typing import Dict, List, Iterator, Optional
+from typing import Dict, Iterator, List, Optional
 
 from implicitdict import ImplicitDict
 
@@ -16,17 +16,11 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerCombinationSelectorSpecification,
 )
 from monitoring.uss_qualifier.resources.resource import (
-    ResourceType,
     MissingResourceError,
+    ResourceType,
 )
-
-from monitoring.uss_qualifier.suites.definitions import (
-    TestSuiteActionDeclaration,
-)
-from monitoring.uss_qualifier.suites.suite import (
-    ActionGenerator,
-    TestSuiteAction,
-)
+from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
+from monitoring.uss_qualifier.suites.suite import ActionGenerator, TestSuiteAction
 
 
 class FlightPlannerCombinationsSpecification(ImplicitDict):

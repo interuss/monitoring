@@ -5,15 +5,14 @@ import s2sphere
 from pykml.factory import KML_ElementMaker as kml
 
 from monitoring.monitorlib.geo import (
+    METERS_PER_FOOT,
     Altitude,
     AltitudeDatum,
     DistanceUnits,
-    egm96_geoid_offset,
     Radius,
-    METERS_PER_FOOT,
+    egm96_geoid_offset,
 )
 from monitoring.monitorlib.geotemporal import Volume4D
-
 
 # Hexadecimal colors
 GREEN = "ff00c000"

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
 from monitoring.monitorlib import schema_validation
 from monitoring.monitorlib.fetch.rid import ISA, FetchedISA, FetchedISAs
@@ -7,8 +7,8 @@ from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.scenarios.scenario import (
-    PendingCheck,
     GenericTestScenario,
+    PendingCheck,
 )
 
 MAX_SKEW = 1e-6  # seconds maximum difference between expected and actual timestamps

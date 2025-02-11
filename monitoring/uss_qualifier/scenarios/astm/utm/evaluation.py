@@ -1,10 +1,10 @@
 from datetime import timedelta
-from typing import Optional, List
+from typing import List, Optional
+
+from uas_standards.astm.f3548.v21.api import OperationalIntentDetails, Volume4D
 
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.monitorlib.scd import priority_of
-from uas_standards.astm.f3548.v21.api import OperationalIntentDetails, Volume4D
-
 
 NUMERIC_PRECISION = 0.001
 

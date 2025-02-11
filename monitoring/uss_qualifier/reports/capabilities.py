@@ -1,28 +1,28 @@
-from typing import Dict, Callable, TypeVar, List, Any, Optional
+from typing import Any, Callable, Dict, List, Optional, TypeVar
 
 import bc_jsonpath_ng.ext
 
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.reports.capability_definitions import (
     AllConditions,
-    SpecificCondition,
     AnyCondition,
+    CapabilityVerificationCondition,
+    CapabilityVerifiedCondition,
     NoFailedChecksCondition,
     RequirementsCheckedCondition,
-    CapabilityVerifiedCondition,
-    CapabilityVerificationCondition,
+    SpecificCondition,
 )
 from monitoring.uss_qualifier.reports.report import (
-    TestSuiteReport,
-    ParticipantCapabilityConditionEvaluationReport,
     AllConditionsEvaluationReport,
     AnyConditionEvaluationReport,
-    NoFailedChecksConditionEvaluationReport,
+    CapabilityVerifiedConditionEvaluationReport,
+    CheckedCapability,
     CheckedRequirement,
+    NoFailedChecksConditionEvaluationReport,
+    ParticipantCapabilityConditionEvaluationReport,
     RequirementsCheckedConditionEvaluationReport,
     SpuriousReportMatch,
-    CheckedCapability,
-    CapabilityVerifiedConditionEvaluationReport,
+    TestSuiteReport,
 )
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.requirements.documentation import (

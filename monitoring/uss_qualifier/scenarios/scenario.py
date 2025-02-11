@@ -1,9 +1,10 @@
+import inspect
 import traceback
 from abc import ABC, abstractmethod
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from enum import Enum
-import inspect
-from typing import Callable, Dict, List, Optional, TypeVar, Union, Set, Type
+from typing import Callable, Dict, List, Optional, Set, Type, TypeVar, Union
+
 import arrow
 from implicitdict import StringBasedDateTime
 from loguru import logger
@@ -16,15 +17,16 @@ from monitoring.monitorlib.inspection import fullname
 from monitoring.uss_qualifier import scenarios as scenarios_module
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.reports.report import (
-    TestScenarioReport,
-    TestCaseReport,
-    TestStepReport,
-    FailedCheck,
     ErrorReport,
+    FailedCheck,
     Note,
     ParticipantID,
     PassedCheck,
+    TestCaseReport,
+    TestScenarioReport,
+    TestStepReport,
 )
+from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.resource import (
     MissingResourceError,
     ResourceType,
@@ -34,12 +36,11 @@ from monitoring.uss_qualifier.scenarios.definitions import (
     TestScenarioTypeName,
 )
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
-    TestScenarioDocumentation,
     TestCaseDocumentation,
-    TestStepDocumentation,
     TestCheckDocumentation,
+    TestScenarioDocumentation,
+    TestStepDocumentation,
 )
-from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
 
 SQUELCH_WARN_ON_QUERY_TYPE = [

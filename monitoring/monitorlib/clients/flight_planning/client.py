@@ -1,17 +1,16 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Set
 
-from monitoring.monitorlib.clients.flight_planning.test_preparation import (
-    TestPreparationActivityResponse,
-)
-
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
-    FlightInfo,
-    FlightID,
     ExecutionStyle,
+    FlightID,
+    FlightInfo,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
+)
+from monitoring.monitorlib.clients.flight_planning.test_preparation import (
+    TestPreparationActivityResponse,
 )
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4D

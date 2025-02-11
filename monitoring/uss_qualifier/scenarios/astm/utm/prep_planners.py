@@ -1,12 +1,16 @@
-from typing import Optional, List
+from typing import List, Optional
+
+from uas_standards.astm.f3548.v21.api import OperationalIntentReference
+from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (
-    FlightPlannersResource,
     FlightIntentsResource,
+    FlightPlannersResource,
 )
+from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSResource
 from monitoring.uss_qualifier.scenarios.astm.utm.clear_area_validation import (
     validate_clear_area,
 )
@@ -16,13 +20,6 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss.test_step_fragments import 
 from monitoring.uss_qualifier.scenarios.flight_planning.prep_planners import (
     PrepareFlightPlannersScenario,
 )
-from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
-    MockUSSResource,
-)
-from uas_standards.astm.f3548.v21.api import (
-    OperationalIntentReference,
-)
-from uas_standards.astm.f3548.v21.constants import Scope
 
 
 class PrepareFlightPlanners(PrepareFlightPlannersScenario):

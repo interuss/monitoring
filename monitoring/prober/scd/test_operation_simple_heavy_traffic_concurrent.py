@@ -13,27 +13,23 @@
 
 import asyncio
 import datetime
-import json
 import inspect
+import json
 
+from monitoring.monitorlib import scd
 from monitoring.monitorlib.geo import Circle
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import SCOPE_SC
-from monitoring.monitorlib.testing import (
-    assert_datetimes_are_equal,
-    make_fake_url,
-)
+from monitoring.monitorlib.testing import assert_datetimes_are_equal, make_fake_url
 from monitoring.prober.infrastructure import (
+    IDFactory,
     depends_on,
     for_api_versions,
     register_resource_type,
-    IDFactory,
     resource_type_code_descriptions,
 )
 from monitoring.prober.scd import actions
-
 
 BASE_URL = make_fake_url()
 # TODO(#742): Increase number of concurrent operations from 20 to 100

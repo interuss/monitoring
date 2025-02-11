@@ -5,7 +5,7 @@ import traceback
 import uuid
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Optional, List, Union, TypeVar, Type
+from typing import Dict, List, Optional, Type, TypeVar, Union
 from urllib.parse import urlparse
 
 import flask

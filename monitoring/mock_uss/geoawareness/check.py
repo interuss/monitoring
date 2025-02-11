@@ -1,14 +1,15 @@
 import logging
-from typing import List, Dict
+from typing import Dict, List
+
 from uas_standards.interuss.automated_testing.geo_awareness.v1.api import (
-    GeozonesCheckResultGeozone,
-    GeozonesCheckRequest,
     GeozoneHttpsSourceFormat,
+    GeozonesCheckRequest,
+    GeozonesCheckResultGeozone,
     GeozoneSourceResponseResult,
 )
-from monitoring.mock_uss.geoawareness.ed269 import evaluate_source
-from monitoring.mock_uss.geoawareness.database import db, SourceRecord, Database
 
+from monitoring.mock_uss.geoawareness.database import Database, SourceRecord, db
+from monitoring.mock_uss.geoawareness.ed269 import evaluate_source
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

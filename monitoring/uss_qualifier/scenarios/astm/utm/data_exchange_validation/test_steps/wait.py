@@ -1,11 +1,10 @@
-import arrow
-from monitoring.monitorlib.delay import sleep
 from datetime import timedelta
-from monitoring.monitorlib.clients.mock_uss.interactions import (
-    Interaction,
-    Query,
-)
-from typing import List, Tuple, Callable
+from typing import Callable, List, Tuple
+
+import arrow
+
+from monitoring.monitorlib.clients.mock_uss.interactions import Interaction, Query
+from monitoring.monitorlib.delay import sleep
 
 MaxTimeToWaitForSubscriptionNotificationSeconds = 7
 """

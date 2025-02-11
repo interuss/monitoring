@@ -1,6 +1,6 @@
 import statistics
 from operator import attrgetter
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple
 
 from . import Query
 

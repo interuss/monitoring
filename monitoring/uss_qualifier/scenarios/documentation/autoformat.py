@@ -1,5 +1,5 @@
 import os
-from typing import Iterable, Dict, List
+from typing import Dict, Iterable, List
 
 import marko.block
 import marko.element
@@ -9,8 +9,8 @@ from marko.md_renderer import MarkdownRenderer
 from monitoring.uss_qualifier.documentation import text_of
 from monitoring.uss_qualifier.requirements.documentation import RequirementID
 from monitoring.uss_qualifier.scenarios.documentation.parsing import (
-    get_documentation_filename,
     TEST_STEP_SUFFIX,
+    get_documentation_filename,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 

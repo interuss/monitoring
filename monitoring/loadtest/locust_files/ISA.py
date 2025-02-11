@@ -1,15 +1,16 @@
 #!env/bin/python3
 
-import client
 import datetime
 import random
 import threading
 import uuid
-from monitoring.monitorlib import rid_v1
-from monitoring.prober.rid.v1 import common
-from locust import task, between
 
+import client
+from locust import between, task
+
+from monitoring.monitorlib import rid_v1
 from monitoring.monitorlib.testing import make_fake_url
+from monitoring.prober.rid.v1 import common
 
 
 class ISA(client.USS):

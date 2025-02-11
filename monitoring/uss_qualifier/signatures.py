@@ -1,6 +1,6 @@
 import hashlib
 import json
-from typing import Union, Any
+from typing import Any, Union
 
 
 def compute_baseline_signature(

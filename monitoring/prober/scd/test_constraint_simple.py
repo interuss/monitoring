@@ -10,30 +10,26 @@
 
 import datetime
 
+import pytest
+
+from monitoring.monitorlib import scd
 from monitoring.monitorlib.geo import Circle
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib import scd
 from monitoring.monitorlib.scd import (
-    SCOPE_SC,
-    SCOPE_CM,
-    SCOPE_CP,
-    SCOPE_CM_SA,
     SCOPE_AA,
+    SCOPE_CM,
+    SCOPE_CM_SA,
+    SCOPE_CP,
+    SCOPE_SC,
 )
-from monitoring.monitorlib.testing import (
-    assert_datetimes_are_equal,
-    make_fake_url,
-)
+from monitoring.monitorlib.testing import assert_datetimes_are_equal, make_fake_url
 from monitoring.prober.infrastructure import (
     depends_on,
     for_api_versions,
     register_resource_type,
 )
 from monitoring.prober.scd import actions
-
-import pytest
-
 
 BASE_URL = make_fake_url()
 CONSTRAINT_TYPE = register_resource_type(1, "Single constraint")

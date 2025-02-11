@@ -7,8 +7,8 @@ from monitoring.uss_qualifier.scenarios.documentation.autoformat import (
     format_scenario_documentation,
 )
 from monitoring.uss_qualifier.scenarios.documentation.parsing import (
-    get_documentation,
     RESOURCES_HEADING,
+    get_documentation,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 

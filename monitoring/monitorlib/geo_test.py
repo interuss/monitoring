@@ -3,8 +3,8 @@ from typing import List, Tuple
 from s2sphere import LatLng
 
 from monitoring.monitorlib.geo import (
-    generate_slight_overlap_area,
     generate_area_in_vicinity,
+    generate_slight_overlap_area,
 )
 
 MAX_DIFFERENCE = 0.001

@@ -1,8 +1,8 @@
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.sp_operator_notify_missing_fields import (
     SpOperatorNotifyMissingFields as CommonSpOperatorNotifyMissingFields,
 )
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
 
 class SpOperatorNotifyMissingFields(TestScenario, CommonSpOperatorNotifyMissingFields):

@@ -1,30 +1,25 @@
+from datetime import datetime, timedelta
 from typing import List
 
-from uuid6 import uuid7, uuid6
-from datetime import datetime, timedelta
-
 from uas_standards.astm.f3548.v21.api import (
+    OperationalIntentReference,
     OperationalIntentState,
     Volume4D,
-    OperationalIntentReference,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
+from uuid6 import uuid6, uuid7
 
+from monitoring.monitorlib import geotemporal
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
-from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
-    DSSInstanceResource,
-)
+from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss import IDGeneratorResource
 from monitoring.uss_qualifier.resources.resource import MissingResourceError
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
-from monitoring.uss_qualifier.scenarios.scenario import (
-    TestScenario,
-)
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
-from monitoring.monitorlib import geotemporal
 
 OIR_TYPE = register_resource_type(
     398, "Operational Intent Reference for OVN suffix request"

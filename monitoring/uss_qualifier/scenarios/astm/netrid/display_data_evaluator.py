@@ -1,28 +1,25 @@
 import datetime
 import math
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Union, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 import arrow
-from monitoring.uss_qualifier.resources.netrid.service_providers import (
-    NetRIDServiceProvider,
-)
 import s2sphere
 from loguru import logger
 from s2sphere import LatLng, LatLngRect
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
+    Cluster,
     Flight,
     GetDisplayDataResponse,
-    Cluster,
 )
 
 from monitoring.monitorlib import fetch, geo, schema_validation
 from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.fetch.rid import (
-    all_flights,
     FetchedFlights,
     FetchedUSSFlights,
     Position,
+    all_flights,
 )
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.temporal import Time
@@ -47,14 +44,6 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
-
-from monitoring.uss_qualifier.scenarios.astm.netrid import (
-    injection,
-)
-
-from monitoring.uss_qualifier.resources.netrid import (
-    NetRIDServiceProviders,
-)
 
 SPEED_PRECISION = 0.05
 HEIGHT_PRECISION_M = 1

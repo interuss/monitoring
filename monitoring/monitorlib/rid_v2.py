@@ -3,12 +3,7 @@ from typing import List, Optional
 
 import s2sphere
 from implicitdict import ImplicitDict, StringBasedDateTime
-from uas_standards.astm.f3411.v22a.api import (
-    Time,
-    Altitude,
-    LatLngPoint,
-    Volume4D,
-)
+from uas_standards.astm.f3411.v22a.api import Altitude, LatLngPoint, Time, Volume4D
 
 from . import rid_v1 as rid_v1
 

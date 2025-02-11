@@ -1,20 +1,20 @@
-from enum import Enum
-from dataclasses import dataclass
-from datetime import datetime, timedelta, UTC
-from multiprocessing import Process
 import os
 import signal
 import time
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
+from enum import Enum
+from multiprocessing import Process
 from typing import Callable, Dict, Optional, Tuple
 
 import arrow
 import flask
+from implicitdict import StringBasedDateTime, StringBasedTimeDelta
 from jinja2 import FileSystemLoader
 from loguru import logger
 
-from implicitdict import StringBasedDateTime, StringBasedTimeDelta
-from .database import db, PeriodicTaskStatus, TaskError, Database
 from ..monitorlib.errors import stacktrace_string
+from .database import Database, PeriodicTaskStatus, TaskError, db
 
 MAX_PERIODIC_LATENCY = timedelta(seconds=5)
 
