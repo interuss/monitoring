@@ -286,31 +286,6 @@ def test_timestamp():
     )  # Wrong timezone
 
 
-def _assert_speed(value_inj: float, value_obs: float, outcome: bool):
-    def step_under_test(self: UnitTestScenario):
-        evaluator = RIDCommonDictionaryEvaluator(
-            config=EvaluationConfiguration(),
-            test_scenario=self,
-            rid_version=RIDVersion.f3411_22a,
-        )
-
-        evaluator._evaluate_speed(value_inj, value_obs, [])
-
-    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
-    assert unit_test_scenario.get_report().successful == outcome
-
-
-def test_speed():
-    _assert_speed(1, 1, True)  # Ok
-    _assert_speed(20.75, 20.75, True)  # Ok
-    _assert_speed(400, 400, False)  # Fail, above MaxSpeed
-    _assert_speed(23.3, 23.3, True)  # Ok
-    _assert_speed(23.13, 23.25, True)  # Ok
-    _assert_speed(23.12, 23.0, True)  # Ok
-    _assert_speed(23.13, 23.0, False)  # Ok
-    _assert_speed(23.13, 23.5, False)  # Ok
-
-
 def _assert_track(value_inj: float, value_obs: float, outcome: bool):
     def step_under_test(self: UnitTestScenario):
         evaluator = RIDCommonDictionaryEvaluator(
@@ -651,6 +626,9 @@ def _assert_generic_evaluator_call(
         rid_version: RIDVersion to use, default to 22a
         wanted_fail: A list of specific C-code that should fail. If not set, not tested.
     """
+
+    if rid_version is None:
+        rid_version = RIDVersion.f3411_22a
 
     def step_under_test(self: UnitTestScenario):
         evaluator = RIDCommonDictionaryEvaluator(
@@ -1206,6 +1184,79 @@ def test_evaluate_timestamp_accuracy():
             -1,
             -42,
         ]:  # Float values are funny, we cannot test 0.05 because check may 'round' that to 0.04999999999999716
+            v2 = v1 + invalid_delta
+
+            if v2 > 0:  # Ensure value stays valid
+                _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
+
+
+def test_evaluate_speed():
+    """Test the evaluate_speed function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["speed"] = value
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["raw"] = {"current_state": {"speed": value}}
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["current_state"] = {"speed": value}
+        return flight
+
+    base_args = (
+        "_evaluate_speed",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    # Value should be between -254.25, 254.25 or the special 255 value
+    for valid_value in [0, 0.01, 42, 3.14, 254.25, 255]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in [-255, 254.5, -254.5, -1000, 1000, -0.01, -42, -3.14, -254.25]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args, invalid_value=invalid_value, valid_value=42
+        )
+
+    _assert_generic_evaluator_dont_have_default(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    # Resolution is in steps of 0.25
+    # Float values are funny, we cannot test 0.25 because check may 'round' that to 0.04999999999999716
+    for v1 in [0, 0.01, 42, 3.14]:
+        for valid_delta in [
+            0,
+            0.1,
+            0.2,
+            0.24,
+            -0.1,
+            -0.2,
+            -0.24,
+        ]:
+            v2 = v1 + valid_delta
+
+            if v2 > 0:  # Ensure value stays valid
+                _assert_generic_evaluator_equivalent(*base_args, v1=v1, v2=v2)
+        for invalid_delta in [
+            0.26,
+            1,
+            42,
+            -0.26,
+            -1,
+            -42,
+        ]:
             v2 = v1 + invalid_delta
 
             if v2 > 0:  # Ensure value stays valid
