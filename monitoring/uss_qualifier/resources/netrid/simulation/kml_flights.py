@@ -3,6 +3,9 @@
 # A file to generate Flight Records from KML.
 import math
 import random
+from collections import namedtuple
+
+
 import uuid
 from datetime import timedelta
 from typing import List
@@ -21,6 +24,9 @@ from monitoring.uss_qualifier.resources.netrid.flight_data import (
 )
 
 STATE_INCREMENT_SECONDS = 1
+
+
+Coordinate = namedtuple("Coordinate", ["lng", "lat", "alt"])
 
 
 def get_flight_coordinates(input_coordinates):
@@ -187,10 +193,10 @@ def generate_flight_record(
     now_isoformat = timestamp.isoformat()
 
     # We get the minimum altitude to simulate height
-    minimum_altitude = min(c[2] for c in state_coordinates)
+    minimum_altitude = min(c.alt for c in state_coordinates)
 
     # Reference used to compute vertical speed
-    last_alt = state_coordinates[0][2] if state_coordinates else 0
+    last_alt = state_coordinates[0].alt if state_coordinates else 0
 
     flight_telemetry: List[injection.RIDAircraftState] = []
     for coordinates, speed, angle in zip(
@@ -200,10 +206,10 @@ def generate_flight_record(
         timestamp_isoformat = timestamp.isoformat()
 
         aircraft_height = injection.RIDHeight(
-            distance=coordinates[2] - minimum_altitude, reference="TakeoffLocation"
+            distance=coordinates.alt - minimum_altitude, reference="TakeoffLocation"
         )
 
-        vertical_speed = (coordinates[2] - last_alt) / STATE_INCREMENT_SECONDS
+        vertical_speed = (coordinates.alt - last_alt) / STATE_INCREMENT_SECONDS
         # Let's ensure we stay in [-MaxAbsVerticalSpeed, MaxAbsVerticalSpeed]
         # boundaries
         vertical_speed = min(vertical_speed, constants.MaxAbsVerticalSpeed)
@@ -211,12 +217,12 @@ def generate_flight_record(
         # Round to 0.01 (not stricly needed, but display better values)
         vertical_speed = round(vertical_speed, 2)
 
-        last_alt = coordinates[2]
+        last_alt = coordinates.alt
 
         aircraft_position = injection.RIDAircraftPosition(
-            lng=coordinates[0],
-            lat=coordinates[1],
-            alt=coordinates[2],
+            lng=coordinates.lng,
+            lat=coordinates.lat,
+            alt=coordinates.alt,
             accuracy_h=flight_description.get("accuracy_h"),
             accuracy_v=flight_description.get("accuracy_v"),
             extrapolated=False,
@@ -384,7 +390,9 @@ def get_flight_state_coordinates(flight_details):
     # Position Lat, Lng to Lng, Lat order for KML representation.
     flight_state_coordinates = []
     for p, alt in zip(flight_state_vertices_unflatten, flight_state_altitudes):
-        flight_state_coordinates.append((p.lng().degrees, p.lat().degrees, alt))
+        flight_state_coordinates.append(
+            Coordinate(p.lng().degrees, p.lat().degrees, alt)
+        )
     return flight_state_coordinates, flight_state_speeds, flight_track_angles
 
 
