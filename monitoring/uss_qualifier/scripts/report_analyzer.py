@@ -28,9 +28,11 @@ def look_at_scenario(ts: TestScenarioReport):
         print("  has #steps: ", len(tcr.steps))
         for step in tcr.steps:
             print("   step: ", step.name)
-            print("   has #queries: ", len(step.queries)) if step.get(
-                "queries"
-            ) is not None else print("   has #queries: 0")
+            (
+                print("   has #queries: ", len(step.queries))
+                if step.get("queries") is not None
+                else print("   has #queries: 0")
+            )
             for q in step.queries if step.get("queries") is not None else []:
                 print(f"    {q.response.elapsed_s} - {q.request.url}")
 

@@ -67,12 +67,16 @@ class PlanningAreaSpecification(ImplicitDict):
         return SubscriptionParams(
             sub_id=subscription_id,
             area_vertices=make_latlng_rect(self.volume),
-            min_alt_m=None
-            if self.volume.altitude_lower is None
-            else self.volume.altitude_lower_wgs84_m(),
-            max_alt_m=None
-            if self.volume.altitude_upper is None
-            else self.volume.altitude_upper_wgs84_m(),
+            min_alt_m=(
+                None
+                if self.volume.altitude_lower is None
+                else self.volume.altitude_lower_wgs84_m()
+            ),
+            max_alt_m=(
+                None
+                if self.volume.altitude_upper is None
+                else self.volume.altitude_upper_wgs84_m()
+            ),
             start_time=start_time,
             end_time=start_time + duration,
             base_url=self.get_base_url(frames_above=2),
@@ -106,12 +110,14 @@ class PlanningAreaSpecification(ImplicitDict):
             state=state,
             uss_base_url=uss_base_url,
             subscription_id=subscription_id,
-            new_subscription=ImplicitSubscriptionParameters(
-                uss_base_url=implicit_sub_base_url,
-                notify_for_constraints=implicit_sub_for_constraints,
-            )
-            if implicit_sub_base_url
-            else None,
+            new_subscription=(
+                ImplicitSubscriptionParameters(
+                    uss_base_url=implicit_sub_base_url,
+                    notify_for_constraints=implicit_sub_for_constraints,
+                )
+                if implicit_sub_base_url
+                else None
+            ),
         )
 
     def get_new_constraint_ref_params(

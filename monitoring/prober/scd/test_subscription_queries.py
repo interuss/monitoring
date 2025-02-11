@@ -1,7 +1,7 @@
 """Strategic conflict detection Subscription query tests:
 
-  - add a few Subscriptions spaced in time and footprints
-  - query with various combinations of arguments
+- add a few Subscriptions spaced in time and footprints
+- query with various combinations of arguments
 """
 
 import datetime

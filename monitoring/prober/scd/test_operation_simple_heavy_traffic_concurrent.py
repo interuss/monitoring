@@ -1,14 +1,14 @@
 """Basic Operation tests with hundreds of NON-OVERLAPPING operations created CONCURRENTLY.
-   The core actions are performed in parallel while others like cleanup, assert response, etc are intended to remain
-   sequential.
+ The core actions are performed in parallel while others like cleanup, assert response, etc are intended to remain
+ sequential.
 
-  - make sure operations do not exist with get or query
-  - create 100 operations concurrently, with has non-overlapping volume4d in 2ds, altitude ranges and time windows.
-  - get by IDs concurrently
-  - search by areas concurrently
-  - mutate operations concurrently
-  - delete operations concurrently
-  - confirm deletion by get and query
+- make sure operations do not exist with get or query
+- create 100 operations concurrently, with has non-overlapping volume4d in 2ds, altitude ranges and time windows.
+- get by IDs concurrently
+- search by areas concurrently
+- mutate operations concurrently
+- delete operations concurrently
+- confirm deletion by get and query
 """
 
 import asyncio

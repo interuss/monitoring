@@ -86,7 +86,8 @@ class AncestorSelectionCondition(ImplicitDict):
 class TestSuiteActionSelectionCondition(ImplicitDict):
     """Condition for selecting TestSuiteActions.
 
-    If more than one subcondition is specified, satisfaction of ALL subconditions are necessary to select the action."""
+    If more than one subcondition is specified, satisfaction of ALL subconditions are necessary to select the action.
+    """
 
     is_action_generator: Optional[ActionGeneratorSelectionCondition]
     """Select these action generator actions."""

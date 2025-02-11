@@ -94,9 +94,9 @@ class AuthenticationValidation(TestScenario):
             )
 
             if self._wrong_scope_for_scd is not None:
-                scd_scopes[
-                    self._wrong_scope_for_scd
-                ] = "Attempt to query subscriptions and OIRs with wrong scope"
+                scd_scopes[self._wrong_scope_for_scd] = (
+                    "Attempt to query subscriptions and OIRs with wrong scope"
+                )
         else:
             scd_scopes = None
             self._wrong_scope_for_scd = None
@@ -116,9 +116,9 @@ class AuthenticationValidation(TestScenario):
             )
 
             if self._wrong_scope_for_availability is not None:
-                availability_scopes[
-                    self._wrong_scope_for_availability
-                ] = "Attempt to query availability with wrong scope"
+                availability_scopes[self._wrong_scope_for_availability] = (
+                    "Attempt to query availability with wrong scope"
+                )
         else:
             availability_scopes = None
             self._wrong_scope_for_availability = None
@@ -137,9 +137,9 @@ class AuthenticationValidation(TestScenario):
             )
 
             if self._wrong_scope_for_constraints is not None:
-                constraints_scopes[
-                    self._wrong_scope_for_constraints
-                ] = "Attempt to query constraints with wrong scope"
+                constraints_scopes[self._wrong_scope_for_constraints] = (
+                    "Attempt to query constraints with wrong scope"
+                )
         else:
             constraints_scopes = None
             self._wrong_scope_for_constraints = None
@@ -149,17 +149,17 @@ class AuthenticationValidation(TestScenario):
             # Add empty scope to every map when they are non-empty:
             # (Empty means the endpoint group should not be tested at all)
             if scd_scopes:
-                scd_scopes[
-                    ""
-                ] = "Attempt to query subscriptions and OIRs with missing scope"
+                scd_scopes[""] = (
+                    "Attempt to query subscriptions and OIRs with missing scope"
+                )
             if availability_scopes:
-                availability_scopes[
-                    ""
-                ] = "Attempt to query availability with missing scope"
+                availability_scopes[""] = (
+                    "Attempt to query availability with missing scope"
+                )
             if constraints_scopes:
-                constraints_scopes[
-                    ""
-                ] = "Attempt to query constraints with missing scope"
+                constraints_scopes[""] = (
+                    "Attempt to query constraints with missing scope"
+                )
             self._test_missing_scope = True
 
         # Note: .get_instance should be called once we know every scope we will need,

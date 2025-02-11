@@ -97,7 +97,7 @@ def ridsp_create_test(test_id: str) -> Tuple[str, int]:
         f"Created ISA {isa.id} version {isa.version} from {t0} to {t1} at {bounds}"
     )
     record.isa_version = mutated_isa.dss_query.isa.version
-    for (url, notification) in mutated_isa.notifications.items():
+    for url, notification in mutated_isa.notifications.items():
         code = notification.query.status_code
         if code == 200:
             logger.warning(
@@ -151,7 +151,7 @@ def ridsp_delete_test(test_id: str, version: str) -> Tuple[str, int]:
         return flask.jsonify(response), 412
     logger.info(f"Created ISA {deleted_isa.dss_query.isa.id}")
     result = ChangeTestResponse(version=record.version, injected_flights=record.flights)
-    for (url, notification) in deleted_isa.notifications.items():
+    for url, notification in deleted_isa.notifications.items():
         code = notification.query.status_code
         if code == 200:
             logger.warning(

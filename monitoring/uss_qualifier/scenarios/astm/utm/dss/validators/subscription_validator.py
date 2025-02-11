@@ -296,7 +296,8 @@ class SubscriptionValidator:
         self, expected_sub_id: SubscriptionID, new_sub: MutatedSubscription
     ) -> None:
         """Validate a subscription that was just explicitly created, meaning
-        we don't have a previous version to compare to, and we expect it to not be an implicit one."""
+        we don't have a previous version to compare to, and we expect it to not be an implicit one.
+        """
         (t_dss, sub) = (new_sub.request.timestamp, new_sub.subscription)
 
         # Validate the response schema
@@ -417,7 +418,8 @@ class SubscriptionValidator:
         """Validate a subscription that was retrieved through search.
         Note that the callers need to pass the entire response from the DSS, as the schema check
         will be performed on the entire response, not just the subscription itself.
-        However, only the expected subscription is checked for the correctness of its contents."""
+        However, only the expected subscription is checked for the correctness of its contents.
+        """
 
         (t_dss, subs) = (
             searched_subscriptions.request.timestamp,

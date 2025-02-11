@@ -91,9 +91,11 @@ class V1FlightPlannerClient(FlightPlannerClient):
             queries=[query],
             activity_result=resp.planning_result,
             flight_plan_status=resp.flight_plan_status,
-            includes_advisories=resp.includes_advisories
-            if "includes_advisories" in resp
-            else AdvisoryInclusion.Unknown,
+            includes_advisories=(
+                resp.includes_advisories
+                if "includes_advisories" in resp
+                else AdvisoryInclusion.Unknown
+            ),
         )
 
         return response

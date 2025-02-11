@@ -26,7 +26,6 @@ from .utils import (
 
 
 class AdjacentCircularFlightsSimulator:
-
     """A class to generate Flight Paths given a bounding box, this is the main module to generate flight path datasets, the data is generated as latitude / longitude pairs with assoiated with the flights. Additional flight metadata e.g. flight id, altitude, registration number can also be generated"""
 
     def __init__(self, config: AdjacentCircularFlightsSimulatorConfiguration) -> None:

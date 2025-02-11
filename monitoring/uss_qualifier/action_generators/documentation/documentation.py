@@ -21,7 +21,7 @@ from monitoring.uss_qualifier.suites.definitions import (
 
 
 def list_potential_actions_for_action_generator_definition(
-    generator_def: Union[ActionGeneratorDefinition, PotentialActionGeneratorAction]
+    generator_def: Union[ActionGeneratorDefinition, PotentialActionGeneratorAction],
 ) -> List[PotentialGeneratedAction]:
     action_generator_type = action_generator_type_from_name(
         generator_def.generator_type

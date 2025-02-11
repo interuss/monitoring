@@ -82,9 +82,11 @@ def flight_planning_v1_upsert_flight_plan(flight_plan_id: str) -> Tuple[str, int
         new_flight = FlightRecord(
             flight_info=info,
             op_intent=op_intent,
-            mod_op_sharing_behavior=req_body.behavior
-            if "behavior" in req_body and req_body.behavior
-            else None,
+            mod_op_sharing_behavior=(
+                req_body.behavior
+                if "behavior" in req_body and req_body.behavior
+                else None
+            ),
         )
 
         inject_resp = inject_flight(flight_plan_id, new_flight, existing_flight)
