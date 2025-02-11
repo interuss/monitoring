@@ -68,6 +68,17 @@ If the Speed Accuracy value exposed by the SP API is missing or invalid this che
 If the Speed Accuracy value exposed by the SP API is inconsistent with the injected value this check will fail per:
 **[astm.f3411.v19.NET0260,Table1,17](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the valid injected value.
 
+## ⚠️ Track Direction is exposed correctly check
+
+If the Track Direction value exposed by the SP API is missing or invalid this check will fail per:
+**[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)** because the SP violates the SP API contract;
+**[astm.f3411.v19.NET0260,Table1,18](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Track Direction is consistent with injected value check
+
+If the Track Direction value exposed by the SP API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v19.NET0260,Table1,18](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the valid injected value.
+
 ## ⚠️ Speed is exposed correctly check
 
 If the Speed value exposed by the SP API is missing or invalid this check will fail per:
