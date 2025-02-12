@@ -85,7 +85,7 @@
 <div>
   <h2>Scenarios executed</h2>
   <table>
-    <tr>
+    <tr class="header_row">
       {% if max_suite_cols > 0 %}
         <th colspan="{{ max_suite_cols }}">Suite / action generator</th>
       {% endif %}
@@ -106,7 +106,7 @@
         {% for suite_cell in row.suite_cells %}
           {% if suite_cell.first_row %}
             {% if suite_cell.node != None %}
-              <td rowspan="{{ suite_cell.node.rows }}" colspan="{{ suite_cell.colspan }}">{{ suite_cell.node.name }}</td>
+              <td rowspan="{{ suite_cell.node.rows }}" colspan="{{ suite_cell.colspan }}"><span class="sticky_cell_value">{{ suite_cell.node.name }}</span></td>
             {% else %}
               <td rowspan="{{ suite_cell.rowspan }}" colspan="{{ suite_cell.colspan }}">&rarr;</td>
             {% endif %}
@@ -118,7 +118,7 @@
           {% else %}
             <td>
           {% endif %}
-              {{ row.scenario_node.scenario.scenario_index }}) <a href="s{{ row.scenario_node.scenario.scenario_index }}.html">{{ row.scenario_node.scenario.name }}</a>
+              <span class="sticky_cell_value">{{ row.scenario_node.scenario.scenario_index }}) <a href="s{{ row.scenario_node.scenario.scenario_index }}.html">{{ row.scenario_node.scenario.name }}</a></span>
             </td>
         {% endif %}
         {% if row.skipped_action_node %}
@@ -130,15 +130,15 @@
         {% for participant_id in all_participants %}
           {% if row.scenario_node and participant_id in row.scenario_node.scenario.participants %}
             {% if row.scenario_node.scenario.participants[participant_id].has_failures %}
-              <td class="fail_result">&#x274C;</td>
+              <td class="fail_result"><span class="sticky_cell_value">&#x274C;</span></td>
             {% elif row.scenario_node.scenario.participants[participant_id].has_infos %}
-              <td class="info_result">&#8505;&#65039;</td>
+              <td class="info_result"><span class="sticky_cell_value">&#8505;&#65039;</span></td>
             {% elif row.scenario_node.scenario.participants[participant_id].has_successes %}
-              <td class="pass_result">&#x2705;</td>
+              <td class="pass_result"><span class="sticky_cell_value">&#x2705;</span></td>
             {% elif row.scenario_node.scenario.participants[participant_id].has_queries %}
-              <td>&#x1F310;</td>
+              <td><span class="sticky_cell_value">&#x1F310;</span></td>
             {% else %}
-              <td>???</td>
+              <td><span class="sticky_cell_value">???</span></td>
             {% endif %}
           {% else %}
             <td></td>
@@ -146,7 +146,7 @@
         {% endfor %}
         <td>
           {% if row.scenario_node %}
-            {{ row.scenario_node.scenario.duration }}
+            <span class="sticky_cell_value">{{ row.scenario_node.scenario.duration }}</span>
           {% endif %}
         </td>
       </tr>
