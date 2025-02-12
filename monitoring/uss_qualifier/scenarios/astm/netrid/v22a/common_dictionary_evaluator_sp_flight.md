@@ -123,18 +123,6 @@ If the Vertical Speed value exposed by the SP API is missing or invalid this che
 If the Vertical Speed value exposed by the SP API is inconsistent with the injected value this check will fail per:
 **[astm.f3411.v22a.NET0260,Table1,21](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the valid injected value.
 
-## Service Provider altitude check
-
-**[astm.f3411.v22a.NET0260,Table1,12](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had known altitudes, but the altitude reported by the Service Provider did not match those known altitudes.
-
-## ⚠️ Service Provider speed check
-
-**[astm.f3411.v22a.NET0260,Table1,20](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. Injected flight data had a specified speed that was different from the reported one.
-
-## ⚠️ Service Provider track check
-
-**[astm.f3411.v22a.NET0260,Table1,19](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  Injected flight data had a specified track that was different from the reported one.
-
 ## ⚠️ Service Provider height check
 
 **[astm.f3411.v22a.NET0260,Table1,14](../../../../requirements/astm/f3411/v22a.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  The reported height of the flight is unrealistic or otherwise not consistent with the injected data.
