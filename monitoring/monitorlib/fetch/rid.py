@@ -407,6 +407,28 @@ class Flight(ImplicitDict):
                 f"Cannot retrieve aircraft_type using RID version {self.rid_version}"
             )
 
+    @property
+    def height(
+        self,
+    ) -> Optional[Union[v19.api.RIDHeight, v22a.api.RIDHeight]]:
+        if self.rid_version == RIDVersion.f3411_19:
+            if not self.v19_value.has_field_with_value(
+                "current_state"
+            ) or not self.v19_value.current_state.has_field_with_value("height"):
+                return None
+            return self.v19_value.current_state.height
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if (
+                not self.most_recent_position
+                or not self.most_recent_position.has_field_with_value("height")
+            ):
+                return None
+            return self.most_recent_position.height
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve aircraft_type using RID version {self.rid_version}"
+            )
+
     def errors(self) -> List[str]:
         try:
             rid_version = self.rid_version
