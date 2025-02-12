@@ -57,6 +57,28 @@ If the Geodetic Altitude value exposed by the SP API is missing or invalid this 
 If the Geodetic Altitude value exposed by the SP API is inconsistent with the injected value this check will fail per:
 **[astm.f3411.v19.NET0260,Table1,11](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the valid injected value.
 
+## ⚠️ Height is exposed correctly check
+
+If the Height value exposed by the SP API is missing or invalid this check will fail per:
+**[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)** because the SP violates the SP API contract;
+**[astm.f3411.v19.NET0260,Table1,13](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Height is consistent with injected value check
+
+If the Height value exposed by the SP API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v19.NET0260,Table1,13](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the valid injected value.
+
+## ⚠️ Height type is exposed correctly check
+
+If the Height type value exposed by the SP API is missing or invalid this check will fail per:
+**[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)** because the SP violates the SP API contract;
+**[astm.f3411.v19.NET0260,Table1,14](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Height type is consistent with injected value check
+
+If the Height type value exposed by the SP API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v19.NET0260,Table1,14](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the valid injected value.
+
 ## ⚠️ Geodetic Vertical Accuracy is exposed correctly check
 
 If the Geodetic Vertical Accuracy value exposed by the SP API is missing or invalid this check will fail per:
@@ -126,7 +148,3 @@ If the Vertical Speed value exposed by the SP API is inconsistent with the injec
 ## ⚠️ Service Provider timestamp accuracy is present check
 
 If the timestamp accuracy is not present, the USS under test is not properly implementing the REST interface specified by the OpenAPI definition contained in Annex A4, and is therefore in violation of **[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)**.
-
-## ⚠️ Service Provider height check
-
-**[astm.f3411.v19.NET0260,Table1,13](../../../../requirements/astm/f3411/v19.md)** requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider.  The reported height of the flight is unrealistic or otherwise not consistent with the injected data.

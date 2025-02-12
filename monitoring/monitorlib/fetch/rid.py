@@ -169,14 +169,16 @@ class Position(ImplicitDict):
 
     @staticmethod
     def from_v19_rid_aircraft_position(
-        p: v19.api.RIDAircraftPosition, t: v19.api.StringBasedDateTime
+        p: v19.api.RIDAircraftPosition,
+        t: v19.api.StringBasedDateTime,
+        h: Optional[v19.api.RIDHeight],
     ) -> Position:
         return Position(
             lat=p.lat,
             lng=p.lng,
             alt=p.alt,
             time=t.datetime,
-            height=None,
+            height=h,
             accuracy_v=p.accuracy_v if "accuracy_v" in p else None,
             accuracy_h=p.accuracy_h if "accuracy_h" in p else None,
         )
@@ -237,6 +239,7 @@ class Flight(ImplicitDict):
                 return Position.from_v19_rid_aircraft_position(
                     self.v19_value.current_state.position,
                     self.v19_value.current_state.timestamp,
+                    self.height,
                 )
             elif self.rid_version == RIDVersion.f3411_22a:
                 return Position.from_v22a_rid_aircraft_position(
@@ -254,7 +257,7 @@ class Flight(ImplicitDict):
     def recent_positions(self) -> List[Position]:
         if self.rid_version == RIDVersion.f3411_19:
             return [
-                Position.from_v19_rid_aircraft_position(p.position, p.time)
+                Position.from_v19_rid_aircraft_position(p.position, p.time, self.height)
                 for p in self.v19_value.recent_positions
             ]
         elif self.rid_version == RIDVersion.f3411_22a:
@@ -402,6 +405,28 @@ class Flight(ImplicitDict):
             if not self.v22a_value.has_field_with_value("aircraft_type"):
                 return None
             return self.v22a_value.aircraft_type
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve aircraft_type using RID version {self.rid_version}"
+            )
+
+    @property
+    def height(
+        self,
+    ) -> Optional[Union[v19.api.RIDHeight, v22a.api.RIDHeight]]:
+        if self.rid_version == RIDVersion.f3411_19:
+            if not self.v19_value.has_field_with_value(
+                "current_state"
+            ) or not self.v19_value.current_state.has_field_with_value("height"):
+                return None
+            return self.v19_value.current_state.height
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if (
+                not self.most_recent_position
+                or not self.most_recent_position.has_field_with_value("height")
+            ):
+                return None
+            return self.most_recent_position.height
         else:
             raise NotImplementedError(
                 f"Cannot retrieve aircraft_type using RID version {self.rid_version}"

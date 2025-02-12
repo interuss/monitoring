@@ -828,69 +828,6 @@ class RIDObservationEvaluator(object):
                 query_timestamp,
             )
 
-        # Check that required fields are present and match for any observed flights matching injected flights
-        for mapping in mappings.values():
-            injected_telemetry = mapping.injected_flight.flight.telemetry[
-                mapping.telemetry_index
-            ]
-            observed_position = mapping.observed_flight.most_recent_position
-            injected_position = injected_telemetry.position
-
-            # TODO all/most checks below (Not only 'alt' but also, speed, etc.) should be moved to the common dictionary evaluator
-            # The intent is to do so in a cleanup step once all fields have been checked.
-            # Tracked in issue https://github.com/interuss/monitoring/issues/842
-
-            # Due to how implicit dicts are deserialized and the timestamp_accuracy is specified in the OpenAPI file for F3411-v22a,
-            # we need to look into the raw JSON response to determine if the field is present:
-            #
-            # Because the spec requires the field to be present while also specifying a default value, the implicit dict based class derived
-            # from the spec may not catch that a field is missing at deserialization time (because the RIDAircraftState class specifies a default
-            # value for the field, no ValueError will be thrown when ImplicitDict.parse() is called).
-            #
-            # This means that a missing json field will neither raise an exception nor cause the field to be set to None when we access it,
-            # meaning this part of the logic cannot rely on the deserialized value to determine if the field was present or not.
-            raw_flight = mapping.observed_flight.raw_flight
-            raw_state = (
-                raw_flight["current_state"] if "current_state" in raw_flight else {}
-            )
-
-            if self._rid_version == RIDVersion.f3411_22a:
-                if "height" in injected_position:
-                    # We injected a height so expect to observe one
-                    if "height" not in observed_position:
-                        check.record_failed(
-                            "A value was injected for the height field, but none was returned in Service Provider response",
-                            details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had a height injected, but Service Provider did not return a height at {mapping.observed_flight.query.query.request.initiated_at}",
-                        )
-                    else:
-                        if (
-                            injected_position.height.reference.value
-                            != observed_position.height.reference.value
-                        ):
-                            check.record_failed(
-                                "Height reference reported by Service Provider does not match injected height reference",
-                                details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with height={injected_position.height.distance} {injected_position.height.reference.value}, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
-                            )
-                        if not math.isclose(
-                            injected_position.height.distance,
-                            observed_position.height.distance,
-                            abs_tol=HEIGHT_PRECISION_M,
-                        ):
-                            check.record_failed(
-                                "Height reported by Service Provider does not match injected height",
-                                details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} with height={injected_position.height.distance} {injected_position.height.reference.value}, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
-                            )
-                else:
-                    # We did not inject a height, but a height returning the magic 'unknown' value would still be seen as valid
-                    if "height" in observed_position:
-                        if not math.isclose(
-                            observed_position.height.distance, -1000, abs_tol=1
-                        ):
-                            check.record_failed(
-                                "Injected no height, but Service Provider reported a height",
-                                details=f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID {mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had no height injected, but Service Provider reported height={observed_position.height.distance} {observed_position.height.reference.value} at {mapping.observed_flight.query.query.request.initiated_at}",
-                            )
-
         # Verify that flight details queries succeeded and returned correctly-formatted data
         for mapping in mappings.values():
             details_queries = [

@@ -3,11 +3,11 @@ from datetime import datetime, timedelta
 from itertools import permutations
 from typing import Any, Callable, List, Optional, Tuple, TypeVar
 
-from implicitdict import StringBasedDateTime
 from uas_standards.astm.f3411 import v22a
 from uas_standards.astm.f3411.v22a.api import (
     Altitude,
     LatLngPoint,
+    RIDHeightReference,
     RIDOperationalStatus,
     UAType,
 )
@@ -237,49 +237,6 @@ def test_operator_location():
     ]
     for invalid_location in invalid_locations:
         _assert_operator_location(*invalid_location)
-
-
-def _assert_height(value_inj: injection.RIDHeight, value_obs: RIDHeight, outcome: bool):
-    def step_under_test(self: UnitTestScenario):
-        evaluator = RIDCommonDictionaryEvaluator(
-            config=EvaluationConfiguration(),
-            test_scenario=self,
-            rid_version=RIDVersion.f3411_22a,
-        )
-
-        evaluator._evaluate_height(value_inj, value_obs, [])
-
-    unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
-    assert unit_test_scenario.get_report().successful == outcome
-
-
-def test_height():
-    _assert_height(None, None, True)  # Ok
-    _assert_height(
-        injection.RIDHeight(distance=10, reference="TakeoffLocation"),
-        RIDHeight(distance=10, reference="TakeoffLocation"),
-        True,
-    )  # Ok
-    _assert_height(
-        injection.RIDHeight(distance=10.101, reference="TakeoffLocation"),
-        RIDHeight(distance=10.101, reference="TakeoffLocation"),
-        True,
-    )  # Ok
-    _assert_height(
-        injection.RIDHeight(distance=10.101, reference="TakeoffLocation"),
-        RIDHeight(distance=10.101, reference="Moon"),
-        False,
-    )  # Wrong reference
-    _assert_height(
-        injection.RIDHeight(distance=10.0, reference="TakeoffLocation"),
-        RIDHeight(distance=11.1, reference="TakeoffLocation"),
-        False,
-    )  # Too far apart
-    _assert_height(
-        injection.RIDHeight(distance=10.0, reference="GroundLevel"),
-        RIDHeight(distance=11.1, reference="TakeoffLocation"),
-        False,
-    )  # mismatching reference
 
 
 def mock_flight(
@@ -1346,6 +1303,125 @@ def test_evaluate_timestamp():
     _assert_generic_evaluator_not_equivalent(
         *base_args, v1="2025-01-01T12:00:00Z", v2="2025-01-02T12:00:00Z"
     )
+
+
+def test_evaluate_height():
+    """Test the evaluate_height function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["position"] = {"height": {"distance": value}}
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["height"] = {"distance": value}
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["most_recent_position"] = {"height": {"distance": value}}
+        return flight
+
+    base_args = (
+        "_evaluate_height",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    for valid_value in [0, 0.01, 42, 3.14, 359, 361, -361, -1000, -3.14]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    _assert_generic_evaluator_defaults(
+        *base_args,
+        default_value=-1000,
+        valid_value=1000,
+    )
+
+    # Resolution is in steps of 1
+    # Float values are funny, we cannot test 0.25 because check may 'round' that to 0.04999999999999716
+    for v1 in [0, 42, 3.14, 100]:
+        for valid_delta in [
+            0,
+            0.1,
+            0.2,
+            0.5,
+            0.9,
+            0.95,
+            -0.1,
+            -0.2,
+            -0.5,
+            -0.9,
+            -0.95,
+        ]:
+            v2 = v1 + valid_delta
+            _assert_generic_evaluator_equivalent(*base_args, v1=v1, v2=v2)
+        for invalid_delta in [
+            1.1,
+            2,
+            10,
+            100,
+        ]:
+            v2 = v1 + invalid_delta
+            _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
+
+    # Ensure special value doesn't interfer
+    _assert_generic_evaluator_not_equivalent(*base_args, v1=-1000, v2=42)
+    _assert_generic_evaluator_not_equivalent(*base_args, v1=42, v2=-1000)
+    # Ensure special value is equal
+    _assert_generic_evaluator_equivalent(*base_args, v1=-1000, v2=-1000)
+
+
+def test_evaluate_height_type():
+    """Test the evaluate_height_type function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["position"] = {"height": {"reference": value}}
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["height"] = {"reference": value}
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["most_recent_position"] = {"height": {"reference": value}}
+        return flight
+
+    base_args = (
+        "_evaluate_height_type",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=RIDHeightReference.GroundLevel,
+        valid_value_2=RIDHeightReference.TakeoffLocation,
+    )
+
+    for valid_value in [
+        "GroundLevel",
+        "TakeoffLocation",
+    ]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in ["Undergound", "InATunnel"]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args,
+            invalid_value=invalid_value,
+            valid_value=RIDHeightReference.GroundLevel,
+        )
+
+    for v1, v2 in permutations(
+        ["GroundLevel", "TakeoffLocation"],
+        2,
+    ):
+        _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
 
 
 def test_evaluate_operational_status():

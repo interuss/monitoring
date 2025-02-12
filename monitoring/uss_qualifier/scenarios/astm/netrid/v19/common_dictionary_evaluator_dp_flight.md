@@ -67,6 +67,32 @@ If the Geodetic Altitude value exposed by the observer API is inconsistent with 
 **[astm.f3411.v19.NET0450](../../../../requirements/astm/f3411/v19.md)** because the DP fails to provide accurate data;
 **[astm.f3411.v19.NET0470,Table1,11](../../../../requirements/astm/f3411/v19.md)**  because the DP fails to expose data consistent with the valid injected value.
 
+## ⚠️ Height is exposed correctly check
+
+If the Height value exposed by the observation API is invalid this check will fail per:
+**[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)** because the DP violates the observation API contract;
+**[astm.f3411.v19.NET0450](../../../../requirements/astm/f3411/v19.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v19.NET0470,Table1,13](../../../../requirements/astm/f3411/v19.md)** because the DP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Height is consistent with injected value check
+
+If the Height value exposed by the observer API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v19.NET0450](../../../../requirements/astm/f3411/v19.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v19.NET0470,Table1,13](../../../../requirements/astm/f3411/v19.md)**  because the DP fails to expose data consistent with the valid injected value.
+
+## ⚠️ Height type is exposed correctly check
+
+If the Height type value exposed by the observation API is invalid this check will fail per:
+**[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)** because the DP violates the observation API contract;
+**[astm.f3411.v19.NET0450](../../../../requirements/astm/f3411/v19.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v19.NET0470,Table1,14](../../../../requirements/astm/f3411/v19.md)** because the DP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ Height type is consistent with injected value check
+
+If the Height type value exposed by the observer API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v19.NET0450](../../../../requirements/astm/f3411/v19.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v19.NET0470,Table1,14](../../../../requirements/astm/f3411/v19.md)**  because the DP fails to expose data consistent with the valid injected value.
+
 ## ⚠️ Geodetic Vertical Accuracy is exposed correctly check
 
 If the Geodetic Vertical Accuracy value exposed by the observation API is invalid this check will fail per:
