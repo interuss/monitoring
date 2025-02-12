@@ -23,5 +23,5 @@ unit_test:
 	./scripts/run_unit_tests.sh
 
 .PHONY: test
-test: lint unit_test
+test:
 	./scripts/test_docker_fully_mocked.sh

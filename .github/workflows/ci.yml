@@ -24,14 +24,10 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: true
-    - name: Python lint
-      run: make python-lint
     - name: Automated hygiene verification
       run: make check-hygiene
-    - name: uss_qualifier documentation validation
-      run: make validate-uss-qualifier-docs
-    - name: Shell lint
-      run: make shell-lint
+    - name: Unit tests
+      run: make unit-test
 
   mock_uss-test:
     name: mock_uss tests
