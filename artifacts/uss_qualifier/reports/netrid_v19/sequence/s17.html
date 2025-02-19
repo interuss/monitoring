@@ -37,6 +37,7 @@
     background-color: rgb(230, 230, 230);
     border: 1px solid #d0d7de;
     height: 40px;
+    box-sizing: border-box;
   }
   a {
     background-color: transparent;
@@ -50,9 +51,14 @@
     margin-top: 0.1em;
     margin-bottom: 0.1em;
   }
+  .header_row {
+    position: sticky;
+    top: -1px;
+    z-index: 100;
+  }
   .sticky_cell_value {
     position: sticky;
-    top: 0px; // 40px
+    top: 40px;
     z-index: 0;
   }
   .pass_result {
@@ -106,16 +112,16 @@
 </head>
 <body>
 <div>
-    <h2><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></h2>
+    <h2><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md">ASTM NetRID DSS: Submitted ISA Validations</a></h2>
   <h3>scenarios.astm.netrid.v19.dss.ISAValidation</h3>
   <div id="resources_configuration_section" class="collapseable">
     <div class="node_key" onclick="showHide(document.getElementById('resources_configuration_section'))"><h4>Resources</h4></div>
     <div class="node_value">
       <ul id="resource_origin_list">
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#dss"><code>dss</code></a> provided by <a href="./index.html#resources-configuration">instance 1 in netrid_dss_instances_v19 in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#id_generator"><code>id_generator</code></a> provided by <a href="./index.html#resources-configuration">id_generator in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#isa"><code>isa</code></a> provided by <a href="./index.html#resources-configuration">kentland_service_area in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#problematically_big_area"><code>problematically_big_area</code></a> provided by <a href="./index.html#resources-configuration">au_problematically_big_area in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#dss"><code>dss</code></a> provided by <a href="./index.html#resources-configuration">instance 1 in netrid_dss_instances_v19 in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#id_generator"><code>id_generator</code></a> provided by <a href="./index.html#resources-configuration">id_generator in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#isa"><code>isa</code></a> provided by <a href="./index.html#resources-configuration">kentland_service_area in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#problematically_big_area"><code>problematically_big_area</code></a> provided by <a href="./index.html#resources-configuration">au_problematically_big_area in top-level resource pool</a></li>
       </ul>
     </div>
   </div>
@@ -134,10 +140,10 @@
 
             <tr id="e1">
                 <td rowspan="2"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#setup-test-case">Setup</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#setup-test-case">Setup</a>
                 </span></td>
                 <td rowspan="2"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#ensure-clean-workspace-test-step">Ensure clean workspace</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#ensure-clean-workspace-test-step">Ensure clean workspace</a>
                 </span></td>
               <td><a href="#e1">1</a></td>
                 <td>&#x1F310;</td>
@@ -164,7 +170,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:21:17.410152Z
+        <div class="node_value">      2025-02-19T16:38:42.437350Z
 
 </div>
       </li>
@@ -197,7 +203,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTY1MCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy5yZWFkLmlkZW50aWZpY2F0aW9uX3NlcnZpY2VfYXJlYXMiLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjY5NCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy5yZWFkLmlkZW50aWZpY2F0aW9uX3NlcnZpY2VfYXJlYXMiLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
 
 </div>
       </li>
@@ -238,7 +244,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:21:17 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:38:42 GMT
 
 </div>
       </li>
@@ -254,12 +260,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.001156
+        <div class="node_value">    0.001073
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:21:17.411832Z
+        <div class="node_value">      2025-02-19T16:38:42.438856Z
 
 </div>
       </li>
@@ -268,7 +274,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">message</div>:
-        <div class="node_value">      ISA 00000170-e36d-40be-8d38-beca6ca30000 not found (E:757cdca2-6b4d-46e7-9153-694b8a3a1043)
+        <div class="node_value">      ISA 00000170-e36d-40be-8d38-beca6ca30000 not found (E:1d6355be-60b0-4c05-927f-06efaaa74327)
 
 </div>
       </li>
@@ -318,10 +324,10 @@
             </tr>
             <tr id="e3">
                 <td rowspan="14"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#isa-validation-test-case">ISA Validation</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#isa-validation-test-case">ISA Validation</a>
                 </span></td>
                 <td rowspan="14"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#isa-validation-test-step">ISA Validation</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#isa-validation-test-step">ISA Validation</a>
                 </span></td>
               <td><a href="#e3">3</a></td>
                 <td>&#x1F310;</td>
@@ -348,7 +354,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:21:17.412930Z
+        <div class="node_value">      2025-02-19T16:38:42.439962Z
 
 </div>
       </li>
@@ -393,7 +399,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTY1MCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjY5NCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -508,13 +514,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">time_start</div>:
-        <div class="node_value">      2025-02-18T15:21:18.409930Z
+        <div class="node_value">      2025-02-19T16:38:43.437147Z
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">time_end</div>:
-        <div class="node_value">      2025-02-18T16:21:18.409930Z
+        <div class="node_value">      2025-02-19T17:38:43.437147Z
 
 </div>
       </li>
@@ -530,7 +536,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      daaf27e0-54a5-4066-875c-a623e5e145c9
+        <div class="node_value">      986425e6-b9df-4bc2-b1dc-a9fc28fde28e
 
 </div>
       </li>
@@ -566,7 +572,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:21:17 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:38:42 GMT
 
 </div>
       </li>
@@ -582,12 +588,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.000811
+        <div class="node_value">    0.000798
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:21:17.414210Z
+        <div class="node_value">      2025-02-19T16:38:42.441196Z
 
 </div>
       </li>
@@ -596,7 +602,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">message</div>:
-        <div class="node_value">      Area too large (E:f1448aa6-8c6a-4b97-90cc-7a3de7ee6e1b)
+        <div class="node_value">      Area too large (E:fe540b44-a9ee-4c64-a6c5-8a62ea970960)
 
 </div>
       </li>
@@ -670,7 +676,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:21:17.415112Z
+        <div class="node_value">      2025-02-19T16:38:42.442001Z
 
 </div>
       </li>
@@ -715,7 +721,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTY1MCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjY5NCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -762,13 +768,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">time_start</div>:
-        <div class="node_value">      2025-02-18T15:21:18.409930Z
+        <div class="node_value">      2025-02-19T16:38:43.437147Z
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">time_end</div>:
-        <div class="node_value">      2025-02-18T16:21:18.409930Z
+        <div class="node_value">      2025-02-19T17:38:43.437147Z
 
 </div>
       </li>
@@ -784,7 +790,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      24dd262c-6b10-4235-9d90-95f01648aa1c
+        <div class="node_value">      c078d745-3bf5-4c30-8f1c-c5d3c638377e
 
 </div>
       </li>
@@ -820,7 +826,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:21:17 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:38:42 GMT
 
 </div>
       </li>
@@ -836,12 +842,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.000698
+        <div class="node_value">    0.000735
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:21:17.416232Z
+        <div class="node_value">      2025-02-19T16:38:42.443149Z
 
 </div>
       </li>
@@ -850,7 +856,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">message</div>:
-        <div class="node_value">      Missing or malformed required extents (E:fec5441d-4941-42ef-ae11-504e9d8ef83f)
+        <div class="node_value">      Missing or malformed required extents (E:a094c057-940f-4626-b997-d024baea4439)
 
 </div>
       </li>
@@ -924,7 +930,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:21:17.417256Z
+        <div class="node_value">      2025-02-19T16:38:42.444167Z
 
 </div>
       </li>
@@ -969,7 +975,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTY1MCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjY5NCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -1084,13 +1090,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">time_start</div>:
-        <div class="node_value">      2025-02-18T15:11:17.416396Z
+        <div class="node_value">      2025-02-19T16:28:42.443313Z
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">time_end</div>:
-        <div class="node_value">      2025-02-18T16:11:17.416396Z
+        <div class="node_value">      2025-02-19T17:28:42.443313Z
 
 </div>
       </li>
@@ -1106,7 +1112,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      ca30e601-1eb8-4920-ae41-159f9d5bca2f
+        <div class="node_value">      13a256d5-9d7c-4537-9c5f-b1188dbe468b
 
 </div>
       </li>
@@ -1142,7 +1148,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:21:17 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:38:42 GMT
 
 </div>
       </li>
@@ -1158,12 +1164,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.001287
+        <div class="node_value">    0.000756
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:21:17.418995Z
+        <div class="node_value">      2025-02-19T16:38:42.445355Z
 
 </div>
       </li>
@@ -1172,7 +1178,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">message</div>:
-        <div class="node_value">      IdentificationServiceArea time_start must not be in the past (E:adf388f5-7586-4bcb-97f0-27554daf9b32)
+        <div class="node_value">      IdentificationServiceArea time_start must not be in the past (E:7ebab455-9c36-42a7-bb59-abe108e8de2f)
 
 </div>
       </li>
@@ -1246,7 +1252,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:21:17.420039Z
+        <div class="node_value">      2025-02-19T16:38:42.446413Z
 
 </div>
       </li>
@@ -1291,7 +1297,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTY1MCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjY5NCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -1428,7 +1434,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      8d913a8f-1d3b-4ddd-a90d-4f7c90e2405f
+        <div class="node_value">      ff12ab4f-24a1-404a-b19a-4d246b851e64
 
 </div>
       </li>
@@ -1464,7 +1470,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:21:17 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:38:42 GMT
 
 </div>
       </li>
@@ -1480,12 +1486,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.000901
+        <div class="node_value">    0.000771
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:21:17.421374Z
+        <div class="node_value">      2025-02-19T16:38:42.447616Z
 
 </div>
       </li>
@@ -1494,7 +1500,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">message</div>:
-        <div class="node_value">      IdentificationServiceArea time_start must not be in the past (E:1d9af203-0866-485f-bb30-181357a77662)
+        <div class="node_value">      IdentificationServiceArea time_start must not be in the past (E:6e5caead-1ed6-4ba8-95ab-d5a6e8a88f52)
 
 </div>
       </li>
@@ -1568,7 +1574,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:21:17.422497Z
+        <div class="node_value">      2025-02-19T16:38:42.448651Z
 
 </div>
       </li>
@@ -1613,7 +1619,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTY1MCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjY5NCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -1750,7 +1756,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      a09959f6-946c-432e-820f-6625d470a13a
+        <div class="node_value">      bd80dfc2-c85a-476e-b297-5bdaa47cdf45
 
 </div>
       </li>
@@ -1786,7 +1792,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:21:17 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:38:42 GMT
 
 </div>
       </li>
@@ -1802,12 +1808,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.000665
+        <div class="node_value">    0.000735
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:21:17.423613Z
+        <div class="node_value">      2025-02-19T16:38:42.449909Z
 
 </div>
       </li>
@@ -1816,7 +1822,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">message</div>:
-        <div class="node_value">      Coordinates did not create a well-formed area (E:7bacda45-1998-4434-8ff6-4e7318dc84b0)
+        <div class="node_value">      Coordinates did not create a well-formed area (E:004cb786-9514-4b2b-aeba-4b08df197d8c)
 
 </div>
       </li>
@@ -1890,7 +1896,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:21:17.423880Z
+        <div class="node_value">      2025-02-19T16:38:42.450207Z
 
 </div>
       </li>
@@ -1935,7 +1941,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTY1MCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjY5NCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -1968,13 +1974,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">time_start</div>:
-        <div class="node_value">      2025-02-18T15:21:18.409930Z
+        <div class="node_value">      2025-02-19T16:38:43.437147Z
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">time_end</div>:
-        <div class="node_value">      2025-02-18T16:21:18.409930Z
+        <div class="node_value">      2025-02-19T17:38:43.437147Z
 
 </div>
       </li>
@@ -1990,7 +1996,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      daaf27e0-54a5-4066-875c-a623e5e145c9
+        <div class="node_value">      986425e6-b9df-4bc2-b1dc-a9fc28fde28e
 
 </div>
       </li>
@@ -2026,7 +2032,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:21:17 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:38:42 GMT
 
 </div>
       </li>
@@ -2042,12 +2048,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.000705
+        <div class="node_value">    0.000689
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:21:17.425001Z
+        <div class="node_value">      2025-02-19T16:38:42.451344Z
 
 </div>
       </li>
@@ -2056,7 +2062,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">message</div>:
-        <div class="node_value">      Missing or malformed required extents (E:4a3596e3-708a-42e5-8533-34bcc6b5bfc8)
+        <div class="node_value">      Missing or malformed required extents (E:5c8054c4-652c-4ca4-9692-d09ba0d24479)
 
 </div>
       </li>
@@ -2130,7 +2136,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:21:17.425192Z
+        <div class="node_value">      2025-02-19T16:38:42.451534Z
 
 </div>
       </li>
@@ -2175,7 +2181,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTY1MCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjY5NCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy53cml0ZS5pZGVudGlmaWNhdGlvbl9zZXJ2aWNlX2FyZWFzIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -2191,13 +2197,13 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">time_start</div>:
-        <div class="node_value">      2025-02-18T15:21:18.409930Z
+        <div class="node_value">      2025-02-19T16:38:43.437147Z
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">time_end</div>:
-        <div class="node_value">      2025-02-18T16:21:18.409930Z
+        <div class="node_value">      2025-02-19T17:38:43.437147Z
 
 </div>
       </li>
@@ -2213,7 +2219,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      daaf27e0-54a5-4066-875c-a623e5e145c9
+        <div class="node_value">      986425e6-b9df-4bc2-b1dc-a9fc28fde28e
 
 </div>
       </li>
@@ -2249,7 +2255,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:21:17 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:38:42 GMT
 
 </div>
       </li>
@@ -2265,12 +2271,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.000659
+        <div class="node_value">    0.000797
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:21:17.426252Z
+        <div class="node_value">      2025-02-19T16:38:42.452898Z
 
 </div>
       </li>
@@ -2279,7 +2285,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">message</div>:
-        <div class="node_value">      Missing or malformed required extents (E:8ee9639c-408c-4463-95cd-9bae6ec46b79)
+        <div class="node_value">      Missing or malformed required extents (E:e5082ffc-b09e-4d7f-a929-d4d1f0f29fdf)
 
 </div>
       </li>
@@ -2332,7 +2338,7 @@
                     <a href="#"></a>
                 </span></td>
                 <td rowspan="2"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#cleanup">Cleanup</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v19/dss/isa_validation.md#cleanup">Cleanup</a>
                 </span></td>
               <td><a href="#e17">17</a></td>
                 <td>&#x1F310;</td>
@@ -2359,7 +2365,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:21:17.426473Z
+        <div class="node_value">      2025-02-19T16:38:42.453180Z
 
 </div>
       </li>
@@ -2392,7 +2398,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTY1MCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy5yZWFkLmlkZW50aWZpY2F0aW9uX3NlcnZpY2VfYXJlYXMiLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjY5NCwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImRzcy5yZWFkLmlkZW50aWZpY2F0aW9uX3NlcnZpY2VfYXJlYXMiLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
 
 </div>
       </li>
@@ -2433,7 +2439,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:21:17 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:38:42 GMT
 
 </div>
       </li>
@@ -2449,12 +2455,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.001077
+        <div class="node_value">    0.001519
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:21:17.427949Z
+        <div class="node_value">      2025-02-19T16:38:42.455210Z
 
 </div>
       </li>
@@ -2463,7 +2469,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">message</div>:
-        <div class="node_value">      ISA 00000170-e36d-40be-8d38-beca6ca30000 not found (E:3ff1440c-f2b7-4cb5-b415-d6cd66098d08)
+        <div class="node_value">      ISA 00000170-e36d-40be-8d38-beca6ca30000 not found (E:882cf868-2fee-472e-9e82-8d150b7c7981)
 
 </div>
       </li>

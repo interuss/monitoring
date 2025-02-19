@@ -37,6 +37,7 @@
     background-color: rgb(230, 230, 230);
     border: 1px solid #d0d7de;
     height: 40px;
+    box-sizing: border-box;
   }
   a {
     background-color: transparent;
@@ -50,9 +51,14 @@
     margin-top: 0.1em;
     margin-bottom: 0.1em;
   }
+  .header_row {
+    position: sticky;
+    top: -1px;
+    z-index: 100;
+  }
   .sticky_cell_value {
     position: sticky;
-    top: 0px; // 40px
+    top: 40px;
     z-index: 0;
   }
   .pass_result {
@@ -106,7 +112,7 @@
 </head>
 <body>
 <div>
-    <h2><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/interuss/mock_uss/unconfigure_locality.md">Unconfigure mock_uss locality</a></h2>
+    <h2><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/interuss/mock_uss/unconfigure_locality.md">Unconfigure mock_uss locality</a></h2>
   <h3>scenarios.interuss.mock_uss.unconfigure_locality.UnconfigureLocality</h3>
   <div id="resources_configuration_section" class="collapseable">
     <div class="node_key" onclick="showHide(document.getElementById('resources_configuration_section'))"><h4>Resources</h4></div>
@@ -133,10 +139,10 @@
 
             <tr id="e1">
                 <td rowspan="4"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/interuss/mock_uss/unconfigure_locality.md#restore-locality-test-case">Restore locality</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/interuss/mock_uss/unconfigure_locality.md#restore-locality-test-case">Restore locality</a>
                 </span></td>
                 <td rowspan="4"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/interuss/mock_uss/unconfigure_locality.md#set-locality-to-old-value-test-step">Set locality to old value</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/interuss/mock_uss/unconfigure_locality.md#set-locality-to-old-value-test-step">Set locality to old value</a>
                 </span></td>
               <td><a href="#e1">1</a></td>
                 <td>&#x1F310;</td>
@@ -163,7 +169,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:25:41.533717Z
+        <div class="node_value">      2025-02-19T16:43:12.936217Z
 
 </div>
       </li>
@@ -208,7 +214,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzM5ODk1NTUwLCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MubW9ja191c3MuY29uZmlndXJlIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzM5OTg2NjA0LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MubW9ja191c3MuY29uZmlndXJlIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -227,7 +233,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      f972e1a7-b4c1-4379-adbb-d317fb699eb3
+        <div class="node_value">      0b83743b-718f-40e4-93b6-a2cb6839d62a
 
 </div>
       </li>
@@ -263,7 +269,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:25:41 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:43:12 GMT
 
 </div>
       </li>
@@ -291,12 +297,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.007473
+        <div class="node_value">    0.009844
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:25:41.541853Z
+        <div class="node_value">      2025-02-19T16:43:12.946757Z
 
 </div>
       </li>
@@ -381,7 +387,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:25:41.542061Z
+        <div class="node_value">      2025-02-19T16:43:12.946941Z
 
 </div>
       </li>
@@ -426,7 +432,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MyLmxvY2FsdXRtIiwiZXhwIjoxNzM5ODk1NTUwLCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MubW9ja191c3MuY29uZmlndXJlIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MyLmxvY2FsdXRtIiwiZXhwIjoxNzM5OTg2NjA0LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MubW9ja191c3MuY29uZmlndXJlIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -445,7 +451,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      b389dafe-32d7-4fd2-a97c-4a87b04084e6
+        <div class="node_value">      2abf9232-0548-4b0b-95dd-270a5359c1ae
 
 </div>
       </li>
@@ -481,7 +487,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:25:41 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:43:12 GMT
 
 </div>
       </li>
@@ -509,12 +515,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.007073
+        <div class="node_value">    0.007317
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:25:41.549641Z
+        <div class="node_value">      2025-02-19T16:43:12.954866Z
 
 </div>
       </li>

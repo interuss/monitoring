@@ -37,6 +37,7 @@
     background-color: rgb(230, 230, 230);
     border: 1px solid #d0d7de;
     height: 40px;
+    box-sizing: border-box;
   }
   a {
     background-color: transparent;
@@ -50,9 +51,14 @@
     margin-top: 0.1em;
     margin-bottom: 0.1em;
   }
+  .header_row {
+    position: sticky;
+    top: -1px;
+    z-index: 100;
+  }
   .sticky_cell_value {
     position: sticky;
-    top: 0px; // 40px
+    top: 40px;
     z-index: 0;
   }
   .pass_result {
@@ -106,15 +112,15 @@
 </head>
 <body>
 <div>
-    <h2><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a></h2>
+    <h2><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a></h2>
   <h3>scenarios.astm.utm.dss.SubscriptionValidation</h3>
   <div id="resources_configuration_section" class="collapseable">
     <div class="node_key" onclick="showHide(document.getElementById('resources_configuration_section'))"><h4>Resources</h4></div>
     <div class="node_value">
       <ul id="resource_origin_list">
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#dss"><code>dss</code></a> provided by <a href="./index.html#resources-configuration">instance 2 in scd_dss_instances in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#id_generator"><code>id_generator</code></a> provided by <a href="./index.html#resources-configuration">id_generator in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#planning_area"><code>planning_area</code></a> provided by <a href="./index.html#resources-configuration">kentland_planning_area in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#dss"><code>dss</code></a> provided by <a href="./index.html#resources-configuration">instance 2 in scd_dss_instances in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#id_generator"><code>id_generator</code></a> provided by <a href="./index.html#resources-configuration">id_generator in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#planning_area"><code>planning_area</code></a> provided by <a href="./index.html#resources-configuration">kentland_planning_area in top-level resource pool</a></li>
       </ul>
     </div>
   </div>
@@ -133,10 +139,10 @@
 
             <tr id="e1">
                 <td rowspan="4"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#setup-test-case">Setup</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#setup-test-case">Setup</a>
                 </span></td>
                 <td rowspan="4"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#ensure-clean-workspace-test-step">Ensure clean workspace</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#ensure-clean-workspace-test-step">Ensure clean workspace</a>
                 </span></td>
               <td><a href="#e1">1</a></td>
                 <td>&#x1F310;</td>
@@ -163,7 +169,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:19:28.377485Z
+        <div class="node_value">      2025-02-19T16:37:04.754181Z
 
 </div>
       </li>
@@ -208,7 +214,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTU0NiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjYwMiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -365,12 +371,12 @@
 </div>
       </li>
       <li class="not_collapseable">
-        <div class="node_key">time_end</div>:
+        <div class="node_key">time_start</div>:
         <div class="node_value">    None
 </div>
       </li>
       <li class="not_collapseable">
-        <div class="node_key">time_start</div>:
+        <div class="node_key">time_end</div>:
         <div class="node_value">    None
 </div>
       </li>
@@ -380,7 +386,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      26228b5e-c1cd-4e62-a908-0bb133ce3a59
+        <div class="node_value">      2975d3cf-8361-4cf7-8796-5907232c53ac
 
 </div>
       </li>
@@ -416,7 +422,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:19:28 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:37:04 GMT
 
 </div>
       </li>
@@ -432,12 +438,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.002931
+        <div class="node_value">    0.004478
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:19:28.380891Z
+        <div class="node_value">      2025-02-19T16:37:04.759347Z
 
 </div>
       </li>
@@ -521,7 +527,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:19:28.381036Z
+        <div class="node_value">      2025-02-19T16:37:04.759666Z
 
 </div>
       </li>
@@ -554,7 +560,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTU0NiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjYwMiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -595,7 +601,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:19:28 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:37:04 GMT
 
 </div>
       </li>
@@ -611,12 +617,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.001589
+        <div class="node_value">    0.002291
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:19:28.383046Z
+        <div class="node_value">      2025-02-19T16:37:04.762694Z
 
 </div>
       </li>
@@ -625,7 +631,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">message</div>:
-        <div class="node_value">      Subscription 0000017a-e36d-40be-8d38-beca6ca30000 not found (E:ccb7836f-1b2a-4924-a9af-326b999de82d)
+        <div class="node_value">      Subscription 0000017a-e36d-40be-8d38-beca6ca30000 not found (E:857d674d-bd12-482d-91a1-40576e9c478d)
 
 </div>
       </li>
@@ -675,10 +681,10 @@
             </tr>
             <tr id="e5">
                 <td rowspan="6"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#subscription-validation-test-case">Subscription Validation</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#subscription-validation-test-case">Subscription Validation</a>
                 </span></td>
                 <td rowspan="6"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#subscription-duration-limitations-test-step">Subscription duration limitations</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#subscription-duration-limitations-test-step">Subscription duration limitations</a>
                 </span></td>
               <td><a href="#e5">5</a></td>
                 <td>&#x1F310;</td>
@@ -705,7 +711,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:19:28.384378Z
+        <div class="node_value">      2025-02-19T16:37:04.764695Z
 
 </div>
       </li>
@@ -750,7 +756,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTU0NiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjYwMiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -906,7 +912,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-18T15:18:28.383279Z
+        <div class="node_value">      2025-02-19T16:36:04.763018Z
 
 </div>
       </li>
@@ -925,7 +931,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-19T15:28:28.383279Z
+        <div class="node_value">      2025-02-20T16:46:04.763018Z
 
 </div>
       </li>
@@ -961,7 +967,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      8a667d71-4509-4855-aa19-71cab944d6a0
+        <div class="node_value">      9ddfd081-7a9a-4b61-89ca-b561b62e514c
 
 </div>
       </li>
@@ -997,7 +1003,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:19:28 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:37:04 GMT
 
 </div>
       </li>
@@ -1013,12 +1019,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.001681
+        <div class="node_value">    0.003244
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:19:28.386561Z
+        <div class="node_value">      2025-02-19T16:37:04.768668Z
 
 </div>
       </li>
@@ -1027,7 +1033,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">message</div>:
-        <div class="node_value">      Subscription window exceeds 24 hours (E:66bc129a-77a8-450a-b086-9e88afb98f3e)
+        <div class="node_value">      Subscription window exceeds 24 hours (E:517c03eb-e4d0-4bb9-872e-44337ff57ff2)
 
 </div>
       </li>
@@ -1101,7 +1107,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:19:28.387613Z
+        <div class="node_value">      2025-02-19T16:37:04.770641Z
 
 </div>
       </li>
@@ -1146,7 +1152,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTU0NiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjYwMiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -1302,7 +1308,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-18T15:18:28.383279Z
+        <div class="node_value">      2025-02-19T16:36:04.763018Z
 
 </div>
       </li>
@@ -1321,7 +1327,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-19T15:18:28.383279Z
+        <div class="node_value">      2025-02-20T16:36:04.763018Z
 
 </div>
       </li>
@@ -1357,7 +1363,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      36dfa81b-691e-4421-8d81-1e5a6365c550
+        <div class="node_value">      9dde6068-9b95-4368-8e89-d59e9569f3c5
 
 </div>
       </li>
@@ -1393,7 +1399,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:19:28 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:37:04 GMT
 
 </div>
       </li>
@@ -1409,12 +1415,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.005307
+        <div class="node_value">    0.009274
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:19:28.393370Z
+        <div class="node_value">      2025-02-19T16:37:04.780797Z
 
 </div>
       </li>
@@ -1432,7 +1438,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">version</div>:
-        <div class="node_value">      4PhgbsEWkYMG-cw1zdQJVlMZoV9wxtjDtHbt3wzrALE_
+        <div class="node_value">      QjeiSI.3BcTBVKooOg0K5lZEjA1u6wGAl6ipzbEYmtU_
 
 </div>
       </li>
@@ -1446,7 +1452,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-18T15:18:28.383279Z
+        <div class="node_value">      2025-02-19T16:36:04.763018Z
 
 </div>
       </li>
@@ -1465,7 +1471,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-19T15:18:28.383279Z
+        <div class="node_value">      2025-02-20T16:36:04.763018Z
 
 </div>
       </li>
@@ -1582,13 +1588,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">url</div>:
-        <div class="node_value">      http://dss.uss2.localutm/dss/v1/subscriptions/0000017a-e36d-40be-8d38-beca6ca30000/4PhgbsEWkYMG-cw1zdQJVlMZoV9wxtjDtHbt3wzrALE_
+        <div class="node_value">      http://dss.uss2.localutm/dss/v1/subscriptions/0000017a-e36d-40be-8d38-beca6ca30000/QjeiSI.3BcTBVKooOg0K5lZEjA1u6wGAl6ipzbEYmtU_
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:19:28.395269Z
+        <div class="node_value">      2025-02-19T16:37:04.783789Z
 
 </div>
       </li>
@@ -1633,7 +1639,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTU0NiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjYwMiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -1789,7 +1795,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-18T15:18:28.383279Z
+        <div class="node_value">      2025-02-19T16:36:04.763018Z
 
 </div>
       </li>
@@ -1808,7 +1814,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-19T15:28:28.383279Z
+        <div class="node_value">      2025-02-20T16:46:04.763018Z
 
 </div>
       </li>
@@ -1844,7 +1850,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      6e33aa9a-a973-4ea9-aa17-46a6e3a2e57b
+        <div class="node_value">      c03f049d-b022-4807-8f03-ce6d16586c3d
 
 </div>
       </li>
@@ -1880,7 +1886,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:19:28 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:37:04 GMT
 
 </div>
       </li>
@@ -1896,12 +1902,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.002189
+        <div class="node_value">    0.003554
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:19:28.397932Z
+        <div class="node_value">      2025-02-19T16:37:04.788164Z
 
 </div>
       </li>
@@ -1910,7 +1916,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">message</div>:
-        <div class="node_value">      Subscription window exceeds 24 hours (E:9d75bb28-46c0-4a4a-8af4-33522aa35785)
+        <div class="node_value">      Subscription window exceeds 24 hours (E:c43be5d1-b5dd-4c02-9158-ca245d73232b)
 
 </div>
       </li>
@@ -1963,7 +1969,7 @@
                     <a href="#"></a>
                 </span></td>
                 <td rowspan="4"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#cleanup">Cleanup</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/utm/dss/subscription_validation.md#cleanup">Cleanup</a>
                 </span></td>
               <td><a href="#e11">11</a></td>
                 <td>&#x1F310;</td>
@@ -1990,7 +1996,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:19:28.398229Z
+        <div class="node_value">      2025-02-19T16:37:04.788440Z
 
 </div>
       </li>
@@ -2023,7 +2029,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTU0NiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjYwMiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -2064,7 +2070,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:19:28 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:37:04 GMT
 
 </div>
       </li>
@@ -2080,12 +2086,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.002538
+        <div class="node_value">    0.003602
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:19:28.401250Z
+        <div class="node_value">      2025-02-19T16:37:04.792670Z
 
 </div>
       </li>
@@ -2103,7 +2109,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">version</div>:
-        <div class="node_value">      4PhgbsEWkYMG-cw1zdQJVlMZoV9wxtjDtHbt3wzrALE_
+        <div class="node_value">      QjeiSI.3BcTBVKooOg0K5lZEjA1u6wGAl6ipzbEYmtU_
 
 </div>
       </li>
@@ -2117,7 +2123,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-18T15:18:28.383279Z
+        <div class="node_value">      2025-02-19T16:36:04.763018Z
 
 </div>
       </li>
@@ -2136,7 +2142,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-19T15:18:28.383279Z
+        <div class="node_value">      2025-02-20T16:36:04.763018Z
 
 </div>
       </li>
@@ -2246,13 +2252,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">url</div>:
-        <div class="node_value">      http://dss.uss2.localutm/dss/v1/subscriptions/0000017a-e36d-40be-8d38-beca6ca30000/4PhgbsEWkYMG-cw1zdQJVlMZoV9wxtjDtHbt3wzrALE_
+        <div class="node_value">      http://dss.uss2.localutm/dss/v1/subscriptions/0000017a-e36d-40be-8d38-beca6ca30000/QjeiSI.3BcTBVKooOg0K5lZEjA1u6wGAl6ipzbEYmtU_
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:19:28.402071Z
+        <div class="node_value">      2025-02-19T16:37:04.793695Z
 
 </div>
       </li>
@@ -2291,7 +2297,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTg5NTU0NiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMi5sb2NhbHV0bSIsImV4cCI6MTczOTk4NjYwMiwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
 
 </div>
       </li>
@@ -2332,7 +2338,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:19:28 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:37:04 GMT
 
 </div>
       </li>
@@ -2348,12 +2354,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.00707
+        <div class="node_value">    0.006444
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:19:28.409598Z
+        <div class="node_value">      2025-02-19T16:37:04.800769Z
 
 </div>
       </li>
@@ -2371,7 +2377,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">version</div>:
-        <div class="node_value">      4PhgbsEWkYMG-cw1zdQJVlMZoV9wxtjDtHbt3wzrALE_
+        <div class="node_value">      QjeiSI.3BcTBVKooOg0K5lZEjA1u6wGAl6ipzbEYmtU_
 
 </div>
       </li>
@@ -2385,7 +2391,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-18T15:18:28.383279Z
+        <div class="node_value">      2025-02-19T16:36:04.763018Z
 
 </div>
       </li>
@@ -2404,7 +2410,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-19T15:18:28.383279Z
+        <div class="node_value">      2025-02-20T16:36:04.763018Z
 
 </div>
       </li>

@@ -37,6 +37,7 @@
     background-color: rgb(230, 230, 230);
     border: 1px solid #d0d7de;
     height: 40px;
+    box-sizing: border-box;
   }
   a {
     background-color: transparent;
@@ -50,9 +51,14 @@
     margin-top: 0.1em;
     margin-bottom: 0.1em;
   }
+  .header_row {
+    position: sticky;
+    top: -1px;
+    z-index: 100;
+  }
   .sticky_cell_value {
     position: sticky;
-    top: 0px; // 40px
+    top: 40px;
     z-index: 0;
   }
   .pass_result {
@@ -106,15 +112,15 @@
 </head>
 <body>
 <div>
-    <h2><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md">General flight authorization</a></h2>
+    <h2><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md">General flight authorization</a></h2>
   <h3>scenarios.interuss.flight_authorization.GeneralFlightAuthorization</h3>
   <div id="resources_configuration_section" class="collapseable">
     <div class="node_key" onclick="showHide(document.getElementById('resources_configuration_section'))"><h4>Resources</h4></div>
     <div class="node_value">
       <ul id="resource_origin_list">
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md#table"><code>table</code></a> provided by <a href="./index.html#resources-configuration">example_flight_check_table in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md#flight_intents"><code>flight_intents</code></a> provided by <a href="./index.html#resources-configuration">flight_intents in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md#planner"><code>planner</code></a> provided by <a href="./index.html#resources-configuration">uss1_flight_planner in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md#table"><code>table</code></a> provided by <a href="./index.html#resources-configuration">example_flight_check_table in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md#flight_intents"><code>flight_intents</code></a> provided by <a href="./index.html#resources-configuration">flight_intents in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md#planner"><code>planner</code></a> provided by <a href="./index.html#resources-configuration">uss1_flight_planner in top-level resource pool</a></li>
       </ul>
     </div>
   </div>
@@ -133,10 +139,10 @@
 
             <tr id="e1">
                 <td rowspan="12"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md#flight-planning-test-case">Flight planning</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md#flight-planning-test-case">Flight planning</a>
                 </span></td>
                 <td rowspan="6"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md#dynamic-test-step">TEST_001</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md#dynamic-test-step">TEST_001</a>
                 </span></td>
               <td><a href="#e1">1</a></td>
                 <td>&#x1F310;</td>
@@ -157,13 +163,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">url</div>:
-        <div class="node_value">      http://scdsc.uss1.localutm/flight_planning/v1/flight_plans/d89bec82-bf05-4e96-b0f7-df43e75ca5ef
+        <div class="node_value">      http://scdsc.uss1.localutm/flight_planning/v1/flight_plans/8ec0b676-1a1b-47a1-ae09-4db6fd2676c7
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:19:08.681859Z
+        <div class="node_value">      2025-02-19T16:36:36.296096Z
 
 </div>
       </li>
@@ -208,7 +214,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzM5ODk1NTQ4LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLnBsYW4iLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzM5OTg2NTk2LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLnBsYW4iLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
 
 </div>
       </li>
@@ -345,7 +351,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-18T16:19:06.927188+01:00
+        <div class="node_value">      2025-02-19T17:36:34.526530+01:00
 
 </div>
       </li>
@@ -508,7 +514,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      fb41bfaa-6918-4d3a-954a-34ed33f89942
+        <div class="node_value">      bca47c11-9ddb-45c7-bb46-e225ee1cc358
 
 </div>
       </li>
@@ -544,7 +550,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:19:08 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:36:36 GMT
 
 </div>
       </li>
@@ -572,12 +578,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.068514
+        <div class="node_value">    0.075376
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:19:08.756338Z
+        <div class="node_value">      2025-02-19T16:36:36.378496Z
 
 </div>
       </li>
@@ -592,7 +598,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">flight_id</div>:
-        <div class="node_value">      d89bec82-bf05-4e96-b0f7-df43e75ca5ef
+        <div class="node_value">      8ec0b676-1a1b-47a1-ae09-4db6fd2676c7
 
 </div>
       </li>
@@ -626,67 +632,67 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">item_1</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.695 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] Starting handler<br>
+        <div class="node_value">      [2025-02-19 16:36:36.314 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] Starting handler<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_2</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.702 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] Acquiring lock for flight d89bec82-bf05-4e96-b0f7-df43e75ca5ef<br>
+        <div class="node_value">      [2025-02-19 16:36:36.321 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] Acquiring lock for flight 8ec0b676-1a1b-47a1-ae09-4db6fd2676c7<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_3</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.703 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] Request is for a new flight (lock established)<br>
+        <div class="node_value">      [2025-02-19 16:36:36.321 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] Request is for a new flight (lock established)<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_4</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.710 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] Obtaining latest operational intent information<br>
+        <div class="node_value">      [2025-02-19 16:36:36.328 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] Obtaining latest operational intent information<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_5</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.730 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] Checking for intersections with <br>
+        <div class="node_value">      [2025-02-19 16:36:36.350 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] Checking for intersections with <br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_6</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.731 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] Sharing operational intent with DSS<br>
+        <div class="node_value">      [2025-02-19 16:36:36.351 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] Sharing operational intent with DSS<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_7</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.732 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] Creating new operational intent 986db5d8-71e7-4bcc-ac57-40c275db5f62 in DSS<br>
+        <div class="node_value">      [2025-02-19 16:36:36.353 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] Creating new operational intent a2dd9900-4c25-4458-8752-abad3f627c86 in DSS<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_8</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.749 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] No notifications failed<br>
+        <div class="node_value">      [2025-02-19 16:36:36.371 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] No notifications failed<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_9</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.749 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] Storing flight in database<br>
+        <div class="node_value">      [2025-02-19 16:36:36.371 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] Storing flight in database<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_10</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.750 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] Complete.<br>
+        <div class="node_value">      [2025-02-19 16:36:36.371 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] Complete.<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_11</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.754 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] Releasing lock on existing flight_id d89bec82-bf05-4e96-b0f7-df43e75ca5ef<br>
+        <div class="node_value">      [2025-02-19 16:36:36.376 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] Releasing lock on existing flight_id 8ec0b676-1a1b-47a1-ae09-4db6fd2676c7<br>
 
 </div>
       </li>
@@ -766,13 +772,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">url</div>:
-        <div class="node_value">      http://scdsc.uss1.localutm/flight_planning/v1/flight_plans/d89bec82-bf05-4e96-b0f7-df43e75ca5ef
+        <div class="node_value">      http://scdsc.uss1.localutm/flight_planning/v1/flight_plans/8ec0b676-1a1b-47a1-ae09-4db6fd2676c7
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:19:08.757522Z
+        <div class="node_value">      2025-02-19T16:36:36.379689Z
 
 </div>
       </li>
@@ -811,7 +817,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzM5ODk1NTQ4LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLnBsYW4iLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzM5OTg2NTk2LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLnBsYW4iLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
 
 </div>
       </li>
@@ -852,7 +858,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:19:08 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:36:36 GMT
 
 </div>
       </li>
@@ -880,12 +886,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.023671
+        <div class="node_value">    0.024831
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:19:08.781744Z
+        <div class="node_value">      2025-02-19T16:36:36.405139Z
 
 </div>
       </li>
@@ -900,7 +906,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">flight_id</div>:
-        <div class="node_value">      d89bec82-bf05-4e96-b0f7-df43e75ca5ef
+        <div class="node_value">      8ec0b676-1a1b-47a1-ae09-4db6fd2676c7
 
 </div>
       </li>
@@ -934,25 +940,25 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">item_1</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.763 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] Acquiring and deleting flight<br>
+        <div class="node_value">      [2025-02-19 16:36:36.385 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] Acquiring and deleting flight<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_2</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.766 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] deleting operational intent 986db5d8-71e7-4bcc-ac57-40c275db5f62 with OVN UMzMeMZlE5ab7SDGM0dHlLwnizpzEDaow7P.VxGCRIM_ from DSS<br>
+        <div class="node_value">      [2025-02-19 16:36:36.389 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] deleting operational intent a2dd9900-4c25-4458-8752-abad3f627c86 with OVN Ddl0FXDLVZvk98PNpN7FzDTJj8US93IXItzSHYCXqzM_ from DSS<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_3</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.780 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] No notifications failed<br>
+        <div class="node_value">      [2025-02-19 16:36:36.403 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] No notifications failed<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_4</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.780 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/33:d89bec82-bf05-4e96-b0f7-df43e75ca5ef] Complete.<br>
+        <div class="node_value">      [2025-02-19 16:36:36.403 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/30:8ec0b676-1a1b-47a1-ae09-4db6fd2676c7] Complete.<br>
 
 </div>
       </li>
@@ -1014,7 +1020,7 @@
             </tr>
             <tr id="e7">
                 <td rowspan="6"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md#dynamic-test-step">TEST_002</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/interuss/flight_authorization/general_flight_authorization.md#dynamic-test-step">TEST_002</a>
                 </span></td>
               <td><a href="#e7">7</a></td>
                 <td>&#x1F310;</td>
@@ -1035,13 +1041,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">url</div>:
-        <div class="node_value">      http://scdsc.uss1.localutm/flight_planning/v1/flight_plans/46e0fab9-df84-47e9-8e78-db7a1708ffd0
+        <div class="node_value">      http://scdsc.uss1.localutm/flight_planning/v1/flight_plans/410f8b5d-2b9c-4aeb-93a1-93fc3474a475
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:19:08.785808Z
+        <div class="node_value">      2025-02-19T16:36:36.408988Z
 
 </div>
       </li>
@@ -1086,7 +1092,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzM5ODk1NTQ4LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLnBsYW4iLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzM5OTg2NTk2LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLnBsYW4iLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
 
 </div>
       </li>
@@ -1223,7 +1229,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-20T00:00:00+02:00
+        <div class="node_value">      2025-02-21T00:00:00+02:00
 
 </div>
       </li>
@@ -1242,7 +1248,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">value</div>:
-        <div class="node_value">      2025-02-20T00:05:00+02:00
+        <div class="node_value">      2025-02-21T00:05:00+02:00
 
 </div>
       </li>
@@ -1386,7 +1392,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">request_id</div>:
-        <div class="node_value">      86b6b859-8126-4d34-abd9-54d1fb6c891a
+        <div class="node_value">      1e14cb11-b1dc-4b59-99d6-76e77330f003
 
 </div>
       </li>
@@ -1422,7 +1428,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:19:08 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:36:36 GMT
 
 </div>
       </li>
@@ -1450,12 +1456,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.03316
+        <div class="node_value">    0.033598
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:19:08.819642Z
+        <div class="node_value">      2025-02-19T16:36:36.443390Z
 
 </div>
       </li>
@@ -1470,7 +1476,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">flight_id</div>:
-        <div class="node_value">      46e0fab9-df84-47e9-8e78-db7a1708ffd0
+        <div class="node_value">      410f8b5d-2b9c-4aeb-93a1-93fc3474a475
 
 </div>
       </li>
@@ -1504,67 +1510,67 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">item_1</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.791 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] Starting handler<br>
+        <div class="node_value">      [2025-02-19 16:36:36.415 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] Starting handler<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_2</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.793 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] Acquiring lock for flight 46e0fab9-df84-47e9-8e78-db7a1708ffd0<br>
+        <div class="node_value">      [2025-02-19 16:36:36.417 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] Acquiring lock for flight 410f8b5d-2b9c-4aeb-93a1-93fc3474a475<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_3</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.794 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] Request is for a new flight (lock established)<br>
+        <div class="node_value">      [2025-02-19 16:36:36.417 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] Request is for a new flight (lock established)<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_4</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.797 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] Obtaining latest operational intent information<br>
+        <div class="node_value">      [2025-02-19 16:36:36.420 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] Obtaining latest operational intent information<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_5</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.802 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] Checking for intersections with <br>
+        <div class="node_value">      [2025-02-19 16:36:36.425 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] Checking for intersections with <br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_6</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.802 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] Sharing operational intent with DSS<br>
+        <div class="node_value">      [2025-02-19 16:36:36.426 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] Sharing operational intent with DSS<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_7</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.803 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] Creating new operational intent bb10620e-306e-4d3a-b1da-3b1eb292b1e2 in DSS<br>
+        <div class="node_value">      [2025-02-19 16:36:36.426 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] Creating new operational intent eba3c1b0-89e2-4acf-83ec-709225ea7a1e in DSS<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_8</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.814 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] No notifications failed<br>
+        <div class="node_value">      [2025-02-19 16:36:36.437 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] No notifications failed<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_9</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.814 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] Storing flight in database<br>
+        <div class="node_value">      [2025-02-19 16:36:36.438 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] Storing flight in database<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_10</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.814 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] Complete.<br>
+        <div class="node_value">      [2025-02-19 16:36:36.438 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:150] [inject_flight/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] Complete.<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_11</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.818 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] Releasing lock on existing flight_id 46e0fab9-df84-47e9-8e78-db7a1708ffd0<br>
+        <div class="node_value">      [2025-02-19 16:36:36.441 DEBUG    monitoring.mock_uss.flight_planning.routes:log:60] [upsert_plan/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] Releasing lock on existing flight_id 410f8b5d-2b9c-4aeb-93a1-93fc3474a475<br>
 
 </div>
       </li>
@@ -1644,13 +1650,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">url</div>:
-        <div class="node_value">      http://scdsc.uss1.localutm/flight_planning/v1/flight_plans/46e0fab9-df84-47e9-8e78-db7a1708ffd0
+        <div class="node_value">      http://scdsc.uss1.localutm/flight_planning/v1/flight_plans/410f8b5d-2b9c-4aeb-93a1-93fc3474a475
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-02-18T15:19:08.820168Z
+        <div class="node_value">      2025-02-19T16:36:36.443840Z
 
 </div>
       </li>
@@ -1689,7 +1695,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzM5ODk1NTQ4LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLnBsYW4iLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzM5OTg2NTk2LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLnBsYW4iLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
 
 </div>
       </li>
@@ -1730,7 +1736,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Tue, 18 Feb 2025 15:19:08 GMT
+        <div class="node_value">      Wed, 19 Feb 2025 16:36:36 GMT
 
 </div>
       </li>
@@ -1758,12 +1764,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.020483
+        <div class="node_value">    0.020923
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-02-18T15:19:08.841184Z
+        <div class="node_value">      2025-02-19T16:36:36.465368Z
 
 </div>
       </li>
@@ -1778,7 +1784,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">flight_id</div>:
-        <div class="node_value">      46e0fab9-df84-47e9-8e78-db7a1708ffd0
+        <div class="node_value">      410f8b5d-2b9c-4aeb-93a1-93fc3474a475
 
 </div>
       </li>
@@ -1812,25 +1818,25 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">item_1</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.825 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] Acquiring and deleting flight<br>
+        <div class="node_value">      [2025-02-19 16:36:36.449 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] Acquiring and deleting flight<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_2</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.829 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] deleting operational intent bb10620e-306e-4d3a-b1da-3b1eb292b1e2 with OVN sEgozk1EG81Tb-gcgQLI38zuQ8BFwtMR9SG3FW9JXcs_ from DSS<br>
+        <div class="node_value">      [2025-02-19 16:36:36.452 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] deleting operational intent eba3c1b0-89e2-4acf-83ec-709225ea7a1e with OVN kQBCcDNCsgQG2QzUCfSoZWJnQf-6sVNu.OEh.mPPEeQ_ from DSS<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_3</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.839 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] No notifications failed<br>
+        <div class="node_value">      [2025-02-19 16:36:36.464 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] No notifications failed<br>
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">item_4</div>:
-        <div class="node_value">      [2025-02-18 15:19:08.840 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/33:46e0fab9-df84-47e9-8e78-db7a1708ffd0] Complete.<br>
+        <div class="node_value">      [2025-02-19 16:36:36.464 DEBUG    monitoring.mock_uss.scd_injection.routes_injection:log:258] [delete_flight/30:410f8b5d-2b9c-4aeb-93a1-93fc3474a475] Complete.<br>
 
 </div>
       </li>

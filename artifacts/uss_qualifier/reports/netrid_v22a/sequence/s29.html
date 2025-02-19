@@ -37,6 +37,7 @@
     background-color: rgb(230, 230, 230);
     border: 1px solid #d0d7de;
     height: 40px;
+    box-sizing: border-box;
   }
   a {
     background-color: transparent;
@@ -50,9 +51,14 @@
     margin-top: 0.1em;
     margin-bottom: 0.1em;
   }
+  .header_row {
+    position: sticky;
+    top: -1px;
+    z-index: 100;
+  }
   .sticky_cell_value {
     position: sticky;
-    top: 0px; // 40px
+    top: 40px;
     z-index: 0;
   }
   .pass_result {
@@ -106,16 +112,16 @@
 </head>
 <body>
 <div>
-    <h2><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md">ASTM F3411-22a NetRID aggregate checks</a></h2>
+    <h2><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md">ASTM F3411-22a NetRID aggregate checks</a></h2>
   <h3>scenarios.astm.netrid.v22a.AggregateChecks</h3>
   <div id="resources_configuration_section" class="collapseable">
     <div class="node_key" onclick="showHide(document.getElementById('resources_configuration_section'))"><h4>Resources</h4></div>
     <div class="node_value">
       <ul id="resource_origin_list">
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#service_providers"><code>service_providers</code></a> provided by <a href="./index.html#resources-configuration">netrid_service_providers_v22a in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#observers"><code>observers</code></a> provided by <a href="./index.html#resources-configuration">netrid_observers_v22a in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#dss_instances"><code>dss_instances</code></a> provided by <a href="./index.html#resources-configuration">netrid_dss_instances_v22a in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#test_exclusions"><code>test_exclusions</code></a> provided by <a href="./index.html#resources-configuration">test_exclusions in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#service_providers"><code>service_providers</code></a> provided by <a href="./index.html#resources-configuration">netrid_service_providers_v22a in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#observers"><code>observers</code></a> provided by <a href="./index.html#resources-configuration">netrid_observers_v22a in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#dss_instances"><code>dss_instances</code></a> provided by <a href="./index.html#resources-configuration">netrid_dss_instances_v22a in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#test_exclusions"><code>test_exclusions</code></a> provided by <a href="./index.html#resources-configuration">test_exclusions in top-level resource pool</a></li>
       </ul>
     </div>
   </div>
@@ -163,10 +169,10 @@
           </tr>
             <tr id="e9">
                 <td rowspan="10"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#performance-of-display-providers-requests-test-case">Performance of Display Providers requests</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#performance-of-display-providers-requests-test-case">Performance of Display Providers requests</a>
                 </span></td>
                 <td rowspan="6"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#performance-of-/display_data-requests-test-step">Performance of /display_data requests</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#performance-of-/display_data-requests-test-step">Performance of /display_data requests</a>
                 </span></td>
               <td><a href="#e9">9</a></td>
                 <td>&#x2705;</td>
@@ -187,14 +193,14 @@
               <td><a href="#e11">11</a></td>
                 <td>&#x1F4D3;</td>
                 <td colspan="2">
-                  <code>uss1/display_data</code>: percentiles on 45 relevant queries (18 different URLs, 26 initial queries, 19 subsequent queries): init 95th: 0.154; init 99th: 0.185; subsequent 95th: 0.153; subsequent 99th: 0.174
+                  <code>uss1/display_data</code>: percentiles on 45 relevant queries (18 different URLs, 28 initial queries, 17 subsequent queries): init 95th: 0.174; init 99th: 0.219; subsequent 95th: 0.0953; subsequent 99th: 0.0973
                 </td>
             </tr>
             <tr id="e12">
               <td><a href="#e12">12</a></td>
                 <td>&#x1F4D3;</td>
                 <td colspan="2">
-                  <code>uss1/display_data details</code>: Initial durations: [0.049801, 0.046442, 0.117773, 0.060868, 0.058561, 0.05887, 0.135221, 0.071882, 0.079125, 0.103937, 0.164052, 0.088012, 0.090883, 0.102217, 0.090012, 0.091177, 0.090483, 0.089436, 0.087288, 0.089462, 0.022456, 0.012519, 0.022239, 0.023292, 0.012632, 0.012635] subsequent durations: [0.045232, 0.15318, 0.126594, 0.105943, 0.099984, 0.082392, 0.075621, 0.066301, 0.058638, 0.089533, 0.088871, 0.088622, 0.087843, 0.088327, 0.089068, 0.080534, 0.072588, 0.064104, 0.078991]
+                  <code>uss1/display_data details</code>: Initial durations: [0.044202, 0.037241, 0.07286, 0.06077, 0.058464, 0.056997, 0.14847, 0.070041, 0.152431, 0.082876, 0.0928, 0.086324, 0.091549, 0.191435, 0.095768, 0.092049, 0.119658, 0.089107, 0.098019, 0.089224, 0.090705, 0.110054, 0.026577, 0.012721, 0.012371, 0.012823, 0.01267, 0.012465] subsequent durations: [0.04398, 0.09073, 0.091527, 0.091172, 0.089663, 0.082063, 0.082944, 0.065419, 0.067682, 0.09506, 0.092274, 0.090533, 0.088769, 0.081619, 0.08451, 0.064977, 0.074547]
                 </td>
             </tr>
             <tr id="e13">
@@ -213,7 +219,7 @@
             </tr>
             <tr id="e18">
                 <td rowspan="4"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#performance-of-/display_data/<flight_id>-requests-test-step">Performance of /display_data/<flight_id> requests</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#performance-of-/display_data/<flight_id>-requests-test-step">Performance of /display_data/<flight_id> requests</a>
                 </span></td>
               <td><a href="#e18">18</a></td>
                 <td>&#x2705;</td>
@@ -226,7 +232,7 @@
               <td><a href="#e19">19</a></td>
                 <td>&#x1F4D3;</td>
                 <td colspan="2">
-                  <code>uss1/display_data/&lt;flight_id&gt;</code>: uss1/display_data/&lt;flight_id&gt; stats computed on 1 queries 95th percentile: 0.0526s, 99th percentile: 0.0526s
+                  <code>uss1/display_data/&lt;flight_id&gt;</code>: uss1/display_data/&lt;flight_id&gt; stats computed on 1 queries 95th percentile: 0.0514s, 99th percentile: 0.0514s
                 </td>
             </tr>
             <tr id="e20">
@@ -245,10 +251,10 @@
             </tr>
             <tr id="e25">
                 <td rowspan="5"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#performance-of-service-providers-requests-test-case">Performance of Service Providers requests</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#performance-of-service-providers-requests-test-case">Performance of Service Providers requests</a>
                 </span></td>
                 <td rowspan="5"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#performance-of-/flights?view-requests-test-step">Performance of /flights?view requests</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#performance-of-/flights?view-requests-test-step">Performance of /flights?view requests</a>
                 </span></td>
               <td><a href="#e25">25</a></td>
                 <td>&#x2705;</td>
@@ -269,7 +275,7 @@
               <td><a href="#e27">27</a></td>
                 <td>&#x1F4D3;</td>
                 <td colspan="2">
-                  <code>uss1/flights</code>: percentiles on 64 relevant queries: 95th: 0.0431; 99th: 0.0518
+                  <code>uss1/flights</code>: percentiles on 64 relevant queries: 95th: 0.053; 99th: 0.0586
                 </td>
             </tr>
             <tr id="e28">
@@ -288,10 +294,10 @@
             </tr>
             <tr id="e32">
                 <td rowspan="2"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#verify-https-is-in-use-test-case">Verify https is in use</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#verify-https-is-in-use-test-case">Verify https is in use</a>
                 </span></td>
                 <td rowspan="2"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/9eca0a74a6a9398610f20dd1e459a6a753582ded/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#verify-https-is-in-use-test-step">Verify https is in use</a>
+                    <a href="https://github.com/interuss/monitoring/blob/58bcbb6edea0e3dcd325e5b51925fbc82e7c64f6/monitoring/uss_qualifier/scenarios/astm/netrid/v22a/aggregate_checks.md#verify-https-is-in-use-test-step">Verify https is in use</a>
                 </span></td>
               <td><a href="#e32">32</a></td>
                 <td>&#x1F4D3;</td>
@@ -336,10 +342,10 @@
   * GET http://v22a.ridsp.uss1.localutm/mock/ridsp/v2/uss/flights/d50598bc-638a-4f52-bf3f-dd85595fb52e/details
   * GET http://v22a.ridsp.uss1.localutm/mock/ridsp/v2/uss/flights?view=37.16991081384571%2C-80.59836814523806%2C37.22341879301451%2C-80.55757068496229&amp;recent_positions_duration=60
   * GET http://v22a.ridsp.uss1.localutm/mock/ridsp/v2/uss/flights?view=37.18929776281991%2C-80.58358645673233%2C37.20403184404031%2C-80.57235237346801&amp;recent_positions_duration=60
-  * POST https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/scenarios/astm/netrid/common/dss_interoperability/uss/identification_service_areas/b01a23dd-e4d6-4a86-afc9-76dadef29cf6
-  * POST https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/scenarios/astm/netrid/common/dss_interoperability/uss/identification_service_areas/b01a23dd-e4d6-4a86-afc9-76dadef29cf6
-  * POST https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/scenarios/astm/netrid/common/dss_interoperability/uss/identification_service_areas/c9698d23-6175-486c-ab41-a9da9d709085
-  * POST https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/scenarios/astm/netrid/common/dss_interoperability/uss/identification_service_areas/c9698d23-6175-486c-ab41-a9da9d709085
+  * POST https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/scenarios/astm/netrid/common/dss_interoperability/uss/identification_service_areas/b46b9411-511f-42ee-8e91-0c8c98a61818
+  * POST https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/scenarios/astm/netrid/common/dss_interoperability/uss/identification_service_areas/b46b9411-511f-42ee-8e91-0c8c98a61818
+  * POST https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/scenarios/astm/netrid/common/dss_interoperability/uss/identification_service_areas/656077ba-2b23-4b21-99a5-6bce57ca1df6
+  * POST https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/scenarios/astm/netrid/common/dss_interoperability/uss/identification_service_areas/656077ba-2b23-4b21-99a5-6bce57ca1df6
   * GET http://v22a.ridsp.uss1.localutm/mock/ridsp/v2/uss/flights?view=37.17012502620794%2C-80.60460507832957%2C37.22335021182907%2C-80.55137989270844&amp;recent_positions_duration=60
   * GET http://v22a.ridsp.uss1.localutm/mock/ridsp/v2/uss/flights?view=37.17225403363279%2C-80.60247607090473%2C37.22122120440422%2C-80.55350890013328&amp;recent_positions_duration=60
   * GET http://v22a.ridsp.uss1.localutm/mock/ridsp/v2/uss/flights?view=37.18999576217316%2C-80.58473434236436%2C37.20347947586385%2C-80.57125062867368&amp;recent_positions_duration=60
