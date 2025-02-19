@@ -311,6 +311,10 @@ class GenericTestScenario(ABC):
                 ScenarioPhase.CleaningUp,
             }
         )
+
+        if self._scenario_report is None:
+            self._make_scenario_report()
+
         if "notes" not in self._scenario_report:
             self._scenario_report.notes = {}
 
@@ -430,15 +434,6 @@ class GenericTestScenario(ABC):
             logger.warning(
                 f"Missing query metadata: {query.request['method']} {query.request['url']} has participant {participant} and type {query_type} at {location}"
             )
-
-    def _get_check(self, name: str) -> TestCheckDocumentation:
-        available_checks = {c.name: c for c in self._current_step.checks}
-        if name not in available_checks:
-            check_list = ", ".join(f'"{c}"' for c in available_checks)
-            raise RuntimeError(
-                f'Test scenario `{self.me()}` was instructed to record outcome for check "{name}" during test step "{self._current_step.name}" during test case "{self._current_case.name}", but that check is not declared in documentation; declared checks are: {check_list}'
-            )
-        return available_checks[name]
 
     def check(
         self,
