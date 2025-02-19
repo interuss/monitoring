@@ -5,6 +5,7 @@ from monitoring.monitorlib import inspection
 from monitoring.uss_qualifier import scenarios
 from monitoring.uss_qualifier.scenarios.documentation.autoformat import (
     format_scenario_documentation,
+    update_checks_without_severity,
 )
 from monitoring.uss_qualifier.scenarios.scenario import find_test_scenarios
 
@@ -19,6 +20,9 @@ def main() -> int:
         print(f"Reformatted documentation in {filename}")
     if not changes:
         print("No scenario documentation needs to be reformatted.")
+
+    update_checks_without_severity(test_scenarios)
+
     return os.EX_OK
 
 
