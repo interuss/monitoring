@@ -39,7 +39,7 @@ Per **[interuss.automated_testing.rid.injection.UpsertTestSuccess](../../../../r
 **[astm.f3411.v19.NET0500](../../../../requirements/astm/f3411/v19.md)** requires a Service Provider to provide a persistently supported test instance of their implementation.
 This check will fail if the flight was not successfully injected.
 
-#### Valid flight check
+#### 🛑 Valid flight check
 
 TODO: Validate injected flights, especially to make sure they contain the specified injection IDs
 

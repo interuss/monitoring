@@ -174,7 +174,14 @@ def get_user_notifications(
                     details=f"Expected response code 200 from {target.participant_id} but received {query.status_code} while trying to retrieve user notifications",
                     query_timestamps=[query.request.timestamp],
                 )
-
-            notifications[target.participant_id] = response.user_notifications
+            if response is None:
+                check.record_failed(
+                    summary="Error while trying to retrieve user notifications",
+                    details=f"Response from {target.participant_id} was not valid",
+                    query_timestamps=[query.request.timestamp],
+                )
+                notifications[target.participant_id] = []
+            else:
+                notifications[target.participant_id] = response.user_notifications
 
     return notifications

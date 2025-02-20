@@ -3,12 +3,12 @@ from typing import List, Optional, Tuple
 from urllib.parse import urlparse
 
 from implicitdict import ImplicitDict
+from loguru import logger
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     QueryUserNotificationsResponse,
 )
 
 from monitoring.monitorlib import fetch, infrastructure
-from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing.injection_api import (
     SCOPE_RID_QUALIFIER_INJECT,
     CreateTestParameters,
@@ -80,7 +80,7 @@ class NetRIDServiceProvider(object):
         self,
         after: datetime.datetime,
         before: datetime.datetime,
-    ) -> Tuple[QueryUserNotificationsResponse, fetch.Query]:
+    ) -> Tuple[Optional[QueryUserNotificationsResponse], fetch.Query]:
         q = fetch.query_and_describe(
             self.injection_client,
             "GET",
@@ -95,9 +95,16 @@ class NetRIDServiceProvider(object):
         )
 
         if q.error_message:
-            return QueryUserNotificationsResponse(user_notifications=[]), q
+            return None, q
 
-        return ImplicitDict.parse(q.response.json, QueryUserNotificationsResponse), q
+        try:
+            return (
+                ImplicitDict.parse(q.response.json, QueryUserNotificationsResponse),
+                q,
+            )
+        except ValueError as e:
+            logger.error("Error parsing user notifications response: {}", e)
+            return None, q
 
 
 class NetRIDServiceProviders(Resource[NetRIDServiceProvidersSpecification]):
