@@ -53,13 +53,14 @@ contained in the USS1 backend but not presented to the user in the USS1 app.
 
 ### Scope of testing capability
 
-Any kind of testing (automated or manual) to measure compliance to requirements
-can never be objectively "complete" because it is impossible to prove a
-negative. To say that a system always complies with a requirement is equivalent
-to saying that there exists no situation in which the system does not comply
-with that requirement. Since all situations cannot be tested, the results of a
-test cannot be used to claim that there is no situation in which the system does
-not comply. Instead, the results of a test can only be used to show that a
+Like manual testing, InterUSS automated testing focuses on developing a suite
+of test activities sufficient to establish compliance to a set of requirements
+at an acceptable level of confidence.  The focus is on “sufficient” rather than
+“complete” because, as with manual testing, a suite of test activities can
+never be objectively "complete" because it is impossible to prove the negative
+that there exists no situation in which the system does not comply with that
+requirement (which is equivalent to saying that a system always complies with a
+requirement). The results of a test can only be used to show that a
 system complied with requirements in all the situations tested. This is
 generally considered acceptable in traditional manual tests as long as the test
 design had sufficient coverage. There is no standard definition of sufficient
