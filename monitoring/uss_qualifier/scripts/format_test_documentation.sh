@@ -21,6 +21,7 @@ make image
 # shellcheck disable=SC2086
 docker run --name test_documentation_formatter \
   --rm \
+  -u "$(id -u):$(id -g)" \
   -v "$(pwd):/app" \
   -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
   interuss/monitoring \
