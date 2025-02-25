@@ -100,13 +100,9 @@ down-locally:
 check-monitoring:
 	cd monitoring && make test
 
-# This mirrors the monitoring-tests continuous integration workflow job (.github/workflows/ci.yml)
-.PHONY: monitoring-tests
-monitoring-tests: check-monitoring
-
 # This reproduces the entire continuous integration workflow (.github/workflows/ci.yml)
 .PHONY: presubmit
-presubmit: check-hygiene monitoring-tests
+presubmit: check-hygiene check-monitoring
 
 # For local development when restarts are frequently required (such as when testing changes on the DSS)
 .PHONY: restart-all
