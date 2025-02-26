@@ -997,10 +997,8 @@ class RIDCommonDictionaryEvaluator(object):
         VERTICAL_SPEED_PRECISION = 0.1
 
         def value_validator(val: float) -> float:
-            if val < -63:
-                raise ValueError("Vertical speed is less than -63")
-            if -63 > val > -62:
-                raise ValueError("Vertical speed is between -63 and -62, exclusive")
+            if val < -62:
+                raise ValueError("Vertical speed is less than -62")
             if val > 63:
                 raise ValueError("Vertical speed is greather than 63")
             if 62 < val < 63:

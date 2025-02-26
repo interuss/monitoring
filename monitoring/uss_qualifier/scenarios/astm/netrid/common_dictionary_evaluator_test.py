@@ -6,10 +6,13 @@ from typing import Any, Callable, List, Optional, Tuple, TypeVar
 from uas_standards.astm.f3411 import v22a
 from uas_standards.astm.f3411.v22a.api import (
     Altitude,
+    HorizontalAccuracy,
     LatLngPoint,
     RIDHeightReference,
     RIDOperationalStatus,
+    SpeedAccuracy,
     UAType,
+    VerticalAccuracy,
 )
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
@@ -1499,3 +1502,345 @@ def test_evaluate_operational_status():
         _assert_generic_evaluator_not_equivalent(
             *base_args, v1=v1, v2=v2, rid_version=rid_version
         )
+
+
+def test_evaluate_alt():
+    """Test the evaluate_alt function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["position"] = {"alt": value}
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["raw"] = {"current_state": {"position": {"alt": value}}}
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["most_recent_position"] = {"alt": value}
+        return flight
+
+    base_args = (
+        "_evaluate_alt",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    # Value can be anything
+    for valid_value in [0, 0.01, 42, 3.14, 10000, -1, -0.01, -0.05, -10000]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    _assert_generic_evaluator_dont_have_default(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    # Resolution is in steps of 0.01
+    for v1 in [0, 0.01, 42, 3.14, 10000]:
+        for valid_delta in [
+            0,
+            0.001,
+            0.002,
+            0.003,
+            0.004,
+            0.0045,
+            0.0099,
+            -0.001,
+            -0.002,
+            -0.003,
+            -0.004,
+            -0.0045,
+            -0.0099,
+        ]:
+            v2 = v1 + valid_delta
+
+            if v2 > 0:  # Ensure value stays valid
+                _assert_generic_evaluator_equivalent(*base_args, v1=v1, v2=v2)
+        for invalid_delta in [
+            0.012,
+            0.051,
+            1,
+            42,
+            -0.051,
+            -0.012,
+            -1,
+            -42,
+        ]:  # Float values are funny, we cannot test 0.05 because check may 'round' that to 0.04999999999999716
+            v2 = v1 + invalid_delta
+
+            if v2 > 0:  # Ensure value stays valid
+                _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
+
+
+def test_evaluate_accuracy_v():
+    """Test the evaluate_accuracy_v function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["position"] = {"accuracy_v": value}
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["raw"] = {"current_state": {"position": {"accuracy_v": value}}}
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["most_recent_position"] = {"accuracy_v": value}
+        return flight
+
+    base_args = (
+        "_evaluate_accuracy_v",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=VerticalAccuracy.VA150mPlus,
+        valid_value_2=VerticalAccuracy.VA150m,
+    )
+
+    for valid_value in [
+        "VAUnknown",
+        "VA150mPlus",
+        "VA150m",
+        "VA45m",
+        "VA25m",
+        "VA10m",
+        "VA3m",
+        "VA1m",
+    ]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in ["MeasuredWithALaser", "+/- 5m", "HA10NM"]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args,
+            invalid_value=invalid_value,
+            valid_value=VerticalAccuracy.VA150mPlus,
+        )
+
+    for v1, v2 in permutations(
+        [
+            "VAUnknown",
+            "VA150mPlus",
+            "VA150m",
+            "VA45m",
+            "VA25m",
+            "VA10m",
+            "VA3m",
+            "VA1m",
+        ],
+        2,
+    ):
+        _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
+
+
+def test_evaluate_accuracy_h():
+    """Test the evaluate_accuracy_h function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["position"] = {"accuracy_h": value}
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["raw"] = {"current_state": {"position": {"accuracy_h": value}}}
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["most_recent_position"] = {"accuracy_h": value}
+        return flight
+
+    base_args = (
+        "_evaluate_accuracy_h",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=HorizontalAccuracy.HA10NMPlus,
+        valid_value_2=HorizontalAccuracy.HA2NM,
+    )
+
+    for valid_value in [
+        "HAUnknown",
+        "HA10NMPlus",
+        "HA10NM",
+        "HA4NM",
+        "HA2NM",
+        "HA1NM",
+        "HA05NM",
+        "HA03NM",
+        "HA01NM",
+        "HA005NM",
+        "HA30m",
+        "HA10m",
+        "HA3m",
+        "HA1m",
+    ]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in ["MeasuredWithALaser", "+/- 5m", "VA45m"]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args,
+            invalid_value=invalid_value,
+            valid_value=HorizontalAccuracy.HA10NMPlus,
+        )
+
+    for v1, v2 in permutations(
+        [
+            "HAUnknown",
+            "HA10NMPlus",
+            "HA10NM",
+            "HA4NM",
+            "HA2NM",
+            "HA1NM",
+            "HA05NM",
+            "HA03NM",
+            "HA01NM",
+            "HA005NM",
+            "HA30m",
+            "HA10m",
+            "HA3m",
+            "HA1m",
+        ],
+        2,
+    ):
+        _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
+
+
+def test_evaluate_speed_accuracy():
+    """Test the evaluate_speed_accuracy function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["speed_accuracy"] = value
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["raw"] = {"current_state": {"speed_accuracy": value}}
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["current_state"] = {"speed_accuracy": value}
+        return flight
+
+    base_args = (
+        "_evaluate_speed_accuracy",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=SpeedAccuracy.SA3mps,
+        valid_value_2=SpeedAccuracy.SA10mpsPlus,
+    )
+
+    for valid_value in [
+        "SAUnknown",
+        "SA10mpsPlus",
+        "SA10mps",
+        "SA3mps",
+        "SA1mps",
+        "SA03mps",
+    ]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in ["MeasuredWithALaser", "+/- 5m", "VA45m"]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args,
+            invalid_value=invalid_value,
+            valid_value=SpeedAccuracy.SA10mps,
+        )
+
+    for v1, v2 in permutations(
+        [
+            "SAUnknown",
+            "SA10mpsPlus",
+            "SA10mps",
+            "SA3mps",
+            "SA1mps",
+            "SA03mps",
+        ],
+        2,
+    ):
+        _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
+
+
+def test_evaluate_vertical_speed():
+    """Test the evaluate_vertical_speed function"""
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["vertical_speed"] = value
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["raw"] = {"current_state": {"vertical_speed": value}}
+        return flight
+
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["current_state"] = {"vertical_speed": value}
+        return flight
+
+    base_args = (
+        "_evaluate_vertical_speed",
+        injected_field_setter,
+        sp_field_setter,
+        dp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    # Value should be between -62, 62 or the special 255 value
+    for valid_value in [0, 0.01, 42, 3.14, 62, 63, -62, -42, -5]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in [-63, -62.5, -1000, 1000]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args, invalid_value=invalid_value, valid_value=42
+        )
+
+    _assert_generic_evaluator_dont_have_default(
+        *base_args,
+        valid_value=42,
+        valid_value_2=3.14,
+    )
+
+    # Resolution is in steps of 0.1
+    for v1 in [0, 0.01, 42, 3.14]:
+        for valid_delta in [
+            0,
+            0.01,
+            0.02,
+            0.09,
+            -0.09,
+            -0.02,
+            -0.024,
+        ]:
+            v2 = v1 + valid_delta
+            _assert_generic_evaluator_equivalent(*base_args, v1=v1, v2=v2)
+        for invalid_delta in [
+            0.11,
+            1,
+            42,
+            -0.11,
+            -1,
+            -42,
+        ]:
+            v2 = v1 + invalid_delta
+
+            if v2 > 0:  # Ensure value stays valid
+                _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
