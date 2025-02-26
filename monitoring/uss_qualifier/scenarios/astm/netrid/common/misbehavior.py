@@ -60,6 +60,7 @@ class Misbehavior(GenericTestScenario):
         self._flights_data = flights_data
         self._service_providers = service_providers
         self._evaluation_configuration = evaluation_configuration
+        self._query_cache = {}
         if len(dss_pool.dss_instances) == 0:
             raise ValueError(
                 "The Misbehavior Scenario requires at least one DSS instance"
@@ -182,7 +183,7 @@ class Misbehavior(GenericTestScenario):
         sp_observation = rid.all_flights(
             rect,
             include_recent_positions=True,
-            get_details=True,
+            get_details=False,
             rid_version=self._rid_version,
             session=self._dss.client,
             dss_participant_id=self._dss.participant_id,
@@ -190,7 +191,9 @@ class Misbehavior(GenericTestScenario):
 
         mapping_by_injection_id = (
             display_data_evaluator.map_fetched_to_injected_flights(
-                self._injected_flights, list(sp_observation.uss_flight_queries.values())
+                self._injected_flights,
+                list(sp_observation.uss_flight_queries.values()),
+                self._query_cache,
             )
         )
         self.record_queries(sp_observation.queries)

@@ -592,7 +592,7 @@ def put_isa(
         elif do_not_notify is None:
             do_not_notify = []
         notifications = {
-            sub.url: sub.notify(isa.id, utm_client, isa)
+            sub.url: sub.notify(isa.id, utm_client, isa, participant_id=participant_id)
             for sub in dss_response.subscribers
             if not any(sub.url.startswith(base_url) for base_url in do_not_notify)
         }
@@ -648,7 +648,7 @@ def delete_isa(
         elif do_not_notify is None:
             do_not_notify = []
         notifications = {
-            sub.url: sub.notify(isa.id, utm_client)
+            sub.url: sub.notify(isa.id, utm_client, participant_id=participant_id)
             for sub in dss_response.subscribers
             if not any(sub.url.startswith(base_url) for base_url in do_not_notify)
         }
