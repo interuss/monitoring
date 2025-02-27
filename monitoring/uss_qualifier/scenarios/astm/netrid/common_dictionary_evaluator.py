@@ -34,13 +34,7 @@ from uas_standards.interuss.automated_testing.rid.v1.injection import (
 )
 
 from monitoring.monitorlib.fetch.rid import Flight, FlightDetails, Position
-from monitoring.monitorlib.geo import (
-    DISTANCE_TOLERANCE_M,
-    Altitude,
-    LatLngPoint,
-    validate_lat,
-    validate_lng,
-)
+from monitoring.monitorlib.geo import Altitude, LatLngPoint, validate_lat, validate_lng
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -352,7 +346,7 @@ class RIDCommonDictionaryEvaluator(object):
 
             return (
                 abs(v1.datetime - v2.datetime).total_seconds() < 0.1
-            )  # TODO: Not a constant right now, waiting on PR in uas_standards
+            )  # TODO: Replace with MinTimestampResolution
 
         self._generic_evaluator(
             "timestamp",
@@ -521,10 +515,11 @@ class RIDCommonDictionaryEvaluator(object):
             with self._test_scenario.check(
                 "Observed Position is consistent with injected one", participants
             ) as check:
-                # TODO is this too lax?
                 if (
-                    abs(position_inj.lat - position_obs.lat) > 0.01
-                    or abs(position_inj.lng - position_obs.lng) > 0.01
+                    abs(position_inj.lat - position_obs.lat)
+                    > constants.MinPositionResolution
+                    or abs(position_inj.lng - position_obs.lng)
+                    > constants.MinPositionResolution
                 ):
                     check.record_failed(
                         "Observed position inconsistent with injected one",
@@ -560,7 +555,7 @@ class RIDCommonDictionaryEvaluator(object):
             None,
             None,
             False,
-            [None, -1000],
+            [None, constants.SpecialHeight],
             value_comparator,
             **generic_kwargs,
         )
@@ -643,8 +638,10 @@ class RIDCommonDictionaryEvaluator(object):
                     "Operator Location is consistent with injected one", participants
                 ) as check:
                     if (
-                        abs(position_obs.lat - position_inj.lat) > 0.01
-                        or abs(position_obs.lng - position_obs.lng) > 0.01
+                        abs(position_obs.lat - position_inj.lat)
+                        > constants.MinPositionResolution
+                        or abs(position_obs.lng - position_obs.lng)
+                        > constants.MinPositionResolution
                     ):
                         check.record_failed(
                             summary="Operator Location not consistent with injected one",
@@ -679,7 +676,8 @@ class RIDCommonDictionaryEvaluator(object):
                         if (
                             alt.units != altitude_inj.units
                             or alt.reference != altitude_inj.reference
-                            or abs(alt.value - altitude_inj.value) > 1
+                            or abs(alt.value - altitude_inj.value)
+                            > 1  # TODO  replace with constants.MinOperatorAltitudeResolution
                         ):
                             check.record_failed(
                                 "Observed operator altitude inconsistent with injected one",
@@ -827,8 +825,6 @@ class RIDCommonDictionaryEvaluator(object):
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
 
-        TIMESTAMP_ACCURACY_PRECISION = 0.05
-
         def value_validator(val: float) -> float:
             if val < 0:
                 raise ValueError("Timestamp accurary is less than 0")
@@ -839,7 +835,9 @@ class RIDCommonDictionaryEvaluator(object):
             if v1 is None or v2 is None:
                 return False
 
-            return abs(v1 - v2) < TIMESTAMP_ACCURACY_PRECISION
+            return (
+                abs(v1 - v2) < 0.1
+            )  # TODO Replace with MinTimestampAccuracyResolution
 
         self._generic_evaluator(
             "timestamp_accuracy",
@@ -868,7 +866,7 @@ class RIDCommonDictionaryEvaluator(object):
             if v1 is None or v2 is None:
                 return False
 
-            return abs(v1 - v2) < DISTANCE_TOLERANCE_M
+            return abs(v1 - v2) < constants.MinHeightResolution
 
         self._generic_evaluator(
             "position.alt",
@@ -994,15 +992,20 @@ class RIDCommonDictionaryEvaluator(object):
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
 
-        VERTICAL_SPEED_PRECISION = 0.1
+        VERTICAL_SPEED_PRECISION = 0.1  # TODO Replace with MinVerticalSpeedResolution
 
         def value_validator(val: float) -> float:
-            if val < -62:
-                raise ValueError("Vertical speed is less than -62")
-            if val > 63:
-                raise ValueError("Vertical speed is greather than 63")
-            if 62 < val < 63:
-                raise ValueError("Vertical speed is between 62 and 63, exclusive")
+            if val == constants.SpecialVerticalSpeed:
+                return val
+
+            if val < -constants.MaxAbsVerticalSpeed:
+                raise ValueError(
+                    f"Vertical speed is less than -{constants.MaxAbsVerticalSpeed}"
+                )
+            if val > constants.MaxAbsVerticalSpeed:
+                raise ValueError(
+                    f"Vertical speed is greather than {constants.MaxAbsVerticalSpeed}"
+                )
             return val
 
         def value_comparator(v1: Optional[float], v2: Optional[float]) -> bool:
