@@ -37,18 +37,18 @@ If the UA classification 'class' field for 'European Union' type value exposed b
 If the UA classification 'class' field for 'European Union' type value exposed by the SP API is inconsistent with the injected value this check will fail per:
 **[astm.f3411.v22a.NET0260,Table1,3](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the valid injected value.
 
-## Operator ID consistency with Common Dictionary check
+## ⚠️ Operator ID consistency with Common Dictionary check
 
 NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the Operator ID, if present, is expressed as ASCII text. (**[astm.f3411.v22a.NET0260,Table1,9](../../../../requirements/astm/f3411/v22a.md)**)
 
-## Operator Location consistency with Common Dictionary check
+## ⚠️ Operator Location consistency with Common Dictionary check
 
 NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the Operator Latitude (**[astm.f3411.v22a.NET0260,Table1,23](../../../../requirements/astm/f3411/v22a.md)**) and Longitude (**[astm.f3411.v22a.NET0260,Table1,24](../../../../requirements/astm/f3411/v22a.md)**), if present, are valid.
 
-## Operator Altitude consistency with Common Dictionary check
+## ⚠️ Operator Altitude consistency with Common Dictionary check
 
 NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that if the Operator Altitude is based on WGS-84 height above ellipsoid (HAE) and is provided in meters. (**[astm.f3411.v22a.NET0260,Table1,25](../../../../requirements/astm/f3411/v22a.md)**)
 
-## Operator Altitude Type consistency with Common Dictionary check
+## ⚠️ Operator Altitude Type consistency with Common Dictionary check
 
 NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that if the Operator Altitude Type is valid, if present. (**[astm.f3411.v22a.NET0260,Table1,26](../../../../requirements/astm/f3411/v22a.md)**)

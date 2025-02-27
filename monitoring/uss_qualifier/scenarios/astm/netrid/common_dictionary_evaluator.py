@@ -42,7 +42,6 @@ from monitoring.monitorlib.geo import (
     validate_lng,
 )
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenarioType
@@ -382,7 +381,6 @@ class RIDCommonDictionaryEvaluator(object):
                     if not is_ascii:
                         check.record_failed(
                             "Operator ID contains non-ascii characters",
-                            severity=Severity.Medium,
                         )
 
             if value_inj is not None:
@@ -393,7 +391,6 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             "Observed Operator ID not consistent with injected one",
                             details=f"Observed: {value_obs} - injected: {value_inj}",
-                            severity=Severity.Medium,
                         )
 
         else:
@@ -624,7 +621,6 @@ class RIDCommonDictionaryEvaluator(object):
                     check.record_failed(
                         "Operator Location contains an invalid latitude",
                         details=f"Invalid latitude: {lat}",
-                        severity=Severity.Medium,
                     )
                 lng = position_obs.lng
                 try:
@@ -635,7 +631,6 @@ class RIDCommonDictionaryEvaluator(object):
                     check.record_failed(
                         "Operator Location contains an invalid longitude",
                         details=f"Invalid longitude: {lng}",
-                        severity=Severity.Medium,
                     )
 
             if position_valid and position_obs is not None and position_inj is not None:
@@ -649,7 +644,6 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             summary="Operator Location not consistent with injected one",
                             details=f"Observed: {position_obs} - injected: {position_inj}",
-                            severity=Severity.Medium,
                         )
 
             alt = altitude_obs
@@ -662,13 +656,11 @@ class RIDCommonDictionaryEvaluator(object):
                         check.record_failed(
                             "Operator Altitude shall be based on WGS-84 height above ellipsoid (HAE)",
                             details=f"Invalid Operator Altitude reference: {alt.reference}",
-                            severity=Severity.Medium,
                         )
                     if alt.units != v22a.api.AltitudeUnits.M:
                         check.record_failed(
                             "Operator Altitude units shall be provided in meters",
                             details=f"Invalid Operator Altitude units: {alt.units}",
-                            severity=Severity.Medium,
                         )
                 if altitude_inj is not None:
 
@@ -684,7 +676,6 @@ class RIDCommonDictionaryEvaluator(object):
                             check.record_failed(
                                 "Observed operator altitude inconsistent with injected one",
                                 details=f"Observed: {alt} - injected: {altitude_inj}",
-                                severity=Severity.Medium,
                             )
 
                 alt_type = altitude_type_obs
@@ -701,7 +692,6 @@ class RIDCommonDictionaryEvaluator(object):
                             check.record_failed(
                                 "Operator Location contains an altitude type which is invalid",
                                 details=f"Invalid altitude type: {alt_type}",
-                                severity=Severity.Medium,
                             )
 
                     if altitude_type_inj is not None:
@@ -713,7 +703,6 @@ class RIDCommonDictionaryEvaluator(object):
                                 check.record_failed(
                                     "Observed Operator Altitude Type is inconsistent with injected one",
                                     details=f"Observed: {alt_type} - Injected: {altitude_type_inj}",
-                                    severity=Severity.Medium,
                                 )
 
         else:
