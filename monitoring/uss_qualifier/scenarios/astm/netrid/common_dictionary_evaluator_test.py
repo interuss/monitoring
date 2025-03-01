@@ -1042,7 +1042,7 @@ def test_evaluate_timestamp_accuracy():
         valid_value_2=3.14,
     )
 
-    # Resolution is in steps of 0.05
+    # Resolution is in steps of 0.1
     for v1 in [0, 0.01, 42, 3.14, 10000]:
         for valid_delta in [
             0,
@@ -1051,23 +1051,23 @@ def test_evaluate_timestamp_accuracy():
             0.03,
             0.04,
             0.045,
-            0.049,
+            0.099,
             -0.01,
             -0.02,
             -0.03,
             -0.04,
             -0.045,
-            -0.049,
+            -0.099,
         ]:
             v2 = v1 + valid_delta
 
             if v2 > 0:  # Ensure value stays valid
                 _assert_generic_evaluator_equivalent(*base_args, v1=v1, v2=v2)
         for invalid_delta in [
-            0.051,
+            0.11,
             1,
             42,
-            -0.051,
+            -0.11,
             -1,
             -42,
         ]:  # Float values are funny, we cannot test 0.05 because check may 'round' that to 0.04999999999999716
@@ -1368,6 +1368,10 @@ def test_evaluate_height():
             2,
             10,
             100,
+            -1.1,
+            -2,
+            -10,
+            -100,
         ]:
             v2 = v1 + invalid_delta
             _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
@@ -1542,37 +1546,33 @@ def test_evaluate_alt():
         valid_value_2=3.14,
     )
 
-    # Resolution is in steps of 0.01
+    # Resolution is in steps of 1
     for v1 in [0, 0.01, 42, 3.14, 10000]:
         for valid_delta in [
             0,
-            0.001,
-            0.002,
-            0.003,
-            0.004,
-            0.0045,
-            0.0099,
-            -0.001,
-            -0.002,
-            -0.003,
-            -0.004,
-            -0.0045,
-            -0.0099,
+            0.1,
+            0.2,
+            0.5,
+            0.9,
+            0.95,
+            -0.1,
+            -0.2,
+            -0.5,
+            -0.9,
+            -0.95,
         ]:
             v2 = v1 + valid_delta
 
             if v2 > 0:  # Ensure value stays valid
                 _assert_generic_evaluator_equivalent(*base_args, v1=v1, v2=v2)
         for invalid_delta in [
-            0.012,
-            0.051,
-            1,
+            1.1,
+            2,
             42,
-            -0.051,
-            -0.012,
-            -1,
+            -1.1,
+            2,
             -42,
-        ]:  # Float values are funny, we cannot test 0.05 because check may 'round' that to 0.04999999999999716
+        ]:
             v2 = v1 + invalid_delta
 
             if v2 > 0:  # Ensure value stays valid
