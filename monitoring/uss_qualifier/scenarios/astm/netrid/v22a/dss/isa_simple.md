@@ -32,7 +32,7 @@ part of the test.
 
 ## Create and check ISA test case
 
-### [Create ISA test step](test_steps/put_isa.md)
+### [Create ISA test step](test_steps/create_isa.md)
 
 This step attempts to query the configured DSS with the ISA provided as a resource.
 
@@ -56,7 +56,7 @@ The DSS returns the version of the ISA in the response body.  If this version do
 
 ## Update and search ISA test case
 
-### [Update ISA test step](test_steps/put_isa.md)
+### [Update ISA test step](test_steps/mutate_isa.md)
 
 This step attempts to update the configured DSS with the ISA provided as a resource, with a slightly different end time.
 

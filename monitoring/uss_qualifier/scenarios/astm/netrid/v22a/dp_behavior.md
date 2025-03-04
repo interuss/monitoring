@@ -50,7 +50,7 @@ Each observer is queried for flights in the empty area.
 
 This test step has the mock_uss begin a new flight by establishing an ISA.
 
-### [Create ISA test step](./dss/test_steps/put_isa.md)
+### [Create ISA test step](./dss/test_steps/create_isa.md)
 
 uss_qualifier, acting as mock_uss, creates an ISA in the area specified by the `isa` resource, valid from the moment the scenario runs and for a duration of 5 minutes.
 
