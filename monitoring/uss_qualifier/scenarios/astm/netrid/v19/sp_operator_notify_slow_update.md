@@ -52,7 +52,7 @@ If notifications are reported to have been sent after the scenario's start but b
 
 Inject flight with a 0.5Hz update rate
 
-### [Service Provider polling test step](../v19/fragments/sp_polling.md)
+### [Service Provider polling test step](../v19/fragments/sp_polling_queries.md)
 
 Poll the service providers until all of them have generated a new notification to the operator.
 
