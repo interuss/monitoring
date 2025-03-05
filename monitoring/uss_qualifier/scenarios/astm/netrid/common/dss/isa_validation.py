@@ -86,6 +86,7 @@ class ISAValidation(GenericTestScenario):
 
         self._isa_missing_outline(create_isa_url, json_body)
         self._isa_missing_volume(create_isa_url, json_body)
+        self._isa_missing_extents(create_isa_url, json_body)
 
         self.end_test_step()
         self.end_test_case()
