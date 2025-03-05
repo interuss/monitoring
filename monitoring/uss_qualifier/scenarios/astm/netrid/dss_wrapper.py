@@ -377,7 +377,7 @@ class DSSWrapper(object):
         )
 
         isa_validator.validate_mutated_isa(
-            isa_id, mutated_isa.dss_query, previous_version=None
+            isa_id, mutated_isa.dss_query, previous_version=isa_version
         )
         # TODO: Validate subscriber notifications (the validator currently does not)
 

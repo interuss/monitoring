@@ -27,7 +27,7 @@ part of the test.
 
 ## Token validation test case
 
-### [Token validation test step](test_steps/put_isa.md)
+### [Token validation test step](test_steps/create_isa.md)
 
 This step attempts to create and read ISAs by providing both the correct and incorrect scopes, omitting the token or providing an invalid one,
 and expects the DSS to properly behave in each case.

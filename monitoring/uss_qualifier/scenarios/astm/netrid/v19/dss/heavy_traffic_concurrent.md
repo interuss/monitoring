@@ -35,7 +35,7 @@ This test case will:
 5. Query each ISA individually, but concurrently
 6. Search for all ISAs in the area of the deleted ISAs (using a single request)
 
-### [Create ISA concurrently test step](test_steps/put_isa.md)
+### [Create ISA concurrently test step](test_steps/create_isa.md)
 
 This step attempts to concurrently create multiple ISAs, as specified in this scenario's resource, at the configured DSS.
 
