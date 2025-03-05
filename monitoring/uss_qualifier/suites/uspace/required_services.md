@@ -256,7 +256,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,NearRealTime</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,NetSpDataResponseTime95thPercentile</a></td>
@@ -271,127 +271,127 @@
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,1</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,10</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,11</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,12</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,14</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,15</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,16</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,17</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,18</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,19</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,1a</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,2</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,20</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,21</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,23</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,24</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,25</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,26</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,3</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,4</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,5</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,6</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,7</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,9</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0270</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0290</a></td>
@@ -406,7 +406,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0340</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0420</a></td>
@@ -576,7 +576,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0610</a></td>
     <td>Implemented + TODO</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a><br><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a><br><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0620</a></td>
@@ -586,7 +586,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0710,1</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0710,2</a></td>
@@ -1034,7 +1034,7 @@
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">ExpectedBehavior</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/interuss/automated_testing/rid/injection.md">UpsertTestResult</a></td>
