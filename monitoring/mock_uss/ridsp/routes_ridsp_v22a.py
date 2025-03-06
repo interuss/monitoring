@@ -83,7 +83,7 @@ def _make_details(p: injection.RIDFlightDetails) -> RIDFlightDetails:
         if "uas_id" in p and p.uas_id
         else UASID(
             serial_number=serial_number,
-            registration_number=registration_number,
+            registration_id=registration_number,
             utm_id=p.id,
         )
     )

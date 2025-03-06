@@ -6,11 +6,13 @@ from typing import List, Optional, Self
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
+from uas_standards.astm.f3411.v22a.api import UASID
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     RIDAircraftState,
     TestFlightDetails,
 )
 
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
 from monitoring.uss_qualifier.resources.files import load_content, load_dict
 from monitoring.uss_qualifier.resources.netrid.flight_data import (
@@ -58,7 +60,9 @@ class FlightDataResource(Resource[FlightDataSpecification]):
             )
         self._flight_start_delay = specification.flight_start_delay.timedelta
 
-    def get_test_flights(self) -> List[TestFlight]:
+    def get_test_flights(
+        self, rid_version: Optional[RIDVersion] = None
+    ) -> List[TestFlight]:
         t0 = arrow.utcnow() + self._flight_start_delay
 
         test_flights: List[TestFlight] = []
@@ -96,6 +100,24 @@ class FlightDataResource(Resource[FlightDataSpecification]):
                 effective_after=StringBasedDateTime(t0),
                 details=flight.flight_details,
             )
+
+            if (
+                rid_version == RIDVersion.f3411_22a
+            ):  # If not present, we do inject the v22 version of id
+                if "uas_id" not in details.details:
+
+                    utm_id = str(
+                        uuid.UUID(
+                            int=(2**128 - uuid.UUID(details.details.id).int), version=4
+                        )
+                    )
+
+                    details.details["uas_id"] = UASID(
+                        serial_number=details.details.get("serial_number"),
+                        registration_id=details.details.get("registration_number"),
+                        utm_id=str(utm_id),
+                        specific_session_id=f"02-{utm_id.replace('-', '')[:19]}",
+                    )
 
             test_flights.append(
                 TestFlight(
@@ -157,7 +179,7 @@ class FlightDataResource(Resource[FlightDataSpecification]):
 
         flights = self_copy.get_test_flights()
 
-        def new_test_flights(self):
+        def new_test_flights(self, rid_version=None):
             return flights
 
         self_copy.get_test_flights = new_test_flights.__get__(
