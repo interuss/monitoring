@@ -9,7 +9,6 @@ from monitoring.monitorlib.clients.flight_planning.client import (
 )
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from monitoring.monitorlib.temporal import Time, TimeDuringTest
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
@@ -94,7 +93,6 @@ class PrepareFlightPlannersScenario(TestScenario):
                     check.record_failed(
                         summary=f"Error while determining readiness of {participant_id}",
                         details=str(e),
-                        severity=Severity.Medium,
                         query_timestamps=[q.request.timestamp for q in e.queries],
                     )
                     continue
@@ -105,7 +103,6 @@ class PrepareFlightPlannersScenario(TestScenario):
                     check.record_failed(
                         summary=f"Errors in {participant_id} readiness",
                         details="\n".join("* " + e for e in resp.errors),
-                        severity=Severity.Medium,
                         query_timestamps=[q.request.timestamp for q in resp.queries],
                     )
 
@@ -123,7 +120,6 @@ class PrepareFlightPlannersScenario(TestScenario):
                         check.record_failed(
                             summary=f"Error while instructing {participant_id} to clear area",
                             details=str(e),
-                            severity=Severity.Medium,
                             query_timestamps=[q.request.timestamp for q in e.queries],
                         )
                         continue
@@ -134,7 +130,6 @@ class PrepareFlightPlannersScenario(TestScenario):
                         check.record_failed(
                             summary=f"Errors when {participant_id} was clearing the area",
                             details="\n".join("* " + e for e in resp.errors),
-                            severity=Severity.Medium,
                             query_timestamps=[
                                 q.request.timestamp for q in resp.queries
                             ],

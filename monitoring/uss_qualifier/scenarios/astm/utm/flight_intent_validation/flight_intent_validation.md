@@ -141,5 +141,5 @@ to reject or accept the flight. If the USS indicates that the attempt failed, th
 #### [Validate Tiny Overlap Conflict Flight not planned](../validate_not_shared_operational_intent.md)
 
 ## Cleanup
-### Successful flight deletion check
+### ⚠️ Successful flight deletion check
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../requirements/interuss/automated_testing/flight_planning.md)**

@@ -23,7 +23,6 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 )
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4DCollection
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.scenarios.astm.utm.evaluation import (
     validate_op_intent_details,
@@ -191,7 +190,6 @@ class OpIntentValidator(object):
             if self._new_oi_ref is not None:
                 check.record_failed(
                     summary="Operational intent reference was incorrectly shared with DSS",
-                    severity=Severity.High,
                     details=f"USS {self._flight_planner.participant_id} was not supposed to share an operational intent with the DSS, but the new operational intent with ID {self._new_oi_ref.id} was found",
                     query_timestamps=[self._after_query.request.timestamp],
                 )
@@ -285,7 +283,6 @@ class OpIntentValidator(object):
             if not expected_validation_failure_found:
                 check.record_failed(
                     summary="This negative test case requires specific invalid data shared with other USS in Operational intent details ",
-                    severity=Severity.High,
                     details=f"Data shared by Mock USS with other USSes did not have the specified invalid data, as expected for test case.",
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
@@ -422,7 +419,6 @@ class OpIntentValidator(object):
                 errors = data_format_fail.errors
                 check.record_failed(
                     summary="Operational intent details response failed schema validation",
-                    severity=Severity.Medium,
                     details="The response received from querying operational intent details failed validation against the required OpenAPI schema:\n"
                     + "\n".join(
                         f"At {e.json_path} in the response: {e.message}" for e in errors
@@ -441,7 +437,6 @@ class OpIntentValidator(object):
             if error_text:
                 check.record_failed(
                     summary="Operational intent details do not match user flight intent",
-                    severity=Severity.High,
                     details=error_text,
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
@@ -460,7 +455,6 @@ class OpIntentValidator(object):
             if off_nom_vol_fail:
                 check.record_failed(
                     summary="Accepted or Activated operational intents are not allowed off-nominal volumes",
-                    severity=Severity.Medium,
                     details=off_nom_vol_fail.error_text,
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
@@ -478,7 +472,6 @@ class OpIntentValidator(object):
             if vertices_fail:
                 check.record_failed(
                     summary="Too many vertices",
-                    severity=Severity.Medium,
                     details=vertices_fail.error_text,
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
