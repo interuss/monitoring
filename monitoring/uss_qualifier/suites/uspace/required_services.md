@@ -18,7 +18,7 @@
     <th><a href="../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="117" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
+    <td rowspan="119" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
     <td><a href="../../requirements/astm/f3411/v22a.md">DSS0010</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss/token_validation.md">ASTM NetRID DSS: Token Validation</a></td>
@@ -324,6 +324,21 @@
     <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,1b</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,1c</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,1d</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+  </tr>
+  <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0260,Table1,2</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
@@ -485,11 +500,6 @@
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,19</a></td>
-    <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../requirements/astm/f3411/v22a.md">NET0470,Table1,1a</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
