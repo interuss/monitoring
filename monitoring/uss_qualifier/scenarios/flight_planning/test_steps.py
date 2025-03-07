@@ -20,7 +20,6 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
 )
 from monitoring.monitorlib.fetch import Query, QueryError
 from monitoring.monitorlib.geotemporal import end_time_of
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 
@@ -370,7 +369,6 @@ def delete_flight(
                 scenario.record_query(q)
             check.record_failed(
                 summary=f"Error from {flight_planner.participant_id} when attempting to delete a flight intent (flight ID: {flight_id})",
-                severity=Severity.High,
                 details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
@@ -385,7 +383,6 @@ def delete_flight(
         else:
             check.record_failed(
                 summary=f"Flight deletion attempt unexpectedly {resp.activity_result} with flight plan status {resp.flight_plan_status}",
-                severity=Severity.High,
                 details=f"{flight_planner.participant_id} indicated {resp.activity_result} with flight plan status {resp.flight_plan_status} rather than the expected Completed with flight plan status Closed{notes_suffix}",
                 query_timestamps=[query.request.timestamp],
             )
@@ -419,7 +416,6 @@ def cleanup_flights(
                         scenario.record_query(q)
                     check.record_failed(
                         summary=f"Failed to clean up flight {flight_id} from {flight_planner.participant_id}",
-                        severity=Severity.Medium,
                         details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
                         query_timestamps=[q.request.timestamp for q in e.queries],
                     )
@@ -436,6 +432,5 @@ def cleanup_flights(
                             if "notes" in resp
                             else "See query"
                         ),
-                        severity=Severity.Medium,
                         query_timestamps=[query.request.timestamp],
                     )
