@@ -1,7 +1,12 @@
+import json
+import uuid
 from typing import Optional
 
 import flask
+from implicitdict import ImplicitDict
+from loguru import logger
 from uas_standards.astm.f3548.v21.api import (
+    ErrorReport,
     ErrorResponse,
     GetOperationalIntentDetailsResponse,
     GetOperationalIntentTelemetryResponse,
@@ -117,15 +122,21 @@ def scdsc_notify_operational_intent_details_changed():
 def scdsc_make_uss_report():
     """Implements makeUssReport in ASTM SCD API."""
 
-    return flask.jsonify({"message": "Not yet implemented"}), 500
-
     # Parse the request
-    # TODO: Implement
+    try:
+        report: ErrorReport = ImplicitDict.parse(flask.request.json, ErrorReport)
+    except ValueError as e:
+        return (
+            flask.jsonify(ErrorResponse(message=f"Error parsing request: {str(e)}")),
+            400,
+        )
 
     # Construct the ErrorReport object, primarily from the request
-    # TODO: Implement
+    if "report_id" not in report or not report.report_id:
+        report.report_id = str(uuid.uuid4())
 
-    # Do not store the ErrorReport (in this diagnostic implementation)
+    # Log the error report
+    logger.info("Error report:\n" + json.dumps(report, indent=2))
 
     # Return the ErrorReport as the nominal response
-    # TODO: Implement
+    return flask.jsonify(report), 201
