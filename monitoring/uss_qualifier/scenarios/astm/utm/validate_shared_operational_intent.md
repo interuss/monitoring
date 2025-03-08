@@ -23,11 +23,11 @@ If the state of the operational intent found in the DSS does not match the user'
 
 ## 🛑 Operational intent details retrievable check
 
-If the operational intent details for the flight cannot be retrieved from the USS, this check will fail per **[astm.f3548.v21.USS0105](../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.OPIN0025](../../../requirements/astm/f3548/v21.md)**.
+If the operational intent details for the flight cannot be retrieved from the USS, this check will fail per **[astm.f3548.v21.USS0105,1](../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.OPIN0025](../../../requirements/astm/f3548/v21.md)**.
 
 ## ⚠️ Operational intent details data format check
 
-If the operational intent details response does not validate against [the GetOperationalIntentDetailsResponse schema of the OpenAPI specification](https://github.com/astm-utm/Protocol/blob/v1.0.0/utm.yaml#L1120), this check fill fail per **[astm.f3548.v21.USS0105](../../../requirements/astm/f3548/v21.md)**.
+If the operational intent details response does not validate against [the GetOperationalIntentDetailsResponse schema of the OpenAPI specification](https://github.com/astm-utm/Protocol/blob/v1.0.0/utm.yaml#L1120), this check fill fail per **[astm.f3548.v21.USS0105,1](../../../requirements/astm/f3548/v21.md)**.
 
 ## 🛑 Correct operational intent details check
 
@@ -48,4 +48,4 @@ If:
 - that its telemetry cannot be retrieved from the USS, and
 - that the USS does not explicitly indicate that no telemetry is available,
 
-this check will fail per **[astm.f3548.v21.USS0105](../../../requirements/astm/f3548/v21.md)**.
+this check will fail per **[astm.f3548.v21.USS0105,2](../../../requirements/astm/f3548/v21.md)**.

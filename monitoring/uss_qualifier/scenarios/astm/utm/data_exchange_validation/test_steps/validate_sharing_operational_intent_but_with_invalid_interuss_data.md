@@ -13,7 +13,7 @@ If a reference to the operational intent for the flight is not found in the DSS,
 
 ## 🛑 Operational intent details retrievable check
 
-If the operational intent details for the flight cannot be retrieved from the USS, this check will fail per **[astm.f3548.v21.USS0105](../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.OPIN0025](../../../../../requirements/astm/f3548/v21.md)**.
+If the operational intent details for the flight cannot be retrieved from the USS, this check will fail per **[astm.f3548.v21.USS0105,1](../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.OPIN0025](../../../../../requirements/astm/f3548/v21.md)**.
 
 ## 🛑 Invalid data in Operational intent details shared by Mock USS for negative test check
 

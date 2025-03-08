@@ -17,7 +17,7 @@ class RequirementID(str):
     `astm.f3548.v21`.
 
     NAME is an identifier defined in the file described by PACKAGE by enclosing it
-    in a <tt> tag; for instance: `<tt>USS0105</tt>`.
+    in a <tt> tag; for instance: `<tt>USS0105,1</tt>`.
     """
 
     def __new__(cls, value):

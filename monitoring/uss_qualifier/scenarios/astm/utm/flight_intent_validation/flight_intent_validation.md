@@ -89,7 +89,7 @@ As such, if the USS synchronizes its time correctly, the attempt should be rejec
 If the USS successfully plans the flight or otherwise fails to indicate a rejection, it means that it failed to validate
 that the intent provided was in the past. Therefore, this check will fail if the USS indicates success in creating the
 flight from the user flight intent, per one of the following requirements:
-- the USS does not implement properly the interface _getOperationalIntentDetails_ as required by **[astm.f3548.v21.USS0105](../../../../requirements/astm/f3548/v21.md)**, which specifies that _The end time may not be in the past_; or
+- the USS does not implement properly the interface _getOperationalIntentDetails_ as required by **[astm.f3548.v21.USS0105,1](../../../../requirements/astm/f3548/v21.md)**, which specifies that _The end time may not be in the past_; or
 - the USS did not synchronize its time within `TimeSyncMaxDifferentialSeconds` = 5 seconds of an industry-recognized time source as required by **[astm.f3548.v21.GEN0100](../../../../requirements/astm/f3548/v21.md)**; or
 - the USS did not use the synchronized time for the operational intent timestamps, as required by **[astm.f3548.v21.GEN0105](../../../../requirements/astm/f3548/v21.md)**.
 
