@@ -26,6 +26,7 @@ function(env) {
             dss: 'dss',
             dss_instances: 'dss_instances',
             mock_uss: 'mock_uss',
+            utm_auth: 'utm_auth',
             second_utm_auth: 'second_utm_auth',
             planning_area: 'planning_area',
             problematically_big_area: 'problematically_big_area',
