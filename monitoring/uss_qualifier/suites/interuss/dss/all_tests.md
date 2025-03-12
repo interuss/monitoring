@@ -5,7 +5,7 @@
 ## [Actions](../../README.md#actions)
 
 1. Action generator: [`action_generators.astm.f3548.ForEachDSS`](../../../action_generators/astm/f3548/for_each_dss.py)
-    1. Suite: [DSS testing for ASTM NetRID F3548-21](../../astm/utm/dss_probing.md) ([`suites.astm.utm.dss_probing`](../../astm/utm/dss_probing.yaml))
+    1. Suite: [DSS testing for ASTM F3548-21](../../astm/utm/dss_probing.md) ([`suites.astm.utm.dss_probing`](../../astm/utm/dss_probing.yaml))
 2. Action generator: [`action_generators.astm.f3411.ForEachDSS`](../../../action_generators/astm/f3411/for_each_dss.py)
     1. Suite: [DSS testing for ASTM NetRID F3411-19](../../astm/netrid/f3411_19/dss_probing.md) ([`suites.astm.netrid.f3411_19.dss_probing`](../../astm/netrid/f3411_19/dss_probing.yaml))
 3. Action generator: [`action_generators.astm.f3411.ForEachDSS`](../../../action_generators/astm/f3411/for_each_dss.py)
