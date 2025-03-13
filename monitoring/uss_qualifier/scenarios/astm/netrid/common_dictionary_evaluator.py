@@ -426,10 +426,11 @@ class RIDCommonDictionaryEvaluator(object):
             if not val:
                 return val
 
-            # We don't check for ICAO Nationality mark to avoid complex
-            # parsing, but enforce the A-Z0-9.'s rule from the standard
-            if not re.match(r"^[A-Z\.0-9]*$", val):
-                raise ValueError("Invalid registration id")
+            # We don't check for ICAO Nationality mark validity
+            # because we don't have a list of valid marks, but
+            # otherwise enforce the formatting rule from the standard
+            if not re.match(r"^[A-Z0-9]{1,4}\.[A-Z0-9]+$", val):
+                raise ValueError("Invalid registration ID; expected <ICAO nationality>.<CAA assigned ID>")
 
             return val
 
