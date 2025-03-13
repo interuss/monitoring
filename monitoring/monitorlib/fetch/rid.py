@@ -4,12 +4,9 @@ import datetime
 from typing import Any, Dict, List, Optional, Union
 
 import s2sphere
-import uas_standards.astm.f3411.v19.api
-import uas_standards.astm.f3411.v19.constants
-import uas_standards.astm.f3411.v22a.api
-import uas_standards.astm.f3411.v22a.constants
 import yaml
 from implicitdict import ImplicitDict, StringBasedDateTime
+from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v19, v22a
 from uas_standards.astm.f3411.v22a.api import (
     HorizontalAccuracy,
@@ -634,6 +631,38 @@ class FlightDetails(ImplicitDict):
         else:
             raise NotImplementedError(
                 f"Cannot retrieve operator_altitude_type using RID version {self.rid_version}"
+            )
+
+    @property
+    def serial_number(
+        self,
+    ) -> Optional[SerialNumber]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value.serial_number
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if self.v22a_value.has_field_with_value("uas_id"):
+                return self.v22a_value.uas_id.serial_number
+            else:
+                return None
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve UAS ID serial number using RID version {self.rid_version}"
+            )
+
+    @property
+    def registration_id(
+        self,
+    ) -> Optional[SerialNumber]:
+        if self.rid_version == RIDVersion.f3411_19:
+            return self.v19_value.registration_number
+        elif self.rid_version == RIDVersion.f3411_22a:
+            if self.v22a_value.has_field_with_value("uas_id"):
+                return self.v22a_value.uas_id.registration_id
+            else:
+                return None
+        else:
+            raise NotImplementedError(
+                f"Cannot retrieve UAS ID registration id using RID version {self.rid_version}"
             )
 
 
