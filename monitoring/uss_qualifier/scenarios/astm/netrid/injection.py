@@ -38,7 +38,9 @@ def inject_flights(
     service_providers_res: NetRIDServiceProviders,
 ) -> Tuple[List[InjectedFlight], List[InjectedTest]]:
     test_id = str(uuid.uuid4())
-    test_flights = flights_data_res.get_test_flights()
+    test_flights = flights_data_res.get_test_flights(
+        getattr(test_scenario, "_rid_version", None)
+    )
     service_providers = service_providers_res.service_providers
 
     injected_flights: List[InjectedFlight] = []
