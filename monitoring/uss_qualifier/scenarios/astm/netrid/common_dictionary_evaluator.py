@@ -345,7 +345,7 @@ class RIDCommonDictionaryEvaluator(object):
                     )
                 else:
                     check.record_failed(
-                        f"UAS ID obseved ({obverved_value}) in not consistant with one of the injected values ({', '.join(possibles_values)})",
+                        f"UAS ID observed ({observed_value}) in not consistent with one of the injected values ({', '.join(possibles_values)})",
                         query_timestamps=[query_timestamp],
                     )
 
