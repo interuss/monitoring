@@ -18,6 +18,7 @@ from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.scenarios.astm.utm import FlightIntentValidation
+from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import OpIntentValidator
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
@@ -59,17 +60,20 @@ class MakeUssReport(TestScenario):
             cases = [
                 case
                 for case in report.cases
-                if case.name == "Validate transition to Ended state after cancellation"
+                if case.name == FlightIntentValidation.VALIDATE_TRANSITION_TO_ENDED_CASE
             ]
             for case in cases:
                 steps = [
-                    step for step in case.steps if step.name == "Plan Valid Flight"
+                    step
+                    for step in case.steps
+                    if step.name == FlightIntentValidation.PLAN_VALID_FLIGHT_STEP
                 ]
                 for step in steps:
                     checks = [
                         check
                         for check in step.passed_checks
-                        if check.name == "Operational intent details data format"
+                        if check.name
+                        == OpIntentValidator.OP_INTENT_DETAILS_DATA_FORMAT_CHECK
                     ]
                     if checks:
                         base_urls = []
@@ -131,8 +135,7 @@ class MakeUssReport(TestScenario):
                             query,
                         )
                 except QueryError as e:
-                    for query in e.queries:
-                        self.record_query(query)
+                    self.record_queries(e.queries)
                     check.record_failed(
                         summary="Error querying makeUssReport",
                         details=e.msg,
