@@ -1,6 +1,6 @@
 import datetime
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple, Union
 
 import arrow
@@ -84,6 +84,10 @@ class DPObservedFlight(object):
     def raw_flight(self) -> dict:
         return self.query.query.response.json["flights"][self.flight_index]
 
+    @property
+    def flights_url(self) -> str:
+        return self.query.flights_url
+
 
 ObservationType = Union[Flight, DPObservedFlight]
 
@@ -93,6 +97,14 @@ class TelemetryMapping(object):
     injected_flight: InjectedFlight
     telemetry_index: int
     observed_flight: ObservationType
+
+
+@dataclass
+class FetchedToInjectedCache(object):
+    # Mapping is a map of URL -> ParticipantID that we found until now
+    mappings: dict[str, ParticipantID] = field(default_factory=dict)
+    # Unmapped is the list of flights we didn't attributed yet
+    unmapped: list[FetchedUSSFlights] = field(default_factory=list)
 
 
 def map_observations_to_injected_flights(
@@ -165,6 +177,7 @@ def map_observations_to_injected_flights(
 def map_fetched_to_injected_flights(
     injected_flights: List[InjectedFlight],
     fetched_flights: List[FetchedUSSFlights],
+    query_cache: FetchedToInjectedCache,
 ) -> Dict[str, TelemetryMapping]:
     """Identify which of the fetched flights (if any) matches to each of the injected flights.
 
@@ -173,6 +186,7 @@ def map_fetched_to_injected_flights(
 
     :param injected_flights: Flights injected into RID Service Providers under test.
     :param fetched_flights: Flight observed from an RID Display Provider under test.
+    :param query_cache: A FetchedToInjectedCache, used to maintain participant_id in various queries
     :return: Mapping between InjectedFlight and observed Flight, indexed by injection_id.
     """
     observed_flights = []
@@ -184,12 +198,29 @@ def map_fetched_to_injected_flights(
         injected_flights, observed_flights
     )
 
-    # TODO: a better approach here would be to separately map flights URL to participant IDs based on all TelemetryMapping encountered, and set retroactively the participant ID on all queries
+    # Create new mappings we found
     for mapping in tel_mapping.values():
-        if mapping.observed_flight.query.participant_id is None:
-            mapping.observed_flight.query.set_participant_id(
+        if mapping.observed_flight.flights_url not in query_cache.mappings:
+            query_cache.mappings[mapping.observed_flight.flights_url] = (
                 mapping.injected_flight.uss_participant_id
             )
+
+    # Add to the todo list queries to map
+    for uss_query in fetched_flights:
+        if not uss_query.has_field_with_value("participant_id"):
+            query_cache.unmapped.append(uss_query)
+
+    # Try to map existing queries
+    for query_not_mapped in query_cache.unmapped:
+        if query_not_mapped.flights_url in query_cache.mappings:
+            query_not_mapped.set_participant_id(
+                query_cache.mappings[query_not_mapped.flights_url]
+            )
+
+    # Filter out queries ok
+    query_cache.unmapped = list(
+        filter(lambda q: not q.participant_id, query_cache.unmapped)
+    )
 
     return tel_mapping
 
@@ -227,6 +258,7 @@ class RIDObservationEvaluator(object):
         self._config = config
         self._rid_version = rid_version
         self._dss = dss
+        self._query_cache = FetchedToInjectedCache()
         if dss and dss.rid_version != rid_version:
             raise ValueError(
                 f"Cannot evaluate a system using RID version {rid_version} with a DSS using RID version {dss.rid_version}"
@@ -255,7 +287,9 @@ class RIDObservationEvaluator(object):
 
             # map observed flights to injected flight and attribute participant ID
             mapping_by_injection_id = map_fetched_to_injected_flights(
-                self._injected_flights, list(sp_observation.uss_flight_queries.values())
+                self._injected_flights,
+                list(sp_observation.uss_flight_queries.values()),
+                self._query_cache,
             )
             for q in sp_observation.queries:
                 self._test_scenario.record_query(q)
@@ -840,6 +874,7 @@ class RIDObservationEvaluator(object):
                     f"Found {len(details_queries)} flight details queries (instead of the expected 1) for flight {mapping.observed_flight.id} corresponding to injection ID {mapping.injected_flight.flight.injection_id} for {mapping.injected_flight.uss_participant_id}"
                 )
             details_query = details_queries[0]
+            details_query.set_participant_id(mapping.injected_flight.uss_participant_id)
             with self._test_scenario.check(
                 "Successful flight details query",
                 [mapping.injected_flight.uss_participant_id],
@@ -996,6 +1031,7 @@ class DisconnectedUASObservationEvaluator(object):
         self._config = config
         self._rid_version = rid_version
         self._dss = dss
+        self._query_cache = FetchedToInjectedCache()
         if dss and dss.rid_version != rid_version:
             raise ValueError(
                 f"Cannot evaluate a system using RID version {rid_version} with a DSS using RID version {dss.rid_version}"
@@ -1035,7 +1071,7 @@ class DisconnectedUASObservationEvaluator(object):
         sp_observation = all_flights(
             rect,
             include_recent_positions=True,
-            get_details=True,
+            get_details=False,
             rid_version=self._rid_version,
             session=self._dss.client,
             dss_participant_id=self._dss.participant_id,
@@ -1043,7 +1079,9 @@ class DisconnectedUASObservationEvaluator(object):
 
         # map observed flights to injected flight and attribute participant ID
         mapping_by_injection_id = map_fetched_to_injected_flights(
-            self._injected_flights, list(sp_observation.uss_flight_queries.values())
+            self._injected_flights,
+            list(sp_observation.uss_flight_queries.values()),
+            self._query_cache,
         )
         for q in sp_observation.queries:
             self._test_scenario.record_query(q)
