@@ -45,6 +45,10 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class FlightIntentValidation(TestScenario):
+    VALIDATE_TRANSITION_TO_ENDED_CASE = (
+        "Validate transition to Ended state after cancellation"
+    )
+    PLAN_VALID_FLIGHT_STEP = "Plan Valid Flight"
 
     times: Dict[TimeDuringTest, Time]
 
@@ -147,7 +151,7 @@ class FlightIntentValidation(TestScenario):
         self._attempt_invalid()
         self.end_test_case()
 
-        self.begin_test_case("Validate transition to Ended state after cancellation")
+        self.begin_test_case(self.VALIDATE_TRANSITION_TO_ENDED_CASE)
         self._validate_ended_cancellation()
         self.end_test_case()
 
@@ -206,7 +210,7 @@ class FlightIntentValidation(TestScenario):
         self.end_test_step()
 
     def _validate_ended_cancellation(self):
-        self.begin_test_step("Plan Valid Flight")
+        self.begin_test_step(self.PLAN_VALID_FLIGHT_STEP)
         valid_flight = self.resolve_flight(self.valid_flight)
 
         with OpIntentValidator(
@@ -235,7 +239,7 @@ class FlightIntentValidation(TestScenario):
         self.end_test_step()
 
     def _validate_precision_intersection(self):
-        self.begin_test_step("Plan Valid Flight")
+        self.begin_test_step(self.PLAN_VALID_FLIGHT_STEP)
         valid_flight = self.resolve_flight(self.valid_flight)
 
         plan_flight(

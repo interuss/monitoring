@@ -22,6 +22,7 @@ resources:
   evaluation_configuration: resources.netrid.EvaluationConfigurationResource
   netrid_dss_instances: resources.astm.f3411.DSSInstancesResource?
   utm_client_identity: resources.communications.ClientIdentityResource
+  utm_auth: resources.communications.AuthAdapterResource?
   second_utm_auth: resources.communications.AuthAdapterResource?
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
@@ -58,6 +59,7 @@ actions:
       dss_instances: scd_dss_instances
       dss_crdb_cluster: dss_crdb_cluster?
       id_generator: id_generator
+      utm_auth: utm_auth?
       second_utm_auth: second_utm_auth?
       utm_client_identity: utm_client_identity
       planning_area: planning_area

@@ -42,6 +42,8 @@ class OpIntentValidator(object):
     It assumes an area lock on the extent of the flight intent.
     """
 
+    OP_INTENT_DETAILS_DATA_FORMAT_CHECK = "Operational intent details data format"
+
     _extent: Volume4D
 
     _before_oi_refs: List[OperationalIntentReference]
@@ -405,7 +407,7 @@ class OpIntentValidator(object):
 
         validation_failures = self._evaluate_op_intent_validation(oi_full_query)
         with self._scenario.check(
-            "Operational intent details data format",
+            self.OP_INTENT_DETAILS_DATA_FORMAT_CHECK,
             [self._flight_planner.participant_id],
         ) as check:
             data_format_fail = (
