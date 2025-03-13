@@ -31,6 +31,7 @@ configurations.dev.generate_rid_test_data,\
 configurations.dev.geospatial_comprehension,\
 configurations.dev.general_flight_auth,\
 configurations.dev.message_signing,\
+configurations.dev.minimal_probing,\
 configurations.dev.dss_probing,\
 configurations.dev.f3548_self_contained,\
 configurations.dev.netrid_v22a,\
