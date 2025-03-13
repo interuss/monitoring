@@ -11,6 +11,9 @@ from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
+from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss.isa_validator import (
+    ISAValidator,
+)
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -187,6 +190,13 @@ class ISASimple(GenericTestScenario):
 
             self._isa_end_time = self._isa_end_time + datetime.timedelta(seconds=1)
             with self.check("ISA updated", [self._dss_wrapper.participant_id]) as check:
+                self._updated_isa_params = dict(
+                    start_time=self._isa_start_time,
+                    end_time=self._isa_end_time,
+                    uss_base_url=self._isa.base_url,
+                    alt_lo=self._isa.altitude_min,
+                    alt_hi=self._isa.altitude_max,
+                )
                 mutated_isa = self._dss_wrapper.put_isa(
                     check,
                     area_vertices=self._isa_area,
@@ -227,6 +237,18 @@ class ISASimple(GenericTestScenario):
                         f"ISAs search did not return expected ISA {self._isa_id}",
                         details=f"Search in area {self._isa_area} from time {earliest} returned ISAs {isas.isas.keys()}",
                         query_timestamps=[isas.dss_query.query.request.timestamp],
+                    )
+                else:
+                    isa_validator = ISAValidator(
+                        main_check=check,
+                        scenario=self,
+                        isa_params=self._updated_isa_params,
+                        dss_id=[self._dss.participant_id],
+                        rid_version=self._dss.rid_version,
+                    )
+
+                    isa_validator.validate_searched_isas(
+                        isas, {self._isa_id: self._isa_version}
                     )
 
             self.end_test_step()
@@ -282,6 +304,18 @@ class ISASimple(GenericTestScenario):
                         details=f"Search in area {self._isa_area} to time {latest} returned ISAs {isas.isas.keys()}",
                         query_timestamps=[isas.dss_query.query.request.timestamp],
                     )
+                else:
+                    isa_validator = ISAValidator(
+                        main_check=check,
+                        scenario=self,
+                        isa_params=self._updated_isa_params,
+                        dss_id=[self._dss.participant_id],
+                        rid_version=self._dss.rid_version,
+                    )
+
+                    isa_validator.validate_searched_isas(
+                        isas, {self._isa_id: self._isa_version}
+                    )
 
             self.end_test_step()
 
@@ -333,6 +367,18 @@ class ISASimple(GenericTestScenario):
                         f"ISAs search did not return expected ISA {self._isa_id}",
                         details=f"Search in area {self._isa_area} returned ISAs {isas.isas.keys()}",
                         query_timestamps=[isas.dss_query.query.request.timestamp],
+                    )
+                else:
+                    isa_validator = ISAValidator(
+                        main_check=check,
+                        scenario=self,
+                        isa_params=self._updated_isa_params,
+                        dss_id=[self._dss.participant_id],
+                        rid_version=self._dss.rid_version,
+                    )
+
+                    isa_validator.validate_searched_isas(
+                        isas, {self._isa_id: self._isa_version}
                     )
 
             self.end_test_step()
@@ -432,8 +478,21 @@ class ISASimple(GenericTestScenario):
             self.begin_test_step("Delete ISA")
 
             with self.check("ISA deleted", [self._dss_wrapper.participant_id]) as check:
-                _ = self._dss_wrapper.del_isa(
+                deleted_isa = self._dss_wrapper.del_isa(
                     check, isa_id=self._isa_id, isa_version=self._isa_version
+                )
+
+                # We repeat the validation that happened in del_isa with the known params of the ISA.
+                isa_validator = ISAValidator(
+                    main_check=check,
+                    scenario=self,
+                    isa_params=self._updated_isa_params,
+                    dss_id=[self._dss.participant_id],
+                    rid_version=self._dss.rid_version,
+                )
+
+                isa_validator.validate_deleted_isa(
+                    self._isa_id, deleted_isa.dss_query, self._isa_version
                 )
 
             self.end_test_step()

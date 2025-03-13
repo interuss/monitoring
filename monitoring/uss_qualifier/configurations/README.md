@@ -66,9 +66,25 @@ local test_environment = import 'https://raw.githubusercontent.com/interuss_coll
 
 ### Building
 
-A valid configuration file must provide a single instance of the [`USSQualifierConfiguration` schema](configuration.py) in the format chosen (JSON, YAML, Jsonnet), as indicated by the file extension (.json, .yaml, or .jsonnet).
+A valid test configuration file must provide a single instance of the [`USSQualifierConfiguration` schema](configuration.py) in the format chosen (JSON, YAML, Jsonnet), as indicated by the file extension (.json, .yaml, or .jsonnet).
 
 Note that the configuration file may use or refer to other files via [$refs](#references) in JSON, YAML, or Jsonnet.  Jsonnet files may also use or refer to other files via [imports](https://jsonnet.org/learning/tutorial.html#imports).  See the continuous integration test configurations in the [dev folder](dev) for examples.
+
+#### Contents
+
+The contents of a test configuration are a JSON-like representation of an instance of the [`USSQualifierConfiguration` schema](configuration.py).  The JSON schema validating this type can be found in the [USSQualifierConfiguration.json](../../../schemas/monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json) JSON schema file.  A USSQualifierConfiguration includes specification of:
+
+1. Information necessary to define the test activities to be performed
+    1. Test action to execute ([test suite](../README.md#architecture), [test scenario](../README.md#architecture), etc)
+    2. Specification of all [resources](../resources/README.md) that will be used in all test scenarios executed to fulfill the specified test action, including:
+        1. Information about test participants' systems (e.g., base URLs of APIs needed for testing)
+        2. Information about test environment infrastructure (e.g., auth server location, how to obtain access tokens, etc)
+        3. Test data (e.g., location and characteristics of flights to request, geographic areas to query, etc)
+    3. Which portions (if any) of the test configuration should be considered part of the ["test environment configuration"](#terminology) and not the ["test baseline configuration"](#terminology).  Unless specified here, every part of the test configuration is considered part of the "test baseline configuration".  The test baseline identifier is computed from the contents of the test configuration excluding the portions of the test configuration identified as non-baseline here.
+2. [Artifacts](../reports/README.md) (if any) to produce from the test run
+3. Validation criteria, if uss_qualifier should exit with an error code based on the outome of the test activities
+
+An optional convention encouraged in test configurations is to annotate the type of objects whose type may be unclear (especially resource declarations) with a `$content_schema` key containing, as its value, the path to the JSON schema of the object type relative to the [`schemas`](../../../schemas) folder.  These annotations are not required and are not used at runtime by uss_qualifier, but [can be used](../../../schemas/README.md) to improve the ease of editing test configuration files.  Note these annotations take advantage of the behavior that all keys present in a test configuration, but not specified in the appropriate schema, are ignored by uss_qualifier.
 
 #### Personalization
 

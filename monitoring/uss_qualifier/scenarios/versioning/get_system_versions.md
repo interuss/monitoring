@@ -18,6 +18,6 @@ A [`SystemIdentityResource`](../../resources/versioning/system_identity.py) indi
 
 Each version provider is queried for the version of its system (identified by system_identity) and the result is recorded as a note in the report.
 
-#### Valid response check
+#### 🛑 Valid response check
 
 If a valid response is not received from a version provider, they will have failed to meet **[versioning.ReportSystemVersion](../../requirements/versioning.md)**.

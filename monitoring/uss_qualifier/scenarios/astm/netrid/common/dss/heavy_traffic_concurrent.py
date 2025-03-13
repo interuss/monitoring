@@ -307,7 +307,16 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             "Concurrent ISAs creation", [self._dss_wrapper.participant_id]
         ) as main_check:
             for isa_id, changed_isa in results:
-                if changed_isa.query.response.code != 200:
+                with self.check(
+                    "ISA response code", [self._dss_wrapper.participant_id]
+                ) as sub_check:
+                    if changed_isa.status_code == 201:
+                        sub_check.record_failed(
+                            summary=f"PUT ISA returned technically-incorrect 201",
+                            details="DSS should return 200 from PUT ISA, but instead returned the reasonable-but-technically-incorrect code 201",
+                            query_timestamps=[changed_isa.timestamp],
+                        )
+                if changed_isa.status_code not in [200, 201]:
                     main_check.record_failed(
                         f"ISA creation failed for {isa_id}",
                         details=f"ISA creation for {isa_id} returned {changed_isa.query.response.code}",

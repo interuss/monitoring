@@ -32,7 +32,7 @@ part of the test.
 
 ## Create and check ISA test case
 
-### [Create ISA test step](test_steps/put_isa.md)
+### [Create ISA test step](test_steps/create_isa.md)
 
 This step attempts to query the configured DSS with the ISA provided as a resource.
 
@@ -56,7 +56,7 @@ The DSS returns the version of the ISA in the response body.  If this version do
 
 ## Update and search ISA test case
 
-### [Update ISA test step](test_steps/put_isa.md)
+### [Update ISA test step](test_steps/mutate_isa.md)
 
 This step attempts to update the configured DSS with the ISA provided as a resource, with a slightly different end time.
 
@@ -90,7 +90,7 @@ The ISA search parameters are valid, as such the search should be successful.  I
 
 The ISA search parameters cover the resource ISA, as such the resource ISA that exists at the DSS should be returned by the search.  If it is not returned, this check will fail.
 
-### [Search by earliest time (excluded) test step](test_steps/search_isas.md)
+### [Search by earliest time (excluded) test step](test_steps/search_isas_miss.md)
 
 This step attempts an ISA search at the DSS with the area of the ISA resource and an earliest time that does not overlap with the resource ISA.
 
@@ -114,7 +114,7 @@ The ISA search parameters are valid, as such the search should be successful.  I
 
 The ISA search parameters cover the resource ISA, as such the resource ISA that exists at the DSS should be returned by the search.  If it is not returned, this check will fail as per **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
-### [Search by latest time (excluded) test step](test_steps/search_isas.md)
+### [Search by latest time (excluded) test step](test_steps/search_isas_miss.md)
 
 This step attempts an ISA search at the DSS with the area of the ISA resource and a latest time that does not overlap with the resource ISA.
 
@@ -196,7 +196,7 @@ This step attempts to retrieve at the DSS the ISA just deleted.
 
 The ISA fetch request was about a deleted ISA, as such the DSS should reject it with a 404 HTTP code.  If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
-### [Search ISA test step](test_steps/search_isas.md)
+### [Search ISA test step](test_steps/search_isas_miss.md)
 
 This step attempts an ISA search at the DSS with only the area of the ISA resource. Since it has just been deleted, the ISA should not be returned.
 

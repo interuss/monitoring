@@ -60,7 +60,7 @@ As such, this check will fail if the DSS is not reachable with a dummy query,
 
 ## Interoperability sequence test case
 
-### [S1 test step](dss/test_steps/put_isa.md)
+### [S1 test step](dss/test_steps/create_isa.md)
 
 Action: USS1@DSS*P*: PUT ISA with no start time and end time 10 minutes from now
 
@@ -155,7 +155,7 @@ Qualitatively proves: All Subscription[i] 1≤i≤n are returned in subscription
 
 **[astm.f3411.v22a.DSS0070](../../../../requirements/astm/f3411/v22a.md)** requires that all DSS instances in a pool return the same result. This check fails if the DSS instance does not return the same result as the other DSS instances.
 
-### [S5 test step](dss/test_steps/put_isa.md)
+### [S5 test step](dss/test_steps/mutate_isa.md)
 
 Action: USS1@DSS*P*: PUT ISA[*P*] setting end time to now + D seconds
 
@@ -235,7 +235,7 @@ Qualitatively proves: Expired ISA automatically removed, ISA modifications acces
 
 **[astm.f3411.v22a.DSS0070](../../../../requirements/astm/f3411/v22a.md)** requires that all DSS instances in a pool return the same result. This check fails if the DSS instance does not return the same result as the other DSS instances.
 
-### [S10 test step](dss/test_steps/put_isa.md)
+### [S10 test step](dss/test_steps/create_isa.md)
 
 Action: USS1@DSS*P*: PUT ISA with no start time and end time 10 minutes from now
 
@@ -263,7 +263,7 @@ Qualitatively proves: ISA deletion triggers subscription notification requests
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,3c](../../../../requirements/astm/f3411/v22a.md)**
 
-### [S12 test step](dss/test_steps/put_isa.md)
+### [S12 test step](dss/test_steps/create_isa.md)
 
 Action: Wait >D seconds from S9 then USS1@DSS*P*: PUT ISA with no start time and end time 10 minutes from now
 
