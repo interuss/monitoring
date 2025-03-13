@@ -407,7 +407,7 @@ class OpIntentValidator(object):
 
         validation_failures = self._evaluate_op_intent_validation(oi_full_query)
         with self._scenario.check(
-            self.OP_INTENT_DETAILS_DATA_FORMAT,
+            self.OP_INTENT_DETAILS_DATA_FORMAT_CHECK,
             [self._flight_planner.participant_id],
         ) as check:
             data_format_fail = (
