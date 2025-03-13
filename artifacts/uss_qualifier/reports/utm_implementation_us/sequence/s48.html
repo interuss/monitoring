@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>s48 - ASTM F3548-21 evaluate system versions</title>
+  <title>s48 - ASTM F3548 makeUssReport</title>
 <style>
   body {
     margin: 0;
@@ -112,15 +112,13 @@
 </head>
 <body>
 <div>
-    <h2><a href="https://github.com/interuss/monitoring/blob/a670e63002bd65c60985631f21bddde11cee7702/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md">ASTM F3548-21 evaluate system versions</a></h2>
-  <h3>scenarios.astm.utm.versioning.evaluate_system_versions.EvaluateSystemVersions</h3>
+    <h2><a href="https://github.com/interuss/monitoring/blob/a3ee9da05d3d3a83aefacb60e073c7c66daa3767/monitoring/uss_qualifier/scenarios/astm/utm/make_uss_report.md">ASTM F3548 makeUssReport</a></h2>
+  <h3>scenarios.astm.utm.make_uss_report.MakeUssReport</h3>
   <div id="resources_configuration_section" class="collapseable">
     <div class="node_key" onclick="showHide(document.getElementById('resources_configuration_section'))"><h4>Resources</h4></div>
     <div class="node_value">
       <ul id="resource_origin_list">
-          <li><a href="https://github.com/interuss/monitoring/blob/a670e63002bd65c60985631f21bddde11cee7702/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#system_identity"><code>system_identity</code></a> provided by <a href="./index.html#resources-configuration">system_identity in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/a670e63002bd65c60985631f21bddde11cee7702/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#test_env_version_providers"><code>test_env_version_providers</code></a> provided by <a href="./index.html#resources-configuration">test_env_version_providers in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/a670e63002bd65c60985631f21bddde11cee7702/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#prod_env_version_providers"><code>prod_env_version_providers</code></a> provided by <a href="./index.html#resources-configuration">prod_env_version_providers in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/a3ee9da05d3d3a83aefacb60e073c7c66daa3767/monitoring/uss_qualifier/scenarios/astm/utm/make_uss_report.md#utm_auth"><code>utm_auth</code></a> provided by <a href="./index.html#resources-configuration">utm_auth in top-level resource pool</a></li>
       </ul>
     </div>
   </div>
@@ -141,11 +139,11 @@
     </tr>
 
             <tr id="e1">
-                <td rowspan="13"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/a670e63002bd65c60985631f21bddde11cee7702/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#evaluate-versions-test-case">Evaluate versions</a>
+                <td rowspan="4"><span class="sticky_cell_value">
+                    <a href="https://github.com/interuss/monitoring/blob/a3ee9da05d3d3a83aefacb60e073c7c66daa3767/monitoring/uss_qualifier/scenarios/astm/utm/make_uss_report.md#call-makeussreport-interface-test-case">Call makeUssReport interface</a>
                 </span></td>
                 <td rowspan="4"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/a670e63002bd65c60985631f21bddde11cee7702/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#get-test-environment-test-versions-test-step">Get test environment test versions</a>
+                    <a href="https://github.com/interuss/monitoring/blob/a3ee9da05d3d3a83aefacb60e073c7c66daa3767/monitoring/uss_qualifier/scenarios/astm/utm/make_uss_report.md#call-makeussreport-interfaces-test-step">Call makeUssReport interfaces</a>
                 </span></td>
               <td><a href="#e1">1</a></td>
                 <td>&#x1F310;</td>
@@ -153,26 +151,26 @@
                     <div id="e1query">
       <ul>
       <li class="collapseable">
-        <div class="node_key">GET scdsc.uss1.localutm 200</div>:
+        <div class="node_key">POST scdsc.uss1.localutm 201</div>:
         <div class="node_value">      <ul>
       <li class="collapseable">
         <div class="node_key">request</div>:
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">method</div>:
-        <div class="node_value">      GET
+        <div class="node_value">      POST
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">url</div>:
-        <div class="node_value">      http://scdsc.uss1.localutm/versioning/versions/us.utm_implementation
+        <div class="node_value">      http://scdsc.uss1.localutm/mock/scd/uss/v1/reports
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-03-13T11:20:23.576662Z
+        <div class="node_value">      2025-03-13T16:05:23.839348Z
 
 </div>
       </li>
@@ -204,8 +202,63 @@
 </div>
       </li>
       <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      421
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzQxODY4MzY1LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MudmVyc2lvbmluZy5yZWFkX3N5c3RlbV92ZXJzaW9ucyIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzQxODg1NDg2LCJpc3MiOiJkdW1teSIsInNjb3BlIjoidXRtLnN0cmF0ZWdpY19jb29yZGluYXRpb24iLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">exchange</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.uss1.localutm/mock/scd/uss/v1/reports
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      GET
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">recorder_role</div>:
+        <div class="node_value">      Client
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">request_time</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-13T16:05:23.839206Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
 
 </div>
       </li>
@@ -214,8 +267,47 @@
 </div>
       </li>
       <li class="not_collapseable">
-        <div class="node_key">json</div>:
-        <div class="node_value">    None
+        <div class="node_key">problem</div>:
+        <div class="node_value">      this is a dummy record created by the USS qualifier. This failure is expected.
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">response_body</div>:
+        <div class="node_value">      
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">request_body</div>:
+        <div class="node_value">      
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">response_code</div>:
+        <div class="node_value">    0
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      a2fcf3e1-faed-4eff-a5d5-d3df07d6ccba
+
+</div>
+      </li>
+  </ul>
+
 </div>
       </li>
       <li class="not_collapseable">
@@ -232,7 +324,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">code</div>:
-        <div class="node_value">    200
+        <div class="node_value">    201
 </div>
       </li>
       <li class="collapseable">
@@ -246,7 +338,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Thu, 13 Mar 2025 11:20:23 GMT
+        <div class="node_value">      Thu, 13 Mar 2025 16:05:23 GMT
 
 </div>
       </li>
@@ -264,7 +356,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Content-Length</div>:
-        <div class="node_value">      98
+        <div class="node_value">      1104
 
 </div>
       </li>
@@ -274,27 +366,108 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.006652
+        <div class="node_value">    0.009343
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-03-13T11:20:23.583855Z
+        <div class="node_value">      2025-03-13T16:05:23.849309Z
 
 </div>
       </li>
       <li class="collapseable">
         <div class="node_key">json</div>:
         <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">system_identity</div>:
-        <div class="node_value">      us.utm_implementation
+      <li class="collapseable">
+        <div class="node_key">exchange</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+  </ul>
 
 </div>
       </li>
       <li class="not_collapseable">
-        <div class="node_key">system_version</div>:
-        <div class="node_value">      interuss/monitoring/v0.0.0-a670e63
+        <div class="node_key">method</div>:
+        <div class="node_value">      GET
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">problem</div>:
+        <div class="node_value">      this is a dummy record created by the USS qualifier. This failure is expected.
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">recorder_role</div>:
+        <div class="node_value">      Client
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">request_body</div>:
+        <div class="node_value">      
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">request_time</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-13T16:05:23.839206Z
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">response_body</div>:
+        <div class="node_value">      
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">response_code</div>:
+        <div class="node_value">    0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.uss1.localutm/mock/scd/uss/v1/reports
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">report_id</div>:
+        <div class="node_value">      ad33d99e-ca16-4bec-a264-55ce8d35815e
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">log_messages</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      [2025-03-13 16:05:23.847 INFO     monitoring.mock_uss.f3548v21.routes_scd:scdsc_make_uss_report:139] Error report:<br>{<br>  "exchange": {<br>    "url": "http://scdsc.uss1.localutm/mock/scd/uss/v1/reports",<br>    "method": "GET",<br>    "recorder_role": "Client",<br>    "request_time": {<br>      "value": "2025-03-13T16:05:23.839206Z",<br>      "format": "RFC3339"<br>    },<br>    "problem": "this is a dummy record created by the USS qualifier. This failure is expected.",<br>    "response_body": "",<br>    "headers": [],<br>    "request_body": "",<br>    "response_code": 0<br>  },<br>  "report_id": "ad33d99e-ca16-4bec-a264-55ce8d35815e"<br>}<br>
+
+</div>
+      </li>
+  </ul>
 
 </div>
       </li>
@@ -313,7 +486,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">query_type</div>:
-        <div class="node_value">      interuss.automated_testing.versioning.GetVersion
+        <div class="node_value">      astm.f3548.v21.uss.makeUssReport
 
 </div>
       </li>
@@ -339,7 +512,7 @@
               <td><a href="#e2">2</a></td>
                 <td>&#x2705;</td>
                 <td class="pass_result">
-                  Valid response
+                  makeUssReport responds correctly
                 </td>
                     <td class="pass_result">&#x2705;</td>
                     <td></td>
@@ -351,26 +524,26 @@
                     <div id="e3query">
       <ul>
       <li class="collapseable">
-        <div class="node_key">GET scdsc.uss2.localutm 200</div>:
+        <div class="node_key">POST scdsc.uss2.localutm 201</div>:
         <div class="node_value">      <ul>
       <li class="collapseable">
         <div class="node_key">request</div>:
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">method</div>:
-        <div class="node_value">      GET
+        <div class="node_value">      POST
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">url</div>:
-        <div class="node_value">      http://scdsc.uss2.localutm/versioning/versions/us.utm_implementation
+        <div class="node_value">      http://scdsc.uss2.localutm/mock/scd/uss/v1/reports
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-03-13T11:20:23.584147Z
+        <div class="node_value">      2025-03-13T16:05:23.850332Z
 
 </div>
       </li>
@@ -402,8 +575,63 @@
 </div>
       </li>
       <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      421
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MyLmxvY2FsdXRtIiwiZXhwIjoxNzQxODY4MzY1LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MudmVyc2lvbmluZy5yZWFkX3N5c3RlbV92ZXJzaW9ucyIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MyLmxvY2FsdXRtIiwiZXhwIjoxNzQxODg1NDg3LCJpc3MiOiJkdW1teSIsInNjb3BlIjoidXRtLnN0cmF0ZWdpY19jb29yZGluYXRpb24iLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">exchange</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.uss2.localutm/mock/scd/uss/v1/reports
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      GET
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">recorder_role</div>:
+        <div class="node_value">      Client
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">request_time</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-13T16:05:23.850206Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
 
 </div>
       </li>
@@ -412,8 +640,47 @@
 </div>
       </li>
       <li class="not_collapseable">
-        <div class="node_key">json</div>:
-        <div class="node_value">    None
+        <div class="node_key">problem</div>:
+        <div class="node_value">      this is a dummy record created by the USS qualifier. This failure is expected.
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">response_body</div>:
+        <div class="node_value">      
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">request_body</div>:
+        <div class="node_value">      
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">response_code</div>:
+        <div class="node_value">    0
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      5b00f656-b3fa-478d-a816-50cd5da72466
+
+</div>
+      </li>
+  </ul>
+
 </div>
       </li>
       <li class="not_collapseable">
@@ -430,7 +697,7 @@
         <div class="node_value">      <ul>
       <li class="not_collapseable">
         <div class="node_key">code</div>:
-        <div class="node_value">    200
+        <div class="node_value">    201
 </div>
       </li>
       <li class="collapseable">
@@ -444,7 +711,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Thu, 13 Mar 2025 11:20:23 GMT
+        <div class="node_value">      Thu, 13 Mar 2025 16:05:23 GMT
 
 </div>
       </li>
@@ -462,7 +729,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Content-Length</div>:
-        <div class="node_value">      98
+        <div class="node_value">      1104
 
 </div>
       </li>
@@ -472,27 +739,108 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.006637
+        <div class="node_value">    0.008496
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-03-13T11:20:23.591228Z
+        <div class="node_value">      2025-03-13T16:05:23.859388Z
 
 </div>
       </li>
       <li class="collapseable">
         <div class="node_key">json</div>:
         <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">system_identity</div>:
-        <div class="node_value">      us.utm_implementation
+      <li class="collapseable">
+        <div class="node_key">exchange</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+  </ul>
 
 </div>
       </li>
       <li class="not_collapseable">
-        <div class="node_key">system_version</div>:
-        <div class="node_value">      interuss/monitoring/v0.0.0-a670e63
+        <div class="node_key">method</div>:
+        <div class="node_value">      GET
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">problem</div>:
+        <div class="node_value">      this is a dummy record created by the USS qualifier. This failure is expected.
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">recorder_role</div>:
+        <div class="node_value">      Client
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">request_body</div>:
+        <div class="node_value">      
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">request_time</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-13T16:05:23.850206Z
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">response_body</div>:
+        <div class="node_value">      
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">response_code</div>:
+        <div class="node_value">    0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.uss2.localutm/mock/scd/uss/v1/reports
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">report_id</div>:
+        <div class="node_value">      eea5e4d3-fb58-4133-96e7-afcc929fa52d
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">log_messages</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      [2025-03-13 16:05:23.858 INFO     monitoring.mock_uss.f3548v21.routes_scd:scdsc_make_uss_report:139] Error report:<br>{<br>  "exchange": {<br>    "url": "http://scdsc.uss2.localutm/mock/scd/uss/v1/reports",<br>    "method": "GET",<br>    "recorder_role": "Client",<br>    "request_time": {<br>      "value": "2025-03-13T16:05:23.850206Z",<br>      "format": "RFC3339"<br>    },<br>    "problem": "this is a dummy record created by the USS qualifier. This failure is expected.",<br>    "response_body": "",<br>    "headers": [],<br>    "request_body": "",<br>    "response_code": 0<br>  },<br>  "report_id": "eea5e4d3-fb58-4133-96e7-afcc929fa52d"<br>}<br>
+
+</div>
+      </li>
+  </ul>
 
 </div>
       </li>
@@ -511,7 +859,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">query_type</div>:
-        <div class="node_value">      interuss.automated_testing.versioning.GetVersion
+        <div class="node_value">      astm.f3548.v21.uss.makeUssReport
 
 </div>
       </li>
@@ -537,457 +885,7 @@
               <td><a href="#e4">4</a></td>
                 <td>&#x2705;</td>
                 <td class="pass_result">
-                  Valid response
-                </td>
-                    <td></td>
-                    <td class="pass_result">&#x2705;</td>
-            </tr>
-            <tr id="e5">
-                <td rowspan="4"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/a670e63002bd65c60985631f21bddde11cee7702/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#get-production-environment-versions-test-step">Get production environment versions</a>
-                </span></td>
-              <td><a href="#e5">5</a></td>
-                <td>&#x1F310;</td>
-                <td>
-                    <div id="e5query">
-      <ul>
-      <li class="collapseable">
-        <div class="node_key">GET scdsc.uss1.localutm 200</div>:
-        <div class="node_value">      <ul>
-      <li class="collapseable">
-        <div class="node_key">request</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">method</div>:
-        <div class="node_value">      GET
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">url</div>:
-        <div class="node_value">      http://scdsc.uss1.localutm/versioning/versions/us.utm_implementation
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-03-13T11:20:23.591533Z
-
-</div>
-      </li>
-      <li class="collapseable">
-        <div class="node_key">headers</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">User-Agent</div>:
-        <div class="node_value">      python-requests/2.32.3
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Accept-Encoding</div>:
-        <div class="node_value">      gzip, deflate, br
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Accept</div>:
-        <div class="node_value">      */*
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Connection</div>:
-        <div class="node_value">      keep-alive
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzQxODY4MzY1LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MudmVyc2lvbmluZy5yZWFkX3N5c3RlbV92ZXJzaW9ucyIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
-
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">json</div>:
-        <div class="node_value">    None
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">body</div>:
-        <div class="node_value">    None
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="collapseable">
-        <div class="node_key">response</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">code</div>:
-        <div class="node_value">    200
-</div>
-      </li>
-      <li class="collapseable">
-        <div class="node_key">headers</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">Server</div>:
-        <div class="node_value">      gunicorn
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Date</div>:
-        <div class="node_value">      Thu, 13 Mar 2025 11:20:23 GMT
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Connection</div>:
-        <div class="node_value">      keep-alive
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Content-Type</div>:
-        <div class="node_value">      application/json
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Content-Length</div>:
-        <div class="node_value">      98
-
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.006545
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">reported</div>:
-        <div class="node_value">      2025-03-13T11:20:23.598512Z
-
-</div>
-      </li>
-      <li class="collapseable">
-        <div class="node_key">json</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">system_identity</div>:
-        <div class="node_value">      us.utm_implementation
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">system_version</div>:
-        <div class="node_value">      interuss/monitoring/v0.0.0-a670e63
-
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">body</div>:
-        <div class="node_value">    None
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">query_type</div>:
-        <div class="node_value">      interuss.automated_testing.versioning.GetVersion
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">participant_id</div>:
-        <div class="node_value">      uss1_core
-
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-  </ul>
-
-  </div>
-
-                </td>
-                    <td>&#x1F310;</td>
-                    <td></td>
-            </tr>
-            <tr id="e6">
-              <td><a href="#e6">6</a></td>
-                <td>&#x2705;</td>
-                <td class="pass_result">
-                  Valid response
-                </td>
-                    <td class="pass_result">&#x2705;</td>
-                    <td></td>
-            </tr>
-            <tr id="e7">
-              <td><a href="#e7">7</a></td>
-                <td>&#x1F310;</td>
-                <td>
-                    <div id="e7query">
-      <ul>
-      <li class="collapseable">
-        <div class="node_key">GET scdsc.uss2.localutm 200</div>:
-        <div class="node_value">      <ul>
-      <li class="collapseable">
-        <div class="node_key">request</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">method</div>:
-        <div class="node_value">      GET
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">url</div>:
-        <div class="node_value">      http://scdsc.uss2.localutm/versioning/versions/us.utm_implementation
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-03-13T11:20:23.598760Z
-
-</div>
-      </li>
-      <li class="collapseable">
-        <div class="node_key">headers</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">User-Agent</div>:
-        <div class="node_value">      python-requests/2.32.3
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Accept-Encoding</div>:
-        <div class="node_value">      gzip, deflate, br
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Accept</div>:
-        <div class="node_value">      */*
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Connection</div>:
-        <div class="node_value">      keep-alive
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MyLmxvY2FsdXRtIiwiZXhwIjoxNzQxODY4MzY1LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MudmVyc2lvbmluZy5yZWFkX3N5c3RlbV92ZXJzaW9ucyIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
-
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">json</div>:
-        <div class="node_value">    None
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">body</div>:
-        <div class="node_value">    None
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="collapseable">
-        <div class="node_key">response</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">code</div>:
-        <div class="node_value">    200
-</div>
-      </li>
-      <li class="collapseable">
-        <div class="node_key">headers</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">Server</div>:
-        <div class="node_value">      gunicorn
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Date</div>:
-        <div class="node_value">      Thu, 13 Mar 2025 11:20:23 GMT
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Connection</div>:
-        <div class="node_value">      keep-alive
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Content-Type</div>:
-        <div class="node_value">      application/json
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Content-Length</div>:
-        <div class="node_value">      98
-
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.006143
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">reported</div>:
-        <div class="node_value">      2025-03-13T11:20:23.605333Z
-
-</div>
-      </li>
-      <li class="collapseable">
-        <div class="node_key">json</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">system_identity</div>:
-        <div class="node_value">      us.utm_implementation
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">system_version</div>:
-        <div class="node_value">      interuss/monitoring/v0.0.0-a670e63
-
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">body</div>:
-        <div class="node_value">    None
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">query_type</div>:
-        <div class="node_value">      interuss.automated_testing.versioning.GetVersion
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">participant_id</div>:
-        <div class="node_value">      uss2_core
-
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-  </ul>
-
-  </div>
-
-                </td>
-                    <td></td>
-                    <td>&#x1F310;</td>
-            </tr>
-            <tr id="e8">
-              <td><a href="#e8">8</a></td>
-                <td>&#x2705;</td>
-                <td class="pass_result">
-                  Valid response
-                </td>
-                    <td></td>
-                    <td class="pass_result">&#x2705;</td>
-            </tr>
-            <tr id="e9">
-                <td rowspan="3"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/a670e63002bd65c60985631f21bddde11cee7702/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#evaluate-current-system-versions-test-step">Evaluate current system versions</a>
-                </span></td>
-              <td><a href="#e9">9</a></td>
-                <td>&#x2705;</td>
-                <td class="pass_result">
-                  Test software version matches production
-                </td>
-                    <td class="pass_result">&#x2705;</td>
-                    <td></td>
-            </tr>
-            <tr id="e10">
-              <td><a href="#e10">10</a></td>
-                <td>&#x2705;</td>
-                <td class="pass_result">
-                  Test software version matches production
-                </td>
-                    <td></td>
-                    <td class="pass_result">&#x2705;</td>
-            </tr>
-            <tr id="e11">
-              <td><a href="#e11">11</a></td>
-                <td>&#x2705;</td>
-                <td class="pass_result">
-                  At most one participant is testing a new software version
-                </td>
-                    <td class="pass_result">&#x2705;</td>
-                    <td class="pass_result">&#x2705;</td>
-            </tr>
-            <tr id="e12">
-                <td rowspan="2"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/a670e63002bd65c60985631f21bddde11cee7702/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#evaluate-system-version-consistency-test-step">Evaluate system version consistency</a>
-                </span></td>
-              <td><a href="#e12">12</a></td>
-                <td>&#x2705;</td>
-                <td class="pass_result">
-                  Software versions are consistent throughout test run
-                </td>
-                    <td class="pass_result">&#x2705;</td>
-                    <td></td>
-            </tr>
-            <tr id="e13">
-              <td><a href="#e13">13</a></td>
-                <td>&#x2705;</td>
-                <td class="pass_result">
-                  Software versions are consistent throughout test run
+                  makeUssReport responds correctly
                 </td>
                     <td></td>
                     <td class="pass_result">&#x2705;</td>
@@ -1027,8 +925,6 @@
       addShowHide(document.getElementById("resource_origin_list"));
       addShowHide(document.getElementById("e1query"));
       addShowHide(document.getElementById("e3query"));
-      addShowHide(document.getElementById("e5query"));
-      addShowHide(document.getElementById("e7query"));
   </script>
 
 </body>
