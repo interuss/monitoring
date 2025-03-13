@@ -196,6 +196,19 @@ jobs:
         cd monitoring/uss_qualifier
         make test
 
+  uss_qualifier-minimal_probing-test:
+    name: uss_qualifier configurations.dev.minimal_probing tests
+    permissions:
+      contents: read
+    uses: ./.github/workflows/monitoring-test.yml
+    with:
+      name: uss_qualifier-minimal_probing-test
+      script: |
+        export CONFIG_NAME="configurations.dev.minimal_probing"
+
+        cd monitoring/uss_qualifier
+        make test
+
   prober-test:
     name: prober tests
     permissions:
