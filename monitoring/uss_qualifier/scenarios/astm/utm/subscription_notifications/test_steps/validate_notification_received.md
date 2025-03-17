@@ -27,7 +27,7 @@ This check will fail if tested USS does not respond with http status 204 to a va
 
 ## ⚠️ Tested USS rejects invalid notification check
 
-As per **[astm.f3548.v21.USS0105](../../../../../requirements/astm/f3548/v21.md)**, Tested USS should validate that the notification
+As per **[astm.f3548.v21.USS0105,3](../../../../../requirements/astm/f3548/v21.md)**, Tested USS should validate that the notification
 received includes the subscription_id associated with its managed operation.
 The check will be done if invalid notification is sent by Mock USS, which is determined in
 [Mock USS sends valid notification check](#⚠️-mock-uss-sends-valid-notification-check) above.

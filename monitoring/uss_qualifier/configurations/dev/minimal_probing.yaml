@@ -1,0 +1,90 @@
+$content_schema: monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json
+v1:
+  test_run:
+    resources:
+      resource_declarations:
+        kentland_planning_area: { $ref: 'library/resources.yaml#/kentland_planning_area' }
+
+        utm_auth: { $ref: 'library/environment.yaml#/utm_auth' }
+        second_utm_auth: {$ref: 'library/environment.yaml#/second_utm_auth'}
+        utm_client_identity: { $ref: 'library/resources.yaml#/utm_client_identity' }
+        id_generator: { $ref: 'library/resources.yaml#/id_generator' }
+        scd_dss_instances: { $ref: 'library/environment.yaml#/scd_dss_instances' }
+
+        test_exclusions: { $ref: 'library/resources.yaml#/test_exclusions' }
+    non_baseline_inputs:
+      - v1.test_run.resources.resource_declarations.utm_auth
+      - v1.test_run.resources.resource_declarations.second_utm_auth
+      - v1.test_run.resources.resource_declarations.scd_dss_instances
+    action:
+      test_suite:
+        suite_type: suites.astm.utm.prod_probe
+        resources:
+          dss_instances: scd_dss_instances
+          id_generator: id_generator
+          planning_area: kentland_planning_area
+          second_utm_auth: second_utm_auth
+          test_exclusions: test_exclusions
+          utm_client_identity: utm_client_identity
+    execution:
+      stop_fast: true
+  artifacts:
+    sequence_view: { }
+    tested_requirements:
+      - report_name: requirements
+        requirement_collections:
+          all_requirements:
+            requirement_collections:
+              - requirements:
+                - astm.f3548.v21.DSS0005,1
+                - astm.f3548.v21.DSS0005,2
+                - astm.f3548.v21.DSS0005,5
+                - astm.f3548.v21.DSS0020
+                - astm.f3548.v21.DSS0100,1
+                - astm.f3548.v21.DSS0100,2
+                - astm.f3548.v21.DSS0200
+                - astm.f3548.v21.DSS0205
+                - astm.f3548.v21.DSS0210,1a
+                - astm.f3548.v21.DSS0210,1b
+                - astm.f3548.v21.DSS0210,1c
+                - astm.f3548.v21.DSS0210,1d
+                - astm.f3548.v21.DSS0210,1e
+                - astm.f3548.v21.DSS0210,1f
+                - astm.f3548.v21.DSS0210,1g
+                - astm.f3548.v21.DSS0210,1h
+                - astm.f3548.v21.DSS0210,1i
+                - astm.f3548.v21.DSS0210,2a
+                - astm.f3548.v21.DSS0210,2b
+                - astm.f3548.v21.DSS0210,2c
+                - astm.f3548.v21.DSS0210,2d
+                - astm.f3548.v21.DSS0210,2e
+                - astm.f3548.v21.DSS0210,2f
+                - astm.f3548.v21.DSS0210,A2-7-2,1a
+                - astm.f3548.v21.DSS0210,A2-7-2,1b
+                - astm.f3548.v21.DSS0210,A2-7-2,1c
+                - astm.f3548.v21.DSS0210,A2-7-2,1d
+                - astm.f3548.v21.DSS0210,A2-7-2,3a
+                - astm.f3548.v21.DSS0210,A2-7-2,3b
+                - astm.f3548.v21.DSS0210,A2-7-2,4a
+                - astm.f3548.v21.DSS0210,A2-7-2,4b
+                - astm.f3548.v21.DSS0210,A2-7-2,4c
+                - astm.f3548.v21.DSS0210,A2-7-2,4d
+                - astm.f3548.v21.DSS0210,A2-7-2,5a
+                - astm.f3548.v21.DSS0210,A2-7-2,5b
+                - astm.f3548.v21.DSS0210,A2-7-2,5c
+                - astm.f3548.v21.DSS0210,A2-7-2,7
+                - astm.f3548.v21.DSS0215
+                - astm.f3548.v21.DSS0300
+        participant_requirements:
+          uss1: all_requirements
+          uss2: all_requirements
+  validation:
+    criteria:
+      - $ref: ./library/validation.yaml#/execution_error_none
+      - $ref: ./library/validation.yaml#/failed_check_severity_max_low
+      - applicability:
+          skipped_actions: {}
+        pass_condition:
+          elements:
+            count:
+              equal_to: 2 # 2 CRDBAccess scenarios are skipped

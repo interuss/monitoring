@@ -625,9 +625,7 @@ class DSSInteroperability(GenericTestScenario):
             mutated_isa = self._dss_primary.put_isa(
                 check,
                 isa_id=isa_2.uuid,
-                do_not_notify=list(
-                    all_sub_2_ids
-                ),  # Do not attempt to notify our own subscriptions
+                do_not_notify="https://testdummy.interuss.org",
                 **_default_params(datetime.timedelta(minutes=10)),
             )
             isa_2.version = mutated_isa.dss_query.isa.version
@@ -659,9 +657,7 @@ class DSSInteroperability(GenericTestScenario):
                 check,
                 isa_id=isa_2.uuid,
                 isa_version=isa_2.version,
-                do_not_notify=list(
-                    all_sub_2_ids
-                ),  # Do not attempt to notify our own subscriptions
+                do_not_notify="https://testdummy.interuss.org",
             )
 
         with self.check(

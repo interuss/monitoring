@@ -13,6 +13,7 @@ resources:
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
   nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   priority_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
+  utm_auth: resources.communications.AuthAdapterResource?
   second_utm_auth: resources.communications.AuthAdapterResource?
   utm_client_identity: resources.communications.ClientIdentityResource
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
@@ -255,6 +256,11 @@ actions:
       flight_intents2: priority_preemption_flights?
       flight_intents3: conflicting_flights?
       flight_intents4: non_conflicting_flights?
+  on_failure: Continue
+- test_scenario:
+    scenario_type: scenarios.astm.utm.make_uss_report.MakeUssReport
+    resources:
+      utm_auth: utm_auth
   on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.astm.utm.versioning.evaluate_system_versions.EvaluateSystemVersions

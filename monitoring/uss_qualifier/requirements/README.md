@@ -6,7 +6,7 @@ The primary purpose of uss_qualifier is to identify the requirements with which 
 
 ## Documentation format
 
-A requirement's identifier is `<PACKAGE>.<NAME>` where `<PACKAGE>` is a Python-style package reference to a .md file (without extension) relative to this folder (`uss_qualifier/requirements`).  For instance, the `<PACKAGE>` for the file located at `./astm/f3548/v21.md` would be `astm.f3548.v21`.  `<NAME>` is an identifier defined in the file described by `<PACKAGE>` by enclosing it in a `<tt>` tag; for instance: `<tt>USS0105</tt>`.
+A requirement's identifier is `<PACKAGE>.<NAME>` where `<PACKAGE>` is a Python-style package reference to a .md file (without extension) relative to this folder (`uss_qualifier/requirements`).  For instance, the `<PACKAGE>` for the file located at `./astm/f3548/v21.md` would be `astm.f3548.v21`.  `<NAME>` is an identifier defined in the file described by `<PACKAGE>` by enclosing it in a `<tt>` tag; for instance: `<tt>USS0105,1</tt>`.
 
 ## Usage
 

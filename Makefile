@@ -18,8 +18,8 @@ isort-image:
 
 .PHONY: format
 format: isort-image
-	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:25.1.0 black --exclude=$(BLACK_EXCLUDES) .
-	docker run --rm -v "$(CURDIR):/code" -w /code interuss/isort --profile black ${ISORT_EXCLUDES} .
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/code" -w /code pyfound/black:25.1.0 black --exclude=$(BLACK_EXCLUDES) .
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/code" -w /code interuss/isort --profile black ${ISORT_EXCLUDES} .
 	cd monitoring && make format
 	cd schemas && make format
 
