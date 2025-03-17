@@ -101,10 +101,11 @@ class TelemetryMapping(object):
 
 @dataclass
 class FetchedToInjectedCache(object):
-    # Mapping is a map of URL -> ParticipantID that we found until now
     mappings: dict[str, ParticipantID] = field(default_factory=dict)
-    # Unmapped is the list of flights we didn't attributed yet
+    """Mapping is a map of URL -> ParticipantID that we found until now"""
+
     unmapped: list[FetchedUSSFlights] = field(default_factory=list)
+    """Unmapped is the list of flights we didn't attributed yet"""
 
 
 def map_observations_to_injected_flights(
