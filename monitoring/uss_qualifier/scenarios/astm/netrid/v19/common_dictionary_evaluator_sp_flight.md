@@ -4,11 +4,11 @@ This fragment is implemented in `common_dictionary_evaluator.py:RIDCommonDiction
 
 ## ⚠️ UAS ID presence in flight details check
 
-NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the UAS ID is present in the information sent by the Service Provider. (**[astm.f3411.v19.NET0260,Table1,1](../../../../requirements/astm/f3411/v19.md)**)
+NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the UAS ID is present (serial number or registration ID set) in the information sent by the Service Provider. (**[astm.f3411.v19.NET0260,Table1,1](../../../../requirements/astm/f3411/v19.md)**)
 
 ## ⚠️ UAS ID (Serial number) is exposed correctly check
 
-If the UAS ID's serial number value exposed by the SP API is missing or invalid this check will fail per:
+If the UAS ID's serial number value exposed by the SP API is invalid this check will fail per:
 **[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)** because the SP violates the SP API contract;
 **[astm.f3411.v19.NET0260,Table1,1a](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
 
@@ -19,7 +19,7 @@ If the UAS ID's serial number value exposed by the SP API is inconsistent with t
 
 ## ⚠️ UAS ID (Registration ID) is exposed correctly check
 
-If the UAS ID's registration ID value exposed by the SP API is missing or invalid this check will fail per:
+If the UAS ID's registration ID value exposed by the SP API is invalid this check will fail per:
 **[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)** because the SP violates the SP API contract;
 **[astm.f3411.v19.NET0260,Table1,1b](../../../../requirements/astm/f3411/v19.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
 

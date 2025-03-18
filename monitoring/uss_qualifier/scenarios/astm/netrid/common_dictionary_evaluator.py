@@ -38,6 +38,7 @@ from uas_standards.interuss.automated_testing.rid.v1.injection import (
 from monitoring.monitorlib.fetch.rid import Flight, FlightDetails, Position
 from monitoring.monitorlib.geo import Altitude, LatLngPoint, validate_lat, validate_lng
 from monitoring.monitorlib.rid import RIDVersion
+from monitoring.monitorlib.schema_validation import F3411_19, F3411_22a
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenarioType
@@ -246,13 +247,13 @@ class RIDCommonDictionaryEvaluator(object):
             sp_values = []
 
             if sp_observed.rid_version == RIDVersion.f3411_19:
-                sp_values += [
+                sp_values = [
                     sp_observed.v19_value.get("registration_number", None),
                     sp_observed.v19_value.get("serial_number", None),
                 ]
             elif sp_observed.rid_version == RIDVersion.f3411_22a:
                 if "uas_id" in sp_observed.v22a_value and sp_observed.v22a_value.uas_id:
-                    sp_values += [
+                    sp_values = [
                         sp_observed.v22a_value.uas_id.get("registration_id", None),
                         sp_observed.v22a_value.uas_id.get("serial_number", None),
                         sp_observed.v22a_value.uas_id.get("specific_session_id", None),
@@ -312,24 +313,19 @@ class RIDCommonDictionaryEvaluator(object):
                 )
                 return
 
+        # NB: We don't use the two redudent fields for registration_id and
+        # serial_number in flight details. get_test_flights ensured values are
+        # in sync with thoses in uas_id.
+
+        # Can be returned by f3411_19 and f3411_22a SP interface
         possible_values = [
-            injected.get("registration_number", None),
-            injected.get("serial_number", None),
+            injected.uas_id.get("registration_id", None),
+            injected.uas_id.get("serial_number", None),
         ]
 
-        if (
-            self._rid_version == RIDVersion.f3411_22a
-            and "uas_id" in injected
-            and injected.uas_id
-        ):
-            # Remark: We don't check explicity for differences between the
-            # registration number and serial number in injected values and
-            # injected['uas_id'] values and accept any choices by the SP.
-            # The injection API should probably be updated to have thoses
-            # fields in a unique location.
+        # Can be returned by f3411_22a SP interface
+        if self._rid_version == RIDVersion.f3411_22a:
             possible_values += [
-                injected.uas_id.get("registration_id", None),
-                injected.uas_id.get("serial_number", None),
                 injected.uas_id.get("specific_session_id", None),
                 injected.uas_id.get("utm_id", None),
             ]
@@ -354,12 +350,7 @@ class RIDCommonDictionaryEvaluator(object):
                 if self._rid_version == RIDVersion.f3411_19:
                     dp_can_return_anything = True  # Impossible to inject an utm_id
                 elif self._rid_version == RIDVersion.f3411_22a:
-                    if (
-                        "uas_id" not in injected
-                        or not injected.uas_id
-                        or "utm_id" not in injected.uas_id
-                        or not injected.uas_id.utm_id
-                    ):
+                    if "utm_id" not in injected.uas_id or not injected.uas_id.utm_id:
                         dp_can_return_anything = True  # No uas_id.utm_id value
                 else:
                     check.skip()
@@ -417,9 +408,7 @@ class RIDCommonDictionaryEvaluator(object):
         self._generic_evaluator(
             (
                 "uas_id.serial_number"
-                if self._rid_version == RIDVersion.f3411_22a
-                else "serial_number"
-            ),  # TODO
+            ),  # NB: We don't use the redudent field in flight details,  get_test_flights ensured value is in sync with the uas_id's one
             "serial_number",
             None,
             "UAS ID (Serial number)",
@@ -471,9 +460,7 @@ class RIDCommonDictionaryEvaluator(object):
         self._generic_evaluator(
             (
                 "uas_id.registration_id"
-                if self._rid_version == RIDVersion.f3411_22a
-                else "registration_number"
-            ),  # TODO
+            ),  # NB: We don't use the redudent field in flight details,  get_test_flights ensured value is in sync with the uas_id's one
             "registration_id",
             None,
             "UAS ID (Registration ID)",
@@ -509,6 +496,10 @@ class RIDCommonDictionaryEvaluator(object):
             return
 
         def value_validator(val: str) -> uuid.UUID:
+
+            if not val:
+                return val
+
             # The standard say it's a UUID, but doesn't really set the format.
             # We do accept the most common ones
             return uuid.UUID(val)
@@ -580,6 +571,7 @@ class RIDCommonDictionaryEvaluator(object):
             dp_observed=None,
             participant=participant,
             query_timestamp=query_timestamp,
+            sp_is_allowed_to_generate_missing=True,
         )
 
     def _evaluate_timestamp(self, **generic_kwargs):
@@ -1470,6 +1462,7 @@ class RIDCommonDictionaryEvaluator(object):
         ],
         participant: ParticipantID,
         query_timestamp: datetime.datetime,
+        sp_is_allowed_to_generate_missing: bool = False,
     ):
         """
         Generic evaluator of a field. Exactly one of sp_observed or dp_observed must be provided.
@@ -1493,6 +1486,8 @@ class RIDCommonDictionaryEvaluator(object):
             dp_observed: flight (or details) observed through the observation API.
             participant: participant providing the API through which the value was observed.
             query_timestamp: timestamp of the observation query.
+            sp_is_allowed_to_generate_missing: Boolean to indicate that the SP may generate any value, should no value have been injected.
+
 
         Raises:
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
@@ -1534,12 +1529,15 @@ class RIDCommonDictionaryEvaluator(object):
         ) as check:
             if sp_observed is not None:
                 if observed_val is None:  # C3
-                    check.record_failed(
-                        f"{field_human_name} is missing",
-                        details=f"SP did not return any {field_human_name}",
-                        query_timestamps=[query_timestamp],
-                        additional_data={"RIDCommonDictionaryEvaluatorCheckID": "C3"},
-                    )
+                    if injection_required_field or injected_val:
+                        check.record_failed(
+                            f"{field_human_name} is missing",
+                            details=f"SP did not return any {field_human_name}",
+                            query_timestamps=[query_timestamp],
+                            additional_data={
+                                "RIDCommonDictionaryEvaluatorCheckID": "C3"
+                            },
+                        )
 
             if observed_val is not None:  # C5 / C9
                 if value_validator is not None:
@@ -1580,16 +1578,17 @@ class RIDCommonDictionaryEvaluator(object):
                     unknown_value = [unknown_value]
 
                 if observed_val not in unknown_value:  # C6 / C10
-                    check.record_failed(
-                        f"{field_human_name} is inconsistent, expected '{unknown_value}' since no value was injected",
-                        details=f"USS returned the UA type {observed_val} yet no value was injected. Since '{field_human_name}' is a required field of SP API, the SP should map this to '{unknown_value}' and the DP should expose the same value.",
-                        query_timestamps=[query_timestamp],
-                        additional_data={
-                            "RIDCommonDictionaryEvaluatorCheckID": (
-                                "C6" if sp_observed else "C10"
-                            )
-                        },
-                    )
+                    if not sp_is_allowed_to_generate_missing:
+                        check.record_failed(
+                            f"{field_human_name} is inconsistent, expected '{unknown_value}' since no value was injected",
+                            details=f"USS returned the value {observed_val} for {field_human_name} yet no value was injected. Since '{field_human_name}' is a required field of SP API, the SP should map this to '{unknown_value}' and the DP should expose the same value.",
+                            query_timestamps=[query_timestamp],
+                            additional_data={
+                                "RIDCommonDictionaryEvaluatorCheckID": (
+                                    "C6" if sp_observed else "C10"
+                                )
+                            },
+                        )
 
             elif not value_comparator(injected_val, observed_val):  # C7 / C10
                 check.record_failed(

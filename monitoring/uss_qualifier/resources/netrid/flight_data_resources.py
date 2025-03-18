@@ -12,7 +12,6 @@ from uas_standards.interuss.automated_testing.rid.v1.injection import (
     TestFlightDetails,
 )
 
-from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
 from monitoring.uss_qualifier.resources.files import load_content, load_dict
 from monitoring.uss_qualifier.resources.netrid.flight_data import (
@@ -60,9 +59,7 @@ class FlightDataResource(Resource[FlightDataSpecification]):
             )
         self._flight_start_delay = specification.flight_start_delay.timedelta
 
-    def get_test_flights(
-        self, rid_version: Optional[RIDVersion] = None
-    ) -> List[TestFlight]:
+    def get_test_flights(self) -> List[TestFlight]:
         t0 = arrow.utcnow() + self._flight_start_delay
 
         test_flights: List[TestFlight] = []
@@ -101,23 +98,50 @@ class FlightDataResource(Resource[FlightDataSpecification]):
                 details=flight.flight_details,
             )
 
-            if (
-                rid_version == RIDVersion.f3411_22a
-            ):  # If not present, we do inject the v22 version of id
-                if "uas_id" not in details.details:
+            # Right now, injection API specfic two method of injecting the
+            # serial_number and registration_number.
+            # To ensure consistency, we do inject both if one value is present,
+            # raise an expcetion if we do have different value and do nothing
+            # if none are present
 
-                    utm_id = str(
-                        uuid.UUID(
-                            int=(2**128 - uuid.UUID(details.details.id).int), version=4
-                        )
-                    )
+            # Values outside uas_id
+            serial_number = details.details.get("serial_number")
+            registration_number = details.details.get("registration_number")
 
-                    details.details["uas_id"] = UASID(
-                        serial_number=details.details.get("serial_number"),
-                        registration_id=details.details.get("registration_number"),
-                        utm_id=str(utm_id),
-                        specific_session_id=f"02-{utm_id.replace('-', '')[:19]}",
+            # No uas_id and one value present: We build a uas_id that we will
+            # fill at next step
+            if ("uas_id" not in details.details or not details.details.uas_id) and (
+                serial_number or registration_number
+            ):
+                details.details.uas_id = UASID()
+
+            if details.details.uas_id.serial_number:
+                if not serial_number:  # No serial number outside uas_id, we set it
+                    details.details.serial_number = details.details.uas_id.serial_number
+                elif serial_number != details.details.uas_id.serial_number:
+                    raise ValueError(
+                        f"Impossible to generate test flihts: details.serial_number ({serial_number}) is not eqal to details.uas_id.serial_number ({details.details.uas_id.serial_number})"
                     )
+            elif (
+                serial_number
+            ):  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
+                details.details.uas_id.serial_number = serial_number
+
+            if details.details.uas_id.registration_id:
+                if (
+                    not registration_number
+                ):  # No serial number outside uas_id, we set it
+                    details.details.registration_number = (
+                        details.details.uas_id.registration_id
+                    )
+                elif registration_number != details.details.uas_id.registration_id:
+                    raise ValueError(
+                        f"Impossible to generate test flihts: details.registration_number ({registration_number}) is not eqal to details.uas_id.registration_id ({details.details.uas_id.registration_id})"
+                    )
+            elif (
+                registration_number
+            ):  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
+                details.details.uas_id.registration_id = registration_number
 
             test_flights.append(
                 TestFlight(
@@ -179,7 +203,7 @@ class FlightDataResource(Resource[FlightDataSpecification]):
 
         flights = self_copy.get_test_flights()
 
-        def new_test_flights(self, rid_version=None):
+        def new_test_flights(self):
             return flights
 
         self_copy.get_test_flights = new_test_flights.__get__(

@@ -8,7 +8,9 @@ This fragment is implemented in `common_dictionary_evaluator.py:RIDCommonDiction
 
 ## ⚠️ UAS ID is consistent with injected one check
 
-If the UAS ID contained in flight details returned by a display provider does not correspond to the injected one, the DP is not providing accurate data and is thus in breach of **[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)**
+If the UA ID value exposed by the observer API is inconsistent with the possible injected values this check will fail per:
+**[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
+**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
 
 ## ⚠️ UA classification type is consistent with injected value check
 
