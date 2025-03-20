@@ -640,7 +640,9 @@ class FlightDetails(ImplicitDict):
         if self.rid_version == RIDVersion.f3411_19:
             return self.v19_value.serial_number
         elif self.rid_version == RIDVersion.f3411_22a:
-            if self.v22a_value.has_field_with_value("uas_id"):
+            if self.v22a_value.has_field_with_value(
+                "uas_id"
+            ) and self.v22a_value.uas_id.has_field_with_value("serial_number"):
                 return self.v22a_value.uas_id.serial_number
             else:
                 return None
@@ -656,7 +658,9 @@ class FlightDetails(ImplicitDict):
         if self.rid_version == RIDVersion.f3411_19:
             return self.v19_value.registration_number
         elif self.rid_version == RIDVersion.f3411_22a:
-            if self.v22a_value.has_field_with_value("uas_id"):
+            if self.v22a_value.has_field_with_value(
+                "uas_id"
+            ) and self.v22a_value.uas_id.has_field_with_value("registration_id"):
                 return self.v22a_value.uas_id.registration_id
             else:
                 return None
