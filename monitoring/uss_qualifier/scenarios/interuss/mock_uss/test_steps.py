@@ -62,6 +62,22 @@ def notif_op_intent_id_filter(
     return is_applicable
 
 
+def notif_sub_id_filter(
+    sub_id: EntityID,
+) -> Callable[[Interaction], bool]:
+    """Returns an `is_applicable` function that detects whether an op intent notification refers to the specified subscription."""
+
+    def is_applicable(interaction: Interaction) -> bool:
+        if "json" in interaction.query.request and interaction.query.request.json:
+            subs = interaction.query.request.json.get("subscriptions")
+            return isinstance(subs, list) and any(
+                sub_id == sub.get("subscription_id") for sub in subs
+            )
+        return False
+
+    return is_applicable
+
+
 def base_url_filter(
     base_url: str,
 ) -> Callable[[Interaction], bool]:
