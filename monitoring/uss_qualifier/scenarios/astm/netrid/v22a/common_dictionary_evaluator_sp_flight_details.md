@@ -4,11 +4,52 @@ This fragment is implemented in `common_dictionary_evaluator.py:RIDCommonDiction
 
 ## ⚠️ UAS ID presence in flight details check
 
-NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the UAS ID is present in the information sent by the Service Provider. (**[astm.f3411.v22a.NET0260,Table1,1](../../../../requirements/astm/f3411/v22a.md)**)
+NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the UAS ID is present (serial number, registration ID, UTM ID or Specifc session ID set) in the information sent by the Service Provider. (**[astm.f3411.v22a.NET0260,Table1,1](../../../../requirements/astm/f3411/v22a.md)**)
 
-## ⚠️ UAS ID (Serial Number format) consistency with Common Dictionary check
+## ⚠️ UAS ID (Serial number) is exposed correctly check
 
-NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that the UAS ID is in serial number format. (**[astm.f3411.v22a.NET0260,Table1,1a](../../../../requirements/astm/f3411/v22a.md)**)
+If the UAS ID's serial number value exposed by the SP API is invalid this check will fail per:
+**[astm.f3411.v22a.NET0710,1](../../../../requirements/astm/f3411/v22a.md)** because the SP violates the SP API contract;
+**[astm.f3411.v22a.NET0260,Table1,1a](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
+## ⚠️ UAS ID (Serial number) is consistent with injected value check
+
+If the UAS ID's serial number value exposed by the SP API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v22a.NET0260,Table1,1a](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the valid injected value.
+
+## ⚠️ UAS ID (Registration ID) is exposed correctly check
+
+If the UAS ID's registration ID value exposed by the SP API is  invalid this check will fail per:
+**[astm.f3411.v22a.NET0710,1](../../../../requirements/astm/f3411/v22a.md)** because the SP violates the SP API contract;
+**[astm.f3411.v22a.NET0260,Table1,1b](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ UAS ID (Registration ID) is consistent with injected value check
+
+If the UAS ID's registration ID value exposed by the SP API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v22a.NET0260,Table1,1b](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the valid injected value.
+
+## ⚠️ UAS ID (UTM ID) is exposed correctly check
+
+If the UAS ID's UTM ID value exposed by the SP API is invalid this check will fail per:
+**[astm.f3411.v22a.NET0710,1](../../../../requirements/astm/f3411/v22a.md)** because the SP violates the SP API contract;
+**[astm.f3411.v22a.NET0260,Table1,1c](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ UAS ID (UTM ID) is consistent with injected value check
+
+If the UAS ID's UTM ID value exposed by the SP API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v22a.NET0260,Table1,1c](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the valid injected value.
+
+## ⚠️ UAS ID (Specific session ID) is exposed correctly check
+
+If the UAS ID's Specific session ID value exposed by the SP API is invalid this check will fail per:
+**[astm.f3411.v22a.NET0710,1](../../../../requirements/astm/f3411/v22a.md)** because the SP violates the SP API contract;
+**[astm.f3411.v22a.NET0260,Table1,1d](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the Common Data Dictionary.
+
+## ⚠️ UAS ID (Specific session ID) is consistent with injected value check
+
+If the UAS ID's Specific session ID value exposed by the SP API is inconsistent with the injected value this check will fail per:
+**[astm.f3411.v22a.NET0260,Table1,1d](../../../../requirements/astm/f3411/v22a.md)** because the SP fails to expose data consistent with the valid injected value.
+
+If nothing has been injected, the SP is allowed to generate a value and thus this check is only done when UAS ID's UTM ID value has been injected.
 
 ## ⚠️ UA classification type is consistent with injected value check
 
