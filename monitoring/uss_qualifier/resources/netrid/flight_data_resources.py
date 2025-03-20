@@ -6,6 +6,7 @@ from typing import List, Optional, Self
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
+from uas_standards.astm.f3411.v22a.api import UASID
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     RIDAircraftState,
     TestFlightDetails,
@@ -96,6 +97,51 @@ class FlightDataResource(Resource[FlightDataSpecification]):
                 effective_after=StringBasedDateTime(t0),
                 details=flight.flight_details,
             )
+
+            # Right now, injection API specfic two method of injecting the
+            # serial_number and registration_number.
+            # To ensure consistency, we do inject both if one value is present,
+            # raise an expcetion if we do have different value and do nothing
+            # if none are present
+
+            # Values outside uas_id
+            serial_number = details.details.get("serial_number")
+            registration_number = details.details.get("registration_number")
+
+            # No uas_id and one value present: We build a uas_id that we will
+            # fill at next step
+            if ("uas_id" not in details.details or not details.details.uas_id) and (
+                serial_number or registration_number
+            ):
+                details.details.uas_id = UASID()
+
+            if details.details.uas_id.serial_number:
+                if not serial_number:  # No serial number outside uas_id, we set it
+                    details.details.serial_number = details.details.uas_id.serial_number
+                elif serial_number != details.details.uas_id.serial_number:
+                    raise ValueError(
+                        f"Impossible to generate test flihts: details.serial_number ({serial_number}) is not eqal to details.uas_id.serial_number ({details.details.uas_id.serial_number})"
+                    )
+            elif (
+                serial_number
+            ):  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
+                details.details.uas_id.serial_number = serial_number
+
+            if details.details.uas_id.registration_id:
+                if (
+                    not registration_number
+                ):  # No serial number outside uas_id, we set it
+                    details.details.registration_number = (
+                        details.details.uas_id.registration_id
+                    )
+                elif registration_number != details.details.uas_id.registration_id:
+                    raise ValueError(
+                        f"Impossible to generate test flihts: details.registration_number ({registration_number}) is not eqal to details.uas_id.registration_id ({details.details.uas_id.registration_id})"
+                    )
+            elif (
+                registration_number
+            ):  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
+                details.details.uas_id.registration_id = registration_number
 
             test_flights.append(
                 TestFlight(

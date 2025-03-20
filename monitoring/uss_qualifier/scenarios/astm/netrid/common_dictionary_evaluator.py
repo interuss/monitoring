@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import datetime
 import math
+import re
+import uuid
 from collections.abc import Callable
 from typing import Any, List, Optional, TypeVar, Union
 
@@ -36,6 +38,7 @@ from uas_standards.interuss.automated_testing.rid.v1.injection import (
 from monitoring.monitorlib.fetch.rid import Flight, FlightDetails, Position
 from monitoring.monitorlib.geo import Altitude, LatLngPoint, validate_lat, validate_lng
 from monitoring.monitorlib.rid import RIDVersion
+from monitoring.monitorlib.schema_validation import F3411_19, F3411_22a
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenarioType
@@ -64,6 +67,7 @@ class RIDCommonDictionaryEvaluator(object):
         "_evaluate_height_type",
     ]
     details_evaluators = [
+        "_evaluate_uas_id",
         "_evaluate_ua_classification",
         "_evaluate_ua_classification_eu_category",
         "_evaluate_ua_classification_eu_class",
@@ -161,7 +165,6 @@ class RIDCommonDictionaryEvaluator(object):
                 query_timestamp=query_timestamp,
             )
 
-        self._evaluate_uas_id(observed_details.raw.get("uas_id"), [participant_id])
         self._evaluate_operator_id(None, observed_details.operator_id, [participant_id])
         self._evaluate_operator_location(
             None,
@@ -194,14 +197,6 @@ class RIDCommonDictionaryEvaluator(object):
         if not observed_details:
             return
 
-        self._evaluate_arbitrary_uas_id(
-            injected_details.get(
-                "uas_id", injected_details.get("serial_number", None)
-            ),  # fall back on seria number if no UAS ID
-            observed_details.get("uas", {}).get("id", None),
-            [participant_id],
-        )
-
         operator_obs = observed_details.get("operator", {})
 
         self._evaluate_operator_id(
@@ -223,88 +218,361 @@ class RIDCommonDictionaryEvaluator(object):
             [participant_id],
         )
 
-    def _evaluate_uas_id(self, value: Optional[UASID], participants: List[str]):
-        if self._rid_version == RIDVersion.f3411_22a:
-            formats_keys = [
-                "serial_number",
-                "registration_id",
-                "utm_id",
-                "specific_session_id",
-            ]
-            formats_count = (
-                0
-                if value is None
-                else sum([0 if value.get(v) is None else 1 for v in formats_keys])
-            )
-            with self._test_scenario.check(
-                "UAS ID presence in flight details", participants
-            ) as check:
-                if formats_count == 0:
-                    check.record_failed(
-                        f"UAS ID not present as required by the Common Dictionary definition: {value}",
-                    )
-                    return
-
-            serial_number = value.get("serial_number")
-            if serial_number:
-                with self._test_scenario.check(
-                    "UAS ID (Serial Number format) consistency with Common Dictionary",
-                    participants,
-                ) as check:
-                    if not SerialNumber(serial_number).valid:
-                        check.record_failed(
-                            f"Invalid uas_id serial number: {serial_number}"
-                        )
-                    else:
-                        check.record_passed()
-
-            # TODO: Add registration id format check
-            # TODO: Add utm id format check
-            # TODO: Add specific session id format check
-        else:
-            self._test_scenario.record_note(
-                key="skip_reason",
-                message=f"Unsupported version {self._rid_version}: skipping UAS ID evaluation",
-            )
-
-    def _evaluate_arbitrary_uas_id(
-        self, value_inj: str, value_obs: str, participants: List[str]
+    def _evaluate_uas_id(
+        self,
+        injected: injection.RIDFlightDetails,
+        sp_observed: Optional[FlightDetails],
+        dp_observed: Optional[observation_api.GetDetailsResponse],
+        participant: ParticipantID,
+        query_timestamp: datetime.datetime,
     ):
+        """
+        Evaluates UAS id Exactly one of sp_observed or dp_observed must be provided.
+        See as well `common_dictionary_evaluator.md`.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        if dp_observed:
+            return self._evaluate_uas_id_dp(
+                injected, dp_observed, participant, query_timestamp
+            )
+
+        # We check that there is at least one value set
+        with self._test_scenario.check(
+            "UAS ID presence in flight details", participant
+        ) as check:
+
+            sp_values = []
+
+            if sp_observed.rid_version == RIDVersion.f3411_19:
+                sp_values = [
+                    sp_observed.v19_value.get("registration_number", None),
+                    sp_observed.v19_value.get("serial_number", None),
+                ]
+            elif sp_observed.rid_version == RIDVersion.f3411_22a:
+                if "uas_id" in sp_observed.v22a_value and sp_observed.v22a_value.uas_id:
+                    sp_values = [
+                        sp_observed.v22a_value.uas_id.get("registration_id", None),
+                        sp_observed.v22a_value.uas_id.get("serial_number", None),
+                        sp_observed.v22a_value.uas_id.get("specific_session_id", None),
+                        sp_observed.v22a_value.uas_id.get("utm_id", None),
+                    ]
+            else:
+                check.skip()
+                self._test_scenario.record_note(
+                    key="skip_reason",
+                    message=f"Unsupported version {self._rid_version}: skipping check for UAS ID presence",
+                )
+                return
+
+            if not any(sp_values):
+                check.record_failed(
+                    f"UAS ID not present as required by the Common Dictionary definition",
+                )
+
+        # We check individual fields
+        for sub_check in [
+            "_evaluate_uas_id_serial_number",
+            "_evaluate_uas_id_registration_id",
+            "_evaluate_uas_id_utm_id",
+            "_evaluate_uas_id_specific_session_id",
+        ]:
+            getattr(self, sub_check)(
+                injected,
+                sp_observed,
+                participant,
+                query_timestamp,
+            )
+
+    def _evaluate_uas_id_dp(
+        self,
+        injected: injection.RIDFlightDetails,
+        observed: Optional[observation_api.GetDetailsResponse],
+        participant: ParticipantID,
+        query_timestamp: datetime.datetime,
+    ):
+        """
+        Evaluates UAS id for DP observations.
+
+        We cannot use the generic function in that case.
+        The value returned by the DP is obscured and may be any of various UAS id injected.
+        It's possible to have the utm_id not injected, but generated by the SP and returned by the DP. In thoses case, we skip the check because we don't know if the value is correct
+        """
+
+        observed_value = observed.get("uas", {}).get("id", None)
+
+        with self._test_scenario.check(
+            "UAS ID presence in flight details", participant
+        ) as check:
+            if observed_value is None:
+                check.record_failed(
+                    "UAS ID not present as required by the Common Dictionary definition",
+                    query_timestamps=[query_timestamp],
+                )
+                return
+
+        # NB: We don't use the two redudent fields for registration_id and
+        # serial_number in flight details. get_test_flights ensured values are
+        # in sync with thoses in uas_id.
+
+        # Can be returned by f3411_19 and f3411_22a SP interface
+        possible_values = [
+            injected.uas_id.get("registration_id", None),
+            injected.uas_id.get("serial_number", None),
+        ]
+
+        # Can be returned by f3411_22a SP interface
         if self._rid_version == RIDVersion.f3411_22a:
-            with self._test_scenario.check(
-                "UAS ID presence in flight details", participants
-            ) as check:
-                if value_obs is None:
-                    check.record_failed(
-                        f"UAS ID not present as required by the Common Dictionary definition: {value_obs}",
+            possible_values += [
+                injected.uas_id.get("specific_session_id", None),
+                injected.uas_id.get("utm_id", None),
+            ]
+
+        possible_values = list(filter(lambda x: x, possible_values))
+
+        with self._test_scenario.check(
+            "UAS ID is consistent with injected one", participant
+        ) as check:
+
+            if observed_value in possible_values:
+                check.record_passed()
+            else:
+
+                dp_can_return_anything = False
+
+                # If there is no utm_id injected, the SP is allowed to generate one.
+                # In that case, the DP may return this generated, unknown to us, value,
+                # so we cannot do any tests about the returned value and need to allows
+                # the DP to return anything.
+
+                if self._rid_version == RIDVersion.f3411_19:
+                    dp_can_return_anything = True  # Impossible to inject an utm_id
+                elif self._rid_version == RIDVersion.f3411_22a:
+                    if "utm_id" not in injected.uas_id or not injected.uas_id.utm_id:
+                        dp_can_return_anything = True  # No uas_id.utm_id value
+                else:
+                    check.skip()
+                    self._test_scenario.record_note(
+                        key="skip_reason",
+                        message=f"Unsupported version {self._rid_version}: skipping check for UAS ID consistency",
                     )
+
                     return
 
-            if SerialNumber(value_obs).valid:
-                self._test_scenario.check(
-                    "UAS ID (Serial Number format) consistency with Common Dictionary",
-                    participants,
-                ).record_passed()
+                if dp_can_return_anything:
+                    check.skip()
+                    self._test_scenario.record_note(
+                        key="skip_reason",
+                        message=f"Unable to verify that observed UAS id is valid, skipped consistency validation",
+                    )
+                else:
+                    check.record_failed(
+                        f"UAS ID observed ({observed_value}) in not consistent with one of the injected values ({', '.join(possible_values)})",
+                        query_timestamps=[query_timestamp],
+                    )
 
-            if value_obs is not None:
-                with self._test_scenario.check(
-                    "UAS ID is consistent with injected one", participants
-                ) as check:
-                    if value_inj != value_obs:
-                        check.record_failed(
-                            "Observed UAS ID not consistent with injected one",
-                            details=f"Observed: {value_obs} - injected: {value_inj}",
-                        )
+    def _evaluate_uas_id_serial_number(
+        self,
+        injected: injection.RIDFlightDetails,
+        observed: FlightDetails,
+        participant: ParticipantID,
+        query_timestamp: datetime.datetime,
+    ):
+        """
+        Evaluates UAS ID serial number. Contrary to most generic evaluators, cannot evaluate DP.
+        See as well `common_dictionary_evaluator.md`.
 
-        # TODO: Add registration id format check
-        # TODO: Add utm id format check
-        # TODO: Add specific session id format check
-        # TODO: Add a check to validate at least one format is correct
-        else:
-            self._test_scenario.record_note(
-                key="skip_reason",
-                message=f"Unsupported version {self._rid_version}: skipping arbitrary uas id evaluation",
-            )
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        def value_validator(val: SerialNumber) -> SerialNumber:
+
+            if not val:
+                return val
+
+            serial_number = SerialNumber(val)
+
+            if not serial_number.valid:
+                raise ValueError("Invalid serial number")
+
+            return serial_number
+
+        def value_comparator(
+            v1: Optional[SerialNumber], v2: Optional[SerialNumber]
+        ) -> bool:
+            return v1 == v2
+
+        self._generic_evaluator(
+            (
+                "uas_id.serial_number"
+            ),  # NB: We don't use the redudent field in flight details,  get_test_flights ensured value is in sync with the uas_id's one
+            "serial_number",
+            None,
+            "UAS ID (Serial number)",
+            value_validator,
+            None,
+            False,
+            None,
+            value_comparator,
+            injected=injected,
+            sp_observed=observed,
+            dp_observed=None,
+            participant=participant,
+            query_timestamp=query_timestamp,
+        )
+
+    def _evaluate_uas_id_registration_id(
+        self,
+        injected: injection.RIDFlightDetails,
+        observed: FlightDetails,
+        participant: ParticipantID,
+        query_timestamp: datetime.datetime,
+    ):
+        """
+        Evaluates UAS ID registration id. Contrary to most generic evaluators, cannot evaluate DP.
+        See as well `common_dictionary_evaluator.md`.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        def value_validator(val: str) -> str:
+
+            if not val:
+                return val
+
+            # We don't check for ICAO Nationality mark validity
+            # because we don't have a list of valid marks, but
+            # otherwise enforce the formatting rule from the standard
+            if not re.match(r"^[A-Z0-9]{1,4}\.[A-Z0-9]+$", val):
+                raise ValueError(
+                    "Invalid registration ID; expected <ICAO nationality>.<CAA assigned ID>"
+                )
+
+            return val
+
+        def value_comparator(v1: Optional[str], v2: Optional[str]) -> bool:
+            return v1 == v2
+
+        self._generic_evaluator(
+            (
+                "uas_id.registration_id"
+            ),  # NB: We don't use the redudent field in flight details,  get_test_flights ensured value is in sync with the uas_id's one
+            "registration_id",
+            None,
+            "UAS ID (Registration ID)",
+            value_validator,
+            None,
+            False,
+            None,
+            value_comparator,
+            injected=injected,
+            sp_observed=observed,
+            dp_observed=None,
+            participant=participant,
+            query_timestamp=query_timestamp,
+        )
+
+    def _evaluate_uas_id_utm_id(
+        self,
+        injected: injection.RIDFlightDetails,
+        observed: FlightDetails,
+        participant: ParticipantID,
+        query_timestamp: datetime.datetime,
+    ):
+        """
+        Evaluates UAS ID UTM id. Contrary to most generic evaluators, cannot evaluate DP.
+        See as well `common_dictionary_evaluator.md`.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        # This field doesn't exists in v19
+        if self._rid_version == RIDVersion.f3411_19:
+            return
+
+        def value_validator(val: str) -> uuid.UUID:
+
+            if not val:
+                return val
+
+            # The standard say it's a UUID, but doesn't really set the format.
+            # We do accept the most common ones
+            return uuid.UUID(val)
+
+        def value_comparator(v1: Optional[uuid.UUID], v2: Optional[uuid.UUID]) -> bool:
+            if (
+                not v1
+            ):  # If we didn't inject a value, the UTM (in our case, the USS) may provide a value
+                return True
+            return v1 == v2
+
+        self._generic_evaluator(
+            "uas_id.utm_id",
+            "raw.uas_id.utm_id",
+            None,
+            "UAS ID (UTM ID)",
+            value_validator,
+            None,
+            False,
+            None,
+            value_comparator,
+            injected=injected,
+            sp_observed=observed,
+            dp_observed=None,
+            participant=participant,
+            query_timestamp=query_timestamp,
+        )
+
+    def _evaluate_uas_id_specific_session_id(
+        self,
+        injected: injection.RIDFlightDetails,
+        observed: FlightDetails,
+        participant: ParticipantID,
+        query_timestamp: datetime.datetime,
+    ):
+        """
+        Evaluates UAS ID specific session id. Contrary to most generic evaluators, cannot evaluate DP.
+        See as well `common_dictionary_evaluator.md`.
+
+        Raises:
+            ValueError: if a test operation wasn't performed correctly by uss_qualifier.
+        """
+
+        # This field doesn't exists in v19
+        if self._rid_version == RIDVersion.f3411_19:
+            return
+
+        def value_validator(val: str) -> str:
+            # The standard say that it should be at
+            # most 20 bytes, but doesn't define a format (hex ? bytes ? binary
+            # representation ?) so we don't perform any validation
+            return val
+
+        def value_comparator(v1: Optional[str], v2: Optional[str]) -> bool:
+            return v1 == v2
+
+        self._generic_evaluator(
+            "uas_id.specific_session_id",
+            "raw.uas_id.specific_session_id",
+            None,
+            "UAS ID (Specific session ID)",
+            value_validator,
+            None,
+            False,
+            None,
+            value_comparator,
+            injected=injected,
+            sp_observed=observed,
+            dp_observed=None,
+            participant=participant,
+            query_timestamp=query_timestamp,
+            sp_is_allowed_to_generate_missing=True,
+        )
 
     def _evaluate_timestamp(self, **generic_kwargs):
         """
@@ -1194,6 +1462,7 @@ class RIDCommonDictionaryEvaluator(object):
         ],
         participant: ParticipantID,
         query_timestamp: datetime.datetime,
+        sp_is_allowed_to_generate_missing: bool = False,
     ):
         """
         Generic evaluator of a field. Exactly one of sp_observed or dp_observed must be provided.
@@ -1217,6 +1486,8 @@ class RIDCommonDictionaryEvaluator(object):
             dp_observed: flight (or details) observed through the observation API.
             participant: participant providing the API through which the value was observed.
             query_timestamp: timestamp of the observation query.
+            sp_is_allowed_to_generate_missing: Boolean to indicate that the SP may generate any value, should no value have been injected.
+
 
         Raises:
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
@@ -1258,12 +1529,15 @@ class RIDCommonDictionaryEvaluator(object):
         ) as check:
             if sp_observed is not None:
                 if observed_val is None:  # C3
-                    check.record_failed(
-                        f"{field_human_name} is missing",
-                        details=f"SP did not return any {field_human_name}",
-                        query_timestamps=[query_timestamp],
-                        additional_data={"RIDCommonDictionaryEvaluatorCheckID": "C3"},
-                    )
+                    if injection_required_field or injected_val:
+                        check.record_failed(
+                            f"{field_human_name} is missing",
+                            details=f"SP did not return any {field_human_name}",
+                            query_timestamps=[query_timestamp],
+                            additional_data={
+                                "RIDCommonDictionaryEvaluatorCheckID": "C3"
+                            },
+                        )
 
             if observed_val is not None:  # C5 / C9
                 if value_validator is not None:
@@ -1304,16 +1578,17 @@ class RIDCommonDictionaryEvaluator(object):
                     unknown_value = [unknown_value]
 
                 if observed_val not in unknown_value:  # C6 / C10
-                    check.record_failed(
-                        f"{field_human_name} is inconsistent, expected '{unknown_value}' since no value was injected",
-                        details=f"USS returned the UA type {observed_val} yet no value was injected. Since '{field_human_name}' is a required field of SP API, the SP should map this to '{unknown_value}' and the DP should expose the same value.",
-                        query_timestamps=[query_timestamp],
-                        additional_data={
-                            "RIDCommonDictionaryEvaluatorCheckID": (
-                                "C6" if sp_observed else "C10"
-                            )
-                        },
-                    )
+                    if not sp_is_allowed_to_generate_missing:
+                        check.record_failed(
+                            f"{field_human_name} is inconsistent, expected '{unknown_value}' since no value was injected",
+                            details=f"USS returned the value {observed_val} for {field_human_name} yet no value was injected. Since '{field_human_name}' is a required field of SP API, the SP should map this to '{unknown_value}' and the DP should expose the same value.",
+                            query_timestamps=[query_timestamp],
+                            additional_data={
+                                "RIDCommonDictionaryEvaluatorCheckID": (
+                                    "C6" if sp_observed else "C10"
+                                )
+                            },
+                        )
 
             elif not value_comparator(injected_val, observed_val):  # C7 / C10
                 check.record_failed(
