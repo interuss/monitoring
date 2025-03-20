@@ -13,7 +13,10 @@ from monitoring.mock_uss import webapp
 
 
 def _get_request_id(req: Request) -> str:
-    return f"[{os.getpid()}] {req.date} {req.method} {req.url}"
+    try:
+        return f"[{os.getpid()}] {req.date} {req.method} {req.url}"
+    except RuntimeError:  # In some edge case, we may be outside a request context
+        return ""
 
 
 class RequestLogger(object):
@@ -33,7 +36,11 @@ class RequestLogger(object):
         )
 
     def log(self, msg: loguru.Message) -> None:
-        if self._report_log and _get_request_id(flask.request) == self._request_id:
+        if (
+            self._report_log
+            and _get_request_id(flask.request) == self._request_id
+            and self._request_id
+        ):
             self.messages.append(msg)
 
     def do_not_report(self) -> None:
