@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>s49 - ASTM F3548-21 evaluate system versions</title>
+  <title>s49 - ASTM F3548 flight planners preparation</title>
 <style>
   body {
     margin: 0;
@@ -112,15 +112,18 @@
 </head>
 <body>
 <div>
-    <h2><a href="https://github.com/interuss/monitoring/blob/c554117dae97cf3373645f8bae8add4d9da9ecf0/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md">ASTM F3548-21 evaluate system versions</a></h2>
-  <h3>scenarios.astm.utm.versioning.evaluate_system_versions.EvaluateSystemVersions</h3>
+    <h2><a href="https://github.com/interuss/monitoring/blob/407a571594d65a75d5e03883579dafb209979ac1/monitoring/uss_qualifier/scenarios/astm/utm/prep_planners.md">ASTM F3548 flight planners preparation</a></h2>
+  <h3>scenarios.astm.utm.PrepareFlightPlanners</h3>
   <div id="resources_configuration_section" class="collapseable">
     <div class="node_key" onclick="showHide(document.getElementById('resources_configuration_section'))"><h4>Resources</h4></div>
     <div class="node_value">
       <ul id="resource_origin_list">
-          <li><a href="https://github.com/interuss/monitoring/blob/c554117dae97cf3373645f8bae8add4d9da9ecf0/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#system_identity"><code>system_identity</code></a> provided by <a href="./index.html#resources-configuration">system_identity in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/c554117dae97cf3373645f8bae8add4d9da9ecf0/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#test_env_version_providers"><code>test_env_version_providers</code></a> provided by <a href="./index.html#resources-configuration">test_env_version_providers in top-level resource pool</a></li>
-          <li><a href="https://github.com/interuss/monitoring/blob/c554117dae97cf3373645f8bae8add4d9da9ecf0/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#prod_env_version_providers"><code>prod_env_version_providers</code></a> provided by <a href="./index.html#resources-configuration">prod_env_version_providers in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/407a571594d65a75d5e03883579dafb209979ac1/monitoring/uss_qualifier/scenarios/astm/utm/prep_planners.md#flight_planners"><code>flight_planners</code></a> provided by <a href="./index.html#resources-configuration">flight_planners in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/407a571594d65a75d5e03883579dafb209979ac1/monitoring/uss_qualifier/scenarios/astm/utm/prep_planners.md#dss"><code>dss</code></a> provided by <a href="./index.html#resources-configuration">dss in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/407a571594d65a75d5e03883579dafb209979ac1/monitoring/uss_qualifier/scenarios/astm/utm/prep_planners.md#flight_intents"><code>flight_intents</code></a> provided by <a href="./index.html#resources-configuration">invalid_flight_intents in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/407a571594d65a75d5e03883579dafb209979ac1/monitoring/uss_qualifier/scenarios/astm/utm/prep_planners.md#mock_uss"><code>mock_uss</code></a> provided by <a href="./index.html#resources-configuration">mock_uss in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/407a571594d65a75d5e03883579dafb209979ac1/monitoring/uss_qualifier/scenarios/astm/utm/prep_planners.md#flight_intents3"><code>flight_intents3</code></a> provided by <a href="./index.html#resources-configuration">conflicting_flights in top-level resource pool</a></li>
+          <li><a href="https://github.com/interuss/monitoring/blob/407a571594d65a75d5e03883579dafb209979ac1/monitoring/uss_qualifier/scenarios/astm/utm/prep_planners.md#flight_intents4"><code>flight_intents4</code></a> provided by <a href="./index.html#resources-configuration">non_conflicting_flights in top-level resource pool</a></li>
       </ul>
     </div>
   </div>
@@ -133,19 +136,28 @@
       <th>Step</th>
       <th colspan="3">Event</th>
         <th>
+            mock_uss
+        </th>
+        <th>
             uss1_core
+        </th>
+        <th>
+            uss1_dss
         </th>
         <th>
             uss2_core
         </th>
+        <th>
+            &lt;None&gt;
+        </th>
     </tr>
 
             <tr id="e1">
-                <td rowspan="13"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/c554117dae97cf3373645f8bae8add4d9da9ecf0/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#evaluate-versions-test-case">Evaluate versions</a>
+                <td rowspan="45"><span class="sticky_cell_value">
+                    <a href="https://github.com/interuss/monitoring/blob/407a571594d65a75d5e03883579dafb209979ac1/monitoring/uss_qualifier/scenarios/astm/utm/prep_planners.md#flight-planners-preparation-test-case">Flight planners preparation</a>
                 </span></td>
-                <td rowspan="4"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/c554117dae97cf3373645f8bae8add4d9da9ecf0/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#get-test-environment-test-versions-test-step">Get test environment test versions</a>
+                <td rowspan="9"><span class="sticky_cell_value">
+                    <a href="https://github.com/interuss/monitoring/blob/407a571594d65a75d5e03883579dafb209979ac1/monitoring/uss_qualifier/scenarios/astm/utm/prep_planners.md#check-for-flight-planning-readiness-test-step">Check for flight planning readiness</a>
                 </span></td>
               <td><a href="#e1">1</a></td>
                 <td>&#x1F310;</td>
@@ -166,13 +178,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">url</div>:
-        <div class="node_value">      http://scdsc.uss1.localutm/versioning/versions/us.utm_implementation
+        <div class="node_value">      http://scdsc.uss1.localutm/flight_planning/v1/status
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-03-20T15:14:20.053399Z
+        <div class="node_value">      2025-03-21T14:48:00.429864Z
 
 </div>
       </li>
@@ -205,7 +217,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzQyNDg3MjAxLCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MudmVyc2lvbmluZy5yZWFkX3N5c3RlbV92ZXJzaW9ucyIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzQyNTcyMDE5LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLmRpcmVjdF9hdXRvbWF0ZWRfdGVzdCIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
 
 </div>
       </li>
@@ -246,7 +258,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Thu, 20 Mar 2025 15:14:20 GMT
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
 
 </div>
       </li>
@@ -264,7 +276,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Content-Length</div>:
-        <div class="node_value">      98
+        <div class="node_value">      99
 
 </div>
       </li>
@@ -274,12 +286,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.006922
+        <div class="node_value">    0.006861
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-03-20T15:14:20.060893Z
+        <div class="node_value">      2025-03-21T14:48:00.437206Z
 
 </div>
       </li>
@@ -287,14 +299,20 @@
         <div class="node_key">json</div>:
         <div class="node_value">      <ul>
       <li class="not_collapseable">
-        <div class="node_key">system_identity</div>:
-        <div class="node_value">      us.utm_implementation
+        <div class="node_key">api_name</div>:
+        <div class="node_value">      Flight Planning Automated Testing Interface
 
 </div>
       </li>
       <li class="not_collapseable">
-        <div class="node_key">system_version</div>:
-        <div class="node_value">      interuss/monitoring/v0.0.0-c554117
+        <div class="node_key">api_version</div>:
+        <div class="node_value">      v0.3.0
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">status</div>:
+        <div class="node_value">      Ready
 
 </div>
       </li>
@@ -313,7 +331,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">query_type</div>:
-        <div class="node_value">      interuss.automated_testing.versioning.GetVersion
+        <div class="node_value">      interuss.automated_testing.flight_planning.v1.GetStatus
 
 </div>
       </li>
@@ -332,23 +350,41 @@
   </div>
 
                 </td>
+                    <td></td>
                     <td>&#x1F310;</td>
+                    <td></td>
+                    <td></td>
                     <td></td>
             </tr>
             <tr id="e2">
               <td><a href="#e2">2</a></td>
                 <td>&#x2705;</td>
                 <td class="pass_result">
-                  Valid response
+                  Valid response to readiness query
                 </td>
+                    <td></td>
                     <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
                     <td></td>
             </tr>
             <tr id="e3">
               <td><a href="#e3">3</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Flight planning USS ready
+                </td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e4">
+              <td><a href="#e4">4</a></td>
                 <td>&#x1F310;</td>
                 <td>
-                    <div id="e3query">
+                    <div id="e4query">
       <ul>
       <li class="collapseable">
         <div class="node_key">GET scdsc.uss2.localutm 200</div>:
@@ -364,13 +400,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">url</div>:
-        <div class="node_value">      http://scdsc.uss2.localutm/versioning/versions/us.utm_implementation
+        <div class="node_value">      http://scdsc.uss2.localutm/flight_planning/v1/status
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-03-20T15:14:20.061328Z
+        <div class="node_value">      2025-03-21T14:48:00.437494Z
 
 </div>
       </li>
@@ -403,7 +439,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MyLmxvY2FsdXRtIiwiZXhwIjoxNzQyNDg3MjAxLCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MudmVyc2lvbmluZy5yZWFkX3N5c3RlbV92ZXJzaW9ucyIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MyLmxvY2FsdXRtIiwiZXhwIjoxNzQyNTcyMDE5LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLmRpcmVjdF9hdXRvbWF0ZWRfdGVzdCIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
 
 </div>
       </li>
@@ -444,7 +480,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Thu, 20 Mar 2025 15:14:20 GMT
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
 
 </div>
       </li>
@@ -462,7 +498,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Content-Length</div>:
-        <div class="node_value">      98
+        <div class="node_value">      99
 
 </div>
       </li>
@@ -472,12 +508,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.007344
+        <div class="node_value">    0.005876
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-03-20T15:14:20.069236Z
+        <div class="node_value">      2025-03-21T14:48:00.443840Z
 
 </div>
       </li>
@@ -485,14 +521,20 @@
         <div class="node_key">json</div>:
         <div class="node_value">      <ul>
       <li class="not_collapseable">
-        <div class="node_key">system_identity</div>:
-        <div class="node_value">      us.utm_implementation
+        <div class="node_key">api_name</div>:
+        <div class="node_value">      Flight Planning Automated Testing Interface
 
 </div>
       </li>
       <li class="not_collapseable">
-        <div class="node_key">system_version</div>:
-        <div class="node_value">      interuss/monitoring/v0.0.0-c554117
+        <div class="node_key">api_version</div>:
+        <div class="node_value">      v0.3.0
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">status</div>:
+        <div class="node_value">      Ready
 
 </div>
       </li>
@@ -511,7 +553,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">query_type</div>:
-        <div class="node_value">      interuss.automated_testing.versioning.GetVersion
+        <div class="node_value">      interuss.automated_testing.flight_planning.v1.GetStatus
 
 </div>
       </li>
@@ -531,215 +573,32 @@
 
                 </td>
                     <td></td>
-                    <td>&#x1F310;</td>
-            </tr>
-            <tr id="e4">
-              <td><a href="#e4">4</a></td>
-                <td>&#x2705;</td>
-                <td class="pass_result">
-                  Valid response
-                </td>
                     <td></td>
-                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td>&#x1F310;</td>
+                    <td></td>
             </tr>
             <tr id="e5">
-                <td rowspan="4"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/c554117dae97cf3373645f8bae8add4d9da9ecf0/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#get-production-environment-versions-test-step">Get production environment versions</a>
-                </span></td>
               <td><a href="#e5">5</a></td>
-                <td>&#x1F310;</td>
-                <td>
-                    <div id="e5query">
-      <ul>
-      <li class="collapseable">
-        <div class="node_key">GET scdsc.uss1.localutm 200</div>:
-        <div class="node_value">      <ul>
-      <li class="collapseable">
-        <div class="node_key">request</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">method</div>:
-        <div class="node_value">      GET
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">url</div>:
-        <div class="node_value">      http://scdsc.uss1.localutm/versioning/versions/us.utm_implementation
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-03-20T15:14:20.069636Z
-
-</div>
-      </li>
-      <li class="collapseable">
-        <div class="node_key">headers</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">User-Agent</div>:
-        <div class="node_value">      python-requests/2.32.3
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Accept-Encoding</div>:
-        <div class="node_value">      gzip, deflate, br
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Accept</div>:
-        <div class="node_value">      */*
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Connection</div>:
-        <div class="node_value">      keep-alive
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzQyNDg3MjAxLCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MudmVyc2lvbmluZy5yZWFkX3N5c3RlbV92ZXJzaW9ucyIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
-
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">json</div>:
-        <div class="node_value">    None
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">body</div>:
-        <div class="node_value">    None
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="collapseable">
-        <div class="node_key">response</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">code</div>:
-        <div class="node_value">    200
-</div>
-      </li>
-      <li class="collapseable">
-        <div class="node_key">headers</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">Server</div>:
-        <div class="node_value">      gunicorn
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Date</div>:
-        <div class="node_value">      Thu, 20 Mar 2025 15:14:20 GMT
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Connection</div>:
-        <div class="node_value">      keep-alive
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Content-Type</div>:
-        <div class="node_value">      application/json
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">Content-Length</div>:
-        <div class="node_value">      98
-
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.006685
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">reported</div>:
-        <div class="node_value">      2025-03-20T15:14:20.076803Z
-
-</div>
-      </li>
-      <li class="collapseable">
-        <div class="node_key">json</div>:
-        <div class="node_value">      <ul>
-      <li class="not_collapseable">
-        <div class="node_key">system_identity</div>:
-        <div class="node_value">      us.utm_implementation
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">system_version</div>:
-        <div class="node_value">      interuss/monitoring/v0.0.0-c554117
-
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">body</div>:
-        <div class="node_value">    None
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">query_type</div>:
-        <div class="node_value">      interuss.automated_testing.versioning.GetVersion
-
-</div>
-      </li>
-      <li class="not_collapseable">
-        <div class="node_key">participant_id</div>:
-        <div class="node_value">      uss1_core
-
-</div>
-      </li>
-  </ul>
-
-</div>
-      </li>
-  </ul>
-
-  </div>
-
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Valid response to readiness query
                 </td>
-                    <td>&#x1F310;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
                     <td></td>
             </tr>
             <tr id="e6">
               <td><a href="#e6">6</a></td>
                 <td>&#x2705;</td>
                 <td class="pass_result">
-                  Valid response
+                  Flight planning USS ready
                 </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                     <td class="pass_result">&#x2705;</td>
                     <td></td>
             </tr>
@@ -750,7 +609,7 @@
                     <div id="e7query">
       <ul>
       <li class="collapseable">
-        <div class="node_key">GET scdsc.uss2.localutm 200</div>:
+        <div class="node_key">GET scdsc.log.uss6.localutm 200</div>:
         <div class="node_value">      <ul>
       <li class="collapseable">
         <div class="node_key">request</div>:
@@ -763,13 +622,13 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">url</div>:
-        <div class="node_value">      http://scdsc.uss2.localutm/versioning/versions/us.utm_implementation
+        <div class="node_value">      http://scdsc.log.uss6.localutm/flight_planning/v1/status
 
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">initiated_at</div>:
-        <div class="node_value">      2025-03-20T15:14:20.077099Z
+        <div class="node_value">      2025-03-21T14:48:00.444176Z
 
 </div>
       </li>
@@ -802,7 +661,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Authorization</div>:
-        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MyLmxvY2FsdXRtIiwiZXhwIjoxNzQyNDg3MjAxLCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MudmVyc2lvbmluZy5yZWFkX3N5c3RlbV92ZXJzaW9ucyIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy5sb2cudXNzNi5sb2NhbHV0bSIsImV4cCI6MTc0MjU3MjAxOSwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImludGVydXNzLmZsaWdodF9wbGFubmluZy5kaXJlY3RfYXV0b21hdGVkX3Rlc3QiLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
 
 </div>
       </li>
@@ -843,7 +702,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Date</div>:
-        <div class="node_value">      Thu, 20 Mar 2025 15:14:20 GMT
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
 
 </div>
       </li>
@@ -861,7 +720,7 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">Content-Length</div>:
-        <div class="node_value">      98
+        <div class="node_value">      99
 
 </div>
       </li>
@@ -871,12 +730,12 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">elapsed_s</div>:
-        <div class="node_value">    0.00698
+        <div class="node_value">    0.006448
 </div>
       </li>
       <li class="not_collapseable">
         <div class="node_key">reported</div>:
-        <div class="node_value">      2025-03-20T15:14:20.084737Z
+        <div class="node_value">      2025-03-21T14:48:00.451021Z
 
 </div>
       </li>
@@ -884,14 +743,20 @@
         <div class="node_key">json</div>:
         <div class="node_value">      <ul>
       <li class="not_collapseable">
-        <div class="node_key">system_identity</div>:
-        <div class="node_value">      us.utm_implementation
+        <div class="node_key">api_name</div>:
+        <div class="node_value">      Flight Planning Automated Testing Interface
 
 </div>
       </li>
       <li class="not_collapseable">
-        <div class="node_key">system_version</div>:
-        <div class="node_value">      interuss/monitoring/v0.0.0-c554117
+        <div class="node_key">api_version</div>:
+        <div class="node_value">      v0.3.0
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">status</div>:
+        <div class="node_value">      Ready
 
 </div>
       </li>
@@ -910,7 +775,938 @@
       </li>
       <li class="not_collapseable">
         <div class="node_key">query_type</div>:
-        <div class="node_value">      interuss.automated_testing.versioning.GetVersion
+        <div class="node_value">      interuss.automated_testing.flight_planning.v1.GetStatus
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">participant_id</div>:
+        <div class="node_value">      mock_uss
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+  </div>
+
+                </td>
+                    <td>&#x1F310;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e8">
+              <td><a href="#e8">8</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Valid response to readiness query
+                </td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e9">
+              <td><a href="#e9">9</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Flight planning USS ready
+                </td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e10">
+                <td rowspan="27"><span class="sticky_cell_value">
+                    <a href="https://github.com/interuss/monitoring/blob/407a571594d65a75d5e03883579dafb209979ac1/monitoring/uss_qualifier/scenarios/astm/utm/prep_planners.md#area-clearing-test-step">Area clearing</a>
+                </span></td>
+              <td><a href="#e10">10</a></td>
+                <td>&#x1F310;</td>
+                <td>
+                    <div id="e10query">
+      <ul>
+      <li class="collapseable">
+        <div class="node_key">POST scdsc.uss1.localutm 200</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">request</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      POST
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.uss1.localutm/flight_planning/v1/clear_area_requests
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">initiated_at</div>:
+        <div class="node_value">      2025-03-21T14:48:00.452950Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">User-Agent</div>:
+        <div class="node_value">      python-requests/2.32.3
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept-Encoding</div>:
+        <div class="node_value">      gzip, deflate, br
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept</div>:
+        <div class="node_value">      */*
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      569
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Authorization</div>:
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzQyNTcyMDE5LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLmRpcmVjdF9hdXRvbWF0ZWRfdGVzdCIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      5eca86d7-82c4-4eed-ab8f-7cee4e403906
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">extent</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">volume</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">altitude_lower</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    116.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">altitude_upper</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    146.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">outline_polygon</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">vertices</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37118
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.3219
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_2</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37202
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.3219
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_3</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37202
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32130000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_4</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37118
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32130000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_start</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T14:45:58.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_end</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-04-22T16:16:58.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">response</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">code</div>:
+        <div class="node_value">    200
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">Server</div>:
+        <div class="node_value">      gunicorn
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Date</div>:
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      222
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">elapsed_s</div>:
+        <div class="node_value">    0.024759
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reported</div>:
+        <div class="node_value">      2025-03-21T14:48:00.478264Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">outcome</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">details</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">error</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flight_deletion_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flights_deleted</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intent_removal_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intents_removed</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">message</div>:
+        <div class="node_value">      See `details` field in response for more information
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">success</div>:
+        <div class="node_value">    True
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">query_type</div>:
+        <div class="node_value">      interuss.automated_testing.flight_planning.v1.ClearArea
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">participant_id</div>:
+        <div class="node_value">      uss1_core
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+  </div>
+
+                </td>
+                    <td></td>
+                    <td>&#x1F310;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e11">
+              <td><a href="#e11">11</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Valid response to clearing query
+                </td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e12">
+              <td><a href="#e12">12</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Area cleared successfully
+                </td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e13">
+              <td><a href="#e13">13</a></td>
+                <td>&#x1F310;</td>
+                <td>
+                    <div id="e13query">
+      <ul>
+      <li class="collapseable">
+        <div class="node_key">POST scdsc.uss2.localutm 200</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">request</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      POST
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.uss2.localutm/flight_planning/v1/clear_area_requests
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">initiated_at</div>:
+        <div class="node_value">      2025-03-21T14:48:00.480302Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">User-Agent</div>:
+        <div class="node_value">      python-requests/2.32.3
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept-Encoding</div>:
+        <div class="node_value">      gzip, deflate, br
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept</div>:
+        <div class="node_value">      */*
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      569
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Authorization</div>:
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MyLmxvY2FsdXRtIiwiZXhwIjoxNzQyNTcyMDE5LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLmRpcmVjdF9hdXRvbWF0ZWRfdGVzdCIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      f75e5b1f-737b-49f7-8efe-08f88d22d1e3
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">extent</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">volume</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">altitude_lower</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    116.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">altitude_upper</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    146.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">outline_polygon</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">vertices</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37118
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.3219
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_2</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37202
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.3219
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_3</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37202
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32130000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_4</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37118
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32130000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_start</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T14:45:58.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_end</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-04-22T16:16:58.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">response</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">code</div>:
+        <div class="node_value">    200
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">Server</div>:
+        <div class="node_value">      gunicorn
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Date</div>:
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      222
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">elapsed_s</div>:
+        <div class="node_value">    0.02477
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reported</div>:
+        <div class="node_value">      2025-03-21T14:48:00.505614Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">outcome</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">details</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">error</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flight_deletion_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flights_deleted</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intent_removal_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intents_removed</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">message</div>:
+        <div class="node_value">      See `details` field in response for more information
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">success</div>:
+        <div class="node_value">    True
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">query_type</div>:
+        <div class="node_value">      interuss.automated_testing.flight_planning.v1.ClearArea
 
 </div>
       </li>
@@ -930,65 +1726,4486 @@
 
                 </td>
                     <td></td>
+                    <td></td>
+                    <td></td>
                     <td>&#x1F310;</td>
+                    <td></td>
             </tr>
-            <tr id="e8">
-              <td><a href="#e8">8</a></td>
+            <tr id="e14">
+              <td><a href="#e14">14</a></td>
                 <td>&#x2705;</td>
                 <td class="pass_result">
-                  Valid response
+                  Valid response to clearing query
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+            </tr>
+            <tr id="e15">
+              <td><a href="#e15">15</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Area cleared successfully
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+            </tr>
+            <tr id="e16">
+              <td><a href="#e16">16</a></td>
+                <td>&#x1F310;</td>
+                <td>
+                    <div id="e16query">
+      <ul>
+      <li class="collapseable">
+        <div class="node_key">POST scdsc.log.uss6.localutm 200</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">request</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      POST
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.log.uss6.localutm/flight_planning/v1/clear_area_requests
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">initiated_at</div>:
+        <div class="node_value">      2025-03-21T14:48:00.507600Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">User-Agent</div>:
+        <div class="node_value">      python-requests/2.32.3
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept-Encoding</div>:
+        <div class="node_value">      gzip, deflate, br
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept</div>:
+        <div class="node_value">      */*
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      569
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Authorization</div>:
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy5sb2cudXNzNi5sb2NhbHV0bSIsImV4cCI6MTc0MjU3MjAxOSwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImludGVydXNzLmZsaWdodF9wbGFubmluZy5kaXJlY3RfYXV0b21hdGVkX3Rlc3QiLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      0c2af8dc-78a9-458d-abf4-cfffa6efa4d5
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">extent</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">volume</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">altitude_lower</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    116.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">altitude_upper</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    146.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">outline_polygon</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">vertices</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37118
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.3219
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_2</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37202
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.3219
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_3</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37202
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32130000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_4</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37118
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32130000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_start</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T14:45:58.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_end</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-04-22T16:16:58.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">response</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">code</div>:
+        <div class="node_value">    200
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">Server</div>:
+        <div class="node_value">      gunicorn
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Date</div>:
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      222
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">elapsed_s</div>:
+        <div class="node_value">    0.017962
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reported</div>:
+        <div class="node_value">      2025-03-21T14:48:00.526113Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">outcome</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">details</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">error</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flight_deletion_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flights_deleted</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intent_removal_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intents_removed</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">message</div>:
+        <div class="node_value">      See `details` field in response for more information
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">success</div>:
+        <div class="node_value">    True
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">query_type</div>:
+        <div class="node_value">      interuss.automated_testing.flight_planning.v1.ClearArea
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">participant_id</div>:
+        <div class="node_value">      mock_uss
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+  </div>
+
+                </td>
+                    <td>&#x1F310;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e17">
+              <td><a href="#e17">17</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Valid response to clearing query
+                </td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e18">
+              <td><a href="#e18">18</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Area cleared successfully
+                </td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e19">
+              <td><a href="#e19">19</a></td>
+                <td>&#x1F310;</td>
+                <td>
+                    <div id="e19query">
+      <ul>
+      <li class="collapseable">
+        <div class="node_key">POST scdsc.uss1.localutm 200</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">request</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      POST
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.uss1.localutm/flight_planning/v1/clear_area_requests
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">initiated_at</div>:
+        <div class="node_value">      2025-03-21T14:48:00.527988Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">User-Agent</div>:
+        <div class="node_value">      python-requests/2.32.3
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept-Encoding</div>:
+        <div class="node_value">      gzip, deflate, br
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept</div>:
+        <div class="node_value">      */*
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      569
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Authorization</div>:
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzQyNTcyMDE5LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLmRpcmVjdF9hdXRvbWF0ZWRfdGVzdCIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      787842fa-8bea-416e-8aee-639d535c9c6c
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">extent</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">volume</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">altitude_lower</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    85.95
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">altitude_upper</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    166.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">outline_polygon</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">vertices</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37135
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32180000000002
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_2</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.3721
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32180000000002
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_3</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.3721
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32105
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_4</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37135
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32105
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_start</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T14:46:57.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_end</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T16:16:58.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">response</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">code</div>:
+        <div class="node_value">    200
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">Server</div>:
+        <div class="node_value">      gunicorn
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Date</div>:
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      222
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">elapsed_s</div>:
+        <div class="node_value">    0.023968
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reported</div>:
+        <div class="node_value">      2025-03-21T14:48:00.552517Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">outcome</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">details</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">error</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flight_deletion_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flights_deleted</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intent_removal_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intents_removed</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">message</div>:
+        <div class="node_value">      See `details` field in response for more information
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">success</div>:
+        <div class="node_value">    True
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">query_type</div>:
+        <div class="node_value">      interuss.automated_testing.flight_planning.v1.ClearArea
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">participant_id</div>:
+        <div class="node_value">      uss1_core
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+  </div>
+
+                </td>
+                    <td></td>
+                    <td>&#x1F310;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e20">
+              <td><a href="#e20">20</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Valid response to clearing query
                 </td>
                     <td></td>
                     <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
             </tr>
-            <tr id="e9">
-                <td rowspan="3"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/c554117dae97cf3373645f8bae8add4d9da9ecf0/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#evaluate-current-system-versions-test-step">Evaluate current system versions</a>
+            <tr id="e21">
+              <td><a href="#e21">21</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Area cleared successfully
+                </td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e22">
+              <td><a href="#e22">22</a></td>
+                <td>&#x1F310;</td>
+                <td>
+                    <div id="e22query">
+      <ul>
+      <li class="collapseable">
+        <div class="node_key">POST scdsc.uss2.localutm 200</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">request</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      POST
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.uss2.localutm/flight_planning/v1/clear_area_requests
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">initiated_at</div>:
+        <div class="node_value">      2025-03-21T14:48:00.554481Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">User-Agent</div>:
+        <div class="node_value">      python-requests/2.32.3
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept-Encoding</div>:
+        <div class="node_value">      gzip, deflate, br
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept</div>:
+        <div class="node_value">      */*
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      569
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Authorization</div>:
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MyLmxvY2FsdXRtIiwiZXhwIjoxNzQyNTcyMDE5LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLmRpcmVjdF9hdXRvbWF0ZWRfdGVzdCIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      80d64725-f48b-4b52-9437-13851c34c715
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">extent</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">volume</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">altitude_lower</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    85.95
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">altitude_upper</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    166.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">outline_polygon</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">vertices</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37135
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32180000000002
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_2</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.3721
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32180000000002
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_3</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.3721
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32105
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_4</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37135
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32105
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_start</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T14:46:57.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_end</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T16:16:58.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">response</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">code</div>:
+        <div class="node_value">    200
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">Server</div>:
+        <div class="node_value">      gunicorn
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Date</div>:
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      222
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">elapsed_s</div>:
+        <div class="node_value">    0.024461
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reported</div>:
+        <div class="node_value">      2025-03-21T14:48:00.579542Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">outcome</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">details</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">error</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flight_deletion_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flights_deleted</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intent_removal_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intents_removed</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">message</div>:
+        <div class="node_value">      See `details` field in response for more information
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">success</div>:
+        <div class="node_value">    True
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">query_type</div>:
+        <div class="node_value">      interuss.automated_testing.flight_planning.v1.ClearArea
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">participant_id</div>:
+        <div class="node_value">      uss2_core
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+  </div>
+
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>&#x1F310;</td>
+                    <td></td>
+            </tr>
+            <tr id="e23">
+              <td><a href="#e23">23</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Valid response to clearing query
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+            </tr>
+            <tr id="e24">
+              <td><a href="#e24">24</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Area cleared successfully
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+            </tr>
+            <tr id="e25">
+              <td><a href="#e25">25</a></td>
+                <td>&#x1F310;</td>
+                <td>
+                    <div id="e25query">
+      <ul>
+      <li class="collapseable">
+        <div class="node_key">POST scdsc.log.uss6.localutm 200</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">request</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      POST
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.log.uss6.localutm/flight_planning/v1/clear_area_requests
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">initiated_at</div>:
+        <div class="node_value">      2025-03-21T14:48:00.581479Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">User-Agent</div>:
+        <div class="node_value">      python-requests/2.32.3
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept-Encoding</div>:
+        <div class="node_value">      gzip, deflate, br
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept</div>:
+        <div class="node_value">      */*
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      569
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Authorization</div>:
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy5sb2cudXNzNi5sb2NhbHV0bSIsImV4cCI6MTc0MjU3MjAxOSwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImludGVydXNzLmZsaWdodF9wbGFubmluZy5kaXJlY3RfYXV0b21hdGVkX3Rlc3QiLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      235e328e-46b5-43c3-bb88-26ac059c1d2a
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">extent</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">volume</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">altitude_lower</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    85.95
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">altitude_upper</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    166.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">outline_polygon</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">vertices</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37135
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32180000000002
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_2</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.3721
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32180000000002
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_3</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.3721
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32105
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_4</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37135
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32105
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_start</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T14:46:57.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_end</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T16:16:58.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">response</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">code</div>:
+        <div class="node_value">    200
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">Server</div>:
+        <div class="node_value">      gunicorn
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Date</div>:
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      222
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">elapsed_s</div>:
+        <div class="node_value">    0.017652
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reported</div>:
+        <div class="node_value">      2025-03-21T14:48:00.599678Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">outcome</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">details</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">error</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flight_deletion_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flights_deleted</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intent_removal_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intents_removed</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">message</div>:
+        <div class="node_value">      See `details` field in response for more information
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">success</div>:
+        <div class="node_value">    True
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">query_type</div>:
+        <div class="node_value">      interuss.automated_testing.flight_planning.v1.ClearArea
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">participant_id</div>:
+        <div class="node_value">      mock_uss
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+  </div>
+
+                </td>
+                    <td>&#x1F310;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e26">
+              <td><a href="#e26">26</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Valid response to clearing query
+                </td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e27">
+              <td><a href="#e27">27</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Area cleared successfully
+                </td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e28">
+              <td><a href="#e28">28</a></td>
+                <td>&#x1F310;</td>
+                <td>
+                    <div id="e28query">
+      <ul>
+      <li class="collapseable">
+        <div class="node_key">POST scdsc.uss1.localutm 200</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">request</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      POST
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.uss1.localutm/flight_planning/v1/clear_area_requests
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">initiated_at</div>:
+        <div class="node_value">      2025-03-21T14:48:00.601651Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">User-Agent</div>:
+        <div class="node_value">      python-requests/2.32.3
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept-Encoding</div>:
+        <div class="node_value">      gzip, deflate, br
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept</div>:
+        <div class="node_value">      */*
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      611
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Authorization</div>:
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MxLmxvY2FsdXRtIiwiZXhwIjoxNzQyNTcyMDE5LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLmRpcmVjdF9hdXRvbWF0ZWRfdGVzdCIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      36bec474-eb66-47bb-9e65-36457cf47ac2
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">extent</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">volume</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">altitude_lower</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    107.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">altitude_upper</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    192.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">outline_polygon</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">vertices</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.367290000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.33195
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_2</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.380990000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.33195
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_3</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.380990000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.31844000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_4</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.367290000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.31844000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_start</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T14:46:57.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_end</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T16:16:57.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">response</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">code</div>:
+        <div class="node_value">    200
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">Server</div>:
+        <div class="node_value">      gunicorn
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Date</div>:
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      222
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">elapsed_s</div>:
+        <div class="node_value">    0.025136
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reported</div>:
+        <div class="node_value">      2025-03-21T14:48:00.627432Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">outcome</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">details</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">error</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flight_deletion_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flights_deleted</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intent_removal_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intents_removed</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">message</div>:
+        <div class="node_value">      See `details` field in response for more information
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">success</div>:
+        <div class="node_value">    True
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">query_type</div>:
+        <div class="node_value">      interuss.automated_testing.flight_planning.v1.ClearArea
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">participant_id</div>:
+        <div class="node_value">      uss1_core
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+  </div>
+
+                </td>
+                    <td></td>
+                    <td>&#x1F310;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e29">
+              <td><a href="#e29">29</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Valid response to clearing query
+                </td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e30">
+              <td><a href="#e30">30</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Area cleared successfully
+                </td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e31">
+              <td><a href="#e31">31</a></td>
+                <td>&#x1F310;</td>
+                <td>
+                    <div id="e31query">
+      <ul>
+      <li class="collapseable">
+        <div class="node_key">POST scdsc.uss2.localutm 200</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">request</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      POST
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.uss2.localutm/flight_planning/v1/clear_area_requests
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">initiated_at</div>:
+        <div class="node_value">      2025-03-21T14:48:00.629500Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">User-Agent</div>:
+        <div class="node_value">      python-requests/2.32.3
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept-Encoding</div>:
+        <div class="node_value">      gzip, deflate, br
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept</div>:
+        <div class="node_value">      */*
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      611
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Authorization</div>:
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy51c3MyLmxvY2FsdXRtIiwiZXhwIjoxNzQyNTcyMDE5LCJpc3MiOiJkdW1teSIsInNjb3BlIjoiaW50ZXJ1c3MuZmxpZ2h0X3BsYW5uaW5nLmRpcmVjdF9hdXRvbWF0ZWRfdGVzdCIsInN1YiI6InVzc19xdWFsaWZpZXIifQ.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      21d3123e-56d4-4270-976e-e55cacdc1b87
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">extent</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">volume</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">altitude_lower</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    107.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">altitude_upper</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    192.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">outline_polygon</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">vertices</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.367290000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.33195
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_2</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.380990000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.33195
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_3</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.380990000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.31844000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_4</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.367290000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.31844000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_start</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T14:46:57.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_end</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T16:16:57.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">response</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">code</div>:
+        <div class="node_value">    200
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">Server</div>:
+        <div class="node_value">      gunicorn
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Date</div>:
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      222
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">elapsed_s</div>:
+        <div class="node_value">    0.024653
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reported</div>:
+        <div class="node_value">      2025-03-21T14:48:00.654839Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">outcome</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">details</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">error</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flight_deletion_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flights_deleted</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intent_removal_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intents_removed</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">message</div>:
+        <div class="node_value">      See `details` field in response for more information
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">success</div>:
+        <div class="node_value">    True
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">query_type</div>:
+        <div class="node_value">      interuss.automated_testing.flight_planning.v1.ClearArea
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">participant_id</div>:
+        <div class="node_value">      uss2_core
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+  </div>
+
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>&#x1F310;</td>
+                    <td></td>
+            </tr>
+            <tr id="e32">
+              <td><a href="#e32">32</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Valid response to clearing query
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+            </tr>
+            <tr id="e33">
+              <td><a href="#e33">33</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Area cleared successfully
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+            </tr>
+            <tr id="e34">
+              <td><a href="#e34">34</a></td>
+                <td>&#x1F310;</td>
+                <td>
+                    <div id="e34query">
+      <ul>
+      <li class="collapseable">
+        <div class="node_key">POST scdsc.log.uss6.localutm 200</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">request</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      POST
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://scdsc.log.uss6.localutm/flight_planning/v1/clear_area_requests
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">initiated_at</div>:
+        <div class="node_value">      2025-03-21T14:48:00.656865Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">User-Agent</div>:
+        <div class="node_value">      python-requests/2.32.3
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept-Encoding</div>:
+        <div class="node_value">      gzip, deflate, br
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept</div>:
+        <div class="node_value">      */*
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      611
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Authorization</div>:
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzY2RzYy5sb2cudXNzNi5sb2NhbHV0bSIsImV4cCI6MTc0MjU3MjAxOSwiaXNzIjoiZHVtbXkiLCJzY29wZSI6ImludGVydXNzLmZsaWdodF9wbGFubmluZy5kaXJlY3RfYXV0b21hdGVkX3Rlc3QiLCJzdWIiOiJ1c3NfcXVhbGlmaWVyIn0.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      c20f5378-3336-45bf-960d-0c49ea5aec9a
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">extent</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">volume</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">altitude_lower</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    107.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">altitude_upper</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    192.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">outline_polygon</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">vertices</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.367290000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.33195
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_2</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.380990000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.33195
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_3</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.380990000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.31844000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_4</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.367290000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.31844000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_start</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T14:46:57.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_end</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T16:16:57.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">response</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">code</div>:
+        <div class="node_value">    200
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">Server</div>:
+        <div class="node_value">      gunicorn
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Date</div>:
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      222
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">elapsed_s</div>:
+        <div class="node_value">    0.019473
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reported</div>:
+        <div class="node_value">      2025-03-21T14:48:00.676956Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">outcome</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">details</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">error</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flight_deletion_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">flights_deleted</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intent_removal_errors</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">op_intents_removed</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">message</div>:
+        <div class="node_value">      See `details` field in response for more information
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">success</div>:
+        <div class="node_value">    True
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">query_type</div>:
+        <div class="node_value">      interuss.automated_testing.flight_planning.v1.ClearArea
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">participant_id</div>:
+        <div class="node_value">      mock_uss
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+  </div>
+
+                </td>
+                    <td>&#x1F310;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e35">
+              <td><a href="#e35">35</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Valid response to clearing query
+                </td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e36">
+              <td><a href="#e36">36</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Area cleared successfully
+                </td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e37">
+                <td rowspan="9"><span class="sticky_cell_value">
+                    <a href="https://github.com/interuss/monitoring/blob/407a571594d65a75d5e03883579dafb209979ac1/monitoring/uss_qualifier/scenarios/astm/utm/prep_planners.md#clear-area-validation-test-step">Clear area validation</a>
                 </span></td>
-              <td><a href="#e9">9</a></td>
-                <td>&#x2705;</td>
-                <td class="pass_result">
-                  Test software version matches production
+              <td><a href="#e37">37</a></td>
+                <td>&#x1F310;</td>
+                <td>
+                    <div id="e37query">
+      <ul>
+      <li class="collapseable">
+        <div class="node_key">POST dss.uss1.localutm 200</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">request</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      POST
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://dss.uss1.localutm/dss/v1/operational_intent_references/query
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">initiated_at</div>:
+        <div class="node_value">      2025-03-21T14:48:00.678144Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">User-Agent</div>:
+        <div class="node_value">      python-requests/2.32.3
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept-Encoding</div>:
+        <div class="node_value">      gzip, deflate, br
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept</div>:
+        <div class="node_value">      */*
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      579
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Authorization</div>:
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMS5sb2NhbHV0bSIsImV4cCI6MTc0MjU3MjAxOSwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">area_of_interest</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">volume</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">altitude_lower</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    116.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">altitude_upper</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    146.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">outline_polygon</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">vertices</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37118
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.3219
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_2</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37202
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.3219
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_3</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37202
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32130000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_4</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37118
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32130000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_start</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T14:45:58.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_end</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-04-22T16:16:58.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      c013b2de-9275-4fd9-b542-9048395641a9
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">response</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">code</div>:
+        <div class="node_value">    200
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json; charset=utf-8
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Date</div>:
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      37
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">elapsed_s</div>:
+        <div class="node_value">    0.003073
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reported</div>:
+        <div class="node_value">      2025-03-21T14:48:00.681702Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">operational_intent_references</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">query_type</div>:
+        <div class="node_value">      astm.f3548.v21.dss.queryOperationalIntentReferences
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">participant_id</div>:
+        <div class="node_value">      uss1_dss
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+  </div>
+
                 </td>
-                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td>&#x1F310;</td>
+                    <td></td>
                     <td></td>
             </tr>
-            <tr id="e10">
-              <td><a href="#e10">10</a></td>
+            <tr id="e38">
+              <td><a href="#e38">38</a></td>
                 <td>&#x2705;</td>
                 <td class="pass_result">
-                  Test software version matches production
+                  DSS responses
                 </td>
+                    <td></td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e39">
+              <td><a href="#e39">39</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Area is clear of op intents
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                     <td></td>
                     <td class="pass_result">&#x2705;</td>
             </tr>
-            <tr id="e11">
-              <td><a href="#e11">11</a></td>
-                <td>&#x2705;</td>
-                <td class="pass_result">
-                  At most one participant is testing a new software version
+            <tr id="e40">
+              <td><a href="#e40">40</a></td>
+                <td>&#x1F310;</td>
+                <td>
+                    <div id="e40query">
+      <ul>
+      <li class="collapseable">
+        <div class="node_key">POST dss.uss1.localutm 200</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">request</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      POST
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://dss.uss1.localutm/dss/v1/operational_intent_references/query
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">initiated_at</div>:
+        <div class="node_value">      2025-03-21T14:48:00.682678Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">User-Agent</div>:
+        <div class="node_value">      python-requests/2.32.3
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept-Encoding</div>:
+        <div class="node_value">      gzip, deflate, br
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept</div>:
+        <div class="node_value">      */*
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      579
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Authorization</div>:
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMS5sb2NhbHV0bSIsImV4cCI6MTc0MjU3MjAxOSwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">area_of_interest</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">volume</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">altitude_lower</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    85.95
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">altitude_upper</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    166.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">outline_polygon</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">vertices</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37135
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32180000000002
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_2</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.3721
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32180000000002
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_3</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.3721
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32105
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_4</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.37135
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.32105
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_start</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T14:46:57.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_end</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T16:16:58.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      856137f9-46ee-479e-ae81-45740f842a86
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">response</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">code</div>:
+        <div class="node_value">    200
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json; charset=utf-8
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Date</div>:
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      37
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">elapsed_s</div>:
+        <div class="node_value">    0.002698
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reported</div>:
+        <div class="node_value">      2025-03-21T14:48:00.685918Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">operational_intent_references</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">query_type</div>:
+        <div class="node_value">      astm.f3548.v21.dss.queryOperationalIntentReferences
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">participant_id</div>:
+        <div class="node_value">      uss1_dss
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+  </div>
+
                 </td>
-                    <td class="pass_result">&#x2705;</td>
-                    <td class="pass_result">&#x2705;</td>
-            </tr>
-            <tr id="e12">
-                <td rowspan="2"><span class="sticky_cell_value">
-                    <a href="https://github.com/interuss/monitoring/blob/c554117dae97cf3373645f8bae8add4d9da9ecf0/monitoring/uss_qualifier/scenarios/astm/utm/versioning/evaluate_system_versions.md#evaluate-system-version-consistency-test-step">Evaluate system version consistency</a>
-                </span></td>
-              <td><a href="#e12">12</a></td>
-                <td>&#x2705;</td>
-                <td class="pass_result">
-                  Software versions are consistent throughout test run
-                </td>
-                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+                    <td>&#x1F310;</td>
+                    <td></td>
                     <td></td>
             </tr>
-            <tr id="e13">
-              <td><a href="#e13">13</a></td>
+            <tr id="e41">
+              <td><a href="#e41">41</a></td>
                 <td>&#x2705;</td>
                 <td class="pass_result">
-                  Software versions are consistent throughout test run
+                  DSS responses
                 </td>
+                    <td></td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e42">
+              <td><a href="#e42">42</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Area is clear of op intents
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+            </tr>
+            <tr id="e43">
+              <td><a href="#e43">43</a></td>
+                <td>&#x1F310;</td>
+                <td>
+                    <div id="e43query">
+      <ul>
+      <li class="collapseable">
+        <div class="node_key">POST dss.uss1.localutm 200</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">request</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">method</div>:
+        <div class="node_value">      POST
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">url</div>:
+        <div class="node_value">      http://dss.uss1.localutm/dss/v1/operational_intent_references/query
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">initiated_at</div>:
+        <div class="node_value">      2025-03-21T14:48:00.687262Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">User-Agent</div>:
+        <div class="node_value">      python-requests/2.32.3
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept-Encoding</div>:
+        <div class="node_value">      gzip, deflate, br
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Accept</div>:
+        <div class="node_value">      */*
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Connection</div>:
+        <div class="node_value">      keep-alive
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      621
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Authorization</div>:
+        <div class="node_value">      Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkc3MudXNzMS5sb2NhbHV0bSIsImV4cCI6MTc0MjU3MjAxOSwiaXNzIjoiZHVtbXkiLCJzY29wZSI6InV0bS5zdHJhdGVnaWNfY29vcmRpbmF0aW9uIiwic3ViIjoidXNzX3F1YWxpZmllciJ9.REDACTED
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">area_of_interest</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">volume</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">altitude_lower</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    107.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">altitude_upper</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">    192.0
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reference</div>:
+        <div class="node_value">      W84
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">units</div>:
+        <div class="node_value">      M
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">outline_polygon</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">vertices</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">item_1</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.367290000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.33195
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_2</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.380990000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.33195
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_3</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.380990000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.31844000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">item_4</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">lat</div>:
+        <div class="node_value">    32.367290000000004
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">lng</div>:
+        <div class="node_value">    -95.31844000000001
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_start</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T14:46:57.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">time_end</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">value</div>:
+        <div class="node_value">      2025-03-21T16:16:57.740422Z
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">format</div>:
+        <div class="node_value">      RFC3339
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">request_id</div>:
+        <div class="node_value">      45290701-1152-49fa-858b-d4896288c8f6
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">response</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">code</div>:
+        <div class="node_value">    200
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">headers</div>:
+        <div class="node_value">      <ul>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Type</div>:
+        <div class="node_value">      application/json; charset=utf-8
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Date</div>:
+        <div class="node_value">      Fri, 21 Mar 2025 14:48:00 GMT
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">Content-Length</div>:
+        <div class="node_value">      37
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">elapsed_s</div>:
+        <div class="node_value">    0.003049
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">reported</div>:
+        <div class="node_value">      2025-03-21T14:48:00.691161Z
+
+</div>
+      </li>
+      <li class="collapseable">
+        <div class="node_key">json</div>:
+        <div class="node_value">      <ul>
+      <li class="collapseable">
+        <div class="node_key">operational_intent_references</div>:
+        <div class="node_value">      <ul>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">body</div>:
+        <div class="node_value">    None
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">query_type</div>:
+        <div class="node_value">      astm.f3548.v21.dss.queryOperationalIntentReferences
+
+</div>
+      </li>
+      <li class="not_collapseable">
+        <div class="node_key">participant_id</div>:
+        <div class="node_value">      uss1_dss
+
+</div>
+      </li>
+  </ul>
+
+</div>
+      </li>
+  </ul>
+
+  </div>
+
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td>&#x1F310;</td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e44">
+              <td><a href="#e44">44</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  DSS responses
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+                    <td></td>
+            </tr>
+            <tr id="e45">
+              <td><a href="#e45">45</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Area is clear of op intents
+                </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                     <td></td>
                     <td class="pass_result">&#x2705;</td>
             </tr>
@@ -1026,9 +6243,20 @@
 
       addShowHide(document.getElementById("resource_origin_list"));
       addShowHide(document.getElementById("e1query"));
-      addShowHide(document.getElementById("e3query"));
-      addShowHide(document.getElementById("e5query"));
+      addShowHide(document.getElementById("e4query"));
       addShowHide(document.getElementById("e7query"));
+      addShowHide(document.getElementById("e10query"));
+      addShowHide(document.getElementById("e13query"));
+      addShowHide(document.getElementById("e16query"));
+      addShowHide(document.getElementById("e19query"));
+      addShowHide(document.getElementById("e22query"));
+      addShowHide(document.getElementById("e25query"));
+      addShowHide(document.getElementById("e28query"));
+      addShowHide(document.getElementById("e31query"));
+      addShowHide(document.getElementById("e34query"));
+      addShowHide(document.getElementById("e37query"));
+      addShowHide(document.getElementById("e40query"));
+      addShowHide(document.getElementById("e43query"));
   </script>
 
 </body>
