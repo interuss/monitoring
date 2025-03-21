@@ -5,6 +5,7 @@ from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
     OperationalIntentState,
 )
+from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
@@ -33,6 +34,14 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 class DownUSSEqualPriorityNotPermitted(DownUSS):
     flight2_planned: FlightInfoTemplate
+
+    @property
+    def _dss_req_scopes(self) -> dict[str, str]:
+        return {
+            Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities and retrieve operational intent details",
+            Scope.AvailabilityArbitration: "declare virtual USS down in DSS",
+            Scope.ConformanceMonitoringForSituationalAwareness: "create operational intent references in an off-nominal state",
+        }
 
     @property
     def _expected_flight_intents(self) -> List[ExpectedFlightIntent]:
