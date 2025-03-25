@@ -57,6 +57,7 @@ class DownUSS(TestScenario):
     uss_qualifier_sub: str
 
     tested_uss: FlightPlannerClient
+    dss_resource: DSSInstanceResource
     dss: DSSInstance
 
     def __init__(
@@ -67,13 +68,7 @@ class DownUSS(TestScenario):
     ):
         super().__init__()
         self.tested_uss = tested_uss.client
-        self.dss = dss.get_instance(
-            {
-                Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities and retrieve operational intent details",
-                Scope.AvailabilityArbitration: "declare virtual USS down in DSS",
-                Scope.ConformanceMonitoringForSituationalAwareness: "create operational intent references in an off-nominal state",
-            }
-        )
+        self.dss = dss.get_instance(self._dss_req_scopes)
 
         templates = flight_intents.get_flight_intents()
         try:
@@ -87,6 +82,13 @@ class DownUSS(TestScenario):
 
         for efi in self._expected_flight_intents:
             setattr(self, efi.intent_id, templates[efi.intent_id])
+
+    @property
+    def _dss_req_scopes(self) -> dict[str, str]:
+        return {
+            Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities and retrieve operational intent details",
+            Scope.AvailabilityArbitration: "declare virtual USS down in DSS",
+        }
 
     @property
     def _expected_flight_intents(self) -> List[ExpectedFlightIntent]:
