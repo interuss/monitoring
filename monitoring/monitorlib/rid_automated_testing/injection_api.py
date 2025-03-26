@@ -15,21 +15,21 @@ from monitoring.monitorlib.rid import RIDVersion
 
 SCOPE_RID_QUALIFIER_INJECT = "rid.inject_test_data"
 
+MANDATORY_TELEMETRY_FIELDS = [
+    "timestamp",
+    "timestamp_accuracy",
+    "position",
+    "track",
+    "speed",
+    "speed_accuracy",
+    "vertical_speed",
+]
+
+# TODO: Handle accuracy_h and accuracy_v
+MANDATORY_POSITION_FIELDS = ["lat", "lng", "alt"]
+
 
 class TestFlight(injection.TestFlight):
-
-    MANDATORY_TELEMETRY_FIELDS = [
-        "timestamp",
-        "timestamp_accuracy",
-        "position",
-        "track",
-        "speed",
-        "speed_accuracy",
-        "vertical_speed",
-    ]
-
-    # TODO: Handle accuracy_h and accuracy_v
-    MANDATORY_POSITION_FIELDS = ["lat", "lng", "alt"]
 
     raw_telemetry: Optional[List[RIDAircraftState]]
     """Copy of original telemetry with potential invalid data"""
@@ -56,7 +56,7 @@ class TestFlight(injection.TestFlight):
 
                 is_ok = True
 
-                for mandatory_field in self.MANDATORY_TELEMETRY_FIELDS:
+                for mandatory_field in MANDATORY_TELEMETRY_FIELDS:
                     if telemetry.get(mandatory_field, None) is None:
                         is_ok = False
                         break
@@ -64,7 +64,7 @@ class TestFlight(injection.TestFlight):
                 if not is_ok:
                     continue
 
-                for mandatory_field in self.MANDATORY_POSITION_FIELDS:
+                for mandatory_field in MANDATORY_POSITION_FIELDS:
                     if telemetry.position.get(mandatory_field, None) is None:
                         is_ok = False
                         break
