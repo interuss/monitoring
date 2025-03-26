@@ -36,6 +36,9 @@ class Settings:
     add_request_id: bool = True
     """Whether to automatically add a `request_id` field to any request with a JSON body and no pre-existing `request_id` field"""
 
+    fake_netlocs: tuple[str] = ("testdummy.interuss.org",)
+    """Network locations well-known to be fake and for which a request should fail immediately without being attempted."""
+
 
 settings = Settings()
 """Singleton settings for queries made with this tool"""
@@ -621,12 +624,31 @@ def query_and_describe(
         req_kwargs["json"] = json_body
 
     failures = []
+
+    is_netloc_fake = False
+    try:
+        is_netloc_fake = urlparse(url).netloc in settings.fake_netlocs
+    except ValueError:
+        pass
+
+    def get_location() -> str:
+        return (
+            traceback.format_list([traceback.extract_stack()[-3]])[0]
+            .split("\n")[0]
+            .strip()
+        )
+
     # Note: retry logic could be attached to the `client` Session by `mount`ing an HTTPAdapter with custom
     # `max_retries`, however we do not want to mutate the provided Session.  Instead, retry only on errors we explicitly
     # consider retryable.
     for attempt in range(settings.attempts):
         t0 = datetime.datetime.now(datetime.UTC)
         try:
+            if is_netloc_fake:
+                failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} was not attempted because network location of {url} was identified as fake: {settings.fake_netlocs}\nAt {get_location()}"
+                failures.append(failure_message)
+                break
+
             return describe_query(
                 client.request(verb, url, **req_kwargs),
                 t0,
@@ -634,12 +656,7 @@ def query_and_describe(
                 participant_id=participant_id,
             )
         except (requests.Timeout, urllib3.exceptions.ReadTimeoutError) as e:
-            location = (
-                traceback.format_list([traceback.extract_stack()[-2]])[0]
-                .split("\n")[0]
-                .strip()
-            )
-            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with timeout {type(e).__name__}: {str(e)}\nAt {location}"
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with timeout {type(e).__name__}: {str(e)}\nAt {get_location()}"
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
@@ -651,24 +668,14 @@ def query_and_describe(
                 retryable = True
             else:
                 retryable = False
-            location = (
-                traceback.format_list([traceback.extract_stack()[-2]])[0]
-                .split("\n")[0]
-                .strip()
-            )
-            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with {'' if retryable else 'non-'}retryable ConnectionError: {str(e)}\nAt {location}"
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with {'' if retryable else 'non-'}retryable ConnectionError: {str(e)}\nAt {get_location()}"
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
             if not retryable:
                 break
         except requests.RequestException as e:
-            location = (
-                traceback.format_list([traceback.extract_stack()[-2]])[0]
-                .split("\n")[0]
-                .strip()
-            )
-            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with non-retryable RequestException {type(e).__name__}: {str(e)}\nAt {location}"
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with non-retryable RequestException {type(e).__name__}: {str(e)}\nAt {get_location()}"
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
