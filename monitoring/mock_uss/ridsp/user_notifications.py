@@ -9,7 +9,11 @@ from uas_standards.interuss.automated_testing.rid.v1.injection import (
 )
 
 from monitoring.monitorlib.rid_automated_testing import injection_api
-from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
+from monitoring.monitorlib.rid_automated_testing.injection_api import (
+    MANDATORY_POSITION_FIELDS,
+    MANDATORY_TELEMETRY_FIELDS,
+    TestFlight,
+)
 
 from . import database
 
@@ -70,7 +74,7 @@ def check_and_generate_missing_fields_notifications(
             # one
             default_timestamp = best_timestamp
 
-            for mandatory_field in flight.MANDATORY_TELEMETRY_FIELDS:
+            for mandatory_field in MANDATORY_TELEMETRY_FIELDS:
                 if telemetry.get(mandatory_field, None) is None:
                     missing_fields_notifications.append(
                         (
@@ -80,7 +84,7 @@ def check_and_generate_missing_fields_notifications(
                     )
 
             if telemetry.get("position", None):
-                for mandatory_field in flight.MANDATORY_POSITION_FIELDS:
+                for mandatory_field in MANDATORY_POSITION_FIELDS:
                     if telemetry["position"].get(mandatory_field, None) is None:
                         missing_fields_notifications.append(
                             (

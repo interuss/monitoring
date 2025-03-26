@@ -7,7 +7,11 @@ from s2sphere import LatLngRect
 
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
+from monitoring.monitorlib.rid_automated_testing.injection_api import (
+    MANDATORY_POSITION_FIELDS,
+    MANDATORY_TELEMETRY_FIELDS,
+    TestFlight,
+)
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
     EvaluationConfigurationResource,
@@ -64,8 +68,8 @@ class SpOperatorNotifyMissingFields(GenericTestScenario):
 
         self.begin_test_case("Missing fields flight")
 
-        for field in TestFlight.MANDATORY_TELEMETRY_FIELDS + [
-            f"position.{f}" for f in TestFlight.MANDATORY_POSITION_FIELDS
+        for field in MANDATORY_TELEMETRY_FIELDS + [
+            f"position.{f}" for f in MANDATORY_POSITION_FIELDS
         ]:
             self._frozen_flights_data = self._flights_data.truncate_flights_field(
                 field
