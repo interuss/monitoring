@@ -1,10 +1,14 @@
-from dataclasses import dataclass
+import uuid
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from itertools import permutations
+from itertools import combinations, permutations
 from typing import Any, Callable, List, Optional, Tuple, TypeVar
 
+from implicitdict import ImplicitDict
+from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
 from uas_standards.astm.f3411.v22a.api import (
+    UASID,
     Altitude,
     HorizontalAccuracy,
     LatLngPoint,
@@ -17,7 +21,6 @@ from uas_standards.astm.f3411.v22a.api import (
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     OperatorAltitudeAltitudeType,
-    RIDHeight,
 )
 
 from monitoring.monitorlib.fetch.rid import Flight
@@ -1844,3 +1847,468 @@ def test_evaluate_vertical_speed():
 
             if v2 > 0:  # Ensure value stays valid
                 _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
+
+
+def test_evaluate_uas_id():
+    """Test uas id base part, about the presence of at least one field in observed values"""
+
+    def do_checkfor_uas_id_presence(sp_observed, rid_version):
+
+        def step_under_test(self: UnitTestScenario):
+            evaluator = RIDCommonDictionaryEvaluator(
+                config=EvaluationConfiguration(),
+                test_scenario=self,
+                rid_version=rid_version,
+            )
+
+            evaluator._evaluate_uas_id(None, sp_observed, None, None, None)
+
+        unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+
+        reported_missing_uas_id = False
+
+        for c in unit_test_scenario.get_report().cases:
+            for step in c.steps:
+                for failed_check in step.failed_checks:
+                    if (
+                        failed_check.summary
+                        == "UAS ID not present as required by the Common Dictionary definition"
+                    ):
+                        reported_missing_uas_id = True
+
+        return not reported_missing_uas_id
+
+    # v19
+    for v in range(0, 4):  # We activate or not 2 fields, 2^2 == 4
+
+        class SpObservedV19(ImplicitDict):
+
+            rid_version = RIDVersion.f3411_19
+
+            def __init__(self, v):
+                self.v19_value = {
+                    "registration_number": "x" if v & 0b1 else None,
+                    "serial_number": "x" if v & 0b10 else None,
+                }
+
+        assert do_checkfor_uas_id_presence(
+            SpObservedV19(v), RIDVersion.f3411_19
+        ) == bool(v)
+
+    # v22
+    for v in range(0, 16):  # We activate or not 4 field, 2^4 == 16
+
+        class FakeV22Value(ImplicitDict):
+            uas_id = None
+
+        class SpObservedV22a(ImplicitDict):
+
+            rid_version = RIDVersion.f3411_22a
+
+            def __init__(self, v):
+
+                self.v22a_value = FakeV22Value()
+
+                self.v22a_value["uas_id"] = {
+                    "registration_id": "x" if v & 0b1 else None,
+                    "serial_number": "x" if v & 0b10 else None,
+                    "specific_session_id": "x" if v & 0b100 else None,
+                    "utm_id": "x" if v & 0b1000 else None,
+                }
+
+        assert do_checkfor_uas_id_presence(
+            SpObservedV22a(v), RIDVersion.f3411_22a
+        ) == bool(v)
+
+
+def test_evaluate_uas_id_dp():
+    """Test various UAS Id DP-specifc tests cases"""
+
+    @dataclass
+    class DPTestCase:
+        observed_value: dict
+        injected_val_uas_id: dict = field(default_factory=dict)
+        expected_failure_message: Optional[str] = None
+        expected_skiped_message: Optional[str] = None
+        version: RIDVersion = RIDVersion.f3411_22a
+
+    tests_casses = [
+        # Missing data
+        DPTestCase(
+            observed_value={},
+            expected_failure_message="UAS ID not present as required by the Common Dictionary definition",
+        ),
+        # Missing data
+        DPTestCase(
+            observed_value={"uas": {}},
+            expected_failure_message="UAS ID not present as required by the Common Dictionary definition",
+        ),
+        # Missing data
+        DPTestCase(
+            observed_value={"uas": {"id": None}},
+            expected_failure_message="UAS ID not present as required by the Common Dictionary definition",
+        ),
+        # In v19, we cannot inject an utm_id, so any id is valid
+        DPTestCase(
+            observed_value={"uas": {"id": "random-value"}},
+            version=RIDVersion.f3411_19,
+            expected_skiped_message="Unable to verify that observed UAS id is valid, skipped consistency validation",
+        ),
+        # v19 nominal matching values
+        DPTestCase(
+            observed_value={"uas": {"id": "test-reg-id"}},
+            injected_val_uas_id={"registration_id": "test-reg-id"},
+            version=RIDVersion.f3411_19,
+        ),
+        DPTestCase(
+            observed_value={"uas": {"id": "test-ser-num"}},
+            injected_val_uas_id={"serial_number": "test-ser-num"},
+            version=RIDVersion.f3411_19,
+        ),
+        DPTestCase(
+            observed_value={"uas": {"id": "test-reg-id"}},
+            injected_val_uas_id={
+                "registration_id": "test-reg-id",
+                "serial_number": "test-ser-num",
+            },
+            version=RIDVersion.f3411_19,
+        ),
+        DPTestCase(
+            observed_value={"uas": {"id": "test-ser-num"}},
+            injected_val_uas_id={
+                "registration_id": "test-reg-id",
+                "serial_number": "test-ser-num",
+            },
+            version=RIDVersion.f3411_19,
+        ),
+        # In v22a, without utm_id injected everything is valid
+        DPTestCase(
+            observed_value={"uas": {"id": "random-value"}},
+            expected_skiped_message="Unable to verify that observed UAS id is valid, skipped consistency validation",
+        ),
+        # Bot the opposite is not
+        DPTestCase(
+            observed_value={"uas": {"id": "random-value"}},
+            injected_val_uas_id={"utm_id": "test-utm-id"},
+            expected_failure_message="is not consistent with one of the injected values",
+        ),
+    ]
+
+    for target_key, target_value in [
+        ("registration_id", "test-reg-id"),
+        ("serial_number", "test-ser-num"),
+        ("specific_session_id", "test-spe-id"),
+        ("utm_id", "test-utm-id"),
+    ]:
+        for provided_value in range(1, 16):
+
+            injected = {
+                "registration_id": "test-reg-id" if provided_value & 0b1 else None,
+                "serial_number": "test-ser-num" if provided_value & 0b10 else None,
+                "specific_session_id": (
+                    "test-spe-id" if provided_value & 0b100 else None
+                ),
+                "utm_id": "test-utm-id" if provided_value & 0b1000 else None,
+            }
+
+            if injected[target_key]:
+                tests_casses.append(
+                    DPTestCase(
+                        observed_value={"uas": {"id": target_value}},
+                        injected_val_uas_id=injected,
+                    )
+                )
+            else:
+                if injected["utm_id"]:
+                    tests_casses.append(
+                        DPTestCase(
+                            observed_value={"uas": {"id": target_value}},
+                            injected_val_uas_id=injected,
+                            expected_failure_message="is not consistent with one of the injected values",
+                        )
+                    )
+                else:
+                    tests_casses.append(
+                        DPTestCase(
+                            observed_value={"uas": {"id": target_value}},
+                            injected_val_uas_id=injected,
+                            expected_skiped_message="Unable to verify that observed UAS id is valid, skipped consistency validation",
+                        )
+                    )
+
+    for test_case in tests_casses:
+
+        def step_under_test(self: UnitTestScenario):
+            evaluator = RIDCommonDictionaryEvaluator(
+                config=EvaluationConfiguration(),
+                test_scenario=self,
+                rid_version=test_case.version,
+            )
+
+            class FakeInjected(ImplicitDict):
+                uas_id = UASID(test_case.injected_val_uas_id)
+
+            evaluator._evaluate_uas_id_dp(
+                FakeInjected(), test_case.observed_value, None, datetime.now()
+            )
+
+        unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
+
+        if test_case.expected_skiped_message:
+            found_message = False
+            for note in unit_test_scenario.get_report().notes.values():
+                if test_case.expected_skiped_message in note.message:
+                    found_message = True
+                    break
+
+            assert found_message
+
+        if test_case.expected_failure_message:
+
+            assert not unit_test_scenario.get_report().successful
+
+            found_message = False
+
+            for c in unit_test_scenario.get_report().cases:
+                for step in c.steps:
+                    for failed_check in step.failed_checks:
+                        if test_case.expected_failure_message in failed_check.summary:
+                            found_message = True
+                            break
+
+            assert found_message
+        else:
+            assert unit_test_scenario.get_report().successful
+
+
+def test_evaluate_uas_id_serial_number():
+
+    # We try to reuse internal testing function, so we mock a normal _generic_evaluator
+    def mock(self, injected, sp_observed, dp_observed, participant, query_timestamp):
+        if sp_observed:
+            return RIDCommonDictionaryEvaluator._evaluate_uas_id_serial_number(
+                self, injected, sp_observed, participant, query_timestamp
+            )
+        # We reuse the SP one for the DP since we don't have a DP
+        return RIDCommonDictionaryEvaluator._evaluate_uas_id_serial_number(
+            self, injected, dp_observed, participant, query_timestamp
+        )
+
+    RIDCommonDictionaryEvaluator._test_evaluate_uas_id_serial_number = mock
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["uas_id"] = {"serial_number": value}
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["serial_number"] = value
+        return flight
+
+    base_args = (
+        "_test_evaluate_uas_id_serial_number",
+        injected_field_setter,
+        sp_field_setter,
+        sp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=SerialNumber.generate_valid(),
+        valid_value_2=SerialNumber.generate_valid(),
+    )
+
+    for valid_value in [
+        SerialNumber.generate_valid(),
+        "LWBE53EGFG",
+        "9M2WC3YKQN9YZ3EHW",
+    ]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in ["42", "SERIAL3000"]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args,
+            invalid_value=invalid_value,
+            valid_value=SerialNumber.generate_valid(),
+        )
+
+    _assert_generic_evaluator_defaults(
+        *base_args,
+        default_value=None,
+        valid_value=SerialNumber.generate_valid(),
+    )
+
+
+def test_evaluate_uas_id_registration_id():
+    # We try to reuse internal testing function, so we mock a normal _generic_evaluator
+    def mock(self, injected, sp_observed, dp_observed, participant, query_timestamp):
+        if sp_observed:
+            return RIDCommonDictionaryEvaluator._evaluate_uas_id_registration_id(
+                self, injected, sp_observed, participant, query_timestamp
+            )
+        # We reuse the SP one for the DP since we don't have a DP
+        return RIDCommonDictionaryEvaluator._evaluate_uas_id_registration_id(
+            self, injected, dp_observed, participant, query_timestamp
+        )
+
+    RIDCommonDictionaryEvaluator._test_evaluate_uas_id_registration_id = mock
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["uas_id"] = {"registration_id": value}
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["registration_id"] = value
+        return flight
+
+    base_args = (
+        "_test_evaluate_uas_id_registration_id",
+        injected_field_setter,
+        sp_field_setter,
+        sp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value="HB.4242",
+        valid_value_2="HB.2424",
+    )
+
+    for valid_value in ["HB.4242", "HB.2424", "F.FRANCE"]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in ["42", "SERIAL3000", "COUNTRY.NUMBER"]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args, invalid_value=invalid_value, valid_value="HB.4242"
+        )
+
+    _assert_generic_evaluator_defaults(
+        *base_args,
+        default_value=None,
+        valid_value="HB.4242",
+    )
+
+
+def test_evaluate_uas_id_utm_id():
+    # We try to reuse internal testing function, so we mock a normal _generic_evaluator
+    def mock(self, injected, sp_observed, dp_observed, participant, query_timestamp):
+        if sp_observed:
+            return RIDCommonDictionaryEvaluator._evaluate_uas_id_utm_id(
+                self, injected, sp_observed, participant, query_timestamp
+            )
+        # We reuse the SP one for the DP since we don't have a DP
+        return RIDCommonDictionaryEvaluator._evaluate_uas_id_utm_id(
+            self, injected, dp_observed, participant, query_timestamp
+        )
+
+    RIDCommonDictionaryEvaluator._test_evaluate_uas_id_utm_id = mock
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["uas_id"] = {"utm_id": value}
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["raw"] = {"uas_id": {"utm_id": value}}
+        return flight
+
+    base_args = (
+        "_test_evaluate_uas_id_utm_id",
+        injected_field_setter,
+        sp_field_setter,
+        sp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=str(uuid.uuid4()),
+        valid_value_2=str(uuid.uuid4()),
+    )
+
+    for valid_value in [
+        str(uuid.uuid4()),
+        "00000000-0000-0000-0000-000000000000",
+        "{12345678-1234-5678-1234-567812345678}",
+        "12345678123456781234567812345678",
+        "urn:uuid:12345678-1234-5678-1234-567812345678",
+        "12345678-1234-5678-1234-567812345678",
+    ]:
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for invalid_value in ["42", "test"]:
+        _assert_generic_evaluator_invalid_value(
+            *base_args, invalid_value=invalid_value, valid_value=str(uuid.uuid4())
+        )
+
+    for v1, v2 in permutations(
+        [
+            "00000000-0000-0000-0000-000000000000",
+            "{12345678-1234-5678-1234-567812345678}",
+            "12345678123456781234567812345678",
+            "urn:uuid:12345678-1234-5678-1234-567812345678",
+            "12345678-1234-5678-1234-567812345678",
+        ],
+        2,
+    ):
+        if "0000" in v1 or "0000" in v2:
+            _assert_generic_evaluator_not_equivalent(*base_args, v1=v1, v2=v2)
+        else:
+            _assert_generic_evaluator_equivalent(*base_args, v1=v1, v2=v2)
+
+    _assert_generic_evaluator_defaults(
+        *base_args,
+        default_value=None,
+        valid_value=str(uuid.uuid4()),
+    )
+
+
+def test_evaluate_uas_id_specific_session_id():
+    # We try to reuse internal testing function, so we mock a normal _generic_evaluator
+    def mock(self, injected, sp_observed, dp_observed, participant, query_timestamp):
+        if sp_observed:
+            return RIDCommonDictionaryEvaluator._evaluate_uas_id_specific_session_id(
+                self, injected, sp_observed, participant, query_timestamp
+            )
+        # We reuse the SP one for the DP since we don't have a DP
+        return RIDCommonDictionaryEvaluator._evaluate_uas_id_specific_session_id(
+            self, injected, dp_observed, participant, query_timestamp
+        )
+
+    RIDCommonDictionaryEvaluator._test_evaluate_uas_id_specific_session_id = mock
+
+    def injected_field_setter(flight: Any, value: T) -> Any:
+        flight["uas_id"] = {"specific_session_id": value}
+        return flight
+
+    def sp_field_setter(flight: Any, value: T) -> Any:
+        flight["raw"] = {"uas_id": {"specific_session_id": value}}
+        return flight
+
+    base_args = (
+        "_test_evaluate_uas_id_specific_session_id",
+        injected_field_setter,
+        sp_field_setter,
+        sp_field_setter,
+    )
+
+    _assert_generic_evaluator_correct_field_is_used(
+        *base_args,
+        valid_value=str(uuid.uuid4()),
+        valid_value_2=str(uuid.uuid4()),
+    )
+
+    for valid_value in [
+        str(uuid.uuid4()),
+        "42",
+        "Test",
+        "Hello",
+    ]:  # Everything is valid
+        _assert_generic_evaluator_valid_value(*base_args, valid_value=valid_value)
+
+    for valid_value in [
+        str(uuid.uuid4()),
+        "42",
+        "Test",
+        "Hello",
+    ]:  # If nothing is injected, everything is valid
+        _assert_generic_evaluator_result(
+            *base_args, None, valid_value, valid_value, outcome=True
+        )
