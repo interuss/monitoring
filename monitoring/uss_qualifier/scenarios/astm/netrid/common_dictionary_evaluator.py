@@ -16,7 +16,6 @@ from uas_standards.astm.f3411.v19.api import (
 )
 from uas_standards.astm.f3411.v22a import constants
 from uas_standards.astm.f3411.v22a.api import (
-    UASID,
     HorizontalAccuracy,
     RIDHeightReference,
     RIDOperationalStatus,
@@ -365,11 +364,11 @@ class RIDCommonDictionaryEvaluator(object):
                     check.skip()
                     self._test_scenario.record_note(
                         key="skip_reason",
-                        message=f"Unable to verify that observed UAS id is valid, skipped consistency validation",
+                        message="Unable to verify that observed UAS id is valid, skipped consistency validation",
                     )
                 else:
                     check.record_failed(
-                        f"UAS ID observed ({observed_value}) in not consistent with one of the injected values ({', '.join(possible_values)})",
+                        f"UAS ID observed ({observed_value}) is not consistent with one of the injected values ({', '.join(possible_values)})",
                         query_timestamps=[query_timestamp],
                     )
 
