@@ -101,7 +101,7 @@ class TestFlight(injection.TestFlight):
                     detail.details.serial_number = detail.details.uas_id.serial_number
                 elif serial_number != detail.details.uas_id.serial_number:
                     raise ValueError(
-                        f"Impossible to validate test flight: details.serial_number ({serial_number}) is not eqal to details.uas_id.serial_number ({detail.details.uas_id.serial_number})"
+                        f"Impossible to validate test flight: details.serial_number ({serial_number}) is not equal to details.uas_id.serial_number ({detail.details.uas_id.serial_number})"
                     )
             elif (
                 serial_number
