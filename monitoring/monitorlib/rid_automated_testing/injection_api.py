@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple
 
 import arrow
 import s2sphere
+from uas_standards.astm.f3411.v22a.api import UASID
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     RIDAircraftState,
@@ -42,12 +43,12 @@ class TestFlight(injection.TestFlight):
             Any other argument is passed to the parent injection.TestFlight class.
         """
 
+        filter_invalid_telemetry = kwargs.pop("filter_invalid_telemetry", True)
+
         super().__init__(*args, **kwargs)
 
         # We filter out bad telemetry but keep a copy in raw_telemetry
         self.raw_telemetry = self.telemetry
-
-        filter_invalid_telemetry = kwargs.pop("filter_invalid_telemetry", True)
 
         if filter_invalid_telemetry:
             filtered_telemetry = []
@@ -75,6 +76,53 @@ class TestFlight(injection.TestFlight):
                 filtered_telemetry.append(telemetry)
 
             self.telemetry = filtered_telemetry
+
+        # Right now, injection API specfic two method of injecting the
+        # serial_number and registration_number.
+        # To ensure consistency, we do inject both if one value is present,
+        # raise an expcetion if we do have different value and do nothing
+        # if none are present
+
+        for detail in self.details_responses:
+
+            # Values outside uas_id
+            serial_number = detail.details.get("serial_number")
+            registration_number = detail.details.get("registration_number")
+
+            # No uas_id and one value present: We build a uas_id that we will
+            # fill at next step
+            if ("uas_id" not in detail.details or not detail.details.uas_id) and (
+                serial_number or registration_number
+            ):
+                detail.details.uas_id = UASID()
+
+            if detail.details.uas_id.serial_number:
+                if not serial_number:  # No serial number outside uas_id, we set it
+                    detail.details.serial_number = detail.details.uas_id.serial_number
+                elif serial_number != detail.details.uas_id.serial_number:
+                    raise ValueError(
+                        f"Impossible to validate test flight: details.serial_number ({serial_number}) is not equal to details.uas_id.serial_number ({detail.details.uas_id.serial_number})"
+                    )
+            elif (
+                serial_number
+            ):  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
+                detail.details.uas_id.serial_number = serial_number
+
+            if detail.details.uas_id.registration_id:
+                if (
+                    not registration_number
+                ):  # No serial number outside uas_id, we set it
+                    detail.details.registration_number = (
+                        detail.details.uas_id.registration_id
+                    )
+                elif registration_number != detail.details.uas_id.registration_id:
+                    raise ValueError(
+                        f"Impossible to validate test flight: details.registration_number ({registration_number}) is not eqal to details.uas_id.registration_id ({detail.details.uas_id.registration_id})"
+                    )
+            elif (
+                registration_number
+            ):  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
+                detail.details.uas_id.registration_id = registration_number
 
     def get_span(
         self,
