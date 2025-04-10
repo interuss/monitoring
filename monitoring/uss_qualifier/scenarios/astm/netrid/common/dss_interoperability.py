@@ -12,7 +12,6 @@ import s2sphere
 from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch.rid import ISA
 from monitoring.monitorlib.testing import make_fake_url
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
     DSSInstanceResource,
     DSSInstancesResource,
@@ -196,7 +195,6 @@ class DSSInteroperability(GenericTestScenario):
                 if sub_isa is None:
                     check.record_failed(
                         summary=f"DSS did not return ISA {isa_1.uuid} from testStep1 when creating Subscription {sub_1.uuid}",
-                        severity=Severity.High,
                         details=f"service_areas IDs: {', '.join([isa.id for isa in created_sub.isas])}",
                         query_timestamps=[created_sub.query.request.timestamp],
                     )
@@ -217,7 +215,6 @@ class DSSInteroperability(GenericTestScenario):
                 return dict(
                     summary=f"ISA[{dss.participant_id}].{field_name} not equal ISA[{self._dss_primary.participant_id}].{field_name}",
                     details=f"ISA[{dss.participant_id}].{field_name} is {primary_isa_field_value}; ISA[{self._dss_primary.participant_id}].{field_name} is {other_isa_field_value}",
-                    severity=Severity.High,
                     query_timestamps=[created_sub.query.request.timestamp],
                 )
 
@@ -314,7 +311,6 @@ class DSSInteroperability(GenericTestScenario):
                 return dict(
                     summary=f"Subscription[{dss.participant_id}].{field_name} not equal Subscription[{self._dss_primary.participant_id}].{field_name}",
                     details=f"Subscription[{dss.participant_id}].{field_name} is {primary_sub_field_value}; Subscription[{self._dss_primary.participant_id}].{field_name} is {other_sub_field_value}",
-                    severity=Severity.High,
                     query_timestamps=[other_sub.query.request.timestamp],
                 )
 
@@ -449,7 +445,6 @@ class DSSInteroperability(GenericTestScenario):
                 if missing_subs:
                     check.record_failed(
                         summary=f"DSS returned too few subscriptions",
-                        severity=Severity.High,
                         details=f"Missing: {', '.join(missing_subs)}",
                         query_timestamps=[subs.query.request.timestamp],
                     )
@@ -571,7 +566,6 @@ class DSSInteroperability(GenericTestScenario):
                 if found_deleted_sub:
                     check.record_failed(
                         summary="Found deleted Subscriptions",
-                        severity=Severity.High,
                         details=f"Deleted Subscriptions found: {found_deleted_sub}",
                         query_timestamps=[subs.query.request.timestamp],
                     )
@@ -608,7 +602,6 @@ class DSSInteroperability(GenericTestScenario):
                 if isa_1.uuid in isa_ids:
                     check.record_failed(
                         summary=f"DSS returned expired ISA {isa_1.uuid} when creating Subscription {sub_2.uuid}",
-                        severity=Severity.High,
                         details=f"service_areas IDs: {', '.join(isa_ids)}",
                         query_timestamps=[created_sub.query.request.timestamp],
                     )
@@ -639,7 +632,6 @@ class DSSInteroperability(GenericTestScenario):
             if missing_subs:
                 check.record_failed(
                     summary=f"DSS returned too few Subscriptions",
-                    severity=Severity.High,
                     details=f"Missing Subscriptions: {', '.join(missing_subs)}",
                     query_timestamps=[mutated_isa.dss_query.query.request.timestamp],
                 )
@@ -669,7 +661,6 @@ class DSSInteroperability(GenericTestScenario):
             if missing_subs:
                 check.record_failed(
                     summary=f"DSS returned too few Subscriptions",
-                    severity=Severity.High,
                     details=f"Missing Subscriptions: {', '.join(missing_subs)}",
                     query_timestamps=[del_isa.dss_query.query.request.timestamp],
                 )
@@ -708,7 +699,6 @@ class DSSInteroperability(GenericTestScenario):
             if found_expired_sub:
                 check.record_failed(
                     summary="Found expired Subscriptions",
-                    severity=Severity.High,
                     details=f"Expired Subscriptions found: {', '.join(found_expired_sub)}",
                     query_timestamps=[mutated_isa.dss_query.query.request.timestamp],
                 )
@@ -737,7 +727,6 @@ class DSSInteroperability(GenericTestScenario):
                 if found_expired_sub:
                     check.record_failed(
                         summary="Found expired Subscriptions",
-                        severity=Severity.High,
                         details=f"Expired Subscriptions found: {', '.join(found_expired_sub)}",
                         query_timestamps=[subs.query.request.timestamp],
                     )
@@ -780,7 +769,6 @@ class DSSInteroperability(GenericTestScenario):
             if found_expired_sub:
                 check.record_failed(
                     summary="Found expired Subscriptions",
-                    severity=Severity.High,
                     details=f"Expired Subscriptions found: {', '.join(found_expired_sub)}",
                     query_timestamps=[del_isa.dss_query.query.request.timestamp],
                 )
@@ -811,7 +799,6 @@ class DSSInteroperability(GenericTestScenario):
                 if isa_3.uuid in isa_ids:
                     check.record_failed(
                         summary=f"DSS returned expired ISA {isa_3.uuid} when creating Subscription {sub_3.uuid}",
-                        severity=Severity.High,
                         details=f"service_areas IDs: {', '.join(isa_ids)}",
                         query_timestamps=[created_sub.query.request.timestamp],
                     )

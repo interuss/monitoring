@@ -66,7 +66,7 @@ Action: USS1@DSS*P*: PUT ISA with no start time and end time 10 minutes from now
 
 Qualitatively proves: Can create ISA in primary DSS
 
-#### ISA[*P*] created with proper response check
+#### 🛑 ISA[*P*] created with proper response check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,1a](../../../../requirements/astm/f3411/v22a.md)**
 
@@ -76,28 +76,28 @@ Action: USS2@DSS*n*: PUT Subscription with intersecting area, no start time
 
 Qualitatively proves: Can create Subscription in primary DSS, ISA accessible from all non-primary DSSs
 
-#### Subscription[*n*] created with proper response check
+#### 🛑 Subscription[*n*] created with proper response check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,3a](../../../../requirements/astm/f3411/v22a.md)**
 
-#### service_areas includes ISA from S1 check
+#### 🛑 service_areas includes ISA from S1 check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,1c](../../../../requirements/astm/f3411/v22a.md)**
 **[astm.f3411.v22a.DSS0130,3,e](../../../../requirements/astm/f3411/v22a.md)**
 
-#### ID of ISA from S1 is properly synchronized with all DSS check
+#### 🛑 ID of ISA from S1 is properly synchronized with all DSS check
 
 **[astm.f3411.v22a.DSS0130,3,a](../../../../requirements/astm/f3411/v22a.md)**
 
-#### Owner of ISA from S1 is properly synchronized with all DSS check
+#### 🛑 Owner of ISA from S1 is properly synchronized with all DSS check
 
 **[astm.f3411.v22a.DSS0130,3,b](../../../../requirements/astm/f3411/v22a.md)**
 
-#### URL of ISA from S1 is properly synchronized with all DSS check
+#### 🛑 URL of ISA from S1 is properly synchronized with all DSS check
 
 **[astm.f3411.v22a.DSS0130,3,c](../../../../requirements/astm/f3411/v22a.md)**
 
-#### Start/end times of ISA from S1 are properly synchronized with all DSS check
+#### 🛑 Start/end times of ISA from S1 are properly synchronized with all DSS check
 
 **[astm.f3411.v22a.DSS0130,3,d](../../../../requirements/astm/f3411/v22a.md)**
 
@@ -113,23 +113,23 @@ Qualitatively proves: Can retrieve specific Subscription emplaced in primary DSS
 
 **[astm.f3411.v22a.DSS0070](../../../../requirements/astm/f3411/v22a.md)** requires that all DSS instances in a pool return the same result. This check fails if the DSS instance does not return the same result as the other DSS instances.
 
-#### Subscription[*P*] ID is properly synchronized with all DSS check
+#### 🛑 Subscription[*P*] ID is properly synchronized with all DSS check
 
 **[astm.f3411.v22a.DSS0130,2,a](../../../../requirements/astm/f3411/v22a.md)**
 
-#### Subscription[*P*] owner is properly synchronized with all DSS check
+#### 🛑 Subscription[*P*] owner is properly synchronized with all DSS check
 
 **[astm.f3411.v22a.DSS0130,2,b](../../../../requirements/astm/f3411/v22a.md)**
 
-#### Subscription[*P*] URL is properly synchronized with all DSS check
+#### 🛑 Subscription[*P*] URL is properly synchronized with all DSS check
 
 **[astm.f3411.v22a.DSS0130,2,c](../../../../requirements/astm/f3411/v22a.md)**
 
-#### Subscription[*P*] start/end times are properly synchronized with all DSS check
+#### 🛑 Subscription[*P*] start/end times are properly synchronized with all DSS check
 
 **[astm.f3411.v22a.DSS0130,2,d](../../../../requirements/astm/f3411/v22a.md)**
 
-#### Subscription[*P*] notification count is properly synchronized with all DSS check
+#### 🛑 Subscription[*P*] notification count is properly synchronized with all DSS check
 
 **[astm.f3411.v22a.DSS0130,2,f](../../../../requirements/astm/f3411/v22a.md)**
 
@@ -149,7 +149,7 @@ Action: USS2@DSS*n*: GET Subscriptions using ISA[*P*]’s area
 
 Qualitatively proves: All Subscription[i] 1≤i≤n are returned in subscriptions with proper response
 
-#### Can query all Subscriptions in area from all DSSs check
+#### 🛑 Can query all Subscriptions in area from all DSSs check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,6](../../../../requirements/astm/f3411/v22a.md)**
 
@@ -213,7 +213,7 @@ Qualitatively proves: Subscription deletion from geographic index was effective 
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,6](../../../../requirements/astm/f3411/v22a.md)**
 
-#### No Subscription[i] 1≤i≤n returned with proper response check
+#### 🛑 No Subscription[i] 1≤i≤n returned with proper response check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,4b](../../../../requirements/astm/f3411/v22a.md)**
 
@@ -225,11 +225,11 @@ Action: Wait >D seconds from S5 then USS2@DSS*n*: PUT Subscription with intersec
 
 Qualitatively proves: Expired ISA automatically removed, ISA modifications accessible from all non-primary DSSs
 
-#### Subscription[*n*] created with proper response check
+#### 🛑 Subscription[*n*] created with proper response check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,1c](../../../../requirements/astm/f3411/v22a.md)**
 
-#### service_areas does not include ISA from S1 check
+#### 🛑 service_areas does not include ISA from S1 check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,1d](../../../../requirements/astm/f3411/v22a.md)**
 
@@ -241,11 +241,11 @@ Action: USS1@DSS*P*: PUT ISA with no start time and end time 10 minutes from now
 
 Qualitatively proves: ISA creation triggers subscription notification requests
 
-#### ISA[*P*] created with proper response check
+#### 🛑 ISA[*P*] created with proper response check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,1a](../../../../requirements/astm/f3411/v22a.md)**
 
-#### All Subscription[i] 1≤i≤n returned in subscribers check
+#### 🛑 All Subscription[i] 1≤i≤n returned in subscribers check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,3b](../../../../requirements/astm/f3411/v22a.md)**
 
@@ -259,7 +259,7 @@ Qualitatively proves: ISA deletion triggers subscription notification requests
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,2a](../../../../requirements/astm/f3411/v22a.md)**
 
-#### All Subscription[i] 1≤i≤n returned in subscribers check
+#### 🛑 All Subscription[i] 1≤i≤n returned in subscribers check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,3c](../../../../requirements/astm/f3411/v22a.md)**
 
@@ -269,11 +269,11 @@ Action: Wait >D seconds from S9 then USS1@DSS*P*: PUT ISA with no start time and
 
 Qualitatively proves: Expired Subscriptions don’t trigger subscription notification requests
 
-#### ISA[*P*] created with proper response check
+#### 🛑 ISA[*P*] created with proper response check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,1a](../../../../requirements/astm/f3411/v22a.md)**
 
-#### None of Subscription[i] 1≤i≤n returned in subscribers check
+#### 🛑 None of Subscription[i] 1≤i≤n returned in subscribers check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,3d](../../../../requirements/astm/f3411/v22a.md)**
 
@@ -287,7 +287,7 @@ Qualitatively proves: Expired Subscription removed from geographic index on prim
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,6](../../../../requirements/astm/f3411/v22a.md)**
 
-#### No Subscription[i] 1≤i≤n returned with proper response check
+#### 🛑 No Subscription[i] 1≤i≤n returned with proper response check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,3d](../../../../requirements/astm/f3411/v22a.md)**
 
@@ -315,7 +315,7 @@ Qualitatively proves: ISA deletion does not trigger subscription notification re
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,2a](../../../../requirements/astm/f3411/v22a.md)**
 
-#### None of Subscription[i] 1≤i≤n returned in subscribers with proper response check
+#### 🛑 None of Subscription[i] 1≤i≤n returned in subscribers with proper response check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,3d](../../../../requirements/astm/f3411/v22a.md)**
 
@@ -325,11 +325,11 @@ Action: USS2@DSS*n*: PUT Subscription with intersecting area, no start time
 
 Qualitatively proves: Deleted ISA removed from all DSSs
 
-#### Subscription[*n*] created with proper response check
+#### 🛑 Subscription[*n*] created with proper response check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,3a](../../../../requirements/astm/f3411/v22a.md)**
 
-#### service_areas does not include ISA from S12 check
+#### 🛑 service_areas does not include ISA from S12 check
 
 **[astm.f3411.v22a.DSS0130,A2-6-1,2b](../../../../requirements/astm/f3411/v22a.md)**
 

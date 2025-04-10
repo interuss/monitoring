@@ -10,7 +10,6 @@ from monitoring.monitorlib.fetch import QueryType, query_and_describe
 from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
@@ -269,7 +268,6 @@ class ISAValidation(GenericTestScenario):
                 q=rid_query,
                 fail_msg="ISA Creation with missing outline has unexpected result code",
                 required_status_code={400},
-                severity=Severity.High,
             )
 
     def _isa_missing_volume(self, create_isa_url: str, json_body: Dict[str, Any]):
@@ -304,7 +302,6 @@ class ISAValidation(GenericTestScenario):
                 q=rid_query,
                 fail_msg="ISA Creation with missing outline has unexpected result code",
                 required_status_code={400},
-                severity=Severity.High,
             )
 
     def _isa_missing_extents(self, create_isa_url: str, json_body: Dict[str, Any]):
@@ -334,7 +331,6 @@ class ISAValidation(GenericTestScenario):
                 q=rid_query,
                 fail_msg="ISA Creation with missing outline has unexpected result code",
                 required_status_code={400},
-                severity=Severity.High,
             )
 
     def cleanup(self):

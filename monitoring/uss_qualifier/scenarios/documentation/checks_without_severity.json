@@ -45,12 +45,6 @@
       }
     },
     "scenarios.astm.netrid.v19.dss.isa_expiry.ISAExpiry": {
-      "ISA Expiry": {
-        "ISA Expiry": [
-          "An expired ISA can be queried by its ID",
-          "Expired ISAs are not part of search results"
-        ]
-      },
       "Setup": {
         "Ensure clean workspace": [
           "Successful ISA query",
@@ -135,13 +129,6 @@
       }
     },
     "scenarios.astm.netrid.v19.dss.isa_validation.ISAValidation": {
-      "ISA Validation": {
-        "ISA Validation": [
-          "ISA missing outline",
-          "ISA missing volume",
-          "ISA missing extents"
-        ]
-      },
       "Setup": {
         "Ensure clean workspace": [
           "Successful ISA query",
@@ -165,90 +152,18 @@
         ]
       },
       "Subscription Simple": {
-        "Create subscription validation": [
-          "Create subscription",
-          "Response to subscription creation contains a subscription",
-          "Returned subscription has an ID",
-          "Returned subscription ID is correct",
-          "Returned subscription has an owner",
-          "Returned subscription owner is correct",
-          "Returned notification index is 0 if present",
-          "Returned subscription has an ISA URL",
-          "Returned ISA URL has correct base URL",
-          "Returned subscription has a start time",
-          "Returned start time is correct",
-          "Returned subscription has an end time",
-          "Returned end time is correct",
-          "Returned subscription has a version",
-          "Generated subscription version has proper format"
-        ],
-        "Delete Subscription": [
-          "Missing version prevents deletion",
-          "Incorrect version prevents deletion",
-          "Returned notification index is equal to or greater than 0",
-          "Returned subscription has an ID",
-          "Returned subscription ID is correct",
-          "Returned subscription has an owner",
-          "Returned subscription owner is correct",
-          "Returned subscription has an ISA URL",
-          "Returned ISA URL has correct base URL",
-          "Returned subscription has a start time",
-          "Returned start time is correct",
-          "Returned subscription has an end time",
-          "Returned end time is correct",
-          "Returned subscription has a version",
-          "Non-mutated subscription keeps the same version",
-          "Generated subscription version has proper format"
-        ],
         "Mutate Subscription": [
-          "Subscription can be mutated",
-          "Response to subscription mutation contains a subscription",
-          "Returned subscription ID is correct",
-          "Returned subscription has an owner",
-          "Returned subscription owner is correct",
-          "Returned notification index is equal to or greater than 0",
-          "Returned subscription has an ID",
-          "Returned subscription ID is correct",
-          "Returned subscription has an ISA URL",
-          "Returned ISA URL has correct base URL",
-          "Returned subscription has a start time",
-          "Returned start time is correct",
-          "Returned subscription has an end time",
-          "Returned ISA URL has correct base URL",
-          "Returned start time is correct",
-          "Returned end time is correct",
-          "Returned subscription has a version",
-          "Mutated subscription version is updated",
-          "Generated subscription version has proper format"
+          "Subscription can be mutated"
         ],
         "Query Deleted Subscription": [
           "Query by subscription ID should fail",
           "Search for all subscriptions in ISA area",
-          "Search area that represents a loop is not allowed",
-          "Deleted subscription should not be present in search results"
+          "Search area that represents a loop is not allowed"
         ],
         "Query Existing Subscription": [
           "Get Subscription by ID",
           "Search for all subscriptions in ISA area",
-          "Created Subscription is in search results",
-          "No huge search area allowed",
-          "Returned subscription ID is correct",
-          "Returned subscription has an owner",
-          "Returned subscription owner is correct",
-          "Returned notification index is equal to or greater than 0",
-          "Returned subscription has an ID",
-          "Returned subscription ID is correct",
-          "Returned subscription has an ISA URL",
-          "Returned ISA URL has correct base URL",
-          "Returned subscription has a start time",
-          "Returned start time is correct",
-          "Returned subscription has an end time",
-          "Returned ISA URL has correct base URL",
-          "Returned start time is correct",
-          "Returned end time is correct",
-          "Returned subscription has a version",
-          "Non-mutated subscription keeps the same version",
-          "Generated subscription version has proper format"
+          "No huge search area allowed"
         ]
       }
     },
@@ -320,54 +235,20 @@
     },
     "scenarios.astm.netrid.v19.dss_interoperability.DSSInteroperability": {
       "Interoperability sequence": {
-        "S1": [
-          "ISA[P] created with proper response"
-        ],
-        "S10": [
-          "ISA[P] created with proper response",
-          "All Subscription[i] 1\u2264i\u2264n returned in subscribers"
-        ],
         "S11": [
-          "ISA[P] deleted with proper response",
-          "All Subscription[i] 1\u2264i\u2264n returned in subscribers"
-        ],
-        "S12": [
-          "ISA[P] created with proper response",
-          "None of Subscription[i] 1\u2264i\u2264n returned in subscribers"
+          "ISA[P] deleted with proper response"
         ],
         "S13": [
-          "Subscriptions queried successfully",
-          "No Subscription[i] 1\u2264i\u2264n returned with proper response"
+          "Subscriptions queried successfully"
         ],
         "S14": [
           "404 with proper response"
         ],
         "S15": [
-          "ISA[P] deleted with proper response",
-          "None of Subscription[i] 1\u2264i\u2264n returned in subscribers with proper response"
-        ],
-        "S16": [
-          "Subscription[n] created with proper response",
-          "service_areas does not include ISA from S12"
-        ],
-        "S2": [
-          "Subscription[n] created with proper response",
-          "service_areas includes ISA from S1",
-          "ID of ISA from S1 is properly synchronized with all DSS",
-          "Owner of ISA from S1 is properly synchronized with all DSS",
-          "URL of ISA from S1 is properly synchronized with all DSS",
-          "Start/end times of ISA from S1 are properly synchronized with all DSS"
+          "ISA[P] deleted with proper response"
         ],
         "S3": [
-          "Subscription[P] returned with proper response",
-          "Subscription[P] ID is properly synchronized with all DSS",
-          "Subscription[P] owner is properly synchronized with all DSS",
-          "Subscription[P] URL is properly synchronized with all DSS",
-          "Subscription[P] start/end times are properly synchronized with all DSS",
-          "Subscription[P] notification count is properly synchronized with all DSS"
-        ],
-        "S4": [
-          "Can query all Subscriptions in area from all DSSs"
+          "Subscription[P] returned with proper response"
         ],
         "S5": [
           "Can get ISA from primary DSS",
@@ -377,24 +258,12 @@
           "404 with proper response"
         ],
         "S8": [
-          "Subscriptions queried successfully",
-          "No Subscription[i] 1\u2264i\u2264n returned with proper response"
-        ],
-        "S9": [
-          "Subscription[n] created with proper response",
-          "service_areas does not include ISA from S1"
+          "Subscriptions queried successfully"
         ]
       },
       "Prerequisites": {
         "Test environment requirements": [
           "DSS instance is reachable"
-        ]
-      }
-    },
-    "scenarios.astm.netrid.v19.misbehavior.Misbehavior": {
-      "Invalid requests": {
-        "Unauthenticated requests": [
-          "Missing credentials"
         ]
       }
     },
@@ -538,12 +407,6 @@
       }
     },
     "scenarios.astm.netrid.v22a.dss.isa_expiry.ISAExpiry": {
-      "ISA Expiry": {
-        "ISA Expiry": [
-          "An expired ISA can be queried by its ID",
-          "Expired ISAs are not part of search results"
-        ]
-      },
       "Setup": {
         "Ensure clean workspace": [
           "Successful ISA query",
@@ -628,13 +491,6 @@
       }
     },
     "scenarios.astm.netrid.v22a.dss.isa_validation.ISAValidation": {
-      "ISA Validation": {
-        "ISA Validation": [
-          "ISA missing outline",
-          "ISA missing volume",
-          "ISA missing extents"
-        ]
-      },
       "Setup": {
         "Ensure clean workspace": [
           "Successful ISA query",
@@ -658,90 +514,18 @@
         ]
       },
       "Subscription Simple": {
-        "Create subscription validation": [
-          "Create subscription",
-          "Response to subscription creation contains a subscription",
-          "Returned subscription has an ID",
-          "Returned subscription ID is correct",
-          "Returned subscription has an owner",
-          "Returned subscription owner is correct",
-          "Returned notification index is 0 if present",
-          "Returned subscription has an ISA URL",
-          "Returned ISA URL has correct base URL",
-          "Returned subscription has a start time",
-          "Returned start time is correct",
-          "Returned subscription has an end time",
-          "Returned end time is correct",
-          "Returned subscription has a version",
-          "Generated subscription version has proper format"
-        ],
-        "Delete Subscription": [
-          "Missing version prevents deletion",
-          "Incorrect version prevents deletion",
-          "Returned notification index is equal to or greater than 0",
-          "Returned subscription has an ID",
-          "Returned subscription ID is correct",
-          "Returned subscription has an owner",
-          "Returned subscription owner is correct",
-          "Returned subscription has an ISA URL",
-          "Returned ISA URL has correct base URL",
-          "Returned subscription has a start time",
-          "Returned start time is correct",
-          "Returned subscription has an end time",
-          "Returned end time is correct",
-          "Returned subscription has a version",
-          "Non-mutated subscription keeps the same version",
-          "Generated subscription version has proper format"
-        ],
         "Mutate Subscription": [
-          "Subscription can be mutated",
-          "Response to subscription mutation contains a subscription",
-          "Returned subscription ID is correct",
-          "Returned subscription has an owner",
-          "Returned subscription owner is correct",
-          "Returned notification index is equal to or greater than 0",
-          "Returned subscription has an ID",
-          "Returned subscription ID is correct",
-          "Returned subscription has an ISA URL",
-          "Returned ISA URL has correct base URL",
-          "Returned subscription has a start time",
-          "Returned start time is correct",
-          "Returned subscription has an end time",
-          "Returned ISA URL has correct base URL",
-          "Returned start time is correct",
-          "Returned end time is correct",
-          "Returned subscription has a version",
-          "Mutated subscription version is updated",
-          "Generated subscription version has proper format"
+          "Subscription can be mutated"
         ],
         "Query Deleted Subscription": [
           "Query by subscription ID should fail",
           "Search for all subscriptions in ISA area",
-          "Search area that represents a loop is not allowed",
-          "Deleted subscription should not be present in search results"
+          "Search area that represents a loop is not allowed"
         ],
         "Query Existing Subscription": [
           "Get Subscription by ID",
           "Search for all subscriptions in ISA area",
-          "Created Subscription is in search results",
-          "No huge search area allowed",
-          "Returned subscription ID is correct",
-          "Returned subscription has an owner",
-          "Returned subscription owner is correct",
-          "Returned notification index is equal to or greater than 0",
-          "Returned subscription has an ID",
-          "Returned subscription ID is correct",
-          "Returned subscription has an ISA URL",
-          "Returned ISA URL has correct base URL",
-          "Returned subscription has a start time",
-          "Returned start time is correct",
-          "Returned subscription has an end time",
-          "Returned ISA URL has correct base URL",
-          "Returned start time is correct",
-          "Returned end time is correct",
-          "Returned subscription has a version",
-          "Non-mutated subscription keeps the same version",
-          "Generated subscription version has proper format"
+          "No huge search area allowed"
         ]
       }
     },
@@ -813,54 +597,20 @@
     },
     "scenarios.astm.netrid.v22a.dss_interoperability.DSSInteroperability": {
       "Interoperability sequence": {
-        "S1": [
-          "ISA[P] created with proper response"
-        ],
-        "S10": [
-          "ISA[P] created with proper response",
-          "All Subscription[i] 1\u2264i\u2264n returned in subscribers"
-        ],
         "S11": [
-          "ISA[P] deleted with proper response",
-          "All Subscription[i] 1\u2264i\u2264n returned in subscribers"
-        ],
-        "S12": [
-          "ISA[P] created with proper response",
-          "None of Subscription[i] 1\u2264i\u2264n returned in subscribers"
+          "ISA[P] deleted with proper response"
         ],
         "S13": [
-          "Subscriptions queried successfully",
-          "No Subscription[i] 1\u2264i\u2264n returned with proper response"
+          "Subscriptions queried successfully"
         ],
         "S14": [
           "404 with proper response"
         ],
         "S15": [
-          "ISA[P] deleted with proper response",
-          "None of Subscription[i] 1\u2264i\u2264n returned in subscribers with proper response"
-        ],
-        "S16": [
-          "Subscription[n] created with proper response",
-          "service_areas does not include ISA from S12"
-        ],
-        "S2": [
-          "Subscription[n] created with proper response",
-          "service_areas includes ISA from S1",
-          "ID of ISA from S1 is properly synchronized with all DSS",
-          "Owner of ISA from S1 is properly synchronized with all DSS",
-          "URL of ISA from S1 is properly synchronized with all DSS",
-          "Start/end times of ISA from S1 are properly synchronized with all DSS"
+          "ISA[P] deleted with proper response"
         ],
         "S3": [
-          "Subscription[P] returned with proper response",
-          "Subscription[P] ID is properly synchronized with all DSS",
-          "Subscription[P] owner is properly synchronized with all DSS",
-          "Subscription[P] URL is properly synchronized with all DSS",
-          "Subscription[P] start/end times are properly synchronized with all DSS",
-          "Subscription[P] notification count is properly synchronized with all DSS"
-        ],
-        "S4": [
-          "Can query all Subscriptions in area from all DSSs"
+          "Subscription[P] returned with proper response"
         ],
         "S5": [
           "Can get ISA from primary DSS",
@@ -870,12 +620,7 @@
           "404 with proper response"
         ],
         "S8": [
-          "Subscriptions queried successfully",
-          "No Subscription[i] 1\u2264i\u2264n returned with proper response"
-        ],
-        "S9": [
-          "Subscription[n] created with proper response",
-          "service_areas does not include ISA from S1"
+          "Subscriptions queried successfully"
         ]
       },
       "Prerequisites": {
@@ -888,9 +633,6 @@
       "Invalid requests": {
         "Injection": [
           "Valid flight"
-        ],
-        "Unauthenticated requests": [
-          "Missing credentials"
         ]
       }
     },

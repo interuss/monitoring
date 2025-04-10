@@ -7,7 +7,6 @@ import s2sphere
 from monitoring.monitorlib.fetch.rid import Subscription
 from monitoring.monitorlib.mutate.rid import ChangedSubscription
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
@@ -241,7 +240,6 @@ class SubscriptionSimple(GenericTestScenario):
             if notif_index is not None and notif_index != 0:
                 check.record_failed(
                     f"Returned notification index was {notif_index} instead of 0",
-                    Severity.High,
                     details="A subscription is expected to have a notification index of 0 when it is created"
                     f"Parameters used: {creation_params}",
                     query_timestamps=[newly_created.query.request.timestamp],
@@ -276,7 +274,6 @@ class SubscriptionSimple(GenericTestScenario):
             if not creation_resp_under_test.subscription:
                 check.record_failed(
                     "Response to subscription creation did not contain a subscription",
-                    Severity.High,
                     details="A subscription is expected to be returned in the response to a subscription creation request."
                     f"Parameters used: {creation_params}",
                     query_timestamps=[creation_resp_under_test.query.request.timestamp],
@@ -399,8 +396,7 @@ class SubscriptionSimple(GenericTestScenario):
                 if sub_id not in subs_in_area.subscriptions:
                     check.record_failed(
                         "Created subscription is not present in search results",
-                        Severity.High,
-                        f"The subscription {sub_id} was expected to be found in the search results, but these only contained the following subscriptions: {subs_in_area.subscriptions.keys()}",
+                        details=f"The subscription {sub_id} was expected to be found in the search results, but these only contained the following subscriptions: {subs_in_area.subscriptions.keys()}",
                         query_timestamps=[subs_in_area.query.request.timestamp],
                     )
 
@@ -502,8 +498,7 @@ class SubscriptionSimple(GenericTestScenario):
                 if sub_id in subs_in_area.subscriptions:
                     check.record_failed(
                         "A deleted subscription is still present in search results",
-                        Severity.High,
-                        f"The subscription {sub_id} was deleted, and thus not expected to be found in the search results."
+                        details=f"The subscription {sub_id} was deleted, and thus not expected to be found in the search results."
                         f"Subscription IDs returned in search results: {subs_in_area.subscriptions.keys()}",
                         query_timestamps=[subs_in_area.query.request.timestamp],
                     )
@@ -546,7 +541,6 @@ class SubscriptionSimple(GenericTestScenario):
             ):
                 check.record_failed(
                     "Returned notification index is lower than 0",
-                    Severity.High,
                     f"Returned: {sub_under_test.notification_index} when 0 or more was expected"
                     f"Parameters used: {creation_params}",
                     query_timestamps=query_timestamps,
@@ -579,7 +573,6 @@ class SubscriptionSimple(GenericTestScenario):
             if not sub_under_test.id:
                 check.record_failed(
                     "Returned subscription had no ID",
-                    Severity.High,
                     details="A subscription is expected to have an ID",
                     query_timestamps=query_timestamps,
                 )
@@ -590,8 +583,7 @@ class SubscriptionSimple(GenericTestScenario):
             if sub_under_test.id != sub_id:
                 check.record_failed(
                     "Returned subscription ID does not match provided one",
-                    Severity.High,
-                    f"Provided: {sub_id}, Returned: {sub_under_test.id}",
+                    details=f"Provided: {sub_id}, Returned: {sub_under_test.id}",
                     query_timestamps=query_timestamps,
                 )
 
@@ -601,7 +593,6 @@ class SubscriptionSimple(GenericTestScenario):
             if not sub_under_test.owner:
                 check.record_failed(
                     "Returned subscription had no owner",
-                    Severity.High,
                     details="A subscription is expected to have an owner",
                     query_timestamps=query_timestamps,
                 )
@@ -613,8 +604,7 @@ class SubscriptionSimple(GenericTestScenario):
             if sub_under_test.owner != client_sub:
                 check.record_failed(
                     "Returned subscription owner does not match provided one",
-                    Severity.High,
-                    f"Provided: {client_sub}, Returned: {sub_under_test.owner}",
+                    details=f"Provided: {client_sub}, Returned: {sub_under_test.owner}",
                     query_timestamps=query_timestamps,
                 )
 
@@ -624,7 +614,6 @@ class SubscriptionSimple(GenericTestScenario):
             if not sub_under_test.isa_url:
                 check.record_failed(
                     "Returned subscription had no ISA URL",
-                    Severity.High,
                     details="A subscription is expected to have an ISA URL",
                     query_timestamps=query_timestamps,
                 )
@@ -635,8 +624,7 @@ class SubscriptionSimple(GenericTestScenario):
             if not sub_under_test.isa_url.startswith(self._isa.base_url):
                 check.record_failed(
                     "Returned USS Base URL does not match provided one",
-                    Severity.High,
-                    f"Provided: {self._isa.base_url}, Returned: {sub_under_test.isa_url}",
+                    details=f"Provided: {self._isa.base_url}, Returned: {sub_under_test.isa_url}",
                     query_timestamps=query_timestamps,
                 )
 
@@ -646,7 +634,6 @@ class SubscriptionSimple(GenericTestScenario):
             if not sub_under_test.time_start:
                 check.record_failed(
                     "Returned subscription had no start time",
-                    Severity.High,
                     details="A subscription is expected to have a start time",
                     query_timestamps=query_timestamps,
                 )
@@ -657,7 +644,6 @@ class SubscriptionSimple(GenericTestScenario):
             if not sub_under_test.time_end:
                 check.record_failed(
                     "Returned subscription had no end time",
-                    Severity.High,
                     details="A subscription is expected to have an end time",
                     query_timestamps=query_timestamps,
                 )
@@ -674,8 +660,7 @@ class SubscriptionSimple(GenericTestScenario):
                 ):
                     check.record_failed(
                         "Returned start time does not match provided one",
-                        Severity.High,
-                        f"Provided: {expect_start_time}, Returned: {sub_under_test.time_start}",
+                        details=f"Provided: {expect_start_time}, Returned: {sub_under_test.time_start}",
                         query_timestamps=query_timestamps,
                     )
 
@@ -691,7 +676,6 @@ class SubscriptionSimple(GenericTestScenario):
                 ):
                     check.record_failed(
                         "Returned end time does not match provided one",
-                        Severity.High,
                         f"Provided: {expect_end_time}, Returned: {sub_under_test.time_end}",
                         query_timestamps=query_timestamps,
                     )
@@ -702,7 +686,6 @@ class SubscriptionSimple(GenericTestScenario):
             if not sub_under_test.version:
                 check.record_failed(
                     "Returned subscription had no version",
-                    Severity.High,
                     details="A subscription is expected to have a version",
                     query_timestamps=query_timestamps,
                 )
@@ -714,8 +697,7 @@ class SubscriptionSimple(GenericTestScenario):
             if not re.match(r"[a-z0-9]{10,}$", sub_under_test.version):
                 check.record_failed(
                     "Returned subscription version does not match expected format",
-                    Severity.High,
-                    f"Returned: {sub_under_test.version}, this does not match"
+                    details=f"Returned: {sub_under_test.version}, this does not match"
                     + "[a-z0-9]{10,}$",
                     query_timestamps=query_timestamps,
                 )
@@ -732,8 +714,7 @@ class SubscriptionSimple(GenericTestScenario):
                 ):
                     check.record_failed(
                         "Returned subscription version was not updated",
-                        Severity.High,
-                        f"Returned: {sub_under_test.version}, Expected: {self._current_subscriptions[sub_under_test.id]}",
+                        details=f"Returned: {sub_under_test.version}, Expected: {self._current_subscriptions[sub_under_test.id]}",
                         query_timestamps=query_timestamps,
                     )
         elif sub_id in self._current_subscriptions.keys():
@@ -747,8 +728,7 @@ class SubscriptionSimple(GenericTestScenario):
                 ):
                     check.record_failed(
                         "Returned subscription version was updated",
-                        Severity.High,
-                        f"Returned: {sub_under_test.version}, Expected: {self._current_subscriptions[sub_under_test.id]}.",
+                        details=f"Returned: {sub_under_test.version}, Expected: {self._current_subscriptions[sub_under_test.id]}.",
                         query_timestamps=query_timestamps,
                     )
 
