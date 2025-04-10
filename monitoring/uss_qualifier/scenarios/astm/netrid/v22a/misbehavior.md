@@ -41,7 +41,7 @@ to confirm that the requested data is indeed available to any authorized query.
 
 It then repeats the exact same request without credentials, and expects this to fail.
 
-#### Missing credentials check
+#### ⚠️ Missing credentials check
 
 This check ensures that all requests are properly authenticated, as required by **[astm.f3411.v22a.NET0210](../../../../requirements/astm/f3411/v22a.md)**,
 and that requests for existing flights that are executed with missing credentials fail.
@@ -59,6 +59,6 @@ and that requests for existing flights that are executed with incorrect credenti
 
 The cleanup phase of this test scenario attempts to remove injected data from all SPs.
 
-### Successful test deletion check
+### ⚠️ Successful test deletion check
 
 **[interuss.automated_testing.rid.injection.DeleteTestSuccess](../../../../requirements/interuss/automated_testing/rid/injection.md)**

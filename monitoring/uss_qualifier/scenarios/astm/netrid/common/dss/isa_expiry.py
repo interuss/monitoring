@@ -6,7 +6,6 @@ import arrow
 
 from monitoring.monitorlib.delay import sleep
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
@@ -102,7 +101,6 @@ class ISAExpiry(GenericTestScenario):
             if self._isa_id in isas.isas.keys():
                 check.record_failed(
                     summary=f"Expired ISA {self._isa_id} found in search results",
-                    severity=Severity.Medium,
                     details=f"Searched for area {self._isa_area} with unspecified end and start time.",
                     query_timestamps=[
                         created_isa.dss_query.query.request.timestamp,

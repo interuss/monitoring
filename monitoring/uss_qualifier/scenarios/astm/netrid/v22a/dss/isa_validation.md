@@ -54,17 +54,17 @@ The DSS must reject ISAs for which the start time is after the end time, otherwi
 
 The DSS must reject ISAs with invalid vertices, such as vertices that have latitude or longitude outside meaningful ranges, otherwise it fails to meet **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
-#### ISA missing outline check
+#### 🛑 ISA missing outline check
 
 If the outline polygon is missing from the `extents.spatial_volume.footprint` field in the payload of the ISA creation request,
 the DSS is expected to reject the request, otherwise it fails to meet **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
-#### ISA missing volume check
+#### 🛑 ISA missing volume check
 
 If the outline polygon is missing from the `extents.spatial_volume` field in the payload of the ISA creation request,
 the DSS is expected to reject the request, otherwise it fails to meet **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.
 
-#### ISA missing extents check
+#### 🛑 ISA missing extents check
 
 If the `extents` field is missing from the payload of the ISA creation request,
 the DSS is expected to reject the request, otherwise it fails to meet **[astm.f3411.v22a.DSS0030,a](../../../../../requirements/astm/f3411/v22a.md)**.

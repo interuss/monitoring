@@ -9,7 +9,6 @@ from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.fetch import rid
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
     EvaluationConfigurationResource,
@@ -297,13 +296,11 @@ class Misbehavior(GenericTestScenario):
                 if uss_flights_query.success:
                     check.record_failed(
                         "Unauthenticated request for flights to USS was fulfilled",
-                        severity=Severity.Medium,
                         details=f"Queried flights on {flights_url} for USS {participant_id} with {credentials_type_description} credentials, expected a failure but got a success reply.",
                     )
                 elif uss_flights_query.status_code != 401:
                     check.record_failed(
                         "Unauthenticated request for flights failed with wrong HTTP code",
-                        severity=Severity.Medium,
                         details=f"Queried flights on {flights_url} for USS {participant_id} with {credentials_type_description} credentials, expected an HTTP 401 but got an HTTP {uss_flights_query.status_code}.",
                     )
 
@@ -322,13 +319,11 @@ class Misbehavior(GenericTestScenario):
                     if uss_flight_details_query.success:
                         check.record_failed(
                             "Unauthenticated request for flight details to USS was fulfilled",
-                            severity=Severity.Medium,
                             details=f"Queried flight details on {flights_url} for USS {participant_id} for flight {flight.id} with {credentials_type_description} credentials, expected a failure but got a success reply.",
                         )
                     elif uss_flight_details_query.status_code != 401:
                         check.record_failed(
                             "Unauthenticated request for flight details failed with wrong HTTP code",
-                            severity=Severity.Medium,
                             details=f"Queried flight details on {flights_url} for USS {participant_id} for flight {flight.id} with {credentials_type_description} credentials, expected an HTTP 401 but got an HTTP {uss_flight_details_query.status_code}.",
                         )
 
@@ -362,7 +357,6 @@ class Misbehavior(GenericTestScenario):
                 stacktrace = stacktrace_string(e)
                 check.record_failed(
                     summary="Error while trying to delete test flight",
-                    severity=Severity.Medium,
                     details=f"While trying to delete a test flight from {sp.participant_id}, encountered error:\n{stacktrace}",
                 )
         self.end_cleanup()

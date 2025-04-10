@@ -34,12 +34,12 @@ This test case creates an ISA with a short lifetime and verifies that it is not 
 
 Not allowing an ISA to be created violates **[astm.f3411.v19.DSS0030,a](../../../../../requirements/astm/f3411/v19.md)**
 
-#### An expired ISA can be queried by its ID check
+#### 🛑 An expired ISA can be queried by its ID check
 
 **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** requires that
 an ISA be returned in all cases when it is queried directly, even if it expired.
 
-#### Expired ISAs are not part of search results check
+#### ⚠️ Expired ISAs are not part of search results check
 
 **[interuss.f3411.dss_endpoints.SearchISAs](../../../../../requirements/interuss/f3411/dss_endpoints.md)** requires
 that ISAs that are in the searched area but have expired should not be returned.
