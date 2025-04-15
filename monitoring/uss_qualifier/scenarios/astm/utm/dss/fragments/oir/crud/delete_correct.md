@@ -1,10 +1,10 @@
-# Delete operational intent reference test step fragment
+# Delete operational intent reference response format test step fragment
 
-This test step fragment validates that operational intent references can be deleted
+This test step fragment validates that an operational intent references deletion returns a body in the correct format and with the correct content.
 
-## 🛑 Delete operational intent reference query succeeds check
+## [Query Success](./delete_query.md)
 
-A query to delete an operational intent reference, by its owner and when the correct OVN is provided, should succeed, otherwise the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../../../requirements/astm/f3548/v21.md)**.
+Check query succeeds
 
 ## 🛑 Delete operational intent reference response format conforms to spec check
 
