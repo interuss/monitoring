@@ -23,7 +23,7 @@ def rid_v19_operation(op_id: OperationID):
 
 @rid_v19_operation(OperationID.PostIdentificationServiceArea)
 @requires_scope(Scope.Write)
-def ridsp_notify_isa_v19(id: str):
+def riddp_notify_isa_v19(id: str):
     try:
         json = flask.request.json
         if json is None:
