@@ -85,7 +85,13 @@ class EndpointEncryption(GenericTestScenario):
                     )
 
             except socket.error as e:
-                if e.errno not in [errno.ECONNREFUSED, errno.ETIMEDOUT]:
+                if e.errno not in [
+                    errno.ECONNREFUSED,
+                    errno.ETIMEDOUT,
+                    errno.ECONNRESET,
+                    errno.ECONNABORTED,
+                    errno.ECANCELED,
+                ]:
                     check.record_failed(
                         "Connection to HTTP port failed for an unexpected reason",
                         details=f"Encountered socket error: {e}, while the expectation is to either run into a straight up connection refusal or a timeout.",
