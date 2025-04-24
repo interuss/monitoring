@@ -10,7 +10,7 @@ from monitoring.uss_qualifier.reports.tested_requirements.data_types import (
     PASS_CLASS,
     ParticipantVerificationStatus,
     TestedBreakdown,
-    TestRunInformation,
+    TestRunInformation, FINDINGS_CLASS,
 )
 from monitoring.uss_qualifier.signatures import compute_signature
 
@@ -40,6 +40,9 @@ def compute_overall_status(
                 return ParticipantVerificationStatus.Fail
             elif req.classname == NOT_TESTED_CLASS:
                 overall_status = ParticipantVerificationStatus.Incomplete
+            elif req.classname == FINDINGS_CLASS:
+                if overall_status == ParticipantVerificationStatus.Pass:
+                    overall_status = ParticipantVerificationStatus.PassWithFindings
             elif req.classname == PASS_CLASS:
                 pass
             else:
