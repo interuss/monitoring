@@ -67,6 +67,7 @@ class DownUSS(TestScenario):
         dss: DSSInstanceResource,
     ):
         super().__init__()
+        self.dss_resource = dss
         self.tested_uss = tested_uss.client
         self.dss = dss.get_instance(self._dss_req_scopes)
 
