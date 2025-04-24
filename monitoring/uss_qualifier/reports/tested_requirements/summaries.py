@@ -6,11 +6,12 @@ from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.reports.report import TestRunReport, TestSuiteActionReport
 from monitoring.uss_qualifier.reports.tested_requirements.data_types import (
     FAIL_CLASS,
+    FINDINGS_CLASS,
     NOT_TESTED_CLASS,
     PASS_CLASS,
     ParticipantVerificationStatus,
     TestedBreakdown,
-    TestRunInformation, FINDINGS_CLASS,
+    TestRunInformation,
 )
 from monitoring.uss_qualifier.signatures import compute_signature
 
