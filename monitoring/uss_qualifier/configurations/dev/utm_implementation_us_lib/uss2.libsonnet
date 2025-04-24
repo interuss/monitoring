@@ -3,7 +3,7 @@
   participant_id: 'uss2',
 
   // Set of requirements this participant wants to satisfy
-  participant_requirements: 'Basic SCD without DSS provision',
+  participant_requirements: 'Basic SCD',
 
   // (optional) IDs of subparticipants that make up this participant
   aggregate_participant_ids: [
