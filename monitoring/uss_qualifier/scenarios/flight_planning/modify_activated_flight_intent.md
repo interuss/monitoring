@@ -32,9 +32,8 @@ and create a new one. This may or may not be strictly speaking a failure to meet
 distinguish between an actual failure to meet the requirement and a reasonable behavior due to implementation
 limitations.
 
-As such, if the pre-existing conflict was present, and that the USS rejected the modification, this check will fail with
-a low severity per **[astm.f3548.v21.SCD0030](../../requirements/astm/f3548/v21.md)**. This won't actually fail the test
-but will serve as a warning.
+As such, if the pre-existing conflict was present, and that the USS rejected the modification, this check will produce
+a low severity finding per **[astm.f3548.v21.SCD0030](../../requirements/astm/f3548/v21.md)**.
 
 ## 🛑 Failure check
 
