@@ -1,10 +1,9 @@
-# Delete operational intent reference response format test step fragment
+# Delete known operational intent reference test step fragment
 
-This test step fragment validates that an operational intent references deletion returns a body in the correct format and with the correct content.
+This test step fragment validates that deleting an operational intent reference succeeds
+and returns the expected deleted operational intent reference.
 
-## [Query Success](./delete_query.md)
-
-Check query succeeds
+## [Verify query succeeds](./delete_query.md)
 
 ## 🛑 Delete operational intent reference response format conforms to spec check
 

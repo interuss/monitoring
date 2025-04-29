@@ -42,7 +42,7 @@ This step creates an OIR with an implicit subscription and confirms that the sub
 
 ### Delete the OIR with implicit subscription test step
 
-#### [Delete OIR](./fragments/oir/crud/delete_correct.md)
+#### [Delete OIR](./fragments/oir/crud/delete_known.md)
 
 #### 🛑 The implicit subscription was removed check
 

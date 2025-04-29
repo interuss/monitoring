@@ -148,7 +148,7 @@ Attempt to delete the operational intent reference in various ways and ensure th
 
 This also checks that the operational intent reference data returned by a successful deletion is correct.
 
-#### [Delete OIR](../fragments/oir/crud/delete_correct.md)
+#### [Delete OIR](../fragments/oir/crud/delete_known.md)
 
 Confirm that an operational intent reference can be deleted.
 

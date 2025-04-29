@@ -1,6 +1,6 @@
 # Delete operational intent reference test step fragment
 
-This test step fragment validates that operational intent references can be deleted
+This test step fragment validates that an operational intent reference was deleted successfully
 
 ## 🛑 Delete operational intent reference query succeeds check
 
