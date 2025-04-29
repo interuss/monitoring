@@ -6,6 +6,7 @@ from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.reports.report import TestRunReport, TestSuiteActionReport
 from monitoring.uss_qualifier.reports.tested_requirements.data_types import (
     FAIL_CLASS,
+    FINDINGS_CLASS,
     NOT_TESTED_CLASS,
     PASS_CLASS,
     ParticipantVerificationStatus,
@@ -40,6 +41,9 @@ def compute_overall_status(
                 return ParticipantVerificationStatus.Fail
             elif req.classname == NOT_TESTED_CLASS:
                 overall_status = ParticipantVerificationStatus.Incomplete
+            elif req.classname == FINDINGS_CLASS:
+                if overall_status == ParticipantVerificationStatus.Pass:
+                    overall_status = ParticipantVerificationStatus.PassWithFindings
             elif req.classname == PASS_CLASS:
                 pass
             else:

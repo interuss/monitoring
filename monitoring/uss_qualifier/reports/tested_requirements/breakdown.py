@@ -9,6 +9,7 @@ from monitoring.uss_qualifier.action_generators.documentation.definitions import
 from monitoring.uss_qualifier.action_generators.documentation.documentation import (
     list_potential_actions_for_action_generator_definition,
 )
+from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.report import (
@@ -214,7 +215,10 @@ def _populate_breakdown_with_scenario_report(
                 if isinstance(check, PassedCheck):
                     tested_check.successes += 1
                 elif isinstance(check, FailedCheck):
-                    tested_check.failures += 1
+                    if check.severity == Severity.Low:
+                        tested_check.findings += 1
+                    else:
+                        tested_check.failures += 1
                 else:
                     raise ValueError("Check is neither PassedCheck nor FailedCheck")
 
