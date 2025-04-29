@@ -8,6 +8,7 @@ from monitoring.uss_qualifier.requirements.definitions import PackageID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 
 PASS_CLASS = "pass_result"
+FINDINGS_CLASS = "findings_result"
 NOT_TESTED_CLASS = "not_tested"
 FAIL_CLASS = "fail_result"
 HAS_TODO_CLASS = "has_todo"
@@ -18,16 +19,20 @@ class TestedCheck(ImplicitDict):
     url: str
     has_todo: bool
     successes: int = 0
+    findings: int = 0
     failures: int = 0
 
     @property
     def result(self) -> str:
         if self.failures > 0:
             return "Fail"
+        if self.findings > 0 and self.successes == 0:
+            return "Findings"
         if self.not_tested:
             return "Not tested"
-        else:
-            return "Pass"
+        if self.findings > 0:
+            return "Pass (with findings)"
+        return "Pass"
 
     @property
     def check_classname(self) -> str:
@@ -45,10 +50,11 @@ class TestedCheck(ImplicitDict):
     def result_classname(self) -> str:
         if self.failures > 0:
             return FAIL_CLASS
-        if self.successes + self.failures == 0:
+        if self.successes + self.failures + self.findings == 0:
             return NOT_TESTED_CLASS
-        else:
-            return PASS_CLASS
+        if self.findings > 0:
+            return FINDINGS_CLASS
+        return PASS_CLASS
 
     @property
     def not_tested(self) -> bool:
@@ -72,6 +78,10 @@ class TestedStep(ImplicitDict):
     def not_tested(self) -> bool:
         return all(c.not_tested for c in self.checks)
 
+    @property
+    def findings(self) -> bool:
+        return any(c.findings > 0 for c in self.checks)
+
 
 class TestedCase(ImplicitDict):
     name: str
@@ -89,6 +99,10 @@ class TestedCase(ImplicitDict):
     @property
     def not_tested(self) -> bool:
         return all(s.not_tested for s in self.steps)
+
+    @property
+    def findings(self) -> bool:
+        return any(s.findings for s in self.steps)
 
 
 class TestedScenario(ImplicitDict):
@@ -109,6 +123,10 @@ class TestedScenario(ImplicitDict):
     def not_tested(self) -> bool:
         return all(c.not_tested for c in self.cases)
 
+    @property
+    def findings(self) -> bool:
+        return any(c.findings for c in self.cases)
+
 
 class TestedRequirement(ImplicitDict):
     id: str
@@ -127,6 +145,8 @@ class TestedRequirement(ImplicitDict):
             return FAIL_CLASS
         elif all(s.not_tested for s in self.scenarios):
             return NOT_TESTED_CLASS
+        elif any(s.findings for s in self.scenarios):
+            return FINDINGS_CLASS
         else:
             return PASS_CLASS
 
@@ -161,6 +181,9 @@ class ParticipantVerificationStatus(str, Enum):
     Pass = "Pass"
     """Participant has verified all tested requirements."""
 
+    PassWithFindings = "PassWithFindings"
+    """Participant has verified all tested requirements, but has some additional findings."""
+
     Fail = "Fail"
     """Participant has failed to comply with one or more requirements."""
 
@@ -169,6 +192,8 @@ class ParticipantVerificationStatus(str, Enum):
 
     def get_class(self) -> str:
         if self == ParticipantVerificationStatus.Pass:
+            return PASS_CLASS
+        elif self == ParticipantVerificationStatus.PassWithFindings:
             return PASS_CLASS
         elif self == ParticipantVerificationStatus.Fail:
             return FAIL_CLASS

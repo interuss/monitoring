@@ -57,6 +57,9 @@
     .pass_result {
       background-color: rgb(192, 255, 192);
     }
+    .findings_result {
+      background-color: rgb(255, 255, 192);
+    }
     .fail_result {
       background-color: rgb(255, 192, 192);
     }
@@ -126,6 +129,8 @@
       <td class="{{ overall_status.get_class() }}">
         {% if overall_status == ParticipantVerificationStatus.Pass %}
           Pass
+        {% elif overall_status == ParticipantVerificationStatus.PassWithFindings %}
+          Pass (with findings)
         {% elif overall_status == ParticipantVerificationStatus.Fail %}
           Fail
         {% elif overall_status == ParticipantVerificationStatus.Incomplete %}

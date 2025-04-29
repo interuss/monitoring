@@ -88,8 +88,7 @@ will. Refer to this check for more information.
 #### ℹ️ Rejected planning check
 All flight intent data provided is correct and the USS should have either successfully planned Flight 1 or rejected
 properly the planning if it decided to be more conservative with such conflicts.
-If the USS rejects the planning, this check will fail with a low severity per **[astm.f3548.v21.SCD0005](../../../../requirements/astm/f3548/v21.md)**.
-This won't actually fail the test but will serve as a warning.
+If the USS rejects the planning, this check will produce a low severity finding per **[astm.f3548.v21.SCD0005](../../../../requirements/astm/f3548/v21.md)**.
 
 #### 🛑 Failure check
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS

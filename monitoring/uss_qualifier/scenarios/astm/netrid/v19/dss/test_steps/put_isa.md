@@ -5,7 +5,7 @@ See `DSSWrapper.put_isa` in [`dss_wrapper.py`](../../../dss_wrapper.py).
 
 ## ℹ️ ISA response code check
 
-The API for **[astm.f3411.v19.DSS0030,a](../../../../../../requirements/astm/f3411/v19.md)** specifies that the code of successful DSS responses is 200. While tolerated in some cases, if the DSS responds with an HTTP code 201 for success, this check will fail with a low severity.
+The API for **[astm.f3411.v19.DSS0030,a](../../../../../../requirements/astm/f3411/v19.md)** specifies that the code of successful DSS responses is 200. While tolerated in some cases, if the DSS responds with an HTTP code 201 for success, this check will produce a low severity finding.
 
 ## ⚠️ ISA response format check
 
