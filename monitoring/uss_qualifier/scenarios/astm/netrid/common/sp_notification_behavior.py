@@ -171,10 +171,6 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
             post_isa_filter,
         )
 
-        logger.debug(
-            f"Received {len(interactions)} interactions from mock uss:\n{interactions}"
-        )
-
         # For each of the service providers we injected flights in,
         # we're looking for an inbound notification for the mock_uss's subscription:
         for test_flight in self._injected_flights:

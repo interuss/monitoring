@@ -22,7 +22,7 @@ FlightIntentsResource that provides the following flight intents:
   <tr>
     <td><code>flight2_planned</code></td>
     <td>Flight 2</td>
-    <td>High priority</td>
+    <td>Any level where conflicts are not permitted</td>
     <td>Planned</td>
     <td>Nominal</td>
   </tr>
@@ -57,10 +57,10 @@ If the search for operational intent references or their deletion fail, this che
 This scenario requires the area to have been cleared of operational intents. If it has not, this test step will raise a failed check.
 
 ## Plan Flight 2 in conflict with activated operational intent managed by down USS test case
-This test case aims at testing requirement **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)**.
+This test case aims at testing requirement **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)** when the pre-existing conflicting flight is in the Activated state.
 
 ### Virtual USS creates conflicting operational intent test step
-The USS qualifier, acting as a virtual USS, creates an operational intent at the DSS with a non-working base URL.
+The USS qualifier, acting as a virtual USS, creates an operational intent with identical characteristics to Flight 2 at the DSS with a non-working base URL.
 The objective is to make the later request by the tested USS to retrieve operational intent details to fail.
 
 #### 🛑 Operational intent successfully created check
@@ -75,13 +75,13 @@ If the activation of the operational intent reference at the DSS fails, this che
 
 ### [Declare virtual USS as down at DSS test step](../set_uss_down.md)
 
-### Tested USS attempts to plan high-priority Flight 2 test step
-The high-priority Flight 2 of the tested USS conflicts with the operational intent of the virtual USS.
+### Tested USS attempts to plan Flight 2 test step
+The same-priority Flight 2 of the tested USS conflicts with the operational intent of the virtual USS.
 However, since:
 - the virtual USS is declared as down at the DSS,
 - it does not respond for operational intent details, and
 - the conflicting operational intent is in the 'Activated' state,
-- the local regulation does not allow for equal priority conflicts at the highest priority level,
+- the local regulation does not allow for equal priority conflicts at this priority level,
 The tested USS should evaluate the conflicting operational intent as having the highest priority status allowed by the local regulation.
 As such, the tested USS should reject the planning of Flight 2.
 
@@ -95,13 +95,13 @@ All flight intent data provided was complete and correct. It should have been pr
 to reject or accept Flight 2. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-#### [Validate high-priority Flight 2 not shared](../validate_not_shared_operational_intent.md)
+#### [Validate Flight 2 not shared](../validate_not_shared_operational_intent.md)
 
 ### [Restore virtual USS availability at DSS test step](../set_uss_available.md)
 
 
 ## Plan Flight 2 in conflict with nonconforming operational intent managed by down USS test case
-This test case aims at testing requirement **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)**.
+This test case aims at testing requirement **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)** when the pre-existing conflicting flight is in the Nonconforming state.  This test case will only be executed if uss_qualifier can perform Conformance Monitoring for Situational Awareness operations in the provided DSS instance.
 
 ### Virtual USS transitions to Nonconforming conflicting operational intent test step
 The USS qualifier, acting as a virtual USS, transitions to Nonconforming the operational intent previously created at the DSS with a non-working base URL.
@@ -112,13 +112,13 @@ If the transition of the operational intent reference at the DSS fails, this che
 
 ### [Declare virtual USS as down at DSS test step](../set_uss_down.md)
 
-### Tested USS attempts to plan high-priority Flight 2 test step
-The high-priority Flight 2 of the tested USS conflicts with the operational intent of the virtual USS.
+### Tested USS attempts to plan Flight 2 test step
+The same-priority Flight 2 of the tested USS conflicts with the operational intent of the virtual USS.
 However, since:
 - the virtual USS is declared as down at the DSS,
 - it does not respond for operational intent details, and
 - the conflicting operational intent is in the 'Nonconforming' state,
-- the local regulation does not allow for equal priority conflicts at the highest priority level,
+- the local regulation does not allow for equal priority conflicts at this priority level,
 The tested USS should evaluate the conflicting operational intent as having the highest priority status allowed by the local regulation.
 As such, the tested USS should reject the planning of Flight 2.
 
@@ -132,13 +132,13 @@ All flight intent data provided was complete and correct. It should have been pr
 to reject or accept Flight 2. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-#### [Validate high-priority Flight 2 not shared](../validate_not_shared_operational_intent.md)
+#### [Validate Flight 2 not shared](../validate_not_shared_operational_intent.md)
 
 ### [Restore virtual USS availability at DSS test step](../set_uss_available.md)
 
 
 ## Plan Flight 2 in conflict with contingent operational intent managed by down USS test case
-This test case aims at testing requirement **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)**.
+This test case aims at testing requirement **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)** when the pre-existing conflicting flight is in the Contingent state.  This test case will only be executed if uss_qualifier can perform Conformance Monitoring for Situational Awareness operations in the provided DSS instance.
 
 ### Virtual USS transitions to Contingent conflicting operational intent test step
 The USS qualifier, acting as a virtual USS, transitions to Contingent the operational intent previously created at the DSS with a non-working base URL.
@@ -149,13 +149,13 @@ If the transition of the operational intent reference at the DSS fails, this che
 
 ### [Declare virtual USS as down at DSS test step](../set_uss_down.md)
 
-### Tested USS attempts to plan high-priority Flight 2 test step
-The high-priority Flight 2 of the tested USS conflicts with the operational intent of the virtual USS.
+### Tested USS attempts to plan Flight 2 test step
+The same-priority Flight 2 of the tested USS conflicts with the operational intent of the virtual USS.
 However, since:
 - the virtual USS is declared as down at the DSS,
 - it does not respond for operational intent details, and
 - the conflicting operational intent is in the 'Contingent' state,
-- the local regulation does not allow for equal priority conflicts at the highest priority level,
+- the local regulation does not allow for equal priority conflicts at this priority level,
 The tested USS should evaluate the conflicting operational intent as having the highest priority status allowed by the local regulation.
 As such, the tested USS should reject the planning of Flight 2.
 
@@ -169,7 +169,7 @@ All flight intent data provided was complete and correct. It should have been pr
 to reject or accept Flight 2. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-#### [Validate high-priority Flight 2 not shared](../validate_not_shared_operational_intent.md)
+#### [Validate Flight 2 not shared](../validate_not_shared_operational_intent.md)
 
 
 ## Cleanup
