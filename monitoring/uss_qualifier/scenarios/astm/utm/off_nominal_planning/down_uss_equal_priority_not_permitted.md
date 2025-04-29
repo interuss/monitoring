@@ -155,7 +155,7 @@ However, since:
 - the virtual USS is declared as down at the DSS,
 - it does not respond for operational intent details, and
 - the conflicting operational intent is in the 'Contingent' state,
-- the local regulation does not allow for equal priority conflicts at the highest priority level,
+- the local regulation does not allow for equal priority conflicts at this priority level,
 The tested USS should evaluate the conflicting operational intent as having the highest priority status allowed by the local regulation.
 As such, the tested USS should reject the planning of Flight 2.
 
