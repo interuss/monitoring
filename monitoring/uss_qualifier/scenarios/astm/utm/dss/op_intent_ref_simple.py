@@ -24,6 +24,9 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.oir import (
+    crud as oir_fragments,
+)
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
@@ -110,31 +113,6 @@ class OIRSimple(TestScenario):
         self.end_test_case()
 
         self.end_test_scenario()
-
-    def _create_oir(self, oir_params: PutOperationalIntentReferenceParameters):
-        sub_id = oir_params.subscription_id if "subscription_id" in oir_params else None
-        with self.check(
-            "Create operational intent reference query succeeds",
-            self._pid,
-        ) as check:
-            try:
-                new_oir, subs, query = self._dss.put_op_intent(
-                    extents=oir_params.extents,
-                    key=oir_params.key,
-                    state=oir_params.state,
-                    base_url=oir_params.uss_base_url,
-                    oi_id=self._oir_id,
-                    subscription_id=sub_id,
-                )
-                self.record_query(query)
-                self._current_oir = new_oir
-            except QueryError as qe:
-                self.record_queries(qe.queries)
-                check.record_failed(
-                    summary="Could not create operational intent reference",
-                    details=f"Failed to create operational intent reference with error code {qe.cause_status_code}: {qe.msg}",
-                    query_timestamps=qe.query_timestamps,
-                )
 
     def _step_attempt_delete_missing_ovn(self):
 
@@ -279,56 +257,31 @@ class OIRSimple(TestScenario):
         self.begin_test_step("Attempt mutation with correct OVN")
 
         oir_params = self._test_params_for_current_time()
-        with self.check(
-            "Mutate operational intent reference query succeeds", self._pid
-        ) as check:
-            try:
-                self._current_oir, _, query = self._dss.put_op_intent(
-                    extents=oir_params.extents,
-                    key=oir_params.key,
-                    state=oir_params.state,
-                    base_url=oir_params.uss_base_url + "?correct-ovn-mutation=true",
-                    oi_id=self._oir_id,
-                    ovn=self._current_oir.ovn,
-                )
-                self.record_query(query)
-            except QueryError as qe:
-                self.record_queries(qe.queries)
-                check.record_failed(
-                    summary="OIR Mutation with correct OVN failed for unexpected reason",
-                    details=f"Was expecting an 200 or 201 response because of an incorrect OVN, but got {qe.cause_status_code} instead",
-                    query_timestamps=qe.query_timestamps,
-                )
+        oir_params.uss_base_url = oir_params.uss_base_url + "?correct-ovn-mutation=true"
+        self._current_oir, _, _ = oir_fragments.update_oir_query(
+            scenario=self,
+            dss=self._dss,
+            oir_id=self._oir_id,
+            oir_params=oir_params,
+            ovn=self._current_oir.ovn,
+        )
 
         self.end_test_step()
-
-    def _setup_case(self):
-        # Multiple runs of the scenario seem to rely on the same instance of it:
-        # thus we need to reset the state of the scenario before running it.
-        self._current_oir = None
-
-        self._create_oir(oir_params=self._default_oir_params(subscription_id=None))
 
     def _step_create_oir(self):
         self.begin_test_step("Create OIR")
-        self._setup_case()
+        self._current_oir, _, _ = oir_fragments.create_oir_query(
+            scenario=self,
+            dss=self._dss,
+            oir_id=self._oir_id,
+            oir_params=self._default_oir_params(subscription_id=None),
+        )
         self.end_test_step()
 
     def _delete_oir(self, oir_id: EntityID, ovn: str):
-        with self.check(
-            "Delete operational intent reference query succeeds", self._pid
-        ) as check:
-            try:
-                _, _, query = self._dss.delete_op_intent(oir_id, ovn)
-                self.record_query(query)
-            except QueryError as qe:
-                self.record_queries(qe.queries)
-                check.record_failed(
-                    summary="Could not delete operational intent reference",
-                    details=f"Failed to delete operational intent reference with error code {qe.cause_status_code}: {qe.msg}",
-                    query_timestamps=qe.query_timestamps,
-                )
-
+        oir_fragments.delete_oir_query(
+            scenario=self, dss=self._dss, oir_id=oir_id, ovn=ovn
+        )
         self._current_oir = None
 
     def _step_delete_oir(self, is_cleanup: bool = True):
@@ -355,6 +308,8 @@ class OIRSimple(TestScenario):
 
         # Make sure the OIR IDs we are going to use are available
         test_step_fragments.cleanup_op_intent(self, self._dss, self._oir_id)
+
+        self._current_oir = None
 
     def cleanup(self):
         self.begin_cleanup()
