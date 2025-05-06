@@ -105,6 +105,8 @@ class OIRSynchronization(TestScenario):
             volume=self._planning_area.volume,
         )
 
+        self._current_oir = None
+
     def run(self, context: ExecutionContext):
         self._oir_params = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
@@ -176,9 +178,6 @@ class OIRSynchronization(TestScenario):
 
     def _setup_case(self):
         self.begin_test_case("Setup")
-        # Multiple runs of the scenario seem to rely on the same instance of it:
-        # thus we need to reset the state of the scenario before running it.
-        self._current_oir = None
         self.begin_test_step("Ensure clean workspace")
         self._ensure_clean_workspace_step()
         self.end_test_step()

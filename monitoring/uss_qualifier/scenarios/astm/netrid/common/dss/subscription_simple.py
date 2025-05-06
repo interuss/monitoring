@@ -84,6 +84,9 @@ class SubscriptionSimple(GenericTestScenario):
 
         self._client_identity = client_identity
 
+        self._current_subscriptions = {}
+        self._sub_params_by_sub_id = {}
+
     def run(self, context: ExecutionContext):
         self._initialize_creation_params()
 
@@ -131,11 +134,6 @@ class SubscriptionSimple(GenericTestScenario):
 
     def _setup_case(self):
         self.begin_test_case("Setup")
-
-        # Multiple runs of the scenario seem to rely on the same instance of it:
-        # thus we need to reset the state of the scenario before running it.
-        self._current_subscriptions = {}
-        self._sub_params_by_sub_id = {}
 
         self._ensure_clean_workspace_step()
 
