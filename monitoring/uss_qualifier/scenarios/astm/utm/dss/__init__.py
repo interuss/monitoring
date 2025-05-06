@@ -1,6 +1,7 @@
 from .constraint_ref_simple import CRSimple
 from .crdb_access import CRDBAccess
 from .dss_interoperability import DSSInteroperability
+from .oir_explicit_sub_handling import OIRExplicitSubHandling
 from .oir_implicit_sub_handling import OIRImplicitSubHandling
 from .op_intent_ref_access_control import OpIntentReferenceAccessControl
 from .op_intent_ref_key_validation import OIRKeyValidation
