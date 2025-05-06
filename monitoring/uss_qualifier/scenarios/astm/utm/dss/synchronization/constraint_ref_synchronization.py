@@ -108,6 +108,8 @@ class CRSynchronization(TestScenario):
             volume=self._planning_area.volume,
         )
 
+        self._current_cr = None
+
     def run(self, context: ExecutionContext):
 
         # Check that we actually have at least one other DSS to test against:
@@ -169,9 +171,6 @@ class CRSynchronization(TestScenario):
 
     def _setup_case(self):
         self.begin_test_case("Setup")
-        # Multiple runs of the scenario seem to rely on the same instance of it:
-        # thus we need to reset the state of the scenario before running it.
-        self._current_cr = None
         # We need times that are close to 'now': the params are set
         # at the beginning of each scenario run.
         self._cr_params = self._planning_area.get_new_constraint_ref_params(

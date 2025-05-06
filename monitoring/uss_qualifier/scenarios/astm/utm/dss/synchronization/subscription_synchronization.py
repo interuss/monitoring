@@ -156,6 +156,10 @@ class SubscriptionSynchronization(TestScenario):
         else:
             self._dss_separate_creds = None
 
+        self._current_subscription = None
+        self._subs_for_deletion = {}
+        self._subs_for_deletion_params = {}
+
     def run(self, context: ExecutionContext):
         self._sub_params = self._planning_area.get_new_subscription_params(
             subscription_id=self._sub_id,
@@ -227,11 +231,6 @@ class SubscriptionSynchronization(TestScenario):
 
     def _step_setup_case(self):
         self.begin_test_case("Setup")
-        # Multiple runs of the scenario seem to rely on the same instance of it:
-        # thus we need to reset the state of the scenario before running it.
-        self._current_subscription = None
-        self._subs_for_deletion = {}
-        self._subs_for_deletion_params = {}
         self._ensure_clean_workspace_step()
         self.end_test_case()
 

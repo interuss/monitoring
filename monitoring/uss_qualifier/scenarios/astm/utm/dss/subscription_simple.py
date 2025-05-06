@@ -101,6 +101,9 @@ class SubscriptionSimple(TestScenario):
             vertices=problematically_big_area.specification.vertices
         )
 
+        self._current_subscriptions = {}
+        self._sub_params_by_sub_id = {}
+
     def _build_current_time_sub_params(self):
         return self._planning_area.get_new_subscription_params(
             subscription_id="",  # subscription ID will need to be overwritten
@@ -153,12 +156,6 @@ class SubscriptionSimple(TestScenario):
     def _setup_case(self):
         self.begin_test_case("Setup")
 
-        # Multiple runs of the scenario seem to rely on the same instance of it:
-        # thus we need to reset the state of the scenario before running it.
-        self._current_subscriptions = {}
-        self._sub_params_by_sub_id = {}
-        # The subscription needs to be reasonably close to 'now':
-        # We reset it at the beginning of each run.
         self._sub_generation_params = self._build_current_time_sub_params()
 
         self._ensure_clean_workspace_step()
