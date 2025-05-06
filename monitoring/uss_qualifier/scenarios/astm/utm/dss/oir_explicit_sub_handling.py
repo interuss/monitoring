@@ -34,7 +34,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.oir import (
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
-# The official DSS implementation will set an OIR's subscription ID to 00000000-0000-4000-8000-000000000000
+# The InterUSS DSS implementation will set an OIR's subscription ID to 00000000-0000-4000-8000-000000000000
 # when the OIR is not attached to any subscription, as the OpenAPI spec does not allow the value to be empty.
 # Other implementations may use a different value. One way to check that an OIR is not attached to any subscription
 # is to attempt to retrieve the subscription reportedly attached to it: if a 404 is returned then we may assume
@@ -107,7 +107,7 @@ class OIRExplicitSubHandling(TestScenario):
         self.end_test_case()
 
         self.begin_test_case("Validate explicit subscription on OIR creation")
-        self._setup_case(create_oir=False, create_explicit_sub=True)
+        self._step_create_explicit_sub()
         self._step_create_oir_insufficient_subscription()
         self._step_create_oir_sufficient_subscription()
         self.end_test_case()
@@ -117,16 +117,11 @@ class OIRExplicitSubHandling(TestScenario):
         )
         self._step_update_oir_with_insufficient_explicit_sub(is_replacement=True)
         self._step_update_oir_with_sufficient_explicit_sub(is_replacement=True)
-        self._step_delete_oir()
-        self._step_delete_subscription(
-            self._extra_sub_id, self._current_extra_sub.version
-        )
         self.end_test_case()
 
         self.end_test_scenario()
 
     def _step_create_subscription(self, params: SubscriptionParams) -> Subscription:
-        self.begin_test_step("Create a subscription")
         with self.check("Create subscription query succeeds", self._pid) as check:
             mutated_sub = self._dss.upsert_subscription(**params)
             self.record_query(mutated_sub)
@@ -136,7 +131,6 @@ class OIRExplicitSubHandling(TestScenario):
                     details=f"Failed to create subscription with error code {mutated_sub.status_code}: {mutated_sub.error_message}",
                     query_timestamps=[mutated_sub.timestamp],
                 )
-        self.end_test_step()
         return mutated_sub.subscription
 
     def _step_create_explicit_sub(self):
@@ -147,37 +141,9 @@ class OIRExplicitSubHandling(TestScenario):
             notify_for_op_intents=True,
             notify_for_constraints=False,
         )
+        self.begin_test_step("Create independent subscription")
         self._current_sub = self._step_create_subscription(self._sub_params)
-
-    def _create_oir(self, oir_params: PutOperationalIntentReferenceParameters):
-        sub_id = oir_params.subscription_id if "subscription_id" in oir_params else None
-        with self.check(
-            "Create operational intent reference query succeeds",
-            self._pid,
-        ) as check:
-            try:
-                no_implicit_sub = (
-                    "new_subscription" not in oir_params
-                    or "uss_base_url" not in oir_params.new_subscription
-                )
-                new_oir, subs, query = self._dss.put_op_intent(
-                    extents=oir_params.extents,
-                    key=oir_params.key,
-                    state=oir_params.state,
-                    base_url=oir_params.uss_base_url,
-                    oi_id=self._oir_id,
-                    subscription_id=sub_id,
-                    force_no_implicit_subscription=no_implicit_sub,
-                )
-                self.record_query(query)
-
-            except QueryError as qe:
-                self.record_queries(qe.queries)
-                check.record_failed(
-                    summary="Could not create operational intent reference",
-                    details=f"Failed to create operational intent reference with error code {qe.cause_status_code}: {qe.msg}",
-                    query_timestamps=qe.query_timestamps,
-                )
+        self.end_test_step()
 
     def _step_create_oir_insufficient_subscription(self):
         self.begin_test_step(
@@ -260,7 +226,9 @@ class OIRExplicitSubHandling(TestScenario):
             notify_for_constraints=False,
         )
 
+        self.begin_test_step("Create a subscription")
         self._current_extra_sub = self._step_create_subscription(new_sub_params)
+        self.end_test_step()
 
         # Now attempt to mutate the OIR for it to use the invalid subscription:
         oir_update_params = self._planning_area.get_new_operational_intent_ref_params(
@@ -362,15 +330,14 @@ class OIRExplicitSubHandling(TestScenario):
         sub_is_as_expected = False
         referenced_sub_was_found_when_non_expected = False
         if expected_sub_id is None:
-            # The official DSS implementation will set the subscription ID to 00000000-0000-4000-8000-000000000000 when the OIR is not attached to any subscription.
-            # Other implementations may use a different value, as the OpenAPI spec does not allow the value to be empty
-            # We may at some point decide to tolerate accepting empty returned values here,
+            # See comment on NULL_SUBSCRIPTION_ID
+            # ASTM may at some point decide to tolerate accepting empty returned values here,
             # but in the meantime we simply attempt to obtain the subscription and check that it does not exist
             if oir.subscription_id == NULL_SUBSCRIPTION_ID:
                 # Sub ID explicitly set to the value representing the null subscription: all good
                 sub_is_as_expected = True
             elif oir.subscription_id is None:
-                # Sub ID not set at all: not strictly compliant with the spec, but acceptable in this context
+                # Sub ID not set at all: not compliant with the spec, but not wrong with regard to which subscription should be attached to the OIR
                 sub_is_as_expected = True
             else:
                 # If the subscription ID is defined and not set to the known 'null' value, we assume that the DSS used another
@@ -412,25 +379,6 @@ class OIRExplicitSubHandling(TestScenario):
                 )
         self.end_test_step()
 
-    def _setup_case(self, create_oir=False, create_explicit_sub=False):
-        # Multiple runs of the scenario seem to rely on the same instance of it:
-        # thus we need to reset the state of the scenario before running it.
-        self._current_oir = None
-        self._current_sub = None
-        self._current_extra_sub = None
-
-        if create_explicit_sub:
-            self._step_create_explicit_sub()
-
-        if create_oir:
-            sub_id = self._sub_id if create_explicit_sub else None
-            self._current_oir, _, _ = oir_fragments.create_oir_query(
-                scenario=self,
-                dss=self._dss,
-                oir_id=self._oir_id,
-                oir_params=self._default_oir_params(subscription_id=sub_id),
-            )
-
     def _delete_subscription(self, sub_id: EntityID, sub_version: str):
         with self.check("Subscription can be deleted", self._pid) as check:
             sub = self._dss.delete_subscription(sub_id, sub_version)
@@ -441,34 +389,6 @@ class OIRExplicitSubHandling(TestScenario):
                     details=f"Failed to delete subscription with error code {sub.status_code}: {sub.error_message}",
                     query_timestamps=[sub.request.timestamp],
                 )
-
-    def _step_delete_oir(self, is_cleanup: bool = True):
-        if is_cleanup:
-            self.begin_test_step("Cleanup OIR")
-        else:
-            self.begin_test_step("Delete OIR")
-        oir_fragments.delete_oir_query(
-            scenario=self, dss=self._dss, oir_id=self._oir_id, ovn=self._current_oir.ovn
-        )
-        self.end_test_step()
-
-    def _step_delete_subscription(self, sub_id: EntityID, sub_version: str):
-        self.begin_test_step("Cleanup subscription")
-        self._delete_subscription(sub_id, sub_version)
-        self.end_test_step()
-
-    def _ensure_clean_workspace_step(self):
-
-        # Delete any active OIR we might own
-        test_step_fragments.cleanup_active_oirs(
-            self,
-            self._dss,
-            self._planning_area_volume4d.to_f3548v21(),
-            self._expected_manager,
-        )
-
-        # Make sure the OIR IDs we are going to use are available
-        test_step_fragments.cleanup_op_intent(self, self._dss, self._oir_id)
 
     def _ensure_clean_workspace(self):
         self.begin_test_step("Cleanup OIRs")

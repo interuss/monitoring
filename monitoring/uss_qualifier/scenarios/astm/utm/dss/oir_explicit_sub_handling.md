@@ -34,11 +34,7 @@ This test case ensures that no entities with the known test IDs exists in the DS
 
 Ensures that the explicit subscription provided upon creation of an OIR is properly validated and attached to the OIR.
 
-### Create a subscription test step
-
-Create an explicit subscription to be used in this test case.
-
-#### [Create explicit subscription](./fragments/sub/crud/create_query.md)
+### [Create independent subscription test step](./fragments/sub/crud/create_query.md)
 
 ### Provide subscription not covering extent of OIR being created test step
 
@@ -78,23 +74,16 @@ This step verifies that an OIR's existing explicit subscription cannot be replac
 If the DSS under test allows the qualifier to replace an OIR's existing explicit subscription with an explicit subscription that does not cover the extent of the OIR,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
 
-#### [OIR is attached to previous, valid, subscription](./fragments/oir/oir_has_expected_subscription.md)
+#### [Unchanged OIR is attached to previous, valid, subscription](./fragments/oir/oir_has_expected_subscription.md)
 
 ### Replace the OIR's explicit subscription test step
 
 This step verifies that an OIR attached to an explicit subscription can be mutated in order to be attached
 to another explicit subscription that properly covers the extent of the OIR.
 
-After mutation, to determine if the OIR is attached to the correct subscription, the OIR is directly fetched from the DSS.
-
 #### [Update the OIR's subscription](./fragments/oir/crud/update_query.md)
 
-#### [Fetch the OIR](./fragments/oir/crud/read_query.md)
-
-#### 🛑 OIR is attached to expected subscription check
-
-If the OIR returned by the DSS under test is not attached to the expected subscription,
-it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
+#### [Updated OIR is attached to newly specified subscription](./fragments/oir/oir_has_expected_subscription.md)
 
 ### [Cleanup OIR test step](./fragments/oir/crud/delete_query.md)
 
