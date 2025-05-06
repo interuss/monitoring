@@ -31,6 +31,9 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.oir import (
     crud as oir_fragments,
 )
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.sub import (
+    crud as sub_fragments,
+)
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
@@ -121,18 +124,6 @@ class OIRExplicitSubHandling(TestScenario):
 
         self.end_test_scenario()
 
-    def _step_create_subscription(self, params: SubscriptionParams) -> Subscription:
-        with self.check("Create subscription query succeeds", self._pid) as check:
-            mutated_sub = self._dss.upsert_subscription(**params)
-            self.record_query(mutated_sub)
-            if mutated_sub.status_code != 200:
-                check.record_failed(
-                    summary="Could not create subscription",
-                    details=f"Failed to create subscription with error code {mutated_sub.status_code}: {mutated_sub.error_message}",
-                    query_timestamps=[mutated_sub.timestamp],
-                )
-        return mutated_sub.subscription
-
     def _step_create_explicit_sub(self):
         self._sub_params = self._planning_area.get_new_subscription_params(
             subscription_id=self._sub_id,
@@ -142,7 +133,9 @@ class OIRExplicitSubHandling(TestScenario):
             notify_for_constraints=False,
         )
         self.begin_test_step("Create independent subscription")
-        self._current_sub = self._step_create_subscription(self._sub_params)
+        self._current_sub, _, _ = sub_fragments.sub_create_query(
+            scenario=self, dss=self._dss, sub_params=self._sub_params
+        )
         self.end_test_step()
 
     def _step_create_oir_insufficient_subscription(self):
@@ -227,7 +220,9 @@ class OIRExplicitSubHandling(TestScenario):
         )
 
         self.begin_test_step("Create a subscription")
-        self._current_extra_sub = self._step_create_subscription(new_sub_params)
+        self._current_extra_sub, _, _ = sub_fragments.sub_create_query(
+            scenario=self, dss=self._dss, sub_params=new_sub_params
+        )
         self.end_test_step()
 
         # Now attempt to mutate the OIR for it to use the invalid subscription:
