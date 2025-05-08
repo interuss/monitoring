@@ -38,6 +38,7 @@ def create_oir_query(
                 base_url=oir_params.uss_base_url,
                 oi_id=oir_id,
                 subscription_id=sub_id,
+                force_no_implicit_subscription="new_subscription" not in oir_params,
             )
             scenario.record_query(query)
             return new_oir, subs, query
