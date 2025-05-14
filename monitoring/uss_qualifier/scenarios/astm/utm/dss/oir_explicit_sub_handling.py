@@ -118,7 +118,7 @@ class OIRExplicitSubHandling(TestScenario):
         self.begin_test_case(
             "Validate explicit subscription upon subscription replacement"
         )
-        self._step_update_oir_with_insufficient_explicit_sub(is_replacement=True)
+        self._steps_update_oir_with_insufficient_explicit_sub(is_replacement=True)
         self._step_update_oir_with_sufficient_explicit_sub(is_replacement=True)
         self._clean_test_case()
         self.end_test_case()
@@ -148,7 +148,7 @@ class OIRExplicitSubHandling(TestScenario):
         self.begin_test_case(
             "Validate explicit subscription being attached to OIR without subscription"
         )
-        self._step_update_oir_with_insufficient_explicit_sub(is_replacement=False)
+        self._steps_update_oir_with_insufficient_explicit_sub(is_replacement=False)
         self._step_oir_has_correct_subscription(expected_sub_id=None)
         self._step_update_oir_with_sufficient_explicit_sub(is_replacement=False)
         self._step_oir_has_correct_subscription(expected_sub_id=self._extra_sub_id)
@@ -236,7 +236,7 @@ class OIRExplicitSubHandling(TestScenario):
 
         self._step_oir_has_correct_subscription(expected_sub_id=self._sub_id)
 
-    def _step_update_oir_with_insufficient_explicit_sub(self, is_replacement: bool):
+    def _steps_update_oir_with_insufficient_explicit_sub(self, is_replacement: bool):
         # Create another subscription that is a few seconds short of covering the OIR:
         oir_duration = (
             self._current_oir.time_end.value.datetime
@@ -385,7 +385,7 @@ class OIRExplicitSubHandling(TestScenario):
             sub_is_as_expected = oir.subscription_id == expected_sub_id
 
         attached_check_name = (
-            "OIR is attached to the NULL subscription"
+            "OIR is not attached to a subscription"
             if expected_sub_id is None
             else f"OIR is attached to expected subscription"
         )

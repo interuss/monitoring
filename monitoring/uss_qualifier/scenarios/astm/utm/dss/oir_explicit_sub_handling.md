@@ -105,12 +105,6 @@ This step verifies that an OIR can be created in the ACCEPTED state without prov
 
 ### [OIR is not attached to any subscription test step](./fragments/oir/oir_has_no_subscription.md)
 
-#### 🛑 Referenced subscription does not exist check
-
-If the placeholder subscription contained in the OIR returned to the qualifier by the DSS references an existing subscription,
-then the DSS under test is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**, as the creation request
-did not specify any subscription.
-
 ## Validate explicit subscription being attached to OIR without subscription test case
 
 Ensures that an explicit subscription can be attached to an OIR without subscription attached, and that the subscription is required to properly cover the OIR.
