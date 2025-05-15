@@ -118,10 +118,41 @@ class OIRExplicitSubHandling(TestScenario):
         self.begin_test_case(
             "Validate explicit subscription upon subscription replacement"
         )
-        self._step_update_oir_with_insufficient_explicit_sub(is_replacement=True)
+        self._steps_update_oir_with_insufficient_explicit_sub(is_replacement=True)
         self._step_update_oir_with_sufficient_explicit_sub(is_replacement=True)
+        self._clean_test_case()
         self.end_test_case()
 
+        self.begin_test_case(
+            "OIR in ACCEPTED state can be created without subscription"
+        )
+        self.begin_test_step("Create an operational intent reference")
+        self._current_oir, _, _ = oir_fragments.create_oir_query(
+            scenario=self,
+            dss=self._dss,
+            oir_id=self._oir_id,
+            oir_params=self._planning_area.get_new_operational_intent_ref_params(
+                key=[],
+                state=OperationalIntentState.Accepted,
+                uss_base_url=self._planning_area.get_base_url(),
+                time_start=datetime.now() - timedelta(seconds=10),
+                time_end=datetime.now() + timedelta(minutes=20),
+                subscription_id=None,
+                implicit_sub_base_url=None,
+            ),
+        )
+        self.end_test_step()
+        self._step_oir_has_correct_subscription(expected_sub_id=None)
+        self.end_test_case()
+
+        self.begin_test_case(
+            "Validate explicit subscription being attached to OIR without subscription"
+        )
+        self._steps_update_oir_with_insufficient_explicit_sub(is_replacement=False)
+        self._step_oir_has_correct_subscription(expected_sub_id=None)
+        self._step_update_oir_with_sufficient_explicit_sub(is_replacement=False)
+        self._step_oir_has_correct_subscription(expected_sub_id=self._extra_sub_id)
+        self.end_test_case()
         self.end_test_scenario()
 
     def _step_create_explicit_sub(self):
@@ -205,7 +236,7 @@ class OIRExplicitSubHandling(TestScenario):
 
         self._step_oir_has_correct_subscription(expected_sub_id=self._sub_id)
 
-    def _step_update_oir_with_insufficient_explicit_sub(self, is_replacement: bool):
+    def _steps_update_oir_with_insufficient_explicit_sub(self, is_replacement: bool):
         # Create another subscription that is a few seconds short of covering the OIR:
         oir_duration = (
             self._current_oir.time_end.value.datetime
@@ -354,7 +385,7 @@ class OIRExplicitSubHandling(TestScenario):
             sub_is_as_expected = oir.subscription_id == expected_sub_id
 
         attached_check_name = (
-            "OIR is attached to the NULL subscription"
+            "OIR is not attached to a subscription"
             if expected_sub_id is None
             else f"OIR is attached to expected subscription"
         )
@@ -416,6 +447,16 @@ class OIRExplicitSubHandling(TestScenario):
         # Make sure the subscription IDs we are going to use are available
         test_step_fragments.cleanup_sub(self, self._dss, self._sub_id)
         test_step_fragments.cleanup_sub(self, self._dss, self._extra_sub_id)
+
+    def _clean_test_case(self):
+        self.begin_test_step("Cleanup After Test Case")
+        oir_fragments.delete_oir_query(
+            scenario=self, dss=self._dss, oir_id=self._oir_id, ovn=self._current_oir.ovn
+        )
+        self._current_oir = None
+        self._delete_subscription(self._extra_sub_id, self._current_extra_sub.version)
+        self._current_sub = None
+        self.end_test_step()
 
     def cleanup(self):
         self.begin_cleanup()
