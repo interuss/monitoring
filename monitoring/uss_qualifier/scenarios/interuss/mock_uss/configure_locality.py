@@ -1,7 +1,6 @@
 from typing import List
 
 from monitoring.monitorlib.locality import LocalityCode
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
     MockUSSsResource,
@@ -44,13 +43,11 @@ class ConfigureLocality(TestScenario):
                 if query.status_code != 200:
                     check.record_failed(
                         f"Get current locality returned {query.status_code}",
-                        Severity.High,
                         query_timestamps=[query.request.initiated_at.datetime],
                     )
                 elif locality_code is None:
                     check.record_failed(
                         f"Missing current locality code",
-                        Severity.High,
                         "Query to get current locality value did not produce a valid locality code",
                         query_timestamps=[query.request.initiated_at.datetime],
                     )
@@ -68,7 +65,6 @@ class ConfigureLocality(TestScenario):
                 if query.status_code != 200:
                     check.record_failed(
                         f"Set locality returned {query.status_code}",
-                        Severity.High,
                         query_timestamps=[query.request.initiated_at.datetime],
                     )
             self.to_unconfigure.append(

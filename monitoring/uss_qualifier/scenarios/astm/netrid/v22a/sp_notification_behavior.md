@@ -39,7 +39,7 @@ A [`DSSInstancesResource`](../../../../resources/astm/f3411/dss.py) from which a
 Before injecting the test flights, a subscription is created on the DSS for the configured mock USS to allow it
 to validate that the Service Providers under test correctly send out notifications.
 
-#### Subscription creation succeeds check
+#### 🛑 Subscription creation succeeds check
 
 As per **[astm.f3411.v22a.DSS0030,c](../../../../requirements/astm/f3411/v22a.md)**, the DSS API must allow callers to create a subscription with either one or both of the
 start and end time missing, provided all the required parameters are valid.

@@ -22,7 +22,6 @@ from monitoring.monitorlib.fetch.rid import (
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.mutate.rid import ChangedSubscription, ISAChange
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss.isa_validator import (
     ISAValidator,
@@ -66,7 +65,6 @@ class DSSWrapper(object):
             self._scenario.record_query(q)
         check.record_failed(
             summary=f"Error when querying DSS",
-            severity=Severity.High,
             details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
             query_timestamps=[q.request.timestamp for q in e.queries],
         )
@@ -77,7 +75,6 @@ class DSSWrapper(object):
         q: RIDQuery,
         fail_msg: str,
         required_status_code: Optional[Set[int]] = None,
-        severity: Severity = Severity.High,
         fail_details: Optional[str] = None,
     ):
         """
@@ -96,7 +93,6 @@ class DSSWrapper(object):
         :param q: the query to check
         :param fail_msg: the message to use when failing the check
         :param required_status_code: the set of status codes that are considered successful. If this is None then success is defined by `q.success`
-        :param severity: the severity of the check failure
         :param fail_details: the details passed to check.record_fail
         """
         self._scenario.record_query(q.query)
@@ -106,7 +102,6 @@ class DSSWrapper(object):
         ):
             check.record_failed(
                 summary=fail_msg,
-                severity=severity,
                 details=(
                     f"{fail_details}\n{q.status_code} response: " + "\n".join(q.errors)
                     if fail_details is not None
@@ -157,8 +152,7 @@ class DSSWrapper(object):
                 details = "\n".join(f"[{e.json_path}] {e.message}" for e in errors)
                 sub_check.record_failed(
                     "Search ISA response format was invalid",
-                    Severity.Medium,
-                    "Found the following schema validation errors in the DSS response:\n"
+                    details="Found the following schema validation errors in the DSS response:\n"
                     + details,
                     query_timestamps=[t_dss],
                 )
@@ -224,7 +218,6 @@ class DSSWrapper(object):
             if isa_id != isa.isa.id:
                 check.record_failed(
                     summary=f"DSS did not return correct ISA",
-                    severity=Severity.High,
                     details=f"Expected ISA ID {isa_id} but got {isa.id}",
                     query_timestamps=[isa.query.request.timestamp],
                 )
@@ -427,9 +420,7 @@ class DSSWrapper(object):
                 details = "\n".join(f"[{e.json_path}] {e.message}" for e in errors)
                 sub_check.record_failed(
                     "Delete ISA response format was invalid",
-                    Severity.Medium,
-                    "Found the following schema validation errors in the DSS response:\n"
-                    + details,
+                    details=f"Found the following schema validation errors in the DSS response:\n{details}",
                     query_timestamps=[t_dss],
                 )
 
@@ -446,7 +437,6 @@ class DSSWrapper(object):
             )
             main_check.record_failed(
                 summary=f"Delete ISA request succeeded, but the DSS response is not valid: {_summary}",
-                severity=Severity.High,
                 details=_details,
                 query_timestamps=[t_dss],
             )
@@ -537,7 +527,7 @@ class DSSWrapper(object):
             )
 
             self.handle_query_result(
-                check, isa, f"Failed to get ISA {isa_id}", {404, 200}, Severity.Medium
+                check, isa, f"Failed to get ISA {isa_id}", {404, 200}
             )
 
             if isa.status_code == 404:
@@ -552,11 +542,7 @@ class DSSWrapper(object):
             )
 
             self.handle_query_result(
-                check,
-                del_isa.dss_query,
-                f"Failed to delete ISA {isa_id}",
-                {404, 200},
-                Severity.Medium,
+                check, del_isa.dss_query, f"Failed to delete ISA {isa_id}", {404, 200}
             )
 
             return del_isa
@@ -687,7 +673,6 @@ class DSSWrapper(object):
             if sub_id != sub.subscription.id:
                 check.record_failed(
                     summary=f"DSS did not return correct subscription",
-                    severity=Severity.High,
                     details=f"Expected Subscription ID {sub_id} but got {sub.subscription.id}",
                     query_timestamps=[sub.query.request.timestamp],
                 )
@@ -927,7 +912,6 @@ class DSSWrapper(object):
                         del_sub,
                         f"Failed to delete subscription {sub}",
                         {404, 200},
-                        Severity.Medium,
                     )
         except QueryError as e:
             self._handle_query_error(check, e)
@@ -956,11 +940,7 @@ class DSSWrapper(object):
                 )
 
                 self.handle_query_result(
-                    check,
-                    sub,
-                    f"Failed to get subscription {sub_id}",
-                    {404, 200},
-                    Severity.Medium,
+                    check, sub, f"Failed to get subscription {sub_id}", {404, 200}
                 )
 
             if sub.status_code == 404:
@@ -982,7 +962,6 @@ class DSSWrapper(object):
                     del_sub,
                     f"Failed to delete subscription {sub_id}",
                     {404, 200},
-                    Severity.Medium,
                 )
 
             return del_sub
@@ -1034,12 +1013,6 @@ class DSSWrapper(object):
         else:
             raise ValueError(f"Unknown RID version: {self._dss.rid_version}")
 
-        self.handle_query_result(
-            check,
-            rid_query,
-            fail_msg,
-            expected_error_codes,
-            Severity.Medium,
-        )
+        self.handle_query_result(check, rid_query, fail_msg, expected_error_codes)
 
         return rid_query

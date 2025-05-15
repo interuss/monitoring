@@ -1,4 +1,3 @@
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
     MockUSSResource,
@@ -29,7 +28,6 @@ class FinalizeMessageSigningReport(TestScenario):
                 check.record_failed(
                     summary="Failed to finalize message signing report",
                     details="TODO",
-                    severity=Severity.High,
                     query_timestamps=[],
                 )
                 return

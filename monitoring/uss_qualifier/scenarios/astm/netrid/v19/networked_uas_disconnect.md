@@ -60,16 +60,16 @@ uss_qualifier acts as a Display Provider to query Service Providers under test i
 
 #### [Flight presence checks](./display_data_evaluator_flight_presence.md)
 
-#### Flights data format check
+#### ⚠️ Flights data format check
 
 **[astm.f3411.v19.NET0710,1](../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../requirements/astm/f3411/v19.md)** requires a Service Provider to implement the P2P portion of the OpenAPI specification. This check will fail if the response to the /flights endpoint does not validate against the OpenAPI-specified schema.
 
 #### [Flight consistency with Common Data Dictionary checks](./common_dictionary_evaluator_sp_flight.md)
 
-#### Recent positions timestamps check
+#### 🛑 Recent positions timestamps check
 **[astm.f3411.v19.NET0270](../../../../requirements/astm/f3411/v19.md)** requires all recent positions to be within the NetMaxNearRealTimeDataPeriod. This check will fail if any of the reported positions are older than the maximally allowed period plus NetSpDataResponseTime99thPercentile.
 
-#### Recent positions for aircraft crossing the requested area boundary show only one position before or after crossing check
+#### 🛑 Recent positions for aircraft crossing the requested area boundary show only one position before or after crossing check
 **[astm.f3411.v19.NET0270](../../../../requirements/astm/f3411/v19.md)** requires that when an aircraft enters or leaves the queried area, the last or first reported position outside the area is provided in the recent positions, as long as it is not older than NetMaxNearRealTimeDataPeriod.
 
 This implies that any recent position outside the area must be either preceded or followed by a position inside the area.
@@ -84,13 +84,13 @@ Service providers are expected to convey to clients that a flight is not sending
 
 Service providers that return anything else than the last received telemetry during `NetMaxNearRealTimeDataPeriodSeconds` (60) after a flight stops disconnects will fail this check.
 
-#### Successful observation check
+#### ⚠️ Successful observation check
 
 Per **[interuss.automated_testing.rid.observation.ObservationSuccess](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the call to each observer is expected to succeed since a valid view was provided by uss_qualifier.
 
 #### [Clustering checks](./display_data_evaluator_clustering.md)
 
-#### Duplicate flights check
+#### 🛑 Duplicate flights check
 
 Per **[interuss.automated_testing.rid.observation.UniqueFlights](../../../../requirements/interuss/automated_testing/rid/observation.md)**, the same flight ID may not be reported by a Display Provider for two flights in the same observation.
 
@@ -98,7 +98,7 @@ Per **[interuss.automated_testing.rid.observation.UniqueFlights](../../../../req
 
 #### [Flight consistency with Common Data Dictionary checks](./common_dictionary_evaluator_dp_flight.md)
 
-#### Telemetry being used when present check
+#### 🛑 Telemetry being used when present check
 
 **[astm.f3411.v19.NET0290](../../../../requirements/astm/f3411/v19.md)** requires a SP uses Telemetry vs extrapolation when telemetry is present.
 

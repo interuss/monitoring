@@ -4,7 +4,6 @@ from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 
 
@@ -41,8 +40,7 @@ def delete_isa_if_exists(
         if not fetched.success and fetched.status_code != 404:
             check.record_failed(
                 "ISA information could not be retrieved",
-                Severity.High,
-                f"{participant_id} DSS instance returned {fetched.status_code} when queried for ISA {isa_id}",
+                details=f"{participant_id} DSS instance returned {fetched.status_code} when queried for ISA {isa_id}",
                 query_timestamps=[fetched.query.request.timestamp],
             )
 
@@ -61,8 +59,7 @@ def delete_isa_if_exists(
             if not deleted.dss_query.success:
                 check.record_failed(
                     "Could not delete pre-existing ISA",
-                    Severity.High,
-                    f"Attempting to delete ISA {isa_id} from the {participant_id} DSS returned error {deleted.dss_query.status_code}",
+                    details=f"Attempting to delete ISA {isa_id} from the {participant_id} DSS returned error {deleted.dss_query.status_code}",
                     query_timestamps=[deleted.dss_query.query.request.timestamp],
                 )
 
@@ -82,7 +79,6 @@ def delete_isa_if_exists(
                     if not notification.success:
                         check.record_failed(
                             "Could not notify ISA subscriber",
-                            Severity.Medium,
-                            f"Attempting to notify subscriber for ISA {isa_id} at {subscriber_url} resulted in {notification.status_code}",
+                            details=f"Attempting to notify subscriber for ISA {isa_id} at {subscriber_url} resulted in {notification.status_code}",
                             query_timestamps=[notification.query.request.timestamp],
                         )

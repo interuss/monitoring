@@ -8,7 +8,11 @@ from marko.md_renderer import MarkdownRenderer
 
 from monitoring.uss_qualifier.documentation import text_of
 from monitoring.uss_qualifier.requirements.documentation import RequirementID
-from monitoring.uss_qualifier.scenarios.documentation.definitions import TestCheckTree
+from monitoring.uss_qualifier.scenarios.documentation.definitions import (
+    TestCaseDocumentation,
+    TestCheckTree,
+    TestStepDocumentation,
+)
 from monitoring.uss_qualifier.scenarios.documentation.parsing import (
     TEST_STEP_SUFFIX,
     get_documentation,
@@ -148,6 +152,15 @@ def update_checks_without_severity(test_scenarios: List[TestScenarioType]) -> No
                         checks_without_severity.add_check(
                             scenario=test_scenario, case=case, step=step, check=check
                         )
+        if "cleanup" in docs:
+            for check in docs.cleanup.checks:
+                if "severity" not in check or check.severity is None:
+                    checks_without_severity.add_check(
+                        scenario=test_scenario,
+                        case=TestCaseDocumentation(name="Cleanup", steps=[]),
+                        step=docs.cleanup,
+                        check=check,
+                    )
     preexisting_checks_without_severity = TestCheckTree.preexisting(
         "checks_without_severity.json"
     )

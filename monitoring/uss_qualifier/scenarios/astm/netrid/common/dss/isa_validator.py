@@ -5,7 +5,6 @@ from monitoring.monitorlib import schema_validation
 from monitoring.monitorlib.fetch.rid import ISA, FetchedISA, FetchedISAs
 from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.scenarios.scenario import (
     GenericTestScenario,
     PendingCheck,
@@ -43,7 +42,6 @@ class ISAValidator(object):
     def _fail_sub_check(
         self, _sub_check: PendingCheck, _summary: str, _details: str, t_dss: datetime
     ) -> None:
-        """Fails with Medium severity the sub_check and with High severity the main check."""
 
         _sub_check.record_failed(
             summary=_summary,
@@ -53,7 +51,6 @@ class ISAValidator(object):
 
         self._main_check.record_failed(
             summary=f"ISA request succeeded, but the DSS response is not valid: {_summary}",
-            severity=Severity.High,
             details=_details,
             query_timestamps=[t_dss],
         )

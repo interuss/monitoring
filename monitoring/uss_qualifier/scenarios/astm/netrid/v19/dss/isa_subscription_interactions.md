@@ -141,14 +141,14 @@ If the ISA cannot be mutated, **[astm.f3411.v19.DSS0030,a](../../../../../requir
 When an ISA is mutated, the DSS must return the identifiers for any subscription that was made to the ISA,
 or be in violation of **[astm.f3411.v19.DSS0030,a](../../../../../requirements/astm/f3411/v19.md)**.
 
-#### ⚠️ Subscription to an ISA has its notification index incremented after mutation check
+#### 🛑 Subscription to an ISA has its notification index incremented after mutation check
 
 When an ISA is mutated, the DSS must increment the notification index of any subscription to that ISA,
 and return the up-to-date subscription in the response to the query mutating the ISA.
 
 Failure to do so means that the DSS is not properly implementing **[astm.f3411.v19.DSS0030,a](../../../../../requirements/astm/f3411/v19.md)**.
 
-#### Subscription that only barely overlaps the ISA contains the ISA check
+#### 🛑 Subscription that only barely overlaps the ISA contains the ISA check
 
 A subscription that is created for a volume that only barely overlaps with the previously created ISA should still
 contain the ISA in the reply from the server, otherwise the DSS does not comply with **[astm.f3411.v19.DSS0030,c](../../../../../requirements/astm/f3411/v19.md)**
@@ -182,22 +182,22 @@ Notifications to any subscriber to the created ISA need to be successful.  If a 
 The cleanup phase of this test scenario attempts to remove the ISA if the test ended prematurely while
 also deleting any subscription it might have created for the ISA's area.
 
-#### Successful ISA query check
+#### ⚠️ Successful ISA query check
 
 **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** requires the implementation of the DSS endpoint enabling retrieval of information about a specific ISA; if the individual ISA cannot be retrieved and the error isn't a 404, then this requirement isn't met.
 
-#### Removed pre-existing ISA check
+#### ⚠️ Removed pre-existing ISA check
 
 If an ISA with the intended ID is already present in the DSS, it needs to be removed before proceeding with the test.  If that ISA cannot be deleted, then the **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the ISA deletion endpoint might not be met.
 
-#### Notified subscriber check
+#### ⚠️ Notified subscriber check
 
 When a pre-existing ISA needs to be deleted to ensure a clean workspace, any subscribers to ISAs in that area must be notified (as specified by the DSS).  If a notification cannot be delivered, then the **[astm.f3411.v19.NET0730](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the POST ISAs endpoint isn't met.
 
-#### Successful subscription search query check
+#### ⚠️ Successful subscription search query check
 
 **[astm.f3411.v19.DSS0030,f](../../../../../requirements/astm/f3411/v19.md)** requires the implementation of the DSS endpoint to allow callers to retrieve the subscriptions they created.
 
-#### Subscription can be deleted check
+#### ⚠️ Subscription can be deleted check
 
 **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)** requires the implementation of the DSS endpoint to allow callers to delete subscriptions they created.

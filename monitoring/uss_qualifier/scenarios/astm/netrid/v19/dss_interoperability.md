@@ -54,7 +54,7 @@ As per **[astm.f3411.v19.DSS0210](../../../../requirements/astm/f3411/v19.md)** 
 As such, this check will fail if the resolved IP of the DSS host is a private IP address.
 This check is skipped if the test exclusion `allow_private_addresses` is set to `True`.
 
-#### DSS instance is reachable check
+#### 🛑 DSS instance is reachable check
 As per **[astm.f3411.v19.DSS0210](../../../../requirements/astm/f3411/v19.md)** the DSS instance should be publicly addressable.
 As such, this check will fail if the DSS is not reachable with a dummy query,
 
@@ -108,7 +108,7 @@ Action: USS2@DSS*n*: GET Subscription[*P*] by ID
 
 Qualitatively proves: Can retrieve specific Subscription emplaced in primary DSS from all DSSs
 
-#### Subscription[*P*] returned with proper response check
+#### 🛑 Subscription[*P*] returned with proper response check
 
 **[astm.f3411.v19.DSS0130,A2-6-1,5](../../../../requirements/astm/f3411/v19.md)**
 
@@ -162,11 +162,11 @@ Action: USS1@DSS*P*: PUT ISA[*P*] setting end time to now + D seconds
 
 Qualitatively proves: ISA[*P*] modified with proper response, all Subscription[i] 1≤i≤n are returned in subscribers with proper response
 
-#### Can get ISA from primary DSS check
+#### 🛑 Can get ISA from primary DSS check
 
 **[astm.f3411.v19.DSS0130,3,a](../../../../requirements/astm/f3411/v19.md)**
 
-#### Can modify ISA in primary DSS check
+#### 🛑 Can modify ISA in primary DSS check
 
 **[astm.f3411.v19.DSS0130,A2-6-1,1b](../../../../requirements/astm/f3411/v19.md)**
 
@@ -198,7 +198,7 @@ Action: USS2@DSS*n*: GET Subscription[*n*] by ID
 
 Qualitatively proves: Subscription deletion from ID index was effective from primary DSS
 
-#### 404 with proper response check
+#### 🛑 404 with proper response check
 
 **[astm.f3411.v19.DSS0130,A2-6-1,4b](../../../../requirements/astm/f3411/v19.md)**
 
@@ -210,7 +210,7 @@ Action: USS2@DSS*n*: GET Subscriptions using ISA[*P*]’s area
 
 Qualitatively proves: Subscription deletion from geographic index was effective from primary DSS
 
-#### Subscriptions queried successfully check
+#### 🛑 Subscriptions queried successfully check
 
 **[astm.f3411.v19.DSS0130,A2-6-1,6](../../../../requirements/astm/f3411/v19.md)**
 
@@ -256,7 +256,7 @@ Action: USS1@DSS*P*: DELETE ISA[*P*]
 
 Qualitatively proves: ISA deletion triggers subscription notification requests
 
-#### ISA[*P*] deleted with proper response check
+#### 🛑 ISA[*P*] deleted with proper response check
 
 **[astm.f3411.v19.DSS0130,A2-6-1,2a](../../../../requirements/astm/f3411/v19.md)**
 
@@ -284,7 +284,7 @@ Action: USS2@DSS*n*: GET Subscriptions using ISA[*P*]’s area
 
 Qualitatively proves: Expired Subscription removed from geographic index on primary DSS
 
-#### Subscriptions queried successfully check
+#### 🛑 Subscriptions queried successfully check
 
 **[astm.f3411.v19.DSS0130,A2-6-1,6](../../../../requirements/astm/f3411/v19.md)**
 
@@ -300,7 +300,7 @@ Action: USS2@DSS*n*: GET Subscription[*n*] by ID
 
 Qualitatively proves: Expired Subscription removed from ID index on primary DSS
 
-#### 404 with proper response check
+#### 🛑 404 with proper response check
 
 TODO: Investigate expected behavior and "404 with proper response" check
 
@@ -312,7 +312,7 @@ Action: USS1@DSS*P*: DELETE ISA[*P*]
 
 Qualitatively proves: ISA deletion does not trigger subscription notification requests for expired Subscriptions
 
-#### ISA[*P*] deleted with proper response check
+#### 🛑 ISA[*P*] deleted with proper response check
 
 **[astm.f3411.v19.DSS0130,A2-6-1,2a](../../../../requirements/astm/f3411/v19.md)**
 
@@ -348,14 +348,14 @@ Action: USS2@DSS*P*: DELETE Subscription[*n*]
 
 Any entities (ISAs or Subscriptions) not deleted normally will be deleted here.
 
-### ISA deleted with proper response check
+### ⚠️ ISA deleted with proper response check
 
 **[astm.f3411.v19.DSS0130,A2-6-1,2a](../../../../requirements/astm/f3411/v19.md)**
 
-### Subscription can be queried by ID check
+### ⚠️ Subscription can be queried by ID check
 
 **[astm.f3411.v19.DSS0130,A2-6-1,4a](../../../../requirements/astm/f3411/v19.md)**
 
-### Subscription can be deleted check
+### ⚠️ Subscription can be deleted check
 
 **[astm.f3411.v19.DSS0130,A2-6-1,4a](../../../../requirements/astm/f3411/v19.md)**

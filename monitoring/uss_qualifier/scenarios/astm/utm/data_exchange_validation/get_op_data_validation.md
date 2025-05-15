@@ -98,6 +98,6 @@ direct retrieval by tested_uss from mock_uss.
 Teardown
 
 ## Cleanup
-### Successful flight deletion check
+### ⚠️ Successful flight deletion check
 This cleanup is for both - after testcase ends and after test scenario ends
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../requirements/interuss/automated_testing/flight_planning.md)**

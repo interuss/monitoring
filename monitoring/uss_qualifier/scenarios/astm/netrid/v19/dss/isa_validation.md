@@ -73,14 +73,14 @@ the DSS is expected to reject the request, otherwise it fails to meet **[astm.f3
 
 The cleanup phase of this test scenario attempts to remove the ISA if the test ended prematurely.
 
-### Successful ISA query check
+### ⚠️ Successful ISA query check
 
 **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)** requires the implementation of the DSS endpoint enabling retrieval of information about a specific ISA; if the individual ISA cannot be retrieved and the error isn't a 404, then this requirement isn't met.
 
-### Removed pre-existing ISA check
+### ⚠️ Removed pre-existing ISA check
 
 If an ISA with the intended ID is still present in the DSS, it needs to be removed before exiting the test. If that ISA cannot be deleted, then the **[astm.f3411.v19.DSS0030,b](../../../../../requirements/astm/f3411/v19.md)** requirement to implement the ISA deletion endpoint might not be met.
 
-### Notified subscriber check
+### ⚠️ Notified subscriber check
 
 When an ISA is deleted, subscribers must be notified. If a subscriber cannot be notified, that subscriber USS did not correctly implement "POST Identification Service Area" in **[astm.f3411.v19.NET0730](../../../../../requirements/astm/f3411/v19.md)**.

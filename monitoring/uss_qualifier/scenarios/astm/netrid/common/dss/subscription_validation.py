@@ -3,7 +3,6 @@ from typing import Dict
 
 from monitoring.monitorlib.mutate.rid import ChangedSubscription
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
@@ -203,8 +202,7 @@ class SubscriptionValidation(GenericTestScenario):
         else:
             check.record_failed(
                 "Created record subscription has not been properly truncated to 24 hours",
-                Severity.Medium,
-                f"{self._dss.participant_id} DSS instance has returned a non-properly truncated subscription "
+                details=f"{self._dss.participant_id} DSS instance has returned a non-properly truncated subscription "
                 f"(duration: {duration}) "
                 f"when the expectation was either to fail or to truncate at 24 hours.",
                 query_timestamps=[changed.query.request.timestamp],
