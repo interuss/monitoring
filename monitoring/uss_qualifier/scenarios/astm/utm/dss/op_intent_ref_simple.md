@@ -41,6 +41,18 @@ Create an OIR with allowed parameters.
 
 Delete the OIR created in the previous step.
 
+## Remove explicit subscription from OIR test case
+
+Checks that an OIR in the ACCEPTED state that is attached to an explicit subscription can be mutated in order to not be attached to any subscription.
+
+### [Remove explicit subscription from OIR test step](./fragments/oir/crud/update_query.md)
+
+This step verifies that an OIR attached to an explicit subscription can be mutated in order to not be attached to any subscription.
+
+### [OIR is not attached to any subscription test step](./fragments/oir/oir_has_expected_subscription.md)
+
+This step verifies that the OIR is not attached to any subscription.
+
 ## Deletion requires correct OVN test case
 
 Ensures that a DSS will only delete OIRs when the correct OVN is presented.

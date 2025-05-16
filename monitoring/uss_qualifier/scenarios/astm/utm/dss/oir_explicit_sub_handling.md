@@ -128,6 +128,14 @@ it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm
 
 ### [OIR is attached to expected subscription test step](./fragments/oir/oir_has_expected_subscription.md)
 
+## Remove explicit subscription from OIR test case
+
+Checks that an OIR in the ACCEPTED state that is attached to an explicit subscription can be mutated in order to not be attached to any subscription.
+
+### [Remove explicit subscription from OIR test step](./fragments/oir/crud/update_query.md)
+
+### [OIR is not attached to any subscription test step](./fragments/oir/oir_has_no_subscription.md)
+
 ## Cleanup
 
 ### [Cleanup OIRs test step](./clean_workspace_op_intents.md)
