@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import List
 
 from monitoring.monitorlib.locality import LocalityCode
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -41,7 +40,6 @@ class UnconfigureLocality(TestScenario):
                 if query.status_code != 200:
                     check.record_failed(
                         f"Set locality returned {query.status_code}",
-                        Severity.Medium,
                         query_timestamps=[query.request.initiated_at.datetime],
                     )
 

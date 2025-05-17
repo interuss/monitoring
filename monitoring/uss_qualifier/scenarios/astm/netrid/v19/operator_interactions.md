@@ -54,7 +54,7 @@ uss_qualifier retrieves the current (pre-existing) set of operator notifications
 
 uss_qualifier attempts to inject a flight into the Service Provider under test, knowing that the Service Provider will not be able to create an ISA.
 
-#### Flight failed check
+#### 🛑 Flight failed check
 
 Since the DSS is known to fail when attempting to create an ISA, if the Service Provider successfully creates the flight, they will have not met **[astm.f3411.v19.NET0610](../../../../requirements/astm/f3411/v19.md)**.
 
@@ -64,7 +64,7 @@ TODO: Implement
 
 uss_qualifier retrieves the current (after failed flight) set of operator notifications.
 
-#### Operator notified of discoverability failure check
+#### 🛑 Operator notified of discoverability failure check
 
 The "after" set of operator notifications should contain at least one more entry than the "before" set of operator notifications.  If there was no new operator notification, the Service Provider will not have met **[astm.f3411.v19.NET0620](../../../../requirements/astm/f3411/v19.md)**.
 
@@ -84,13 +84,13 @@ uss_qualifier retrieves the current (pre-existing) set of operator notifications
 
 Throughout the duration of the flight, uss_qualifier periodically polls for operator notifications.
 
-#### Insufficient telemetry operator notification check
+#### 🛑 Insufficient telemetry operator notification check
 
 If the Service Provider under test does not provide an operator notification in Phase 2 (regarding the telemetry feed stopping), it will not have complied with **[astm.f3411.v19.NET0040](../../../../requirements/astm/f3411/v19.md)**.
 
 TODO: Implement
 
-#### Missing data operator notification check
+#### 🛑 Missing data operator notification check
 
 If the Service Provider under test does not provide an operator notification in Phase 4 (regarding missing data fields in reported telemetry), it will not have complied with **[astm.f3411.v19.NET0030](../../../../requirements/astm/f3411/v19.md)**.
 

@@ -18,7 +18,6 @@ from monitoring.monitorlib.mutate.rid import (
 )
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
@@ -105,8 +104,7 @@ class TokenValidation(GenericTestScenario):
             if put_wrong_scope.dss_query.success:
                 check.record_failed(
                     "Read scope can create ISA",
-                    Severity.High,
-                    f"Attempting to create ISA {self._isa_id} with read scope returned {put_wrong_scope.dss_query.status_code}",
+                    details=f"Attempting to create ISA {self._isa_id} with read scope returned {put_wrong_scope.dss_query.status_code}",
                     query_timestamps=[
                         put_wrong_scope.dss_query.query.request.timestamp
                     ],
@@ -125,8 +123,7 @@ class TokenValidation(GenericTestScenario):
             if put_no_token.dss_query.success:
                 check.record_failed(
                     "Could create an ISA without a token",
-                    Severity.High,
-                    f"Attempting to create ISA {self._isa_id} with no token returned {put_no_token.dss_query.status_code}",
+                    details=f"Attempting to create ISA {self._isa_id} with no token returned {put_no_token.dss_query.status_code}",
                     query_timestamps=[put_no_token.dss_query.query.request.timestamp],
                 )
 
@@ -143,8 +140,7 @@ class TokenValidation(GenericTestScenario):
             if put_fake_token.dss_query.success:
                 check.record_failed(
                     "Could create an ISA with a fake token",
-                    Severity.High,
-                    f"Attempting to create ISA {self._isa_id} with a fake token returned {put_fake_token.dss_query.status_code}",
+                    details=f"Attempting to create ISA {self._isa_id} with a fake token returned {put_fake_token.dss_query.status_code}",
                     query_timestamps=[put_fake_token.dss_query.query.request.timestamp],
                 )
 
@@ -175,8 +171,7 @@ class TokenValidation(GenericTestScenario):
             if get_no_token.success:
                 check.record_failed(
                     "Could read an ISA without a token",
-                    Severity.High,
-                    f"Attempting to read ISA {self._isa_id} with no token returned {get_no_token.status_code}",
+                    details=f"Attempting to read ISA {self._isa_id} with no token returned {get_no_token.status_code}",
                     query_timestamps=[get_no_token.query.request.timestamp],
                 )
 
@@ -188,8 +183,7 @@ class TokenValidation(GenericTestScenario):
             if get_fake_token.success:
                 check.record_failed(
                     "Could read an ISA with a fake token",
-                    Severity.High,
-                    f"Attempting to read ISA {self._isa_id} with a fake token returned {get_fake_token.status_code}",
+                    details=f"Attempting to read ISA {self._isa_id} with a fake token returned {get_fake_token.status_code}",
                     query_timestamps=[get_fake_token.query.request.timestamp],
                 )
 
@@ -206,8 +200,7 @@ class TokenValidation(GenericTestScenario):
             if mutate_wrong_scope.dss_query.success:
                 check.record_failed(
                     "Read scope can mutate an ISA",
-                    Severity.High,
-                    f"Attempting to create ISA {self._isa_id} with read scope returned {mutate_wrong_scope.dss_query.status_code}",
+                    details=f"Attempting to create ISA {self._isa_id} with read scope returned {mutate_wrong_scope.dss_query.status_code}",
                     query_timestamps=[
                         mutate_wrong_scope.dss_query.query.request.timestamp
                     ],
@@ -225,8 +218,7 @@ class TokenValidation(GenericTestScenario):
             if mutate_no_token.dss_query.success:
                 check.record_failed(
                     "Could mutate an ISA without a token",
-                    Severity.High,
-                    f"Attempting to create ISA {self._isa_id} with no token returned {mutate_no_token.dss_query.status_code}",
+                    details=f"Attempting to create ISA {self._isa_id} with no token returned {mutate_no_token.dss_query.status_code}",
                     query_timestamps=[
                         mutate_no_token.dss_query.query.request.timestamp
                     ],
@@ -244,8 +236,7 @@ class TokenValidation(GenericTestScenario):
             if mutate_fake_token.dss_query.success:
                 check.record_failed(
                     "Could mutate an ISA with a fake token",
-                    Severity.High,
-                    f"Attempting to create ISA {self._isa_id} with a fake token returned {mutate_fake_token.dss_query.status_code}",
+                    details=f"Attempting to create ISA {self._isa_id} with a fake token returned {mutate_fake_token.dss_query.status_code}",
                     query_timestamps=[
                         mutate_fake_token.dss_query.query.request.timestamp
                     ],
@@ -262,8 +253,7 @@ class TokenValidation(GenericTestScenario):
             if del_wrong_scope.dss_query.success:
                 check.record_failed(
                     "Read scope can delete an ISA",
-                    Severity.High,
-                    f"Attempting to delete ISA {self._isa_id} with read scope returned {del_wrong_scope.dss_query.status_code}",
+                    details=f"Attempting to delete ISA {self._isa_id} with read scope returned {del_wrong_scope.dss_query.status_code}",
                     query_timestamps=[
                         del_wrong_scope.dss_query.query.request.timestamp
                     ],
@@ -284,8 +274,7 @@ class TokenValidation(GenericTestScenario):
             if del_no_token.dss_query.success:
                 check.record_failed(
                     "Could mutate an ISA without a token",
-                    Severity.High,
-                    f"Attempting to create ISA {self._isa_id} with no token returned {del_no_token.dss_query.status_code}",
+                    details=f"Attempting to create ISA {self._isa_id} with no token returned {del_no_token.dss_query.status_code}",
                     query_timestamps=[del_no_token.dss_query.query.request.timestamp],
                 )
 
@@ -304,8 +293,7 @@ class TokenValidation(GenericTestScenario):
             if del_fake_token.dss_query.success:
                 check.record_failed(
                     "Could delete an ISA with a fake token",
-                    Severity.High,
-                    f"Attempting to create ISA {self._isa_id} with a fake token returned {del_fake_token.dss_query.status_code}",
+                    details=f"Attempting to create ISA {self._isa_id} with a fake token returned {del_fake_token.dss_query.status_code}",
                     query_timestamps=[del_fake_token.dss_query.query.request.timestamp],
                 )
 
@@ -325,8 +313,7 @@ class TokenValidation(GenericTestScenario):
             if not search_ok.success:
                 check.record_failed(
                     "Search request failed although a valid token was used",
-                    Severity.High,
-                    f"Attempting to search ISAs with a valid token returned failure code: {search_ok.query.status_code}",
+                    details=f"Attempting to search ISAs with a valid token returned failure code: {search_ok.query.status_code}",
                     query_timestamps=[search_ok.query.request.timestamp],
                 )
 
@@ -345,8 +332,7 @@ class TokenValidation(GenericTestScenario):
             if search_wrong_token.success:
                 check.record_failed(
                     "Search endpoint returned successfully without a token",
-                    Severity.High,
-                    f"Attempting to search ISAs with invalid token returned successful query: {search_wrong_token.query.status_code}",
+                    details=f"Attempting to search ISAs with invalid token returned successful query: {search_wrong_token.query.status_code}",
                     query_timestamps=[search_wrong_token.query.request.timestamp],
                 )
 
@@ -365,8 +351,7 @@ class TokenValidation(GenericTestScenario):
             if search_no_token.success:
                 check.record_failed(
                     "Search endpoint returned successfully without a token",
-                    Severity.High,
-                    f"Attempting to search ISAs with no token returned successful query: {search_no_token.query.status_code}",
+                    details=f"Attempting to search ISAs with no token returned successful query: {search_no_token.query.status_code}",
                     query_timestamps=[search_no_token.query.request.timestamp],
                 )
 
@@ -379,8 +364,7 @@ class TokenValidation(GenericTestScenario):
             if not del_isa_ok.dss_query.success:
                 check.record_failed(
                     "Could not delete ISA with valid credentials",
-                    Severity.High,
-                    f"Attempting to delete ISA {self._isa_id} returned {del_isa_ok.dss_query.status_code}",
+                    details=f"Attempting to delete ISA {self._isa_id} returned {del_isa_ok.dss_query.status_code}",
                     query_timestamps=[del_isa_ok.dss_query.query.request.timestamp],
                 )
 
@@ -398,8 +382,7 @@ class TokenValidation(GenericTestScenario):
             if not fetched.success and fetched.status_code != 404:
                 check.record_failed(
                     "ISA information could not be retrieved",
-                    Severity.High,
-                    f"{self._dss.participant_id} DSS instance returned {fetched.status_code} when queried for ISA {self._isa_id}",
+                    details=f"{self._dss.participant_id} DSS instance returned {fetched.status_code} when queried for ISA {self._isa_id}",
                     query_timestamps=[fetched.query.request.timestamp],
                 )
 
@@ -420,8 +403,7 @@ class TokenValidation(GenericTestScenario):
                 if not deleted.dss_query.success:
                     check.record_failed(
                         "Could not delete pre-existing ISA",
-                        Severity.High,
-                        f"Attempting to delete ISA {self._isa_id} from the {self._dss.participant_id} DSS returned error {deleted.dss_query.status_code}",
+                        details=f"Attempting to delete ISA {self._isa_id} from the {self._dss.participant_id} DSS returned error {deleted.dss_query.status_code}",
                         query_timestamps=[deleted.dss_query.query.request.timestamp],
                     )
             self._verify_notifications(deleted.notifications)
@@ -437,8 +419,7 @@ class TokenValidation(GenericTestScenario):
                 if not notification.success:
                     check.record_failed(
                         "Could not notify ISA subscriber",
-                        Severity.Medium,
-                        f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
+                        details=f"Attempting to notify subscriber for ISA {self._isa_id} at {subscriber_url} resulted in {notification.status_code}",
                         query_timestamps=[notification.query.request.timestamp],
                     )
 

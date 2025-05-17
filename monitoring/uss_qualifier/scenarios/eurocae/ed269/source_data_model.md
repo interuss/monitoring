@@ -14,10 +14,10 @@ The file or url of the document to be tested.
 
 ### Valid source test step
 
-#### Valid JSON check
+#### 🛑 Valid JSON check
 
 The JSON file is properly formatted and can be read successfully.
 
-#### Valid schema and values check
+#### 🛑 Valid schema and values check
 
 The file respects the ED-269 schema and values are valid.

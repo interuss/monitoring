@@ -127,6 +127,6 @@ Check a notification was received by tested_uss for Flight 2, with Flight 1's su
 
 ## Cleanup
 
-### Successful flight deletion check
+### ⚠️ Successful flight deletion check
 The flights are cleaned up at the end of the test scenario.
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../../requirements/interuss/automated_testing/flight_planning.md)**

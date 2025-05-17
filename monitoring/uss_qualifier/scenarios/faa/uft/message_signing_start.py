@@ -1,4 +1,3 @@
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
     MockUSSResource,
@@ -31,7 +30,6 @@ class StartMessageSigningReport(TestScenario):
                 check.record_failed(
                     summary="Failed to get status from mock USS",
                     details=f"Status code {query.status_code}",
-                    severity=Severity.High,
                     query_timestamps=[query.request.timestamp],
                 )
                 return  # Return if this scenario cannot continue
@@ -42,7 +40,6 @@ class StartMessageSigningReport(TestScenario):
                 check.record_failed(
                     summary="Mock USS SCD functionality not ready",
                     details=f"Status indicated as: {status}",
-                    severity=Severity.High,
                     query_timestamps=[query.request.timestamp],
                 )
                 return
@@ -59,7 +56,6 @@ class StartMessageSigningReport(TestScenario):
                 check.record_failed(
                     summary="Failed to start message signing report",
                     details="TODO",
-                    severity=Severity.High,
                     query_timestamps=[],
                 )
                 return

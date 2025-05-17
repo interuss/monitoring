@@ -16,7 +16,7 @@ This check will fail if the flight was not successfully injected.
 This particular test requires each flight to be uniquely identifiable by its 2D telemetry position; the same (lat, lng) pair may not appear in two different telemetry points, even if the two points are in different injected flights.  This should generally be achieved by injecting appropriate data.
 
 
-## Valid flight check
+## 🛑 Valid flight check
 
 TODO: Validate injected flights, especially to make sure they contain the specified injection IDs
 

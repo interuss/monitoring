@@ -23,7 +23,6 @@ from monitoring.monitorlib.fetch.rid import (
 )
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.temporal import Time
-from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
 from monitoring.uss_qualifier.resources.netrid import NetRIDServiceProviders
@@ -351,7 +350,6 @@ class RIDObservationEvaluator(object):
                 check.record_failed(
                     summary="Observation failed",
                     details=f"When queried for an observation in {geo.rect_str(rect)}, {observer.participant_id} returned code {query.status_code}",
-                    severity=Severity.Medium,
                     query_timestamps=[query.request.timestamp],
                 )
                 return
@@ -589,7 +587,6 @@ class RIDObservationEvaluator(object):
                 ):
                     check.record_failed(
                         summary=f"Cluster display area is smaller than {self._rid_version.min_cluster_size_percent} % of the view area required",
-                        severity=Severity.Medium,
                         details=f"Cluster covers {cluster.area_sqm} sqm and the view area is {view_area_sqm} sqm. Cluster area covers {cluster_area_sqm_percent} % of the view area and is less than the required {self._rid_version.min_cluster_size_percent} %",
                     )
 
@@ -615,14 +612,12 @@ class RIDObservationEvaluator(object):
                 # Missing flight
                 check.record_failed(
                     summary="Error while evaluating clustered area view. Missing flight",
-                    severity=Severity.Medium,
                     details=f"{expected_count - clustered_flight_count} (~{uncertain_count}) missing flight(s)",
                 )
             elif clustered_flight_count > expected_count + uncertain_count:
                 # Unexpected flight
                 check.record_failed(
                     summary="Error while evaluating clustered area view. Unexpected flight",
-                    severity=Severity.Medium,
                     details=f"{clustered_flight_count - expected_count} (~{uncertain_count}) unexpected flight(s)",
                 )
             elif clustered_flight_count == expected_count:
@@ -680,7 +675,6 @@ class RIDObservationEvaluator(object):
                     # Cluster has a too small distance to the edge
                     check.record_failed(
                         summary="Error while evaluating cluster obfuscation. Cluster does not comply with the minimum obfuscation distance.",
-                        severity=Severity.Medium,
                         details=f"Cluster {clusters[c_idx].corners} ({clusters[c_idx].number_of_flights} flights): too small dimensions. Height: {cluster_height}m, width: {cluster_width}m, minimum: {min_dim}m.",
                     )
 
@@ -720,7 +714,6 @@ class RIDObservationEvaluator(object):
                             # Flight was not obfuscated
                             check.record_failed(
                                 summary="Error while evaluating obfuscation of individual flights. Flight was not obfuscated: it is at the center of the cluster.",
-                                severity=Severity.Medium,
                                 details=f"Flight {injected_flight.flight.injection_id}: distance between cluster center ({center}) and flight telemetry position ({flight_pos} at {tel.timestamp}) is {distance} meters.",
                             )
 
@@ -743,7 +736,6 @@ class RIDObservationEvaluator(object):
                     # Flight has no telemetry point belonging to a cluster
                     check.record_failed(
                         summary="Error while evaluating obfuscation of individual flights. Flight was outside of all clusters.",
-                        severity=Severity.Medium,
                         details=f"Flight {injected_flight.flight.injection_id}: has no telemetry position that belong to a cluster.",
                     )
 
@@ -1111,7 +1103,6 @@ class DisconnectedUASObservationEvaluator(object):
             if not sp_observation.dss_isa_query.success:
                 check.record_failed(
                     summary="Could not query ISAs from DSS",
-                    severity=Severity.Medium,
                     details=f"Query to {self._dss.participant_id}'s DSS at {sp_observation.dss_isa_query.query.request.url} failed {sp_observation.dss_isa_query.query.status_code}",
                     query_timestamps=[
                         sp_observation.dss_isa_query.query.request.initiated_at.datetime
@@ -1322,7 +1313,6 @@ def _evaluate_flight_presence(
                     check.record_failed(
                         summary="Flight observed before it started",
                         details=f"Flight {expected_flight.flight.injection_id} injected into {expected_flight.uss_participant_id} was observed by {observer_participant_id} at {t_response.isoformat()} before that flight should have started at {t_min.isoformat()}",
-                        severity=Severity.Medium,
                         query_timestamps=query_timestamps
                         + [expected_flight.query_timestamp],
                     )
@@ -1346,7 +1336,6 @@ def _evaluate_flight_presence(
                     check.record_failed(
                         summary="Flight still observed long after it ended",
                         details=f"Flight {expected_flight.flight.injection_id} injected into {expected_flight.uss_participant_id} was observed by {observer_participant_id} at {t_response.isoformat()} after it ended at {t_max.isoformat()}",
-                        severity=Severity.Medium,
                         query_timestamps=query_timestamps
                         + [expected_flight.query_timestamp],
                     )
@@ -1370,7 +1359,6 @@ def _evaluate_flight_presence(
                     check.record_failed(
                         summary="Expected flight not observed",
                         details=f"Flight {expected_flight.flight.injection_id} injected into {expected_flight.uss_participant_id} was not found in the observation by {observer_participant_id} at {t_response.isoformat()} even though it should have been active from {t_min.isoformat()} to {t_max.isoformat()}",
-                        severity=Severity.Medium,
                         query_timestamps=query_timestamps
                         + [expected_flight.query_timestamp],
                     )

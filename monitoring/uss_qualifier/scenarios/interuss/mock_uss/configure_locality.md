@@ -18,18 +18,18 @@ The locality to set all mock USS instances to.
 
 ### Get current locality value test step
 
-#### Query ok check
+#### 🛑 Query ok check
 
 If a mock USS instance doesn't respond properly to a request to get its current locality, **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../requirements/interuss/mock_uss/hosted_instance.md)** is not met.
 
 ### Set locality to desired value test step
 
-#### Query ok check
+#### 🛑 Query ok check
 
 If a mock USS instance doesn't respond properly to a request to change its locality, **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../requirements/interuss/mock_uss/hosted_instance.md)** is not met.
 
 ## Cleanup
 
-### Restore locality check
+### 🛑 Restore locality check
 
 If uss_qualifier cannot restore a mock_uss instance's locality to its old value when rolling back incomplete locality changes, **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../requirements/interuss/mock_uss/hosted_instance.md)** is not met.
