@@ -92,10 +92,7 @@ If the newly created OIR does not mention the implicit subscription from the pre
 the DSS is either improperly managing implicit subscriptions, or failing to report the subscriptions relevant to an OIR,
 and therefore in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)** respectively.
 
-#### 🛑 No implicit subscription was attached check
-
-If the DSS attached an implicit subscription, by either creating or re-using an existing one, to the OIR that was created in this step,
-the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+#### [OIR is not attached to an implicit subscription](./fragments/oir/oir_has_expected_subscription.md)
 
 ### Mutate OIR with implicit subscription to not overlap anymore test step
 
@@ -135,11 +132,7 @@ that were present when the test case started.
 Otherwise, the DSS may be failing to properly implement **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
 or **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-#### 🛑 No implicit subscription was attached check
-
-If the DSS attached an implicit subscription, by either creating or re-using an existing one, to the OIR that was created in this step,
-the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
-
+#### [OIR is not attached to an implicit subscription](./fragments/oir/oir_has_expected_subscription.md)
 ## Implicit subscriptions are properly deleted when required by OIR mutation test case
 
 This test case verifies that implicit subscriptions are properly removed if they become unnecessary following the mutation of an OIR.
@@ -271,10 +264,41 @@ Replace the first OIR's explicit subscription with the implicit one created in t
 
 Confirm that the query to replace the second OIR's explicit subscription with the second OIR's implicit subscription succeeds.
 
-#### 🛑 The first OIR is now attached to the specified implicit subscription check
+#### [First OIR is now attached to the specified implicit subscription](fragments/oir/oir_has_expected_subscription.md)
 
-If the OIR is not attached to the implicit subscription specified in a successful mutation query,
-the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+## Existing implicit subscription can be attached to OIR without subscription test case
+
+This test case verifies that an implicit subscription can be attached to an OIR that is not currently attached to any subscription.
+
+### Ensure clean workspace test step
+
+Reset the workspace for this test case.
+
+#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
+
+#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
+
+### [Create OIR with no subscription test step](./fragments/oir/crud/create_query.md)
+
+#### [OIR is not attached to an implicit subscription](./fragments/oir/oir_has_expected_subscription.md)
+
+### [Create second OIR with an implicit subscription test step](./fragments/oir/crud/create_query.md)
+
+#### [An implicit subscription was created](./fragments/sub/implicit_create.md)
+
+### Attach OIR without subscription to implicit subscription test step
+
+Attach the first OIR to the implicit subscription created with the second OIR.
+
+#### [Attach OIR to implicit subscription](./fragments/oir/crud/update_query.md)
+
+### Confirm OIR is now attached to implicit subscription test step
+
+Confirms that the DSS properly attached the first OIR to the implicit subscription created with the second OIR.
+
+#### [Get OIR query](./fragments/oir/crud/read_query.md)
+
+#### [First OIR is now attached to the specified implicit subscription](fragments/oir/oir_has_expected_subscription.md)
 
 ## Cleanup
 
