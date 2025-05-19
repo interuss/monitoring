@@ -20,6 +20,9 @@ class QueryBehaviorSpecification(ImplicitDict):
     add_request_id: Optional[bool]
     """Whether to automatically add a `request_id` field to any request with a JSON body and no pre-existing `request_id` field"""
 
+    fake_netlocs: Optional[list[str]]
+    """Network locations well-known to be fake and for which a request should fail immediately without being attempted."""
+
 
 class QueryBehaviorResource(Resource[QueryBehaviorSpecification]):
     """When declared, this resource adjusts the settings for all queries made by uss_qualifier.
@@ -80,4 +83,10 @@ class QueryBehaviorResource(Resource[QueryBehaviorSpecification]):
             settings.add_request_id = specification.add_request_id
             logger.info(
                 f"QueryBehaviorResource: Fetch query set to {'' if settings.add_request_id else 'not '} add `request_id`"
+            )
+
+        if "fake_netlocs" in specification and specification.fake_netlocs is not None:
+            settings.fake_netlocs = tuple(specification.fake_netlocs)
+            logger.info(
+                f"QueryBehaviorResource: Fake network locations set to {settings.fake_netlocs}"
             )
