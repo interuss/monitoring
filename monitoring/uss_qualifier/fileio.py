@@ -80,7 +80,9 @@ def _get_web_content(url: str) -> str:
 
     # Check if this is a request to a private GitHub repo
     github_private_repos_key = "GITHUB_PRIVATE_REPOS"
-    if github_private_repos_key in os.environ:
+    if github_private_repos_key in os.environ and os.environ.get(
+        github_private_repos_key
+    ):
         github_match = re.match(
             r"^https://(?P<hostname>github\.com|raw\.githubusercontent\.com|api\.github\.com)/(?P<org>[^/]*)/(?P<repo>[^/?#]*)(?P<predicate>.*)$",
             url,
