@@ -92,7 +92,7 @@ If the newly created OIR does not mention the implicit subscription from the pre
 the DSS is either improperly managing implicit subscriptions, or failing to report the subscriptions relevant to an OIR,
 and therefore in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)** respectively.
 
-#### [OIR is not attached to an implicit subscription](./fragments/oir/oir_has_expected_subscription.md)
+#### [No implicit subscription was attached](./fragments/oir/oir_has_no_subscription.md)
 
 ### Mutate OIR with implicit subscription to not overlap anymore test step
 
@@ -132,7 +132,8 @@ that were present when the test case started.
 Otherwise, the DSS may be failing to properly implement **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
 or **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
-#### [OIR is not attached to an implicit subscription](./fragments/oir/oir_has_expected_subscription.md)
+#### [No implicit subscription was attached](./fragments/oir/oir_has_no_subscription.md)
+
 ## Implicit subscriptions are properly deleted when required by OIR mutation test case
 
 This test case verifies that implicit subscriptions are properly removed if they become unnecessary following the mutation of an OIR.
@@ -280,7 +281,7 @@ Reset the workspace for this test case.
 
 ### [Create OIR with no subscription test step](./fragments/oir/crud/create_query.md)
 
-#### [OIR is not attached to an implicit subscription](./fragments/oir/oir_has_expected_subscription.md)
+#### [OIR is not attached to an implicit subscription](./fragments/oir/oir_has_no_subscription.md)
 
 ### [Create second OIR with an implicit subscription test step](./fragments/oir/crud/create_query.md)
 

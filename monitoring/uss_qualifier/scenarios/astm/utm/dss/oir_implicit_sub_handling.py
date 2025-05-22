@@ -20,6 +20,9 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstanceRes
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.oir import (
+    check_oir_has_correct_subscription,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.sub.crud import (
     sub_create_query,
 )
@@ -440,7 +443,7 @@ class OIRImplicitSubHandling(TestScenario):
             implicit_sub = sub.subscription
         elif subscription_id is None:
             with self.check(
-                "OIR is attached to expected subscription", self._pid
+                "OIR is not attached to a subscription", self._pid
             ) as check:
                 # The official DSS implementation will set the subscription ID to 00000000-0000-4000-8000-000000000000
                 # Other implementations may use a different value, as the OpenAPI spec does not allow the value to be empty
@@ -802,6 +805,12 @@ class OIRImplicitSubHandling(TestScenario):
             with_implicit_sub=False,
         )
         self._oir_a_ovn = oir_no_sub.ovn
+        check_oir_has_correct_subscription(
+            self,
+            self._dss,
+            self._oir_a_id,
+            expected_sub_id=None,
+        )
         self.end_test_step()
 
         self.begin_test_step("Create second OIR with an implicit subscription")
