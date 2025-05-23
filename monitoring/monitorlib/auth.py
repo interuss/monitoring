@@ -613,11 +613,7 @@ def make_auth_adapter(spec: AuthSpec) -> AuthAdapter:
     kwargs = {}
     for param_string in param_strings:
         if "=" in param_string:
-            kv = param_string.split("=")
-            if len(kv) != 2:
-                raise ValueError(
-                    "Auth adapter specification contained a parameter with more than one `=` character"
-                )
+            kv = param_string.split("=", 1)
             kwargs[kv[0].strip()] = kv[1].strip()
         else:
             args.append(param_string)
