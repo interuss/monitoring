@@ -27,6 +27,8 @@ jobs:
         echo "Repository: ${{ github.repository }}"
         echo "Branch: ${{ github.ref }}"
         docker images
+        docker version
+        docker compose version
     - name: Checkout
       uses: actions/checkout@v4
       with:
