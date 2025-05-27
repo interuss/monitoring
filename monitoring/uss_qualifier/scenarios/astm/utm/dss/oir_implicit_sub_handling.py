@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple
 
 import arrow
 from uas_standards.astm.f3548.v21.api import (
-    EntityID,
     OperationalIntentReference,
     OperationalIntentState,
     SubscriberToNotify,
@@ -21,6 +20,9 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstanceRes
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.oir import (
+    check_oir_has_correct_subscription,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.sub.crud import (
     sub_create_query,
 )
@@ -191,6 +193,12 @@ class OIRImplicitSubHandling(TestScenario):
         self._case_5_replace_explicit_sub_with_implicit()
         self.end_test_case()
 
+        self.begin_test_case(
+            "Existing implicit subscription can be attached to OIR without subscription"
+        )
+        self._setup_case()
+        self._case_6_attach_implicit_sub_to_oir_without_subscription()
+        self.end_test_case()
         self.end_test_scenario()
 
     def _case_1_step_create_oir_1(self):
@@ -435,7 +443,7 @@ class OIRImplicitSubHandling(TestScenario):
             implicit_sub = sub.subscription
         elif subscription_id is None:
             with self.check(
-                "No implicit subscription was attached", self._pid
+                "OIR is not attached to a subscription", self._pid
             ) as check:
                 # The official DSS implementation will set the subscription ID to 00000000-0000-4000-8000-000000000000
                 # Other implementations may use a different value, as the OpenAPI spec does not allow the value to be empty
@@ -777,7 +785,7 @@ class OIRImplicitSubHandling(TestScenario):
         self._oir_a_ovn = oir.ovn
 
         with self.check(
-            "The first OIR is now attached to the specified implicit subscription",
+            "OIR is attached to expected subscription",
             self._pid,
         ) as check:
             if sub_implicit.id != oir.subscription_id:
@@ -785,6 +793,106 @@ class OIRImplicitSubHandling(TestScenario):
                     summary="Implicit subscription not attached to OIR",
                     details=f"The subscription {sub_implicit.id} was attached to the OIR, but it reports being attached to subscription {oir.subscription_id} instead.",
                 )
+        self.end_test_step()
+
+    def _case_6_attach_implicit_sub_to_oir_without_subscription(self):
+        self.begin_test_step("Create OIR with no subscription")
+        oir_no_sub, _, _, _ = self._create_oir(
+            oir_id=self._oir_a_id,
+            time_start=self._time_2,
+            time_end=self._time_3,
+            relevant_ovns=[],
+            with_implicit_sub=False,
+        )
+        self._oir_a_ovn = oir_no_sub.ovn
+        check_oir_has_correct_subscription(
+            self,
+            self._dss,
+            self._oir_a_id,
+            expected_sub_id=None,
+        )
+        self.end_test_step()
+
+        self.begin_test_step("Create second OIR with an implicit subscription")
+        oir_implicit, _, sub_implicit, _ = self._create_oir(
+            oir_id=self._oir_b_id,
+            time_start=oir_no_sub.time_start.value.datetime,
+            time_end=oir_no_sub.time_end.value.datetime,
+            relevant_ovns=[oir_no_sub.ovn],
+            with_implicit_sub=True,
+        )
+        self._oir_b_ovn = oir_implicit.ovn
+        self._implicit_sub_1 = sub_implicit
+        self.end_test_step()
+
+        self.begin_test_step("Attach OIR without subscription to implicit subscription")
+        with self.check(
+            "Mutate operational intent reference query succeeds", self._pid
+        ) as check:
+            try:
+                oir_updated, subs, q = self._dss.put_op_intent(
+                    extents=[
+                        self._planning_area.get_volume4d(
+                            oir_no_sub.time_start.value.datetime,
+                            oir_no_sub.time_end.value.datetime,
+                        ).to_f3548v21()
+                    ],
+                    key=[oir_implicit.ovn],
+                    state=OperationalIntentState.Accepted,
+                    base_url=DUMMY_BASE_URL,
+                    oi_id=self._oir_a_id,
+                    ovn=self._oir_a_ovn,
+                    subscription_id=sub_implicit.id,
+                )
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                check.record_failed(
+                    summary="OIR Creation failed",
+                    details=str(e),
+                    query_timestamps=e.query_timestamps,
+                )
+
+        self._oir_a_ovn = oir_updated.ovn
+
+        self.end_test_step()
+
+        self.begin_test_step("Confirm OIR is now attached to implicit subscription")
+
+        # First, sanity check of the value reported by the DSS at the previous step
+        with self.check(
+            "OIR is attached to expected subscription",
+            self._pid,
+        ) as check:
+            if sub_implicit.id != oir_updated.subscription_id:
+                check.record_failed(
+                    summary="Implicit subscription not attached to OIR",
+                    details=f"The subscription {sub_implicit.id} was attached to the OIR, but it reports being attached to subscription {oir_no_sub.subscription_id} instead.",
+                )
+
+        # Then, do an actual query of the OIR
+        with self.check("Get operational intent reference by ID", self._pid) as check:
+            try:
+                oir_queried, _ = self._dss.get_op_intent_reference(self._oir_a_id)
+
+            except QueryError as e:
+                self.record_queries(e.queries)
+                check.record_failed(
+                    summary="OIR query failed",
+                    details=str(e),
+                    query_timestamps=e.query_timestamps,
+                )
+
+        with self.check(
+            "OIR is attached to expected subscription",
+            self._oir_a_id,
+        ) as check:
+            if sub_implicit.id != oir_queried.subscription_id:
+                check.record_failed(
+                    summary="Implicit subscription not attached to OIR",
+                    details=f"The subscription {sub_implicit.id} was attached to the OIR, but it reports being attached to subscription {oir_queried.subscription_id} instead.",
+                )
+
         self.end_test_step()
 
     def _setup_case(self):
