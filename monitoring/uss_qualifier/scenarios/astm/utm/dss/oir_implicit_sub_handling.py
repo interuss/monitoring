@@ -45,13 +45,6 @@ class OIRImplicitSubHandling(TestScenario):
     A scenario that tests that a DSS properly handles the creation and mutation of implicit subscriptions
     """
 
-    # TODO additional improvements:
-    #  - check the handling of the implicit subscription when, on mutation, the implicit subscription
-    #    is specified.
-    #  - update and don't mention anything (ie, no subscription ID and not implicit sub creation params)
-    #   - test what happens if ACCEPTED -> either implicit sub removal or mutation
-    #  - update and mention the existing implicit sub -> expect to mutate the sub
-
     # Identifiers for the test OIRs
     _oir_a_id: str
     _oir_b_id: str
@@ -124,7 +117,6 @@ class OIRImplicitSubHandling(TestScenario):
         self.end_test_case()
 
         self.begin_test_case("Implicit subscriptions always properly cover their OIR")
-
         self.begin_test_step("Create an OIR with implicit subscription")
         self._case_2_step_create_oir_1()
         self.end_test_step()
@@ -199,6 +191,14 @@ class OIRImplicitSubHandling(TestScenario):
         self._setup_case()
         self._case_6_attach_implicit_sub_to_oir_without_subscription()
         self.end_test_case()
+
+        self.begin_test_case(
+            "OIR without subscription can be mutated without a new subscription being attached"
+        )
+        self._setup_case()
+        self._case_7_mutate_oir_without_subscription()
+        self.end_test_case()
+
         self.end_test_scenario()
 
     def _case_1_step_create_oir_1(self):
@@ -265,7 +265,7 @@ class OIRImplicitSubHandling(TestScenario):
             except QueryError as e:
                 self.record_queries(e.queries)
                 check.record_failed(
-                    summary="OIR Creation failed",
+                    summary="OIR Mutation failed",
                     details=str(e),
                     query_timestamps=e.query_timestamps,
                 )
@@ -893,6 +893,59 @@ class OIRImplicitSubHandling(TestScenario):
                     details=f"The subscription {sub_implicit.id} was attached to the OIR, but it reports being attached to subscription {oir_queried.subscription_id} instead.",
                 )
 
+        self.end_test_step()
+
+    def _case_7_mutate_oir_without_subscription(self):
+        self.begin_test_step("Create OIR with no subscription")
+        oir_no_sub, _, _, _ = self._create_oir(
+            oir_id=self._oir_a_id,
+            time_start=self._time_2,
+            time_end=self._time_3,
+            relevant_ovns=[],
+            with_implicit_sub=False,
+        )
+        self._oir_a_ovn = oir_no_sub.ovn
+        check_oir_has_correct_subscription(
+            self,
+            self._dss,
+            self._oir_a_id,
+            expected_sub_id=None,
+        )
+        self.end_test_step()
+
+        self.begin_test_step("Mutate OIR without adding a subscription")
+        with self.check(
+            "Mutate operational intent reference query succeeds", self._pid
+        ) as check:
+            try:
+                oir_mutated_no_sub, _, q = self._dss.put_op_intent(
+                    extents=[
+                        self._planning_area.get_volume4d(
+                            self._time_0, self._time_1
+                        ).to_f3548v21()
+                    ],
+                    key=[],
+                    state=OperationalIntentState.Accepted,
+                    base_url=DUMMY_BASE_URL,
+                    oi_id=self._oir_a_id,
+                    ovn=self._oir_a_ovn,
+                    subscription_id=None,
+                    force_no_implicit_subscription=True,
+                )
+                self.record_query(q)
+            except QueryError as e:
+                self.record_queries(e.queries)
+                check.record_failed(
+                    summary="OIR Mutation failed",
+                    details=str(e),
+                    query_timestamps=e.query_timestamps,
+                )
+        check_oir_has_correct_subscription(
+            self,
+            self._dss,
+            self._oir_a_id,
+            expected_sub_id=None,
+        )
         self.end_test_step()
 
     def _setup_case(self):

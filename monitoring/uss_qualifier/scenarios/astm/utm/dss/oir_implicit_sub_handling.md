@@ -301,6 +301,31 @@ Confirms that the DSS properly attached the first OIR to the implicit subscripti
 
 #### [First OIR is now attached to the specified implicit subscription](fragments/oir/oir_has_expected_subscription.md)
 
+## OIR without subscription can be mutated without a new subscription being attached test case
+
+This test case ensures that, when a client mutates an OIR not attached to any subscription without specifiying either
+a subscription identifier nor parameters for an implicit subscription, the DSS under test will correctly keep the OIR unattached to any subscription.
+
+### Ensure clean workspace test step
+
+Reset the workspace for this test case.
+
+#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
+
+#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
+
+### Create OIR with no subscription test step
+
+#### [Create OIR](./fragments/oir/crud/create_query.md)
+
+#### [OIR is not attached to any subscription](./fragments/oir/oir_has_no_subscription.md)
+
+### Mutate OIR without adding a subscription test step
+
+#### [Mutate OIR](./fragments/oir/crud/update_query.md)
+
+#### [OIR is not attached to any subscription](./fragments/oir/oir_has_no_subscription.md)
+
 ## Cleanup
 
 ### [Remove OIRs created during this test](clean_workspace_op_intents.md)
