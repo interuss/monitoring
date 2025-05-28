@@ -10,8 +10,6 @@ from monitoring.uss_qualifier.documentation import text_of
 from monitoring.uss_qualifier.requirements.documentation import RequirementID
 from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestCaseDocumentation,
-    TestCheckTree,
-    TestStepDocumentation,
 )
 from monitoring.uss_qualifier.scenarios.documentation.parsing import (
     TEST_STEP_SUFFIX,
@@ -138,48 +136,3 @@ def _enumerate_linked_test_steps(
             else:
                 linked_test_steps.extend(_enumerate_linked_test_steps(child, doc_path))
     return linked_test_steps
-
-
-def update_checks_without_severity(test_scenarios: List[TestScenarioType]) -> None:
-    checks_without_severity = TestCheckTree(scenarios={})
-    for test_scenario in test_scenarios:
-        docs = get_documentation(test_scenario)
-
-        for case in docs.cases:
-            for step in case.steps:
-                for check in step.checks:
-                    if "severity" not in check or check.severity is None:
-                        checks_without_severity.add_check(
-                            scenario=test_scenario, case=case, step=step, check=check
-                        )
-        if "cleanup" in docs:
-            for check in docs.cleanup.checks:
-                if "severity" not in check or check.severity is None:
-                    checks_without_severity.add_check(
-                        scenario=test_scenario,
-                        case=TestCaseDocumentation(name="Cleanup", steps=[]),
-                        step=docs.cleanup,
-                        check=check,
-                    )
-    preexisting_checks_without_severity = TestCheckTree.preexisting(
-        "checks_without_severity.json"
-    )
-    new_checks_without_severity = checks_without_severity.without(
-        preexisting_checks_without_severity
-    )
-    removed_checks_without_severity = preexisting_checks_without_severity.without(
-        checks_without_severity
-    )
-    if new_checks_without_severity.n == 0 and removed_checks_without_severity.n > 0:
-        print(
-            f"Updated tracking to note removal of {removed_checks_without_severity.n} checks without documented severity."
-        )
-        checks_without_severity.write("checks_without_severity.json")
-    elif new_checks_without_severity.n > 0:
-        print(
-            f"WARNING: There are {new_checks_without_severity.n} new checks without documented severity:\n{new_checks_without_severity.render()}"
-        )
-    else:
-        print(
-            f"Number of checks without documented severity ({preexisting_checks_without_severity.n}) has not changed."
-        )
