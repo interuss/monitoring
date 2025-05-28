@@ -161,6 +161,13 @@ class OIRImplicitSubHandling(TestScenario):
             "Request new implicit subscription when mutating an OIR with existing explicit subscription"
         )
         self._case_8_mutate_oir_explicit_request_implicit()
+        self._clean_after_test_case()
+        self.end_test_case()
+
+        self.begin_test_case(
+            "Request new implicit subscription when mutating an OIR without subscription"
+        )
+        self._case_9_mutate_oir_nosub_request_implicit()
         self.end_test_case()
         self.end_test_scenario()
 
@@ -1043,6 +1050,82 @@ class OIRImplicitSubHandling(TestScenario):
         oir_queried, q = get_oir_query(self, self._dss, self._oir_a_id)
 
         check_sub_changed(oir_queried, q)
+
+        # Now fetch the subscription and check it is implicit
+        fetched_sub, _ = sub_get_query(self, self._dss, oir_queried.subscription_id)
+
+        with self.check(
+            "OIR is now attached to an implicit subscription", self._pid
+        ) as check:
+            if not fetched_sub.implicit_subscription:
+                check.record_failed(
+                    summary="OIR is not attached to an implicit subscription",
+                    details=f"Subscription {self._sub_id} referenced by OIR {self._oir_a_id} is not an implicit subscription.",
+                    query_timestamps=[fetched_sub.request.timestamp],
+                )
+
+        self.end_test_step()
+
+    def _case_9_mutate_oir_nosub_request_implicit(self):
+        self.begin_test_step("Create OIR with no subscription")
+        oir_no_sub, _, _, _ = self._create_oir(
+            oir_id=self._oir_a_id,
+            time_start=self._time_2,
+            time_end=self._time_3,
+            relevant_ovns=[],
+            with_implicit_sub=False,
+        )
+        self._oir_a_ovn = oir_no_sub.ovn
+        check_oir_has_correct_subscription(
+            self,
+            self._dss,
+            self._oir_a_id,
+            expected_sub_id=None,
+        )
+        self.end_test_step()
+        self.begin_test_step("Mutate OIR to request new implicit subscription")
+        oir_mutated_to_implicit_sub, _, _ = update_oir_query(
+            scenario=self,
+            dss=self._dss,
+            oir_id=self._oir_a_id,
+            ovn=self._oir_a_ovn,
+            oir_params=PutOperationalIntentReferenceParameters(
+                extents=[
+                    self._planning_area.get_volume4d(
+                        self._time_2, self._time_3
+                    ).to_f3548v21()
+                ],
+                key=[],
+                # Update to a state that requires a subscription
+                state=OperationalIntentState.Activated,
+                uss_base_url=DUMMY_BASE_URL,
+                subscription_id=None,
+            ),
+        )
+        self._oir_a_ovn = oir_mutated_to_implicit_sub.ovn
+        self.end_test_step()
+        self.begin_test_step(
+            "Validate that the OIR is now attached to an implicit subscription"
+        )
+
+        def check_sub_not_none(oir):
+            with self.check(
+                "OIR is attached to a new subscription", self._pid
+            ) as check:
+                if oir.subscription_id is None:
+                    check.record_failed(
+                        summary="OIR not attached to any subscription",
+                        details="OIR is not attached to any subscription, when a request for an implicit subscription was made.",
+                        query_timestamps=[mutate_q.timestamp],
+                    )
+
+        # First check the OIR as it was returned by the mutation endpoint
+        check_sub_not_none(oir_mutated_to_implicit_sub)
+
+        # Then, do an actual query of the OIR
+        oir_queried, _ = get_oir_query(self, self._dss, self._oir_a_id)
+
+        check_sub_not_none(oir_queried)
 
         # Now fetch the subscription and check it is implicit
         fetched_sub, _ = sub_get_query(self, self._dss, oir_queried.subscription_id)
