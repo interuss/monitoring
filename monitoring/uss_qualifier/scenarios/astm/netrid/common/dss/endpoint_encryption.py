@@ -83,7 +83,10 @@ class EndpointEncryption(GenericTestScenario):
                         "HTTP GET request did not redirect to HTTPS",
                         details=f"Made an http GET request and obtained status code {response.status_code} with response {str(response.content)} that was not redirected to https",
                     )
-
+            except requests.exceptions.ConnectionError:
+                pass
+            except requests.exceptions.Timeout:
+                pass
             except socket.error as e:
                 if e.errno not in [
                     errno.ECONNREFUSED,
