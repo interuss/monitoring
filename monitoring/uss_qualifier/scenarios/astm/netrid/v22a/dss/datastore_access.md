@@ -1,17 +1,17 @@
-# ASTM NetRID DSS: Direct CRDB access test scenario
+# ASTM NetRID DSS: Direct datastore access test scenario
 
 ## Overview
 
-Attempt to directly access the CockroachDB (CRDB) nodes intercommunicating to form the DSS Airspace Representation for the DSS instances under test, for the purpose of determining compliance to certain DSS interoperability requirements.
-The psycopg library is used to attempt standard PostgreSQL connections to the nodes as it is the most straightforward way of connecting directly to the CockroachDB nodes while controlling the connection parameters (such as for encryption).
+Attempt to directly access the datastore (CockroachDB or Yugabyte) nodes intercommunicating to form the DSS Airspace Representation for the DSS instances under test, for the purpose of determining compliance to certain DSS interoperability requirements.
+The psycopg library is used to attempt standard PostgreSQL connections to the nodes as it is the most straightforward way of connecting directly to the datastore nodes while controlling the connection parameters (such as for encryption).
 
 This scenario aims at validating the following requirements:
-- **[astm.f3411.v19.DSS0110](../../../../../requirements/astm/f3411/v19.md)**
-- **[astm.f3411.v19.DSS0120](../../../../../requirements/astm/f3411/v19.md)**
+- **[astm.f3411.v22a.DSS0110](../../../../../requirements/astm/f3411/v22a.md)**
+- **[astm.f3411.v22a.DSS0120](../../../../../requirements/astm/f3411/v22a.md)**
 
 ## Resources
-### crdb_cluster
-CockroachDBClusterResource that provides access to a set of CockroachDB nodes constituting the DSS instances under test.
+### datastore_cluster
+DatastoreDBClusterResource that provides access to a set of CockroachDB or Yugabyte nodes constituting the DSS instances under test.
 
 ## Setup test case
 ### Validate nodes are reachable test step
@@ -32,8 +32,8 @@ It is expected that the connection attempts are rejected due to the fact that al
 This check succeeds if the node rejects the insecure connection attempt by the USS qualifier because it is in secure mode.
 It fails in all other cases.
 
-If it is in insecure mode, it means that the node does not authenticate incoming connection attempt as it should per **[astm.f3411.v19.DSS0110](../../../../../requirements/astm/f3411/v19.md)**.
-If it is in insecure mode, it means that the node does not encrypt its communications as it should per **[astm.f3411.v19.DSS0120](../../../../../requirements/astm/f3411/v19.md)**.
+If it is in insecure mode, it means that the node does not authenticate incoming connection attempt as it should per **[astm.f3411.v22a.DSS0110](../../../../../requirements/astm/f3411/v22a.md)**.
+If it is in insecure mode, it means that the node does not encrypt its communications as it should per **[astm.f3411.v22a.DSS0120](../../../../../requirements/astm/f3411/v22a.md)**.
 
 ### Attempt to connect with legacy encryption protocol test step
 Attempt connection with nodes of the cluster forcing the use of legacy encryption protocols, namely between TLSv1 and TLSv1.1.
@@ -43,4 +43,4 @@ It is expected that the connection attempts are rejected due to the fact that al
 This check succeeds if the node rejects the connection attempt by the USS qualifier because the TLS version in use is below TLSv1.2.
 It fails in all other cases.
 
-If it accepts the connection attempt, it means that the node accepts insecure encryption protocols, as it should not per **[astm.f3411.v19.DSS0120](../../../../../requirements/astm/f3411/v19.md)**.
+If it accepts the connection attempt, it means that the node accepts insecure encryption protocols, as it should not per **[astm.f3411.v22a.DSS0120](../../../../../requirements/astm/f3411/v22a.md)**.

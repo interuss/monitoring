@@ -1,23 +1,23 @@
 from typing import List
 
-from monitoring.uss_qualifier.resources.interuss.crdb import (
-    CockroachDBClusterResource,
-    CockroachDBNode,
+from monitoring.uss_qualifier.resources.interuss.datastore import (
+    DatastoreDBClusterResource,
+    DatastoreDBNode,
 )
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
-class CRDBAccess(GenericTestScenario):
-    crdb_nodes: List[CockroachDBNode] = []
+class DatastoreAccess(GenericTestScenario):
+    datastore_nodes: List[DatastoreDBNode] = []
 
     def __init__(
         self,
-        crdb_cluster: CockroachDBClusterResource,
+        datastore_cluster: DatastoreDBClusterResource,
     ):
         super().__init__()
-        for node in crdb_cluster.nodes:
-            self.crdb_nodes.append(node.get_client())
+        for node in datastore_cluster.nodes:
+            self.datastore_nodes.append(node.get_client())
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
@@ -34,7 +34,7 @@ class CRDBAccess(GenericTestScenario):
 
     def _setup(self) -> None:
         self.begin_test_step("Validate nodes are reachable")
-        for node in self.crdb_nodes:
+        for node in self.datastore_nodes:
             with self.check(
                 "Node is reachable",
                 node.participant_id,
@@ -50,7 +50,7 @@ class CRDBAccess(GenericTestScenario):
 
     def _attempt_connection(self) -> None:
         self.begin_test_step("Attempt to connect in insecure mode")
-        for node in self.crdb_nodes:
+        for node in self.datastore_nodes:
             with self.check(
                 "Node runs in secure mode",
                 node.participant_id,
@@ -64,7 +64,7 @@ class CRDBAccess(GenericTestScenario):
         self.end_test_step()
 
         self.begin_test_step("Attempt to connect with legacy encryption protocol")
-        for node in self.crdb_nodes:
+        for node in self.datastore_nodes:
             with self.check(
                 "Node rejects legacy encryption protocols",
                 node.participant_id,

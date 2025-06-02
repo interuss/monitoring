@@ -13,7 +13,7 @@
 7. Scenario: [ASTM NetRID DSS: Subscription Simple](../../../../scenarios/astm/netrid/v22a/dss/subscription_simple.md) ([`scenarios.astm.netrid.v22a.dss.SubscriptionSimple`](../../../../scenarios/astm/netrid/v22a/dss/subscription_simple.py))
 8. Scenario: [ASTM F3411-22a NetRID DSS interoperability](../../../../scenarios/astm/netrid/v22a/dss_interoperability.md) ([`scenarios.astm.netrid.v22a.DSSInteroperability`](../../../../scenarios/astm/netrid/v22a/dss_interoperability.py))
 9. Scenario: [ASTM NetRID DSS: Token Validation](../../../../scenarios/astm/netrid/v22a/dss/token_validation.md) ([`scenarios.astm.netrid.v22a.dss.TokenValidation`](../../../../scenarios/astm/netrid/v22a/dss/token_validation.py))
-10. Scenario: [ASTM NetRID DSS: Direct CRDB access](../../../../scenarios/astm/netrid/v22a/dss/crdb_access.md) ([`scenarios.astm.netrid.v22a.dss.CRDBAccess`](../../../../scenarios/astm/netrid/v22a/dss/crdb_access.py))
+10. Scenario: [ASTM NetRID DSS: Direct datastore access](../../../../scenarios/astm/netrid/v22a/dss/datastore_access.md) ([`scenarios.astm.netrid.v22a.dss.DatastoreAccess`](../../../../scenarios/astm/netrid/v22a/dss/datastore_access.py))
 11. Scenario: [ASTM NetRID DSS: Concurrent Requests](../../../../scenarios/astm/netrid/v22a/dss/heavy_traffic_concurrent.md) ([`scenarios.astm.netrid.v22a.dss.HeavyTrafficConcurrent`](../../../../scenarios/astm/netrid/v22a/dss/heavy_traffic_concurrent.py))
 
 ## [Checked requirements](../../../README.md#checked-requirements)
@@ -89,12 +89,12 @@
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v22a.md">DSS0110</a></td>
     <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v22a/dss/crdb_access.md">ASTM NetRID DSS: Direct CRDB access</a></td>
+    <td><a href="../../../../scenarios/astm/netrid/v22a/dss/datastore_access.md">ASTM NetRID DSS: Direct datastore access</a></td>
   </tr>
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v22a.md">DSS0120</a></td>
     <td>Implemented</td>
-    <td><a href="../../../../scenarios/astm/netrid/v22a/dss/crdb_access.md">ASTM NetRID DSS: Direct CRDB access</a></td>
+    <td><a href="../../../../scenarios/astm/netrid/v22a/dss/datastore_access.md">ASTM NetRID DSS: Direct datastore access</a></td>
   </tr>
   <tr>
     <td><a href="../../../../requirements/astm/f3411/v22a.md">DSS0130,1</a></td>

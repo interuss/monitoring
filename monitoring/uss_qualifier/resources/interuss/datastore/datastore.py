@@ -2,46 +2,45 @@ from __future__ import annotations
 
 from typing import List, Optional, Tuple
 
-import psycopg.errors
+import psycopg
 from implicitdict import ImplicitDict
-from psycopg import crdb
 
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
-class CockroachDBNodeSpecification(ImplicitDict):
+class DatastoreDBNodeSpecification(ImplicitDict):
     participant_id: str
-    """ID of the USS responsible for this CockroachDB node"""
+    """ID of the USS responsible for this DatastoreDB node"""
 
     host: str
-    """Host where the CockroachDB node is reachable."""
+    """Host where the DatastoreDB node is reachable."""
 
     port: int
-    """Port to which CockroachDB node is listening to."""
+    """Port to which DatastoreDB node is listening to."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
 
 
-class CockroachDBNodeResource(Resource[CockroachDBNodeSpecification]):
-    _specification: CockroachDBNodeSpecification
+class DatastoreDBNodeResource(Resource[DatastoreDBNodeSpecification]):
+    _specification: DatastoreDBNodeSpecification
 
     def __init__(
         self,
-        specification: CockroachDBNodeSpecification,
+        specification: DatastoreDBNodeSpecification,
         resource_origin: str,
     ):
-        super(CockroachDBNodeResource, self).__init__(specification, resource_origin)
+        super(DatastoreDBNodeResource, self).__init__(specification, resource_origin)
         self._specification = specification
 
-    def get_client(self) -> CockroachDBNode:
-        return CockroachDBNode(
+    def get_client(self) -> DatastoreDBNode:
+        return DatastoreDBNode(
             self._specification.participant_id,
             self._specification.host,
             self._specification.port,
         )
 
-    def is_same_as(self, other: CockroachDBNodeResource) -> bool:
+    def is_same_as(self, other: DatastoreDBNodeResource) -> bool:
         return self._specification == other._specification
 
     @property
@@ -49,28 +48,28 @@ class CockroachDBNodeResource(Resource[CockroachDBNodeSpecification]):
         return self._specification.participant_id
 
 
-class CockroachDBClusterSpecification(ImplicitDict):
-    nodes: List[CockroachDBNodeSpecification]
+class DatastoreDBClusterSpecification(ImplicitDict):
+    nodes: List[DatastoreDBNodeSpecification]
 
 
-class CockroachDBClusterResource(Resource[CockroachDBClusterSpecification]):
-    nodes: List[CockroachDBNodeResource]
+class DatastoreDBClusterResource(Resource[DatastoreDBClusterSpecification]):
+    nodes: List[DatastoreDBNodeResource]
 
     def __init__(
         self,
-        specification: CockroachDBClusterSpecification,
+        specification: DatastoreDBClusterSpecification,
         resource_origin: str,
     ):
-        super(CockroachDBClusterResource, self).__init__(specification, resource_origin)
+        super(DatastoreDBClusterResource, self).__init__(specification, resource_origin)
         self.nodes = [
-            CockroachDBNodeResource(
+            DatastoreDBNodeResource(
                 specification=s, resource_origin=f"node {i + 1} in {resource_origin}"
             )
             for i, s in enumerate(specification.nodes)
         ]
 
 
-class CockroachDBNode(object):
+class DatastoreDBNode(object):
     participant_id: str
     host: str
     port: int
@@ -85,8 +84,8 @@ class CockroachDBNode(object):
         self.host = host
         self.port = port
 
-    def connect(self, **kwargs) -> crdb.connection.CrdbConnection:
-        return crdb.connect(
+    def connect(self, **kwargs) -> psycopg.Connection:
+        return psycopg.connect(
             host=self.host,
             port=self.port,
             user="dummy",

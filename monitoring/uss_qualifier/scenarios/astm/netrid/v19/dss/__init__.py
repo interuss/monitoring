@@ -1,4 +1,4 @@
-from .crdb_access import CRDBAccess
+from .datastore_access import DatastoreAccess
 from .endpoint_encryption import EndpointEncryption
 from .heavy_traffic_concurrent import HeavyTrafficConcurrent
 from .isa_expiry import ISAExpiry

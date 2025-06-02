@@ -2,7 +2,7 @@ name: Minimal production probing
 resources:
   second_utm_auth: resources.communications.AuthAdapterResource?
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
-  dss_crdb_cluster: resources.interuss.crdb.CockroachDBClusterResource?
+  dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
   id_generator: resources.interuss.IDGeneratorResource
   planning_area: resources.astm.f3548.v21.PlanningAreaResource
   test_exclusions: resources.dev.TestExclusionsResource?
@@ -12,7 +12,7 @@ actions:
       generator_type: action_generators.astm.f3548.ForEachDSS
       resources:
         dss_instances: dss_instances
-        dss_crdb_cluster: dss_crdb_cluster?
+        dss_datastore_cluster: dss_datastore_cluster?
         second_utm_auth: second_utm_auth?
         id_generator: id_generator
         planning_area: planning_area
@@ -27,7 +27,7 @@ actions:
               primary_dss_instance: current_dss_instance
               second_utm_auth: second_utm_auth?
               all_dss_instances: dss_instances
-              dss_crdb_cluster: dss_crdb_cluster?
+              dss_datastore_cluster: dss_datastore_cluster?
               id_generator: id_generator
               planning_area: planning_area
               test_exclusions: test_exclusions?
@@ -39,7 +39,7 @@ actions:
                 primary_dss_instance: resources.astm.f3548.v21.DSSInstanceResource
                 second_utm_auth: resources.communications.AuthAdapterResource?
                 all_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
-                dss_crdb_cluster: resources.interuss.crdb.CockroachDBClusterResource?
+                dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
                 id_generator: resources.interuss.IDGeneratorResource
                 planning_area: resources.astm.f3548.v21.PlanningAreaResource
                 test_exclusions: resources.dev.TestExclusionsResource?
@@ -104,9 +104,9 @@ actions:
                       planning_area: planning_area
                       second_utm_auth: second_utm_auth
                 - test_scenario:
-                    scenario_type: scenarios.astm.utm.dss.CRDBAccess
+                    scenario_type: scenarios.astm.utm.dss.DatastoreAccess
                     resources:
-                      crdb_cluster: dss_crdb_cluster
+                      datastore_cluster: dss_datastore_cluster
                 - test_scenario:
                     scenario_type: scenarios.astm.utm.dss.Report
                     resources:

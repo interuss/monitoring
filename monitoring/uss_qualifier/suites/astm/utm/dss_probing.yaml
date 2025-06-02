@@ -4,7 +4,7 @@ resources:
   utm_client_identity: resources.communications.ClientIdentityResource
   second_utm_auth: resources.communications.AuthAdapterResource?
   all_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
-  dss_crdb_cluster: resources.interuss.crdb.CockroachDBClusterResource?
+  dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
   flight_intents: resources.flight_planning.FlightIntentsResource
   id_generator: resources.interuss.IDGeneratorResource
   planning_area: resources.astm.f3548.v21.PlanningAreaResource
@@ -132,9 +132,9 @@ actions:
         planning_area: planning_area
         second_utm_auth: second_utm_auth
   - test_scenario:
-      scenario_type: scenarios.astm.utm.dss.CRDBAccess
+      scenario_type: scenarios.astm.utm.dss.DatastoreAccess
       resources:
-        crdb_cluster: dss_crdb_cluster
+        datastore_cluster: dss_datastore_cluster
   - test_scenario:
       scenario_type: scenarios.interuss.ovn_request.DSSOVNRequest
       resources:
