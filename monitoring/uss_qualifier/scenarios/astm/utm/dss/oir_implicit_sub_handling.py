@@ -107,75 +107,23 @@ class OIRImplicitSubHandling(TestScenario):
         self.begin_test_case(
             "Single OIR implicit subscription is removed upon OIR deletion"
         )
-        self.begin_test_step("Create an OIR with implicit subscription")
-        self._case_1_step_create_oir_1()
-        self.end_test_step()
-
-        self.begin_test_step("Delete the OIR with implicit subscription")
-        self._case_1_step_delete_single_oir()
-        self.end_test_step()
+        self._case_1_implicit_sub_cleanup_on_oir_deletion()
         self.end_test_case()
 
         self.begin_test_case("Implicit subscriptions always properly cover their OIR")
-        self.begin_test_step("Create an OIR with implicit subscription")
-        self._case_2_step_create_oir_1()
-        self.end_test_step()
-
-        self.begin_test_step("Create an overlapping OIR without any subscription")
-        self._case_2_step_create_overlapping_oir_no_sub()
-        self.end_test_step()
-
-        self.begin_test_step(
-            "Mutate OIR with implicit subscription to not overlap anymore"
-        )
-        self._case_2_step_mutate_oir_with_implicit_sub_specify_implicit_params()
-        self.end_test_step()
-
-        self.begin_test_step(
-            "Create an OIR overlapping with the second OIR but not the first"
-        )
-        self._case_2_step_create_oir_2()
-        self.end_test_step()
+        self._case_2_implicit_subs_cover_their_oir()
         self.end_test_case()
 
         self.begin_test_case(
             "Implicit subscriptions are properly deleted when required by OIR mutation"
         )
         self._setup_case()
-        self.begin_test_step("Create two OIRs with implicit subscription")
-        self._case_3_create_oirs_with_implicit_sub()
-        self.end_test_step()
-
-        self.begin_test_step("Create a subscription")
-        self._case_3_step_create_sub()
-        self.end_test_step()
-
-        self.begin_test_step(
-            "Update OIR with implicit subscription to use explicit subscription"
-        )
-        self._case_3_update_oir_with_explicit_sub()
-        self.end_test_step()
-
-        self.begin_test_step(
-            "Update OIR with implicit subscription to use no subscription"
-        )
-        self._case_3_update_oir_with_no_sub()
-        self.end_test_step()
-
+        self._case_3_implicit_sub_deleted_after_oir_mutation()
         self.end_test_case()
 
         self.begin_test_case("Implicit subscriptions are expanded as needed")
         self._setup_case()
-        self.begin_test_step("Create an OIR with implicit subscription")
-        self._case_4_create_oir()
-        self.end_test_step()
-
-        self.begin_test_step(
-            "Expand the OIR while keeping the same implicit subscription"
-        )
-        self._case_4_expand_oir_same_implicit_sub()
-        self.end_test_step()
-
+        self._case_4_implicit_sub_expansion()
         self.end_test_case()
 
         self.begin_test_case(
@@ -200,6 +148,68 @@ class OIRImplicitSubHandling(TestScenario):
         self.end_test_case()
 
         self.end_test_scenario()
+
+    def _case_1_implicit_sub_cleanup_on_oir_deletion(self):
+        self.begin_test_step("Create an OIR with implicit subscription")
+        self._case_1_step_create_oir_1()
+        self.end_test_step()
+
+        self.begin_test_step("Delete the OIR with implicit subscription")
+        self._case_1_step_delete_single_oir()
+        self.end_test_step()
+
+    def _case_2_implicit_subs_cover_their_oir(self):
+        self.begin_test_step("Create an OIR with implicit subscription")
+        self._case_2_step_create_oir_1()
+        self.end_test_step()
+
+        self.begin_test_step("Create an overlapping OIR without any subscription")
+        self._case_2_step_create_overlapping_oir_no_sub()
+        self.end_test_step()
+
+        self.begin_test_step(
+            "Mutate OIR with implicit subscription to not overlap anymore"
+        )
+        self._case_2_step_mutate_oir_with_implicit_sub_specify_implicit_params()
+        self.end_test_step()
+
+        self.begin_test_step(
+            "Create an OIR overlapping with the second OIR but not the first"
+        )
+        self._case_2_step_create_oir_2()
+        self.end_test_step()
+
+    def _case_3_implicit_sub_deleted_after_oir_mutation(self):
+        self.begin_test_step("Create two OIRs with implicit subscription")
+        self._case_3_create_oirs_with_implicit_sub()
+        self.end_test_step()
+
+        self.begin_test_step("Create a subscription")
+        self._case_3_step_create_sub()
+        self.end_test_step()
+
+        self.begin_test_step(
+            "Update OIR with implicit subscription to use explicit subscription"
+        )
+        self._case_3_update_oir_with_explicit_sub()
+        self.end_test_step()
+
+        self.begin_test_step(
+            "Update OIR with implicit subscription to use no subscription"
+        )
+        self._case_3_update_oir_with_no_sub()
+        self.end_test_step()
+
+    def _case_4_implicit_sub_expansion(self):
+        self.begin_test_step("Create an OIR with implicit subscription")
+        self._case_4_create_oir()
+        self.end_test_step()
+
+        self.begin_test_step(
+            "Expand the OIR while keeping the same implicit subscription"
+        )
+        self._case_4_expand_oir_same_implicit_sub()
+        self.end_test_step()
 
     def _case_1_step_create_oir_1(self):
         oir, subs, impl_sub, _ = self._create_oir(
