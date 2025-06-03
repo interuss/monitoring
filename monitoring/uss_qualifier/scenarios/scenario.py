@@ -113,19 +113,17 @@ class PendingCheck(object):
     def record_failed(
         self,
         summary: str,
-        severity: Optional[Severity] = None,
         details: str = "",
         query_timestamps: Optional[List[datetime]] = None,
         additional_data: Optional[dict] = None,
     ) -> None:
         self._outcome_recorded = True
-        if severity is None:
-            if "severity" in self._documentation and self._documentation.severity:
-                severity = self._documentation.severity
-            else:
-                raise ValueError(
-                    f"Severity of check '{self._documentation.name}' was not specified at failure time and is not documented in scenario documentation"
-                )
+        if "severity" in self._documentation and self._documentation.severity:
+            severity = self._documentation.severity
+        else:
+            raise ValueError(
+                f"Severity of check '{self._documentation.name}' was not specified at failure time and is not documented in scenario documentation"
+            )
 
         if (
             self._stop_fast
