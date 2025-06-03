@@ -12,7 +12,7 @@ Defined in [parent suite](prod_probe.md) [`suites.astm.utm.prod_probe`](./prod_p
 6. Scenario: [ASTM SCD DSS: Interfaces authentication](../../../scenarios/astm/utm/dss/authentication/authentication_validation.md) ([`scenarios.astm.utm.dss.authentication.AuthenticationValidation`](../../../scenarios/astm/utm/dss/authentication/authentication_validation.py))
 7. Scenario: [ASTM F3548-21 UTM DSS interoperability](../../../scenarios/astm/utm/dss/dss_interoperability.md) ([`scenarios.astm.utm.dss.DSSInteroperability`](../../../scenarios/astm/utm/dss/dss_interoperability.py))
 8. Scenario: [ASTM SCD DSS: Subscription Synchronization](../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md) ([`scenarios.astm.utm.dss.synchronization.SubscriptionSynchronization`](../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.py))
-9. Scenario: [ASTM UTM DSS: Direct CRDB access](../../../scenarios/astm/utm/dss/crdb_access.md) ([`scenarios.astm.utm.dss.CRDBAccess`](../../../scenarios/astm/utm/dss/crdb_access.py))
+9. Scenario: [ASTM UTM DSS: Direct datastore access](../../../scenarios/astm/utm/dss/datastore_access.md) ([`scenarios.astm.utm.dss.DatastoreAccess`](../../../scenarios/astm/utm/dss/datastore_access.py))
 10. Scenario: [ASTM SCD DSS: Report](../../../scenarios/astm/utm/dss/report.md) ([`scenarios.astm.utm.dss.Report`](../../../scenarios/astm/utm/dss/report.py))
 
 ## [Checked requirements](../../README.md#checked-requirements)
@@ -68,12 +68,12 @@ Defined in [parent suite](prod_probe.md) [`suites.astm.utm.prod_probe`](./prod_p
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0200</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/crdb_access.md">ASTM UTM DSS: Direct CRDB access</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/datastore_access.md">ASTM UTM DSS: Direct datastore access</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0205</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/crdb_access.md">ASTM UTM DSS: Direct CRDB access</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/datastore_access.md">ASTM UTM DSS: Direct datastore access</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,1a</a></td>

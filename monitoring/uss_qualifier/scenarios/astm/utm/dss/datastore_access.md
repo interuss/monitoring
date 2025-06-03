@@ -1,17 +1,17 @@
-# ASTM UTM DSS: Direct CRDB access test scenario
+# ASTM UTM DSS: Direct datastore access test scenario
 
 ## Overview
 
-Attempt to directly access the CockroachDB (CRDB) nodes intercommunicating to form the DSS Airspace Representation for the DSS instances under test, for the purpose of determining compliance to certain DSS interoperability requirements.
-The psycopg library is used to attempt standard PostgreSQL connections to the nodes as it is the most straightforward way of connecting directly to the CockroachDB nodes while controlling the connection parameters (such as for encryption).
+Attempt to directly access the datastore (CockroachDB or Yugabyte) nodes intercommunicating to form the DSS Airspace Representation for the DSS instances under test, for the purpose of determining compliance to certain DSS interoperability requirements.
+The psycopg library is used to attempt standard PostgreSQL connections to the nodes as it is the most straightforward way of connecting directly to the datastore nodes while controlling the connection parameters (such as for encryption).
 
 This scenario aims at validating the following requirements:
 - **[astm.f3548.v21.DSS0200](../../../../requirements/astm/f3548/v21.md)**
 - **[astm.f3548.v21.DSS0205](../../../../requirements/astm/f3548/v21.md)**
 
 ## Resources
-### crdb_cluster
-CockroachDBClusterResource that provides access to a set of CockroachDB nodes constituting the DSS instances under test.
+### datastore_cluster
+DatastoreDBClusterResource that provides access to a set of CockroachDB or Yugabyte nodes constituting the DSS instances under test.
 
 ## Setup test case
 ### Validate nodes are reachable test step

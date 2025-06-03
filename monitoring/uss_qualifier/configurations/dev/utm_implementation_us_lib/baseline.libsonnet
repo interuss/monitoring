@@ -31,7 +31,7 @@ function(env) {
             planning_area: 'planning_area',
             problematically_big_area: 'problematically_big_area',
             system_identity: 'system_identity',
-            // dss_crdb_cluster: dss_crdb_cluster  # TODO: Provide once local DSS uses a multi-node cluster
+            // dss_datastore_cluster: dss_datastore_cluster  # TODO: Provide once local DSS uses a multi-node cluster
             test_exclusions: 'test_exclusions',
           },
         },
@@ -49,7 +49,7 @@ function(env) {
         'v1.test_run.resources.resource_declarations.dss',
         'v1.test_run.resources.resource_declarations.dss_instances',
         'v1.test_run.resources.resource_declarations.mock_uss',
-        'v1.test_run.resources.resource_declarations.dss_crdb_cluster',
+        'v1.test_run.resources.resource_declarations.dss_datastore_cluster',
         'v1.artifacts.tested_requirements[0].aggregate_participants',
         'v1.artifacts.tested_requirements[0].participant_requirements',
       ],

@@ -5,7 +5,7 @@ resources:
   combination_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource
   dss: resources.astm.f3548.v21.DSSInstanceResource
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
-  dss_crdb_cluster: resources.interuss.crdb.CockroachDBClusterResource?
+  dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
   conflicting_flights: resources.flight_planning.FlightIntentsResource
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
@@ -36,7 +36,7 @@ actions:
       priority_planning_selector: combination_selector
       dss: dss
       dss_instances: dss_instances
-      dss_crdb_cluster: dss_crdb_cluster?
+      dss_datastore_cluster: dss_datastore_cluster?
       id_generator: id_generator
       utm_client_identity: utm_client_identity
       second_utm_auth: second_utm_auth

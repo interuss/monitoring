@@ -21,7 +21,7 @@
 15. Scenario: [ASTM F3548-21 UTM DSS Operational Intent Reference Access Control](../../../scenarios/astm/utm/dss/op_intent_ref_access_control.md) ([`scenarios.astm.utm.dss.OpIntentReferenceAccessControl`](../../../scenarios/astm/utm/dss/op_intent_ref_access_control.py))
 16. Scenario: [ASTM F3548-21 UTM DSS interoperability](../../../scenarios/astm/utm/dss/dss_interoperability.md) ([`scenarios.astm.utm.dss.DSSInteroperability`](../../../scenarios/astm/utm/dss/dss_interoperability.py))
 17. Scenario: [ASTM SCD DSS: Subscription Synchronization](../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md) ([`scenarios.astm.utm.dss.synchronization.SubscriptionSynchronization`](../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.py))
-18. Scenario: [ASTM UTM DSS: Direct CRDB access](../../../scenarios/astm/utm/dss/crdb_access.md) ([`scenarios.astm.utm.dss.CRDBAccess`](../../../scenarios/astm/utm/dss/crdb_access.py))
+18. Scenario: [ASTM UTM DSS: Direct datastore access](../../../scenarios/astm/utm/dss/datastore_access.md) ([`scenarios.astm.utm.dss.DatastoreAccess`](../../../scenarios/astm/utm/dss/datastore_access.py))
 19. Scenario: [OVN Request Optional Extension to ASTM F3548-21](../../../scenarios/interuss/ovn_request/dss_ovn_request.md) ([`scenarios.interuss.ovn_request.DSSOVNRequest`](../../../scenarios/interuss/ovn_request/dss_ovn_request.py))
 20. Scenario: [ASTM SCD DSS: Report](../../../scenarios/astm/utm/dss/report.md) ([`scenarios.astm.utm.dss.Report`](../../../scenarios/astm/utm/dss/report.py))
 
@@ -83,12 +83,12 @@
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0200</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/crdb_access.md">ASTM UTM DSS: Direct CRDB access</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/datastore_access.md">ASTM UTM DSS: Direct datastore access</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0205</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/crdb_access.md">ASTM UTM DSS: Direct CRDB access</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/datastore_access.md">ASTM UTM DSS: Direct datastore access</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,1a</a></td>
