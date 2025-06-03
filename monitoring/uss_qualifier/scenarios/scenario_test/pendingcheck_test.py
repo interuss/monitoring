@@ -79,7 +79,6 @@ def test_report_failed():
     with pc:
         pc.record_failed(
             summary="test-summary",
-            severity=None,
             details="test-details",
             query_timestamps=["2025-02-18 12:34:56"],
             additional_data={"test-additional": "test-data"},
@@ -106,7 +105,7 @@ def test_report_failed():
 
 
 def test_report_failed_severities_no_severity():
-    """Test the PendingCheck's record_failed function behavior with severities, where a severity must be define in the documentation or the record_failed's call. This function test the case where no severity is defined."""
+    """Test the PendingCheck's record_failed function behavior with severities, where a severity must be define in the documentation. This function test the case where no severity is defined."""
 
     pc, _ = build_testable_pending_check()
 
@@ -118,30 +117,16 @@ def test_report_failed_severities_no_severity():
             pass
 
 
-def test_report_failed_severities_severity_in_record():
-    """Test the PendingCheck's record_failed function behavior with severities, where a severity must be define in the documentation or the record_failed's call. This function test the case where severity is defined in the record call."""
-
-    pc, report = build_testable_pending_check()
-
-    with pc:
-        pc.record_failed(summary="", severity=Severity.Low)
-
-    assert report.failed_checks
-    assert report.failed_checks[0].severity == Severity.Low
-
-
 def test_report_failed_severities_severity_in_documentation():
-    """Test the PendingCheck's record_failed function behavior with severities, where a severity must be define in the documentation or the record_failed's call. This function tset the case where severity is defined in the documentation."""
+    """Test the PendingCheck's record_failed function behavior with severities, where a severity must be define in the documentation. This function test the case where severity is defined in the documentation."""
 
     pc, report = build_testable_pending_check(severity=Severity.Low)
 
     with pc:
-        pc.record_failed(summary="", severity=Severity.Medium)
+        pc.record_failed(summary="")
 
     assert report.failed_checks
-    assert (
-        report.failed_checks[0].severity == Severity.Medium
-    )  # record_failed's argument have priority
+    assert report.failed_checks[0].severity == Severity.Low
 
 
 def test_report_failed_stopfast_non_low():
@@ -283,9 +268,11 @@ def test_on_failed_check_failling():
         nonlocal has_been_called_with_check_result
         has_been_called_with_check_result = check
 
-    pc, report = build_testable_pending_check(on_failed_check=callme)
+    pc, report = build_testable_pending_check(
+        on_failed_check=callme, severity=Severity.Medium
+    )
 
     with pc:
-        pc.record_failed(summary="", severity=Severity.Medium)
+        pc.record_failed(summary="")
     assert has_been_called_with_check_result
     assert has_been_called_with_check_result == report.failed_checks[0]
