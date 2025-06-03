@@ -101,11 +101,18 @@ class DatastoreDBNode(object):
         or 2) that the connection succeeds.
         """
         try:
-            c = self.connect(sslmode="allow", require_auth="password", password="dummy")
+            c = self.connect(
+                sslmode="prefer", require_auth="password", password="dummy"
+            )
             c.close()
         except psycopg.OperationalError as e:
             err_msg = str(e)
-            is_reachable = "password authentication failed" in err_msg
+            # First message is returned if password authentication is enabled
+            # (CockroachDB), second one if not (Yugabyte use certificates)
+            is_reachable = (
+                "password authentication failed" in err_msg
+                or "server did not complete authentication" in err_msg
+            )
             return is_reachable, e
         return True, None
 
@@ -121,7 +128,12 @@ class DatastoreDBNode(object):
             c.close()
         except psycopg.OperationalError as e:
             err_msg = str(e)
-            secure_mode = "node is running secure mode" in err_msg
+            # First message is returned by CockroachDB, second one by Yugabyte
+            # (No hba entries for authentication outside SSL)
+            secure_mode = (
+                "node is running secure mode" in err_msg
+                or "no pg_hba.conf entry for host" in err_msg
+            )
             return secure_mode, e
         return False, None
 
