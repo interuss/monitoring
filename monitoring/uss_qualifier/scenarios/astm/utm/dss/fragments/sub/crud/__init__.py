@@ -44,7 +44,7 @@ def sub_get_query(
     with scenario.check("Get Subscription by ID", dss.participant_id) as check:
         fetched_sub = dss.get_subscription(sub_id)
         scenario.record_query(fetched_sub)
-        if fetched_sub.status_code != 200:
+        if not fetched_sub.success:
             check.record_failed(
                 summary="Subscription query failed",
                 details=f"Failed to query subscription {sub_id} referenced by oid {self._oir_a_id} with code {fetched_sub.response.status_code}. Message: {fetched_sub.error_message}",

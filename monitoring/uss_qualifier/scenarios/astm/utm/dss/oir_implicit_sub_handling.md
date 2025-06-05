@@ -320,12 +320,12 @@ with an explicit subscription attached.
 If the DSS under test fails to attach the OIR to a subscription that is different from the one it is currently attached to when it is requested to do so,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
+#### [Get subscription](./fragments/sub/crud/read_query.md)
+
 #### 🛑 OIR is now attached to an implicit subscription check
 
 If the DSS under test fails to attach the OIR to an implicit subscription (which may either already exist or be newly created) when it is requested to do so,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
-
-#### [Get subscription](./fragments/sub/crud/read_query.md)
 
 ## Cleanup
 
