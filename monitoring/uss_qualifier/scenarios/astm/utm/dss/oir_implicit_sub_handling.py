@@ -5,6 +5,7 @@ import arrow
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
     OperationalIntentState,
+    PutOperationalIntentReferenceParameters,
     SubscriberToNotify,
     Subscription,
     SubscriptionID,
@@ -23,8 +24,15 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.oir import (
     check_oir_has_correct_subscription,
 )
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.oir.crud import (
+    delete_oir_query,
+    get_oir_query,
+    update_oir_query,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.sub.crud import (
     sub_create_query,
+    sub_delete_query,
+    sub_get_query,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -101,7 +109,7 @@ class OIRImplicitSubHandling(TestScenario):
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
         self.begin_test_case("Setup")
-        self._setup_case()
+        self._setup_scenario()
         self.end_test_case()
 
         self.begin_test_case(
@@ -112,41 +120,48 @@ class OIRImplicitSubHandling(TestScenario):
 
         self.begin_test_case("Implicit subscriptions always properly cover their OIR")
         self._case_2_implicit_subs_cover_their_oir()
+        self._clean_after_test_case()
         self.end_test_case()
 
         self.begin_test_case(
             "Implicit subscriptions are properly deleted when required by OIR mutation"
         )
-        self._setup_case()
         self._case_3_implicit_sub_deleted_after_oir_mutation()
+        self._clean_after_test_case()
         self.end_test_case()
 
         self.begin_test_case("Implicit subscriptions are expanded as needed")
-        self._setup_case()
         self._case_4_implicit_sub_expansion()
+        self._clean_after_test_case()
         self.end_test_case()
 
         self.begin_test_case(
             "Existing implicit subscription can replace an OIR's explicit subscription"
         )
-        self._setup_case()
         self._case_5_replace_explicit_sub_with_implicit()
+        self._clean_after_test_case()
         self.end_test_case()
 
         self.begin_test_case(
             "Existing implicit subscription can be attached to OIR without subscription"
         )
-        self._setup_case()
         self._case_6_attach_implicit_sub_to_oir_without_subscription()
+        self._clean_after_test_case()
         self.end_test_case()
 
         self.begin_test_case(
             "OIR without subscription can be mutated without a new subscription being attached"
         )
-        self._setup_case()
+
         self._case_7_mutate_oir_without_subscription()
+        self._clean_after_test_case()
         self.end_test_case()
 
+        self.begin_test_case(
+            "Request new implicit subscription when mutating an OIR with existing explicit subscription"
+        )
+        self._case_8_mutate_oir_explicit_request_implicit()
+        self.end_test_case()
         self.end_test_scenario()
 
     def _case_1_implicit_sub_cleanup_on_oir_deletion(self):
@@ -272,6 +287,7 @@ class OIRImplicitSubHandling(TestScenario):
                     subscription_id=None,
                 )
                 self.record_query(q)
+                self._oir_b_ovn = oir.ovn
             except QueryError as e:
                 self.record_queries(e.queries)
                 check.record_failed(
@@ -482,6 +498,7 @@ class OIRImplicitSubHandling(TestScenario):
                     self._oir_a_id, self._oir_a_ovn
                 )
                 self.record_query(q)
+                self._oir_a_ovn = None
             except QueryError as e:
                 self.record_queries(e.queries)
                 check.record_failed(
@@ -666,6 +683,7 @@ class OIRImplicitSubHandling(TestScenario):
                     subscription_id=self._implicit_sub_1.id,
                 )
                 self.record_query(q)
+                self._oir_a_ovn = oir.ovn
             except QueryError as e:
                 self.record_queries(e.queries)
                 check.record_failed(
@@ -711,8 +729,6 @@ class OIRImplicitSubHandling(TestScenario):
                 )
 
     def _case_5_replace_explicit_sub_with_implicit(self):
-        # TODO explicit subscription creation could be moved to a common fragment to be shared
-        #  with the OIRSimple scenario once it has been extended with new corner cases.
         self.begin_test_step("Create an explicit subscription")
         sub_params = self._planning_area.get_new_subscription_params(
             subscription_id=self._sub_id,
@@ -721,29 +737,17 @@ class OIRImplicitSubHandling(TestScenario):
             notify_for_op_intents=True,
             notify_for_constraints=False,
         )
-        with self.check("Create subscription query succeeds", self._pid) as check:
-            try:
-                sub_q = self._dss.upsert_subscription(**sub_params)
-                self.record_query(sub_q)
-            except QueryError as qe:
-                self.record_queries(qe.queries)
-                check.record_failed(
-                    summary="Could not create subscription",
-                    details=f"Failed to create subscription with error code {qe.cause_status_code}: {qe.msg}",
-                    query_timestamps=qe.query_timestamps,
-                )
-        sub_explicit = sub_q.subscription
-        self._explicit_sub = sub_explicit
+        self._explicit_sub, _, _ = sub_create_query(self, self._dss, sub_params)
         self.end_test_step()
 
         self.begin_test_step("Create first OIR with an explicit subscription")
         oir_explicit, _, _, _ = self._create_oir(
             oir_id=self._oir_a_id,
-            time_start=sub_explicit.time_start.value.datetime,
-            time_end=sub_explicit.time_end.value.datetime,
+            time_start=self._explicit_sub.time_start.value.datetime,
+            time_end=self._explicit_sub.time_end.value.datetime,
             relevant_ovns=[],
             with_implicit_sub=False,
-            subscription_id=sub_explicit.id,
+            subscription_id=self._explicit_sub.id,
         )
         self._oir_a_ovn = oir_explicit.ovn
         self.end_test_step()
@@ -751,8 +755,8 @@ class OIRImplicitSubHandling(TestScenario):
         self.begin_test_step("Create second OIR with an implicit subscription")
         oir_implicit, _, sub_implicit, _ = self._create_oir(
             oir_id=self._oir_b_id,
-            time_start=sub_explicit.time_start.value.datetime,
-            time_end=sub_explicit.time_end.value.datetime,
+            time_start=self._explicit_sub.time_start.value.datetime,
+            time_end=self._explicit_sub.time_end.value.datetime,
             relevant_ovns=[oir_explicit.ovn],
             with_implicit_sub=True,
         )
@@ -770,8 +774,8 @@ class OIRImplicitSubHandling(TestScenario):
                 oir, subs, q = self._dss.put_op_intent(
                     extents=[
                         self._planning_area.get_volume4d(
-                            sub_explicit.time_start.value.datetime,
-                            sub_explicit.time_end.value.datetime,
+                            self._explicit_sub.time_start.value.datetime,
+                            self._explicit_sub.time_end.value.datetime,
                         ).to_f3548v21()
                     ],
                     key=[oir_implicit.ovn],
@@ -943,6 +947,7 @@ class OIRImplicitSubHandling(TestScenario):
                     force_no_implicit_subscription=True,
                 )
                 self.record_query(q)
+                self._oir_a_ovn = oir_mutated_no_sub.ovn
             except QueryError as e:
                 self.record_queries(e.queries)
                 check.record_failed(
@@ -958,7 +963,103 @@ class OIRImplicitSubHandling(TestScenario):
         )
         self.end_test_step()
 
-    def _setup_case(self):
+    def _case_8_mutate_oir_explicit_request_implicit(self):
+        self.begin_test_step("Create an explicit subscription")
+        sub_params = self._planning_area.get_new_subscription_params(
+            subscription_id=self._sub_id,
+            start_time=self._time_2,
+            duration=self._time_3 - self._time_2,
+            notify_for_op_intents=True,
+            notify_for_constraints=False,
+        )
+        self._explicit_sub, _, _ = sub_create_query(self, self._dss, sub_params)
+        self.end_test_step()
+
+        self.begin_test_step("Create OIR with explicit subscription")
+        oir_explicit_sub, _, _, _ = self._create_oir(
+            oir_id=self._oir_a_id,
+            time_start=self._time_2,
+            time_end=self._time_3,
+            relevant_ovns=[],
+            subscription_id=self._sub_id,
+            with_implicit_sub=False,
+        )
+        self._oir_a_ovn = oir_explicit_sub.ovn
+        check_oir_has_correct_subscription(
+            self,
+            self._dss,
+            self._oir_a_id,
+            expected_sub_id=self._sub_id,
+        )
+        self.end_test_step()
+
+        self.begin_test_step("Mutate OIR to request new implicit subscription")
+        oir_mutated_to_implicit_sub, _, q = update_oir_query(
+            scenario=self,
+            dss=self._dss,
+            oir_id=self._oir_a_id,
+            ovn=self._oir_a_ovn,
+            oir_params=PutOperationalIntentReferenceParameters(
+                extents=[
+                    self._planning_area.get_volume4d(
+                        self._time_2, self._time_3
+                    ).to_f3548v21()
+                ],
+                key=[],
+                # Update to a state that requires a subscription
+                state=OperationalIntentState.Activated,
+                uss_base_url=DUMMY_BASE_URL,
+                subscription_id=None,
+            ),
+        )
+        self._oir_a_ovn = oir_mutated_to_implicit_sub.ovn
+        self.end_test_step()
+
+        self.begin_test_step(
+            "Validate that the OIR is now attached to an implicit subscription"
+        )
+
+        def check_sub_changed(oir, mutate_q):
+            with self.check(
+                "OIR is attached to a new subscription", self._pid
+            ) as check:
+                if oir.subscription_id is None:
+                    check.record_failed(
+                        summary="OIR not attached to any subscription",
+                        details="OIR is not attached to any subscription, when a request for an implicit subscription was made.",
+                        query_timestamps=[mutate_q.timestamp],
+                    )
+                if oir.subscription_id == self._explicit_sub.id:
+                    check.record_failed(
+                        summary="OIR is still attached to the explicit subscription",
+                        details=f"OIR is still attached to the explicit subscription {self._explicit_sub.id}, when a request for an implicit subscription was made.",
+                        query_timestamps=[mutate_q.timestamp],
+                    )
+
+        # First check the OIR as it was returned by the mutation endpoint
+        check_sub_changed(oir_mutated_to_implicit_sub, q)
+
+        # Then, do an actual query of the OIR
+        oir_queried, q = get_oir_query(self, self._dss, self._oir_a_id)
+
+        check_sub_changed(oir_queried, q)
+
+        # Now fetch the subscription and check it is implicit
+        fetched_sub, _ = sub_get_query(self, self._dss, oir_queried.subscription_id)
+
+        with self.check(
+            "OIR is now attached to an implicit subscription", self._pid
+        ) as check:
+            if not fetched_sub.implicit_subscription:
+                check.record_failed(
+                    summary="OIR is not attached to an implicit subscription",
+                    details=f"Subscription {self._sub_id} referenced by OIR {self._oir_a_id} is not an implicit subscription.",
+                    query_timestamps=[fetched_sub.request.timestamp],
+                )
+
+        self.end_test_step()
+
+    def _setup_scenario(self):
         # T0 corresponds to 'now'
         self._time_0 = arrow.utcnow().datetime
 
@@ -999,6 +1100,35 @@ class OIRImplicitSubHandling(TestScenario):
             extents,
         )
         test_step_fragments.cleanup_sub(self, self._dss, self._sub_id)
+
+    def _clean_after_test_case(self):
+        self.begin_test_step("Cleanup After Test Case")
+
+        if self._oir_a_ovn:
+            delete_oir_query(
+                scenario=self, dss=self._dss, oir_id=self._oir_a_id, ovn=self._oir_a_ovn
+            )
+            self._oir_a_ovn = None
+
+        if self._oir_b_ovn:
+            delete_oir_query(
+                scenario=self, dss=self._dss, oir_id=self._oir_b_id, ovn=self._oir_b_ovn
+            )
+            self._oir_b_ovn = None
+
+        if self._oir_c_ovn:
+            delete_oir_query(
+                scenario=self, dss=self._dss, oir_id=self._oir_c_id, ovn=self._oir_c_ovn
+            )
+            self._oir_c_ovn = None
+
+        if self._explicit_sub:
+            sub_delete_query(
+                self, self._dss, self._explicit_sub.id, self._explicit_sub.version
+            )
+            self._explicit_sub = None
+
+        self.end_test_step()
 
     def cleanup(self):
         self.begin_cleanup()

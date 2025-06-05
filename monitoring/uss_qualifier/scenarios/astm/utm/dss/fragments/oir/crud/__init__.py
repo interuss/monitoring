@@ -115,3 +115,25 @@ def delete_oir_query(
             )
             # Failure of the query has a severity that will interrupt the test:
             # no need to return anything
+
+
+def get_oir_query(
+    scenario: TestScenarioType, dss: DSSInstance, oir_id: EntityID
+) -> Tuple[OperationalIntentReference, Query]:
+    """
+    Issue a request to get an OIR by ID to the DSS instance, wrapped in a check documented in `get_query.md`.
+    """
+    with scenario.check(
+        "Get operational intent reference by ID", dss.participant_id
+    ) as check:
+        try:
+            oir, query = dss.get_op_intent_reference(oir_id)
+            scenario.record_query(query)
+            return oir, query
+        except QueryError as qe:
+            scenario.record_queries(qe.queries)
+            check.record_failed(
+                summary="Could not get operational intent reference",
+                details=f"Failed to get operational intent reference with error code {qe.cause_status_code}: {qe.msg}",
+                query_timestamps=qe.query_timestamps,
+            )
