@@ -7,11 +7,10 @@ from enum import Enum
 from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
-import s2sphere
-
 from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch.rid import ISA
-from monitoring.monitorlib.testing import make_fake_url
+from monitoring.monitorlib.geo import get_latlngrect_vertices, make_latlng_rect
+from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
     DSSInstanceResource,
     DSSInstancesResource,
@@ -19,32 +18,15 @@ from monitoring.uss_qualifier.resources.astm.f3411.dss import (
 from monitoring.uss_qualifier.resources.dev.test_exclusions import (
     TestExclusionsResource,
 )
+from monitoring.uss_qualifier.resources.planning_area import PlanningAreaSpecification
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
-# TODO pass a test resource specifying the test area instead
-VERTICES: List[s2sphere.LatLng] = [
-    s2sphere.LatLng.from_degrees(lng=130.6205, lat=-23.6558),
-    s2sphere.LatLng.from_degrees(lng=130.6301, lat=-23.6898),
-    s2sphere.LatLng.from_degrees(lng=130.6700, lat=-23.6709),
-    s2sphere.LatLng.from_degrees(lng=130.6466, lat=-23.6407),
-]
-
-
-def _default_params(duration: datetime.timedelta) -> Dict:
-    now = datetime.datetime.now().astimezone()
-    return dict(
-        area_vertices=VERTICES,
-        alt_lo=20,
-        alt_hi=400,
-        start_time=now,
-        end_time=now + duration,
-        uss_base_url=make_fake_url(),
-    )
-
-
 SHORT_WAIT_SEC = 5
+
+DEFAULT_LOWER_ALT_M = 0
+DEFAULT_UPPER_ALT_M = 300
 
 
 class EntityType(str, Enum):
@@ -70,11 +52,13 @@ class DSSInteroperability(GenericTestScenario):
     _dss_others: List[DSSWrapper]
     _allow_private_addresses: bool = False
     _context: Dict[str, TestEntity]
+    _planning_area: PlanningAreaSpecification
 
     def __init__(
         self,
         primary_dss_instance: DSSInstanceResource,
         all_dss_instances: DSSInstancesResource,
+        planning_area: PlanningAreaResource,
         test_exclusions: Optional[TestExclusionsResource] = None,
     ):
         super().__init__()
@@ -85,15 +69,21 @@ class DSSInteroperability(GenericTestScenario):
             if not dss.is_same_as(primary_dss_instance.dss_instance)
         ]
 
+        self._planing_area = planning_area.specification
+        self._area_vertices = get_latlngrect_vertices(
+            make_latlng_rect(self._planing_area.volume)
+        )
         if test_exclusions is not None:
             self._allow_private_addresses = test_exclusions.allow_private_addresses
 
         self._context: Dict[str, TestEntity] = {}
 
+    # TODO migrate to ID generator?
     def _new_isa(self, name: str) -> TestEntity:
         self._context[name] = TestEntity(EntityType.ISA, str(uuid.uuid4()))
         return self._context[name]
 
+    # TODO migrate to ID generator?
     def _new_sub(self, name: str) -> TestEntity:
         self._context[name] = TestEntity(EntityType.Sub, str(uuid.uuid4()))
         return self._context[name]
@@ -148,7 +138,7 @@ class DSSInteroperability(GenericTestScenario):
 
             with self.check("DSS instance is reachable", [dss.participant_id]) as check:
                 # dummy search query
-                dss.search_subs(check, VERTICES)
+                dss.search_subs(check, self._area_vertices)
 
     def step1(self):
         """Create ISA in Primary DSS with 10 min TTL."""
@@ -161,7 +151,7 @@ class DSSInteroperability(GenericTestScenario):
             mutated_isa = self._dss_primary.put_isa(
                 check,
                 isa_id=isa_1.uuid,
-                **_default_params(datetime.timedelta(minutes=10)),
+                **self._default_params(datetime.timedelta(minutes=10)),
             )
             isa_1.version = mutated_isa.dss_query.isa.version
 
@@ -181,7 +171,7 @@ class DSSInteroperability(GenericTestScenario):
                 created_sub = dss.put_sub(
                     check,
                     sub_id=sub_1.uuid,
-                    **_default_params(datetime.timedelta(minutes=10)),
+                    **self._default_params(datetime.timedelta(minutes=10)),
                 )
                 sub_1.version = created_sub.subscription.version
 
@@ -407,7 +397,7 @@ class DSSInteroperability(GenericTestScenario):
                 "Subscription[n] search returned with proper response",
                 [dss.participant_id],
             ) as check:
-                searched_subs = dss.search_subs(check, VERTICES)
+                searched_subs = dss.search_subs(check, self._area_vertices)
                 if not searched_subs.success:
                     check.record_failed(
                         summary="Subscription search on secondary DSS failed",
@@ -437,7 +427,7 @@ class DSSInteroperability(GenericTestScenario):
                 "Can query all Subscriptions in area from all DSSs",
                 [dss.participant_id],
             ) as check:
-                subs = dss.search_subs(check, VERTICES)
+                subs = dss.search_subs(check, self._area_vertices)
 
                 returned_sub_ids = set([sub_id for sub_id in subs.subscriptions])
                 missing_subs = all_sub_1_ids - returned_sub_ids
@@ -470,7 +460,7 @@ class DSSInteroperability(GenericTestScenario):
                 isa_id=isa_1.uuid,
                 isa_version=isa_1.version,
                 do_not_notify="https://testdummy.interuss.org",
-                **_default_params(datetime.timedelta(seconds=SHORT_WAIT_SEC)),
+                **self._default_params(datetime.timedelta(seconds=SHORT_WAIT_SEC)),
             )
             isa_1.version = mutated_isa_primary.dss_query.isa.version
 
@@ -499,7 +489,7 @@ class DSSInteroperability(GenericTestScenario):
                     isa_id=isa_1.uuid,
                     isa_version=isa_1.version,
                     do_not_notify="https://testdummy.interuss.org",
-                    **_default_params(datetime.timedelta(seconds=SHORT_WAIT_SEC)),
+                    **self._default_params(datetime.timedelta(seconds=SHORT_WAIT_SEC)),
                 )
                 isa_1.version = mutated_isa_sec.dss_query.isa.version
 
@@ -551,7 +541,7 @@ class DSSInteroperability(GenericTestScenario):
             with self.check(
                 "Subscriptions queried successfully", [dss.participant_id]
             ) as check:
-                subs = dss.search_subs(check, VERTICES)
+                subs = dss.search_subs(check, self._area_vertices)
 
             with self.check(
                 "No Subscription[i] 1≤i≤n returned with proper response",
@@ -590,7 +580,7 @@ class DSSInteroperability(GenericTestScenario):
                 created_sub = dss.put_sub(
                     check,
                     sub_id=sub_2.uuid,
-                    **_default_params(datetime.timedelta(seconds=SHORT_WAIT_SEC)),
+                    **self._default_params(datetime.timedelta(seconds=SHORT_WAIT_SEC)),
                 )
                 sub_2.version = created_sub.subscription.version
 
@@ -619,7 +609,7 @@ class DSSInteroperability(GenericTestScenario):
                 check,
                 isa_id=isa_2.uuid,
                 do_not_notify="https://testdummy.interuss.org",
-                **_default_params(datetime.timedelta(minutes=10)),
+                **self._default_params(datetime.timedelta(minutes=10)),
             )
             isa_2.version = mutated_isa.dss_query.isa.version
 
@@ -682,7 +672,7 @@ class DSSInteroperability(GenericTestScenario):
             mutated_isa = self._dss_primary.put_isa(
                 check,
                 isa_id=isa_3.uuid,
-                **_default_params(datetime.timedelta(minutes=10)),
+                **self._default_params(datetime.timedelta(minutes=10)),
             )
             isa_3.version = mutated_isa.dss_query.isa.version
 
@@ -712,7 +702,7 @@ class DSSInteroperability(GenericTestScenario):
             with self.check(
                 "Subscriptions queried successfully", [dss.participant_id]
             ) as check:
-                subs = dss.search_subs(check, VERTICES)
+                subs = dss.search_subs(check, self._area_vertices)
 
             with self.check(
                 "No Subscription[i] 1≤i≤n returned with proper response",
@@ -787,7 +777,7 @@ class DSSInteroperability(GenericTestScenario):
                 created_sub = dss.put_sub(
                     check,
                     sub_id=sub_3.uuid,
-                    **_default_params(datetime.timedelta(minutes=10)),
+                    **self._default_params(datetime.timedelta(minutes=10)),
                 )
                 sub_3.version = created_sub.subscription.version
 
@@ -816,6 +806,22 @@ class DSSInteroperability(GenericTestScenario):
                 _ = self._dss_primary.del_sub(
                     check, sub_id=sub_3.uuid, sub_version=sub_3.version
                 )
+
+    def _default_params(self, duration: datetime.timedelta) -> Dict:
+        now = datetime.datetime.now().astimezone()
+
+        return dict(
+            area_vertices=self._area_vertices,
+            alt_lo=self._planing_area.volume.altitude_lower_wgs84_m(
+                DEFAULT_LOWER_ALT_M
+            ),
+            alt_hi=self._planing_area.volume.altitude_upper_wgs84_m(
+                DEFAULT_UPPER_ALT_M
+            ),
+            start_time=now,
+            end_time=now + duration,
+            uss_base_url=self._planing_area.get_base_url(),
+        )
 
     def cleanup(self):
         self.begin_cleanup()

@@ -7,6 +7,7 @@ resources:
   utm_client_identity: resources.communications.ClientIdentityResource
   isa: resources.netrid.ServiceAreaResource
   problematically_big_area: resources.VerticesResource
+  planning_area: resources.PlanningAreaResource
   test_exclusions: resources.dev.TestExclusionsResource?
 actions:
   - test_scenario:
@@ -58,6 +59,7 @@ actions:
       resources:
         primary_dss_instance: dss
         all_dss_instances: all_dss_instances
+        planning_area: planning_area
         test_exclusions: test_exclusions?
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.dss.TokenValidation
