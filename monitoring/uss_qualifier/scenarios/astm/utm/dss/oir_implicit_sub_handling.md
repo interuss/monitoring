@@ -134,17 +134,11 @@ or **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
 #### [No implicit subscription was attached](./fragments/oir/oir_has_no_subscription.md)
 
+### [Cleanup After Test Case test step](./fragments/oir/crud/delete_query.md)
+
 ## Implicit subscriptions are properly deleted when required by OIR mutation test case
 
 This test case verifies that implicit subscriptions are properly removed if they become unnecessary following the mutation of an OIR.
-
-### Ensure clean workspace test step
-
-<!-- TODO(Shastick): Why do we need to reclean the workspace at this point?  We already ensured it was clean before starting the test; don't we know exactly what happened in the test and therefore know that it's already clean (or something failed)?  If a previous test case created something that we don't need/want in later test cases, the original test case should clean up at the end of the test case. -->
-
-#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
-
-#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
 
 ### Create two OIRs with implicit subscription test step
 
@@ -186,17 +180,11 @@ This step updates the OIR to not use any subscription, and expects the implicit 
 If the implicit subscription that was attached to the OIR is still present after the OIR is updated to use another subscription,
 the DSS is failing to properly manage implicit subscriptions for OIRs, and is therefore in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
+### [Cleanup After Test Case test step](./cleanup_after_testcase_oir_subs.md)
+
 ## Implicit subscriptions are expanded as needed test case
 
 This test case checks that a DSS will properly expand an implicit subscription to cover an OIR that is being attached to it.
-
-### Ensure clean workspace test step
-
-<!-- TODO(Shastick): Why do we need to reclean the workspace at this point?  We already ensured it was clean before starting the test; don't we know exactly what happened in the test and therefore know that it's already clean (or something failed)?  If a previous test case created something that we don't need/want in later test cases, the original test case should clean up at the end of the test case. -->
-
-#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
-
-#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
 
 ### Create an OIR with implicit subscription test step
 
@@ -225,17 +213,11 @@ in which case the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../.
 
 Ensure that the attached implicit subscription has been expanded
 
+### [Cleanup After Test Case test step](./fragments/oir/crud/delete_query.md)
+
 ## Existing implicit subscription can replace an OIR's explicit subscription test case
 
 This test case verifies that an implicit subscription can be used to replace an explicit subscription attached to an OIR.
-
-### Ensure clean workspace test step
-
-Reset the workspace for this test case.
-
-#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
-
-#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
 
 ### [Create an explicit subscription test step](./fragments/sub/crud/create_query.md)
 
@@ -267,17 +249,11 @@ Confirm that the query to replace the second OIR's explicit subscription with th
 
 #### [First OIR is now attached to the specified implicit subscription](fragments/oir/oir_has_expected_subscription.md)
 
+### [Cleanup After Test Case test step](./cleanup_after_testcase_oir_subs.md)
+
 ## Existing implicit subscription can be attached to OIR without subscription test case
 
 This test case verifies that an implicit subscription can be attached to an OIR that is not currently attached to any subscription.
-
-### Ensure clean workspace test step
-
-Reset the workspace for this test case.
-
-#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
-
-#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
 
 ### [Create OIR with no subscription test step](./fragments/oir/crud/create_query.md)
 
@@ -301,18 +277,12 @@ Confirms that the DSS properly attached the first OIR to the implicit subscripti
 
 #### [First OIR is now attached to the specified implicit subscription](fragments/oir/oir_has_expected_subscription.md)
 
+### [Cleanup After Test Case test step](./fragments/oir/crud/delete_query.md)
+
 ## OIR without subscription can be mutated without a new subscription being attached test case
 
 This test case ensures that, when a client mutates an OIR not attached to any subscription without specifiying either
 a subscription identifier nor parameters for an implicit subscription, the DSS under test will correctly keep the OIR unattached to any subscription.
-
-### Ensure clean workspace test step
-
-Reset the workspace for this test case.
-
-#### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
-
-#### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
 
 ### Create OIR with no subscription test step
 
@@ -325,6 +295,37 @@ Reset the workspace for this test case.
 #### [Mutate OIR](./fragments/oir/crud/update_query.md)
 
 #### [OIR is not attached to any subscription](./fragments/oir/oir_has_no_subscription.md)
+
+### [Cleanup After Test Case test step](./fragments/oir/crud/delete_query.md)
+
+## Request new implicit subscription when mutating an OIR with existing explicit subscription test case
+
+This test case ensures that a DSS properly allows a client to request that a new implicit subscription be created for an existing OIR
+with an explicit subscription attached.
+
+### [Create an explicit subscription test step](./fragments/sub/crud/create_query.md)
+
+### [Create OIR with explicit subscription test step](./fragments/oir/crud/create_query.md)
+
+#### [OIR is attached to the expected subscription](./fragments/oir/oir_has_expected_subscription.md)
+
+### [Mutate OIR to request new implicit subscription test step](./fragments/oir/crud/update_query.md)
+
+### Validate that the OIR is now attached to an implicit subscription test step
+
+#### [Get OIR](./fragments/oir/crud/read_query.md)
+
+#### 🛑 OIR is attached to a new subscription check
+
+If the DSS under test fails to attach the OIR to a subscription that is different from the one it is currently attached to when it is requested to do so,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+
+#### [Get subscription](./fragments/sub/crud/read_query.md)
+
+#### 🛑 OIR is now attached to an implicit subscription check
+
+If the DSS under test fails to attach the OIR to an implicit subscription (which may either already exist or be newly created) when it is requested to do so,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 ## Cleanup
 
