@@ -19,6 +19,10 @@ A resources.astm.f3411.DSSInstanceResource containing the "primary" DSS instance
 
 A resources.astm.f3411.DSSInstancesResource containing at least two DSS instances complying with ASTM F3411-22a.
 
+### planning_area
+
+A [resources.astm.f3411.PlanningAreaResource](../../../../resources/planning_area.py) containing a planning area that covers the area of interest for this
+
 ### test_exclusions
 
 A [resources.dev.TestExclusionsResource](../../../../resources/dev/test_exclusions.py) containing test exclusions parameters like whether private addresses are allowed.
