@@ -18,7 +18,7 @@ from monitoring.monitorlib.temporal import Time
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
-from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
+from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
     DSSInstanceResource,
     DSSInstancesResource,

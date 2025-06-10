@@ -21,7 +21,7 @@ are properly propagated to every other DSS instance participating in the deploym
 
 ### planning_area
 
-[`PlanningAreaResource`](../../../../../resources/astm/f3548/v21/planning_area.py) describes the 3D volume in which constraint reference will be created.
+[`PlanningAreaResource`](../../../../../resources/planning_area.py) describes the 3D volume in which constraint reference will be created.
 
 ### client_identity
 

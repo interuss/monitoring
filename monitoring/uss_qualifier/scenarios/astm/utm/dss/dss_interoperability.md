@@ -18,7 +18,7 @@ A [resources.astm.f3548.v21.DSSInstancesResource](../../../../resources/astm/f35
 
 ### planning_area
 
-A [resources.astm.f3548.v21.PlanningAreaResource](../../../../resources/astm/f3548/v21/planning_area.py) containing a planning area that covers the area of interest for this
+A [resources.PlanningAreaResource](../../../../resources/planning_area.py) containing a planning area that covers the area of interest for this
 
 ### test_exclusions
 

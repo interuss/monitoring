@@ -20,7 +20,7 @@ Verifies that all subscription CRUD operations performed on a single DSS instanc
 
 ### planning_area
 
-[`PlanningAreaResource`](../../../../../resources/astm/f3548/v21/planning_area.py) describes the 3D volume in which subscriptions will be created.
+[`PlanningAreaResource`](../../../../../resources/planning_area.py) describes the 3D volume in which subscriptions will be created.
 
 ### second_utm_auth
 
