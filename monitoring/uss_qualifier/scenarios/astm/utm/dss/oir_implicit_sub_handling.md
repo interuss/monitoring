@@ -327,6 +327,37 @@ it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm
 If the DSS under test fails to attach the OIR to an implicit subscription (which may either already exist or be newly created) when it is requested to do so,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
+### [Cleanup After Test Case test step](./cleanup_after_testcase_oir_subs.md)
+
+## Request new implicit subscription when mutating an OIR without subscription test case
+
+This test case ensures that a DSS properly allows a client to request that a new implicit subscription be created for an existing OIR
+that is not attached to any subscription.
+
+### Create OIR with no subscription test step
+
+#### [Create OIR](./fragments/oir/crud/create_query.md)
+
+#### [OIR is not attached to any subscription](./fragments/oir/oir_has_no_subscription.md)
+
+### [Mutate OIR to request new implicit subscription test step](./fragments/oir/crud/update_query.md)
+
+### Validate that the OIR is now attached to an implicit subscription test step
+
+#### [Get OIR](./fragments/oir/crud/read_query.md)
+
+#### 🛑 OIR is attached to a new subscription check
+
+If the DSS under test fails to attach the OIR to a subscription when it is requested to do so,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+
+#### [Get subscription](./fragments/sub/crud/read_query.md)
+
+#### 🛑 OIR is now attached to an implicit subscription check
+
+If the DSS under test fails to attach the OIR to an implicit subscription (which may either already exist or be newly created) when it is requested to do so,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+
 ## Cleanup
 
 ### [Remove OIRs created during this test](clean_workspace_op_intents.md)
