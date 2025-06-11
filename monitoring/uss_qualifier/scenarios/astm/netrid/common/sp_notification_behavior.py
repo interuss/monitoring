@@ -1,57 +1,47 @@
+import time
 from datetime import timedelta
-from typing import List, Optional, Type, Union
+from typing import Callable, Dict, List, Optional, Set, Tuple, Type, Union
 
 from future.backports.datetime import datetime
 from implicitdict import ImplicitDict
-from loguru import logger
 from requests.exceptions import RequestException
 from s2sphere import LatLngRect
 from uas_standards.astm.f3411.v19 import api as api_v19
 from uas_standards.astm.f3411.v22a import api as api_v22a
 
-from monitoring.monitorlib.clients.mock_uss.interactions import QueryDirection
+from monitoring.monitorlib.clients.mock_uss.interactions import (
+    Interaction,
+    QueryDirection,
+)
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.temporal import Time
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.resources.astm.f3411.dss import (
-    DSSInstanceResource,
-    DSSInstancesResource,
-)
+from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.interuss import IDGeneratorResource
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
     MockUSSResource,
 )
 from monitoring.uss_qualifier.resources.netrid import (
-    EvaluationConfigurationResource,
     FlightDataResource,
-    NetRIDObserversResource,
     NetRIDServiceProviders,
 )
-from monitoring.uss_qualifier.scenarios.astm.netrid import (
-    display_data_evaluator,
-    injection,
-)
+from monitoring.uss_qualifier.scenarios.astm.netrid import injection
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
-from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection import (
-    InjectedFlightCollection,
-)
 from monitoring.uss_qualifier.scenarios.astm.netrid.injection import (
     InjectedFlight,
     InjectedTest,
 )
-from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
-    VirtualObserver,
-)
 from monitoring.uss_qualifier.scenarios.interuss.mock_uss.test_steps import (
     direction_filter,
     get_mock_uss_interactions,
-    operation_filter,
     status_code_filter,
 )
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
+
+INJECTION_LATENCY_MARGIN_SEC = 1
 
 
 class ServiceProviderNotificationBehavior(GenericTestScenario):
@@ -154,74 +144,115 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
         )
 
     def _validate_mock_uss_notifications(self, scenario_start_time: datetime):
-        def post_isa_filter(interaction):
+        """verify that required notifications have been received within the permissible delay."""
+
+        # The version-specific type of the notification (required for parsing)
+        PutIsaParamsType = self._notif_param_type()
+        # Participants we injected flights in
+        relevant_participant_ids = set(
+            [tf.uss_participant_id for tf in self._injected_flights]
+        )
+
+        def post_isa_filter(interaction: Interaction):
             return (
                 interaction.query.request.method == "POST"
                 and "/uss/identification_service_areas/"
                 in interaction.query.request.url
             )
 
-        interactions, _ = get_mock_uss_interactions(
-            self,
-            self._mock_uss,
-            Time(scenario_start_time),
-            direction_filter(QueryDirection.Incoming),
-            status_code_filter(204),
-            # Not relying on operation_filter because it currently only knows about ASTM F3548 operations
-            post_isa_filter,
-        )
+        def fetch_interactions() -> List[Interaction]:
+            return get_mock_uss_interactions(
+                self,
+                self._mock_uss,
+                Time(scenario_start_time),
+                direction_filter(QueryDirection.Incoming),
+                status_code_filter(204),
+                post_isa_filter,
+            )[0]
 
-        # For each of the service providers we injected flights in,
-        # we're looking for an inbound notification for the mock_uss's subscription:
-        for test_flight in self._injected_flights:
-            notification_reception_times = []
-            with self.check(
-                "Service Provider issued a notification", test_flight.uss_participant_id
-            ) as check:
-                notif_param_type = self._notif_param_type()
-                sub_notif_interactions: List[(datetime, notif_param_type)] = [
-                    (
-                        i.query.request.received_at.datetime,
-                        ImplicitDict.parse(i.query.request.json, notif_param_type),
-                    )
-                    for i in interactions
-                ]
-                for received_at, notification in sub_notif_interactions:
-                    for sub in notification.subscriptions:
-                        if (
-                            sub.subscription_id == self._subscription_id
-                            and "service_area"
-                            in notification  # deletion notification don't have this field
-                            and notification.service_area.owner
-                            == test_flight.uss_participant_id
-                        ):
-                            notification_reception_times.append(received_at)
+        def relevant_notified_subs(
+            parsed_interactions: List[Tuple[datetime, PutIsaParamsType]],
+            relevant_pids: Set[str],
+        ) -> Dict[str, List[datetime]]:
+            """Get a list of (time, participant_id) tuples for received notifications that are relevant
+            to the subscription we are expecting notifications for."""
+            relevant = []
+            for received_at, notification in parsed_interactions:
+                for sub in notification.subscriptions:
+                    if (
+                        sub.subscription_id == self._subscription_id
+                        and "service_area"
+                        in notification  # deletion notification don't have this field
+                        and notification.service_area.owner in relevant_pids
+                        and received_at
+                        > scenario_start_time  # We may sometimes receive slightly older and unrelated notifications which we filter out
+                    ):
+                        relevant.append((received_at, notification.service_area.owner))
 
-                if len(notification_reception_times) == 0:
-                    check.record_failed(
-                        summary="No notification received",
-                        details=f"No notification received from {test_flight.uss_participant_id} for subscription {self._subscription_id} about flight {test_flight.test_id} that happened within the subscription's boundaries.",
-                    )
-                    continue
+            notifs_by_participant: Dict[str, List[datetime]] = {}
+            for received_at, participant_id in relevant:
+                if participant_id not in notifs_by_participant:
+                    notifs_by_participant[participant_id] = []
+                notifs_by_participant[participant_id].append(received_at)
+            return notifs_by_participant
 
-            # The performance requirements define 95th and 99th percentiles for the SP to respect,
-            # which we can't strictly check with one (or very few) samples.
-            # Furthermore, we use the time of injection as the 'starting point', which is necessarily before the SP
-            # actually becomes aware of the subscription (when the ISA is created at the DSS)
-            # the p95 to respect is 1 second, the p99 is 3 seconds.
-            # As an approximation, we check that the single sample (or the average of the few) is below the p99.
-            notif_latencies = [
-                l - test_flight.query_timestamp for l in notification_reception_times
+        def parse_interactions(
+            raw_interactions: List[Interaction],
+        ) -> List[Tuple[datetime, PutIsaParamsType]]:
+            return [
+                (
+                    i.query.request.received_at.datetime,
+                    ImplicitDict.parse(i.query.request.json, PutIsaParamsType),
+                )
+                for i in raw_interactions
             ]
-            avg_latency = sum(notif_latencies, timedelta(0)) / len(notif_latencies)
+
+        def condition(raw_interactions: List[Interaction]) -> bool:
+            """returns true once we have received notifications from all relevant service providers."""
+            pids_having_notified = relevant_notified_subs(
+                parse_interactions(raw_interactions), relevant_participant_ids
+            )
+            # We're done once we have a notification from each SP we injected a flight in
+            return len(pids_having_notified) == len(relevant_participant_ids)
+
+        # notifications are not immediate: we optimistically try early, and retry until
+        # the permissible delay has passed, or we have received all notifications.
+        interactions = retry_with_backoff(
+            fetch_interactions, retries=3, delay=1, condition=condition
+        )
+        # fish out the notification times per participant ID
+        notifs_by_participant = relevant_notified_subs(
+            parse_interactions(interactions), relevant_participant_ids
+        )
+        # For each of the service providers we injected flights in,
+        # check the latency between the flight injection and the notification reception time.
+        for test_flight in self._injected_flights:
             with self.check(
                 "Service Provider notification was received within delay",
                 test_flight.uss_participant_id,
             ) as check:
-                if avg_latency.seconds > self._rid_version.dp_data_resp_percentile99_s:
+                notif_reception_times = notifs_by_participant.get(
+                    test_flight.uss_participant_id, []
+                )
+
+                if len(notif_reception_times) == 0:
+                    check.record_failed(
+                        summary="No notification received",
+                        details=f"No notification received within roughly {self._rid_version.dp_data_resp_percentile99_s} seconds from {test_flight.uss_participant_id} for subscription {self._subscription_id} about flight {test_flight.test_id} that happened within the subscription's boundaries.",
+                    )
+                    continue
+
+                # We don't expect more than one notification. If this happens we take the first one.
+                latency = min(notif_reception_times) - test_flight.query_timestamp
+
+                if (
+                    latency.seconds
+                    > self._rid_version.dp_data_resp_percentile99_s
+                    + INJECTION_LATENCY_MARGIN_SEC
+                ):
                     check.record_failed(
                         summary="Notification received too late",
-                        details=f"Notification(s) received {avg_latency} after the flight ended, which is more than the allowed 99th percentile of {self._rid_version.dp_data_resp_percentile99_s} seconds.",
+                        details=f"Notification received {latency} after the flight was injected, which is more than the allowed 99th percentile of {self._rid_version.dp_data_resp_percentile99_s} seconds.",
                     )
 
     def _notif_operation_id(self) -> Union[api_v19.OperationID | api_v22a.OperationID]:
@@ -280,3 +311,21 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
                     details=f"While trying to delete a test flight from {sp.participant_id}, encountered error:\n{stacktrace}",
                 )
         self.end_cleanup()
+
+
+def retry_with_backoff(
+    operation: Callable[[], List],
+    retries: int,
+    delay: int,
+    condition: Callable[[List], bool],
+) -> List:
+    """Retry an operation with a delay, up to a certain number of retries,
+    until the condition is met or retries are exhausted.
+    """
+    for attempt in range(retries + 1):
+        result = operation()
+        if condition(result):
+            return result
+        if attempt < retries:
+            time.sleep(delay)
+    return result
