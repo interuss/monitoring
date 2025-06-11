@@ -71,6 +71,12 @@ class SpOperatorNotifyMissingFields(GenericTestScenario):
         for field in MANDATORY_TELEMETRY_FIELDS + [
             f"position.{f}" for f in MANDATORY_POSITION_FIELDS
         ]:
+
+            if field == "timestamp":
+                # TODO: See #1042: Telemetry may be used as timing for data
+                # delivery, blanking it may confuse USSs
+                continue
+
             self._frozen_flights_data = self._flights_data.truncate_flights_field(
                 field
             ).freeze_flights()
