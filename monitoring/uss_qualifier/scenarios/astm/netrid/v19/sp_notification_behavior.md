@@ -55,12 +55,6 @@ at which a flight was injected.
 
 #### [Get mock_uss interactions](../../../interuss/mock_uss/get_mock_uss_interactions.md)
 
-#### ℹ️ Service Provider issued a notification check
-
-This check validates that each Service Provider at which a test flight was injected properly notified the mock_uss.
-
-ASTM F3411 V19 has no explicit requirement for this check, so triggering it will raise an informational warning.
-
 #### ℹ️ Service Provider notification was received within delay check
 
 This check validates that the notification from each Service Provider was received by the mock_uss within the specified delay.
