@@ -1,13 +1,12 @@
 import uuid
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import arrow
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.rid.v1.injection import ChangeTestResponse
 
 from monitoring.monitorlib import geo
-from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing.injection_api import (
     CreateTestParameters,
     TestFlight,
@@ -92,19 +91,32 @@ def inject_flights(
                     query_timestamp=query.request.timestamp,
                 )
             )
-            earliest_time = min(t.timestamp.datetime for t in flight.telemetry)
-            latest_time = max(t.timestamp.datetime for t in flight.telemetry)
-            if start_time is None or earliest_time < start_time:
-                start_time = earliest_time
-            if end_time is None or latest_time > end_time:
-                end_time = latest_time
-        now = arrow.utcnow().datetime
-        dt0 = (start_time - now).total_seconds()
-        dt1 = (end_time - now).total_seconds()
-        test_scenario.record_note(
-            f"{test_id} time range",
-            f"Injected flights start {dt0:.1f} seconds from now and end {dt1:.1f} seconds from now",
-        )
+            timestamps = [
+                t.timestamp.datetime
+                for t in flight.telemetry
+                if t.has_field_with_value("timestamp")
+            ]
+            if timestamps:
+                earliest_time = min(timestamps)
+                latest_time = max(timestamps)
+                if start_time is None or earliest_time < start_time:
+                    start_time = earliest_time
+                if end_time is None or latest_time > end_time:
+                    end_time = latest_time
+
+        if start_time and end_time:
+            now = arrow.utcnow().datetime
+            dt0 = (start_time - now).total_seconds()
+            dt1 = (end_time - now).total_seconds()
+            test_scenario.record_note(
+                f"{test_id} time range",
+                f"Injected flights start {dt0:.1f} seconds from now and end {dt1:.1f} seconds from now",
+            )
+        else:
+            test_scenario.record_note(
+                f"{test_id} time range",
+                f"Injected flights have no timestamps",
+            )
 
     # Make sure the injected flights can be identified correctly by the test harness
     with test_scenario.check("Identifiable flights") as check:
