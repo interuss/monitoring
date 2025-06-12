@@ -12,7 +12,7 @@ from uuid6 import uuid6, uuid7
 from monitoring.monitorlib import geotemporal
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
+from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss import IDGeneratorResource

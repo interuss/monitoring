@@ -15,7 +15,7 @@ This test validates that a DSS correctly implements the [OVN Request Optional Ex
 [`ClientIdentityResource`](../../../resources/communications/client_identity.py) the client identity that will be used to create and update operational intent references.
 
 ### planning_area
-[`PlanningAreaResource`](../../../resources/astm/f3548/v21/planning_area.py) describes the 3D volume in which operational intent references will be created.
+[`PlanningAreaResource`](../../../resources/planning_area.py) describes the 3D volume in which operational intent references will be created.
 
 ## Setup test case
 

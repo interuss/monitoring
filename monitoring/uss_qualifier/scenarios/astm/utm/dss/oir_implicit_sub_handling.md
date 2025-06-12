@@ -16,7 +16,7 @@ Checks that implicit subscriptions are properly created, mutated and cleaned up.
 
 ### planning_area
 
-[`PlanningAreaResource`](../../../../resources/astm/f3548/v21/planning_area.py) describes the 3D volume in which subscriptions will be created.
+[`PlanningAreaResource`](../../../../resources/planning_area.py) describes the 3D volume in which subscriptions will be created.
 
 ### utm_client_identity
 
