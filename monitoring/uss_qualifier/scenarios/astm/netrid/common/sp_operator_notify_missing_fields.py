@@ -108,7 +108,7 @@ class SpOperatorNotifyMissingFields(GenericTestScenario):
                 timestamp = telemetry.get("timestamp", None)
                 if timestamp:
                     start_time = min(start_time, timestamp.datetime)
-                    end_time = max(start_time, timestamp.datetime)
+                    end_time = max(end_time, timestamp.datetime)
 
         return start_time, end_time
 
