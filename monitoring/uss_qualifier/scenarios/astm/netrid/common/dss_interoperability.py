@@ -7,6 +7,8 @@ from enum import Enum
 from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
+import s2sphere
+
 from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch.rid import ISA
 from monitoring.monitorlib.geo import get_latlngrect_vertices, make_latlng_rect
@@ -25,8 +27,8 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 SHORT_WAIT_SEC = 5
 
-DEFAULT_LOWER_ALT_M = 0
-DEFAULT_UPPER_ALT_M = 300
+DEFAULT_LOWER_ALT_M = 20
+DEFAULT_UPPER_ALT_M = 400
 
 
 class EntityType(str, Enum):
@@ -52,6 +54,7 @@ class DSSInteroperability(GenericTestScenario):
     _dss_others: List[DSSWrapper]
     _allow_private_addresses: bool = False
     _context: Dict[str, TestEntity]
+    _area_vertices: List[s2sphere.LatLng]
     _planning_area: PlanningAreaSpecification
 
     def __init__(
@@ -69,9 +72,9 @@ class DSSInteroperability(GenericTestScenario):
             if not dss.is_same_as(primary_dss_instance.dss_instance)
         ]
 
-        self._planing_area = planning_area.specification
+        self._planning_area = planning_area.specification
         self._area_vertices = get_latlngrect_vertices(
-            make_latlng_rect(self._planing_area.volume)
+            make_latlng_rect(self._planning_area.volume)
         )
         if test_exclusions is not None:
             self._allow_private_addresses = test_exclusions.allow_private_addresses
@@ -812,15 +815,15 @@ class DSSInteroperability(GenericTestScenario):
 
         return dict(
             area_vertices=self._area_vertices,
-            alt_lo=self._planing_area.volume.altitude_lower_wgs84_m(
+            alt_lo=self._planning_area.volume.altitude_lower_wgs84_m(
                 DEFAULT_LOWER_ALT_M
             ),
-            alt_hi=self._planing_area.volume.altitude_upper_wgs84_m(
+            alt_hi=self._planning_area.volume.altitude_upper_wgs84_m(
                 DEFAULT_UPPER_ALT_M
             ),
             start_time=now,
             end_time=now + duration,
-            uss_base_url=self._planing_area.get_base_url(),
+            uss_base_url=self._planning_area.get_base_url(),
         )
 
     def cleanup(self):

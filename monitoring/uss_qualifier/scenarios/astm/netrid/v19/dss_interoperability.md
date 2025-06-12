@@ -21,7 +21,9 @@ A resources.astm.f3411.DSSInstancesResource containing at least two DSS instance
 
 ### planning_area
 
-A [resources.astm.f3411.PlanningAreaResource](../../../../resources/planning_area.py) containing a planning area that covers the area of interest for this
+A [resources.PlanningAreaResource](../../../../resources/planning_area.py) containing a planning area to be used when creating relevant resources on the DSS instances.
+
+Note that the bounding box of the area will be used, not the area itself.
 
 ### test_exclusions
 
