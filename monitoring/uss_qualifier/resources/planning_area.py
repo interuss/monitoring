@@ -23,7 +23,7 @@ from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class PlanningAreaSpecification(ImplicitDict):
-    """Specifies an area and USS related information to create test resources that require them."""
+    """Specifies a 2D or 3D volume along with USS related information to create test resources that require them."""
 
     base_url: Optional[str]
     """Base URL for the USS

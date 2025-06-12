@@ -11,17 +11,15 @@ from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
 from monitoring.monitorlib.schema_validation import F3548_21
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
+from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
     DSSInstance,
     DSSInstanceResource,
     DSSInstancesResource,
 )
-from monitoring.uss_qualifier.resources.astm.f3548.v21.planning_area import (
-    SubscriptionParams,
-)
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
+from monitoring.uss_qualifier.resources.planning_area import SubscriptionParams
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.sub.crud import (
     sub_create_query,

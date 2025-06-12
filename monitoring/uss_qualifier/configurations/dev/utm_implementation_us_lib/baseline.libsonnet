@@ -104,7 +104,7 @@ function(env) {
 
           // Area that will be used for queries and resource creation that are geo-located
           planning_area: {
-            resource_type: 'resources.astm.f3548.v21.PlanningAreaResource',
+            resource_type: 'resources.PlanningAreaResource',
             specification: {
               volume: {
                 outline_polygon: {

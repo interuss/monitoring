@@ -36,7 +36,7 @@ Optional scopes that will allow the scenario to provide additional coverage:
 
 ### planning_area
 
-[`PlanningAreaResource`](../../../../../resources/astm/f3548/v21/planning_area.py) describes the 3D volume in which entities will be created.
+[`PlanningAreaResource`](../../../../../resources/planning_area.py) describes the 3D volume in which entities will be created.
 
 ## Setup test case
 

@@ -16,7 +16,7 @@ Perform basic operations on a single DSS instance to create, update and delete s
 
 ### planning_area
 
-[`PlanningAreaResource`](../../../../resources/astm/f3548/v21/planning_area.py) describes the 3D volume in which subscriptions will be created.
+[`PlanningAreaResource`](../../../../resources/planning_area.py) describes the 3D volume in which subscriptions will be created.
 
 ### problematically_big_area
 

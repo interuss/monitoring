@@ -13,7 +13,7 @@ from uas_standards.astm.f3548.v21.constants import Scope
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.testing import make_fake_url
-from monitoring.uss_qualifier.resources.astm.f3548.v21 import PlanningAreaResource
+from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
     DSSInstanceResource,
     DSSInstancesResource,
