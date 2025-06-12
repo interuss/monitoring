@@ -12,6 +12,7 @@ resources:
   id_generator: resources.interuss.IDGeneratorResource
   service_area: resources.netrid.ServiceAreaResource
   problematically_big_area: resources.VerticesResource
+  planning_area: resources.PlanningAreaResource
   test_exclusions: resources.dev.TestExclusionsResource?
   uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
 actions:
@@ -56,6 +57,7 @@ actions:
         id_generator: id_generator
         service_area: service_area
         problematically_big_area: problematically_big_area
+        planning_area: planning_area
         test_exclusions: test_exclusions?
       specification:
         action_to_repeat:
@@ -70,6 +72,7 @@ actions:
               isa: service_area
               client_identity: utm_client_identity
               problematically_big_area: problematically_big_area
+              planning_area: planning_area
               test_exclusions: test_exclusions?
           on_failure: Continue
         dss_instances_source: dss_instances
