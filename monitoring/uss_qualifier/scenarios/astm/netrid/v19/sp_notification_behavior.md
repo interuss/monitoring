@@ -55,13 +55,13 @@ at which a flight was injected.
 
 #### [Get mock_uss interactions](../../../interuss/mock_uss/get_mock_uss_interactions.md)
 
-#### ℹ️ Service Provider notification was received within delay check
+#### ℹ️ Service Provider notification was received check
 
-This check validates that the notification from each Service Provider was received by the mock_uss within the specified delay.
+This check validates that the notification from each Service Provider was received by the mock_uss within a reasonable delay.
 
 ASTM F3411 V19 has no explicit requirement for this check, so triggering it will raise an informational warning.
 
-This check will be triggered if it takes longer than 3 seconds between the injection of the flight and the notification being received by the mock_uss.
+This check will be triggered if it takes longer than approximately 3 seconds between the injection of the flight and the notification being received by the mock_uss.
 
 ## Cleanup
 
