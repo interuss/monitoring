@@ -16,9 +16,7 @@ from monitoring.monitorlib.geo import Volume3D, make_latlng_rect
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.temporal import Time
 from monitoring.monitorlib.testing import make_fake_url
-from monitoring.uss_qualifier.resources.astm.f3548.v21.subscription_params import (
-    SubscriptionParams,
-)
+from monitoring.uss_qualifier.resources.astm.f3548.params import SubscriptionParams
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
