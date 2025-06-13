@@ -4,10 +4,8 @@ from uas_standards.astm.f3548.v21.api import OperationalIntentReference, Subscri
 
 from monitoring.monitorlib.fetch.rid import FetchedSubscription
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
+from monitoring.uss_qualifier.resources.astm.f3548.params import SubscriptionParams
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
-from monitoring.uss_qualifier.resources.astm.f3548.v21.subscription_params import (
-    SubscriptionParams,
-)
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 # TODO: add functions implementing checks documented in this package

@@ -7,9 +7,7 @@ from monitoring.monitorlib import schema_validation
 from monitoring.monitorlib.fetch.scd import FetchedSubscription, FetchedSubscriptions
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
 from monitoring.monitorlib.schema_validation import F3548_21
-from monitoring.uss_qualifier.resources.astm.f3548.v21.subscription_params import (
-    SubscriptionParams,
-)
+from monitoring.uss_qualifier.resources.astm.f3548.params import SubscriptionParams
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators import (
     fail_with_schema_errors,
 )
