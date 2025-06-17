@@ -1,0 +1,60 @@
+resources:
+  uss1_base_url:
+    resource_type: USSBaseURL
+    specification:
+      uss_base_url: http://mock-uss.interuss.com # Does not need to exist for this test's focus
+
+  uss1_auth_adapter:
+    resource_type: AuthAdapter
+    specification:
+      auth_spec: "" # No auth
+
+  dynamic_geospatial_provider:
+    resource_type: GeospatialInfoProvider
+    specification:
+      geospatial_info_provider:
+        participant_id: "dynamic-geo-provider"
+        # TODO: Replace <YOUR_COMMIT_HASH> with the actual commit hash after this file is committed and pushed.
+        # For now, using a placeholder. In a real CI, this could be dynamically replaced or point to a 'main' branch.
+        # Using a known existing file from the repo for now to ensure the URL is valid.
+        # Replace with the actual path to sample_dynamic_restrictions.geojson on a specific commit/branch.
+        dynamic_source_url: "https://raw.githubusercontent.com/interuss/monitoring/main/monitoring/uss_qualifier/test_data/sample_dynamic_restrictions.geojson"
+        dynamic_source_type: "geojson"
+        dynamic_source_interpretation_rule: "treat_all_as_restrictions"
+
+  uss1_flight_planner:
+    resource_type: FlightPlanner
+    specification:
+      target:
+        name: USS Under Test
+        participant_id: "mock-uss"
+        injection_base_url: http://mock-uss.interuss.com/f3548v21 # Matches uss1_base_url for consistency
+      auth_adapter: uss1_auth_adapter
+
+scenarios:
+  - scenario_type: custom_test_suite.CustomTestSuite
+    name: Dynamic Geospatial Data Validation
+    actions:
+      - test_run_type: ActionGenerator
+        name: Validate Dynamic Geospatial Data against Mock USS
+        specification:
+          action_type: interuss.geospatial_map.DynamicGeospatialMapValidator
+          action_config:
+            geospatial_provider: dynamic_geospatial_provider
+            flight_planner: uss1_flight_planner
+            injection_target: # Corresponds to FlightPlanner's target
+              name: USS Under Test
+              participant_id: "mock-uss"
+              injection_base_url: http://mock-uss.interuss.com/f3548v21
+            flight_altitude_m: 70
+            flight_duration_s: 45
+            flight_extent_buffer_m: 25
+            wait_for_operational_intent: false # False, as mock USS won't confirm, and we focus on planning attempts
+        resources:
+          geospatial_provider: dynamic_geospatial_provider
+          flight_planner: uss1_flight_planner
+          # Implicitly uses uss_base_url and auth_adapter from flight_planner's dependencies if needed by action's setup.
+          # The DynamicGeospatialMapValidationAction sets up its UTMClientSession for the injection_target.
+          # No separate base_url/auth_adapter resources needed directly by the action generator's `resources` map here.
+          # This might need adjustment based on how the test runner resolves transitive dependencies for action setup.
+          # For now, assuming FlightPlannerResource and GeospatialInfoProviderResource are sufficient.
