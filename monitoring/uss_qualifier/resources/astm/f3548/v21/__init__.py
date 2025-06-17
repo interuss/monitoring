@@ -3,6 +3,7 @@ import warnings
 __all__ = ["DSSInstanceResource", "DSSInstancesResource", "PlanningAreaResource"]
 
 
+# TODO remove the exposure of PlanningAreaResource (and revert this __init__.py file to a normal state) when enough time has passed
 def __getattr__(name):
     if name == "PlanningAreaResource":
         warnings.warn(
