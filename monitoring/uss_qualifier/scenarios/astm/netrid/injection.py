@@ -23,6 +23,7 @@ class InjectedFlight(ImplicitDict):
     test_id: str
     flight: TestFlight
     query_timestamp: datetime
+    query_duration_s: float
 
 
 class InjectedTest(ImplicitDict):
@@ -89,6 +90,7 @@ def inject_flights(
                     test_id=test_id,
                     flight=TestFlight(flight),
                     query_timestamp=query.request.timestamp,
+                    query_duration_s=query.response.elapsed_s,
                 )
             )
             timestamps = [

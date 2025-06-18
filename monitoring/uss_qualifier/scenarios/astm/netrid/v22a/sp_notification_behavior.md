@@ -55,19 +55,13 @@ at which a flight was injected.
 
 #### [Get mock_uss interactions](../../../interuss/mock_uss/get_mock_uss_interactions.md)
 
-#### ⚠️ Service Provider issued a notification check
+#### ⚠️ Service Provider notification was received check
 
-This check validates that each Service Provider at which a test flight was injected properly notified the mock_uss.
-
-If this is not the case, the respective Service Provider fails to meet **[astm.f3411.v22a.NET0740](../../../../requirements/astm/f3411/v22a.md)**.
-
-#### ⚠️ Service Provider notification was received within delay check
-
-This check validates that the notification from each Service Provider was received by the mock_uss within the specified delay.
+This check validates that the notification from each Service Provider was received by the mock_uss within a reasonable delay.
 
 **[astm.f3411.v22a.NET0740](../../../../requirements/astm/f3411/v22a.md)** states that a Service Provider must notify the owner of a subscription within `NetDpDataResponse95thPercentile` (1 second) second 95% of the time and `NetDpDataResponse99thPercentile` (3 seconds) 99% of the time as soon as the SP becomes aware of the subscription.
 
-This check will be failed if it takes longer than 3 seconds between the injection of the flight and the notification being received by the mock_uss.
+This check will be failed if it takes longer than approximately 3 seconds between the injection of the flight and the notification being received by the mock_uss.
 
 ## Cleanup
 
