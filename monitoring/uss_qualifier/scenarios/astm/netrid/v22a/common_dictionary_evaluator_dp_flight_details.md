@@ -2,15 +2,45 @@
 
 This fragment is implemented in `common_dictionary_evaluator.py:RIDCommonDictionaryEvaluator.evaluate_dp_details`.
 
-## ⚠️ UAS ID presence in flight details check
+## ⚠️ UAS ID (Serial number) is exposed correctly check
 
-**[astm.f3411.v22a.NET0470](../../../../requirements/astm/f3411/v22a.md)** requires that Net-RID Display Provider shall provide access to required and optional fields to Remote ID Display Applications according to the Common Dictionary. This check validates that the UAS ID is present in the information sent by the Display Provider. (**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)**)
+If the UAS ID's serial number value exposed by the observation API is valid this check will succeed per
+**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0470,Table1,1a](../../../../requirements/astm/f3411/v22a.md)** since the DP exposes data consistent with the Common Data Dictionary.
 
-## ⚠️ UAS ID is consistent with injected one check
+## ⚠️ UAS ID (Serial number) is consistent with injected value check
 
-If the UA ID value exposed by the observer API is inconsistent with the possible injected values this check will fail per:
-**[astm.f3411.v22a.NET0450](../../../../requirements/astm/f3411/v22a.md)** because the DP fails to provide accurate data;
-**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)**  because the DP fails to expose data consistent with the valid injected value.
+If the UAS ID's serial number value exposed by the observation API is consistent with the injected value this check will succeed per
+**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0470,Table1,1a](../../../../requirements/astm/f3411/v22a.md)** since the DP exposes data consistent with the valid injected value.
+
+## ⚠️ UAS ID (Registration ID) is exposed correctly check
+
+If the UAS ID's registration ID value exposed by the observation API is valid this check will succeed per
+**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0470,Table1,1b](../../../../requirements/astm/f3411/v22a.md)** since the DP exposes data consistent with the Common Data Dictionary.
+
+## ⚠️ UAS ID (Registration ID) is consistent with injected value check
+
+If the UAS ID's registration ID value exposed by the observation API is consistent with the injected value this check will succeed per
+**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0470,Table1,1b](../../../../requirements/astm/f3411/v22a.md)** since the DP exposes data consistent with the valid injected value.
+
+## ⚠️ UAS ID (UTM ID) is exposed correctly check
+
+If the UAS ID's UTM ID value exposed by the observation API is valid this check will succeed per
+**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0470,Table1,1c](../../../../requirements/astm/f3411/v22a.md)** since the DP exposes data consistent with the Common Data Dictionary.
+
+## ⚠️ UAS ID (UTM ID) is consistent with injected value check
+
+If the UAS ID's UTM ID value exposed by the observation API is consistent with the injected value this check will succeed per
+**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0470,Table1,1c](../../../../requirements/astm/f3411/v22a.md)** since the DP exposes data consistent with the valid injected value.
+
+## ⚠️ UAS ID (Specific session ID) is exposed correctly check
+
+If the UAS ID's Specific session ID value exposed by the observation API is valid this check will succeed per
+**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0470,Table1,1d](../../../../requirements/astm/f3411/v22a.md)** since the DP exposes data consistent with the Common Data Dictionary.
+
+## ⚠️ UAS ID (Specific session ID) is consistent with injected value check
+
+If the UAS ID's Specific session ID value exposed by the observation API is consistent with the injected value this check will succeed per
+**[astm.f3411.v22a.NET0470,Table1,1](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0470,Table1,1d](../../../../requirements/astm/f3411/v22a.md)** since the DP exposes data consistent with the valid injected value.
 
 ## ⚠️ UA classification type is consistent with injected value check
 
