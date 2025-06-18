@@ -1916,19 +1916,6 @@ def test_evaluate_uas_id():
 
 def test_evaluate_uas_id_serial_number():
 
-    # We try to reuse internal testing function, so we mock a normal _generic_evaluator
-    def mock(self, injected, sp_observed, dp_observed, participant, query_timestamp):
-        if sp_observed:
-            return RIDCommonDictionaryEvaluator._evaluate_uas_id_serial_number(
-                self, injected, sp_observed, participant, query_timestamp
-            )
-        # We reuse the SP one for the DP since we don't have a DP
-        return RIDCommonDictionaryEvaluator._evaluate_uas_id_serial_number(
-            self, injected, dp_observed, participant, query_timestamp
-        )
-
-    RIDCommonDictionaryEvaluator._test_evaluate_uas_id_serial_number = mock
-
     def injected_field_setter(flight: Any, value: T) -> Any:
         flight["uas_id"] = {"serial_number": value}
         return flight
@@ -1937,17 +1924,15 @@ def test_evaluate_uas_id_serial_number():
         flight["serial_number"] = value
         return flight
 
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["uas"] = {"id": value}
+        return flight
+
     base_args = (
-        "_test_evaluate_uas_id_serial_number",
+        "_evaluate_uas_id_serial_number",
         injected_field_setter,
         sp_field_setter,
-        sp_field_setter,
-    )
-
-    _assert_generic_evaluator_correct_field_is_used(
-        *base_args,
-        valid_value=SerialNumber.generate_valid(),
-        valid_value_2=SerialNumber.generate_valid(),
+        dp_field_setter,
     )
 
     for valid_value in [
@@ -1964,26 +1949,8 @@ def test_evaluate_uas_id_serial_number():
             valid_value=SerialNumber.generate_valid(),
         )
 
-    _assert_generic_evaluator_defaults(
-        *base_args,
-        default_value=None,
-        valid_value=SerialNumber.generate_valid(),
-    )
-
 
 def test_evaluate_uas_id_registration_id():
-    # We try to reuse internal testing function, so we mock a normal _generic_evaluator
-    def mock(self, injected, sp_observed, dp_observed, participant, query_timestamp):
-        if sp_observed:
-            return RIDCommonDictionaryEvaluator._evaluate_uas_id_registration_id(
-                self, injected, sp_observed, participant, query_timestamp
-            )
-        # We reuse the SP one for the DP since we don't have a DP
-        return RIDCommonDictionaryEvaluator._evaluate_uas_id_registration_id(
-            self, injected, dp_observed, participant, query_timestamp
-        )
-
-    RIDCommonDictionaryEvaluator._test_evaluate_uas_id_registration_id = mock
 
     def injected_field_setter(flight: Any, value: T) -> Any:
         flight["uas_id"] = {"registration_id": value}
@@ -1993,17 +1960,15 @@ def test_evaluate_uas_id_registration_id():
         flight["registration_id"] = value
         return flight
 
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["uas"] = {"id": value}
+        return flight
+
     base_args = (
-        "_test_evaluate_uas_id_registration_id",
+        "_evaluate_uas_id_registration_id",
         injected_field_setter,
         sp_field_setter,
-        sp_field_setter,
-    )
-
-    _assert_generic_evaluator_correct_field_is_used(
-        *base_args,
-        valid_value="HB.4242",
-        valid_value_2="HB.2424",
+        dp_field_setter,
     )
 
     for valid_value in ["HB.4242", "HB.2424", "F.FRANCE"]:
@@ -2014,26 +1979,8 @@ def test_evaluate_uas_id_registration_id():
             *base_args, invalid_value=invalid_value, valid_value="HB.4242"
         )
 
-    _assert_generic_evaluator_defaults(
-        *base_args,
-        default_value=None,
-        valid_value="HB.4242",
-    )
-
 
 def test_evaluate_uas_id_utm_id():
-    # We try to reuse internal testing function, so we mock a normal _generic_evaluator
-    def mock(self, injected, sp_observed, dp_observed, participant, query_timestamp):
-        if sp_observed:
-            return RIDCommonDictionaryEvaluator._evaluate_uas_id_utm_id(
-                self, injected, sp_observed, participant, query_timestamp
-            )
-        # We reuse the SP one for the DP since we don't have a DP
-        return RIDCommonDictionaryEvaluator._evaluate_uas_id_utm_id(
-            self, injected, dp_observed, participant, query_timestamp
-        )
-
-    RIDCommonDictionaryEvaluator._test_evaluate_uas_id_utm_id = mock
 
     def injected_field_setter(flight: Any, value: T) -> Any:
         flight["uas_id"] = {"utm_id": value}
@@ -2043,17 +1990,15 @@ def test_evaluate_uas_id_utm_id():
         flight["raw"] = {"uas_id": {"utm_id": value}}
         return flight
 
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["uas"] = {"id": value}
+        return flight
+
     base_args = (
-        "_test_evaluate_uas_id_utm_id",
+        "_evaluate_uas_id_utm_id",
         injected_field_setter,
         sp_field_setter,
-        sp_field_setter,
-    )
-
-    _assert_generic_evaluator_correct_field_is_used(
-        *base_args,
-        valid_value=str(uuid.uuid4()),
-        valid_value_2=str(uuid.uuid4()),
+        dp_field_setter,
     )
 
     for valid_value in [
@@ -2086,26 +2031,8 @@ def test_evaluate_uas_id_utm_id():
         else:
             _assert_generic_evaluator_equivalent(*base_args, v1=v1, v2=v2)
 
-    _assert_generic_evaluator_defaults(
-        *base_args,
-        default_value=None,
-        valid_value=str(uuid.uuid4()),
-    )
-
 
 def test_evaluate_uas_id_specific_session_id():
-    # We try to reuse internal testing function, so we mock a normal _generic_evaluator
-    def mock(self, injected, sp_observed, dp_observed, participant, query_timestamp):
-        if sp_observed:
-            return RIDCommonDictionaryEvaluator._evaluate_uas_id_specific_session_id(
-                self, injected, sp_observed, participant, query_timestamp
-            )
-        # We reuse the SP one for the DP since we don't have a DP
-        return RIDCommonDictionaryEvaluator._evaluate_uas_id_specific_session_id(
-            self, injected, dp_observed, participant, query_timestamp
-        )
-
-    RIDCommonDictionaryEvaluator._test_evaluate_uas_id_specific_session_id = mock
 
     def injected_field_setter(flight: Any, value: T) -> Any:
         flight["uas_id"] = {"specific_session_id": value}
@@ -2115,17 +2042,15 @@ def test_evaluate_uas_id_specific_session_id():
         flight["raw"] = {"uas_id": {"specific_session_id": value}}
         return flight
 
+    def dp_field_setter(flight: Any, value: T) -> Any:
+        flight["uas"] = {"id": value}
+        return flight
+
     base_args = (
-        "_test_evaluate_uas_id_specific_session_id",
+        "_evaluate_uas_id_specific_session_id",
         injected_field_setter,
         sp_field_setter,
-        sp_field_setter,
-    )
-
-    _assert_generic_evaluator_correct_field_is_used(
-        *base_args,
-        valid_value=str(uuid.uuid4()),
-        valid_value_2=str(uuid.uuid4()),
+        dp_field_setter,
     )
 
     for valid_value in [
