@@ -66,6 +66,10 @@ class RIDCommonDictionaryEvaluator(object):
     ]
     details_evaluators = [
         "_evaluate_uas_id",
+        "_evaluate_uas_id_serial_number",
+        "_evaluate_uas_id_registration_id",
+        "_evaluate_uas_id_utm_id",
+        "_evaluate_uas_id_specific_session_id",
         "_evaluate_ua_classification",
         "_evaluate_ua_classification_eu_category",
         "_evaluate_ua_classification_eu_class",
@@ -256,18 +260,27 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_uas_id_serial_number(
         self,
-        injected: injection.RIDFlightDetails,
-        observed: FlightDetails,
-        participant: ParticipantID,
-        query_timestamp: datetime.datetime,
+        dp_observed: Optional[observation_api.GetDetailsResponse],
+        **generic_kwargs,
     ):
         """
-        Evaluates UAS ID serial number. Contrary to most generic evaluators, cannot evaluate DP.
+        Evaluates UAS ID serial number.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
+
+        def skip_eval(
+            injected_val: Optional[str], observed_val: Optional[str]
+        ) -> Optional[str]:
+            if not injected_val:
+                return "Injected UAS ID is not 'Serial Number' type"
+
+            if dp_observed and injected_val != observed_val:
+                return f"Cannot determine UAS ID type from DP observed value {observed_val}."
+
+            return None
 
         def value_validator(val: SerialNumber) -> SerialNumber:
 
@@ -286,39 +299,46 @@ class RIDCommonDictionaryEvaluator(object):
         ) -> bool:
             return v1 == v2
 
+        # NB: We don't use the two redundant fields `serial_number` and `uas_id.serial_number`,
+        # at injection `get_test_flights` ensured values are in sync.
         self._generic_evaluator(
-            (
-                "uas_id.serial_number"
-            ),  # NB: We don't use the redudent field in flight details,  get_test_flights ensured value is in sync with the uas_id's one
+            "uas_id.serial_number",
             "serial_number",
-            None,
+            "uas.id",
             "UAS ID (Serial number)",
             value_validator,
             None,
             False,
             None,
             value_comparator,
-            injected=injected,
-            sp_observed=observed,
-            dp_observed=None,
-            participant=participant,
-            query_timestamp=query_timestamp,
+            dp_observed=dp_observed,
+            skip_eval=skip_eval,
+            **generic_kwargs,
         )
 
     def _evaluate_uas_id_registration_id(
         self,
-        injected: injection.RIDFlightDetails,
-        observed: FlightDetails,
-        participant: ParticipantID,
-        query_timestamp: datetime.datetime,
+        dp_observed: Optional[observation_api.GetDetailsResponse],
+        **generic_kwargs,
     ):
         """
-        Evaluates UAS ID registration id. Contrary to most generic evaluators, cannot evaluate DP.
+        Evaluates UAS ID registration id.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
+
+        def skip_eval(
+            injected_val: Optional[str], observed_val: Optional[str]
+        ) -> Optional[str]:
+            if not injected_val:
+                return "Injected UAS ID is not 'Registration ID' type"
+
+            if dp_observed and injected_val != observed_val:
+                return f"Cannot determine UAS ID type from DP observed value {observed_val}."
+
+            return None
 
         def value_validator(val: str) -> str:
 
@@ -338,43 +358,49 @@ class RIDCommonDictionaryEvaluator(object):
         def value_comparator(v1: Optional[str], v2: Optional[str]) -> bool:
             return v1 == v2
 
+        # NB: We don't use the two redundant fields `registration_id` and `uas_id.registration_id`,
+        # at injection `get_test_flights` ensured values are in sync.
         self._generic_evaluator(
-            (
-                "uas_id.registration_id"
-            ),  # NB: We don't use the redudent field in flight details,  get_test_flights ensured value is in sync with the uas_id's one
+            "uas_id.registration_id",
             "registration_id",
-            None,
+            "uas.id",
             "UAS ID (Registration ID)",
             value_validator,
             None,
             False,
             None,
             value_comparator,
-            injected=injected,
-            sp_observed=observed,
-            dp_observed=None,
-            participant=participant,
-            query_timestamp=query_timestamp,
+            dp_observed=dp_observed,
+            skip_eval=skip_eval,
+            **generic_kwargs,
         )
 
     def _evaluate_uas_id_utm_id(
         self,
-        injected: injection.RIDFlightDetails,
-        observed: FlightDetails,
-        participant: ParticipantID,
-        query_timestamp: datetime.datetime,
+        dp_observed: Optional[observation_api.GetDetailsResponse],
+        **generic_kwargs,
     ):
         """
-        Evaluates UAS ID UTM id. Contrary to most generic evaluators, cannot evaluate DP.
+        Evaluates UAS ID UTM id.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
 
-        # This field doesn't exists in v19
-        if self._rid_version == RIDVersion.f3411_19:
-            return
+        def skip_eval(
+            injected_val: Optional[str], observed_val: Optional[str]
+        ) -> Optional[str]:
+            if self._rid_version == RIDVersion.f3411_19:
+                return f"Unsupported version {self._rid_version}"
+
+            if not injected_val:
+                return "Injected UAS ID is not 'UTM ID' type"
+
+            if dp_observed and injected_val != observed_val:
+                return f"Cannot determine UAS ID type from DP observed value {observed_val}."
+
+            return None
 
         def value_validator(val: str) -> uuid.UUID:
 
@@ -392,41 +418,49 @@ class RIDCommonDictionaryEvaluator(object):
                 return True
             return v1 == v2
 
+        # NB: We don't use the two redundant fields `utm_id` and `uas_id.utm_id`,
+        # at injection `get_test_flights` ensured values are in sync.
         self._generic_evaluator(
             "uas_id.utm_id",
             "raw.uas_id.utm_id",
-            None,
+            "uas.id",
             "UAS ID (UTM ID)",
             value_validator,
             None,
             False,
             None,
             value_comparator,
-            injected=injected,
-            sp_observed=observed,
-            dp_observed=None,
-            participant=participant,
-            query_timestamp=query_timestamp,
+            dp_observed=dp_observed,
+            skip_eval=skip_eval,
+            **generic_kwargs,
         )
 
     def _evaluate_uas_id_specific_session_id(
         self,
-        injected: injection.RIDFlightDetails,
-        observed: FlightDetails,
-        participant: ParticipantID,
-        query_timestamp: datetime.datetime,
+        dp_observed: Optional[observation_api.GetDetailsResponse],
+        **generic_kwargs,
     ):
         """
-        Evaluates UAS ID specific session id. Contrary to most generic evaluators, cannot evaluate DP.
+        Evaluates UAS ID specific session id.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
 
-        # This field doesn't exists in v19
-        if self._rid_version == RIDVersion.f3411_19:
-            return
+        def skip_eval(
+            injected_val: Optional[str], observed_val: Optional[str]
+        ) -> Optional[str]:
+            if self._rid_version == RIDVersion.f3411_19:
+                return f"Unsupported version {self._rid_version}"
+
+            if not injected_val:
+                return "Injected UAS ID is not 'Specific session ID' type"
+
+            if dp_observed and injected_val != observed_val:
+                return f"Cannot determine UAS ID type from DP observed value {observed_val}."
+
+            return None
 
         def value_validator(val: str) -> str:
             # The standard say that it should be at
@@ -437,22 +471,22 @@ class RIDCommonDictionaryEvaluator(object):
         def value_comparator(v1: Optional[str], v2: Optional[str]) -> bool:
             return v1 == v2
 
+        # NB: We don't use the two redundant fields `specific_session_id` and `uas_id.specific_session_id`,
+        # at injection `get_test_flights` ensured values are in sync.
         self._generic_evaluator(
             "uas_id.specific_session_id",
             "raw.uas_id.specific_session_id",
-            None,
+            "uas.id",
             "UAS ID (Specific session ID)",
             value_validator,
             None,
             False,
             None,
             value_comparator,
-            injected=injected,
-            sp_observed=observed,
-            dp_observed=None,
-            participant=participant,
-            query_timestamp=query_timestamp,
+            dp_observed=dp_observed,
+            skip_eval=skip_eval,
             sp_is_allowed_to_generate_missing=True,
+            **generic_kwargs,
         )
 
     def _evaluate_timestamp(self, **generic_kwargs):
