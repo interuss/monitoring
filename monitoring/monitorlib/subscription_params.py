@@ -3,7 +3,6 @@ from __future__ import annotations
 import datetime
 from typing import List, Optional, Self
 
-import arrow
 import s2sphere
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import PutSubscriptionParameters
