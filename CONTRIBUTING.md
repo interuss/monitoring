@@ -4,6 +4,10 @@ Welcome to this repository and thank you for your interest in contributing to it
 
 Contributions should follow [the general InterUSS contributions process](https://github.com/interuss/tsc/blob/main/repo_contributions.md).  Additional information specific to this repository is provided below.
 
+## Issues requiring more information
+
+When more information is needed from an issue's author to continue investigation/consideration of the issue, a maintainer may apply the `more-informationed-needed` label following a comment requesting the additional information.  [no-response](https://github.com/lee-dohm/no-response?tab=readme-ov-file#action-flow) will automatically close the issue if no additional information is provided.  New information (in the form of a comment on the issue) should remove the label and reopen the issue if it was closed.
+
 ## Formatting and verification
 
 This repository has a very strict Python linter, as well as very strict expected formats for a number of other artifacts such as Markdown files.  Correct formatting can be verified with `make lint` from the repository root.  But, in most cases manual formatting is not necessary to resolve issues -- instead, `make format` from the repository root should automatically reformat Python and most other mere-formatting issues without changing functionality.  Because `make lint` is part of the integration tests, `make format` should generally be run before integration tests.
