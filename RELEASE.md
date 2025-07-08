@@ -17,7 +17,8 @@ Releasing a monitoring version requires the following steps:
         - Note that valid examples of this form include `0.1.0`, `20.0.0`, `0.5.0-rc`, `0.5.0-1.2`
     - Official releases are `interuss/monitoring/v#.#.#`.
 - The github workflow ([.github/workflows/image-publish.yml](.github/workflows/image-publish.yml)) is triggered for every new release tag. On the canonical interuss fork, it builds and publishes the monitoring image to the [official docker registry](https://hub.docker.com/repository/docker/interuss/monitoring).
-- Remove the pending release notes from [NEXT_RELEASE_NOTES.md](NEXT_RELEASE_NOTES.md) and add them to the release notes.
+- Add the pending release notes from [NEXT_RELEASE_NOTES.md](NEXT_RELEASE_NOTES.md) to the release notes.
+- After completing the release, open a PR to remove the pending release notes from [NEXT_RELEASE_NOTES.md](NEXT_RELEASE_NOTES.md)
 
 To enable releases of monitoring version in a fork, the following steps are required:
   1. Set the remote origin url of the repository of the target fork. (ie git@github.com:[owner]/monitoring.git)
