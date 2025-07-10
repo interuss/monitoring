@@ -223,7 +223,10 @@ class V1FlightPlannerClient(FlightPlannerClient):
         if resp.outcome.success:
             errors = None
         else:
-            errors = [resp.outcome.message]
+            if "message" in resp.outcome:
+                errors = [resp.outcome.message]
+            else:
+                errors = ["No message specified for failure to clear area"]
 
         return TestPreparationActivityResponse(errors=errors, queries=[query])
 
