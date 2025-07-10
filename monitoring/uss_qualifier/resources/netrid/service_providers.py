@@ -89,8 +89,8 @@ class NetRIDServiceProvider(object):
             participant_id=self.participant_id,
             query_type=fetch.QueryType.InterussRIDAutomatedTestingV1UserNotifications,
             params={
-                "after": after,
-                "before": before,
+                "after": after.isoformat(),
+                "before": before.isoformat(),
             },
         )
 
