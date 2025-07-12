@@ -375,15 +375,26 @@ class SubscriptionSynchronization(TestScenario):
     ):
         """Fetches the subscription from the secondary DSS and validates it."""
         with self.check(
-            "Subscription can be found at every DSS",
-            involved_participants,
+            "Get Subscription by ID",
+            secondary_dss.participant_id,
         ) as check:
             fetched_sub = secondary_dss.get_subscription(expected_sub_params.sub_id)
             self.record_query(fetched_sub)
-            if fetched_sub.status_code != 200:
+            # At this point we just check that the request itself returned successfully.
+            if fetched_sub.error_message is not None:
                 check.record_failed(
                     "Get query for existing subscription failed",
-                    details=f"Get query for a subscription expected to exist failed with status code {fetched_sub.status_code}",
+                    details=f"Get query for a subscription expected to exist failed with status code {fetched_sub.status_code}, error: {fetched_sub.error_message}",
+                    query_timestamps=[fetched_sub.request.timestamp],
+                )
+
+        with self.check(
+            "Subscription can be found at every DSS", involved_participants
+        ) as check:
+            if fetched_sub.status_code != 200:
+                check.record_failed(
+                    "Subscription was not found at every DSS",
+                    details=f"Get query for a subscription expected to exist failed with status code {fetched_sub.status_code}.",
                     query_timestamps=[fetched_sub.request.timestamp],
                 )
 
@@ -511,6 +522,25 @@ class SubscriptionSynchronization(TestScenario):
                     details=f"Expected: 0 or more, Received: {notif_index}",
                     query_timestamps=[fetched_sub.request.timestamp],
                 )
+
+        with self.check(
+            "Get subscription response content is correct",
+            involved_participants,
+        ) as check:
+            # The above checks validate synchronization requirements. The check below validates the correctness requirements
+            # (The logic is similar, but it covers different requirements in the standard).
+            SubscriptionValidator(
+                check,
+                self,
+                involved_participants,
+                expected_sub_params,
+            ).validate_fetched_subscription(
+                expected_sub_id=expected_sub_params.sub_id,
+                fetched_sub=fetched_sub,
+                expected_version=self._current_subscription.version,
+                is_implicit=False,
+                validate_schema=False,  # schema validated only for secondary DSS participant in check below
+            )
 
         # Finally, validate the response schema
         with self.check(
