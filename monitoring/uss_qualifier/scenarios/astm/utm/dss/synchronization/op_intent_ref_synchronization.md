@@ -39,15 +39,7 @@ This test case creates an operational intent reference on the main DSS, and veri
 
 It then goes on to mutate and delete it, each time confirming that all other DSSes return the expected results.
 
-### Create OIR validation test step
-
-#### [Create OIR](../fragments/oir/crud/create_correct.md)
-
-Verify that an operational intent reference can be created on the primary DSS.
-
-#### [OIR Content is correct](../fragments/oir/validate/correctness.md)
-
-Verify that the operational intent reference returned by the DSS under test is properly formatted and contains the expected content.
+### [Create OIR validation test step](../fragments/oir/crud/create_correct.md)
 
 ### Retrieve newly created OIR test step
 
@@ -94,16 +86,6 @@ including for changes that are not directly visible, such as changing the operat
 
 #### [Update OIR](../fragments/oir/crud/update_correct.md)
 
-Confirm that the operational intent reference can be mutated.
-
-#### [Validate OIR](../fragments/oir/validate/correctness.md)
-
-Verify that the operational intent reference returned by the DSS is properly formatted and contains the correct content.
-
-#### [OIR Versions are correct](../fragments/oir/validate/mutated.md)
-
-Verify that the operational intent reference's version fields have been updated.
-
 ### Retrieve updated OIR test step
 
 Retrieve and validate synchronization of the updated operational intent at every DSS provided in `dss_instances`.
@@ -142,23 +124,7 @@ and **[astm.f3548.v21.DSS0210,A2-7-2,1c](../../../../../requirements/astm/f3548/
 Confirm that each DSS returns the operational intent in relevant search results.
 Confirm that the operational intent reference that was just updated is properly synchronized across all DSS instances.
 
-### Delete OIR test step
-
-Attempt to delete the operational intent reference in various ways and ensure that the DSS reacts properly.
-
-This also checks that the operational intent reference data returned by a successful deletion is correct.
-
-#### [Delete OIR](../fragments/oir/crud/delete_known.md)
-
-Confirm that an operational intent reference can be deleted.
-
-#### [Validate OIR](../fragments/oir/validate/correctness.md)
-
-Verify that the operational intent reference returned by the DSS via the deletion is properly formatted and contains the correct content.
-
-#### [OIR Versions are correct](../fragments/oir/validate/non_mutated.md)
-
-Verify that the operational intent reference's version fields are as expected.
+### [Delete OIR test step](../fragments/oir/crud/delete_known.md)
 
 ### Query deleted OIR test step
 

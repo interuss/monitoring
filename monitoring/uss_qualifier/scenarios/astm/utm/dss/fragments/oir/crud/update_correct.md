@@ -16,3 +16,7 @@ A successful operational intent reference mutation query is expected to return a
 If the content of the response does not correspond to what was requested, the DSS is failing to implement **[astm.f3548.v21.DSS0005,1](../../../../../../../requirements/astm/f3548/v21.md)**.
 
 This check will usually be performing a series of sub-checks from the [validate](../validate) fragments.
+
+## [Validate updated OIR fields](../validate/correctness.md)
+
+## [OVN and version are updated](../validate/mutated.md)

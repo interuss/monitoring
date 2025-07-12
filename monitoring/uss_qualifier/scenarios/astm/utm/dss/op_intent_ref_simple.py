@@ -25,7 +25,10 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.oir import (
     crud as oir_fragments,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.validators.oir_validator import (
+    OIRValidator,
+)
+from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
@@ -46,6 +49,7 @@ class OIRSimple(TestScenario):
 
     # Keep track of the current OIR state
     _current_oir: Optional[OperationalIntentReference]
+    _current_oir_params: Optional[PutOperationalIntentReferenceParameters]
     _expected_manager: str
     _planning_area: PlanningAreaSpecification
     _planning_area_volume4d: Volume4D
@@ -254,32 +258,57 @@ class OIRSimple(TestScenario):
 
         self.begin_test_step("Attempt mutation with correct OVN")
 
-        oir_params = self._test_params_for_current_time()
-        oir_params.uss_base_url = oir_params.uss_base_url + "?correct-ovn-mutation=true"
-        self._current_oir, _, _ = oir_fragments.update_oir_query(
+        self._current_oir_params = self._test_params_for_current_time()
+        self._current_oir_params.uss_base_url = (
+            self._current_oir_params.uss_base_url + "?correct-ovn-mutation=true"
+        )
+        mutated_oir, _, q = oir_fragments.update_oir_query(
             scenario=self,
             dss=self._dss,
             oir_id=self._oir_id,
-            oir_params=oir_params,
+            oir_params=self._current_oir_params,
             ovn=self._current_oir.ovn,
         )
+
+        with self.check(
+            "Mutate operational intent reference response content is correct", self._pid
+        ) as check:
+            self._oir_validator(check).validate_mutated_oir(
+                self._oir_id, q, self._current_oir.ovn, self._current_oir.version
+            )
+
+        self._current_oir = mutated_oir
 
         self.end_test_step()
 
     def _step_create_oir(self):
         self.begin_test_step("Create OIR")
-        self._current_oir, _, _ = oir_fragments.create_oir_query(
+        self._current_oir_params = self._default_oir_params(subscription_id=None)
+        self._current_oir, _, q = oir_fragments.create_oir_query(
             scenario=self,
             dss=self._dss,
             oir_id=self._oir_id,
-            oir_params=self._default_oir_params(subscription_id=None),
+            oir_params=self._current_oir_params,
         )
+        with self.check(
+            "Create operational intent reference response content is correct", self._pid
+        ) as check:
+            self._oir_validator(check).validate_created_oir(self._oir_id, q)
         self.end_test_step()
 
     def _delete_oir(self, oir_id: EntityID, ovn: str):
-        oir_fragments.delete_oir_query(
+        del_oir, _, q = oir_fragments.delete_oir_query(
             scenario=self, dss=self._dss, oir_id=oir_id, ovn=ovn
         )
+
+        with self.check(
+            "Delete operational intent reference response content is correct", self._pid
+        ) as check:
+            self._oir_validator(check).validate_deleted_oir(
+                oir_id, q, ovn, self._current_oir.version
+            )
+
+        self._current_oir_params = None
         self._current_oir = None
 
     def _step_delete_oir(self, is_cleanup: bool = True):
@@ -325,7 +354,7 @@ class OIRSimple(TestScenario):
         )
 
     def _default_oir_params(
-        self, subscription_id: SubscriptionID
+        self, subscription_id: Optional[SubscriptionID]
     ) -> PutOperationalIntentReferenceParameters:
         return self._planning_area.get_new_operational_intent_ref_params(
             key=[],
@@ -334,4 +363,13 @@ class OIRSimple(TestScenario):
             time_start=datetime.now() - timedelta(seconds=10),
             time_end=datetime.now() + timedelta(minutes=20),
             subscription_id=subscription_id,
+        )
+
+    def _oir_validator(self, main_check: PendingCheck) -> OIRValidator:
+        return OIRValidator(
+            main_check=main_check,
+            scenario=self,
+            expected_manager=self._expected_manager,
+            participant_id=self._pid,
+            oir_params=self._current_oir_params,
         )
