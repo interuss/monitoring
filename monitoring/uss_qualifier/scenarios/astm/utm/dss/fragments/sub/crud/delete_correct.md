@@ -17,3 +17,7 @@ If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../
 A successful subscription deletion query is expected to return a well-defined body, the content of which reflects the deleted subscription.
 
 If the content of the response does not correspond to the subscription at the time of deletion, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../../../../requirements/astm/f3548/v21.md)**.
+
+## [Validate subscription fields](../validate/correctness.md)
+
+## [Validate version fields](../validate/non_mutated.md)
