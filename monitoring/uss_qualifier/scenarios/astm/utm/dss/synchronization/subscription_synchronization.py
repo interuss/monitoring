@@ -512,6 +512,19 @@ class SubscriptionSynchronization(TestScenario):
                     query_timestamps=[fetched_sub.request.timestamp],
                 )
 
+        # The above checks validate synchronization requirements. The check below validates the correctness requirements
+        # (The logic is similar but they cover different requirements in the standard).
+        SubscriptionValidator(
+            check,
+            self,
+            involved_participants,
+            expected_sub_params,
+        ).validate_fetched_subscription(
+            expected_sub_id=expected_sub_params.sub_id,
+            fetched_sub=fetched_sub,
+            expected_version=self._current_subscription.version,
+            is_implicit=False,
+        )
         # Finally, validate the response schema
         with self.check(
             "Get subscription response format conforms to spec",

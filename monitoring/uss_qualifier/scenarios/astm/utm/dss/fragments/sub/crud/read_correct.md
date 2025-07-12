@@ -11,3 +11,10 @@ Check query succeeds.
 The response to a successful get subscription query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
 
 If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../../../../requirements/astm/f3548/v21.md)**.
+
+## 🛑 Get subscription response content is correct check
+
+A successful query for a subscription is expected to return a body, the content of which reflects the created subscription.
+If the content of the response does not correspond to what was requested, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../../../../requirements/astm/f3548/v21.md)**.
+
+This check will usually be performing a series of sub-checks from the [validate](../validate) fragments.
