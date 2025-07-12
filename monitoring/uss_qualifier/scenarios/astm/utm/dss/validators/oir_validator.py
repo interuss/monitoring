@@ -240,6 +240,17 @@ class OIRValidator:
                         t_dss=t_dss,
                     )
 
+        with self._scenario.check(
+            "Returned operational intent reference has a version", self._pid
+        ) as check:
+            if "version" not in dss_oir or dss_oir.version is None:
+                self._fail_sub_check(
+                    check,
+                    summary="Returned OIR has no version",
+                    details="The operational intent reference returned by the DSS has no version when it should have one",
+                    t_dss=t_dss,
+                )
+
         # If the previous version is not None, we are dealing with a mutation:
         if previous_version is not None:
             with self._scenario.check(
@@ -269,8 +280,18 @@ class OIRValidator:
                         t_dss=t_dss,
                     )
 
+        with self._scenario.check(
+            "Returned operational intent reference state is correct", self._pid
+        ) as check:
+            if dss_oir.state != self._oir_params.state:
+                self._fail_sub_check(
+                    check,
+                    summary="Returned OIR state is incorrect",
+                    details=f"Expected: {self._oir_params.state}, got {dss_oir.state}",
+                    t_dss=t_dss,
+                )
+
         # TODO add check for:
-        #  - state
         #  - subscription ID of the OIR (based on passed parameters, if these were set)
 
     def _validate_put_oir_response_schema(
