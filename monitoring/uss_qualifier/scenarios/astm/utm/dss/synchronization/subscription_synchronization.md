@@ -82,7 +82,6 @@ Verify that the subscription returned by the DSS under test is properly formatte
 
 Query the created subscription at every DSS provided in `dss_instances`.
 
-
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
 Confirm that the subscription that was just created is properly synchronized across all DSS instances.
