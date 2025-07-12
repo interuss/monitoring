@@ -129,6 +129,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 scd_api.InjectFlightResponseResult.Failed: old_state,
                 scd_api.InjectFlightResponseResult.NotSupported: old_state,
             }[resp.result],
+            notes=resp.notes if "notes" in resp else None,
         )
 
         if (
@@ -215,6 +216,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 scd_api.DeleteFlightResponseResult.Closed: FlightPlanStatus.Closed,
                 scd_api.DeleteFlightResponseResult.Failed: old_state,
             }[resp.result],
+            notes=resp.notes if "notes" in resp else None,
         )
         if resp.result == scd_api.DeleteFlightResponseResult.Closed:
             del self._plan_statuses[flight_id]
