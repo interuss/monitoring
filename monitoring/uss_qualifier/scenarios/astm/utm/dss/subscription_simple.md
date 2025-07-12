@@ -40,12 +40,6 @@ All subscriptions are left on the DSS when this step ends, as they are expected 
 
 #### [Create subscription](./fragments/sub/crud/create_correct.md)
 
-Check creation succeeds and response is correct.
-
-#### [Validate subscription](fragments/sub/validate/correctness.md)
-
-Verify that the subscription returned by the DSS after its creation is properly formatted and has the right content.
-
 ### Query Existing Subscription test step
 
 Query and search for the created subscription in various ways

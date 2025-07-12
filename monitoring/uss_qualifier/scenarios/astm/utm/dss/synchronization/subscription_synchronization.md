@@ -72,36 +72,16 @@ All subscriptions are left on the DSS when this step ends, as they are expected 
 
 #### [Create subscription](../fragments/sub/crud/create_correct.md)
 
-Verify that a subscription can be created on the primary DSS.
-
-#### [Validate subscription](../fragments/sub/validate/correctness.md)
-
-Verify that the subscription returned by the DSS under test is properly formatted and contains the expected content.
-
 ### Query newly created subscription test step
 
-Query the created subscription at every DSS provided in `dss_instances`.
-
+Query the created subscription at every DSS provided in `dss_instances` to confirm that it is properly synchronized across all DSS instances,
+and that it can be accessed directly by ID or searched for by area.
 
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
-Confirm that the subscription that was just created is properly synchronized across all DSS instances.
-
 #### [Get subscription](../fragments/sub/crud/read_correct.md)
 
-Confirms that each DSS provides access to the created subscription,
-
 #### [Search subscription](../fragments/sub/crud/search_correct.md)
-
-Confirms that each DSS returns the created subscription when searched for.
-
-#### [Validate subscription](../fragments/sub/validate/correctness.md)
-
-Verify that the subscription returned by every DSS is correctly formatted and corresponds to what was created earlier.
-
-#### [Validate version](../fragments/sub/validate/non_mutated.md)
-
-Verify that the version of the subscription returned by every DSS is as expected.
 
 ### Mutate subscription broadcast test step
 
@@ -110,39 +90,15 @@ Notably, it checks that the subscription version is updated, including for chang
 
 #### [Update subscription](../fragments/sub/crud/update_correct.md)
 
-Confirm that the subscription can be mutated.
-
-#### [Validate subscription](../fragments/sub/validate/correctness.md)
-
-Verify that the subscription returned by the DSS is properly formatted and contains the correct content.
-
-#### [Validate version](../fragments/sub/validate/mutated.md)
-
-Verify that the version of the subscription returned by the DSS has been updated.
-
 ### Query updated subscription test step
 
-Query the updated subscription at every DSS provided in `dss_instances`.
+Query the updated subscription at every DSS provided in `dss_instances` to confirm that the mutation is properly synchronized across all DSS instances,
 
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
-Confirm that the subscription that was just mutated is properly synchronized across all DSS instances.
-
 #### [Get subscription](../fragments/sub/crud/read_correct.md)
 
-Confirms that the subscription that was just mutated can be retrieved from any DSS.
-
 #### [Search subscription](../fragments/sub/crud/search_correct.md)
-
-Confirms that the subscription that was just mutated can be searched for from any DSS.
-
-#### [Validate subscription](../fragments/sub/validate/correctness.md)
-
-Verify that the subscription returned by every DSS is correctly formatted and corresponds to what was mutated earlier.
-
-#### [Validate version](../fragments/sub/validate/non_mutated.md)
-
-Verify that the version of the subscription returned by every DSS is as expected.
 
 ### Mutate subscription on secondaries test step
 
@@ -165,16 +121,6 @@ If it does not, it might be in violation of **[astm.f3548.v21.DSS0005,5](../../.
 
 #### [Update subscription](../fragments/sub/crud/update_correct.md)
 
-Confirm that the secondary DSS handles the update properly.
-
-#### [Validate subscription](../fragments/sub/validate/correctness.md)
-
-Verify that the subscription returned by the DSS is properly formatted and contains the correct content.
-
-#### [Validate version is updated by mutation](../fragments/sub/validate/mutated.md)
-
-Verify that the version of the subscription is updated after the mutation on the secondary.
-
 ### Verify mutation on all secondaries test step
 
 This step verifies that the mutation of the subscription on a secondary instance, from the previous step, is properly propagated to every other DSS.
@@ -183,23 +129,9 @@ Note that this step is repeated for every secondary DSS instance.
 
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
-Confirm that the subscription that was just mutated is properly synchronized across all DSS instances.
-
 #### [Get subscription](../fragments/sub/crud/read_correct.md)
 
-Confirms that the subscription that was just mutated can be retrieved from any DSS, and that it has the expected content.
-
 #### [Search subscription](../fragments/sub/crud/search_correct.md)
-
-Confirms that the subscription that was just mutated can be searched for from any DSS, and that it has the expected content.
-
-#### [Validate subscription](../fragments/sub/validate/correctness.md)
-
-Verify that the subscription returned by the DSS is properly formatted and contains the correct content.
-
-#### [Validate version is as expected when read](../fragments/sub/validate/non_mutated.md)
-
-Verify that when we are reading the subscription without mutating it, the version is as expected.
 
 ### Create subscription with different credentials test step
 
@@ -231,16 +163,6 @@ This also checks that the subscription data returned by a successful deletion is
 
 #### [Delete subscription](../fragments/sub/crud/delete_correct.md)
 
-Confirms that a subscription can be deleted.
-
-#### [Validate subscription](../fragments/sub/validate/correctness.md)
-
-Verify that the subscription returned by the DSS via the deletion is properly formatted and contains the correct content.
-
-#### [Validate version](../fragments/sub/validate/non_mutated.md)
-
-Verify that the version of the subscription returned by the DSS is as expected
-
 ### Query deleted subscription test step
 
 Attempt to query and search for the deleted subscription in various ways
@@ -260,16 +182,6 @@ As a result, the DSS pool under test is failing to meet **[astm.f3548.v21.DSS002
 Attempt to delete subscriptions that were created through the primary DSS via the secondary DSS instances.
 
 #### [Delete subscription](../fragments/sub/crud/delete_correct.md)
-
-Confirms that a subscription can be deleted from a secondary DSS
-
-#### [Validate subscription](../fragments/sub/validate/correctness.md)
-
-Verify that the subscription returned by the DSS via the deletion is properly formatted and contains the correct content.
-
-#### [Validate version](../fragments/sub/validate/non_mutated.md)
-
-Verify that the version of the subscription returned by the DSS is as expected
 
 #### 🛑 DSS should not return the deleted subscription check
 
