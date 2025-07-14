@@ -33,11 +33,11 @@ This test case ensures that no entities with the known test IDs exists in the DS
 This test case confirms that an OIR can be created when the correct parameters are provided,
 and that it can be deleted when the proper OVN is provided.
 
-### [Create OIR test step](./fragments/oir/crud/create_query.md)
+### [Create OIR test step](./fragments/oir/crud/create_correct.md)
 
 Create an OIR with allowed parameters.
 
-### [Delete OIR test step](./fragments/oir/crud/delete_query.md)
+### [Delete OIR test step](./fragments/oir/crud/delete_known.md)
 
 Delete the OIR created in the previous step.
 
@@ -45,7 +45,7 @@ Delete the OIR created in the previous step.
 
 Ensures that a DSS will only delete OIRs when the correct OVN is presented.
 
-### [Create OIR test step](./fragments/oir/crud/create_query.md)
+### [Create OIR test step](./fragments/oir/crud/create_correct.md)
 
 Create an OIR to be used in this test case.
 
@@ -67,7 +67,7 @@ This step verifies that an existing OIR cannot be deleted with an incorrect OVN.
 If the DSS under test allows the qualifier to delete an existing OIR with a request that provided an incorrect OVN,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
 
-### [Cleanup OIR test step](./fragments/oir/crud/delete_query.md)
+### [Cleanup OIR test step](./fragments/oir/crud/delete_known.md)
 
 Cleanup the OIR created in this test case.
 
@@ -75,7 +75,7 @@ Cleanup the OIR created in this test case.
 
 Test DSS behavior when mutation requests are not providing the required OVN.
 
-### [Create OIR test step](./fragments/oir/crud/create_query.md)
+### [Create OIR test step](./fragments/oir/crud/create_correct.md)
 
 Create an OIR to be used in this test case.
 
@@ -97,11 +97,11 @@ This step verifies that an existing OIR cannot be mutated with an incorrect OVN.
 If the DSS under test allows the qualifier to mutate an existing OIR with a request that provided an incorrect OVN,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
 
-### [Attempt mutation with correct OVN test step](./fragments/oir/crud/update_query.md)
+### [Attempt mutation with correct OVN test step](./fragments/oir/crud/update_correct.md)
 
 Confirm that an OIR can be mutated when the correct OVN is provided.
 
-### [Cleanup OIR test step](./fragments/oir/crud/delete_query.md)
+### [Cleanup OIR test step](./fragments/oir/crud/delete_known.md)
 
 ## Cleanup
 

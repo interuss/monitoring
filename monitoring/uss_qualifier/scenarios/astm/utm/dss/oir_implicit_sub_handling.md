@@ -42,7 +42,7 @@ This step creates an OIR with an implicit subscription and confirms that the sub
 
 ### Delete the OIR with implicit subscription test step
 
-#### [Delete OIR](./fragments/oir/crud/delete_known.md)
+#### [Delete OIR](./fragments/oir/crud/delete_query.md)
 
 #### 🛑 The implicit subscription was removed check
 
@@ -100,7 +100,7 @@ This step mutates the first OIR, which has an implicit subscription, to no longe
 
 The mutation request does not specify an existing subscription, and provides the parameters required for the creation of an implicit subscription.
 
-#### [Mutate OIR](./fragments/oir/crud/update_correct.md)
+#### [Mutate OIR](./fragments/oir/crud/update_query.md)
 
 #### 🛑 The implicit subscription can be queried check
 
