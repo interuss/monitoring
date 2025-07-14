@@ -47,18 +47,13 @@ Retrieve and validate synchronization of the created operational intent at every
 
 #### [Get OIR query](../fragments/oir/crud/read_query.md)
 
-Check that read query succeeds.
-
 #### 🛑 Newly created OIR can be consistently retrieved from all DSS instances check
 
 If the operational intent retrieved from a secondary DSS instance is not consistent with the newly created one on the
 primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1a](../../../../../requirements/astm/f3548/v21.md)**, **[astm.f3548.v21.DSS0210,A2-7-2,1d](../../../../../requirements/astm/f3548/v21.md)**,
 , **[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
 
-#### [OIR is synchronized](../fragments/oir/sync.md)
-
-Confirm that each DSS provides direct access to the created operational intent reference.
-Confirm that the operational intent reference that was just created is properly synchronized across all DSS instances.
+#### [OIR is synchronized](../fragments/oir/sync_get.md)
 
 ### Search for newly created OIR test step
 
@@ -66,18 +61,13 @@ Search for and validate synchronization of the created operational intent at eve
 
 #### [Search OIR](../fragments/oir/crud/search_query.md)
 
-Check that search query succeeds.
-
 #### 🛑 Newly created OIR can be consistently searched for from all DSS instances check
 
 If the operational intent searched from a secondary DSS instance is not consistent with the newly created one on the
 primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1a](../../../../../requirements/astm/f3548/v21.md)**, **[astm.f3548.v21.DSS0210,A2-7-2,1c](../../../../../requirements/astm/f3548/v21.md)**,
 , **[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
 
-#### [OIR is synchronized](../fragments/oir/sync.md)
-
-Confirm that each DSS returns the operational intent in relevant search results.
-Confirm that the operational intent reference that was just created is properly synchronized across all DSS instances.
+#### [OIR is synchronized](../fragments/oir/sync_search.md)
 
 ### Mutate OIR test step
 
@@ -92,18 +82,13 @@ Retrieve and validate synchronization of the updated operational intent at every
 
 #### [Get OIR query](../fragments/oir/crud/read_query.md)
 
-Check that read query succeeds.
-
 #### 🛑 Updated OIR can be consistently retrieved from all DSS instances check
 
 If the operational intent retrieved from a secondary DSS instance is not consistent with the updated one on the
 primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1b](../../../../../requirements/astm/f3548/v21.md)**
 and **[astm.f3548.v21.DSS0210,A2-7-2,1d](../../../../../requirements/astm/f3548/v21.md)**.
 
-#### [OIR is synchronized](../fragments/oir/sync.md)
-
-Confirm that each DSS provides direct access to the updated operational intent reference.
-Confirm that the operational intent reference that was just updated is properly synchronized across all DSS instances.
+#### [OIR is synchronized](../fragments/oir/sync_get.md)
 
 ### Search for updated OIR test step
 
@@ -111,18 +96,13 @@ Search for and validate synchronization of the updated operational intent at eve
 
 #### [Search OIR](../fragments/oir/crud/search_query.md)
 
-Check that search query succeeds.
-
 #### 🛑 Updated OIR can be consistently searched for from all DSS instances check
 
 If the operational intent searched from a secondary DSS instance is not consistent with the updated one on the
 primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,1b](../../../../../requirements/astm/f3548/v21.md)**
 and **[astm.f3548.v21.DSS0210,A2-7-2,1c](../../../../../requirements/astm/f3548/v21.md)**.
 
-#### [OIR is synchronized](../fragments/oir/sync.md)
-
-Confirm that each DSS returns the operational intent in relevant search results.
-Confirm that the operational intent reference that was just updated is properly synchronized across all DSS instances.
+#### [OIR is synchronized](../fragments/oir/sync_search.md)
 
 ### [Delete OIR test step](../fragments/oir/crud/delete_known.md)
 
