@@ -8,4 +8,4 @@ The code for these checks lives in the [subscription_validator.py](../../../vali
 
 Following a mutation, the DSS needs to update the subscription version, otherwise it is in violation of **[astm.f3548.v21.DSS0005,5](../../../../../../../requirements/astm/f3548/v21.md)**.
 
-## [Positive index](positive_index.md)
+## [Positive notification index](positive_index.md)
