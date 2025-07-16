@@ -247,9 +247,13 @@ class RIDCommonDictionaryEvaluator(object):
             sp_values = [
                 _dotted_get(sp_observed, "serial_number"),
                 _dotted_get(sp_observed, "registration_id"),
-                _dotted_get(sp_observed, "raw.uas_id.utm_id"),
-                _dotted_get(sp_observed, "raw.uas_id.specific_session_id"),
             ]
+
+            if self._rid_version == RIDVersion.f3411_22a:
+                sp_values.append(_dotted_get(sp_observed, "raw.uas_id.utm_id"))
+                sp_values.append(
+                    _dotted_get(sp_observed, "raw.uas_id.specific_session_id")
+                )
 
             if not any(sp_values):
                 check.record_failed(

@@ -31,6 +31,8 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator 
 )
 from monitoring.uss_qualifier.scenarios.interuss.unit_test import UnitTestScenario
 
+QUERY_TIMESTAMP = datetime.fromisoformat("2025-07-16T18:00:00.123")
+
 
 def _assert_operator_id(value_inj: str, value_obs: str, outcome: bool):
     def step_under_test(self: UnitTestScenario):
@@ -1861,7 +1863,7 @@ def test_evaluate_uas_id():
                 rid_version=rid_version,
             )
 
-            evaluator._evaluate_uas_id(None, sp_observed, None, None, datetime.now())
+            evaluator._evaluate_uas_id(None, sp_observed, None, None, QUERY_TIMESTAMP)
 
         unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
 
