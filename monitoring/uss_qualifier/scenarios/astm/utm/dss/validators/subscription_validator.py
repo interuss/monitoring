@@ -376,6 +376,7 @@ class SubscriptionValidator:
         fetched_sub: FetchedSubscription,
         expected_version: str,
         is_implicit: bool,
+        validate_schema: bool = True,
     ) -> None:
         """Validate a subscription that was directly queried by its ID.
         Callers must specify if this is an implicit subscription or not."""
@@ -383,16 +384,17 @@ class SubscriptionValidator:
         (t_dss, sub) = (fetched_sub.request.timestamp, fetched_sub.subscription)
 
         # Validate the response schema
-        with self._scenario.check(
-            "Get subscription response format conforms to spec", self._pid
-        ) as check:
-            errors = schema_validation.validate(
-                F3548_21.OpenAPIPath,
-                F3548_21.GetSubscriptionResponse,
-                fetched_sub.response.json,
-            )
-            if errors:
-                fail_with_schema_errors(check, errors, t_dss)
+        if validate_schema:
+            with self._scenario.check(
+                "Get subscription response format conforms to spec", self._pid
+            ) as check:
+                errors = schema_validation.validate(
+                    F3548_21.OpenAPIPath,
+                    F3548_21.GetSubscriptionResponse,
+                    fetched_sub.response.json,
+                )
+                if errors:
+                    fail_with_schema_errors(check, errors, t_dss)
 
         # Validate the subscription itself
         self._validate_sub(

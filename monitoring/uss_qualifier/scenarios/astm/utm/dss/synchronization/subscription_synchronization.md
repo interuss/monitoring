@@ -76,12 +76,11 @@ All subscriptions are left on the DSS when this step ends, as they are expected 
 
 Query the created subscription at every DSS provided in `dss_instances` to confirm that it is properly synchronized across all DSS instances,
 and that it can be accessed directly by ID or searched for by area.
-
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
 #### [Get subscription](../fragments/sub/crud/read_correct.md)
 
-#### [Search subscription](../fragments/sub/crud/search_correct.md)
+#### [Search subscription](../fragments/sub/crud/search_query.md)
 
 ### Mutate subscription broadcast test step
 
@@ -98,7 +97,7 @@ Query the updated subscription at every DSS provided in `dss_instances` to confi
 
 #### [Get subscription](../fragments/sub/crud/read_correct.md)
 
-#### [Search subscription](../fragments/sub/crud/search_correct.md)
+#### [Search subscription](../fragments/sub/crud/search_query.md)
 
 ### Mutate subscription on secondaries test step
 
@@ -131,7 +130,7 @@ Note that this step is repeated for every secondary DSS instance.
 
 #### [Get subscription](../fragments/sub/crud/read_correct.md)
 
-#### [Search subscription](../fragments/sub/crud/search_correct.md)
+#### [Search subscription](../fragments/sub/crud/search_query.md)
 
 ### Create subscription with different credentials test step
 
