@@ -3,6 +3,7 @@ from typing import List, Optional, Set, Tuple
 
 import arrow
 from uas_standards.astm.f3548.v21.api import (
+    EntityID,
     OperationalIntentReference,
     OperationalIntentState,
     PutOperationalIntentReferenceParameters,
@@ -269,6 +270,10 @@ class OIRImplicitSubHandling(TestScenario):
                     details=f"The subscription {self._implicit_sub_2.id} was not found among the subscribers of the new OIR: {subs}",
                 )
 
+        self._check_oir_has_correct_subscription(
+            oir_id=self._oir_c_id, expected_sub_id=None
+        )
+
         self._oir_c_ovn = oir.ovn
 
     def _case_2_step_mutate_oir_with_implicit_sub_specify_implicit_params(self):
@@ -374,6 +379,10 @@ class OIRImplicitSubHandling(TestScenario):
                     details=f"Subscription outside of remaining implicit subscriptions {subs} are not the same as the initial subscriptions: {self._initial_subscribers}",
                     query_timestamps=[q.request.timestamp],
                 )
+
+        self._check_oir_has_correct_subscription(
+            oir_id=self._oir_a_id, expected_sub_id=None
+        )
 
     def _create_oir(
         self,
@@ -814,6 +823,11 @@ class OIRImplicitSubHandling(TestScenario):
                     summary="Implicit subscription not attached to OIR",
                     details=f"The subscription {sub_implicit.id} was attached to the OIR, but it reports being attached to subscription {oir.subscription_id} instead.",
                 )
+
+        self._check_oir_has_correct_subscription(
+            oir_id=self._oir_a_id, expected_sub_id=sub_implicit.id
+        )
+
         self.end_test_step()
 
     def _case_6_attach_implicit_sub_to_oir_without_subscription(self):
@@ -1141,6 +1155,16 @@ class OIRImplicitSubHandling(TestScenario):
                 )
 
         self.end_test_step()
+
+    def _check_oir_has_correct_subscription(
+        self, oir_id: EntityID, expected_sub_id: Optional[SubscriptionID]
+    ):
+        check_oir_has_correct_subscription(
+            self,
+            self._dss,
+            oir_id,
+            expected_sub_id,
+        )
 
     def _setup_scenario(self):
         # T0 corresponds to 'now'
