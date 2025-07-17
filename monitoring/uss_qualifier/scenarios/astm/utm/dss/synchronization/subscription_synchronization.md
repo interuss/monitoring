@@ -112,13 +112,7 @@ If the secondary DSS does not allow the subscription to be mutated, either the s
 **[astm.f3548.v21.DSS0210,1b](../../../../../requirements/astm/f3548/v21.md)**, if the `manager` of the subscription fails to be taken into account (either because the primary DSS did not propagated it, or because the secondary failed to consider it);
 **[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**, if the secondary DSS fails to properly implement the API to mutate subscriptions.
 
-#### 🛑 Subscription returned by a secondary DSS is valid and correct check
-
-When queried for a subscription that was created via another DSS, a DSS instance is expected to provide a valid subscription.
-
-If it does not, it might be in violation of **[astm.f3548.v21.DSS0005,5](../../../../../requirements/astm/f3548/v21.md)**.
-
-#### [Update subscription](../fragments/sub/crud/update_correct.md)
+#### [Update subscription](../fragments/sub/crud/update_validation.md)
 
 ### Verify mutation on all secondaries test step
 
