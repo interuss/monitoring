@@ -318,6 +318,7 @@ class ISAValidation(GenericTestScenario):
                 scope=self.write_scope,
                 json=payload,
                 query_type=QueryType.dss_create_isa(self._dss.rid_version),
+                participant_id=self._dss_wrapper.participant_id,
             )
             if self._dss.rid_version == RIDVersion.f3411_19:
                 rid_query = ChangedISA(v19_query=q)
