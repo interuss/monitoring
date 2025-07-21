@@ -382,6 +382,7 @@ class DSSWrapper(object):
         isa_id: str,
         isa_version: str,
         do_not_notify: Optional[Union[str, List[str]]] = None,
+        expected_isa_params: Optional[Dict[str, Any]] = None,
     ) -> ISAChange:
         """Delete an ISA at the DSS.
 
@@ -460,7 +461,7 @@ class DSSWrapper(object):
         isa_validator = ISAValidator(
             main_check=main_check,
             scenario=self._scenario,
-            isa_params=None,  # won't check the ISA's content
+            isa_params=expected_isa_params,
             dss_id=dss_id,
             rid_version=self._dss.rid_version,
         )
