@@ -74,14 +74,9 @@ This step verifies that an OIR's existing explicit subscription cannot be replac
 If the DSS under test allows the qualifier to replace an OIR's existing explicit subscription with an explicit subscription that does not cover the extent of the OIR,
 it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
 
-### OIR is attached to expected subscription test step
-
-#### [Unchanged OIR is attached to previous, valid, subscription](./fragments/oir/oir_has_expected_subscription.md)
+### [Unchanged OIR is attached to previous, valid, subscription test step](./fragments/oir/oir_has_expected_subscription.md)
 
 ### Replace the OIR's explicit subscription test step
-
-This step verifies that an OIR attached to an explicit subscription can be mutated in order to be attached
-to another explicit subscription that properly covers the extent of the OIR.
 
 #### [Update the OIR's subscription](./fragments/oir/crud/update_query.md)
 

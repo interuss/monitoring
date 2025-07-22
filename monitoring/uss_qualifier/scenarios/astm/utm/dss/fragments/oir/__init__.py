@@ -20,20 +20,26 @@ def step_oir_has_correct_subscription(
     dss: DSSInstance,
     oir_id: EntityID,
     expected_sub_id: Optional[SubscriptionID],
+    step_name: Optional[str] = None,
 ):
     """
     Ensure that an OIR is currently attached to the specified subscription,
     or not attached to any subscription if the passed subscription ID is None.
 
+    If the passed step_name is None, a generic step name will be used depending on if expected_sub_id is defined or not
+
     This fragment will fetch the OIR from the DSS.
     """
 
-    step_name = (
-        "OIR is not attached to any subscription"
-        if expected_sub_id is None
-        else "OIR is attached to expected subscription"
-    )
-    scenario.begin_test_step(step_name)
+    if step_name is None:
+        chosen_step_name = (
+            "OIR is not attached to any subscription"
+            if expected_sub_id is None
+            else "OIR is attached to expected subscription"
+        )
+    else:
+        chosen_step_name = step_name
+    scenario.begin_test_step(chosen_step_name)
     check_oir_has_correct_subscription(
         scenario,
         dss,
@@ -81,7 +87,7 @@ def check_oir_has_correct_subscription(
             ) as check:
                 sub = dss.get_subscription(oir.subscription_id)
                 scenario.record_query(sub)
-                if sub.status_code not in [200, 400, 404]:
+                if sub.status_code not in [200, 404]:
                     check.record_failed(
                         summary="Failed to try to obtain the subscription referenced by the OIR",
                         details=f"Failed in an unexpected way while querying subscription with ID {oir.subscription_id}: expected a 404 or 200, but got {sub.status_code}",
@@ -89,7 +95,7 @@ def check_oir_has_correct_subscription(
                     )
                 if sub.status_code == 200:
                     referenced_sub_was_found_when_non_expected = True
-                if sub.status_code in [400, 404]:
+                if sub.status_code == 404:
                     sub_is_as_expected = True
     else:
         sub_is_as_expected = oir.subscription_id == expected_sub_id
