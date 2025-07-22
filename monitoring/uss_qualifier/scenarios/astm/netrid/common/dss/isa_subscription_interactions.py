@@ -329,6 +329,20 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 **self._sub_params,
             )
 
+        with self.check(
+            "Subscription for the ISA's area mentions the ISA",
+            [self._dss.participant_id],
+        ) as check:
+            if self._isa_id not in [isa.id for isa in created_subscription.isas]:
+                check.record_failed(
+                    summary="Subscription response does not include the freshly created ISA",
+                    details=f"The subscription created for the area {self._isa_area} is expected to contain the ISA created for this same area. The returned subscription did not mention it.",
+                    query_timestamps=[
+                        created_isa.dss_query.query.request.timestamp,
+                        created_subscription.query.request.timestamp,
+                    ],
+                )
+
         # Mutate the subscription towards the ISA boundary
         with self.check(
             "Mutate the subscription towards the ISA boundary",
@@ -343,13 +357,13 @@ class ISASubscriptionInteractions(GenericTestScenario):
 
         # Check the subscription
         with self.check(
-            "Subscription for the ISA's area mentions the ISA",
+            "Subscription that only barely overlaps the ISA contains the ISA",
             [self._dss.participant_id],
         ) as check:
             if self._isa_id not in [isa.id for isa in mutated_subscription.isas]:
                 check.record_failed(
-                    summary="Subscription response does not include the freshly created ISA",
-                    details=f"The subscription created for the area {self._isa_area} is expected to contain the ISA created for this same area. The returned subscription did not mention it.",
+                    summary="Subscription response does not include the ISA it has a small overlap with",
+                    details=f"The subscription created for the area {self._isa_area} is expected to contain the ISA, given it slightly overlaps. The returned subscription did not mention it.",
                     query_timestamps=[
                         created_isa.dss_query.query.request.timestamp,
                         created_subscription.query.request.timestamp,
