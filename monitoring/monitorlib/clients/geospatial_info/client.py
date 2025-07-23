@@ -33,3 +33,31 @@ class GeospatialInfoClient(ABC):
             * GeospatialInfoError
         """
         raise NotImplementedError()
+
+    @abstractmethod
+    def get_dynamic_features(
+        self, source_url: str, params: Optional[dict] = None
+    ) -> dict:
+        """
+        Fetches features from a dynamic GeoJSON source.
+        `params` could include interpretation_rule, etc.
+        Returns a GeoJSON FeatureCollection as a dictionary.
+
+        Raises:
+            * GeospatialInfoError
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_dynamic_test_points(
+        self, source_url: str, params: Optional[dict] = None
+    ) -> List["LatLng"]:
+        """
+        Fetches features from a dynamic GeoJSON source and computes their centroids.
+        `params` could include interpretation_rule, etc.
+        Returns a list of s2sphere.LatLng points (centroids).
+
+        Raises:
+            * GeospatialInfoError
+        """
+        raise NotImplementedError()
