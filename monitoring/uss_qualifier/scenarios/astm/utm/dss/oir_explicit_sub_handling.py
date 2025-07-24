@@ -110,7 +110,12 @@ class OIRExplicitSubHandling(TestScenario):
             "Validate explicit subscription upon subscription replacement"
         )
         self._steps_update_oir_with_insufficient_explicit_sub(is_replacement=True)
+        self._step_oir_has_correct_subscription(
+            expected_sub_id=self._sub_id,
+            step_name="Unchanged OIR is attached to previous, valid, subscription",
+        )
         self._step_update_oir_with_sufficient_explicit_sub(is_replacement=True)
+        self._step_oir_has_correct_subscription(expected_sub_id=self._extra_sub_id)
         self._clean_test_case()
         self.end_test_case()
 
@@ -340,6 +345,7 @@ class OIRExplicitSubHandling(TestScenario):
                         details=f"Was expecting an HTTP 400 response because of an insufficient subscription, but got {qe.cause_status_code} instead. {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
+
         self.end_test_step()
 
     def _step_update_oir_with_sufficient_explicit_sub(self, is_replacement: bool):
@@ -366,7 +372,7 @@ class OIRExplicitSubHandling(TestScenario):
         self.end_test_step()
 
     def _step_oir_has_correct_subscription(
-        self, expected_sub_id: Optional[SubscriptionID]
+        self, expected_sub_id: Optional[SubscriptionID], step_name: Optional[str] = None
     ):
         step_oir_has_correct_subscription(
             self,

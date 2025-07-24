@@ -20,20 +20,26 @@ def step_oir_has_correct_subscription(
     dss: DSSInstance,
     oir_id: EntityID,
     expected_sub_id: Optional[SubscriptionID],
+    step_name: Optional[str] = None,
 ):
     """
     Ensure that an OIR is currently attached to the specified subscription,
     or not attached to any subscription if the passed subscription ID is None.
 
+    If the passed step_name is None, a generic step name will be used depending on if expected_sub_id is defined or not
+
     This fragment will fetch the OIR from the DSS.
     """
 
-    step_name = (
-        "OIR is not attached to any subscription"
-        if expected_sub_id is None
-        else "OIR is attached to expected subscription"
-    )
-    scenario.begin_test_step(step_name)
+    if step_name is None:
+        chosen_step_name = (
+            "OIR is not attached to any subscription"
+            if expected_sub_id is None
+            else "OIR is attached to expected subscription"
+        )
+    else:
+        chosen_step_name = step_name
+    scenario.begin_test_step(chosen_step_name)
     check_oir_has_correct_subscription(
         scenario,
         dss,
@@ -66,20 +72,18 @@ def check_oir_has_correct_subscription(
     sub_is_as_expected = False
     referenced_sub_was_found_when_non_expected = False
     if expected_sub_id is None:
-        # See comment on NULL_SUBSCRIPTION_ID
-        # ASTM may at some point decide to tolerate accepting empty returned values here,
-        # but in the meantime we simply attempt to obtain the subscription and check that it does not exist
-        if oir.subscription_id == NULL_SUBSCRIPTION_ID:
-            # Sub ID explicitly set to the value representing the null subscription: all good
-            sub_is_as_expected = True
-        elif oir.subscription_id is None:
+        if oir.subscription_id is None:
             # Sub ID not set at all: not compliant with the spec, but not wrong with regard to which subscription should be attached to the OIR
             sub_is_as_expected = True
         else:
-            # If the subscription ID is defined and not set to the known 'null' value, we assume that the DSS used another
-            # placeholder for the non-existing subscription, and we check that it does not exist.
+            # - We expect oir.subscription_id to be defined and set to NULL_SUBSCRIPTION_ID. See comment above NULL_SUBSCRIPTION_ID.
+            # ASTM may at some point decide to tolerate accepting empty returned values here,
+            # but in the meantime we simply attempt to obtain the subscription and check that it does not exist
+            # - If the subscription ID is defined and not set to the known 'null' value, we assume that the DSS used another
+            # placeholder for the non-existing subscription.
+            # - In all cases, we issue a query to the DSS to check whether the subscription exists or not.
             with scenario.check(
-                "Subscription referenced by the OIR does not exist"
+                "Subscription referenced by the OIR does not exist", dss.participant_id
             ) as check:
                 sub = dss.get_subscription(oir.subscription_id)
                 scenario.record_query(sub)
@@ -91,6 +95,8 @@ def check_oir_has_correct_subscription(
                     )
                 if sub.status_code == 200:
                     referenced_sub_was_found_when_non_expected = True
+                if sub.status_code == 404:
+                    sub_is_as_expected = True
     else:
         sub_is_as_expected = oir.subscription_id == expected_sub_id
 
