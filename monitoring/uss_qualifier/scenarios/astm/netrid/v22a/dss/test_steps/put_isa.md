@@ -15,10 +15,6 @@ The API for **[astm.f3411.v22a.DSS0030,a](../../../../../../requirements/astm/f3
 
 When the ISA is created, the DSS returns the ID of the ISA in the response body.  If this ID does not match the ID in the resource path, **[astm.f3411.v22a.DSS0030,a](../../../../../../requirements/astm/f3411/v22a.md)** was not implemented correctly and this check will fail.
 
-## ⚠️ ISA version changed check
-
-When the ISA is updated, the DSS returns the updated version of the ISA in the response body.  If this version remains the same as the one before the update, **[astm.f3411.v22a.DSS0030,a](../../../../../../requirements/astm/f3411/v22a.md)** was not implemented correctly and this check will fail.
-
 ## ⚠️ ISA version format check
 
 Because the ISA version must be used in URLs, it must be URL-safe even though the ASTM standards do not explicitly require this.  If the indicated ISA version is not URL-safe, this check will fail.
