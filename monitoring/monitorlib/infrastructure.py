@@ -5,6 +5,7 @@ import urllib.parse
 from enum import Enum
 from typing import Dict, List, Optional
 
+import aiohttp
 import jwt
 import requests
 from aiohttp import ClientResponse, ClientSession
@@ -198,11 +199,7 @@ class AsyncUTMTestSession:
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "PUT", kwargs)
         async with self._client.put(url, **kwargs) as response:
-            return (
-                response.status,
-                {k: v for k, v in response.headers.items()},
-                await response.json(),
-            )
+            return await _get_response_content_with_text_fallback(response)
 
     async def get(self, url, **kwargs):
         """Returns (status, headers, json)"""
@@ -210,11 +207,7 @@ class AsyncUTMTestSession:
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "GET", kwargs)
         async with self._client.get(url, **kwargs) as response:
-            return (
-                response.status,
-                {k: v for k, v in response.headers.items()},
-                await response.json(),
-            )
+            return await _get_response_content_with_text_fallback(response)
 
     async def post(self, url, **kwargs):
         """Returns (status, headers, json)"""
@@ -222,11 +215,7 @@ class AsyncUTMTestSession:
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "POST", kwargs)
         async with self._client.post(url, **kwargs) as response:
-            return (
-                response.status,
-                {k: v for k, v in response.headers.items()},
-                await response.json(),
-            )
+            return await _get_response_content_with_text_fallback(response)
 
     async def delete(self, url, **kwargs):
         """Returns (status, headers, json)"""
@@ -234,11 +223,24 @@ class AsyncUTMTestSession:
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "DELETE", kwargs)
         async with self._client.delete(url, **kwargs) as response:
-            return (
-                response.status,
-                {k: v for k, v in response.headers.items()},
-                await response.json(),
-            )
+            return await _get_response_content_with_text_fallback(response)
+
+
+async def _get_response_content_with_text_fallback(response: ClientResponse):
+    # TODO: we'll want to handle this more elegantly than failing hard if the response is not JSON,
+    #  such as falling back to reading the response as text and returning that.
+    #  We cannot immediately follow this option as callers need to be adapted, and we'd rather have an obvious
+    #  cause for failures (a ContentTypeError) than obscure errors caused by returning a string instead of a dict.
+    #  Tracked in #1078
+    # try:
+    resp_content = await response.json()
+    # except aiohttp.ContentTypeError:
+    #    resp_content = await response.text()
+    return (
+        response.status,
+        {k: v for k, v in response.headers.items()},
+        resp_content,
+    )
 
 
 def default_scopes(scopes: List[str]):
