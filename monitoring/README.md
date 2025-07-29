@@ -52,3 +52,17 @@ allow it to fulfill different roles.
 ## Settings
 
 Some tools within this repository (especially uss_qualifier's report generation) need to know where on GitHub the repository is hosted.  The interuss repository URL is used by default, but this may be overridden by setting the `MONITORING_GITHUB_ROOT` environment variable.
+
+## Verify signature of prebuilt InterUSS Docker images
+
+The prebuilt docker images are signed using [sigstore](https://www.sigstore.dev/).
+The identity of the CI workflow, attested by GitHub, is used so sign the images.
+
+The signature may be verified by using [cosign](https://github.com/sigstore/cosign):
+```shell
+docker pull "docker.io/interuss/monitoring:latest"
+cosign verify "docker.io/interuss/monitoring:latest" \
+  --certificate-identity-regexp="https://github.com/interuss/monitoring/.github/workflows/image-publish.yml@refs/*" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com"
+```
+Adapt the version specified if required.
