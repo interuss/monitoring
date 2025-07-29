@@ -79,7 +79,7 @@ This step attempts to concurrently access the previously deleted ISAs from the D
 
 The ISA fetch request was about a deleted ISA, as such the DSS should reject it with a 404 HTTP code. If the DSS responds successfully to this request, or if it rejected with an incorrect HTTP code, this check will fail as per **[interuss.f3411.dss_endpoints.GetISA](../../../../../requirements/interuss/f3411/dss_endpoints.md)**.
 
-### [Search Deleted ISAs test step](test_steps/search_isas.md)
+### [Search Deleted ISAs test step](test_steps/search_isas_miss.md)
 
 This step issues a search for active ISAs in the area of the previously deleted ISAs from the DSS.
 

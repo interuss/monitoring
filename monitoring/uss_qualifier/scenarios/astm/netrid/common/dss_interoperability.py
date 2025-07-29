@@ -41,6 +41,7 @@ class TestEntity(object):
     type: EntityType
     uuid: str
     version: Optional[str] = None
+    creation_params: Optional[Dict] = None
 
 
 class DSSInteroperability(GenericTestScenario):
@@ -603,6 +604,7 @@ class DSSInteroperability(GenericTestScenario):
         """ISA creation triggers subscription notification requests"""
 
         isa_2 = self._new_isa("isa_2")
+        isa_2.creation_params = self._default_params(datetime.timedelta(minutes=10))
         all_sub_2_ids = self._get_entities_by_prefix("sub_2_").keys()
 
         with self.check(
@@ -612,7 +614,7 @@ class DSSInteroperability(GenericTestScenario):
                 check,
                 isa_id=isa_2.uuid,
                 do_not_notify="https://testdummy.interuss.org",
-                **self._default_params(datetime.timedelta(minutes=10)),
+                **isa_2.creation_params,
             )
             isa_2.version = mutated_isa.dss_query.isa.version
 
@@ -643,6 +645,7 @@ class DSSInteroperability(GenericTestScenario):
                 isa_id=isa_2.uuid,
                 isa_version=isa_2.version,
                 do_not_notify="https://testdummy.interuss.org",
+                expected_isa_params=isa_2.creation_params,
             )
 
         with self.check(
@@ -667,6 +670,7 @@ class DSSInteroperability(GenericTestScenario):
         )
 
         isa_3 = self._new_isa("isa_3")
+        isa_3.creation_params = self._default_params(datetime.timedelta(minutes=10))
         all_sub_2_ids = self._get_entities_by_prefix("sub_2_").keys()
 
         with self.check(
@@ -675,7 +679,7 @@ class DSSInteroperability(GenericTestScenario):
             mutated_isa = self._dss_primary.put_isa(
                 check,
                 isa_id=isa_3.uuid,
-                **self._default_params(datetime.timedelta(minutes=10)),
+                **isa_3.creation_params,
             )
             isa_3.version = mutated_isa.dss_query.isa.version
 
@@ -746,7 +750,10 @@ class DSSInteroperability(GenericTestScenario):
             "ISA[P] deleted with proper response", [self._dss_primary.participant_id]
         ) as check:
             del_isa = self._dss_primary.del_isa(
-                check, isa_id=isa_3.uuid, isa_version=isa_3.version
+                check,
+                isa_id=isa_3.uuid,
+                isa_version=isa_3.version,
+                expected_isa_params=isa_3.creation_params,
             )
 
         with self.check(

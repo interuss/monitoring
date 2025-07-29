@@ -14,6 +14,7 @@ Attempt to fetch the subscription referenced by the OIR in order to confirm that
 This check will fail if the DSS under test does not return a 400 or 404 error when the subscription
 that it reported in the OIR is queried, as the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../../../../requirements/astm/f3548/v21.md)**.
 
-This is only used in circumstances where the subscription is expected to not exist and the DSS implementation
-is not using the _null_ subscription ID with value `00000000-0000-4000-8000-000000000000`.
+This check is run in circumstances where the subscription is expected to not exist, and will result in attempts
+to obtain the _null_ subscription ID with value `00000000-0000-4000-8000-000000000000`, unless the DSS instances
+under test chose to use another placeholder for non-existent subscriptions.
 

@@ -9,14 +9,6 @@ The code for these checks lives in the [subscription_validator.py](../../../vali
 If the returned subscription ID does not correspond to the one specified in the creation parameters,
 **[astm.f3548.v21.DSS0005,5](../../../../../../../requirements/astm/f3548/v21.md)** is not respected.
 
-## ⚠️ New subscription has a notification index of 0 check
-
-The notification index of a newly created subscription must be 0, otherwise the DSS is in violation of **[astm.f3548.v21.DSS0005,5](../../../../../../../requirements/astm/f3548/v21.md)**.
-
-## ⚠️ Returned notification index is equal to or greater than 0 check
-
-If the notification index of the subscription is less than 0, the DSS fails to properly implement **[astm.f3548.v21.DSS0005,5](../../../../../../../requirements/astm/f3548/v21.md)**.
-
 ## ⚠️ Returned subscription has an USS base URL check
 
 If the returned subscription has no USS base URL defined, **[astm.f3548.v21.DSS0005,5](../../../../../../../requirements/astm/f3548/v21.md)** is not respected.

@@ -40,12 +40,6 @@ All subscriptions are left on the DSS when this step ends, as they are expected 
 
 #### [Create subscription](./fragments/sub/crud/create_correct.md)
 
-Check creation succeeds and response is correct.
-
-#### [Validate subscription](fragments/sub/validate/correctness.md)
-
-Verify that the subscription returned by the DSS after its creation is properly formatted and has the right content.
-
 ### Query Existing Subscription test step
 
 Query and search for the created subscription in various ways
@@ -164,10 +158,6 @@ If the format and content of the response are not conforming, the DSS is failing
 The response to a successful delete subscription query is expected to conform to the format defined by the OpenAPI specification under the `A3.1` Annex of ASTM F3548−21.
 
 If it does not, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
-
-#### 🛑 Subscription can be deleted check
-
-An attempt to delete a subscription when the correct version is provided should succeed, otherwise the DSS is in violation of **[astm.f3548.v21.DSS0005,5](../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Validate subscription](fragments/sub/validate/correctness.md)
 

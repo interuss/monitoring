@@ -89,6 +89,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
             queries=[query],
             activity_result=resp.planning_result,
             flight_plan_status=resp.flight_plan_status,
+            notes=resp.notes if "notes" in resp else None,
             includes_advisories=(
                 resp.includes_advisories
                 if "includes_advisories" in resp
@@ -156,6 +157,12 @@ class V1FlightPlannerClient(FlightPlannerClient):
             queries=[query],
             activity_result=resp.planning_result,
             flight_plan_status=resp.flight_plan_status,
+            notes=resp.notes if "notes" in resp else None,
+            includes_advisories=(
+                resp.includes_advisories
+                if "includes_advisories" in resp
+                else AdvisoryInclusion.Unknown
+            ),
         )
         return response
 
