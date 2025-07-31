@@ -22,7 +22,12 @@ jobs:
     runs-on: ubuntu-latest
     # To modify to enable the job for forked repository
     if: github.repository == 'interuss/monitoring'
+    permissions:
+      id-token: write # needed for signing the images with GitHub OIDC Token
+
     steps:
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.9.1
       - name: Job information
         run: |
           echo "Job information"
@@ -31,6 +36,7 @@ jobs:
           echo "Repository: ${{ github.repository }}"
           echo "Branch: ${{ github.ref }}"
           docker images
+          cosign version
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,9 +51,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push image
+      - name: Build, push and sign image
         env:
           DOCKER_URL: ${{ secrets.DOCKER_URL }}
           DOCKER_UPDATE_LATEST: true
+          DOCKER_SIGN: true
+          CERT_IDENTITY: https://github.com/${{ github.workflow_ref }}
+          CERT_ISSUER: https://token.actions.githubusercontent.com
         run: |
           build/build_and_push.sh
