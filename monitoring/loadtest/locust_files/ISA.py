@@ -10,7 +10,13 @@ from locust import between, task
 
 from monitoring.monitorlib import rid_v1
 from monitoring.monitorlib.testing import make_fake_url
-from monitoring.prober.rid.v1 import common
+
+VERTICES = [
+    {"lng": 130.6205, "lat": -23.6558},
+    {"lng": 130.6301, "lat": -23.6898},
+    {"lng": 130.6700, "lat": -23.6709},
+    {"lng": 130.6466, "lat": -23.6407},
+]
 
 
 class ISA(client.USS):
@@ -29,7 +35,7 @@ class ISA(client.USS):
                 "extents": {
                     "spatial_volume": {
                         "footprint": {
-                            "vertices": common.VERTICES,
+                            "vertices": VERTICES,
                         },
                         "altitude_lo": 20,
                         "altitude_hi": 400,
@@ -58,7 +64,7 @@ class ISA(client.USS):
                 "extents": {
                     "spatial_volume": {
                         "footprint": {
-                            "vertices": common.VERTICES,
+                            "vertices": VERTICES,
                         },
                         "altitude_lo": 20,
                         "altitude_hi": 400,
