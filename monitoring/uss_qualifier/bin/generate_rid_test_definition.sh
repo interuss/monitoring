@@ -46,6 +46,6 @@ docker run ${docker_args} --name uss_qualifier \
   -v "$(pwd):/app" \
   -w /app/monitoring/uss_qualifier \
   interuss/monitoring \
-  python main.py $QUALIFIER_OPTIONS
+  uv run main.py $QUALIFIER_OPTIONS
 
 rm ${CONFIG_LOCATION}

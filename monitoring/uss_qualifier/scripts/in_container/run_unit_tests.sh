@@ -14,4 +14,4 @@ else
 fi
 cd "${BASEDIR}/../.." || exit 1
 
-pytest
+uv run pytest
