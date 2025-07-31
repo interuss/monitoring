@@ -20,7 +20,7 @@ cp health_check.sh /app
 # Start mock_uss server
 port=${MOCK_USS_PORT:-5000}
 export PYTHONUNBUFFERED=TRUE
-gunicorn \
+uv run gunicorn \
     --preload \
     --config ./gunicorn.conf.py \
     --worker-class="gevent" \

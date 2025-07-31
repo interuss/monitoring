@@ -15,4 +15,4 @@ fi
 cd "${BASEDIR}/../.." || exit 1
 
 # Run validation
-python scenarios/documentation/format_documentation.py
+uv run scenarios/documentation/format_documentation.py

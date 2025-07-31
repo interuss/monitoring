@@ -25,4 +25,4 @@ docker run --name type_schema_manager \
   -u "$(id -u):$(id -g)" \
   -v "$(pwd):/app" \
   interuss/monitoring \
-  python /app/schemas/manage_type_schemas.py "${action}"
+  uv run /app/schemas/manage_type_schemas.py "${action}"
