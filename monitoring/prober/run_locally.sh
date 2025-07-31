@@ -40,7 +40,7 @@ if ! docker run \
 	-v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \
 	-w /app/monitoring/prober \
 	interuss/monitoring \
-	pytest \
+	uv run pytest \
 	"${1:-.}" \
 	-rsx \
 	--junitxml="/app/$OUTPUT_DIR/e2e_test_result" \
