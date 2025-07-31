@@ -26,7 +26,9 @@ from uas_standards.astm.f3411.v22a.api import (
     UAClassificationEUClass,
     VerticalAccuracy,
 )
-from uas_standards.interuss.automated_testing.rid.v1 import injection
+from uas_standards.interuss.automated_testing.rid.v1 import (
+    injection,
+)
 from uas_standards.interuss.automated_testing.rid.v1 import (
     observation as observation_api,
 )
