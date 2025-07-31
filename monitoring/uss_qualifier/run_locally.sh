@@ -83,4 +83,4 @@ docker run ${docker_args} --name uss_qualifier \
   -v "$(pwd)/$CACHE_DIR:/app/$CACHE_DIR" \
   -w /app/monitoring/uss_qualifier \
   interuss/monitoring \
-  python main.py $QUALIFIER_OPTIONS
+  uv run main.py $QUALIFIER_OPTIONS

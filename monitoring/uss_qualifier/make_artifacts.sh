@@ -57,4 +57,4 @@ docker run --name uss_qualifier \
   -v "$(pwd)/$CACHE_DIR:/app/$CACHE_DIR" \
   -w /app/monitoring/uss_qualifier \
   interuss/monitoring \
-  python make_artifacts.py $MAKE_ARTIFACTS_OPTIONS
+  uv run make_artifacts.py $MAKE_ARTIFACTS_OPTIONS

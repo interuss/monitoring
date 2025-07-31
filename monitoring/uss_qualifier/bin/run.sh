@@ -50,4 +50,4 @@ docker run ${docker_args} --name uss_qualifier \
   -v "${CONFIG_LOCATION}:/config.json" \
   -w /app/monitoring/uss_qualifier \
   interuss/monitoring \
-  python main.py $QUALIFIER_OPTIONS
+  uv run main.py $QUALIFIER_OPTIONS
