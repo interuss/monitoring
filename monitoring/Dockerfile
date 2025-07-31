@@ -9,7 +9,7 @@
 #
 # This image is intended to be built from the repository root context/folder.
 
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
 # Install system tools
