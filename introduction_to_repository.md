@@ -45,12 +45,26 @@ The [uss_qualifier](monitoring/uss_qualifier/README.md) is a tool for testing / 
 
 ### Updating Dependencies
 
-This project pins its dependencies with the help of [pip-tools](https://pypi.org/project/pip-tools/):
+This project manage its dependencies with the help of [uv](https://docs.astral.sh/uv/).
 
-Direct dependencies are declared in `requirements.in`. This file may be modified to update or add a new dependency.
+You may use [uv features to manage them](https://docs.astral.sh/uv/concepts/projects/dependencies/) or directly update the [pyproject.toml](pyproject.toml) file and run `uv lock`.
 
-When `requirements.in` is updated, the pinned dependencies must be updated by running:
+### Updating python version
 
-```bash
-make requirements.txt
-```
+* Update the requiered version in the [pyproject.toml](pyproject.toml) file
+* Run `uv lock` to update the lock file.
+
+This procedure also work for the small mini-projects for [isort](test/isort) and [repo_hygiene](test/repo_hygiene).
+
+### Upgrade dependencies
+
+Dependencies are locked to the version specified in the [pyproject.toml](pyproject.toml) file and the lock file. To update a package:
+
+* Ensure the correct version is set in the [pyproject.toml](pyproject.toml) file (no constraints is possible).
+* Run `uv lock --upgrade-package <package>`
+
+You may also upgrade all packages with
+
+* `uv lock --upgrade`
+
+This procedure also work for the small mini-projects for [isort](test/isort) and [repo_hygiene](test/repo_hygiene).

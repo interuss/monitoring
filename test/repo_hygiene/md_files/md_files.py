@@ -16,6 +16,8 @@ def check_md_files(path: str, repo_root: str) -> None:
     for md_file in glob.glob(os.path.join(path, "*.md")):
         check_md_file(md_file, repo_root)
     for subfolder in (
-        f.path for f in os.scandir(path) if f.is_dir() and f.name != "github_pages"
+        f.path
+        for f in os.scandir(path)
+        if f.is_dir() and f.name not in ["github_pages", ".venv"]
     ):
         check_md_files(subfolder, repo_root)

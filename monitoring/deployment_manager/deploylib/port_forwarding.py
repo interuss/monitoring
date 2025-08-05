@@ -67,7 +67,7 @@ class SocketHTTPAdapter(HTTPAdapter):
         connections,
         maxsize,
         block=requests.adapters.DEFAULT_POOLBLOCK,
-        **pool_kwargs
+        **pool_kwargs,
     ):
         """Overrides method in base class"""
         self.poolmanager = SocketPoolManager(
@@ -114,7 +114,7 @@ class SocketHTTPConnectionPool(HTTPConnectionPool):
             host=self.host,
             port=self.port,
             timeout=self.timeout.connect_timeout,
-            **self.conn_kw
+            **self.conn_kw,
         )
 
 
@@ -153,7 +153,7 @@ class SocketHTTPSConnectionPool(HTTPSConnectionPool):
             timeout=self.timeout.connect_timeout,
             cert_file=self.cert_file,
             key_file=self.key_file,
-            **self.conn_kw
+            **self.conn_kw,
         )
 
         return self._prepare_conn(conn)
