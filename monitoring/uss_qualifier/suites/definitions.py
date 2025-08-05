@@ -4,7 +4,6 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict
-from loguru import logger
 
 from monitoring.uss_qualifier.action_generators.definitions import (
     ActionGeneratorDefinition,

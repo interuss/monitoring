@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List
 from urllib.parse import urlparse
 
 from implicitdict import ImplicitDict
@@ -13,7 +13,6 @@ from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class DSSInstanceSpecification(ImplicitDict):
-
     participant_id: ParticipantID
     """ID of the USS responsible for this DSS instance"""
 

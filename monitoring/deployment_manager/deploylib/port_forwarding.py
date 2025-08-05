@@ -1,16 +1,15 @@
 from http.client import HTTPConnection
-
-import urllib3
-from urllib3 import HTTPConnectionPool, HTTPSConnectionPool, PoolManager
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from typing import Tuple
 
 import kubernetes.stream
 import requests
+import urllib3
 import urllib3.connection
 from kubernetes.client import CoreV1Api
 from requests.adapters import HTTPAdapter
+from urllib3 import HTTPConnectionPool, HTTPSConnectionPool, PoolManager
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def _get_session_for_socket(sock, host: str, port: int) -> requests.Session:

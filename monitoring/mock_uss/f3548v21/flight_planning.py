@@ -108,7 +108,9 @@ def check_for_disallowed_conflicts(
         log: If specified, call this function to report information about conflict evaluation.
     """
     if log is None:
-        log = lambda msg: None
+
+        def log(msg):
+            return None
 
     if new_op_intent.reference.state not in (
         scd_api.OperationalIntentState.Accepted,
@@ -135,9 +137,8 @@ def check_for_disallowed_conflicts(
                 f"intersection with {op_intent.reference.id} not considered: intersection with lower-priority operational intents"
             )
             continue
-        if (
-            new_priority == old_priority
-            and locality.allows_same_priority_intersections(old_priority)
+        if new_priority == old_priority and locality.allows_same_priority_intersections(
+            old_priority
         ):
             log(
                 f"intersection with {op_intent.reference.id} not considered: intersection with same-priority operational intents (if allowed)"

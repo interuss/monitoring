@@ -362,7 +362,6 @@ class OIRImplicitSubHandling(TestScenario):
                     )
 
     def _case_2_step_create_oir_2(self):
-
         oir, subs, _, q = self._create_oir(
             self._oir_a_id, self._time_2, self._time_3, [self._oir_c_ovn], False
         )
@@ -505,7 +504,6 @@ class OIRImplicitSubHandling(TestScenario):
         return oir, subs, implicit_sub, oir_q
 
     def _case_1_step_delete_single_oir(self):
-
         with self.check(
             "Delete operational intent reference query succeeds", self._pid
         ) as check:

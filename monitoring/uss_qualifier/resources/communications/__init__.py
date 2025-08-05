@@ -1,2 +1,2 @@
-from .auth_adapter import AuthAdapterResource
-from .client_identity import ClientIdentityResource
+from .auth_adapter import AuthAdapterResource as AuthAdapterResource
+from .client_identity import ClientIdentityResource as ClientIdentityResource

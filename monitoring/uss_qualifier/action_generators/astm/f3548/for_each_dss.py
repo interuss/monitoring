@@ -10,7 +10,6 @@ from monitoring.uss_qualifier.action_generators.documentation.documentation impo
     list_potential_actions_for_action_declaration,
 )
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import (
-    DSSInstanceResource,
     DSSInstancesResource,
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID

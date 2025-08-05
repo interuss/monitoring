@@ -851,7 +851,7 @@ class RIDQuery(ImplicitDict):
         elif self.v22a_query is not None:
             self.v22a_query.participant_id = participant_id
         else:
-            raise NotImplementedError(f"Cannot set participant_id")
+            raise NotImplementedError("Cannot set participant_id")
 
 
 class FetchedISA(RIDQuery):

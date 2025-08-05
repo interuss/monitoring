@@ -114,7 +114,7 @@ class ConstraintReferenceValidator:
             if dss_cr.id != expected_entity_id:
                 self._fail_sub_check(
                     check,
-                    summary=f"Returned CR ID is incorrect",
+                    summary="Returned CR ID is incorrect",
                     details=f"Expected CR ID {expected_entity_id}, got {dss_cr.id}",
                     t_dss=t_dss,
                 )
@@ -471,7 +471,6 @@ class ConstraintReferenceValidator:
         expected_ovn: str,
         expected_version: int,
     ) -> None:
-
         t_dss = deleted_cr.request.timestamp
 
         # Validate the response schema

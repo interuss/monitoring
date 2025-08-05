@@ -1,1 +1,1 @@
-from .dss_ovn_request import DSSOVNRequest
+from .dss_ovn_request import DSSOVNRequest as DSSOVNRequest

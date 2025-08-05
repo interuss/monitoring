@@ -3,11 +3,12 @@ from typing import Any, List
 from kubernetes.client import V1Deployment, V1Ingress, V1Namespace, V1Service
 from structlog import BoundLogger
 
-import monitoring.deployment_manager.deploylib.deployments
-import monitoring.deployment_manager.deploylib.ingresses
-import monitoring.deployment_manager.deploylib.namespaces
-import monitoring.deployment_manager.deploylib.services
-from monitoring.deployment_manager import deploylib
+from monitoring.deployment_manager.deploylib import (
+    deployments,
+    ingresses,
+    namespaces,
+    services,
+)
 from monitoring.deployment_manager.infrastructure import Clients
 
 
@@ -19,15 +20,13 @@ def upsert_resources(
 ) -> None:
     for target_resource in target_resources:
         if target_resource.__class__ == V1Deployment:
-            deploylib.deployments.upsert(clients.apps, log, namespace, target_resource)
+            deployments.upsert(clients.apps, log, namespace, target_resource)
         elif target_resource.__class__ == V1Ingress:
-            deploylib.ingresses.upsert(
-                clients.networking, log, namespace, target_resource
-            )
+            ingresses.upsert(clients.networking, log, namespace, target_resource)
         elif target_resource.__class__ == V1Namespace:
-            deploylib.namespaces.upsert(clients.core, log, target_resource)
+            namespaces.upsert(clients.core, log, target_resource)
         elif target_resource.__class__ == V1Service:
-            deploylib.services.upsert(clients.core, log, namespace, target_resource)
+            services.upsert(clients.core, log, namespace, target_resource)
         else:
             raise NotImplementedError(
                 "Upserting {} is not yet supported".format(target_resource.__class__)
@@ -44,19 +43,17 @@ def get_resources(
     existing_resources = []
     for target_resource in target_resources:
         if target_resource.__class__ == V1Deployment:
-            existing_resource = deploylib.deployments.get(
+            existing_resource = deployments.get(
                 clients.apps, log, namespace, target_resource
             )
         elif target_resource.__class__ == V1Ingress:
-            existing_resource = deploylib.ingresses.get(
+            existing_resource = ingresses.get(
                 clients.networking, log, namespace, target_resource
             )
         elif target_resource.__class__ == V1Namespace:
-            existing_resource = deploylib.namespaces.get(
-                clients.core, log, target_resource
-            )
+            existing_resource = namespaces.get(clients.core, log, target_resource)
         elif target_resource.__class__ == V1Service:
-            existing_resource = deploylib.services.get(
+            existing_resource = services.get(
                 clients.core, log, namespace, target_resource
             )
         else:

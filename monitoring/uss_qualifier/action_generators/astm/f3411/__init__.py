@@ -1,1 +1,1 @@
-from .for_each_dss import ForEachDSS
+from .for_each_dss import ForEachDSS as ForEachDSS
