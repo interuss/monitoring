@@ -40,6 +40,7 @@ dependencies = [
     "pytest-mock",
     "pyyaml",
     "requests",
+    "ruff",
     "s2sphere",
     "scipy",
     "shapely",
@@ -48,3 +49,13 @@ dependencies = [
     "uas-standards",
     "uuid6",
 ]
+
+[tool.ruff]
+target-version = "py313"
+
+# Default + isort
+lint.select = [
+    "E4", "E7", "E9", "F", "I",
+]
+extend-exclude = ["interfaces/*"]
+line-length = 88
