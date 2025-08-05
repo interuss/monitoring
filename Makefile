@@ -3,8 +3,8 @@ USER_GROUP := $(shell id -u):$(shell id -g)
 UPSTREAM_OWNER := $(shell scripts/git/upstream_owner.sh)
 COMMIT := $(shell scripts/git/commit.sh)
 
-BLACK_EXCLUDES := "/interfaces|/venv"
-ISORT_EXCLUDES := "--extend-skip=/interfaces --extend-skip=/venv"
+BLACK_EXCLUDES := "/interfaces|/venv|/.venv"
+ISORT_EXCLUDES := "--extend-skip=/interfaces --extend-skip=/venv --extends-skip=/.venv/"
 
 ifeq ($(OS),Windows_NT)
   detected_OS := Windows
@@ -49,7 +49,6 @@ shell-lint:
 unit-test:
 	cd monitoring && make unit-test
 
-# TODO: Add dependency on requirements.txt after we are sufficiently sure most users won't encounter a circular dependency
 .PHONY: image
 image:
 	cd monitoring && make image
@@ -111,21 +110,3 @@ restart-all: stop-uss-mocks down-locally start-locally start-uss-mocks
 # For local development when restarts of the mock USS are frequently required
 .PHONY: restart-uss-mocks
 restart-uss-mocks: stop-uss-mocks start-uss-mocks
-
-# Legacy target To be run locally whenever a direct dependency has been updated in requirements.in
-.PHONY: update-pinned-dependencies
-update-pinned-dependencies: requirements.txt
-
-define finalize_requirements_txt
-	awk 'BEGIN { RS = ""; FS = "\n" } { gsub("# by the following command:\n#\n#    pip-compile --generate-hashes --output-file=requirements.txt requirements.in\n#\n", "#\n# See requirements.in to update.\n\n"); print }' requirements.txt > requirements.txt.new && mv requirements.txt.new requirements.txt
-	echo The WARNING above is expected: https://github.com/jazzband/pip-tools/issues/2160
-endef
-
-requirements.txt: requirements.in
-	docker container run -u ${USER_GROUP} -v $(CURDIR):/app/monitoring interuss/monitoring pip-compile --cache-dir /tmp/.pip-cache --generate-hashes --output-file=requirements.txt requirements.in
-	$(call finalize_requirements_txt)
-
-.PHONY: upgrade-requirements
-upgrade-requirements:
-	docker container run -u ${USER_GROUP} -v $(CURDIR):/app/monitoring interuss/monitoring pip-compile --cache-dir /tmp/.pip-cache --upgrade --generate-hashes --output-file=requirements.txt requirements.in
-	$(call finalize_requirements_txt)

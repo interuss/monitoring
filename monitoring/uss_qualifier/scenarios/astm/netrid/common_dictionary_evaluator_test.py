@@ -574,7 +574,7 @@ def _assert_generic_evaluator_result(
     *setters_and_values: list[Any],
     outcome: bool,
     wanted_fail: Optional[list[str]] = None,
-    rid_version: Optional[RIDVersion] = None
+    rid_version: Optional[RIDVersion] = None,
 ):
     """
     Helper to call _assert_generic_evaluator_call that build mocked objects first and do the call.
@@ -660,7 +660,7 @@ def _assert_generic_evaluator_correct_field_is_used(
 def _assert_generic_evaluator_valid_value(
     *fct_and_setters: list[Any],
     valid_value: T,
-    rid_version: Optional[RIDVersion] = None
+    rid_version: Optional[RIDVersion] = None,
 ):
     """
     Test that a _evaluate function is handeling a specifc value as valid.
@@ -691,7 +691,7 @@ def _assert_generic_evaluator_invalid_value(
     *fct_and_setters: list[Any],
     invalid_value: T,
     valid_value: T,
-    rid_version: Optional[RIDVersion] = None
+    rid_version: Optional[RIDVersion] = None,
 ):
     """
     Test that a _evaluate function is handeling a specifc value as invalid.
@@ -737,7 +737,7 @@ def _assert_generic_evaluator_invalid_value(
 def _assert_generic_evaluator_invalid_observed_value(
     *fct_and_setters: list[Any],
     invalid_value: T,
-    rid_version: Optional[RIDVersion] = None
+    rid_version: Optional[RIDVersion] = None,
 ):
     """
     Test that a _evaluate function is handeling a specifc value as invalid when observed.

@@ -9,7 +9,7 @@
 #
 # This image is intended to be built from the repository root context/folder.
 
-FROM python:3.12.6-slim
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
 # Install system tools
@@ -19,9 +19,6 @@ FROM python:3.12.6-slim
 #   ca-certificates: Needed to accurately validate TLS connections
 RUN apt-get update --fix-missing && apt-get install -y make openssl curl libgeos-dev gcc g++ && apt-get install ca-certificates
 
-# Deal with https://github.com/docker-library/python/pull/954
-RUN pip install --no-cache-dir setuptools==74.1.2
-
 # Required to build in an ARM environment
 #   gevent: libffi-dev libssl-dev python3-dev build-essential
 #   lxml: libxml2-dev libxslt-dev
@@ -30,10 +27,29 @@ RUN if [ "$(uname -m)" = "aarch64" ]; then \
     apt-get install -y libffi-dev libssl-dev python3-dev build-essential libxml2-dev libxslt-dev pkg-config libhdf5-dev \
 ; fi
 
-# Install the necessary Python packages from requirements.txt
-RUN mkdir -p /app/monitoring
-COPY ./requirements.txt /app/monitoring/requirements.txt
-RUN pip install -r /app/monitoring/requirements.txt && rm -rf __pycache__
+RUN mkdir -p /app/
+
+# Install dependencies
+ENV UV_LINK_MODE=copy
+ENV UV_PROJECT_ENVIRONMENT=/venv/
+ENV VIRTUAL_ENV=/venv/
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=./uv.lock,target=/app/uv.lock \
+    --mount=type=bind,source=./pyproject.toml,target=/app/pyproject.toml \
+    cd /app/ && \
+    uv sync --locked --no-install-project --compile-bytecode
+
+# Ensure UV don't check dependencies or lock file, since we installed everything before
+ENV UV_FROZEN=1
+
+# Ensure the cache folder is present and writable by anyone
+# (Some command run with limited privileges)
+RUN mkdir -p /.cache/uv/ && chmod 777 /.cache/uv/
+# Also fix the root folder where python is downloaded
+RUN find /root/ -type d -exec chmod a+rx {} +
+
+# Start in this folder
+WORKDIR /app/monitoring
 
 # Add core content from repo
 ADD ./interfaces /app/interfaces
@@ -42,9 +58,6 @@ ADD ./monitoring /app/monitoring
 # Add health check to the /app root and make it executable
 COPY ./monitoring/health_check.sh /app/health_check.sh
 RUN chmod 766 /app/health_check.sh
-
-# Start in this folder
-WORKDIR /app/monitoring
 
 # Additional preparations for uss_qualifier/webapp
 RUN mkdir -p /app/uss-host-files
