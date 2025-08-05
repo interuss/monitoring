@@ -1128,7 +1128,6 @@ class OIRImplicitSubHandling(TestScenario):
                     check.record_failed(
                         summary="OIR not attached to any subscription",
                         details="OIR is not attached to any subscription, when a request for an implicit subscription was made.",
-                        query_timestamps=[mutate_q.timestamp],
                     )
 
         # First check the OIR as it was returned by the mutation endpoint
