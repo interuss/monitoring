@@ -1,5 +1,4 @@
 import datetime
-from typing import List
 
 import arrow
 from future.backports.datetime import timedelta
@@ -39,10 +38,10 @@ class ServiceProviderNotifiesSlowUpdates(GenericTestScenario):
     _service_providers: NetRIDServiceProviders
     _evaluation_configuration: EvaluationConfigurationResource
 
-    _injected_flights: List[InjectedFlight]
-    _injected_tests: List[InjectedTest]
+    _injected_flights: list[InjectedFlight]
+    _injected_tests: list[InjectedTest]
 
-    _pre_injection_notifications: dict[str, List[str]] = {}
+    _pre_injection_notifications: dict[str, list[str]] = {}
     _notifications_before: datetime
     _notifications_after: datetime
 
@@ -127,7 +126,6 @@ class ServiceProviderNotifiesSlowUpdates(GenericTestScenario):
         )
 
     def _poll_during_flights(self):
-
         config = self._evaluation_configuration.configuration
 
         virtual_observer = VirtualObserver(
@@ -173,7 +171,7 @@ class ServiceProviderNotifiesSlowUpdates(GenericTestScenario):
                 if sp.participant_id in no_notif_participants:
                     check.record_failed(
                         summary="No operator notification found",
-                        details=f"No operator notification was found when at least one would have been expected due to the too low update rate of the injected telemetry.",
+                        details="No operator notification was found when at least one would have been expected due to the too low update rate of the injected telemetry.",
                     )
 
     def cleanup(self):

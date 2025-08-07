@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import Dict, List, Optional
 
 import arrow
 
@@ -22,17 +21,17 @@ MAX_TEST_DURATION = timedelta(minutes=45)
 
 
 class PrepareFlightPlannersScenario(TestScenario):
-    areas: List[Volume4D]
-    flight_planners: Dict[ParticipantID, FlightPlannerClient]
+    areas: list[Volume4D]
+    flight_planners: dict[ParticipantID, FlightPlannerClient]
 
     def __init__(
         self,
         flight_planners: FlightPlannersResource,
         flight_intents: FlightIntentsResource,
-        mock_uss: Optional[MockUSSResource] = None,
-        flight_intents2: Optional[FlightIntentsResource] = None,
-        flight_intents3: Optional[FlightIntentsResource] = None,
-        flight_intents4: Optional[FlightIntentsResource] = None,
+        mock_uss: MockUSSResource | None = None,
+        flight_intents2: FlightIntentsResource | None = None,
+        flight_intents3: FlightIntentsResource | None = None,
+        flight_intents4: FlightIntentsResource | None = None,
     ):
         super().__init__()
         now = Time(arrow.utcnow().datetime)

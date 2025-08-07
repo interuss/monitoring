@@ -1,6 +1,5 @@
 import json
 import os
-from typing import Optional
 
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -47,7 +46,7 @@ def generate_artifacts(
             )
         return result
 
-    logger.info(f"Redacting access tokens from report")
+    logger.info("Redacting access tokens from report")
     redacted_report = ImplicitDict.parse(json.loads(json.dumps(report)), TestRunReport)
     redact_access_tokens(redacted_report)
 

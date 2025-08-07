@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from datetime import timedelta
-from typing import Callable, List, Tuple
 
 import arrow
 
@@ -18,7 +18,7 @@ WaitIntervalSeconds = 1
 """Time interval to wait between two calls to get interactions from Mock USS"""
 
 
-def wait_in_intervals(func) -> Callable[..., Tuple[List[Interaction], Query]]:
+def wait_in_intervals(func) -> Callable[..., tuple[list[Interaction], Query]]:
     """
     This wrapper calls the given function in intervals till desired interactions (of notifications) are returned,
     or till the max wait time is reached.
@@ -27,7 +27,7 @@ def wait_in_intervals(func) -> Callable[..., Tuple[List[Interaction], Query]]:
 
     """
 
-    def wrapper(*args, **kwargs) -> Tuple[List[Interaction], Query]:
+    def wrapper(*args, **kwargs) -> tuple[list[Interaction], Query]:
         wait_until = arrow.utcnow().datetime + timedelta(
             seconds=MaxTimeToWaitForSubscriptionNotificationSeconds
         )

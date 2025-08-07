@@ -4,7 +4,6 @@ import socket
 import uuid
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
 import s2sphere
@@ -37,11 +36,11 @@ class EntityType(str, Enum):
 
 
 @dataclass
-class TestEntity(object):
+class TestEntity:
     type: EntityType
     uuid: str
-    version: Optional[str] = None
-    creation_params: Optional[Dict] = None
+    version: str | None = None
+    creation_params: dict | None = None
 
 
 class DSSInteroperability(GenericTestScenario):
@@ -52,10 +51,10 @@ class DSSInteroperability(GenericTestScenario):
     """
 
     _dss_primary: DSSWrapper
-    _dss_others: List[DSSWrapper]
+    _dss_others: list[DSSWrapper]
     _allow_private_addresses: bool = False
-    _context: Dict[str, TestEntity]
-    _area_vertices: List[s2sphere.LatLng]
+    _context: dict[str, TestEntity]
+    _area_vertices: list[s2sphere.LatLng]
     _planning_area: PlanningAreaSpecification
 
     def __init__(
@@ -63,7 +62,7 @@ class DSSInteroperability(GenericTestScenario):
         primary_dss_instance: DSSInstanceResource,
         all_dss_instances: DSSInstancesResource,
         planning_area: PlanningAreaResource,
-        test_exclusions: Optional[TestExclusionsResource] = None,
+        test_exclusions: TestExclusionsResource | None = None,
     ):
         super().__init__()
         self._dss_primary = DSSWrapper(self, primary_dss_instance.dss_instance)
@@ -80,7 +79,7 @@ class DSSInteroperability(GenericTestScenario):
         if test_exclusions is not None:
             self._allow_private_addresses = test_exclusions.allow_private_addresses
 
-        self._context: Dict[str, TestEntity] = {}
+        self._context: dict[str, TestEntity] = {}
 
     # TODO migrate to ID generator?
     def _new_isa(self, name: str) -> TestEntity:
@@ -92,7 +91,7 @@ class DSSInteroperability(GenericTestScenario):
         self._context[name] = TestEntity(EntityType.Sub, str(uuid.uuid4()))
         return self._context[name]
 
-    def _get_entities_by_prefix(self, prefix: str) -> Dict[str, TestEntity]:
+    def _get_entities_by_prefix(self, prefix: str) -> dict[str, TestEntity]:
         all_entities = dict()
         for name, entity in self._context.items():
             if name.startswith(prefix):
@@ -166,7 +165,6 @@ class DSSInteroperability(GenericTestScenario):
         isa_1 = self._context["isa_1"]
 
         for index, dss in enumerate([self._dss_primary] + self._dss_others):
-
             with self.check(
                 "Subscription[n] created with proper response", [dss.participant_id]
             ) as check:
@@ -182,7 +180,7 @@ class DSSInteroperability(GenericTestScenario):
             with self.check(
                 "service_areas includes ISA from S1", [dss.participant_id]
             ) as check:
-                sub_isa: Optional[ISA] = next(
+                sub_isa: ISA | None = next(
                     filter(lambda isa: isa.id == isa_1.uuid, created_sub.isas), None
                 )
 
@@ -438,7 +436,7 @@ class DSSInteroperability(GenericTestScenario):
 
                 if missing_subs:
                     check.record_failed(
-                        summary=f"DSS returned too few subscriptions",
+                        summary="DSS returned too few subscriptions",
                         details=f"Missing: {', '.join(missing_subs)}",
                         query_timestamps=[subs.query.request.timestamp],
                     )
@@ -541,7 +539,6 @@ class DSSInteroperability(GenericTestScenario):
         all_sub_1_ids = self._get_entities_by_prefix("sub_1_").keys()
 
         for dss in [self._dss_primary] + self._dss_others:
-
             with self.check(
                 "Subscriptions queried successfully", [dss.participant_id]
             ) as check:
@@ -626,7 +623,7 @@ class DSSInteroperability(GenericTestScenario):
 
             if missing_subs:
                 check.record_failed(
-                    summary=f"DSS returned too few Subscriptions",
+                    summary="DSS returned too few Subscriptions",
                     details=f"Missing Subscriptions: {', '.join(missing_subs)}",
                     query_timestamps=[mutated_isa.dss_query.query.request.timestamp],
                 )
@@ -656,7 +653,7 @@ class DSSInteroperability(GenericTestScenario):
 
             if missing_subs:
                 check.record_failed(
-                    summary=f"DSS returned too few Subscriptions",
+                    summary="DSS returned too few Subscriptions",
                     details=f"Missing Subscriptions: {', '.join(missing_subs)}",
                     query_timestamps=[del_isa.dss_query.query.request.timestamp],
                 )
@@ -817,7 +814,7 @@ class DSSInteroperability(GenericTestScenario):
                     check, sub_id=sub_3.uuid, sub_version=sub_3.version
                 )
 
-    def _default_params(self, duration: datetime.timedelta) -> Dict:
+    def _default_params(self, duration: datetime.timedelta) -> dict:
         now = datetime.datetime.now().astimezone()
 
         return dict(

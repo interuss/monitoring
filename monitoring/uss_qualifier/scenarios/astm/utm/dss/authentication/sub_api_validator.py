@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Optional
 
 from uas_standards.astm.f3548.v21.api import (
     OPERATIONS,
@@ -34,7 +33,7 @@ class SubscriptionAuthValidator:
         planning_area_volume4d: Volume4D,
         no_auth_session: UTMClientSession,
         invalid_token_session: UTMClientSession,
-        test_wrong_scope: Optional[str] = None,
+        test_wrong_scope: str | None = None,
         test_missing_scope: bool = False,
     ):
         """
@@ -528,7 +527,7 @@ class SubscriptionAuthValidator:
         self._scenario.record_query(sanity_check)
         if sanity_check.status_code != 404:
             check.record_failed(
-                summary=f"Subscription was created by an unauthorized request.",
+                summary="Subscription was created by an unauthorized request.",
                 details="The subscription should not have been created, as the creation attempt was not authenticated.",
                 query_timestamps=[
                     creation_q.request.timestamp,
@@ -550,7 +549,7 @@ class SubscriptionAuthValidator:
             > TIME_TOLERANCE_SEC
         ):
             check.record_failed(
-                summary=f"Subscription was mutated by an unauthorized query.",
+                summary="Subscription was mutated by an unauthorized query.",
                 details="The subscription should not have been mutated, as the mutation attempt was not appropriately authenticated.",
                 query_timestamps=[
                     mutation_q.request.timestamp,
@@ -565,7 +564,7 @@ class SubscriptionAuthValidator:
         self._scenario.record_query(sanity_check)
         if sanity_check.status_code == 404:
             check.record_failed(
-                summary=f"Unauthorized request could delete the subscription.",
+                summary="Unauthorized request could delete the subscription.",
                 details="The subscription should not have been deleted, as the deletion attempt was not authenticated.",
                 query_timestamps=[
                     deletion_q.request.timestamp,

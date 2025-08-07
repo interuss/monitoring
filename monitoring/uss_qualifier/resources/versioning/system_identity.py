@@ -14,5 +14,5 @@ class SystemIdentityResource(Resource[SystemIdentitySpecification]):
     def __init__(
         self, specification: SystemIdentitySpecification, resource_origin: str
     ):
-        super(SystemIdentityResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.system_identity = specification.system_identity

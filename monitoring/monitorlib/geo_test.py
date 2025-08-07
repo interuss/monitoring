@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 from s2sphere import LatLng
 
 from monitoring.monitorlib.geo import (
@@ -10,7 +8,7 @@ from monitoring.monitorlib.geo import (
 MAX_DIFFERENCE = 0.001
 
 
-def _points(in_points: List[Tuple[float, float]]) -> List[LatLng]:
+def _points(in_points: list[tuple[float, float]]) -> list[LatLng]:
     return [LatLng.from_degrees(*p) for p in in_points]
 
 
@@ -41,7 +39,7 @@ def test_generate_slight_overlap_area():
     ) == _points([(1, -1), (1, -1.5), (1.5, -1.5), (1.5, -1)])
 
 
-def _approx_equals(p1: List[LatLng], p2: List[LatLng]) -> bool:
+def _approx_equals(p1: list[LatLng], p2: list[LatLng]) -> bool:
     return all([p1[i].approx_equals(p2[i], MAX_DIFFERENCE) for i in range(len(p1))])
 
 

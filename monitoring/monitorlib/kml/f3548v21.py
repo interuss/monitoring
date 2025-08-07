@@ -1,5 +1,3 @@
-from typing import List
-
 from pykml.factory import KML_ElementMaker as kml
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntent,
@@ -11,7 +9,6 @@ from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.kml.generation import (
     GREEN,
     RED,
-    TRANSLUCENT_GRAY,
     TRANSLUCENT_GREEN,
     TRANSLUCENT_LIGHTGRAY,
     TRANSLUCENT_LIGHTGREEN,
@@ -71,7 +68,7 @@ def op_intent_refs_query(
     )
 
 
-def f3548v21_styles() -> List[kml.Style]:
+def f3548v21_styles() -> list[kml.Style]:
     """Provides KML styles according to F3548-21 operational intent states."""
     return [
         kml.Style(

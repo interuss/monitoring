@@ -1,7 +1,6 @@
 import os
 import uuid
 from datetime import UTC, datetime
-from typing import List, Tuple, Union
 
 import arrow
 import flask
@@ -9,7 +8,6 @@ import s2sphere
 from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 
-import monitoring.monitorlib.fetch.rid
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.database import db
@@ -32,7 +30,7 @@ from monitoring.mock_uss.tracer.observation_areas import (
 )
 from monitoring.mock_uss.tracer.tracer_poll import TASK_POLL_OBSERVATION_AREAS
 from monitoring.mock_uss.ui import auth as ui_auth
-from monitoring.monitorlib import fetch
+from monitoring.monitorlib.fetch import rid
 from monitoring.monitorlib.geo import Volume3D
 from monitoring.monitorlib.geotemporal import Volume4D
 
@@ -51,18 +49,17 @@ def tracer_list_observation_areas() -> flask.Response:
 @ui_auth.login_required(role="admin")
 def tracer_upsert_observation_area(
     area_id: str,
-) -> Union[Tuple[str, int], flask.Response]:
+) -> tuple[str, int] | flask.Response:
     try:
         req_body = flask.request.json
         if req_body is None:
             raise ValueError("Request did not contain a JSON payload")
-        import json
 
         request: PutObservationAreaRequest = ImplicitDict.parse(
             req_body, PutObservationAreaRequest
         )
     except ValueError as e:
-        msg = "Upsert observation area for tracer unable to parse JSON: {}".format(e)
+        msg = f"Upsert observation area for tracer unable to parse JSON: {e}"
         return msg, 400
 
     with db as tx:
@@ -93,7 +90,7 @@ def tracer_upsert_observation_area(
 @ui_auth.login_required(role="admin")
 def tracer_delete_observation_area(
     area_id: str,
-) -> Union[Tuple[str, int], flask.Response]:
+) -> tuple[str, int] | flask.Response:
     with db as tx:
         if area_id not in tx.observation_areas:
             return "Specified observation area not in system", 404
@@ -110,18 +107,17 @@ def tracer_delete_observation_area(
 
 @webapp.route("/tracer/observation_areas/import_requests", methods=["POST"])
 @ui_auth.login_required(role="admin")
-def tracer_import_observation_areas() -> Union[Tuple[str, int], flask.Response]:
+def tracer_import_observation_areas() -> tuple[str, int] | flask.Response:
     try:
         req_body = flask.request.json
         if req_body is None:
             raise ValueError("Request did not contain a JSON payload")
-        import json
 
         request: ImportObservationAreasRequest = ImplicitDict.parse(
             req_body, ImportObservationAreasRequest
         )
     except ValueError as e:
-        msg = "Import observation area for tracer unable to parse JSON: {}".format(e)
+        msg = f"Import observation area for tracer unable to parse JSON: {e}"
         return msg, 400
 
     auth_spec = context.resolve_auth_spec(None)
@@ -143,7 +139,7 @@ def tracer_import_observation_areas() -> Union[Tuple[str, int], flask.Response]:
             )
         dss_base_url = context.resolve_rid_dss_base_url("", request.f3411)
         rid_client = context.get_client(auth_spec, dss_base_url)
-        rid_subscriptions = fetch.rid.subscriptions(
+        rid_subscriptions = rid.subscriptions(
             area=points,
             rid_version=request.f3411,
             session=rid_client,
@@ -222,7 +218,7 @@ def _shutdown():
     )
 
     with db as tx:
-        observation_areas: List[ObservationArea] = [v for _, v in tx.observation_areas]
+        observation_areas: list[ObservationArea] = [v for _, v in tx.observation_areas]
         tx.observation_areas.clear()
 
     for area in observation_areas:

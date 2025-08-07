@@ -1,6 +1,6 @@
 import json
+from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Iterator, List, Union
 
 import yaml
 from loguru import logger
@@ -32,8 +32,8 @@ from monitoring.uss_qualifier.reports.validation.definitions import (
 
 
 @dataclass
-class TestReportElement(object):
-    element: Union[FailedCheck, SkippedActionReport, TestScenarioReport]
+class TestReportElement:
+    element: FailedCheck | SkippedActionReport | TestScenarioReport
     location: JSONAddress
 
 
@@ -145,10 +145,9 @@ def _get_applicable_elements_from_test_suite(
     location: JSONAddress,
 ) -> Iterator[TestReportElement]:
     for a, action in enumerate(report.actions):
-        for e in _get_applicable_elements_from_action(
+        yield from _get_applicable_elements_from_action(
             applicability, action, JSONAddress(location + f".actions[{a}]")
-        ):
-            yield e
+        )
 
 
 def _get_applicable_elements_from_action_generator(
@@ -157,10 +156,9 @@ def _get_applicable_elements_from_action_generator(
     location: JSONAddress,
 ) -> Iterator[TestReportElement]:
     for a, action in enumerate(report.actions):
-        for e in _get_applicable_elements_from_action(
+        yield from _get_applicable_elements_from_action(
             applicability, action, JSONAddress(location + f".actions[{a}]")
-        ):
-            yield e
+        )
 
 
 def _get_applicable_elements_from_skipped_action(
@@ -237,7 +235,7 @@ def _evaluate_element_condition(
 
 
 def _evaluate_elements_condition(
-    condition: ElementGroupCondition, elements: List[TestReportElement]
+    condition: ElementGroupCondition, elements: list[TestReportElement]
 ) -> bool:
     if "count" in condition and condition.count is not None:
         return _compare_number(len(elements), condition.count)
@@ -249,7 +247,7 @@ def _evaluate_elements_condition(
 
 
 def _evaluate_condition(
-    condition: PassCondition, elements: List[TestReportElement]
+    condition: PassCondition, elements: list[TestReportElement]
 ) -> bool:
     if "each_element" in condition and condition.each_element is not None:
         for element in elements:

@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
     OperationalIntentReference,
@@ -17,9 +15,9 @@ def create_oir_query(
     dss: DSSInstance,
     oir_id: EntityID,
     oir_params: PutOperationalIntentReferenceParameters,
-) -> Tuple[
+) -> tuple[
     OperationalIntentReference,
-    List[SubscriberToNotify],
+    list[SubscriberToNotify],
     Query,
 ]:
     """
@@ -59,9 +57,9 @@ def update_oir_query(
     oir_id: EntityID,
     oir_params: PutOperationalIntentReferenceParameters,
     ovn: str,
-) -> Tuple[
+) -> tuple[
     OperationalIntentReference,
-    List[SubscriberToNotify],
+    list[SubscriberToNotify],
     Query,
 ]:
     """
@@ -97,7 +95,7 @@ def update_oir_query(
 
 def delete_oir_query(
     scenario: TestScenarioType, dss: DSSInstance, oir_id: EntityID, ovn: str
-) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query]:
+) -> tuple[OperationalIntentReference, list[SubscriberToNotify], Query]:
     """Issue a request to delete an OIR to the DSS instance, wrapped in a check documented in `delete_query.md`."""
     with scenario.check(
         "Delete operational intent reference query succeeds", dss.participant_id
@@ -119,7 +117,7 @@ def delete_oir_query(
 
 def get_oir_query(
     scenario: TestScenarioType, dss: DSSInstance, oir_id: EntityID
-) -> Tuple[OperationalIntentReference, Query]:
+) -> tuple[OperationalIntentReference, Query]:
     """
     Issue a request to get an OIR by ID to the DSS instance, wrapped in a check documented in `get_query.md`.
     """

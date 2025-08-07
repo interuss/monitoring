@@ -1,6 +1,4 @@
-import monitoring.deployment_manager.deploylib.namespaces
-import monitoring.deployment_manager.deploylib.systems
-from monitoring.deployment_manager import deploylib
+from monitoring.deployment_manager.deploylib import namespaces, systems
 from monitoring.deployment_manager.infrastructure import Context, deployment_action
 from monitoring.deployment_manager.systems.test import hello_world
 from monitoring.monitorlib.delay import sleep
@@ -12,12 +10,8 @@ def deploy(context: Context) -> None:
     namespace = hello_world.define_namespace(context.spec.test.v1.namespace)
     resources = hello_world.define_resources()
 
-    active_namespace = deploylib.namespaces.upsert(
-        context.clients.core, context.log, namespace
-    )
-    deploylib.systems.upsert_resources(
-        resources, active_namespace, context.clients, context.log
-    )
+    active_namespace = namespaces.upsert(context.clients.core, context.log, namespace)
+    systems.upsert_resources(resources, active_namespace, context.clients, context.log)
 
     context.log.msg(
         "hello_world system deployment complete.  Run `minikube tunnel` and then navigate to http://localhost in a browser to see the web content."
@@ -27,33 +21,29 @@ def deploy(context: Context) -> None:
 @deployment_action("test/hello_world/destroy")
 def destroy(context: Context) -> None:
     """Tear down the hello_world system"""
-    namespace = deploylib.namespaces.get(
+    namespace = namespaces.get(
         context.clients.core,
         context.log,
         hello_world.define_namespace(context.spec.test.v1.namespace),
     )
     if namespace is None:
         context.log.warn(
-            "Namespace `{}` does not exist in `{}` cluster".format(
-                context.spec.test.v1.namespace, context.spec.cluster.name
-            )
+            f"Namespace `{context.spec.test.v1.namespace}` does not exist in `{context.spec.cluster.name}` cluster"
         )
         return
 
     resources = hello_world.define_resources()
     resources.reverse()
-    existing_resources = deploylib.systems.get_resources(
+    existing_resources = systems.get_resources(
         resources, namespace, context.clients, context.log, context.spec.cluster.name
     )
 
     context.log.warn(
-        "Destroying hello_world system in `{}` namespace of `{}` cluster in 15 seconds...".format(
-            namespace.metadata.name, context.spec.cluster.name
-        )
+        f"Destroying hello_world system in `{namespace.metadata.name}` namespace of `{context.spec.cluster.name}` cluster in 15 seconds..."
     )
     sleep(15, "destruction of hello_world system may take a few seconds")
 
-    deploylib.systems.delete_resources(
+    systems.delete_resources(
         existing_resources, namespace, context.clients, context.log
     )
 

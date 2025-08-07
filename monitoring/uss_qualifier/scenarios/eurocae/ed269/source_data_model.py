@@ -1,5 +1,4 @@
 import json
-from typing import List
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 from uas_standards.eurocae_ed269 import UASZoneVersion
@@ -15,7 +14,7 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 class ED269SchemaFile(ImplicitDict):
     formatVersion: str
     createdAt: StringBasedDateTime
-    UASZoneList: List[UASZoneVersion]
+    UASZoneList: list[UASZoneVersion]
 
 
 class SourceDataModelValidation(TestScenario):

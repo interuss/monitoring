@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import List, Optional
 
 from implicitdict import ImplicitDict
 from uas_standards.ansi_cta_2063_a import SerialNumber
@@ -22,7 +21,7 @@ Priority = int
 class ASTMF354821OpIntentInformation(ImplicitDict):
     """Information provided about a flight plan that is necessary for ASTM F3548-21."""
 
-    priority: Optional[Priority]
+    priority: Priority | None
 
 
 # ===== U-space =====
@@ -74,13 +73,13 @@ class FlightAuthorisationData(ImplicitDict):
 
     uas_class: UASClass
 
-    identification_technologies: List[str]
+    identification_technologies: list[str]
     """Technology used to identify the UAS. Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 6."""
 
-    uas_type_certificate: Optional[str]
+    uas_type_certificate: str | None
     """Provisional field. Not applicable as of September 2021. Required only if `uas_class` is set to `other` by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 4."""
 
-    connectivity_methods: List[str]
+    connectivity_methods: list[str]
     """Connectivity methods. Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 7."""
 
     endurance_minutes: int
@@ -96,7 +95,7 @@ class FlightAuthorisationData(ImplicitDict):
     Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 10.
     """
 
-    uas_id: Optional[str]
+    uas_id: str | None
     """When applicable, the registration number of the unmanned aircraft.
     This is expressed using the nationality and registration mark of the unmanned aircraft in
     line with ICAO Annex 7.
@@ -147,28 +146,28 @@ class RPAS26FlightDetailsFlightProfile(str, Enum):
 class RPAS26FlightDetails(ImplicitDict):
     """Information about a flight necessary to plan successfully using the RPAS Platform Operating Rules version 2.6."""
 
-    operator_type: Optional[RPAS26FlightDetailsOperatorType]
+    operator_type: RPAS26FlightDetailsOperatorType | None
     """The type of operator."""
 
-    uas_serial_numbers: Optional[List[str]]
+    uas_serial_numbers: list[str] | None
     """The list of UAS/drone serial numbers that will be operated during the operation."""
 
-    uas_registration_numbers: Optional[List[str]]
+    uas_registration_numbers: list[str] | None
     """The list of UAS/drone registration numbers that will be operated during the operation."""
 
-    aircraft_type: Optional[RPAS26FlightDetailsAircraftType]
+    aircraft_type: RPAS26FlightDetailsAircraftType | None
     """Type of vehicle being used as per ASTM F3411-22a."""
 
-    flight_profile: Optional[RPAS26FlightDetailsFlightProfile]
+    flight_profile: RPAS26FlightDetailsFlightProfile | None
     """Type of flight profile."""
 
-    pilot_license_number: Optional[str]
+    pilot_license_number: str | None
     """License number for the pilot."""
 
-    pilot_phone_number: Optional[str]
+    pilot_phone_number: str | None
     """Contact phone number for the pilot."""
 
-    operator_number: Optional[str]
+    operator_number: str | None
     """Operator number."""
 
 
@@ -256,13 +255,13 @@ class FlightInfo(ImplicitDict):
 
     basic_information: BasicFlightPlanInformation
 
-    astm_f3548_21: Optional[ASTMF354821OpIntentInformation]
+    astm_f3548_21: ASTMF354821OpIntentInformation | None
 
-    uspace_flight_authorisation: Optional[FlightAuthorisationData]
+    uspace_flight_authorisation: FlightAuthorisationData | None
 
-    rpas_operating_rules_2_6: Optional[RPAS26FlightDetails]
+    rpas_operating_rules_2_6: RPAS26FlightDetails | None
 
-    additional_information: Optional[dict]
+    additional_information: dict | None
     """Any information relevant to a particular jurisdiction or use case not described in the standard schema. The keys and values must be agreed upon between the test designers and USSs under test."""
 
     @staticmethod
@@ -449,7 +448,7 @@ class ExecutionStyle(str, Enum):
     """The user is communicating an actual state of reality. The USS should consider the user to be actually performing (or attempting to perform) this action, regardless of whether or not the action is allowed under relevant UTM rules."""
 
 
-def extents_of(flight_infos: List[FlightInfo]) -> Volume4D:
+def extents_of(flight_infos: list[FlightInfo]) -> Volume4D:
     """Return the bounding volume of all volumes in the flight infos"""
     return sum(
         [f.basic_information.area for f in flight_infos], Volume4DCollection([])

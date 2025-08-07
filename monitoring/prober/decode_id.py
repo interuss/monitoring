@@ -2,7 +2,6 @@ import argparse
 import importlib
 import pkgutil
 import sys
-from typing import List
 
 import monitoring
 from monitoring.prober import infrastructure
@@ -30,7 +29,7 @@ def import_submodules(package, recursive=True):
 import_submodules(monitoring.prober)
 
 
-def parse_args(argv: List[str]):
+def parse_args(argv: list[str]):
     parser = argparse.ArgumentParser(description="Decode a test ID")
     parser.add_argument(
         action="store", dest="id", type=str, metavar="ID", help="The ID to decode"
@@ -41,12 +40,10 @@ def parse_args(argv: List[str]):
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
     owner_name, id_code = infrastructure.IDFactory.decode(args.id)
-    print("Owner: {}".format(owner_name))
+    print(f"Owner: {owner_name}")
     if id_code in infrastructure.resource_type_code_descriptions:
         print(
-            "Resource type: {}".format(
-                infrastructure.resource_type_code_descriptions[id_code]
-            )
+            f"Resource type: {infrastructure.resource_type_code_descriptions[id_code]}"
         )
     else:
-        print("Resource type: Unregistered ({})".format(id_code))
+        print(f"Resource type: Unregistered ({id_code})")

@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Optional
 
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
@@ -48,8 +47,8 @@ class OIRSimple(TestScenario):
     _oir_id: EntityID
 
     # Keep track of the current OIR state
-    _current_oir: Optional[OperationalIntentReference]
-    _current_oir_params: Optional[PutOperationalIntentReferenceParameters]
+    _current_oir: OperationalIntentReference | None
+    _current_oir_params: PutOperationalIntentReferenceParameters | None
     _expected_manager: str
     _planning_area: PlanningAreaSpecification
     _planning_area_volume4d: Volume4D
@@ -117,7 +116,6 @@ class OIRSimple(TestScenario):
         self.end_test_scenario()
 
     def _step_attempt_delete_missing_ovn(self):
-
         self.begin_test_step("Attempt deletion with missing OVN")
 
         with self.check(
@@ -148,7 +146,6 @@ class OIRSimple(TestScenario):
         self.end_test_step()
 
     def _step_attempt_delete_incorrect_ovn(self):
-
         self.begin_test_step("Attempt deletion with incorrect OVN")
 
         with self.check(
@@ -180,7 +177,6 @@ class OIRSimple(TestScenario):
         self.end_test_step()
 
     def _step_attempt_mutation_missing_ovn(self):
-
         self.begin_test_step("Attempt mutation with missing OVN")
 
         oir_params = self._test_params_for_current_time()
@@ -218,7 +214,6 @@ class OIRSimple(TestScenario):
         self.end_test_step()
 
     def _step_attempt_mutation_incorrect_ovn(self):
-
         self.begin_test_step("Attempt mutation with incorrect OVN")
 
         oir_params = self._test_params_for_current_time()
@@ -255,7 +250,6 @@ class OIRSimple(TestScenario):
         self.end_test_step()
 
     def _step_attempt_mutation_correct_ovn(self):
-
         self.begin_test_step("Attempt mutation with correct OVN")
 
         self._current_oir_params = self._test_params_for_current_time()
@@ -354,7 +348,7 @@ class OIRSimple(TestScenario):
         )
 
     def _default_oir_params(
-        self, subscription_id: Optional[SubscriptionID]
+        self, subscription_id: SubscriptionID | None
     ) -> PutOperationalIntentReferenceParameters:
         return self._planning_area.get_new_operational_intent_ref_params(
             key=[],

@@ -1,7 +1,6 @@
 import datetime
 import json
 import sys
-from typing import Dict, Optional
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -47,9 +46,9 @@ polling_status = SynchronizedValue(
 
 class PollingValues(ImplicitDict):
     need_line_break: bool = False
-    last_isa_result: Optional[FetchedISAs] = None
-    last_ops_result: Optional[FetchedEntities] = None
-    last_constraints_result: Optional[FetchedEntities] = None
+    last_isa_result: FetchedISAs | None = None
+    last_ops_result: FetchedEntities | None = None
+    last_constraints_result: FetchedEntities | None = None
 
 
 polling_values = SynchronizedValue(
@@ -85,7 +84,7 @@ def _log_poll_start(logger):
 def poll_observation_areas() -> None:
     logger = context.tracer_logger
     _log_poll_start(logger)
-    observation_areas: Dict[ObservationAreaID, ObservationArea] = (
+    observation_areas: dict[ObservationAreaID, ObservationArea] = (
         db.value.observation_areas
     )
     for observation_area in observation_areas.values():
@@ -148,7 +147,7 @@ def poll_ops(
     box = make_latlng_rect(area.area.volume)
     t0 = datetime.datetime.now(datetime.UTC)
     if "operational_intents" not in context.scd_cache:
-        context.scd_cache["operational_intents"]: Dict[
+        context.scd_cache["operational_intents"]: dict[
             str, fetch.scd.FetchedEntity
         ] = {}
     result = fetch.scd.operations(
@@ -193,7 +192,7 @@ def poll_constraints(
     box = make_latlng_rect(area.area.volume)
     t0 = datetime.datetime.now(datetime.UTC)
     if "constraints" not in context.scd_cache:
-        context.scd_cache["constraints"]: Dict[str, fetch.scd.FetchedEntity] = {}
+        context.scd_cache["constraints"]: dict[str, fetch.scd.FetchedEntity] = {}
     result = fetch.scd.constraints(
         scd_client,
         box,

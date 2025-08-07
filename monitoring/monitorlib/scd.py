@@ -1,5 +1,4 @@
 import base64
-from typing import Dict, List, Optional
 
 from implicitdict import StringBasedDateTime
 from uas_standards.astm.f3548.v21.api import (
@@ -35,7 +34,7 @@ def priority_of(details: OperationalIntentDetails) -> int:
 
 
 def make_exchange_record(query: Query, msg_problem: str) -> ExchangeRecord:
-    def str_headers(headers: Optional[Dict[str, str]]) -> List[str]:
+    def str_headers(headers: dict[str, str] | None) -> list[str]:
         if headers is None:
             return []
         return [f"{h_name}: {h_val}" for h_name, h_val in headers.items()]

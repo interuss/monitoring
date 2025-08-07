@@ -1,5 +1,4 @@
 import json
-from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict
 
@@ -14,8 +13,8 @@ class TestRecord(ImplicitDict):
     """Representation of RID SP's record of a set of injected test flights"""
 
     version: str
-    flights: List[injection_api.TestFlight]
-    isa_version: Optional[str] = None
+    flights: list[injection_api.TestFlight]
+    isa_version: str | None = None
 
     def __init__(self, **kwargs):
         kwargs["flights"] = [
@@ -24,13 +23,13 @@ class TestRecord(ImplicitDict):
         for flight in kwargs["flights"]:
             flight.order_telemetry()
 
-        super(TestRecord, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class Database(ImplicitDict):
     """Simple pseudo-database structure tracking the state of the mock system"""
 
-    tests: Dict[str, TestRecord] = {}
+    tests: dict[str, TestRecord] = {}
     behavior: ServiceProviderBehavior = ServiceProviderBehavior()
     notifications: ServiceProviderUserNotifications = ServiceProviderUserNotifications()
 

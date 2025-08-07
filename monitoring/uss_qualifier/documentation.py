@@ -21,5 +21,5 @@ def text_of(value: marko.element.Element) -> str:
         return result
     else:
         raise NotImplementedError(
-            "Cannot yet extract raw text from {}".format(value.__class__.__name__)
+            f"Cannot yet extract raw text from {value.__class__.__name__}"
         )

@@ -11,7 +11,6 @@ import yaml
 from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 
-import monitoring.monitorlib.fetch.rid
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.database import db
@@ -19,7 +18,8 @@ from monitoring.mock_uss.tracer.kml import render_historical_kml
 from monitoring.mock_uss.tracer.log_types import PollFlights, TracerLogEntry
 from monitoring.mock_uss.tracer.observation_areas import ObservationArea
 from monitoring.mock_uss.ui import auth as ui_auth
-from monitoring.monitorlib import fetch, geo, infrastructure
+from monitoring.monitorlib import geo, infrastructure
+from monitoring.monitorlib.fetch import rid
 
 
 @webapp.route("/tracer/logs", methods=["GET"])
@@ -60,7 +60,7 @@ def tracer_download_logs():
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
         for log in logs:
-            with open(os.path.join(context.tracer_logger.log_path, log), "r") as f:
+            with open(os.path.join(context.tracer_logger.log_path, log)) as f:
                 zip_file.writestr(log, f.read())
     zip_name = (
         f"logs_{datetime.datetime.now(datetime.UTC).isoformat().split('.')[0]}.zip"
@@ -115,7 +115,7 @@ def tracer_logs(log):
     logfile = os.path.join(context.tracer_logger.log_path, log)
     if not os.path.exists(logfile):
         flask.abort(404)
-    with open(logfile, "r") as f:
+    with open(logfile) as f:
         objs = [obj for obj in yaml.full_load_all(f)]
     if len(objs) == 1:
         obj = objs[0]
@@ -232,7 +232,7 @@ def tracer_rid_request_poll(observation_area_id: str):
             400, "Specified observation area does not define its spatial outline"
         )
     rid_client = context.get_client(area.f3411.auth_spec, area.f3411.dss_base_url)
-    flights_result = fetch.rid.all_flights(
+    flights_result = rid.all_flights(
         geo.make_latlng_rect(area.area.volume),
         flask.request.form.get("include_recent_positions", type=bool),
         flask.request.form.get("get_details", type=bool),

@@ -1,5 +1,4 @@
 import datetime
-from typing import Dict
 
 from monitoring.monitorlib.mutate.rid import ChangedSubscription
 from monitoring.prober.infrastructure import register_resource_type
@@ -210,7 +209,7 @@ class SubscriptionValidation(GenericTestScenario):
             # If a subscription was created, we want to delete it before continuing:
             self._dss_wrapper.cleanup_sub(sub_id=self._sub_id)
 
-    def _default_subscription_params(self, duration: datetime.timedelta) -> Dict:
+    def _default_subscription_params(self, duration: datetime.timedelta) -> dict:
         now = datetime.datetime.now(datetime.UTC)
         return dict(
             area_vertices=[vertex.as_s2sphere() for vertex in self._isa.footprint],

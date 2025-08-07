@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, List
+from collections.abc import Iterator
 
 from implicitdict import ImplicitDict
 
@@ -47,13 +47,13 @@ class WithLocality(ActionGenerator[WithLocalitySpecification]):
     """Performs a specified test suite action after first configuring mock_uss instances to use a specified locality,
     and then restoring the original locality afterward."""
 
-    _actions: List[TestSuiteAction]
+    _actions: list[TestSuiteAction]
     _current_action: int
 
     @classmethod
     def list_potential_actions(
         cls, specification: WithLocalitySpecification
-    ) -> List[PotentialGeneratedAction]:
+    ) -> list[PotentialGeneratedAction]:
         actions = [
             PotentialGeneratedAction(
                 test_scenario=PotentialTestScenarioAction(
@@ -80,7 +80,7 @@ class WithLocality(ActionGenerator[WithLocalitySpecification]):
     def __init__(
         self,
         specification: WithLocalitySpecification,
-        resources: Dict[ResourceID, ResourceType],
+        resources: dict[ResourceID, ResourceType],
     ):
         if specification.mock_uss_instances_source not in resources:
             raise ValueError(
@@ -136,5 +136,4 @@ class WithLocality(ActionGenerator[WithLocalitySpecification]):
         self._current_action = 0
 
     def actions(self) -> Iterator[TestSuiteAction]:
-        for a in self._actions:
-            yield a
+        yield from self._actions

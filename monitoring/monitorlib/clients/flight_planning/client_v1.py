@@ -1,5 +1,4 @@
 import uuid
-from typing import Optional
 
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api
@@ -16,9 +15,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
     AdvisoryInclusion,
-    FlightPlanStatus,
     PlanningActivityResponse,
-    PlanningActivityResult,
 )
 from monitoring.monitorlib.clients.flight_planning.test_preparation import (
     TestPreparationActivityResponse,
@@ -33,7 +30,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
     _session: UTMClientSession
 
     def __init__(self, session: UTMClientSession, participant_id: ParticipantID):
-        super(V1FlightPlannerClient, self).__init__(participant_id=participant_id)
+        super().__init__(participant_id=participant_id)
         self._session = session
 
     def _inject(
@@ -41,7 +38,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
         flight_plan_id: FlightID,
         flight_info: FlightInfo,
         execution_style: ExecutionStyle,
-        additional_fields: Optional[dict] = None,
+        additional_fields: dict | None = None,
     ) -> PlanningActivityResponse:
         flight_plan = flight_info.to_flight_plan()
         req = api.UpsertFlightPlanRequest(
@@ -103,7 +100,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
         self,
         flight_info: FlightInfo,
         execution_style: ExecutionStyle,
-        additional_fields: Optional[dict] = None,
+        additional_fields: dict | None = None,
     ) -> PlanningActivityResponse:
         return self._inject(
             str(uuid.uuid4()), flight_info, execution_style, additional_fields
@@ -114,7 +111,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
         flight_id: FlightID,
         updated_flight_info: FlightInfo,
         execution_style: ExecutionStyle,
-        additional_fields: Optional[dict] = None,
+        additional_fields: dict | None = None,
     ) -> PlanningActivityResponse:
         return self._inject(
             flight_id, updated_flight_info, execution_style, additional_fields

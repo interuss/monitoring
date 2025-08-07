@@ -1,6 +1,5 @@
-import time
+from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import Callable, Optional
 
 from monitoring.mock_uss.flights.database import DEADLOCK_TIMEOUT, FlightRecord, db
 from monitoring.monitorlib.delay import sleep
@@ -48,7 +47,7 @@ def release_flight_lock(flight_id: str, log: Callable[[str], None]) -> None:
                 del tx.flights[flight_id]
 
 
-def delete_flight_record(flight_id: str) -> Optional[FlightRecord]:
+def delete_flight_record(flight_id: str) -> FlightRecord | None:
     deadline = datetime.now(UTC) + DEADLOCK_TIMEOUT
     while True:
         with db as tx:

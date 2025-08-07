@@ -32,7 +32,7 @@ class Sub(client.USS):
         sub_uuid = str(uuid.uuid4())
 
         resp = self.client.put(
-            "/subscriptions/{}".format(sub_uuid),
+            f"/subscriptions/{sub_uuid}",
             json={
                 "extents": {
                     "spatial_volume": {
@@ -59,7 +59,7 @@ class Sub(client.USS):
         if not target_sub:
             print("Nothing to pick from sub_dict for GET")
             return
-        self.client.get("/subscriptions/{}".format(target_sub))
+        self.client.get(f"/subscriptions/{target_sub}")
 
     @task(50)
     def update_sub(self):
@@ -71,7 +71,7 @@ class Sub(client.USS):
         time_start = datetime.datetime.now(datetime.UTC)
         time_end = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=2)
         resp = self.client.put(
-            "/subscriptions/{}/{}".format(target_sub, target_version),
+            f"/subscriptions/{target_sub}/{target_version}",
             json={
                 "extents": {
                     "spatial_volume": {
@@ -96,7 +96,7 @@ class Sub(client.USS):
         if not target_sub:
             print("Nothing to pick from sub_dict for DELETE")
             return
-        self.client.delete("/subscriptions/{}/{}".format(target_sub, target_version))
+        self.client.delete(f"/subscriptions/{target_sub}/{target_version}")
 
     def checkout_sub(self):
         self.lock.acquire()

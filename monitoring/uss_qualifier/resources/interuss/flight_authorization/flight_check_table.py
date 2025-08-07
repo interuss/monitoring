@@ -16,5 +16,5 @@ class FlightCheckTableResource(Resource[FlightCheckTableSpecification]):
     def __init__(
         self, specification: FlightCheckTableSpecification, resource_origin: str
     ):
-        super(FlightCheckTableResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.table = specification.table

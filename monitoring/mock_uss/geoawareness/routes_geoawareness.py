@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import flask
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.geo_awareness.v1.api import (
@@ -26,7 +24,7 @@ from monitoring.monitorlib.geoawareness_automated_testing.api import (
     methods=["GET"],
 )
 @requires_scope(SCOPE_GEOAWARENESS_TEST)
-def geoawareness_get_geozone_sources(geozone_source_id: str) -> Tuple[str, int]:
+def geoawareness_get_geozone_sources(geozone_source_id: str) -> tuple[str, int]:
     return get_geozone_source(geozone_source_id)
 
 
@@ -35,7 +33,7 @@ def geoawareness_get_geozone_sources(geozone_source_id: str) -> Tuple[str, int]:
     methods=["PUT"],
 )
 @requires_scope(SCOPE_GEOAWARENESS_TEST)
-def geoawareness_put_geozone_sources(geozone_source_id: str) -> Tuple[str, int]:
+def geoawareness_put_geozone_sources(geozone_source_id: str) -> tuple[str, int]:
     try:
         json = flask.request.json
         if json is None:
@@ -44,9 +42,7 @@ def geoawareness_put_geozone_sources(geozone_source_id: str) -> Tuple[str, int]:
             json, CreateGeozoneSourceRequest
         )
     except ValueError as e:
-        msg = "Create geozone source {} unable to parse JSON: {}".format(
-            geozone_source_id, e
-        )
+        msg = f"Create geozone source {geozone_source_id} unable to parse JSON: {e}"
         return msg, 400
 
     return create_geozone_source(geozone_source_id, body)
@@ -57,7 +53,7 @@ def geoawareness_put_geozone_sources(geozone_source_id: str) -> Tuple[str, int]:
     methods=["DELETE"],
 )
 @requires_scope(SCOPE_GEOAWARENESS_TEST)
-def geoawareness_delete_geozone_sources(geozone_source_id: str) -> Tuple[str, int]:
+def geoawareness_delete_geozone_sources(geozone_source_id: str) -> tuple[str, int]:
     return delete_geozone_source(geozone_source_id)
 
 
@@ -70,7 +66,7 @@ def geoawareness_check():
             raise ValueError("Request did not contain a JSON payload")
         body: GeozonesCheckRequest = ImplicitDict.parse(json, GeozonesCheckRequest)
     except ValueError as e:
-        msg = "Geozone check unable to parse JSON: {}".format(e)
+        msg = f"Geozone check unable to parse JSON: {e}"
         return msg, 400
     applicable_geozone = check_geozones(body)
 

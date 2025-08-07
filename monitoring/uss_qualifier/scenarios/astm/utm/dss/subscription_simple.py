@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Dict, List
 
 from uas_standards.astm.f3548.v21.api import Subscription, SubscriptionID
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -46,16 +45,16 @@ class SubscriptionSimple(TestScenario):
     # Base identifier for the subscriptions that will be created
     _base_sub_id: SubscriptionID
 
-    _test_subscription_ids: List[SubscriptionID]
+    _test_subscription_ids: list[SubscriptionID]
 
     # Base parameters used for subscription creation variations
     _sub_generation_params: SubscriptionParams
 
     # Effective parameters used for each subscription, indexed by subscription ID
-    _sub_params_by_sub_id: Dict[SubscriptionID, SubscriptionParams]
+    _sub_params_by_sub_id: dict[SubscriptionID, SubscriptionParams]
 
     # Keep track of the latest subscription returned by the DSS
-    _current_subscriptions: Dict[SubscriptionID, Subscription]
+    _current_subscriptions: dict[SubscriptionID, Subscription]
 
     # An area designed to be too big to be allowed to search by the DSS
     _problematically_big_area_vol: Polygon
@@ -364,7 +363,6 @@ class SubscriptionSimple(TestScenario):
         Mutate all existing subscriptions by updating their footprint.
         """
         for sub_id, sub in self._current_subscriptions.items():
-
             new_params = self._sub_params_by_sub_id[sub_id].copy()
 
             # Shift all previous vertices west by 0.001 degrees
@@ -475,7 +473,6 @@ class SubscriptionSimple(TestScenario):
     def _test_delete_sub_faulty(self):
         """Try to delete subscription in an incorrect way"""
         for sub_id in self._current_subscriptions.keys():
-
             del_missing_version = self._dss.delete_subscription(
                 sub_id=sub_id, sub_version=""
             )
@@ -583,7 +580,7 @@ class SubscriptionSimple(TestScenario):
         sub_under_test: Subscription,
         creation_params: SubscriptionParams,
         was_mutated: bool,
-        query_timestamps: List[datetime],
+        query_timestamps: list[datetime],
     ):
         """Compare the passed subscription with the data we specified when creating it"""
         self._validate_subscription(
@@ -614,7 +611,7 @@ class SubscriptionSimple(TestScenario):
         sub_under_test: Subscription,
         creation_params: SubscriptionParams,
         was_mutated: bool,
-        query_timestamps: List[datetime],
+        query_timestamps: list[datetime],
     ):
         """
         Validate the subscription against the parameters used to create it.

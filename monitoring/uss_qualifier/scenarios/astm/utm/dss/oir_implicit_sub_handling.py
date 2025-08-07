@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import List, Optional, Set, Tuple
 
 import arrow
 from uas_standards.astm.f3548.v21.api import (
@@ -61,8 +60,8 @@ class OIRImplicitSubHandling(TestScenario):
 
     _sub_id: str
 
-    _oir_a_ovn: Optional[str]
-    _oir_b_ovn: Optional[str]
+    _oir_a_ovn: str | None
+    _oir_b_ovn: str | None
 
     # Reference times for the subscriptions and operational intents
     _time_0: datetime
@@ -73,10 +72,10 @@ class OIRImplicitSubHandling(TestScenario):
     _manager: str
 
     # Keeps track of existing subscriptions in the planning area
-    _initial_subscribers: List[SubscriberToNotify]
-    _implicit_sub_1: Optional[Subscription]
-    _implicit_sub_2: Optional[Subscription]
-    _explicit_sub: Optional[Subscription]
+    _initial_subscribers: list[SubscriberToNotify]
+    _implicit_sub_1: Subscription | None
+    _implicit_sub_2: Subscription | None
+    _explicit_sub: Subscription | None
 
     def __init__(
         self,
@@ -362,7 +361,6 @@ class OIRImplicitSubHandling(TestScenario):
                     )
 
     def _case_2_step_create_oir_2(self):
-
         oir, subs, _, q = self._create_oir(
             self._oir_a_id, self._time_2, self._time_3, [self._oir_c_ovn], False
         )
@@ -392,10 +390,10 @@ class OIRImplicitSubHandling(TestScenario):
         relevant_ovns,
         with_implicit_sub,
         subscription_id=None,
-    ) -> Tuple[
+    ) -> tuple[
         OperationalIntentReference,
-        List[SubscriberToNotify],
-        Optional[Subscription],
+        list[SubscriberToNotify],
+        Subscription | None,
         Query,
     ]:
         """
@@ -505,7 +503,6 @@ class OIRImplicitSubHandling(TestScenario):
         return oir, subs, implicit_sub, oir_q
 
     def _case_1_step_delete_single_oir(self):
-
         with self.check(
             "Delete operational intent reference query succeeds", self._pid
         ) as check:
@@ -1130,7 +1127,6 @@ class OIRImplicitSubHandling(TestScenario):
                     check.record_failed(
                         summary="OIR not attached to any subscription",
                         details="OIR is not attached to any subscription, when a request for an implicit subscription was made.",
-                        query_timestamps=[mutate_q.timestamp],
                     )
 
         # First check the OIR as it was returned by the mutation endpoint
@@ -1157,7 +1153,7 @@ class OIRImplicitSubHandling(TestScenario):
         self.end_test_step()
 
     def _check_oir_has_correct_subscription(
-        self, oir_id: EntityID, expected_sub_id: Optional[SubscriptionID]
+        self, oir_id: EntityID, expected_sub_id: SubscriptionID | None
     ):
         check_oir_has_correct_subscription(
             self,
@@ -1243,7 +1239,7 @@ class OIRImplicitSubHandling(TestScenario):
         self.end_cleanup()
 
 
-def to_sub_ids(subscribers: List[SubscriberToNotify]) -> Set[SubscriptionID]:
+def to_sub_ids(subscribers: list[SubscriberToNotify]) -> set[SubscriptionID]:
     """Flatten the passed list of subscribers to notify to a set of subscription IDs"""
     sub_ids = set()
     for subscriber in subscribers:

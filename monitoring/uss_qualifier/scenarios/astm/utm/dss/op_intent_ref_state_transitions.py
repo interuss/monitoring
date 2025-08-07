@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 import arrow
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
@@ -42,10 +40,10 @@ class OpIntentReferenceStateTransitions(TestScenario):
 
     # The DSS under test
     _dss: DSSInstance
-    _pid: List[str]
+    _pid: list[str]
 
     # Participant IDs of users using this DSS instance
-    _uids: List[str]
+    _uids: list[str]
 
     _flight: FlightInfoTemplate
 
@@ -98,7 +96,6 @@ class OpIntentReferenceStateTransitions(TestScenario):
         self.end_test_case()
 
         if ws_is_clean:
-
             self.begin_test_case("Attempt unauthorized state creation")
 
             self.begin_test_step("Attempt direct creation with unauthorized state")
@@ -119,7 +116,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
 
         self.end_test_scenario()
 
-    def _get_extents(self, times: Dict[TimeDuringTest, Time]) -> Volume4D:
+    def _get_extents(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
         return self._flight.resolve(times).basic_information.area.bounding_volume
 
     def _clean_known_op_intents_ids(self):
@@ -136,7 +133,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 # If the Op Intent does not exist, it's fine to run into a 404.
                 if q.response.status_code != 404:
                     check.record_failed(
-                        f"Could not access operational intent using main credentials",
+                        "Could not access operational intent using main credentials",
                         details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid}; {e}",
                         query_timestamps=[q.request.timestamp],
                     )
@@ -151,13 +148,13 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 except QueryError as e:
                     self.record_queries(e.queries)
                     check.record_failed(
-                        f"Could not delete operational intent using main credentials",
+                        "Could not delete operational intent using main credentials",
                         details=f"DSS responded with {e.cause_status_code} to attempt to delete OI {self._oid}; {e}",
                         query_timestamps=e.query_timestamps,
                     )
 
     def _attempt_to_delete_remaining_op_intents(
-        self, times: Dict[TimeDuringTest, Time]
+        self, times: dict[TimeDuringTest, Time]
     ):
         """Search for op intents and attempt to delete them"""
 
@@ -174,7 +171,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 self.record_queries(e.queries)
                 q = e.queries[0]
                 check.record_failed(
-                    f"Could not search operational intent references",
+                    "Could not search operational intent references",
                     details=f"DSS responded with {q.response.status_code} to attempt to search OIs; {e}",
                     query_timestamps=[q.request.timestamp],
                 )
@@ -194,12 +191,12 @@ class OpIntentReferenceStateTransitions(TestScenario):
                     except QueryError as e:
                         self.record_queries(e.queries)
                         check.record_failed(
-                            f"Could not delete operational intent reference",
+                            "Could not delete operational intent reference",
                             details=f"DSS responded with {e.cause_status_code} to attempt to delete OI {op_intent.id}; {e}",
                             query_timestamps=e.query_timestamps,
                         )
 
-    def _ensure_clean_workspace(self, times: Dict[TimeDuringTest, Time]) -> bool:
+    def _ensure_clean_workspace(self, times: dict[TimeDuringTest, Time]) -> bool:
         """
         Tries to provide a clean workspace. If it fails to do so and the underlying check
         has a severity below HIGH, this function will return false.
@@ -225,7 +222,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 self.record_queries(e.queries)
                 q = e.queries[0]
                 check.record_failed(
-                    f"Could not search operational intent references using main credentials",
+                    "Could not search operational intent references using main credentials",
                     details=f"DSS responded with {q.response.status_code} to attempt to search OIs; {e}",
                     query_timestamps=[q.request.timestamp],
                 )
@@ -235,7 +232,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
         ) as check:
             if len(stray_oir) > 0:
                 check.record_failed(
-                    f"Found operational intents that cannot be cleaned up",
+                    "Found operational intents that cannot be cleaned up",
                     details=f"Operational intents that cannot be cleaned up were found: {stray_oir}",
                     query_timestamps=[q.request.timestamp],
                 )
@@ -243,7 +240,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
 
         return True
 
-    def _check_unauthorized_state_creation(self, times: Dict[TimeDuringTest, Time]):
+    def _check_unauthorized_state_creation(self, times: dict[TimeDuringTest, Time]):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         # Reuse info from flight 1 for the third Operational Intent Ref
         flight_3 = self._flight.resolve(times)
@@ -263,7 +260,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 self.record_query(q)
                 # If we reach this point, we should fail:
                 check.record_failed(
-                    f"Could create operational intent using main credentials",
+                    "Could create operational intent using main credentials",
                     details=f"DSS responded with {q.response.status_code} to attempt to create OI {self._oid}",
                     query_timestamps=[q.request.timestamp],
                 )
@@ -271,7 +268,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 self.record_queries(e.queries)
                 if e.cause_status_code not in [400, 403]:
                     check.record_failed(
-                        f"Forbidden operational intent reference creation failed with the wrong error code",
+                        "Forbidden operational intent reference creation failed with the wrong error code",
                         details=f"DSS responded with {e.cause_status_code} to attempt to create OI {self._oid} while 400 or 403 was expected; {e}",
                         query_timestamps=e.query_timestamps,
                     )
@@ -292,7 +289,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 self.record_query(q)
                 # If we reach this point, we should fail:
                 check.record_failed(
-                    f"Could create operational intent using main credentials",
+                    "Could create operational intent using main credentials",
                     details=f"DSS responded with {q.response.status_code} to attempt to create OI {self._oid_1}",
                     query_timestamps=[q.request.timestamp],
                 )
@@ -300,13 +297,13 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 self.record_queries(e.queries)
                 if e.cause_status_code not in [400, 403]:
                     check.record_failed(
-                        f"Forbidden operational intent reference creation failed with the wrong error code",
+                        "Forbidden operational intent reference creation failed with the wrong error code",
                         details=f"DSS responded with {e.cause_status_code} to attempt to create OI {self._oid} while 400 or 403 was expected; {e}",
                         query_timestamps=e.query_timestamps,
                     )
 
     def _steps_check_unauthorized_state_transitions(
-        self, times: Dict[TimeDuringTest, Time]
+        self, times: dict[TimeDuringTest, Time]
     ):
         """This checks for UNAUTHORIZED state transitions, that is, transitions that require the correct scope,
         but are not otherwise disallowed by the standard."""
@@ -332,7 +329,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
             except QueryError as e:
                 self.record_queries(e.queries)
                 check.record_failed(
-                    f"Could not create operational intent using main credentials",
+                    "Could not create operational intent using main credentials",
                     details=f"DSS responded with {e.cause_status_code} to attempt to create OI {self._oid}; {e}",
                     query_timestamps=e.query_timestamps,
                 )
@@ -368,7 +365,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 self.record_queries(e.queries)
                 if e.cause_status_code not in [400, 403]:
                     check.record_failed(
-                        f"Transition from Accepted to Nonconforming was rejected with wrong code",
+                        "Transition from Accepted to Nonconforming was rejected with wrong code",
                         details=f"DSS responded with {e.cause_status_code} to attempt to mutate OI {self._oid} while 403 was expected; {e}",
                         query_timestamps=e.query_timestamps,
                     )
@@ -398,7 +395,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 self.record_queries(e.queries)
                 if e.cause_status_code not in [400, 403]:
                     check.record_failed(
-                        f"Transition from Accepted to Nonconforming was rejected with wrong code",
+                        "Transition from Accepted to Nonconforming was rejected with wrong code",
                         details=f"DSS responded with {e.cause_status_code} to attempt to mutate OI {self._oid} while 403 was expected; {e}",
                         query_timestamps=e.query_timestamps,
                     )
@@ -423,7 +420,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
             except QueryError as e:
                 self.record_queries(e.queries)
                 check.record_failed(
-                    f"Transition from Accepted to Activated was wrongly rejected",
+                    "Transition from Accepted to Activated was wrongly rejected",
                     details=f"DSS responded with {e.cause_status_code} to attempt to transition OI {self._oid}; {e}",
                     query_timestamps=e.query_timestamps,
                 )
@@ -459,7 +456,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 self.record_queries(e.queries)
                 if e.cause_status_code not in [400, 403]:
                     check.record_failed(
-                        f"Transition from Activated to Nonconforming was rejected with wrong code",
+                        "Transition from Activated to Nonconforming was rejected with wrong code",
                         details=f"DSS responded with {e.cause_status_code} to attempt to mutate OI {self._oid} while 400 or 403 was expected; {e}",
                         query_timestamps=e.query_timestamps,
                     )
@@ -489,7 +486,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 self.record_queries(e.queries)
                 if e.cause_status_code not in [400, 403]:
                     check.record_failed(
-                        f"Transition from Activated to Contingent was rejected with wrong code",
+                        "Transition from Activated to Contingent was rejected with wrong code",
                         details=f"DSS responded with {e.cause_status_code} to attempt to mutate OI {self._oid} while 400 or 403 was expected; {e}",
                         query_timestamps=e.query_timestamps,
                     )
@@ -514,7 +511,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
             except QueryError as e:
                 self.record_queries(e.queries)
                 check.record_failed(
-                    f"Transition from Activated to Ended was wrongly rejected",
+                    "Transition from Activated to Ended was wrongly rejected",
                     details=f"DSS responded with {e.cause_status_code} to attempt to transition OI {self._oid}; {e}",
                     query_timestamps=e.query_timestamps,
                 )
@@ -550,7 +547,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 self.record_queries(e.queries)
                 if e.cause_status_code not in [400, 403]:
                     check.record_failed(
-                        f"Transition from Ended to Nonconforming was rejected with wrong code",
+                        "Transition from Ended to Nonconforming was rejected with wrong code",
                         details=f"DSS responded with {e.cause_status_code} to attempt to mutate OI {self._oid} while 400 or 403 was expected; {e}",
                         query_timestamps=e.query_timestamps,
                     )
@@ -578,7 +575,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 self.record_queries(e.queries)
                 if e.cause_status_code not in [400, 403]:
                     check.record_failed(
-                        f"Transition from Ended to Contingent was rejected with wrong code",
+                        "Transition from Ended to Contingent was rejected with wrong code",
                         details=f"DSS responded with {e.cause_status_code} to attempt to mutate OI {self._oid} while 400 or 403 was expected; {e}",
                         query_timestamps=e.query_timestamps,
                     )

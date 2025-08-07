@@ -54,7 +54,7 @@ You may use [uv features to manage them](https://docs.astral.sh/uv/concepts/proj
 * Update the requiered version in the [pyproject.toml](pyproject.toml) file
 * Run `uv lock` to update the lock file.
 
-This procedure also work for the small mini-projects for [isort](test/isort) and [repo_hygiene](test/repo_hygiene).
+This procedure also work for the [repo_hygiene](test/repo_hygiene) mini project.
 
 ### Upgrade dependencies
 
@@ -67,4 +67,4 @@ You may also upgrade all packages with
 
 * `uv lock --upgrade`
 
-This procedure also work for the small mini-projects for [isort](test/isort) and [repo_hygiene](test/repo_hygiene).
+This procedure also work for the [repo_hygiene](test/repo_hygiene) mini project.

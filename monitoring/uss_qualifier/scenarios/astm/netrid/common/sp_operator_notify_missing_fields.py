@@ -1,6 +1,3 @@
-from datetime import datetime
-from typing import List, Optional
-
 import arrow
 from requests.exceptions import RequestException
 from s2sphere import LatLngRect
@@ -10,13 +7,10 @@ from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing.injection_api import (
     MANDATORY_POSITION_FIELDS,
     MANDATORY_TELEMETRY_FIELDS,
-    TestFlight,
 )
-from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
     EvaluationConfigurationResource,
     FlightDataResource,
-    NetRIDObserversResource,
     NetRIDServiceProviders,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid import (
@@ -42,8 +36,8 @@ class SpOperatorNotifyMissingFields(GenericTestScenario):
     _service_providers: NetRIDServiceProviders
     _evaluation_configuration: EvaluationConfigurationResource
 
-    _injected_flights: List[InjectedFlight]
-    _injected_tests: List[InjectedTest]
+    _injected_flights: list[InjectedFlight]
+    _injected_tests: list[InjectedTest]
 
     def __init__(
         self,
@@ -71,7 +65,6 @@ class SpOperatorNotifyMissingFields(GenericTestScenario):
         for field in MANDATORY_TELEMETRY_FIELDS + [
             f"position.{f}" for f in MANDATORY_POSITION_FIELDS
         ]:
-
             if field == "timestamp":
                 # TODO: See #1042: Telemetry may be used as timing for data
                 # delivery, blanking it may confuse USSs
@@ -163,7 +156,6 @@ class SpOperatorNotifyMissingFields(GenericTestScenario):
         unobserved_notifications = evaluator.remaining_notifications_to_observe()
 
         for service_provider in self._service_providers.service_providers:
-
             with self.check(
                 "All injected flights have generated user notifications",
                 [service_provider.participant_id],

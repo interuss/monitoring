@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import sys
 from abc import abstractmethod
-from typing import Optional, Type
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 
-from monitoring.monitorlib.fetch import RequestDescription
+from monitoring.monitorlib.fetch import RequestDescription, summarize
 from monitoring.monitorlib.fetch import rid as rid_fetch
 from monitoring.monitorlib.fetch import scd as scd_fetch
-from monitoring.monitorlib.fetch import summarize
 from monitoring.monitorlib.fetch.rid import FetchedISAs
 from monitoring.monitorlib.mutate import rid as rid_mutate
 from monitoring.monitorlib.mutate import scd as scd_mutate
@@ -30,7 +28,7 @@ class TracerLogEntry(ImplicitDict):
     def __init__(self, *args, **kwargs):
         kwargs = kwargs.copy()
         kwargs["object_type"] = type(self).__name__
-        super(TracerLogEntry, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     @abstractmethod
@@ -45,7 +43,7 @@ class TracerLogEntry(ImplicitDict):
         return self
 
     @staticmethod
-    def entry_type(type_name: Optional[str]) -> Optional[Type]:
+    def entry_type(type_name: str | None) -> type | None:
         matches = [
             cls
             for name, cls in sys.modules[__name__].__dict__.items()
@@ -62,13 +60,13 @@ class TracerLogEntry(ImplicitDict):
         return matches[0]
 
     @staticmethod
-    def entry_type_from_prefix(prefix_code: str) -> Optional[Type[TracerLogEntry]]:
+    def entry_type_from_prefix(prefix_code: str) -> type[TracerLogEntry] | None:
         matches = [
             cls
             for name, cls in sys.modules[__name__].__dict__.items()
             if isinstance(cls, type)
             and issubclass(cls, TracerLogEntry)
-            and not cls is TracerLogEntry
+            and cls is not TracerLogEntry
             and cls.prefix_code() == prefix_code
         ]
         if not matches:
@@ -126,7 +124,7 @@ class RIDUnsubscribe(TracerLogEntry):
     existing_subscription: rid_fetch.FetchedSubscription
     """Subscription, as read from the DSS just before deletion."""
 
-    deleted_subscription: Optional[rid_mutate.ChangedSubscription]
+    deleted_subscription: rid_mutate.ChangedSubscription | None
     """Subscription returned from DSS upon deletion."""
 
 
@@ -216,7 +214,7 @@ class SCDUnsubscribe(TracerLogEntry):
     existing_subscription: scd_fetch.FetchedSubscription
     """Subscription, as read from the DSS just before deletion."""
 
-    deleted_subscription: Optional[scd_mutate.MutatedSubscription]
+    deleted_subscription: scd_mutate.MutatedSubscription | None
     """Subscription returned from DSS upon deletion."""
 
 
@@ -272,7 +270,7 @@ class ObservationAreaImportError(TracerLogEntry):
     def prefix_code() -> str:
         return "import_obs_areas_error"
 
-    rid_subscriptions: Optional[rid_fetch.FetchedSubscriptions]
+    rid_subscriptions: rid_fetch.FetchedSubscriptions | None
     """Result of attempting to fetch RID subscriptions"""
 
 

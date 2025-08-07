@@ -1,6 +1,5 @@
 import ipaddress
 import socket
-from typing import List, Optional
 from urllib.parse import urlparse
 
 from uas_standards.astm.f3548.v21.api import Volume4D
@@ -21,9 +20,8 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class DSSInteroperability(TestScenario):
-
     _dss_primary: DSSInstance
-    _dss_others: List[DSSInstance]
+    _dss_others: list[DSSInstance]
     _allow_private_addresses: bool = False
 
     _valid_search_area: Volume4D
@@ -33,7 +31,7 @@ class DSSInteroperability(TestScenario):
         primary_dss_instance: DSSInstanceResource,
         all_dss_instances: DSSInstancesResource,
         planning_area: PlanningAreaResource,
-        test_exclusions: Optional[TestExclusionsResource] = None,
+        test_exclusions: TestExclusionsResource | None = None,
     ):
         super().__init__()
         scopes = {
@@ -52,7 +50,6 @@ class DSSInteroperability(TestScenario):
             self._allow_private_addresses = test_exclusions.allow_private_addresses
 
     def run(self, context: ExecutionContext):
-
         self.begin_test_scenario(context)
 
         self.begin_test_case("Prerequisites")
@@ -75,7 +72,7 @@ class DSSInteroperability(TestScenario):
                     ip_addr = socket.gethostbyname(parsed_url.hostname)
                 # We would typically get a socket.gaierror if the host does not resolve,
                 # but we catch its parent class socket.error to cover a possibly wider range of issues
-                except socket.error as e:
+                except OSError as e:
                     check.record_failed(
                         summary=f"Could not resolve DSS host {parsed_url.netloc}",
                         details=f"Could not resolve DSS host {parsed_url.netloc}: {e}",
@@ -104,7 +101,7 @@ class DSSInteroperability(TestScenario):
                     # scenario is concerned, the DSS is available.
                     if q.status_code == 999:
                         check.record_failed(
-                            summary=f"Could not reach DSS instance",
+                            summary="Could not reach DSS instance",
                             details=f"{q.response.get('content', '')}; {e}",
                             query_timestamps=[q.request.timestamp],
                         )

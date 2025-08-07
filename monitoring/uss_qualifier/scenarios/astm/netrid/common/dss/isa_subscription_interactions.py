@@ -1,5 +1,3 @@
-from typing import Optional
-
 import arrow
 
 from monitoring.monitorlib import geo
@@ -37,7 +35,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
             ISASubscriptionInteractions.SUB_TYPE
         )
 
-        self._isa_version: Optional[str] = None
+        self._isa_version: str | None = None
         self._isa = isa.specification
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
         self._slight_overlap_area = geo.generate_slight_overlap_area(self._isa_area)
@@ -178,7 +176,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             "Response to the mutation of the ISA contains subscription ID",
             [self._dss.participant_id],
         ) as check:
-
             subs_to_mutated_isa = {}
             for returned_subscriber in mutated_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:
@@ -231,7 +228,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             "Response to the deletion of the ISA contains subscription ID",
             [self._dss.participant_id],
         ) as check:
-
             subs_to_deleted_isa = {}
             for returned_subscriber in deleted_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:
@@ -401,7 +397,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             "Response to the mutation of the ISA contains subscription ID",
             [self._dss.participant_id],
         ) as check:
-
             subs_to_mutated_isa = {}
             for returned_subscriber in mutated_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:
@@ -456,7 +451,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             "Response to the deletion of the ISA contains subscription ID",
             [self._dss.participant_id],
         ) as check:
-
             subs_to_deleted_isa = {}
             for returned_subscriber in deleted_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:

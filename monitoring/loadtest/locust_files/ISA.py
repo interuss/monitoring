@@ -30,7 +30,7 @@ class ISA(client.USS):
         isa_uuid = str(uuid.uuid4())
 
         resp = self.client.put(
-            "/identification_service_areas/{}".format(isa_uuid),
+            f"/identification_service_areas/{isa_uuid}",
             json={
                 "extents": {
                     "spatial_volume": {
@@ -59,7 +59,7 @@ class ISA(client.USS):
         time_start = datetime.datetime.now(datetime.UTC)
         time_end = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=2)
         resp = self.client.put(
-            "/identification_service_areas/{}/{}".format(target_isa, target_version),
+            f"/identification_service_areas/{target_isa}/{target_version}",
             json={
                 "extents": {
                     "spatial_volume": {
@@ -86,7 +86,7 @@ class ISA(client.USS):
         if not target_isa:
             print("Nothing to pick from isa_dict for GET")
             return
-        self.client.get("/identification_service_areas/{}".format(target_isa))
+        self.client.get(f"/identification_service_areas/{target_isa}")
 
     @task(1)
     def delete_isa(self):
@@ -95,7 +95,7 @@ class ISA(client.USS):
             print("Nothing to pick from isa_dict for DELETE")
             return
         self.client.delete(
-            "/identification_service_areas/{}/{}".format(target_isa, target_version)
+            f"/identification_service_areas/{target_isa}/{target_version}"
         )
 
     def checkout_isa(self):

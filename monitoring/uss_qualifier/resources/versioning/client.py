@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.versioning.constants import Scope
 
@@ -20,7 +18,7 @@ class InterUSSVersionProvider(ImplicitDict):
 
 
 class VersionProviderSpecification(ImplicitDict):
-    interuss: Optional[InterUSSVersionProvider] = None
+    interuss: InterUSSVersionProvider | None = None
     """Populated when the version provider is using the InterUSS automated testing versioning API to provide versioning information."""
 
     participant_id: ParticipantID
@@ -28,11 +26,11 @@ class VersionProviderSpecification(ImplicitDict):
 
 
 class VersionProvidersSpecification(ImplicitDict):
-    instances: List[VersionProviderSpecification]
+    instances: list[VersionProviderSpecification]
 
 
 class VersionProvidersResource(Resource[VersionProvidersSpecification]):
-    version_providers: List[VersioningClient]
+    version_providers: list[VersioningClient]
 
     def __init__(
         self,
@@ -40,7 +38,7 @@ class VersionProvidersResource(Resource[VersionProvidersSpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(VersionProvidersResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         auth_adapter.assert_scopes_available(
             {
                 Scope.ReadSystemVersions: "read and record the version of each system under test",

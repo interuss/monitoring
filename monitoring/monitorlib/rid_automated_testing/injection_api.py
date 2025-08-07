@@ -1,5 +1,4 @@
 import datetime
-from typing import List, Optional, Tuple
 
 import arrow
 import s2sphere
@@ -31,8 +30,7 @@ MANDATORY_POSITION_FIELDS = ["lat", "lng", "alt"]
 
 
 class TestFlight(injection.TestFlight):
-
-    raw_telemetry: Optional[List[RIDAircraftState]]
+    raw_telemetry: list[RIDAircraftState] | None
     """Copy of original telemetry with potential invalid data"""
 
     def __init__(self, *args, **kwargs):
@@ -54,7 +52,6 @@ class TestFlight(injection.TestFlight):
             filtered_telemetry = []
 
             for telemetry in self.telemetry:
-
                 is_ok = True
 
                 for mandatory_field in MANDATORY_TELEMETRY_FIELDS:
@@ -84,7 +81,6 @@ class TestFlight(injection.TestFlight):
         # if none are present
 
         for detail in self.details_responses:
-
             # Values outside uas_id
             serial_number = detail.details.get("serial_number")
             registration_number = detail.details.get("registration_number")
@@ -103,9 +99,7 @@ class TestFlight(injection.TestFlight):
                     raise ValueError(
                         f"Impossible to validate test flight: details.serial_number ({serial_number}) is not equal to details.uas_id.serial_number ({detail.details.uas_id.serial_number})"
                     )
-            elif (
-                serial_number
-            ):  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
+            elif serial_number:  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
                 detail.details.uas_id.serial_number = serial_number
 
             if detail.details.uas_id.registration_id:
@@ -119,14 +113,12 @@ class TestFlight(injection.TestFlight):
                     raise ValueError(
                         f"Impossible to validate test flight: details.registration_number ({registration_number}) is not eqal to details.uas_id.registration_id ({detail.details.uas_id.registration_id})"
                     )
-            elif (
-                registration_number
-            ):  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
+            elif registration_number:  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
                 detail.details.uas_id.registration_id = registration_number
 
     def get_span(
         self,
-    ) -> Tuple[Optional[datetime.datetime], Optional[datetime.datetime]]:
+    ) -> tuple[datetime.datetime | None, datetime.datetime | None]:
         earliest = None
         latest = None
         times = [
@@ -144,8 +136,8 @@ class TestFlight(injection.TestFlight):
                 latest = t
         return (earliest, latest)
 
-    def get_details(self, t_now: datetime.datetime) -> Optional[RIDFlightDetails]:
-        latest_after: Optional[datetime.datetime] = None
+    def get_details(self, t_now: datetime.datetime) -> RIDFlightDetails | None:
+        latest_after: datetime.datetime | None = None
         tf_details = None
         for response in self.details_responses:
             t_response = arrow.get(response.effective_after).datetime
@@ -155,7 +147,7 @@ class TestFlight(injection.TestFlight):
                     tf_details = response.details
         return tf_details
 
-    def get_id(self, t_now: datetime.datetime) -> Optional[str]:
+    def get_id(self, t_now: datetime.datetime) -> str | None:
         details = self.get_details(t_now)
         return details.id if details else None
 
@@ -181,8 +173,8 @@ class TestFlight(injection.TestFlight):
 
     def select_relevant_states(
         self, view: s2sphere.LatLngRect, t0: datetime.datetime, t1: datetime.datetime
-    ) -> List[RIDAircraftState]:
-        recent_states: List[RIDAircraftState] = []
+    ) -> list[RIDAircraftState]:
+        recent_states: list[RIDAircraftState] = []
         previously_outside = False
         previously_inside = False
         previous_telemetry = None
@@ -208,12 +200,12 @@ class TestFlight(injection.TestFlight):
             previous_telemetry = telemetry
         return recent_states
 
-    def get_rect(self) -> Optional[s2sphere.LatLngRect]:
+    def get_rect(self) -> s2sphere.LatLngRect | None:
         return geo.bounding_rect(
             [(t.position.lat, t.position.lng) for t in self.telemetry]
         )
 
-    def get_mean_update_rate_hz(self) -> Optional[float]:
+    def get_mean_update_rate_hz(self) -> float | None:
         """
         Calculate the mean update rate of the telemetry in Hz
         """
@@ -229,7 +221,7 @@ class TestFlight(injection.TestFlight):
 class CreateTestParameters(injection.CreateTestParameters):
     def get_span(
         self,
-    ) -> Tuple[Optional[datetime.datetime], Optional[datetime.datetime]]:
+    ) -> tuple[datetime.datetime | None, datetime.datetime | None]:
         if not self.requested_flights:
             return (None, None)
         (earliest, latest) = (None, None)
@@ -242,7 +234,7 @@ class CreateTestParameters(injection.CreateTestParameters):
                 latest = t1
         return (earliest, latest)
 
-    def get_rect(self) -> Optional[s2sphere.LatLngRect]:
+    def get_rect(self) -> s2sphere.LatLngRect | None:
         result = None
         for flight in self.requested_flights:
             flight = TestFlight(flight)

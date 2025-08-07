@@ -1,5 +1,4 @@
 import datetime
-from typing import List, Optional
 
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import (
@@ -23,7 +22,7 @@ from monitoring.uss_qualifier.resources.resource import Resource
 class PlanningAreaSpecification(ImplicitDict):
     """Specifies a 2D or 3D volume along with USS related information to create test resources that require them."""
 
-    base_url: Optional[str]
+    base_url: str | None
     """Base URL for the USS
 
     Note that this is the base URL for the F3548-21 USS API, not the flights or any other specific URL.
@@ -84,14 +83,14 @@ class PlanningAreaSpecification(ImplicitDict):
 
     def get_new_operational_intent_ref_params(
         self,
-        key: List[EntityOVN],
+        key: list[EntityOVN],
         state: OperationalIntentState,
         uss_base_url: UssBaseURL,
         time_start: datetime.datetime,
         time_end: datetime.datetime,
-        subscription_id: Optional[EntityID],
-        implicit_sub_base_url: Optional[UssBaseURL] = None,
-        implicit_sub_for_constraints: Optional[bool] = None,
+        subscription_id: EntityID | None,
+        implicit_sub_base_url: UssBaseURL | None = None,
+        implicit_sub_for_constraints: bool | None = None,
     ) -> PutOperationalIntentReferenceParameters:
         """
         Builds a PutOperationalIntentReferenceParameters object that can be used against the DSS OIR API.
@@ -140,5 +139,5 @@ class PlanningAreaResource(Resource[PlanningAreaSpecification]):
     specification: PlanningAreaSpecification
 
     def __init__(self, specification: PlanningAreaSpecification, resource_origin: str):
-        super(PlanningAreaResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.specification = specification

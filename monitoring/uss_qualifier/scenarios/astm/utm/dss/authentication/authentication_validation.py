@@ -1,5 +1,3 @@
-from typing import Optional
-
 from uas_standards.astm.f3548.v21.api import UssAvailabilityState
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -54,9 +52,9 @@ class AuthenticationValidation(TestScenario):
     _test_id: str
     """Base identifier for the entities that will be created"""
 
-    _scd_dss: Optional[DSSInstance] = None
-    _availability_dss: Optional[DSSInstance] = None
-    _constraints_dss: Optional[DSSInstance] = None
+    _scd_dss: DSSInstance | None = None
+    _availability_dss: DSSInstance | None = None
+    _constraints_dss: DSSInstance | None = None
 
     def __init__(
         self,
@@ -348,7 +346,6 @@ class AuthenticationValidation(TestScenario):
         self.end_test_step()
 
     def _ensure_test_entities_dont_exist(self):
-
         if self._scd_dss:
             # Drop OIR's first: subscriptions may be tied to them and can't be deleted
             # as long as they exist
@@ -376,7 +373,6 @@ class AuthenticationValidation(TestScenario):
             )
 
     def _ensure_availability_is_unknown(self):
-
         with self.check("USS Availability can be requested", self._pid) as check:
             try:
                 availability, q = self._availability_dss.get_uss_availability(

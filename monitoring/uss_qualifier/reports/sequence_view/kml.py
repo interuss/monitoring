@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Protocol, Type, get_type_hints
+from typing import Protocol, get_type_hints
 
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -34,7 +34,7 @@ from monitoring.uss_qualifier.reports.sequence_view.summary_types import TestedS
 class QueryKMLRenderer(Protocol):
     def __call__(
         self, query: Query, req: ImplicitDict, resp: ImplicitDict
-    ) -> List[kml.Element]:
+    ) -> list[kml.Element]:
         """Function that renders the provided query information into KML elements.
 
         Args:
@@ -47,14 +47,14 @@ class QueryKMLRenderer(Protocol):
 
 
 @dataclass
-class QueryKMLRenderInfo(object):
+class QueryKMLRenderInfo:
     renderer: QueryKMLRenderer
     include_query: bool
-    request_type: Optional[Type[ImplicitDict]]
-    response_type: Optional[Type[ImplicitDict]]
+    request_type: type[ImplicitDict] | None
+    response_type: type[ImplicitDict] | None
 
 
-_query_kml_renderers: Dict[QueryType, QueryKMLRenderInfo] = {}
+_query_kml_renderers: dict[QueryType, QueryKMLRenderInfo] = {}
 
 
 def query_kml_renderer(query_type: QueryType):

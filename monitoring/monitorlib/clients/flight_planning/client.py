@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Set
 
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     ExecutionStyle,
@@ -25,11 +24,11 @@ class FlightPlannerClient(ABC):
     """Client to interact with a USS as a user performing flight planning activities and as the test director preparing for tests involving flight planning activities."""
 
     participant_id: ParticipantID
-    created_flight_ids: Set[FlightID]
+    created_flight_ids: set[FlightID]
 
     def __init__(self, participant_id: ParticipantID):
         self.participant_id = participant_id
-        self.created_flight_ids: Set[FlightID] = set()
+        self.created_flight_ids: set[FlightID] = set()
 
     # ===== Emulation of user actions =====
 
@@ -38,7 +37,7 @@ class FlightPlannerClient(ABC):
         self,
         flight_info: FlightInfo,
         execution_style: ExecutionStyle,
-        additional_fields: Optional[dict] = None,
+        additional_fields: dict | None = None,
     ) -> PlanningActivityResponse:
         """Instruct the USS to emulate a normal user trying to plan the described flight.
 
@@ -53,7 +52,7 @@ class FlightPlannerClient(ABC):
         flight_id: FlightID,
         updated_flight_info: FlightInfo,
         execution_style: ExecutionStyle,
-        additional_fields: Optional[dict] = None,
+        additional_fields: dict | None = None,
     ) -> PlanningActivityResponse:
         """Instruct the USS to emulate a normal user trying to update the specified flight as described.
 

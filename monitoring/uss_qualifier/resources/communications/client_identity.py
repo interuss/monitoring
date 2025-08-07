@@ -26,7 +26,6 @@ class ClientIdentitySpecification(ImplicitDict):
 
 
 class ClientIdentityResource(Resource[ClientIdentitySpecification]):
-
     specification: ClientIdentitySpecification
 
     _adapter: AuthAdapter
@@ -37,7 +36,7 @@ class ClientIdentityResource(Resource[ClientIdentitySpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(ClientIdentityResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.specification = specification
         # Keep the adapter: we will only use it later at the moment it is required
         self._adapter = auth_adapter.adapter
@@ -67,7 +66,7 @@ class ClientIdentityResource(Resource[ClientIdentitySpecification]):
                 raise ValueError(
                     f"subject is None, meaning `sub` claim was not found in payload of token, "
                     f"using {type(self._adapter).__name__} requesting {self.specification.whoami_scope} scope "
-                    f"for {self.specification.whoami_audience} audience: {headers['Authorization'][len('Bearer: '):]}"
+                    f"for {self.specification.whoami_audience} audience: {headers['Authorization'][len('Bearer: ') :]}"
                 )
 
         return sub

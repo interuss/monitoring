@@ -1,7 +1,5 @@
 import math
-import re
 from datetime import datetime, timedelta
-from typing import List, Optional
 from urllib.parse import parse_qs, urlparse
 
 import arrow
@@ -46,14 +44,14 @@ class DisplayProviderBehavior(GenericTestScenario):
 
     SUB_TYPE = register_resource_type(400, "ISA")
 
-    _observers: List[RIDSystemObserver]
+    _observers: list[RIDSystemObserver]
     _mock_uss: MockUSSClient
 
-    _dss_wrapper: Optional[DSSWrapper]
+    _dss_wrapper: DSSWrapper | None
     _isa_id: str
-    _isa_area: List[s2sphere.LatLng]
+    _isa_area: list[s2sphere.LatLng]
 
-    _identification: Optional[USSIdentificationResource]
+    _identification: USSIdentificationResource | None
 
     def __init__(
         self,
@@ -62,7 +60,7 @@ class DisplayProviderBehavior(GenericTestScenario):
         id_generator: IDGeneratorResource,  # provides the ISA IS to be used
         dss_pool: DSSInstancesResource,
         isa: ServiceAreaResource,  # area for which the ISA is created
-        uss_identification: Optional[USSIdentificationResource] = None,
+        uss_identification: USSIdentificationResource | None = None,
     ):
         super().__init__()
         self._observers = observers.observers
@@ -92,7 +90,9 @@ class DisplayProviderBehavior(GenericTestScenario):
             self._rid_version.max_diagonal_km * 0.99
             < geo.get_latlngrect_diagonal_km(self._limit_rect)
             <= self._rid_version.max_diagonal_km
-        ), f"{geo.get_latlngrect_diagonal_km(self._limit_rect)} > {self._rid_version.max_diagonal_km}"
+        ), (
+            f"{geo.get_latlngrect_diagonal_km(self._limit_rect)} > {self._rid_version.max_diagonal_km}"
+        )
 
         # Make the too big rect 1% larger than the allowed diagonal limit
         self._too_big_rect = LatLngRect.from_point(isa_center).convolve_with_cap(
@@ -101,7 +101,9 @@ class DisplayProviderBehavior(GenericTestScenario):
         assert (
             geo.get_latlngrect_diagonal_km(self._too_big_rect)
             > self._rid_version.max_diagonal_km
-        ), f"{geo.get_latlngrect_diagonal_km(self._too_big_rect)} <= {self._rid_version.max_diagonal_km}"
+        ), (
+            f"{geo.get_latlngrect_diagonal_km(self._too_big_rect)} <= {self._rid_version.max_diagonal_km}"
+        )
 
     @property
     def _rid_version(self) -> RIDVersion:
@@ -166,7 +168,6 @@ class DisplayProviderBehavior(GenericTestScenario):
             return self._mock_uss.base_url + "/mock/ridsp/v2"
 
     def _step_create_isa(self):
-
         start_time = arrow.utcnow().datetime
         end_time = start_time + timedelta(minutes=5)
 

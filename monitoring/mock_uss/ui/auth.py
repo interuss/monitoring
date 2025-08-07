@@ -1,7 +1,6 @@
 import json
 from dataclasses import dataclass
 from functools import wraps
-from typing import List, Optional
 
 import flask
 import flask_login
@@ -24,7 +23,7 @@ import_environment_variable(KEY_GOOGLE_OAUTH_CLIENT_SECRET, required=False, defa
 GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
 
-def _get_oauth_client() -> Optional[WebApplicationClient]:
+def _get_oauth_client() -> WebApplicationClient | None:
     client_id = webapp.config.get(KEY_GOOGLE_OAUTH_CLIENT_ID)
     client_secret = webapp.config.get(KEY_GOOGLE_OAUTH_CLIENT_SECRET)
     if client_id and client_secret:
@@ -52,8 +51,8 @@ import_environment_variable(KEY_UI_USERS, required=False, default="")
 @dataclass
 class User(flask_login.UserMixin):
     username: str
-    password_hash: Optional[str]
-    roles: List[str]
+    password_hash: str | None
+    roles: list[str]
 
     def get_id(self) -> str:
         return self.username
@@ -62,7 +61,7 @@ class User(flask_login.UserMixin):
         return "admin" in self.roles
 
 
-def _get_users() -> List[User]:
+def _get_users() -> list[User]:
     users = []
     user_strings = webapp.config.get(KEY_UI_USERS).split(";")
     for user_string in user_strings:
@@ -88,7 +87,7 @@ def _get_users() -> List[User]:
 
 
 @login_manager.user_loader
-def load_user(user_id: str) -> Optional[User]:
+def load_user(user_id: str) -> User | None:
     users = [u for u in _get_users() if u.username == user_id]
     if users:
         return users[0]
@@ -178,7 +177,7 @@ def ui_login_callback():
 
 
 def login_required(
-    _func=None, *, role: Optional[str] = None, roles: Optional[List[str]] = None
+    _func=None, *, role: str | None = None, roles: list[str] | None = None
 ):
     if role and roles:
         raise ValueError("Only one of `role` or `roles` may be specified")

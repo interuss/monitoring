@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, List
+from collections.abc import Iterator
 
 from implicitdict import ImplicitDict
 
@@ -10,7 +10,6 @@ from monitoring.uss_qualifier.action_generators.documentation.documentation impo
     list_potential_actions_for_action_declaration,
 )
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import (
-    DSSInstanceResource,
     DSSInstancesResource,
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID
@@ -34,13 +33,13 @@ class ForEachDSSSpecification(ImplicitDict):
 
 
 class ForEachDSS(ActionGenerator[ForEachDSSSpecification]):
-    _actions: List[TestSuiteAction]
+    _actions: list[TestSuiteAction]
     _current_action: int
 
     @classmethod
     def list_potential_actions(
         cls, specification: ForEachDSSSpecification
-    ) -> List[PotentialGeneratedAction]:
+    ) -> list[PotentialGeneratedAction]:
         return list_potential_actions_for_action_declaration(
             specification.action_to_repeat
         )
@@ -52,7 +51,7 @@ class ForEachDSS(ActionGenerator[ForEachDSSSpecification]):
     def __init__(
         self,
         specification: ForEachDSSSpecification,
-        resources: Dict[ResourceID, ResourceType],
+        resources: dict[ResourceID, ResourceType],
     ):
         if specification.dss_instances_source not in resources:
             raise MissingResourceError(
@@ -80,5 +79,4 @@ class ForEachDSS(ActionGenerator[ForEachDSSSpecification]):
         self._current_action = 0
 
     def actions(self) -> Iterator[TestSuiteAction]:
-        for a in self._actions:
-            yield a
+        yield from self._actions

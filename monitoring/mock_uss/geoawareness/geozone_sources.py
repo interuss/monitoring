@@ -1,4 +1,3 @@
-import flask
 import requests
 from uas_standards.eurocae_ed269 import ED269Schema
 from uas_standards.interuss.automated_testing.geo_awareness.v1.api import (
@@ -59,7 +58,7 @@ def create_geozone_source(id, source_definition: CreateGeozoneSourceRequest):
             db,
             id,
             GeozoneSourceResponseResult.Error,
-            f"Unsupported source definition. https_source only",
+            "Unsupported source definition. https_source only",
         )
         return GeozoneSourceResponse(result=source.state, message=source.message), 400
 

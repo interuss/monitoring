@@ -1,5 +1,3 @@
-from typing import Optional
-
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.versioning import api
 from uas_standards.interuss.automated_testing.versioning.constants import Scope
@@ -16,11 +14,11 @@ from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 
 class InterUSSVersioningClient(VersioningClient):
     def __init__(self, session: UTMClientSession, participant_id: ParticipantID):
-        super(InterUSSVersioningClient, self).__init__(participant_id)
+        super().__init__(participant_id)
         self._session = session
         self._participant_id = participant_id
 
-    def get_version(self, version_type: Optional[str]) -> GetVersionResponse:
+    def get_version(self, version_type: str | None) -> GetVersionResponse:
         op = api.OPERATIONS[api.OperationID.GetVersion]
         kwargs = {
             "client": self._session,

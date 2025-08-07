@@ -1,14 +1,14 @@
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from itertools import permutations
-from typing import Any, Callable, List, Optional, Tuple, TypeVar
+from typing import Any, TypeVar
 
 from implicitdict import ImplicitDict
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
 from uas_standards.astm.f3411.v22a.api import (
-    UASID,
     Altitude,
     HorizontalAccuracy,
     LatLngPoint,
@@ -93,14 +93,14 @@ def _assert_operator_location(
 
 
 def test_operator_location():
-    valid_locations: List[
-        Tuple[
-            Optional[LatLngPoint],
-            Optional[Altitude],
-            Optional[OperatorAltitudeAltitudeType],
-            Optional[LatLngPoint],
-            Optional[Altitude],
-            Optional[OperatorAltitudeAltitudeType],
+    valid_locations: list[
+        tuple[
+            LatLngPoint | None,
+            Altitude | None,
+            OperatorAltitudeAltitudeType | None,
+            LatLngPoint | None,
+            Altitude | None,
+            OperatorAltitudeAltitudeType | None,
             int,
         ]
     ] = [
@@ -141,11 +141,11 @@ def test_operator_location():
     for valid_location in valid_locations:
         _assert_operator_location(*valid_location, 0)
 
-    invalid_locations: List[
-        Tuple[
-            Optional[LatLngPoint],
-            Optional[Altitude],
-            Optional[OperatorAltitudeAltitudeType],
+    invalid_locations: list[
+        tuple[
+            LatLngPoint | None,
+            Altitude | None,
+            OperatorAltitudeAltitudeType | None,
             int,
             int,
         ]
@@ -251,7 +251,7 @@ def mock_flight(
     last_position_time: datetime,
     positions_count: int,
     positions_time_delta_s: int,
-    position: Tuple[int, int] = (1.0, 1.0),
+    position: tuple[int, int] = (1.0, 1.0),
 ) -> Flight:
     v22a_flight = v22a.api.RIDFlight(
         id="flightId",
@@ -270,8 +270,8 @@ def mock_positions(
     last_time: datetime,
     amount: int,
     positions_time_delta_s: int,
-    position: Tuple[int, int] = (1.0, 1.0),
-) -> List[v22a.api.RIDRecentAircraftPosition]:
+    position: tuple[int, int] = (1.0, 1.0),
+) -> list[v22a.api.RIDRecentAircraftPosition]:
     """generate a list of positions with the last one at last_time and the next ones going back in time by 10 seconds"""
     return [
         v22a.api.RIDRecentAircraftPosition(
@@ -287,7 +287,7 @@ def mock_positions(
 
 
 def to_positions(
-    coords: List[Tuple[float, float]],
+    coords: list[tuple[float, float]],
     first_time: datetime,
     positions_time_delta_s: int = 1,
 ) -> v22a.api.RIDRecentAircraftPosition:
@@ -353,7 +353,6 @@ def _assert_generic_evaluator(testcase: GenericEvaluatorTestCase, outcome: bool)
         )
 
         if not testcase.ignore_dp_test:
-
             # DP Check
             evaluator._generic_evaluator(
                 injected_field_name="test",
@@ -377,7 +376,6 @@ def _assert_generic_evaluator(testcase: GenericEvaluatorTestCase, outcome: bool)
     assert unit_test_scenario.get_report().successful == outcome
 
     if not outcome:
-
         found_correct_reason = False
 
         for c in unit_test_scenario.get_report().cases:
@@ -503,8 +501,8 @@ def _assert_generic_evaluator_call(
     sp_observed: Any,
     dp_observed: Any,
     outcome: bool,
-    rid_version: Optional[RIDVersion] = RIDVersion.f3411_22a,
-    wanted_fail: Optional[list[str]] = None,
+    rid_version: RIDVersion | None = RIDVersion.f3411_22a,
+    wanted_fail: list[str] | None = None,
 ):
     """
     Verify that the 'fct' function on the RIDCommonDictionaryEvaluator is returning the expected result.
@@ -552,7 +550,6 @@ def _assert_generic_evaluator_call(
     assert unit_test_scenario.get_report().successful == outcome
 
     if wanted_fail:
-
         found_correct_reason = False
 
         for c in unit_test_scenario.get_report().cases:
@@ -573,8 +570,8 @@ def _assert_generic_evaluator_result(
     fct: str,
     *setters_and_values: list[Any],
     outcome: bool,
-    wanted_fail: Optional[list[str]] = None,
-    rid_version: Optional[RIDVersion] = None,
+    wanted_fail: list[str] | None = None,
+    rid_version: RIDVersion | None = None,
 ):
     """
     Helper to call _assert_generic_evaluator_call that build mocked objects first and do the call.
@@ -657,10 +654,10 @@ def _assert_generic_evaluator_correct_field_is_used(
     )
 
 
-def _assert_generic_evaluator_valid_value(
+def _assert_generic_evaluator_valid_value[T](
     *fct_and_setters: list[Any],
     valid_value: T,
-    rid_version: Optional[RIDVersion] = None,
+    rid_version: RIDVersion | None = None,
 ):
     """
     Test that a _evaluate function is handeling a specifc value as valid.
@@ -691,7 +688,7 @@ def _assert_generic_evaluator_invalid_value(
     *fct_and_setters: list[Any],
     invalid_value: T,
     valid_value: T,
-    rid_version: Optional[RIDVersion] = None,
+    rid_version: RIDVersion | None = None,
 ):
     """
     Test that a _evaluate function is handeling a specifc value as invalid.
@@ -734,10 +731,10 @@ def _assert_generic_evaluator_invalid_value(
     )
 
 
-def _assert_generic_evaluator_invalid_observed_value(
+def _assert_generic_evaluator_invalid_observed_value[T](
     *fct_and_setters: list[Any],
     invalid_value: T,
-    rid_version: Optional[RIDVersion] = None,
+    rid_version: RIDVersion | None = None,
 ):
     """
     Test that a _evaluate function is handeling a specifc value as invalid when observed.
@@ -763,7 +760,7 @@ def _assert_generic_evaluator_invalid_observed_value(
     )
 
 
-def _assert_generic_evaluator_defaults(
+def _assert_generic_evaluator_defaults[T2, T](
     *fct_and_setters: list[Any], default_value: T2, valid_value: T
 ):
     """
@@ -819,7 +816,7 @@ def _assert_generic_evaluator_dont_have_default(
         _assert_generic_evaluator_result(
             *fct_and_setters, None, valid_value, valid_value, outcome=False
         )
-    except:
+    except Exception:
         got_exception = True
 
     assert got_exception
@@ -848,7 +845,7 @@ def _assert_generic_evaluator_dont_have_default(
 
 
 def _assert_generic_evaluator_equivalent(
-    *fct_and_setters: list[Any], v1: T, v2: T, rid_version: Optional[RIDVersion] = None
+    *fct_and_setters: list[Any], v1: T, v2: T, rid_version: RIDVersion | None = None
 ):
     """
     Test that a _evaluate function is considering two value as equivalent.
@@ -871,7 +868,7 @@ def _assert_generic_evaluator_equivalent(
 
 
 def _assert_generic_evaluator_not_equivalent(
-    *fct_and_setters: list[Any], v1: T, v2: T, rid_version: Optional[RIDVersion] = None
+    *fct_and_setters: list[Any], v1: T, v2: T, rid_version: RIDVersion | None = None
 ):
     """
     Test that a _evaluate function is considering two value as not equivalent.
@@ -1481,7 +1478,6 @@ def test_evaluate_operational_status():
     v22a_only_values = ["Emergency", "RemoteIDSystemFailure"]
 
     for v22a_only_value in v22a_only_values:
-
         _assert_generic_evaluator_valid_value(
             *base_args, valid_value=v22a_only_value, rid_version=RIDVersion.f3411_22a
         )
@@ -1855,7 +1851,6 @@ def test_evaluate_uas_id():
     """Test uas id base part, about the presence of at least one field in observed values"""
 
     def do_checkfor_uas_id_presence(sp_observed, rid_version):
-
         def step_under_test(self: UnitTestScenario):
             evaluator = RIDCommonDictionaryEvaluator(
                 config=EvaluationConfiguration(),
@@ -1881,9 +1876,7 @@ def test_evaluate_uas_id():
     for v in range(0, 4):  # We activate or not 2 fields, 2^2 == 4
 
         class SpObservedV19(ImplicitDict):
-
             def __init__(self, v):
-
                 if v & 0b1:
                     self.registration_id = "x"
                 if v & 0b10:
@@ -1897,9 +1890,7 @@ def test_evaluate_uas_id():
     for v in range(0, 16):  # We activate or not 4 field, 2^4 == 16
 
         class SpObservedV22a(ImplicitDict):
-
             def __init__(self, v):
-
                 if v & 0b1:
                     self.registration_id = "x"
                 if v & 0b10:
@@ -1917,7 +1908,6 @@ def test_evaluate_uas_id():
 
 
 def test_evaluate_uas_id_serial_number():
-
     def injected_field_setter(flight: Any, value: T) -> Any:
         flight["uas_id"] = {"serial_number": value}
         return flight
@@ -1953,7 +1943,6 @@ def test_evaluate_uas_id_serial_number():
 
 
 def test_evaluate_uas_id_registration_id():
-
     def injected_field_setter(flight: Any, value: T) -> Any:
         flight["uas_id"] = {"registration_id": value}
         return flight
@@ -1983,7 +1972,6 @@ def test_evaluate_uas_id_registration_id():
 
 
 def test_evaluate_uas_id_utm_id():
-
     def injected_field_setter(flight: Any, value: T) -> Any:
         flight["uas_id"] = {"utm_id": value}
         return flight
@@ -2035,7 +2023,6 @@ def test_evaluate_uas_id_utm_id():
 
 
 def test_evaluate_uas_id_specific_session_id():
-
     def injected_field_setter(flight: Any, value: T) -> Any:
         flight["uas_id"] = {"specific_session_id": value}
         return flight

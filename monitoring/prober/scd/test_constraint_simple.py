@@ -63,7 +63,7 @@ def test_constraint_does_not_exist_get(ids, scd_api, scd_session):
 
     for scope in auths:
         resp = scd_session.get(
-            "/constraint_references/{}".format(ids(CONSTRAINT_TYPE)), scope=scope
+            f"/constraint_references/{ids(CONSTRAINT_TYPE)}", scope=scope
         )
         assert resp.status_code == 404, resp.content
 
@@ -99,9 +99,7 @@ def test_constraint_does_not_exist_query(ids, scd_api, scd_session):
 def test_create_constraint_single_extent(ids, scd_api, scd_session):
     req = _make_c1_request()
     req["extents"] = req["extents"][0]
-    resp = scd_session.put(
-        "/constraint_references/{}".format(ids(CONSTRAINT_TYPE)), json=req
-    )
+    resp = scd_session.put(f"/constraint_references/{ids(CONSTRAINT_TYPE)}", json=req)
     assert resp.status_code == 400, resp.content
 
 
@@ -111,9 +109,7 @@ def test_create_constraint_single_extent(ids, scd_api, scd_session):
 def test_create_constraint_missing_time_start(ids, scd_api, scd_session):
     req = _make_c1_request()
     del req["extents"][0]["time_start"]
-    resp = scd_session.put(
-        "/constraint_references/{}".format(ids(CONSTRAINT_TYPE)), json=req
-    )
+    resp = scd_session.put(f"/constraint_references/{ids(CONSTRAINT_TYPE)}", json=req)
     assert resp.status_code == 400, resp.content
 
 
@@ -123,9 +119,7 @@ def test_create_constraint_missing_time_start(ids, scd_api, scd_session):
 def test_create_constraint_missing_time_end(ids, scd_api, scd_session):
     req = _make_c1_request()
     del req["extents"][0]["time_end"]
-    resp = scd_session.put(
-        "/constraint_references/{}".format(ids(CONSTRAINT_TYPE)), json=req
-    )
+    resp = scd_session.put(f"/constraint_references/{ids(CONSTRAINT_TYPE)}", json=req)
     assert resp.status_code == 400, resp.content
 
 
@@ -135,19 +129,13 @@ def test_create_constraint(ids, scd_api, scd_session):
     id = ids(CONSTRAINT_TYPE)
     req = _make_c1_request()
 
-    resp = scd_session.put(
-        "/constraint_references/{}".format(id), json=req, scope=SCOPE_SC
-    )
+    resp = scd_session.put(f"/constraint_references/{id}", json=req, scope=SCOPE_SC)
     assert resp.status_code == 403, resp.content
 
-    resp = scd_session.put(
-        "/constraint_references/{}".format(id), json=req, scope=SCOPE_CP
-    )
+    resp = scd_session.put(f"/constraint_references/{id}", json=req, scope=SCOPE_CP)
     assert resp.status_code == 403, resp.content
 
-    resp = scd_session.put(
-        "/constraint_references/{}".format(id), json=req, scope=SCOPE_CM
-    )
+    resp = scd_session.put(f"/constraint_references/{id}", json=req, scope=SCOPE_CM)
     assert resp.status_code == 201, resp.content
 
     data = resp.json()
@@ -172,7 +160,7 @@ def test_get_constraint_by_id(ids, scd_api, scd_session):
     auths = (SCOPE_CM, SCOPE_CP)
 
     for scope in auths:
-        resp = scd_session.get("/constraint_references/{}".format(id), scope=scope)
+        resp = scd_session.get(f"/constraint_references/{id}", scope=scope)
         assert resp.status_code == 200, resp.content
 
         data = resp.json()
@@ -293,7 +281,7 @@ def test_get_constraint_by_search_latest_time_excluded(ids, scd_api, scd_session
 def test_mutate_constraint(ids, scd_api, scd_session):
     id = ids(CONSTRAINT_TYPE)
     # GET current constraint
-    resp = scd_session.get("/constraint_references/{}".format(id), scope=SCOPE_CP)
+    resp = scd_session.get(f"/constraint_references/{id}", scope=SCOPE_CP)
     assert resp.status_code == 200, resp.content
     existing_constraint = resp.json().get("constraint_reference", None)
     assert existing_constraint is not None
@@ -309,29 +297,29 @@ def test_mutate_constraint(ids, scd_api, scd_session):
     ovn = existing_constraint["ovn"]
 
     resp = scd_session.put(
-        "/constraint_references/{}/{}".format(id, ovn), json=req, scope=SCOPE_SC
+        f"/constraint_references/{id}/{ovn}", json=req, scope=SCOPE_SC
     )
-    assert resp.status_code == 403, "ovn:{}\nresponse: {}".format(ovn, resp.content)
+    assert resp.status_code == 403, f"ovn:{ovn}\nresponse: {resp.content}"
 
     resp = scd_session.put(
-        "/constraint_references/{}/{}".format(id, ovn), json=req, scope=SCOPE_CP
+        f"/constraint_references/{id}/{ovn}", json=req, scope=SCOPE_CP
     )
-    assert resp.status_code == 403, "ovn:{}\nresponse: {}".format(ovn, resp.content)
+    assert resp.status_code == 403, f"ovn:{ovn}\nresponse: {resp.content}"
 
     resp = scd_session.put(
-        "/constraint_references/{}/{}".format(id, ovn), json=req, scope=SCOPE_CM_SA
+        f"/constraint_references/{id}/{ovn}", json=req, scope=SCOPE_CM_SA
     )
-    assert resp.status_code == 403, "ovn:{}\nresponse: {}".format(ovn, resp.content)
+    assert resp.status_code == 403, f"ovn:{ovn}\nresponse: {resp.content}"
 
     resp = scd_session.put(
-        "/constraint_references/{}/{}".format(id, ovn), json=req, scope=SCOPE_AA
+        f"/constraint_references/{id}/{ovn}", json=req, scope=SCOPE_AA
     )
-    assert resp.status_code == 403, "ovn:{}\nresponse: {}".format(ovn, resp.content)
+    assert resp.status_code == 403, f"ovn:{ovn}\nresponse: {resp.content}"
 
     resp = scd_session.put(
-        "/constraint_references/{}/{}".format(id, ovn), json=req, scope=SCOPE_CM
+        f"/constraint_references/{id}/{ovn}", json=req, scope=SCOPE_CM
     )
-    assert resp.status_code == 200, "ovn:{}\nresponse: {}".format(ovn, resp.content)
+    assert resp.status_code == 200, f"ovn:{ovn}\nresponse: {resp.content}"
 
     data = resp.json()
     constraint = data["constraint_reference"]
@@ -346,7 +334,7 @@ def test_mutate_constraint(ids, scd_api, scd_session):
 def test_delete_constraint(ids, scd_api, scd_session):
     id = ids(CONSTRAINT_TYPE)
 
-    resp = scd_session.get("/constraint_references/{}".format(id), scope=SCOPE_CP)
+    resp = scd_session.get(f"/constraint_references/{id}", scope=SCOPE_CP)
     assert resp.status_code == 200, resp.content
     existing_constraint = resp.json().get("constraint_reference", None)
     assert existing_constraint is not None
@@ -362,36 +350,36 @@ def test_delete_constraint(ids, scd_api, scd_session):
     ovn = existing_constraint["ovn"]
 
     resp = scd_session.delete(
-        "/constraint_references/{}/{}".format(id, ovn), json=req, scope=SCOPE_SC
+        f"/constraint_references/{id}/{ovn}", json=req, scope=SCOPE_SC
     )
-    assert resp.status_code == 403, "ovn:{}\nresponse: {}".format(ovn, resp.content)
+    assert resp.status_code == 403, f"ovn:{ovn}\nresponse: {resp.content}"
 
     resp = scd_session.delete(
-        "/constraint_references/{}/{}".format(id, ovn), json=req, scope=SCOPE_CP
+        f"/constraint_references/{id}/{ovn}", json=req, scope=SCOPE_CP
     )
-    assert resp.status_code == 403, "ovn:{}\nresponse: {}".format(ovn, resp.content)
+    assert resp.status_code == 403, f"ovn:{ovn}\nresponse: {resp.content}"
 
     resp = scd_session.delete(
-        "/constraint_references/{}/{}".format(id, ovn), json=req, scope=SCOPE_CM_SA
+        f"/constraint_references/{id}/{ovn}", json=req, scope=SCOPE_CM_SA
     )
-    assert resp.status_code == 403, "ovn:{}\nresponse: {}".format(ovn, resp.content)
+    assert resp.status_code == 403, f"ovn:{ovn}\nresponse: {resp.content}"
 
     resp = scd_session.delete(
-        "/constraint_references/{}/{}".format(id, ovn), json=req, scope=SCOPE_AA
+        f"/constraint_references/{id}/{ovn}", json=req, scope=SCOPE_AA
     )
-    assert resp.status_code == 403, "ovn:{}\nresponse: {}".format(ovn, resp.content)
+    assert resp.status_code == 403, f"ovn:{ovn}\nresponse: {resp.content}"
 
     resp = scd_session.delete(
-        "/constraint_references/{}/{}".format(id, ovn), json=req, scope=SCOPE_CM
+        f"/constraint_references/{id}/{ovn}", json=req, scope=SCOPE_CM
     )
-    assert resp.status_code == 200, "ovn:{}\nresponse: {}".format(ovn, resp.content)
+    assert resp.status_code == 200, f"ovn:{ovn}\nresponse: {resp.content}"
 
 
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_CM)
 @depends_on(test_delete_constraint)
 def test_get_deleted_constraint_by_id(ids, scd_api, scd_session):
-    resp = scd_session.get("/constraint_references/{}".format(ids(CONSTRAINT_TYPE)))
+    resp = scd_session.get(f"/constraint_references/{ids(CONSTRAINT_TYPE)}")
     assert resp.status_code == 404, resp.content
 
 

@@ -5,7 +5,7 @@ import math
 import re
 import uuid
 from collections.abc import Callable
-from typing import Any, List, Optional, TypeVar, Union
+from typing import Any, TypeVar
 
 from arrow import ParserError
 from implicitdict import StringBasedDateTime
@@ -47,8 +47,7 @@ T = TypeVar("T")
 T2 = TypeVar("T2")
 
 
-class RIDCommonDictionaryEvaluator(object):
-
+class RIDCommonDictionaryEvaluator:
     flight_evaluators = [
         "_evaluate_ua_type",
     ]
@@ -119,7 +118,7 @@ class RIDCommonDictionaryEvaluator(object):
         injected_telemetry: injection.RIDAircraftState,
         injected_flight: injection.TestFlight,
         observed_flight: observation_api.Flight,
-        participants: List[str],
+        participants: list[str],
         query_timestamp: datetime.datetime,
     ):
         """Implements fragment documented in `common_dictionary_evaluator_dp_flight.md`."""
@@ -183,7 +182,7 @@ class RIDCommonDictionaryEvaluator(object):
     def evaluate_dp_details(
         self,
         injected_details: injection.RIDFlightDetails,
-        observed_details: Optional[observation_api.GetDetailsResponse],
+        observed_details: observation_api.GetDetailsResponse | None,
         participant_id: ParticipantID,
         query_timestamp: datetime.datetime,
     ):
@@ -225,8 +224,8 @@ class RIDCommonDictionaryEvaluator(object):
     def _evaluate_uas_id(
         self,
         injected: injection.RIDFlightDetails,  # unused but required by callers
-        sp_observed: Optional[FlightDetails],
-        dp_observed: Optional[observation_api.GetDetailsResponse],
+        sp_observed: FlightDetails | None,
+        dp_observed: observation_api.GetDetailsResponse | None,
         participant: ParticipantID,
         query_timestamp: datetime.datetime,
     ):
@@ -266,7 +265,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_uas_id_serial_number(
         self,
-        dp_observed: Optional[observation_api.GetDetailsResponse],
+        dp_observed: observation_api.GetDetailsResponse | None,
         **generic_kwargs,
     ):
         """
@@ -277,9 +276,7 @@ class RIDCommonDictionaryEvaluator(object):
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
 
-        def skip_eval(
-            injected_val: Optional[str], observed_val: Optional[str]
-        ) -> Optional[str]:
+        def skip_eval(injected_val: str | None, observed_val: str | None) -> str | None:
             if not injected_val:
                 return "Injected UAS ID is not 'Serial Number' type"
 
@@ -289,7 +286,6 @@ class RIDCommonDictionaryEvaluator(object):
             return None
 
         def value_validator(val: SerialNumber) -> SerialNumber:
-
             if not val:
                 return val
 
@@ -300,9 +296,7 @@ class RIDCommonDictionaryEvaluator(object):
 
             return serial_number
 
-        def value_comparator(
-            v1: Optional[SerialNumber], v2: Optional[SerialNumber]
-        ) -> bool:
+        def value_comparator(v1: SerialNumber | None, v2: SerialNumber | None) -> bool:
             return v1 == v2
 
         # NB: We don't use the two redundant fields `serial_number` and `uas_id.serial_number`,
@@ -324,7 +318,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_uas_id_registration_id(
         self,
-        dp_observed: Optional[observation_api.GetDetailsResponse],
+        dp_observed: observation_api.GetDetailsResponse | None,
         **generic_kwargs,
     ):
         """
@@ -335,9 +329,7 @@ class RIDCommonDictionaryEvaluator(object):
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
 
-        def skip_eval(
-            injected_val: Optional[str], observed_val: Optional[str]
-        ) -> Optional[str]:
+        def skip_eval(injected_val: str | None, observed_val: str | None) -> str | None:
             if not injected_val:
                 return "Injected UAS ID is not 'Registration ID' type"
 
@@ -347,7 +339,6 @@ class RIDCommonDictionaryEvaluator(object):
             return None
 
         def value_validator(val: str) -> str:
-
             if not val:
                 return val
 
@@ -361,7 +352,7 @@ class RIDCommonDictionaryEvaluator(object):
 
             return val
 
-        def value_comparator(v1: Optional[str], v2: Optional[str]) -> bool:
+        def value_comparator(v1: str | None, v2: str | None) -> bool:
             return v1 == v2
 
         # NB: We don't use the two redundant fields `registration_id` and `uas_id.registration_id`,
@@ -383,7 +374,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_uas_id_utm_id(
         self,
-        dp_observed: Optional[observation_api.GetDetailsResponse],
+        dp_observed: observation_api.GetDetailsResponse | None,
         **generic_kwargs,
     ):
         """
@@ -394,9 +385,7 @@ class RIDCommonDictionaryEvaluator(object):
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
 
-        def skip_eval(
-            injected_val: Optional[str], observed_val: Optional[str]
-        ) -> Optional[str]:
+        def skip_eval(injected_val: str | None, observed_val: str | None) -> str | None:
             if self._rid_version == RIDVersion.f3411_19:
                 return f"Unsupported version {self._rid_version}"
 
@@ -409,7 +398,6 @@ class RIDCommonDictionaryEvaluator(object):
             return None
 
         def value_validator(val: str) -> uuid.UUID:
-
             if not val:
                 return val
 
@@ -417,10 +405,8 @@ class RIDCommonDictionaryEvaluator(object):
             # We do accept the most common ones
             return uuid.UUID(val)
 
-        def value_comparator(v1: Optional[uuid.UUID], v2: Optional[uuid.UUID]) -> bool:
-            if (
-                not v1
-            ):  # If we didn't inject a value, the UTM (in our case, the USS) may provide a value
+        def value_comparator(v1: uuid.UUID | None, v2: uuid.UUID | None) -> bool:
+            if not v1:  # If we didn't inject a value, the UTM (in our case, the USS) may provide a value
                 return True
             return v1 == v2
 
@@ -443,7 +429,7 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_uas_id_specific_session_id(
         self,
-        dp_observed: Optional[observation_api.GetDetailsResponse],
+        dp_observed: observation_api.GetDetailsResponse | None,
         **generic_kwargs,
     ):
         """
@@ -454,9 +440,7 @@ class RIDCommonDictionaryEvaluator(object):
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
 
-        def skip_eval(
-            injected_val: Optional[str], observed_val: Optional[str]
-        ) -> Optional[str]:
+        def skip_eval(injected_val: str | None, observed_val: str | None) -> str | None:
             if self._rid_version == RIDVersion.f3411_19:
                 return f"Unsupported version {self._rid_version}"
 
@@ -474,7 +458,7 @@ class RIDCommonDictionaryEvaluator(object):
             # representation ?) so we don't perform any validation
             return val
 
-        def value_comparator(v1: Optional[str], v2: Optional[str]) -> bool:
+        def value_comparator(v1: str | None, v2: str | None) -> bool:
             return v1 == v2
 
         # NB: We don't use the two redundant fields `specific_session_id` and `uas_id.specific_session_id`,
@@ -505,16 +489,13 @@ class RIDCommonDictionaryEvaluator(object):
         """
 
         def value_validator(val: str | Time) -> StringBasedDateTime:
-
             if self._rid_version == RIDVersion.f3411_22a and isinstance(val, Time):
-
                 if val.format != TimeFormat.RFC3339:
                     raise ValueError(f"{val} is not in RFC3339 format.")
 
                 val = val.value
 
             else:
-
                 try:
                     val = StringBasedDateTime(val)
                 except ParserError as e:
@@ -526,9 +507,8 @@ class RIDCommonDictionaryEvaluator(object):
             return val
 
         def value_comparator(
-            v1: Optional[StringBasedDateTime], v2: Optional[StringBasedDateTime]
+            v1: StringBasedDateTime | None, v2: StringBasedDateTime | None
         ) -> bool:
-
             if v1 is None or v2 is None:
                 return False
 
@@ -551,9 +531,9 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_operator_id(
         self,
-        value_inj: Optional[str],
-        value_obs: Optional[str],
-        participants: List[str],
+        value_inj: str | None,
+        value_obs: str | None,
+        participants: list[str],
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             if value_obs:
@@ -596,13 +576,12 @@ class RIDCommonDictionaryEvaluator(object):
                 return val
 
             if val < 0:
-                raise ValueError(f"Speed is less than 0")
+                raise ValueError("Speed is less than 0")
             if val > constants.MaxSpeed:
                 raise ValueError(f"Speed is greater than {constants.MaxSpeed}")
             return val
 
-        def value_comparator(v1: Optional[float], v2: Optional[float]) -> bool:
-
+        def value_comparator(v1: float | None, v2: float | None) -> bool:
             if v1 is None or v2 is None:
                 return False
 
@@ -639,14 +618,13 @@ class RIDCommonDictionaryEvaluator(object):
             # constants.MinTrackDirection and 360 with constants.MaxTrackDirection
 
             if val < 0:
-                raise ValueError(f"Track direction is less than 0")
+                raise ValueError("Track direction is less than 0")
             if val >= 360:
-                raise ValueError(f"Track direction is greater or equal than 360")
+                raise ValueError("Track direction is greater or equal than 360")
 
             return val
 
-        def value_comparator(v1: Optional[float], v2: Optional[float]) -> bool:
-
+        def value_comparator(v1: float | None, v2: float | None) -> bool:
             if v1 is None or v2 is None:
                 return False
 
@@ -676,7 +654,7 @@ class RIDCommonDictionaryEvaluator(object):
         self,
         position_inj: RIDAircraftPosition,
         position_obs: Position,
-        participants: List[str],
+        participants: list[str],
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             with self._test_scenario.check(
@@ -726,8 +704,7 @@ class RIDCommonDictionaryEvaluator(object):
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
 
-        def value_comparator(v1: Optional[float], v2: Optional[float]) -> bool:
-
+        def value_comparator(v1: float | None, v2: float | None) -> bool:
             if v1 is None or v2 is None:
                 return False
 
@@ -759,9 +736,8 @@ class RIDCommonDictionaryEvaluator(object):
             return RIDHeightReference(val)
 
         def value_comparator(
-            v1: Optional[RIDHeightReference], v2: Optional[RIDHeightReference]
+            v1: RIDHeightReference | None, v2: RIDHeightReference | None
         ) -> bool:
-
             return v1 == v2
 
         self._generic_evaluator(
@@ -783,13 +759,13 @@ class RIDCommonDictionaryEvaluator(object):
 
     def _evaluate_operator_location(
         self,
-        position_inj: Optional[LatLngPoint],
-        altitude_inj: Optional[Altitude],
-        altitude_type_inj: Optional[injection.OperatorAltitudeAltitudeType],
-        position_obs: Optional[LatLngPoint],
-        altitude_obs: Optional[Altitude],
-        altitude_type_obs: Optional[observation_api.OperatorAltitudeAltitudeType],
-        participants: List[str],
+        position_inj: LatLngPoint | None,
+        altitude_inj: Altitude | None,
+        altitude_type_inj: injection.OperatorAltitudeAltitudeType | None,
+        position_obs: LatLngPoint | None,
+        altitude_obs: Altitude | None,
+        altitude_type_obs: observation_api.OperatorAltitudeAltitudeType | None,
+        participants: list[str],
     ):
         if self._rid_version == RIDVersion.f3411_22a:
             if not position_obs:
@@ -849,7 +825,6 @@ class RIDCommonDictionaryEvaluator(object):
                             details=f"Invalid Operator Altitude units: {alt.units}",
                         )
                 if altitude_inj is not None:
-
                     with self._test_scenario.check(
                         "Operator Altitude is consistent with injected one",
                         participants,
@@ -912,17 +887,15 @@ class RIDCommonDictionaryEvaluator(object):
         """
 
         def value_validator(val: str) -> RIDOperationalStatusv19 | RIDOperationalStatus:
-
             if self._rid_version == RIDVersion.f3411_19:
                 return RIDOperationalStatusv19(val)
 
             return RIDOperationalStatus(val)
 
         def value_comparator(
-            v1: Optional[RIDOperationalStatusv19 | RIDOperationalStatus],
-            v2: Optional[RIDOperationalStatusv19 | RIDOperationalStatus],
+            v1: RIDOperationalStatusv19 | RIDOperationalStatus | None,
+            v2: RIDOperationalStatusv19 | RIDOperationalStatus | None,
         ) -> bool:
-
             return v1 == v2
 
         self._generic_evaluator(
@@ -956,7 +929,6 @@ class RIDCommonDictionaryEvaluator(object):
             return injection.UAType(val)
 
         def observed_value_validator(check, observed_val: injection.UAType):
-
             if (
                 self._rid_version == RIDVersion.f3411_19
                 and observed_val == injection.UAType.HybridLift
@@ -971,7 +943,7 @@ class RIDCommonDictionaryEvaluator(object):
                 )
 
         def value_comparator(
-            v1: Optional[injection.UAType], v2: Optional[injection.UAType]
+            v1: injection.UAType | None, v2: injection.UAType | None
         ) -> bool:
             equivalent = {injection.UAType.HybridLift, injection.UAType.VTOL}
 
@@ -1008,8 +980,7 @@ class RIDCommonDictionaryEvaluator(object):
                 raise ValueError("Timestamp accurary is less than 0")
             return val
 
-        def value_comparator(v1: Optional[float], v2: Optional[float]) -> bool:
-
+        def value_comparator(v1: float | None, v2: float | None) -> bool:
             if v1 is None or v2 is None:
                 return False
 
@@ -1039,8 +1010,7 @@ class RIDCommonDictionaryEvaluator(object):
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
 
-        def value_comparator(v1: Optional[float], v2: Optional[float]) -> bool:
-
+        def value_comparator(v1: float | None, v2: float | None) -> bool:
             if v1 is None or v2 is None:
                 return False
 
@@ -1072,9 +1042,8 @@ class RIDCommonDictionaryEvaluator(object):
             return VerticalAccuracy(val)
 
         def value_comparator(
-            v1: Optional[VerticalAccuracy], v2: Optional[VerticalAccuracy]
+            v1: VerticalAccuracy | None, v2: VerticalAccuracy | None
         ) -> bool:
-
             if v1 is None or v2 is None:
                 return False
 
@@ -1106,9 +1075,8 @@ class RIDCommonDictionaryEvaluator(object):
             return HorizontalAccuracy(val)
 
         def value_comparator(
-            v1: Optional[HorizontalAccuracy], v2: Optional[HorizontalAccuracy]
+            v1: HorizontalAccuracy | None, v2: HorizontalAccuracy | None
         ) -> bool:
-
             if v1 is None or v2 is None:
                 return False
 
@@ -1140,9 +1108,8 @@ class RIDCommonDictionaryEvaluator(object):
             return SpeedAccuracy(val)
 
         def value_comparator(
-            v1: Optional[SpeedAccuracy], v2: Optional[SpeedAccuracy]
+            v1: SpeedAccuracy | None, v2: SpeedAccuracy | None
         ) -> bool:
-
             if v1 is None or v2 is None:
                 return False
 
@@ -1186,8 +1153,7 @@ class RIDCommonDictionaryEvaluator(object):
                 )
             return val
 
-        def value_comparator(v1: Optional[float], v2: Optional[float]) -> bool:
-
+        def value_comparator(v1: float | None, v2: float | None) -> bool:
             if v1 is None or v2 is None:
                 return False
 
@@ -1209,8 +1175,8 @@ class RIDCommonDictionaryEvaluator(object):
     def _evaluate_ua_classification(
         self,
         injected: injection.RIDFlightDetails,
-        sp_observed: Optional[FlightDetails],
-        dp_observed: Optional[observation_api.GetDetailsResponse],
+        sp_observed: FlightDetails | None,
+        dp_observed: observation_api.GetDetailsResponse | None,
         participant: ParticipantID,
         query_timestamp: datetime.datetime,
     ):
@@ -1232,11 +1198,11 @@ class RIDCommonDictionaryEvaluator(object):
             )
             return
 
-        injected_ua_classification: Optional[str] = None
+        injected_ua_classification: str | None = None
         if "eu_classification" in injected:
             injected_ua_classification = "eu_classification"
 
-        observed_ua_classification: Optional[str] = None
+        observed_ua_classification: str | None = None
         if sp_observed is not None:
             if sp_observed.raw.has_field_with_value("eu_classification"):
                 observed_ua_classification = "eu_classification"
@@ -1274,9 +1240,9 @@ class RIDCommonDictionaryEvaluator(object):
         """
 
         def skip_eval(
-            _: Optional[UAClassificationEUCategory],
-            __: Optional[UAClassificationEUCategory],
-        ) -> Optional[str]:
+            _: UAClassificationEUCategory | None,
+            __: UAClassificationEUCategory | None,
+        ) -> str | None:
             if self._rid_version == RIDVersion.f3411_19:
                 return f"Unsupported version {self._rid_version}"
 
@@ -1291,10 +1257,9 @@ class RIDCommonDictionaryEvaluator(object):
             return UAClassificationEUCategory(val)
 
         def cat_value_comparator(
-            v1: Optional[UAClassificationEUCategory],
-            v2: Optional[UAClassificationEUCategory],
+            v1: UAClassificationEUCategory | None,
+            v2: UAClassificationEUCategory | None,
         ) -> bool:
-
             if v1 is None or v2 is None:
                 return False
 
@@ -1327,9 +1292,9 @@ class RIDCommonDictionaryEvaluator(object):
         """
 
         def skip_eval(
-            _: Optional[UAClassificationEUCategory],
-            __: Optional[UAClassificationEUCategory],
-        ) -> Optional[str]:
+            _: UAClassificationEUCategory | None,
+            __: UAClassificationEUCategory | None,
+        ) -> str | None:
             if self._rid_version == RIDVersion.f3411_19:
                 return f"Unsupported version {self._rid_version}"
 
@@ -1344,9 +1309,8 @@ class RIDCommonDictionaryEvaluator(object):
             return UAClassificationEUClass(val)
 
         def class_value_comparator(
-            v1: Optional[UAClassificationEUClass], v2: Optional[UAClassificationEUClass]
+            v1: UAClassificationEUClass | None, v2: UAClassificationEUClass | None
         ) -> bool:
-
             if v1 is None or v2 is None:
                 return False
 
@@ -1373,24 +1337,20 @@ class RIDCommonDictionaryEvaluator(object):
         sp_field_name: str,
         dp_field_name: str,
         field_human_name: str,
-        value_validator: Optional[Callable[[T], T2]],
-        observed_value_validator: Optional[Callable[[PendingCheck, T2], None]],
+        value_validator: Callable[[T], T2] | None,
+        observed_value_validator: Callable[[PendingCheck, T2], None] | None,
         injection_required_field: bool,
-        unknown_value: Optional[T2 | List[T2]],
-        value_comparator: Callable[[Optional[T2], Optional[T2]], bool],
-        injected: Union[
-            injection.TestFlight,
-            injection.RIDAircraftState,
-            injection.RIDFlightDetails,
-        ],
-        sp_observed: Optional[Union[Flight, FlightDetails]],
-        dp_observed: Optional[
-            Union[observation_api.Flight, observation_api.GetDetailsResponse]
-        ],
+        unknown_value: T2 | list[T2] | None,
+        value_comparator: Callable[[T2 | None, T2 | None], bool],
+        injected: injection.TestFlight
+        | injection.RIDAircraftState
+        | injection.RIDFlightDetails,
+        sp_observed: Flight | FlightDetails | None,
+        dp_observed: observation_api.Flight | observation_api.GetDetailsResponse | None,
         participant: ParticipantID,
         query_timestamp: datetime.datetime,
         sp_is_allowed_to_generate_missing: bool = False,
-        skip_eval: Optional[Callable[[Optional[T], Optional[T]], str]] = None,
+        skip_eval: Callable[[T | None, T | None], str] | None = None,
     ):
         """
         Generic evaluator of a field. Exactly one of sp_observed or dp_observed must be provided.
@@ -1422,7 +1382,7 @@ class RIDCommonDictionaryEvaluator(object):
             ValueError: if a test operation wasn't performed correctly by uss_qualifier.
         """
 
-        injected_val: Optional[T] = _dotted_get(injected, injected_field_name)
+        injected_val: T | None = _dotted_get(injected, injected_field_name)
         if injected_val is not None:
             if value_validator is not None:
                 try:
@@ -1432,7 +1392,7 @@ class RIDCommonDictionaryEvaluator(object):
                         f"Invalid {field_human_name} {injected_val} injected", e
                     )
 
-        observed_val: Optional[T]
+        observed_val: T | None
         if sp_observed is not None:
             observed_val = _dotted_get(sp_observed, sp_field_name)
         elif dp_observed is not None:
@@ -1489,12 +1449,10 @@ class RIDCommonDictionaryEvaluator(object):
             f"{field_human_name} is consistent with injected value",
             participant,
         ) as check:
-
             if dp_observed is not None and observed_val is None:
                 pass  # C8
 
             elif injected_val is None:
-
                 if injection_required_field:
                     raise ValueError(
                         f"Invalid {field_human_name} value injected. Injection is marked as required, but we injected a None value. This should have been caught by the injection api."
@@ -1529,7 +1487,7 @@ class RIDCommonDictionaryEvaluator(object):
                 )
 
 
-def _dotted_get(obj: Any, key: str) -> Optional[T]:
+def _dotted_get(obj: Any, key: str) -> T | None:
     val: Any = obj
     for k in key.split("."):
         if val is None:

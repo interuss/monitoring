@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import List
 
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
@@ -109,7 +108,7 @@ class DSSOVNRequest(TestScenario):
         self.end_test_scenario()
 
     def _create_oir(
-        self, extents: List[Volume4D], req_ovn_suffix: str
+        self, extents: list[Volume4D], req_ovn_suffix: str
     ) -> OperationalIntentReference:
         with self.check(
             "Create operational intent reference query succeeds",
@@ -136,7 +135,7 @@ class DSSOVNRequest(TestScenario):
 
         return oir
 
-    def _activate_oir(self, extents: List[Volume4D], ovn: str, req_ovn_suffix: str):
+    def _activate_oir(self, extents: list[Volume4D], ovn: str, req_ovn_suffix: str):
         with self.check(
             "Mutate operational intent reference query succeeds",
             [self._dss.participant_id],
@@ -162,7 +161,7 @@ class DSSOVNRequest(TestScenario):
 
         return oir
 
-    def _create_invalid_oir_attempt(self, extents: List[Volume4D], req_ovn_suffix: str):
+    def _create_invalid_oir_attempt(self, extents: list[Volume4D], req_ovn_suffix: str):
         with self.check(
             "Attempt to create OIR with invalid requested OVN suffix query rejected",
             [self._dss.participant_id],

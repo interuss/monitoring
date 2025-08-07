@@ -1,5 +1,3 @@
-from typing import Dict
-
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
@@ -18,7 +16,7 @@ class FlightIntentsResource(Resource[FlightIntentsSpecification]):
     _intent_collection: FlightIntentCollection
 
     def __init__(self, specification: FlightIntentsSpecification, resource_origin: str):
-        super(FlightIntentsResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         has_file = "file" in specification and specification.file
         has_literal = (
             "intent_collection" in specification and specification.intent_collection
@@ -48,5 +46,5 @@ class FlightIntentsResource(Resource[FlightIntentsSpecification]):
             else:
                 self._intent_collection.transformations = specification.transformations
 
-    def get_flight_intents(self) -> Dict[FlightIntentID, FlightInfoTemplate]:
+    def get_flight_intents(self) -> dict[FlightIntentID, FlightInfoTemplate]:
         return self._intent_collection.resolve()

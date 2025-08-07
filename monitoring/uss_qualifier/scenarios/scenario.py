@@ -1,9 +1,10 @@
 import inspect
 import traceback
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Callable, Dict, List, Optional, Set, Type, TypeVar, Union
+from typing import TypeVar
 
 import arrow
 from implicitdict import StringBasedDateTime
@@ -59,12 +60,12 @@ SQUELCH_WARN_ON_QUERY_TYPE = [
 
 class ScenarioCannotContinueError(Exception):
     def __init__(self, msg):
-        super(ScenarioCannotContinueError, self).__init__(msg)
+        super().__init__(msg)
 
 
 class TestRunCannotContinueError(Exception):
     def __init__(self, msg):
-        super(TestRunCannotContinueError, self).__init__(msg)
+        super().__init__(msg)
 
 
 class ScenarioPhase(str, Enum):
@@ -78,23 +79,23 @@ class ScenarioPhase(str, Enum):
     Complete = "Complete"
 
 
-class PendingCheck(object):
+class PendingCheck:
     _phase: ScenarioPhase
     _documentation: TestCheckDocumentation
     _step_report: TestStepReport
     _stop_fast: bool
-    _on_failed_check: Optional[Callable[[FailedCheck], None]]
-    _participants: List[ParticipantID]
+    _on_failed_check: Callable[[FailedCheck], None] | None
+    _participants: list[ParticipantID]
     _outcome_recorded: bool = False
 
     def __init__(
         self,
         phase: ScenarioPhase,
         documentation: TestCheckDocumentation,
-        participants: List[ParticipantID],
+        participants: list[ParticipantID],
         step_report: TestStepReport,
         stop_fast: bool,
-        on_failed_check: Optional[Callable[[FailedCheck], None]],
+        on_failed_check: Callable[[FailedCheck], None] | None,
     ):
         self._phase = phase
         self._documentation = documentation
@@ -114,8 +115,8 @@ class PendingCheck(object):
         self,
         summary: str,
         details: str = "",
-        query_timestamps: Optional[List[datetime]] = None,
-        additional_data: Optional[dict] = None,
+        query_timestamps: list[datetime] | None = None,
+        additional_data: dict | None = None,
     ) -> None:
         self._outcome_recorded = True
         if "severity" in self._documentation and self._documentation.severity:
@@ -176,16 +177,14 @@ class PendingCheck(object):
         self._outcome_recorded = True
 
 
-def get_scenario_type_by_name(scenario_type_name: TestScenarioTypeName) -> Type:
+def get_scenario_type_by_name(scenario_type_name: TestScenarioTypeName) -> type:
     inspection.import_submodules(scenarios_module)
     scenario_type = inspection.get_module_object_by_name(
         parent_module=uss_qualifier_module, object_name=scenario_type_name
     )
     if not issubclass(scenario_type, TestScenario):
         raise NotImplementedError(
-            "Scenario type {} is not a subclass of the TestScenario base class".format(
-                scenario_type.__name__
-            )
+            f"Scenario type {scenario_type.__name__} is not a subclass of the TestScenario base class"
         )
     return scenario_type
 
@@ -198,17 +197,17 @@ class GenericTestScenario(ABC):
 
     declaration: TestScenarioDeclaration
     documentation: TestScenarioDocumentation
-    on_failed_check: Optional[Callable[[FailedCheck], None]] = None
+    on_failed_check: Callable[[FailedCheck], None] | None = None
 
-    resource_origins: Dict[ResourceID, str]
+    resource_origins: dict[ResourceID, str]
     """Map between local resource name (as defined in test scenario) to where that resource originated."""
 
     _phase: ScenarioPhase = ScenarioPhase.Undefined
-    _scenario_report: Optional[TestScenarioReport] = None
-    _current_case: Optional[TestCaseDocumentation] = None
-    _case_report: Optional[TestCaseReport] = None
-    _current_step: Optional[TestStepDocumentation] = None
-    _step_report: Optional[TestStepReport] = None
+    _scenario_report: TestScenarioReport | None = None
+    _current_case: TestCaseDocumentation | None = None
+    _case_report: TestCaseReport | None = None
+    _current_step: TestStepDocumentation | None = None
+    _step_report: TestStepReport | None = None
 
     _allow_undocumented_checks = False
     """When this variable is set to True, it allows undocumented checks to be executed by the scenario. This is primarly intended to simplify internal unit testing."""
@@ -223,7 +222,7 @@ class GenericTestScenario(ABC):
     @staticmethod
     def make_test_scenario(
         declaration: TestScenarioDeclaration,
-        resource_pool: Dict[ResourceID, ResourceType],
+        resource_pool: dict[ResourceID, ResourceType],
     ) -> "TestScenario":
         scenario_type = get_scenario_type_by_name(declaration.scenario_type)
 
@@ -272,7 +271,7 @@ class GenericTestScenario(ABC):
     def me(self) -> str:
         return inspection.fullname(self.__class__)
 
-    def current_step_name(self) -> Optional[str]:
+    def current_step_name(self) -> str | None:
         if self._current_step:
             return self._current_step.name
         else:
@@ -288,7 +287,7 @@ class GenericTestScenario(ABC):
             cases=[],
         )
 
-    def _expect_phase(self, expected_phase: Union[ScenarioPhase, Set[ScenarioPhase]]):
+    def _expect_phase(self, expected_phase: ScenarioPhase | set[ScenarioPhase]):
         if isinstance(expected_phase, ScenarioPhase):
             expected_phase = {expected_phase}
         if self._phase not in expected_phase:
@@ -394,7 +393,7 @@ class GenericTestScenario(ABC):
         self._case_report.steps.append(self._step_report)
         self._phase = ScenarioPhase.RunningTestStep
 
-    def record_queries(self, queries: List[fetch.Query]) -> None:
+    def record_queries(self, queries: list[fetch.Query]) -> None:
         for q in queries:
             self.record_query(q)
 
@@ -436,7 +435,7 @@ class GenericTestScenario(ABC):
     def check(
         self,
         name: str,
-        participants: Optional[Union[ParticipantID, List[ParticipantID]]] = None,
+        participants: ParticipantID | list[ParticipantID] | None = None,
     ) -> PendingCheck:
         if isinstance(participants, str):
             participants = [participants]
@@ -600,7 +599,7 @@ class TestScenario(GenericTestScenario):
     pass
 
 
-def get_scenario_type_name(scenario_type: Type[TestScenario]) -> TestScenarioTypeName:
+def get_scenario_type_name(scenario_type: type[TestScenario]) -> TestScenarioTypeName:
     full_name = fullname(scenario_type)
     if not issubclass(scenario_type, TestScenario):
         raise ValueError(f"{full_name} is not a TestScenario")
@@ -615,8 +614,8 @@ TestScenarioType = TypeVar("TestScenarioType", bound=TestScenario)
 
 
 def find_test_scenarios(
-    module, already_checked: Optional[Set[str]] = None
-) -> List[TestScenarioType]:
+    module, already_checked: set[str] | None = None
+) -> list[TestScenarioType]:
     if already_checked is None:
         already_checked = set()
     already_checked.add(module.__name__)

@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import List, Optional
 
 from uas_standards.astm.f3548.v21.api import (
     ConstraintReference,
@@ -51,7 +50,7 @@ class CRSynchronization(TestScenario):
 
     _dss: DSSInstance
 
-    _secondary_dss_instances: List[DSSInstance]
+    _secondary_dss_instances: list[DSSInstance]
 
     # Base identifier for the OIR that will be created
     _cr_id: EntityID
@@ -60,7 +59,7 @@ class CRSynchronization(TestScenario):
     _cr_params: PutConstraintReferenceParameters
 
     # Keep track of the current OIR state
-    _current_cr: Optional[ConstraintReference]
+    _current_cr: ConstraintReference | None
 
     _expected_manager: str
 
@@ -111,7 +110,6 @@ class CRSynchronization(TestScenario):
         self._current_cr = None
 
     def run(self, context: ExecutionContext):
-
         # Check that we actually have at least one other DSS to test against:
         if not self._secondary_dss_instances:
             raise ScenarioCannotContinueError(
@@ -183,7 +181,6 @@ class CRSynchronization(TestScenario):
         self.end_test_case()
 
     def _ensure_clean_workspace_step(self):
-
         # Delete any active CRs we might own
         test_step_fragments.cleanup_active_constraint_refs(
             self,
@@ -196,7 +193,6 @@ class CRSynchronization(TestScenario):
         test_step_fragments.cleanup_constraint_ref(self, self._dss, self._cr_id)
 
     def _create_cr_with_params(self, creation_params: PutConstraintReferenceParameters):
-
         with self.check(
             "Create constraint reference query succeeds", [self._primary_pid]
         ) as check:
@@ -310,7 +306,7 @@ class CRSynchronization(TestScenario):
                 "Propagated constraint reference general area is synchronized",
                 involved_participants,
             ) as check:
-                cr: Optional[ConstraintReference] = next(
+                cr: ConstraintReference | None = next(
                     (_cr for _cr in crs if _cr.id == self._cr_id), None
                 )
                 if cr is None:
@@ -335,7 +331,7 @@ class CRSynchronization(TestScenario):
         q: Query,
         expected_cr_params: PutConstraintReferenceParameters,
         main_check_name: str,
-        involved_participants: List[str],
+        involved_participants: list[str],
         from_search: bool = False,
     ):
         with self.check(main_check_name, involved_participants) as main_check:

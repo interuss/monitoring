@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 from monitoring.monitorlib import schema_validation
 from monitoring.uss_qualifier.scenarios.scenario import PendingCheck
@@ -7,7 +6,7 @@ from monitoring.uss_qualifier.scenarios.scenario import PendingCheck
 
 def fail_with_schema_errors(
     check: PendingCheck,
-    errors: List[schema_validation.ValidationError],
+    errors: list[schema_validation.ValidationError],
     t_dss: datetime,
 ) -> None:
     """

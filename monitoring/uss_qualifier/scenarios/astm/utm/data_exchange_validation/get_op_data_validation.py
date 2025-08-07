@@ -1,5 +1,3 @@
-from typing import Dict, Optional, Set
-
 import arrow
 from uas_standards.astm.f3548.v21.api import EntityID
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -64,7 +62,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
     flight_1: FlightInfoTemplate
     flight_2: FlightInfoTemplate
 
-    op_intent_ids: Set[EntityID]
+    op_intent_ids: set[EntityID]
 
     tested_uss_client: FlightPlannerClient
     mock_uss: MockUSSClient
@@ -76,7 +74,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         tested_uss: FlightPlannerResource,
         mock_uss: MockUSSResource,
         dss: DSSInstanceResource,
-        flight_intents: Optional[FlightIntentsResource] = None,
+        flight_intents: FlightIntentsResource | None = None,
     ):
         super().__init__()
         self.tested_uss_client = tested_uss.client
@@ -89,7 +87,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         )
 
         if not flight_intents:
-            msg = f"No FlightIntentsResource was provided as input to this test, it is assumed that the jurisdiction does not allow any same priority conflicts, execution of the scenario was stopped without failure"
+            msg = "No FlightIntentsResource was provided as input to this test, it is assumed that the jurisdiction does not allow any same priority conflicts, execution of the scenario was stopped without failure"
             self.record_note(
                 "Jurisdiction of tested USS does not allow any same priority conflicts",
                 msg,
@@ -151,7 +149,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
         self.end_test_scenario()
 
-    def _plan_successfully_test_case(self, times: Dict[TimeDuringTest, Time]):
+    def _plan_successfully_test_case(self, times: dict[TimeDuringTest, Time]):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_2 = self.flight_2.resolve(times)
 
@@ -226,7 +224,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         delete_flight(self, self.mock_uss_client, self.flight_2_id)
         self.end_test_step()
 
-    def _plan_unsuccessfully_test_case(self, times: Dict[TimeDuringTest, Time]):
+    def _plan_unsuccessfully_test_case(self, times: dict[TimeDuringTest, Time]):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_info = self.flight_2.resolve(times)
 
@@ -320,5 +318,5 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights(self, (self.mock_uss_client, self.tested_uss_client)),
+        (cleanup_flights(self, (self.mock_uss_client, self.tested_uss_client)),)
         self.end_cleanup()

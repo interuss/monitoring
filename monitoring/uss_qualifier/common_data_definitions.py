@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import List
 
 
 class Severity(str, Enum):
@@ -99,5 +98,5 @@ class Severity(str, Enum):
         }.get(self.value, "�")
 
     @staticmethod
-    def all_values() -> List[Severity]:
+    def all_values() -> list[Severity]:
         return [Severity.Low, Severity.Medium, Severity.High, Severity.Critical]

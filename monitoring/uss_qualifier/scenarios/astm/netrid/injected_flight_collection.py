@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 import arrow
 from s2sphere import LatLng, LatLngRect
@@ -8,10 +7,10 @@ from monitoring.monitorlib import geo
 from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFlight
 
 
-class InjectedFlightCollection(object):
-    _injected_flights: List[InjectedFlight]
+class InjectedFlightCollection:
+    _injected_flights: list[InjectedFlight]
 
-    def __init__(self, injected_flights: List[InjectedFlight]):
+    def __init__(self, injected_flights: list[InjectedFlight]):
         self._injected_flights = injected_flights
 
     def get_query_rect(

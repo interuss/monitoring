@@ -6,7 +6,6 @@ import random
 import uuid
 from collections import namedtuple
 from datetime import timedelta
-from typing import List
 
 import s2sphere
 from implicitdict import StringBasedDateTime
@@ -45,9 +44,9 @@ def check_if_vertex_is_correct(point1, point2, point3, flight_distance):
     points_distance_difference = math.sqrt(
         (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
     ) - math.sqrt((x2 - x3) * (x2 - x3) + (y2 - y3) * (y2 - y3))
-    assert (
-        abs(points_distance_difference - flight_distance) < 0.2
-    ), f"Generated vertex is not correct. {point1}, {point2}, {point3}, {flight_distance}"
+    assert abs(points_distance_difference - flight_distance) < 0.2, (
+        f"Generated vertex is not correct. {point1}, {point2}, {point3}, {flight_distance}"
+    )
 
 
 def get_track_angle(point1, point2):
@@ -196,7 +195,7 @@ def generate_flight_record(
     # Reference used to compute vertical speed
     last_alt = state_coordinates[0].alt if state_coordinates else 0
 
-    flight_telemetry: List[injection.RIDAircraftState] = []
+    flight_telemetry: list[injection.RIDAircraftState] = []
     for coordinates, speed, angle in zip(
         state_coordinates, flight_state_speeds, flight_track_angles
     ):

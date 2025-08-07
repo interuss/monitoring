@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Optional
 
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
@@ -48,16 +47,16 @@ class OIRExplicitSubHandling(TestScenario):
     _extra_sub_id: SubscriptionID
 
     # Keep track of the current OIR state
-    _current_oir: Optional[OperationalIntentReference]
+    _current_oir: OperationalIntentReference | None
     _expected_manager: str
     _planning_area: PlanningAreaSpecification
     _planning_area_volume4d: Volume4D
 
     # Keep track of the current subscription
-    _sub_params: Optional[SubscriptionParams]
-    _current_sub: Optional[Subscription]
+    _sub_params: SubscriptionParams | None
+    _current_sub: Subscription | None
 
-    _current_extra_sub: Optional[Subscription]
+    _current_extra_sub: Subscription | None
 
     def __init__(
         self,
@@ -372,7 +371,7 @@ class OIRExplicitSubHandling(TestScenario):
         self.end_test_step()
 
     def _step_oir_has_correct_subscription(
-        self, expected_sub_id: Optional[SubscriptionID], step_name: Optional[str] = None
+        self, expected_sub_id: SubscriptionID | None, step_name: str | None = None
     ):
         step_oir_has_correct_subscription(
             self,

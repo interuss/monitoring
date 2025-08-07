@@ -86,7 +86,7 @@ def test_ensure_clean_workspace(ids, scd_api, scd_session):
 @default_scope(SCOPE_SC)
 def test_subs_do_not_exist_get(ids, scd_api, scd_session):
     for sub_id in (ids(SUB1_TYPE), ids(SUB2_TYPE), ids(SUB3_TYPE)):
-        resp = scd_session.get("/subscriptions/{}".format(sub_id))
+        resp = scd_session.get(f"/subscriptions/{sub_id}")
         assert resp.status_code == 404, resp.content
 
 
@@ -115,17 +115,17 @@ def test_subs_do_not_exist_query(ids, scd_api, scd_session):
 @default_scope(SCOPE_SC)
 def test_create_subs(ids, scd_api, scd_session):
     resp = scd_session.put(
-        "/subscriptions/{}".format(ids(SUB1_TYPE)), json=_make_sub1_req(scd_api)
+        f"/subscriptions/{ids(SUB1_TYPE)}", json=_make_sub1_req(scd_api)
     )
     assert resp.status_code == 200, resp.content
 
     resp = scd_session.put(
-        "/subscriptions/{}".format(ids(SUB2_TYPE)), json=_make_sub2_req(scd_api)
+        f"/subscriptions/{ids(SUB2_TYPE)}", json=_make_sub2_req(scd_api)
     )
     assert resp.status_code == 200, resp.content
 
     resp = scd_session.put(
-        "/subscriptions/{}".format(ids(SUB3_TYPE)), json=_make_sub3_req(scd_api)
+        f"/subscriptions/{ids(SUB3_TYPE)}", json=_make_sub3_req(scd_api)
     )
     assert resp.status_code == 200, resp.content
 
@@ -303,7 +303,7 @@ def test_search_time_footprint(ids, scd_api, scd_session):
 def test_delete_subs(ids, scd_api, scd_session):
     for sub_id in (ids(SUB1_TYPE), ids(SUB2_TYPE), ids(SUB3_TYPE)):
         if scd_api == scd.API_0_3_17:
-            resp = scd_session.get("/subscriptions/{}".format(sub_id))
+            resp = scd_session.get(f"/subscriptions/{sub_id}")
             assert resp.status_code == 200
             resp = scd_session.delete(
                 "/subscriptions/{}/{}".format(
@@ -311,7 +311,7 @@ def test_delete_subs(ids, scd_api, scd_session):
                 )
             )
         else:
-            raise NotImplementedError("Unsupported API version {}".format(scd_api))
+            raise NotImplementedError(f"Unsupported API version {scd_api}")
         assert resp.status_code == 200, resp.content
 
 

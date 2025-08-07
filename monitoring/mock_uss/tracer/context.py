@@ -1,10 +1,7 @@
-from typing import Dict, Optional
-
 import yaml
 from implicitdict import StringBasedDateTime
 from yaml.representer import Representer
 
-import monitoring.monitorlib.fetch.scd
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.config import KEY_AUTH_SPEC, KEY_DSS_URL
 from monitoring.mock_uss.tracer.config import (
@@ -14,18 +11,19 @@ from monitoring.mock_uss.tracer.config import (
 )
 from monitoring.mock_uss.tracer.observation_areas import ObservationAreaID
 from monitoring.mock_uss.tracer.tracerlog import Logger
-from monitoring.monitorlib import fetch, infrastructure
+from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.auth import make_auth_adapter
+from monitoring.monitorlib.fetch import scd
 from monitoring.monitorlib.infrastructure import AuthAdapter, AuthSpec, UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
 
 yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
 
-scd_cache: Dict[ObservationAreaID, Dict[str, fetch.scd.FetchedEntity]] = {}
+scd_cache: dict[ObservationAreaID, dict[str, scd.FetchedEntity]] = {}
 
 
-def _get_tracer_logger() -> Optional[Logger]:
+def _get_tracer_logger() -> Logger | None:
     kml_server = webapp.config[KEY_TRACER_KML_SERVER]
     kml_folder = webapp.config[KEY_TRACER_KML_FOLDER]
     output_folder = webapp.config[KEY_TRACER_OUTPUT_FOLDER]
@@ -44,10 +42,10 @@ def _get_tracer_logger() -> Optional[Logger]:
 tracer_logger: Logger = _get_tracer_logger()
 
 
-_adapters: Dict[AuthSpec, AuthAdapter] = {}
+_adapters: dict[AuthSpec, AuthAdapter] = {}
 
 
-def resolve_auth_spec(requested_auth_spec: Optional[AuthSpec]) -> AuthSpec:
+def resolve_auth_spec(requested_auth_spec: AuthSpec | None) -> AuthSpec:
     if not requested_auth_spec:
         if KEY_AUTH_SPEC not in webapp.config or not webapp.config[KEY_AUTH_SPEC]:
             raise ValueError(

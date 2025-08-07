@@ -1,5 +1,3 @@
-from typing import Optional
-
 from implicitdict import ImplicitDict
 
 
@@ -8,4 +6,4 @@ class TestV1(ImplicitDict):
 
 
 class Test(ImplicitDict):
-    v1: Optional[TestV1]
+    v1: TestV1 | None

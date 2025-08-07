@@ -7,7 +7,7 @@ from implicitdict import ImplicitDict
 ImplicitDictType = TypeVar("ImplicitDictType", bound=ImplicitDict)
 
 
-def apply_overrides(
+def apply_overrides[ImplicitDictType: ImplicitDict](
     base_object: ImplicitDictType, overrides: dict, parse_result: bool = True
 ) -> ImplicitDictType:
     """Returns a copy of base_object onto which overrides were applied."""

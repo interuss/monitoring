@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Set
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 from uas_standards.astm.f3548.v21.api import (
@@ -67,7 +66,7 @@ def expect_no_interuss_post_interactions(
     scenario: TestScenarioType,
     mock_uss: MockUSSClient,
     st: StringBasedDateTime,
-    shared_op_intent_ids: Set[EntityID],
+    shared_op_intent_ids: set[EntityID],
     participant_id: str,
 ):
     """This step checks no notification about an unexpected operational intent is sent to any USS within the required time window (as no DSS entity was created).
@@ -101,7 +100,7 @@ def expect_no_interuss_post_interactions(
                     )
                 except (ValueError, TypeError, KeyError) as e:
                     check.record_failed(
-                        summary=f"Failed to parse request of a 'NotifyOperationalIntentDetailsChanged' interaction with mock_uss as a PutOperationalIntentDetailsParameters",
+                        summary="Failed to parse request of a 'NotifyOperationalIntentDetailsChanged' interaction with mock_uss as a PutOperationalIntentDetailsParameters",
                         details=f"{str(e)}\nRequest: {interaction.query.request.json}\n\nStack trace:\n{e.stacktrace}",
                         query_timestamps=[query.request.timestamp],
                     )

@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     UpsertFlightPlanRequest,
@@ -21,7 +19,7 @@ class MockUssFlightBehavior(ImplicitDict):
         }
     """
 
-    modify_sharing_methods: List[str]
+    modify_sharing_methods: list[str]
     """ list of intent sharing http methods GET and POST to be modified"""
 
     modify_fields: dict
@@ -31,10 +29,10 @@ class MockUssFlightBehavior(ImplicitDict):
 class MockUSSInjectFlightRequest(InjectFlightRequest):
     """InjectFlightRequest sent to mock_uss, which looks for the optional additional fields below."""
 
-    behavior: Optional[MockUssFlightBehavior]
+    behavior: MockUssFlightBehavior | None
 
 
 class MockUSSUpsertFlightPlanRequest(UpsertFlightPlanRequest):
     """UpsertFlightPlanRequest sent to mock_uss, which looks for the optional additional fields below."""
 
-    behavior: Optional[MockUssFlightBehavior]
+    behavior: MockUssFlightBehavior | None

@@ -1,9 +1,6 @@
-from typing import Optional
-
 from implicitdict import ImplicitDict
 
 from monitoring.uss_qualifier.action_generators.definitions import GeneratorTypeName
-from monitoring.uss_qualifier.fileio import FileReference
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.suites.definitions import (
     ActionType,
@@ -18,10 +15,10 @@ class PotentialTestScenarioAction(ImplicitDict):
 
 
 class PotentialTestSuiteAction(ImplicitDict):
-    suite_type: Optional[TestSuiteTypeName]
+    suite_type: TestSuiteTypeName | None
     """Type/location of test suite.  Usually expressed as the file name of the suite definition (without extension) qualified relative to the `uss_qualifier` folder"""
 
-    suite_definition: Optional[TestSuiteDefinition]
+    suite_definition: TestSuiteDefinition | None
     """Definition of test suite internal to the configuration -- specified instead of `suite_type`."""
 
 
@@ -34,9 +31,9 @@ class PotentialActionGeneratorAction(ImplicitDict):
 
 
 class PotentialGeneratedAction(ImplicitDict):
-    test_scenario: Optional[PotentialTestScenarioAction]
-    test_suite: Optional[PotentialTestSuiteAction]
-    action_generator: Optional[PotentialActionGeneratorAction]
+    test_scenario: PotentialTestScenarioAction | None
+    test_suite: PotentialTestSuiteAction | None
+    action_generator: PotentialActionGeneratorAction | None
 
     def get_action_type(self) -> ActionType:
         matches = [v for v in ActionType if v in self and self[v]]

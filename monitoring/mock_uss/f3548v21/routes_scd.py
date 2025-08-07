@@ -1,6 +1,5 @@
 import json
 import uuid
-from typing import Optional
 
 import flask
 from implicitdict import ImplicitDict
@@ -9,7 +8,6 @@ from uas_standards.astm.f3548.v21.api import (
     ErrorReport,
     ErrorResponse,
     GetOperationalIntentDetailsResponse,
-    GetOperationalIntentTelemetryResponse,
     OperationalIntentState,
 )
 
@@ -38,9 +36,7 @@ def scdsc_get_operational_intent_details(entityid: str):
         return (
             flask.jsonify(
                 ErrorResponse(
-                    message="Operational intent {} not known by this USS".format(
-                        entityid
-                    )
+                    message=f"Operational intent {entityid} not known by this USS"
                 )
             ),
             404,
@@ -62,7 +58,7 @@ def scdsc_get_operational_intent_telemetry(entityid: str):
 
     # Look up entityid in database
     tx = db.value
-    flight: Optional[FlightRecord] = None
+    flight: FlightRecord | None = None
     for f in tx.flights.values():
         if f and f.op_intent.reference.id == entityid:
             flight = f
@@ -73,9 +69,7 @@ def scdsc_get_operational_intent_telemetry(entityid: str):
         return (
             flask.jsonify(
                 ErrorResponse(
-                    message="Operational intent {} not known by this USS".format(
-                        entityid
-                    )
+                    message=f"Operational intent {entityid} not known by this USS"
                 )
             ),
             404,

@@ -1,10 +1,8 @@
 import math
 import random
-from typing import List
 
 import s2sphere
 from implicitdict import ImplicitDict
-from loguru import logger
 from s2sphere import LatLngRect
 from uas_standards.interuss.automated_testing.rid.v1 import (
     observation as observation_api,
@@ -14,7 +12,7 @@ from monitoring.monitorlib import geo
 from monitoring.monitorlib.rid import RIDVersion
 
 
-class Point(object):
+class Point:
     x: float
     y: float
 
@@ -28,7 +26,7 @@ class Cluster(ImplicitDict):
     x_max: float
     y_min: float
     y_max: float
-    points: List[Point]
+    points: list[Point]
 
     def width(self):
         return math.fabs(self.x_max - self.x_min)
@@ -98,16 +96,16 @@ class Cluster(ImplicitDict):
 
 
 def make_clusters(
-    flights: List[observation_api.Flight],
+    flights: list[observation_api.Flight],
     view_min: s2sphere.LatLng,
     view_max: s2sphere.LatLng,
     rid_version: RIDVersion,
-) -> List[observation_api.Cluster]:
+) -> list[observation_api.Cluster]:
     if not flights:
         return []
 
     # Make the initial cluster
-    points: List[Point] = [
+    points: list[Point] = [
         Point(
             *geo.flatten(
                 view_min,
@@ -119,7 +117,7 @@ def make_clusters(
         for flight in flights
     ]
     x_max, y_max = geo.flatten(view_min, view_max)
-    clusters: List[Cluster] = [
+    clusters: list[Cluster] = [
         Cluster(x_min=0, y_min=0, x_max=x_max, y_max=y_max, points=points)
     ]
 
@@ -127,14 +125,12 @@ def make_clusters(
 
     view_area_sqm = geo.area_of_latlngrect(LatLngRect(view_min, view_max))
 
-    result: List[observation_api.Cluster] = []
+    result: list[observation_api.Cluster] = []
     for cluster in clusters:
         cluster = cluster.extend(rid_version, view_area_sqm)
 
         # Offset cluster
-        cluster = (
-            cluster.randomize()
-        )  # TODO: Set random seed according to view extents so a static view will have static cluster subdivisions
+        cluster = cluster.randomize()  # TODO: Set random seed according to view extents so a static view will have static cluster subdivisions
 
         corners = LatLngRect(
             geo.unflatten(view_min, (cluster.x_min, cluster.y_min)),

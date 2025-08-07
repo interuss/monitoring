@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 
 from uas_standards.astm.f3548.v21.api import Subscription, SubscriptionID
 
@@ -35,16 +34,16 @@ class SubscriptionValidator:
     Scenario in which this validator is being used. Will be used to register checks.
     """
 
-    _sub_params: Optional[SubscriptionParams]
-    _pid: List[str]
+    _sub_params: SubscriptionParams | None
+    _pid: list[str]
     """Participant ID(s) to use for the checks"""
 
     def __init__(
         self,
         main_check: PendingCheck,
         scenario: TestScenario,
-        participant_id: List[str],
-        sub_params: Optional[SubscriptionParams],
+        participant_id: list[str],
+        sub_params: SubscriptionParams | None,
     ):
         self._main_check = main_check
         self._scenario = scenario
@@ -78,8 +77,8 @@ class SubscriptionValidator:
         dss_sub: Subscription,
         t_dss: datetime,
         is_implicit: bool,
-        previous_version: Optional[str],
-        expected_version: Optional[str],
+        previous_version: str | None,
+        expected_version: str | None,
     ) -> None:
         """
         Args:
@@ -97,7 +96,7 @@ class SubscriptionValidator:
             if dss_sub.id != expected_sub_id:
                 self._fail_sub_check(
                     check,
-                    summary=f"Returned subscription ID is incorrect",
+                    summary="Returned subscription ID is incorrect",
                     details=f"Expected subscription ID {expected_sub_id} but got {dss_sub.id}",
                     t_dss=t_dss,
                 )
@@ -258,7 +257,7 @@ class SubscriptionValidator:
 
         with self._scenario.check(
             "Constraints notification flag is as requested", self._pid
-        ) as checK:
+        ):
             if (
                 dss_sub.notify_for_constraints
                 != self._sub_params.notify_for_constraints
@@ -296,7 +295,7 @@ class SubscriptionValidator:
         """Validate a subscription that was just explicitly created, meaning
         we don't have a previous version to compare to, and we expect it to not be an implicit one.
         """
-        (t_dss, sub) = (new_sub.request.timestamp, new_sub.subscription)
+        (t_dss, _sub) = (new_sub.request.timestamp, new_sub.subscription)
 
         # Validate the response schema
         self._validate_put_sub_response_schema(new_sub, t_dss, "create")

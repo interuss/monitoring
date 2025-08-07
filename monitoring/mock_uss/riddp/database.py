@@ -1,5 +1,4 @@
 import json
-from typing import Dict, List
 
 from implicitdict import ImplicitDict
 
@@ -20,9 +19,9 @@ class ObservationSubscription(ImplicitDict):
 
     upsert_result: ChangedSubscription
 
-    updates: List[UpdatedISA]
+    updates: list[UpdatedISA]
 
-    def get_isas(self) -> List[ISA]:
+    def get_isas(self) -> list[ISA]:
         isas = [isa for isa in self.upsert_result.isas]
         # TODO: consider sorting updates by notification index
         for update in self.updates:
@@ -43,7 +42,7 @@ class ObservationSubscription(ImplicitDict):
         return isas
 
     @property
-    def flights_urls(self) -> Dict[str, str]:
+    def flights_urls(self) -> dict[str, str]:
         """Returns map of flights URL to owning USS"""
         return {isa.flights_url: isa.owner for isa in self.get_isas()}
 
@@ -51,9 +50,9 @@ class ObservationSubscription(ImplicitDict):
 class Database(ImplicitDict):
     """Simple pseudo-database structure tracking the state of the mock system"""
 
-    flights: Dict[str, FlightInfo]
+    flights: dict[str, FlightInfo]
     behavior: DisplayProviderBehavior = DisplayProviderBehavior()
-    subscriptions: List[ObservationSubscription]
+    subscriptions: list[ObservationSubscription]
 
 
 db = SynchronizedValue(

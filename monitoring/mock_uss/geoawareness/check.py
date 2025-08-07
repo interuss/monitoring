@@ -1,5 +1,4 @@
 import logging
-from typing import Dict, List
 
 from uas_standards.interuss.automated_testing.geo_awareness.v1.api import (
     GeozoneHttpsSourceFormat,
@@ -27,10 +26,10 @@ def combine_results(
     return GeozonesCheckResultGeozone.Absent
 
 
-def check_geozones(req: GeozonesCheckRequest) -> List[GeozonesCheckResultGeozone]:
-    sources: Dict[str, SourceRecord] = Database.get_sources(db)
+def check_geozones(req: GeozonesCheckRequest) -> list[GeozonesCheckResultGeozone]:
+    sources: dict[str, SourceRecord] = Database.get_sources(db)
 
-    results: List[GeozonesCheckResultGeozone] = [
+    results: list[GeozonesCheckResultGeozone] = [
         GeozonesCheckResultGeozone.Absent
     ] * len(req.checks)
 
@@ -41,19 +40,19 @@ def check_geozones(req: GeozonesCheckRequest) -> List[GeozonesCheckResultGeozone
         for j, (source_id, source) in enumerate(sources.items()):
             if source.state != GeozoneSourceResponseResult.Ready:
                 logger.debug(
-                    f" {j+1}. Source {source_id} is not ready ({source.state}). Skip."
+                    f" {j + 1}. Source {source_id} is not ready ({source.state}). Skip."
                 )
                 continue
 
             fmt = source.definition.https_source.format
             if fmt == GeozoneHttpsSourceFormat.ED_269:
-                logger.debug(f" {j+1}. ED269 source {source_id} ready.")
+                logger.debug(f" {j + 1}. ED269 source {source_id} ready.")
                 result = combine_results(
                     result, evaluate_source(source, check.filterSets)
                 )
             else:
                 logger.debug(
-                    f" {j+1}. Source {source_id} not in supported format {fmt}. Skip."
+                    f" {j + 1}. Source {source_id} not in supported format {fmt}. Skip."
                 )
 
         results[i] = result

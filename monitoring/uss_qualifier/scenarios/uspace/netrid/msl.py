@@ -1,7 +1,3 @@
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Dict, List, Set
-
 import s2sphere
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
@@ -23,7 +19,7 @@ ACCEPTABLE_DATUMS = {AltitudeReference.EGM96, AltitudeReference.EGM2008}
 
 
 class MSLAltitude(TestScenario):
-    _ussps: List[ParticipantID]
+    _ussps: list[ParticipantID]
 
     def __init__(self, observers: NetRIDObserversResource):
         super().__init__()
@@ -41,7 +37,7 @@ class MSLAltitude(TestScenario):
         if not reports:
             self.record_note(
                 "Skip reason",
-                f"Nominal behavior test scenario report could not be found for any of the scenario types {', '.join(SCENARIO_TYPES)}",
+                "Nominal behavior test scenario report could not be found for any of the scenario types",
             )
             self.end_test_scenario()
             return
@@ -55,7 +51,7 @@ class MSLAltitude(TestScenario):
 
         self.end_test_scenario()
 
-    def _evaluate_msl_altitude(self, queries: List[Query]):
+    def _evaluate_msl_altitude(self, queries: list[Query]):
         for query in queries:
             if (
                 "query_type" not in query
@@ -69,7 +65,7 @@ class MSLAltitude(TestScenario):
                 resp: GetDisplayDataResponse = ImplicitDict.parse(
                     query.response.json, GetDisplayDataResponse
                 )
-            except ValueError as e:
+            except ValueError:
                 # Invalid observation; this should already have been recorded as a failure
                 continue
             if "flights" not in resp or not resp.flights:

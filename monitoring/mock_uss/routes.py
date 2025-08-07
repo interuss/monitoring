@@ -31,8 +31,9 @@ def handle_exception(e):
         return (
             flask.jsonify(
                 {
-                    "message": "Invalid scope; expected one of {%s}, but received only {%s}"
-                    % (" ".join(e.permitted_scopes), " ".join(e.provided_scopes))
+                    "message": "Invalid scope; expected one of {{{}}}, but received only {{{}}}".format(
+                        " ".join(e.permitted_scopes), " ".join(e.provided_scopes)
+                    )
                 }
             ),
             403,
@@ -65,4 +66,4 @@ def handle_exception(e):
     )
 
 
-from .dynamic_configuration import routes
+from .dynamic_configuration import routes as routes  # noqa E402

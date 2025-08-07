@@ -87,9 +87,9 @@ class StoreFlightData(TestScenario):
                     "geometry": shapely.geometry.mapping(line),
                 }
                 feature_collection["features"].append(line_feature)
-                path_file_name = "track_%s.geojson" % str(
-                    track_id + 1
-                )  # Avoid Zero based numbering
+                path_file_name = (
+                    f"track_{str(track_id + 1)}.geojson"  # Avoid Zero based numbering
+                )
 
                 tracks_file_path = os.path.join(
                     self._storage_config.storage_configuration.geojson_tracks_path,

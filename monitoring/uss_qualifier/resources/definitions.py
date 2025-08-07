@@ -1,4 +1,4 @@
-from typing import Dict, TypeVar
+from typing import TypeVar
 
 from implicitdict import ImplicitDict
 
@@ -17,7 +17,7 @@ class ResourceDeclaration(ImplicitDict):
     resource_type: ResourceTypeName
     """Type of resource, expressed as a Python class name qualified relative to this `resources` module"""
 
-    dependencies: Dict[ResourceID, ResourceID] = {}
+    dependencies: dict[ResourceID, ResourceID] = {}
     """Mapping of dependency parameter (additional argument to concrete resource constructor) to `name` of resource to use"""
 
     specification: dict = {}
@@ -25,5 +25,5 @@ class ResourceDeclaration(ImplicitDict):
 
 
 class ResourceCollection(ImplicitDict):
-    resource_declarations: Dict[ResourceID, ResourceDeclaration]
+    resource_declarations: dict[ResourceID, ResourceDeclaration]
     """Mapping of globally (within resource collection) unique name identifying a resource to the declaration of that resource"""

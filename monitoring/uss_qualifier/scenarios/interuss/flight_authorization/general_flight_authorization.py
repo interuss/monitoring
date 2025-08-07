@@ -1,5 +1,3 @@
-from typing import Dict
-
 import arrow
 
 from monitoring.monitorlib.clients.flight_planning.client import (
@@ -78,7 +76,7 @@ class GeneralFlightAuthorization(TestScenario):
 
         self.end_test_scenario()
 
-    def _plan_flights(self, times: Dict[TimeDuringTest, Time]):
+    def _plan_flights(self, times: dict[TimeDuringTest, Time]):
         for row in self.table.rows:
             # Collect checks applicable to this row/test step
             checks = [
@@ -219,7 +217,7 @@ class GeneralFlightAuthorization(TestScenario):
                             != AdvisoryInclusion.AtLeastOneAdvisoryOrCondition
                         ):
                             check.record_failed(
-                                summary=f"Missing expected conditions",
+                                summary="Missing expected conditions",
                                 details=f"The flight planning activity result was expected to be accompanied by conditions/advisories, but advisory inclusion was {resp.includes_advisories}",
                                 query_timestamps=[
                                     q.request.initiated_at.datetime
@@ -236,7 +234,7 @@ class GeneralFlightAuthorization(TestScenario):
                             != AdvisoryInclusion.NoAdvisoriesOrConditions
                         ):
                             check.record_failed(
-                                summary=f"Expected-unqualified planning success was qualified by conditions",
+                                summary="Expected-unqualified planning success was qualified by conditions",
                                 details=f"The flight planning activity result was expected to be unqualified (accompanied by no conditions/advisories), but advisory inclusion was {resp.includes_advisories}",
                                 query_timestamps=[
                                     q.request.initiated_at.datetime

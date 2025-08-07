@@ -1,5 +1,3 @@
-from typing import List
-
 import arrow
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
@@ -54,7 +52,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
         return scopes
 
     @property
-    def _expected_flight_intents(self) -> List[ExpectedFlightIntent]:
+    def _expected_flight_intents(self) -> list[ExpectedFlightIntent]:
         return [
             ExpectedFlightIntent(
                 "flight2_planned",
@@ -108,7 +106,6 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
         self.end_test_scenario()
 
     def _plan_flight_conflict_activated(self) -> OperationalIntentReference:
-
         # Virtual USS creates conflicting operational intent test step
         flight2_planned = self.resolve_flight(self.flight2_planned)
         oi_ref = self._put_conflicting_op_intent_step(
@@ -157,7 +154,6 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
     def _plan_flight_conflict_nonconforming(
         self, oi_ref: OperationalIntentReference
     ) -> OperationalIntentReference:
-
         # Virtual USS transitions to Nonconforming conflicting operational intent test step
         flight2_planned = self.resolve_flight(self.flight2_planned)
         oi_ref = self._put_conflicting_op_intent_step(
@@ -199,7 +195,6 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
         return oi_ref
 
     def _plan_flight_conflict_contingent(self, oi_ref: OperationalIntentReference):
-
         # Virtual USS transitions to Contingent conflicting operational intent test step
         flight2_planned = self.resolve_flight(self.flight2_planned)
         self._put_conflicting_op_intent_step(
