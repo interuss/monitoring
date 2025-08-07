@@ -30,7 +30,9 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenario as _TestSce
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestStepReport as _TestStepReport,
 )
-from monitoring.uss_qualifier.scenarios.scenario import uss_qualifier_module
+from monitoring.uss_qualifier.scenarios.scenario import (
+    uss_qualifier_module,
+)
 
 
 def build_fake_scenarios_module():
