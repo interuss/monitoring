@@ -2,7 +2,6 @@ import os.path
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Type
 
 import bc_jsonpath_ng
 import jsonschema.validators
@@ -78,18 +77,18 @@ class F3548_21(str, Enum):
     )
 
 
-_openapi_content_cache: Dict[str, dict] = {}
+_openapi_content_cache: dict[str, dict] = {}
 
 
 def _get_openapi_content(openapi_path: str) -> dict:
     if openapi_path not in _openapi_content_cache:
-        with open(openapi_path, "r") as f:
+        with open(openapi_path) as f:
             _openapi_content_cache[openapi_path] = yaml.full_load(f)
     return _openapi_content_cache[openapi_path]
 
 
 @dataclass
-class ValidationError(object):
+class ValidationError:
     """Error encountered while validating an instance against a schema."""
 
     message: str
@@ -99,7 +98,7 @@ class ValidationError(object):
     """Location of the data causing the validation error."""
 
 
-def _collect_errors(e: jsonschema.ValidationError) -> List[ValidationError]:
+def _collect_errors(e: jsonschema.ValidationError) -> list[ValidationError]:
     if e.context:
         result = []
         for child in e.context:
@@ -111,7 +110,7 @@ def _collect_errors(e: jsonschema.ValidationError) -> List[ValidationError]:
 
 def validate(
     openapi_path: str, object_path: str, instance: dict
-) -> List[ValidationError]:
+) -> list[ValidationError]:
     """Validate an object instance against the OpenAPI schema definition for that object type.
 
     Args:
@@ -157,8 +156,8 @@ def validate(
     return result
 
 
-def _definitions_resolver(t: Type) -> SchemaVars:
-    def path_to(t_dest: Type, t_src: Type) -> str:
+def _definitions_resolver(t: type) -> SchemaVars:
+    def path_to(t_dest: type, t_src: type) -> str:
         return "#/definitions/" + (
             t_dest.__module__ + "." + t_dest.__qualname__
         ).replace(".", "_")
@@ -168,7 +167,7 @@ def _definitions_resolver(t: Type) -> SchemaVars:
     return SchemaVars(name=full_name, path_to=path_to)
 
 
-def _make_implicitdict_schema(t: Type[ImplicitDict]) -> dict:
+def _make_implicitdict_schema(t: type[ImplicitDict]) -> dict:
     repo = {}
     make_json_schema(t, _definitions_resolver, repo)
     config_vars = _definitions_resolver(t)
@@ -178,8 +177,8 @@ def _make_implicitdict_schema(t: Type[ImplicitDict]) -> dict:
 
 
 def validate_implicitdict_object(
-    obj: dict, t: Type[ImplicitDict]
-) -> List[ValidationError]:
+    obj: dict, t: type[ImplicitDict]
+) -> list[ValidationError]:
     schema = _make_implicitdict_schema(t)
     jsonschema.Draft202012Validator.check_schema(schema)
     validator = jsonschema.Draft202012Validator(schema)

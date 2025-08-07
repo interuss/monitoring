@@ -1,6 +1,5 @@
 import datetime
 import enum
-from typing import Dict, List, Tuple
 
 import arrow
 from termcolor import colored
@@ -43,7 +42,7 @@ def _update_overall(overall: Change, field: Change):
     raise ValueError("Unexpected change configuration")
 
 
-def dict_changes(a: Dict, b: Dict) -> Tuple[Dict, Dict, Change]:
+def dict_changes(a: dict, b: dict) -> tuple[dict, dict, Change]:
     values = {}
     changes = {}
     overall = Change.NOCHANGE
@@ -86,7 +85,7 @@ def dict_changes(a: Dict, b: Dict) -> Tuple[Dict, Dict, Change]:
     return values, changes, overall
 
 
-def diff_lines(values: Dict, changes: Dict) -> List[str]:
+def diff_lines(values: dict, changes: dict) -> list[str]:
     lines = []
     for k, v in values.items():
         c = changes[k]
@@ -98,11 +97,11 @@ def diff_lines(values: Dict, changes: Dict) -> List[str]:
             lines.extend("  " + line for line in diff_lines(v, c))
         else:
             if c == Change.ADDED:
-                lines.append(colored("{}: {}".format(k, v), "green"))
+                lines.append(colored(f"{k}: {v}", "green"))
             elif c == Change.CHANGED:
                 lines.append(k + ": " + colored(str(v), "yellow"))
             elif c == Change.REMOVED:
-                lines.append(colored("{}: {}".format(k, v), "red"))
+                lines.append(colored(f"{k}: {v}", "red"))
     return lines
 
 
@@ -140,7 +139,7 @@ def make_datetime(t) -> datetime.datetime:
     elif isinstance(t, datetime.datetime):
         return arrow.get(t).datetime
     else:
-        raise ValueError("Could not convert {} to datetime".format(str(type(t))))
+        raise ValueError(f"Could not convert {str(type(t))} to datetime")
 
 
 def limit_resolution(value: float, resolution: float) -> float:

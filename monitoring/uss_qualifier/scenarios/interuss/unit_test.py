@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioDeclaration
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario

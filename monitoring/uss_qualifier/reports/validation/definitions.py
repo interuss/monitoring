@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.dicts import JSONAddress
@@ -13,21 +11,21 @@ from monitoring.uss_qualifier.common_data_definitions import Severity
 class SeverityComparison(ImplicitDict):
     """Exactly one field must be specified."""
 
-    equal_to: Optional[Severity]
-    at_least: Optional[Severity]
-    higher_than: Optional[Severity]
-    no_higher_than: Optional[Severity]
-    lower_than: Optional[Severity]
+    equal_to: Severity | None
+    at_least: Severity | None
+    higher_than: Severity | None
+    no_higher_than: Severity | None
+    lower_than: Severity | None
 
 
 class NumericComparison(ImplicitDict):
     """Exactly one field must be specified."""
 
-    equal_to: Optional[float]
-    at_least: Optional[float]
-    more_than: Optional[float]
-    no_more_than: Optional[float]
-    less_than: Optional[float]
+    equal_to: float | None
+    at_least: float | None
+    more_than: float | None
+    no_more_than: float | None
+    less_than: float | None
 
 
 # ===== Applicability =====
@@ -42,7 +40,7 @@ class TestScenarioApplicability(ImplicitDict):
 class FailedCheckApplicability(ImplicitDict):
     """FailedCheck test report elements are applicable according to this specification."""
 
-    has_severity: Optional[SeverityComparison]
+    has_severity: SeverityComparison | None
     """If specified, only FailedChecks with specified severity are applicable."""
 
 
@@ -55,14 +53,14 @@ class SkippedCheckApplicability(ImplicitDict):
 class AllCriteriaApplicability(ImplicitDict):
     """All criteria must be met for an element to be applicable."""
 
-    criteria: List[ValidationCriterionApplicability]
+    criteria: list[ValidationCriterionApplicability]
     """Criteria that must all be met."""
 
 
 class AnyCriteriaApplicability(ImplicitDict):
     """Any criterion or criteria must be met for an element to be applicable."""
 
-    criteria: List[ValidationCriterionApplicability]
+    criteria: list[ValidationCriterionApplicability]
     """Options for criterion/criteria to meet."""
 
 
@@ -71,25 +69,25 @@ class ValidationCriterionApplicability(ImplicitDict):
 
     Exactly one field must be specified."""
 
-    test_scenarios: Optional[TestScenarioApplicability]
+    test_scenarios: TestScenarioApplicability | None
     """Only this kind of TestScenarioReport elements are applicable."""
 
-    failed_checks: Optional[FailedCheckApplicability]
+    failed_checks: FailedCheckApplicability | None
     """Only this kind of FailedCheck elements are applicable."""
 
-    skipped_actions: Optional[SkippedCheckApplicability]
+    skipped_actions: SkippedCheckApplicability | None
     """Only this kind of SkippedCheckReport elements are applicable."""
 
-    address_is: Optional[JSONAddress]
+    address_is: JSONAddress | None
     """Only the element at this JSONAddress in the test report is applicable."""
 
-    does_not_satisfy: Optional[ValidationCriterionApplicability]
+    does_not_satisfy: ValidationCriterionApplicability | None
     """Only elements that do not satisfy this criterion are applicable."""
 
-    satisfies_all: Optional[AllCriteriaApplicability]
+    satisfies_all: AllCriteriaApplicability | None
     """Only elements which satisfy all these criteria are applicable."""
 
-    satisfies_any: Optional[AnyCriteriaApplicability]
+    satisfies_any: AnyCriteriaApplicability | None
     """Elements which satisfy any of these criteria are applicable."""
 
 
@@ -99,50 +97,50 @@ class ValidationCriterionApplicability(ImplicitDict):
 class EachElementCondition(ImplicitDict):
     """A single applicable element must meet this condition.  Exactly one field must be specified."""
 
-    has_severity: Optional[SeverityComparison]
+    has_severity: SeverityComparison | None
     """The element must be a FailedCheck that has this specified kind of severity."""
 
-    has_execution_error: Optional[bool]
+    has_execution_error: bool | None
     """The element must be a TestScenarioReport that either must have or must not have an execution error."""
 
 
 class ElementGroupCondition(ImplicitDict):
     """A group of applicable elements must meet this condition.  Exactly one field must be specified."""
 
-    count: Optional[NumericComparison]
+    count: NumericComparison | None
     """The number of applicable elements must have this specified kind of count."""
 
 
 class AllPassConditions(ImplicitDict):
     """All specific conditions must be met."""
 
-    conditions: List[PassCondition]
+    conditions: list[PassCondition]
     """Conditions that all must be met."""
 
 
 class AnyPassCondition(ImplicitDict):
     """Any specific condition must be met."""
 
-    conditions: List[PassCondition]
+    conditions: list[PassCondition]
     """Options for conditions to meet."""
 
 
 class PassCondition(ImplicitDict):
     """Condition for passing validation.  Exactly one field must be specified."""
 
-    each_element: Optional[EachElementCondition]
+    each_element: EachElementCondition | None
     """Condition applies to each applicable element."""
 
-    elements: Optional[ElementGroupCondition]
+    elements: ElementGroupCondition | None
     """Condition applies to the group of applicable elements."""
 
-    does_not_pass: Optional[PassCondition]
+    does_not_pass: PassCondition | None
     """Overall condition is met only if this specified condition is not met."""
 
-    all_of: Optional[AllPassConditions]
+    all_of: AllPassConditions | None
     """Overall condition is met only if all of these specified conditions are met."""
 
-    any_of: Optional[AnyPassCondition]
+    any_of: AnyPassCondition | None
     """Overall condition is met if any of these specified conditions are met."""
 
 
@@ -162,5 +160,5 @@ class ValidationCriterion(ImplicitDict):
 class ValidationConfiguration(ImplicitDict):
     """Complete set of validation criteria that a test run report must satisfy."""
 
-    criteria: List[ValidationCriterion]
+    criteria: list[ValidationCriterion]
     """Set of criteria which must all pass in order to pass validation."""

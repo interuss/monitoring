@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import List, Optional, Set, Union
 
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import (
@@ -33,7 +32,7 @@ from monitoring.uss_qualifier.scenarios.scenario import (
 )
 
 
-class OpIntentValidator(object):
+class OpIntentValidator:
     """
     This class enables the validation of the sharing (or not) of an operational
     intent with the DSS. It does so by comparing the operational intents found
@@ -46,21 +45,21 @@ class OpIntentValidator(object):
 
     _extent: Volume4D
 
-    _before_oi_refs: List[OperationalIntentReference]
+    _before_oi_refs: list[OperationalIntentReference]
     _before_query: fetch.Query
 
-    _after_oi_refs: List[OperationalIntentReference]
+    _after_oi_refs: list[OperationalIntentReference]
     _after_query: fetch.Query
 
-    _new_oi_ref: Optional[OperationalIntentReference] = None
+    _new_oi_ref: OperationalIntentReference | None = None
 
     def __init__(
         self,
         scenario: TestScenarioType,
         flight_planner: FlightPlannerClient,
         dss: DSSInstance,
-        extent: Union[Volume4D, List[Volume4D], FlightInfo, List[FlightInfo]],
-        orig_oi_ref: Optional[OperationalIntentReference] = None,
+        extent: Volume4D | list[Volume4D] | FlightInfo | list[FlightInfo],
+        orig_oi_ref: OperationalIntentReference | None = None,
     ):
         """
         :param scenario: test scenario in which the operational intent is being validated.
@@ -72,10 +71,10 @@ class OpIntentValidator(object):
         self._scenario: TestScenarioType = scenario
         self._flight_planner: FlightPlannerClient = flight_planner
         self._dss: DSSInstance = dss
-        self._orig_oi_ref: Optional[OperationalIntentReference] = orig_oi_ref
+        self._orig_oi_ref: OperationalIntentReference | None = orig_oi_ref
 
-        if isinstance(extent, List):
-            extents_list: List[Volume4D] = []
+        if isinstance(extent, list):
+            extents_list: list[Volume4D] = []
             for extent_el in extent:
                 if isinstance(extent_el, Volume4D):
                     extents_list.append(extent_el)
@@ -117,7 +116,7 @@ class OpIntentValidator(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def _find_after_oi(self, oi_id: str) -> Optional[OperationalIntentReference]:
+    def _find_after_oi(self, oi_id: str) -> OperationalIntentReference | None:
         found = [oi_ref for oi_ref in self._after_oi_refs if oi_ref.id == oi_id]
         return found[0] if len(found) != 0 else None
 
@@ -200,7 +199,7 @@ class OpIntentValidator(object):
         self,
         flight_info: FlightInfo,
         skip_if_not_found: bool = False,
-    ) -> Optional[OperationalIntentReference]:
+    ) -> OperationalIntentReference | None:
         """Validate that operational intent information was correctly shared for a flight intent.
 
         This function implements the test step described in validate_shared_operational_intent.md.
@@ -233,9 +232,9 @@ class OpIntentValidator(object):
         self,
         flight_info: FlightInfo,
         validation_failure_type: OpIntentValidationFailureType,
-        invalid_fields: Optional[List] = None,
+        invalid_fields: list | None = None,
         skip_if_not_found: bool = False,
-    ) -> Optional[OperationalIntentReference]:
+    ) -> OperationalIntentReference | None:
         """Validate that operational intent information was shared with dss,
         but when shared with other USSes, it is expected to have specified invalid data.
 
@@ -295,7 +294,7 @@ class OpIntentValidator(object):
         self,
         flight_intent: FlightInfo,
         skip_if_not_found: bool,
-    ) -> Optional[OperationalIntentReference]:
+    ) -> OperationalIntentReference | None:
         with self._scenario.check(
             "Operational intent shared correctly", [self._flight_planner.participant_id]
         ) as check:
@@ -498,7 +497,7 @@ class OpIntentValidator(object):
 
     def _evaluate_op_intent_validation(
         self, oi_full_query: fetch.Query
-    ) -> Set[OpIntentValidationFailure]:
+    ) -> set[OpIntentValidationFailure]:
         """Evaluates the validation failures in operational intent received"""
 
         validation_failures = set()
@@ -566,9 +565,9 @@ class OpIntentValidator(object):
 
     def _expected_validation_failure_found(
         self,
-        validation_failures: Set[OpIntentValidationFailure],
+        validation_failures: set[OpIntentValidationFailure],
         expected_validation_type: OpIntentValidationFailureType,
-        expected_invalid_fields: Optional[List[str]] = None,
+        expected_invalid_fields: list[str] | None = None,
     ) -> OpIntentValidationFailure:
         """
         Checks if expected validation type is in validation failures
@@ -591,8 +590,8 @@ class OpIntentValidator(object):
                 errors = failure_found.errors
 
                 def expected_fields_in_errors(
-                    fields: List[str],
-                    errors: List[schema_validation.ValidationError],
+                    fields: list[str],
+                    errors: list[schema_validation.ValidationError],
                 ) -> bool:
                     all_found = True
                     for field in fields:
@@ -624,10 +623,10 @@ class OpIntentValidationFailureType(str, Enum):
 class OpIntentValidationFailure(ImplicitDict):
     validation_failure_type: OpIntentValidationFailureType
 
-    error_text: Optional[str] = None
+    error_text: str | None = None
     """Any error_text returned after validation check"""
 
-    errors: Optional[List[schema_validation.ValidationError]] = None
+    errors: list[schema_validation.ValidationError] | None = None
     """Any errors returned after validation check"""
 
     def __hash__(self):

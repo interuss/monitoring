@@ -32,9 +32,7 @@ def riddp_notify_isa_v19(id: str):
             ImplicitDict.parse(json, PutIdentificationServiceAreaNotificationParameters)
         )
     except ValueError as e:
-        msg = "Unable to parse PutIdentificationServiceAreaNotificationParameters JSON request: {}".format(
-            e
-        )
+        msg = f"Unable to parse PutIdentificationServiceAreaNotificationParameters JSON request: {e}"
         return msg, 400
 
     subscription_ids = [s.subscription_id for s in put_params.subscriptions]

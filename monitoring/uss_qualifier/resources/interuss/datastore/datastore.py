@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
-
 import psycopg
 from implicitdict import ImplicitDict
 
@@ -30,7 +28,7 @@ class DatastoreDBNodeResource(Resource[DatastoreDBNodeSpecification]):
         specification: DatastoreDBNodeSpecification,
         resource_origin: str,
     ):
-        super(DatastoreDBNodeResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self._specification = specification
 
     def get_client(self) -> DatastoreDBNode:
@@ -49,18 +47,18 @@ class DatastoreDBNodeResource(Resource[DatastoreDBNodeSpecification]):
 
 
 class DatastoreDBClusterSpecification(ImplicitDict):
-    nodes: List[DatastoreDBNodeSpecification]
+    nodes: list[DatastoreDBNodeSpecification]
 
 
 class DatastoreDBClusterResource(Resource[DatastoreDBClusterSpecification]):
-    nodes: List[DatastoreDBNodeResource]
+    nodes: list[DatastoreDBNodeResource]
 
     def __init__(
         self,
         specification: DatastoreDBClusterSpecification,
         resource_origin: str,
     ):
-        super(DatastoreDBClusterResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.nodes = [
             DatastoreDBNodeResource(
                 specification=s, resource_origin=f"node {i + 1} in {resource_origin}"
@@ -69,7 +67,7 @@ class DatastoreDBClusterResource(Resource[DatastoreDBClusterSpecification]):
         ]
 
 
-class DatastoreDBNode(object):
+class DatastoreDBNode:
     participant_id: str
     host: str
     port: int
@@ -92,7 +90,7 @@ class DatastoreDBNode(object):
             **kwargs,
         )
 
-    def is_reachable(self) -> Tuple[bool, Optional[psycopg.Error]]:
+    def is_reachable(self) -> tuple[bool, psycopg.Error | None]:
         """
         Returns True if the node is reachable.
         This is detected by attempting to establish a connection with the node
@@ -116,7 +114,7 @@ class DatastoreDBNode(object):
             return is_reachable, e
         return True, None
 
-    def runs_in_secure_mode(self) -> Tuple[bool, Optional[psycopg.Error]]:
+    def runs_in_secure_mode(self) -> tuple[bool, psycopg.Error | None]:
         """
         Returns True if the node is running in secure mode.
         This is detected by attempting to establish a connection with the node
@@ -137,7 +135,7 @@ class DatastoreDBNode(object):
             return secure_mode, e
         return False, None
 
-    def legacy_ssl_version_rejected(self) -> Tuple[bool, Optional[psycopg.Error]]:
+    def legacy_ssl_version_rejected(self) -> tuple[bool, psycopg.Error | None]:
         """
         Returns True if the node rejects the usage of the legacy cryptographic
         protocols TLSv1 and TLSv1.1.

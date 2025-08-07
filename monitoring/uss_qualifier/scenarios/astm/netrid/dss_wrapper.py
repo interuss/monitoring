@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any
 
 import s2sphere
 from implicitdict import StringBasedDateTime
@@ -31,7 +31,7 @@ from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenar
 MAX_SKEW = 1e-6  # seconds maximum difference between expected and actual timestamps
 
 
-class DSSWrapper(object):
+class DSSWrapper:
     """Wraps a DSS instance with test checks."""
 
     # TODO: adapt other functions with corresponding test step and sub-checks like it is done for put_isa
@@ -74,8 +74,8 @@ class DSSWrapper(object):
         check: PendingCheck,
         q: RIDQuery,
         fail_msg: str,
-        required_status_code: Optional[Set[int]] = None,
-        fail_details: Optional[str] = None,
+        required_status_code: set[int] | None = None,
+        fail_details: str | None = None,
     ):
         """
         Handle the result of the query, based on the expected result codes versus the actual one,
@@ -113,9 +113,9 @@ class DSSWrapper(object):
     def search_isas(
         self,
         main_check: PendingCheck,
-        area: List[s2sphere.LatLng],
-        start_time: Optional[datetime.datetime] = None,
-        end_time: Optional[datetime.datetime] = None,
+        area: list[s2sphere.LatLng],
+        start_time: datetime.datetime | None = None,
+        end_time: datetime.datetime | None = None,
     ) -> FetchedISAs:
         """Search for ISAs at the DSS.
 
@@ -162,10 +162,10 @@ class DSSWrapper(object):
     def search_isas_expect_response_code(
         self,
         main_check: PendingCheck,
-        expected_error_codes: Set[int],
-        area: List[s2sphere.LatLng],
-        start_time: Optional[datetime.datetime] = None,
-        end_time: Optional[datetime.datetime] = None,
+        expected_error_codes: set[int],
+        area: list[s2sphere.LatLng],
+        start_time: datetime.datetime | None = None,
+        end_time: datetime.datetime | None = None,
     ) -> FetchedISAs:
         """Attempt to search for ISAs at the DSS, and expect the specified HTTP response code.
 
@@ -233,7 +233,7 @@ class DSSWrapper(object):
     def get_isa_expect_response_code(
         self,
         check: PendingCheck,
-        expected_error_codes: Set[int],
+        expected_error_codes: set[int],
         isa_id: str,
     ) -> FetchedISA:
         """Attempt to fetch an ISA at the DSS, and expect the specified HTTP response code.
@@ -263,16 +263,16 @@ class DSSWrapper(object):
     def put_isa_expect_response_code(
         self,
         check: PendingCheck,
-        expected_error_codes: Set[int],
-        area_vertices: List[s2sphere.LatLng],
+        expected_error_codes: set[int],
+        area_vertices: list[s2sphere.LatLng],
         alt_lo: float,
         alt_hi: float,
         start_time: datetime.datetime,
         end_time: datetime.datetime,
         uss_base_url: str,
         isa_id: str,
-        isa_version: Optional[str] = None,
-        do_not_notify: Optional[Union[str, List[str]]] = None,
+        isa_version: str | None = None,
+        do_not_notify: str | list[str] | None = None,
     ) -> ISAChange:
         mutated_isa = mutate.put_isa(
             area_vertices=area_vertices,
@@ -304,15 +304,15 @@ class DSSWrapper(object):
     def put_isa(
         self,
         main_check: PendingCheck,
-        area_vertices: List[s2sphere.LatLng],
+        area_vertices: list[s2sphere.LatLng],
         alt_lo: float,
         alt_hi: float,
         start_time: datetime.datetime,
         end_time: datetime.datetime,
         uss_base_url: str,
         isa_id: str,
-        isa_version: Optional[str] = None,
-        do_not_notify: Optional[Union[str, List[str]]] = None,
+        isa_version: str | None = None,
+        do_not_notify: str | list[str] | None = None,
     ) -> ISAChange:
         """Create or update an ISA at the DSS.
 
@@ -381,8 +381,8 @@ class DSSWrapper(object):
         main_check: PendingCheck,
         isa_id: str,
         isa_version: str,
-        do_not_notify: Optional[Union[str, List[str]]] = None,
-        expected_isa_params: Optional[Dict[str, Any]] = None,
+        do_not_notify: str | list[str] | None = None,
+        expected_isa_params: dict[str, Any] | None = None,
     ) -> ISAChange:
         """Delete an ISA at the DSS.
 
@@ -475,10 +475,10 @@ class DSSWrapper(object):
     def del_isa_expect_response_code(
         self,
         main_check: PendingCheck,
-        expected_error_codes: Set[int],
+        expected_error_codes: set[int],
         isa_id: str,
         isa_version: str,
-        do_not_notify: Optional[Union[str, List[str]]] = None,
+        do_not_notify: str | list[str] | None = None,
     ) -> ISAChange:
         """Attempt to delete an ISA at the DSS, and expect the specified HTTP response code.
 
@@ -513,7 +513,7 @@ class DSSWrapper(object):
         self,
         check: PendingCheck,
         isa_id: str,
-    ) -> Optional[ISAChange]:
+    ) -> ISAChange | None:
         """Cleanup an ISA at the DSS. Does not fail if the ISA is not found.
         A check fail is considered of medium severity and won't raise error.
 
@@ -557,8 +557,8 @@ class DSSWrapper(object):
     def search_subs_expect_response_code(
         self,
         check: PendingCheck,
-        expected_codes: Set[int],
-        area: List[s2sphere.LatLng],
+        expected_codes: set[int],
+        area: list[s2sphere.LatLng],
     ) -> FetchedSubscriptions:
         """Search for subscriptions at the DSS, expecting one of the passed HTTP response codes.
 
@@ -589,7 +589,7 @@ class DSSWrapper(object):
     def search_subs(
         self,
         check: PendingCheck,
-        area: List[s2sphere.LatLng],
+        area: list[s2sphere.LatLng],
     ) -> FetchedSubscriptions:
         """Search for subscriptions at the DSS.
         A check fail is considered of high severity and as such will raise a ScenarioCannotContinueError.
@@ -619,7 +619,7 @@ class DSSWrapper(object):
     def get_sub_expect_response_code(
         self,
         check: PendingCheck,
-        expected_response_codes: Set[int],
+        expected_response_codes: set[int],
         sub_id: str,
     ) -> FetchedSubscription:
         """Get a subscription at the DSS, expecting one the passed HTTP response codes.
@@ -719,15 +719,15 @@ class DSSWrapper(object):
     def put_sub_expect_response_code(
         self,
         check: PendingCheck,
-        area_vertices: List[s2sphere.LatLng],
+        area_vertices: list[s2sphere.LatLng],
         alt_lo: float,
         alt_hi: float,
-        start_time: Optional[datetime.datetime],
-        end_time: Optional[datetime.datetime],
-        expected_error_codes: Set[int],
+        start_time: datetime.datetime | None,
+        end_time: datetime.datetime | None,
+        expected_error_codes: set[int],
         uss_base_url: str,
         sub_id: str,
-        sub_version: Optional[str] = None,
+        sub_version: str | None = None,
     ) -> ChangedSubscription:
         """Attempt to create or update a subscription at the DSS, and expect the specified HTTP response code.
 
@@ -767,14 +767,14 @@ class DSSWrapper(object):
     def put_sub(
         self,
         check: PendingCheck,
-        area_vertices: List[s2sphere.LatLng],
+        area_vertices: list[s2sphere.LatLng],
         alt_lo: float,
         alt_hi: float,
-        start_time: Optional[datetime.datetime],
-        end_time: Optional[datetime.datetime],
+        start_time: datetime.datetime | None,
+        end_time: datetime.datetime | None,
         uss_base_url: str,
         sub_id: str,
-        sub_version: Optional[str] = None,
+        sub_version: str | None = None,
     ) -> ChangedSubscription:
         """Create or update a subscription at the DSS.
         A check fail is considered of high severity and as such will raise a ScenarioCannotContinueError.
@@ -811,7 +811,7 @@ class DSSWrapper(object):
     def del_sub_expect_response_code(
         self,
         check: PendingCheck,
-        expected_response_codes: Set[int],
+        expected_response_codes: set[int],
         sub_id: str,
         sub_version: str,
     ) -> ChangedSubscription:
@@ -886,7 +886,7 @@ class DSSWrapper(object):
 
     def cleanup_subs_in_area(
         self,
-        area: List[s2sphere.LatLng],
+        area: list[s2sphere.LatLng],
     ):
         """Cleanup any subscription that is returned for the search in the provided area"""
 
@@ -923,7 +923,7 @@ class DSSWrapper(object):
     def cleanup_sub(
         self,
         sub_id: str,
-    ) -> Optional[ChangedSubscription]:
+    ) -> ChangedSubscription | None:
         """Cleanup a subscription at the DSS. Does not fail if it is not found.
         A check fail is considered of medium severity and won't raise error.
 
@@ -978,8 +978,8 @@ class DSSWrapper(object):
         check: PendingCheck,
         method: str,
         url_path: str,
-        json: Dict[str, Any],
-        expected_error_codes: Set[int],
+        json: dict[str, Any],
+        expected_error_codes: set[int],
         fail_msg: str,
     ) -> RIDQuery:
         """For passing raw requests to the underlying client.

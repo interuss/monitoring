@@ -1,5 +1,3 @@
-from typing import Dict, Optional
-
 import arrow
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -30,9 +28,9 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class SoloHappyPath(TestScenario):
-    times: Dict[TimeDuringTest, Time]
+    times: dict[TimeDuringTest, Time]
 
-    flight1_id: Optional[str] = None
+    flight1_id: str | None = None
     flight1_planned: FlightInfoTemplate
     flight1_activated: FlightInfoTemplate
 
@@ -43,7 +41,7 @@ class SoloHappyPath(TestScenario):
         self,
         tested_uss: FlightPlannerResource,
         dss: DSSInstanceResource,
-        flight_intents: Optional[FlightIntentsResource] = None,
+        flight_intents: FlightIntentsResource | None = None,
     ):
         super().__init__()
         self.tested_uss = tested_uss.client

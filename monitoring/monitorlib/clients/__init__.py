@@ -1,5 +1,4 @@
 from abc import ABC
-from typing import List
 
 from monitoring.monitorlib.fetch import Query
 
@@ -14,7 +13,7 @@ class QueryHook(ABC):
         raise NotImplementedError("QueryHook subclass did not implement on_query")
 
 
-query_hooks: List[QueryHook] = []
+query_hooks: list[QueryHook] = []
 
 
 def call_query_hooks(query: Query) -> None:

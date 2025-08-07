@@ -1,5 +1,3 @@
-from typing import List
-
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.schema_validation import (
@@ -13,7 +11,7 @@ from monitoring.uss_qualifier.resources.definitions import ResourceDeclaration
 from monitoring.uss_qualifier.resources.resource import get_resource_types
 
 
-def validate_config(config: dict) -> List[ValidationError]:
+def validate_config(config: dict) -> list[ValidationError]:
     """Validate raw data intended to be used to create a USSQualifierConfiguration.
 
     Args:

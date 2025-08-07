@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 import arrow
 
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
@@ -34,9 +32,9 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class Validation(TestScenario):
-    times: Dict[TimeDuringTest, Time]
+    times: dict[TimeDuringTest, Time]
 
-    invalid_flight_intents: List[FlightInfoTemplate]
+    invalid_flight_intents: list[FlightInfoTemplate]
     valid_flight_intent: FlightInfoTemplate
     ussp: FlightPlannerClient
 

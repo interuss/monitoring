@@ -1,6 +1,6 @@
 import copy
 import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import arrow
 import s2sphere
@@ -25,7 +25,7 @@ class ISAValidation(GenericTestScenario):
 
     ISA_TYPE = register_resource_type(368, "ISA")
 
-    _huge_are: List[s2sphere.LatLng]
+    _huge_are: list[s2sphere.LatLng]
 
     create_isa_path: str
 
@@ -44,7 +44,7 @@ class ISAValidation(GenericTestScenario):
         )  # TODO: delete once _delete_isa_if_exists updated to use dss_wrapper
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
         self._isa_id = id_generator.id_factory.make_id(ISAValidation.ISA_TYPE)
-        self._isa_version: Optional[str] = None
+        self._isa_version: str | None = None
         self._isa = isa.specification
 
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
@@ -120,7 +120,7 @@ class ISAValidation(GenericTestScenario):
             ignore_base_url=self._isa.base_url,
         )
 
-    def _isa_huge_area_check(self) -> (str, Dict[str, Any]):
+    def _isa_huge_area_check(self) -> (str, dict[str, Any]):
         """Returns the request's URL and json payload for subsequently re-using it.
 
         It is of the following form (note that v19 and v22a have slight differences):
@@ -212,7 +212,7 @@ class ISAValidation(GenericTestScenario):
             )
 
     def _isa_vertices_are_valid(self):
-        INVALID_VERTICES: List[s2sphere.LatLng] = [
+        INVALID_VERTICES: list[s2sphere.LatLng] = [
             s2sphere.LatLng.from_degrees(lat=130, lng=-23),
             s2sphere.LatLng.from_degrees(lat=130, lng=-24),
             s2sphere.LatLng.from_degrees(lat=132, lng=-24),
@@ -235,7 +235,7 @@ class ISAValidation(GenericTestScenario):
                 isa_version=self._isa_version,
             )
 
-    def _isa_missing_outline(self, create_isa_url: str, json_body: Dict[str, Any]):
+    def _isa_missing_outline(self, create_isa_url: str, json_body: dict[str, Any]):
         payload = copy.deepcopy(json_body)
         if self._dss.rid_version == RIDVersion.f3411_19:
             del payload["extents"]["spatial_volume"]["footprint"]
@@ -269,7 +269,7 @@ class ISAValidation(GenericTestScenario):
                 required_status_code={400},
             )
 
-    def _isa_missing_volume(self, create_isa_url: str, json_body: Dict[str, Any]):
+    def _isa_missing_volume(self, create_isa_url: str, json_body: dict[str, Any]):
         payload = copy.deepcopy(json_body)
         if self._dss.rid_version == RIDVersion.f3411_19:
             del payload["extents"]["spatial_volume"]
@@ -303,7 +303,7 @@ class ISAValidation(GenericTestScenario):
                 required_status_code={400},
             )
 
-    def _isa_missing_extents(self, create_isa_url: str, json_body: Dict[str, Any]):
+    def _isa_missing_extents(self, create_isa_url: str, json_body: dict[str, Any]):
         payload = copy.deepcopy(json_body)
         del payload["extents"]
 

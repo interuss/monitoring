@@ -1,5 +1,4 @@
 from http.client import HTTPConnection
-from typing import Tuple
 
 import kubernetes.stream
 import requests
@@ -24,7 +23,7 @@ def _get_session_for_socket(sock, host: str, port: int) -> requests.Session:
 
 def get_requests_session_for_pod(
     pod_name: str, namespace: str, port: int, client: CoreV1Api
-) -> Tuple[requests.Session, str]:
+) -> tuple[requests.Session, str]:
     """Make a Session to connect to the specified port on the named pod.
 
     Retrieves a requests Session that will send http(s) queries to the specified
@@ -45,10 +44,8 @@ def get_requests_session_for_pod(
         namespace,
         ports=str(port),
     )
-    host = "{}.pod.{}".format(pod_name, namespace)
-    return _get_session_for_socket(pf.socket(port), host, port), "{}:{}".format(
-        host, port
-    )
+    host = f"{pod_name}.pod.{namespace}"
+    return _get_session_for_socket(pf.socket(port), host, port), f"{host}:{port}"
 
 
 # ==== Custom requests handlers to inject/use an explicitly-provided socket ====
@@ -59,7 +56,7 @@ class SocketHTTPAdapter(HTTPAdapter):
         self._socket = sock
         self._host = host
         self._port = port
-        super(SocketHTTPAdapter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def init_poolmanager(
         self,
@@ -79,7 +76,7 @@ class SocketPoolManager(PoolManager):
         self._socket = sock
         self._host = host
         self._port = port
-        super(SocketPoolManager, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _new_pool(self, scheme, host, port, request_context=None):
         """Overrides method in base class"""
@@ -94,16 +91,14 @@ class SocketPoolManager(PoolManager):
                     self._socket, host, port, **self.connection_pool_kw
                 )
         raise ValueError(
-            "{}:{} is not supported by SocketPoolManager intended for {}:{}".format(
-                host, port, self._host, self._port
-            )
+            f"{host}:{port} is not supported by SocketPoolManager intended for {self._host}:{self._port}"
         )
 
 
 class SocketHTTPConnectionPool(HTTPConnectionPool):
     def __init__(self, sock, *args, **kwargs):
         self._socket = sock
-        super(SocketHTTPConnectionPool, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _new_conn(self):
         """Overrides method in base class"""
@@ -120,7 +115,7 @@ class SocketHTTPConnectionPool(HTTPConnectionPool):
 class SocketHTTPConnection(HTTPConnection):
     def __init__(self, sock, *args, **kwargs):
         self._socket = sock
-        super(SocketHTTPConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def connect(self):
         """Overrides method in base class"""
@@ -133,7 +128,7 @@ class SocketHTTPSConnectionPool(HTTPSConnectionPool):
     def __init__(self, sock, *args, **kwargs):
         self._socket = sock
         kwargs["assert_hostname"] = False
-        super(SocketHTTPSConnectionPool, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _new_conn(self):
         """Overrides method in base class"""
@@ -161,7 +156,7 @@ class SocketHTTPSConnectionPool(HTTPSConnectionPool):
 class SocketHTTPSConnection(urllib3.connection.HTTPSConnection):
     def __init__(self, sock, *args, **kwargs):
         self._socket = sock
-        super(SocketHTTPSConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _new_conn(self):
         """Overrides method in base class"""

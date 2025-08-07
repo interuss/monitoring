@@ -1,5 +1,4 @@
 import os
-from typing import Tuple
 
 import arrow
 import flask
@@ -23,7 +22,7 @@ RESULT = ("", 204)
     "/tracer/f3548v21/<observation_area_id>/uss/v1/operational_intents",
     methods=["POST"],
 )
-def tracer_scd_v21_operation_notification(observation_area_id: str) -> Tuple[str, int]:
+def tracer_scd_v21_operation_notification(observation_area_id: str) -> tuple[str, int]:
     """Implements SCD Operation notification receiver."""
     logger.debug(f"Handling tracer_scd_v21_operation_notification from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
@@ -50,7 +49,7 @@ def tracer_scd_v21_operation_notification(observation_area_id: str) -> Tuple[str
                 op_ref = op["reference"]
                 owner_body = op_ref.get("owner")
                 if owner_body and owner_body != owner:
-                    owner = "{} token|{} body".format(owner, owner_body)
+                    owner = f"{owner} token|{owner_body} body"
                 version = op_ref.get("version", version)
                 ovn = op_ref.get("ovn", ovn)
                 time_range = _print_time_range(
@@ -65,24 +64,12 @@ def tracer_scd_v21_operation_notification(observation_area_id: str) -> Tuple[str
                 priority = op_details.get("priority", 0)
             priority_text = str(priority)
             logger.info(
-                "{} {} {} {} v{} ({}) OVN[{}] updated{} -> {}".format(
-                    label,
-                    state,
-                    priority_text,
-                    id,
-                    version,
-                    owner,
-                    ovn,
-                    time_range,
-                    log_name,
-                )
+                f"{label} {state} {priority_text} {id} v{version} ({owner}) OVN[{ovn}] updated{time_range} -> {log_name}"
             )
         else:
-            logger.info("{} {} ({}) deleted -> {}".format(label, id, owner, log_name))
+            logger.info(f"{label} {id} ({owner}) deleted -> {log_name}")
     except ValueError as e:
-        logger.error(
-            "{} ({}) unable to decode JSON: {} -> {}".format(label, owner, e, log_name)
-        )
+        logger.error(f"{label} ({owner}) unable to decode JSON: {e} -> {log_name}")
 
     return RESULT
 
@@ -90,7 +77,7 @@ def tracer_scd_v21_operation_notification(observation_area_id: str) -> Tuple[str
 @webapp.route(
     "/tracer/f3548v21/<observation_area_id>/uss/v1/constraints", methods=["POST"]
 )
-def tracer_scd_v21_constraint_notification(observation_area_id: str) -> Tuple[str, int]:
+def tracer_scd_v21_constraint_notification(observation_area_id: str) -> tuple[str, int]:
     """Implements SCD Constraint notification receiver."""
     logger.debug(f"Handling tracer_scd_v21_constraint_notification from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
@@ -117,7 +104,7 @@ def tracer_scd_v21_constraint_notification(observation_area_id: str) -> Tuple[st
                 constraint_ref = constraint["reference"]
                 owner_body = constraint_ref.get("owner")
                 if owner_body and owner_body != owner:
-                    owner = "{} token|{} body".format(owner, owner_body)
+                    owner = f"{owner} token|{owner_body} body"
                 version = constraint_ref.get("version", version)
                 ovn = constraint_ref.get("ovn", ovn)
                 time_range = _print_time_range(
@@ -129,15 +116,11 @@ def tracer_scd_v21_constraint_notification(observation_area_id: str) -> Tuple[st
                 constraint_details = constraint["details"]
                 type = constraint_details.get("type")
             logger.info(
-                "{} {} {} v{} ({}) OVN[{}] updated{} -> {}".format(
-                    label, type, id, version, owner, ovn, time_range, log_name
-                )
+                f"{label} {type} {id} v{version} ({owner}) OVN[{ovn}] updated{time_range} -> {log_name}"
             )
         else:
-            logger.info("{} {} ({}) deleted -> {}".format(label, id, owner, log_name))
+            logger.info(f"{label} {id} ({owner}) deleted -> {log_name}")
     except ValueError as e:
-        logger.error(
-            "{} ({}) unable to decode JSON: {} -> {}".format(label, owner, e, log_name)
-        )
+        logger.error(f"{label} ({owner}) unable to decode JSON: {e} -> {log_name}")
 
     return RESULT

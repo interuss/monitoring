@@ -6,7 +6,6 @@ import random
 import uuid
 from collections import namedtuple
 from datetime import timedelta
-from typing import List
 
 import s2sphere
 from implicitdict import StringBasedDateTime
@@ -196,7 +195,7 @@ def generate_flight_record(
     # Reference used to compute vertical speed
     last_alt = state_coordinates[0].alt if state_coordinates else 0
 
-    flight_telemetry: List[injection.RIDAircraftState] = []
+    flight_telemetry: list[injection.RIDAircraftState] = []
     for coordinates, speed, angle in zip(
         state_coordinates, flight_state_speeds, flight_track_angles
     ):

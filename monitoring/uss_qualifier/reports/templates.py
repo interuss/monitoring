@@ -4,7 +4,6 @@ import json
 import os
 import pathlib
 import zipfile
-from typing import List
 
 import requests
 from loguru import logger
@@ -84,7 +83,7 @@ class TemplateRenderer:
 
 def render_templates(
     base_path: str,
-    templated_reports: List[TemplatedReportConfiguration],
+    templated_reports: list[TemplatedReportConfiguration],
     report: TestRunReport,
 ):
     pathlib.Path(CACHE_TEMPLATE_PATH).mkdir(parents=True, exist_ok=True)

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from uas_standards.astm.f3548.v21.api import EntityID, Volume4D
 
 from monitoring.monitorlib import fetch
@@ -65,7 +63,7 @@ def remove_constraint_ref(
 
 def cleanup_sub(
     scenario: TestScenarioType, dss: DSSInstance, sub_id: EntityID
-) -> Optional[MutatedSubscription]:
+) -> MutatedSubscription | None:
     """Cleanup a subscription at the DSS. Does not fail if it is not found.
 
     :return: the DSS response if the subscription exists

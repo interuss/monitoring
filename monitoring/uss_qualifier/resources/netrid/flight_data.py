@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 
@@ -10,7 +8,7 @@ class FullFlightRecord(ImplicitDict):
     reference_time: StringBasedDateTime
     """The reference time of this flight (usually the time of first telemetry)"""
 
-    states: List[injection.RIDAircraftState]
+    states: list[injection.RIDAircraftState]
     """All telemetry that will be/was received for this flight"""
 
     flight_details: injection.RIDFlightDetails
@@ -21,7 +19,7 @@ class FullFlightRecord(ImplicitDict):
 
 
 class FlightRecordCollection(ImplicitDict):
-    flights: List[FullFlightRecord]
+    flights: list[FullFlightRecord]
 
 
 class AdjacentCircularFlightsSimulatorConfiguration(ImplicitDict):
@@ -32,7 +30,7 @@ class AdjacentCircularFlightsSimulatorConfiguration(ImplicitDict):
     relative to a time close to the time of test.
     """
 
-    random_seed: Optional[int] = 12345
+    random_seed: int | None = 12345
     """Pseudorandom seed that should be used, or specify None to use default Random."""
 
     minx: float = 7.4735784530639648
@@ -65,7 +63,7 @@ class FlightDataKMLFileConfiguration(ImplicitDict):
     relative to a time close to the time of test.
     """
 
-    random_seed: Optional[int] = 12345
+    random_seed: int | None = 12345
     """Pseudorandom seed that should be used, or specify None to use default Random."""
 
     kml_file: ExternalFile
@@ -76,13 +74,13 @@ class FlightDataSpecification(ImplicitDict):
     flight_start_delay: StringBasedTimeDelta = StringBasedTimeDelta("15s")
     """Amount of time between starting the test and commencement of flights"""
 
-    record_source: Optional[ExternalFile]
+    record_source: ExternalFile | None
     """When this field is populated, flight record data will be loaded directly from this file"""
 
-    kml_source: Optional[FlightDataKMLFileConfiguration]
+    kml_source: FlightDataKMLFileConfiguration | None
     """When this field is populated, flight data will be generated from a KML file"""
 
-    adjacent_circular_flights_simulation_source: Optional[
-        AdjacentCircularFlightsSimulatorConfiguration
-    ]
+    adjacent_circular_flights_simulation_source: (
+        AdjacentCircularFlightsSimulatorConfiguration | None
+    )
     """When this field is populated, flight data will be simulated with the AdjacentCircularFlightsSimulator"""

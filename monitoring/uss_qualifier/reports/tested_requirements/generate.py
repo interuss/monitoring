@@ -1,6 +1,5 @@
 import json
 import os
-from typing import Dict, Optional, Set
 
 from monitoring.monitorlib.inspection import import_submodules
 from monitoring.monitorlib.versioning import get_code_version
@@ -59,8 +58,8 @@ def generate_tested_requirements(
         config_source = "post-hoc artifact configuration"
         artifact_configuration = "post-hoc"
 
-    req_collections: Dict[
-        TestedRequirementsCollectionIdentifier, Set[RequirementID]
+    req_collections: dict[
+        TestedRequirementsCollectionIdentifier, set[RequirementID]
     ] = {}
     if "requirement_collections" in config and config.requirement_collections:
         req_collections = {
@@ -68,8 +67,8 @@ def generate_tested_requirements(
             for k, v in config.requirement_collections.items()
         }
 
-    participant_req_collections: Dict[ParticipantID, Optional[Set[RequirementID]]] = {}
-    participant_req_set_names: Dict[ParticipantID, str] = {}
+    participant_req_collections: dict[ParticipantID, set[RequirementID] | None] = {}
+    participant_req_set_names: dict[ParticipantID, str] = {}
     if "participant_requirements" in config and config.participant_requirements:
         for k, v in config.participant_requirements.items():
             if v and v not in req_collections:

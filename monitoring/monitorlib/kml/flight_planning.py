@@ -1,5 +1,3 @@
-from typing import List
-
 from pykml.factory import KML_ElementMaker as kml
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     UpsertFlightPlanRequest,
@@ -39,7 +37,7 @@ def upsert_flight_plan(
     return folder
 
 
-def flight_planning_styles() -> List[kml.Style]:
+def flight_planning_styles() -> list[kml.Style]:
     """Provides KML styles with names in the form {FlightPlanState}_{AirspaceUsageState}."""
     return [
         kml.Style(

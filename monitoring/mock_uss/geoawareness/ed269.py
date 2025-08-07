@@ -2,7 +2,6 @@ import ast
 import json
 import logging
 from datetime import datetime
-from typing import List, Optional, Union
 
 import s2sphere
 from implicitdict import StringBasedDateTime
@@ -48,7 +47,7 @@ def convert_distance(
     )
 
 
-def evaluate_position(feature: UASZoneVersion, position: Optional[Position]) -> bool:
+def evaluate_position(feature: UASZoneVersion, position: Position | None) -> bool:
     logger.debug(f"      _evaluate_position: position:{position} feature:{feature}")
     if position is None:
         logger.debug("        * position is None => True")
@@ -100,8 +99,8 @@ def evaluate_position(feature: UASZoneVersion, position: Optional[Position]) -> 
 def _is_in_date_range(
     start: StringBasedDateTime,
     end: StringBasedDateTime,
-    after: Optional[StringBasedDateTime],
-    before: Optional[StringBasedDateTime],
+    after: StringBasedDateTime | None,
+    before: StringBasedDateTime | None,
 ) -> bool:
     if after is None and before is None:
         return True
@@ -121,8 +120,8 @@ def _is_in_date_range(
 
 def evaluate_timing(
     feature: UASZoneVersion,
-    after: Optional[StringBasedDateTime] = None,
-    before: Optional[StringBasedDateTime] = None,
+    after: StringBasedDateTime | None = None,
+    before: StringBasedDateTime | None = None,
 ) -> bool:
     logger.debug(
         f"     _evaluate_timing: after:{after} before:{before} feature:{feature}"
@@ -153,7 +152,7 @@ def evaluate_timing(
     return False
 
 
-def _adjust_uspace_class(uspace_class: Union[str, List[str]]) -> List[str]:
+def _adjust_uspace_class(uspace_class: str | list[str]) -> list[str]:
     # TODO: Revisit when new version of ED-269 will be published.
     #  uSpaceClass field is currently defined in ED269 standard as a string.
     #  The current assumption is that uSpaceClass will be a string or some sort of an array of values.
@@ -180,9 +179,7 @@ def _adjust_uspace_class(uspace_class: Union[str, List[str]]) -> List[str]:
     return uspace_class
 
 
-def evaluate_non_spacetime(
-    feature: UASZoneVersion, ed269: Optional[ED269Filters]
-) -> bool:
+def evaluate_non_spacetime(feature: UASZoneVersion, ed269: ED269Filters | None) -> bool:
     """Returns True if the feature matches all provided filters"""
     logger.debug(f"     _evaluate_ed269: ed269:{ed269} feature:{feature}")
 
@@ -190,7 +187,7 @@ def evaluate_non_spacetime(
         return True
 
     uspace_class_filter = ed269.get("uSpaceClass", None)
-    uspace_class: Optional[List[str]] = _adjust_uspace_class(
+    uspace_class: list[str] | None = _adjust_uspace_class(
         feature.get("uSpaceClass", None)
     )
 
@@ -238,7 +235,7 @@ def evaluate_feature(feature: UASZoneVersion, filter_set: GeozonesFilterSet) -> 
 
 
 def evaluate_features(
-    features: List[UASZoneVersion], filter_set: GeozonesFilterSet
+    features: list[UASZoneVersion], filter_set: GeozonesFilterSet
 ) -> GeozonesCheckResultGeozone:
     logger.debug(f"  Evalutating {len(features)} features:")
 
@@ -250,7 +247,7 @@ def evaluate_features(
     return GeozonesCheckResultGeozone.Absent
 
 
-def evaluate_source(source: SourceRecord, filter_sets: List[GeozonesFilterSet]):
+def evaluate_source(source: SourceRecord, filter_sets: list[GeozonesFilterSet]):
     if not (
         source.state == GeozoneSourceResponseResult.Ready and "geozone_ed269" in source
     ):

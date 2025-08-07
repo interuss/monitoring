@@ -1,5 +1,3 @@
-from typing import Dict, List, Optional
-
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
@@ -32,7 +30,7 @@ class BasicFlightPlanInformationTemplate(ImplicitDict):
     area: Volume4DTemplateCollection
     """User intends to or may fly anywhere in this entire area."""
 
-    def resolve(self, times: Dict[TimeDuringTest, Time]) -> BasicFlightPlanInformation:
+    def resolve(self, times: dict[TimeDuringTest, Time]) -> BasicFlightPlanInformation:
         kwargs = {k: v for k, v in self.items()}
         kwargs["area"] = Volume4DCollection([t.resolve(times) for t in self.area])
         return ImplicitDict.parse(kwargs, BasicFlightPlanInformation)
@@ -43,19 +41,19 @@ class FlightInfoTemplate(ImplicitDict):
 
     basic_information: BasicFlightPlanInformationTemplate
 
-    astm_f3548_21: Optional[ASTMF354821OpIntentInformation]
+    astm_f3548_21: ASTMF354821OpIntentInformation | None
 
-    uspace_flight_authorisation: Optional[FlightAuthorisationData]
+    uspace_flight_authorisation: FlightAuthorisationData | None
 
-    rpas_operating_rules_2_6: Optional[RPAS26FlightDetails]
+    rpas_operating_rules_2_6: RPAS26FlightDetails | None
 
-    additional_information: Optional[dict]
+    additional_information: dict | None
     """Any information relevant to a particular jurisdiction or use case not described in the standard schema. The keys and values must be agreed upon between the test designers and USSs under test."""
 
-    transformations: Optional[List[Transformation]]
+    transformations: list[Transformation] | None
     """If specified, transform this flight according to these transformations in order (after all templates are resolved)."""
 
-    def resolve(self, times: Dict[TimeDuringTest, Time]) -> FlightInfo:
+    def resolve(self, times: dict[TimeDuringTest, Time]) -> FlightInfo:
         kwargs = {k: v for k, v in self.items() if k not in {"transformations"}}
         basic_info = self.basic_information.resolve(times)
         if "transformations" in self and self.transformations:
@@ -65,7 +63,7 @@ class FlightInfoTemplate(ImplicitDict):
         return ImplicitDict.parse(kwargs, FlightInfo)
 
     def to_scd_inject_request(
-        self, times: Dict[TimeDuringTest, Time]
+        self, times: dict[TimeDuringTest, Time]
     ) -> scd_api.InjectFlightRequest:
         """Render a legacy SCD injection API request object from this object."""
 

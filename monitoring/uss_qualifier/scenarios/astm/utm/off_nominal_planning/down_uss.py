@@ -1,5 +1,3 @@
-from typing import Dict, List, Optional
-
 import arrow
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
@@ -50,7 +48,7 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class DownUSS(TestScenario):
-    times: Dict[TimeDuringTest, Time]
+    times: dict[TimeDuringTest, Time]
 
     flight1_planned: FlightInfoTemplate
 
@@ -92,7 +90,7 @@ class DownUSS(TestScenario):
         }
 
     @property
-    def _expected_flight_intents(self) -> List[ExpectedFlightIntent]:
+    def _expected_flight_intents(self) -> list[ExpectedFlightIntent]:
         return [
             ExpectedFlightIntent(
                 "flight1_planned",
@@ -175,7 +173,7 @@ class DownUSS(TestScenario):
         self,
         conflicting_flight: FlightInfo,
         target_state: OperationalIntentState,
-        old_op_intent: Optional[OperationalIntentReference] = None,
+        old_op_intent: OperationalIntentReference | None = None,
     ) -> OperationalIntentReference:
         if old_op_intent is not None:
             key = [old_op_intent.ovn]

@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Set, Tuple, Union
+from collections.abc import Iterable
 
 from implicitdict import ImplicitDict
 
@@ -44,7 +44,7 @@ from monitoring.uss_qualifier.suites.definitions import (
 
 def make_breakdown(
     report: TestRunReport,
-    participant_reqs: Optional[Set[RequirementID]],
+    participant_reqs: set[RequirementID] | None,
     participant_ids: Iterable[ParticipantID],
 ) -> TestedBreakdown:
     """Break down a report into requirements tested for the specified participants.
@@ -70,7 +70,7 @@ def make_breakdown(
 
 
 def _populate_breakdown_with_req_set(
-    breakdown: TestedBreakdown, req_set: Set[RequirementID]
+    breakdown: TestedBreakdown, req_set: set[RequirementID]
 ) -> None:
     for req_id in req_set:
         package_id = req_id.package()
@@ -97,7 +97,7 @@ def _populate_breakdown_with_action_report(
     breakdown: TestedBreakdown,
     action: TestSuiteActionReport,
     participant_ids: Iterable[ParticipantID],
-    req_set: Optional[Set[RequirementID]],
+    req_set: set[RequirementID] | None,
 ) -> None:
     test_suite, test_scenario, action_generator = action.get_applicable_report()
     if test_scenario:
@@ -122,10 +122,10 @@ def _populate_breakdown_with_scenario_report(
     breakdown: TestedBreakdown,
     scenario_report: TestScenarioReport,
     participant_ids: Iterable[ParticipantID],
-    req_set: Optional[Set[RequirementID]],
+    req_set: set[RequirementID] | None,
 ) -> None:
     scenario_type_name = scenario_report.scenario_type
-    steps: List[Tuple[Optional[TestCaseReport], TestStepReport]] = []
+    steps: list[tuple[TestCaseReport | None, TestStepReport]] = []
     for case in scenario_report.cases:
         for step in case.steps:
             steps.append((case, step))
@@ -225,8 +225,8 @@ def _populate_breakdown_with_scenario_report(
 
 def _populate_breakdown_with_action_declaration(
     breakdown: TestedBreakdown,
-    action: Union[TestSuiteActionDeclaration, PotentialGeneratedAction],
-    req_set: Optional[Set[RequirementID]],
+    action: TestSuiteActionDeclaration | PotentialGeneratedAction,
+    req_set: set[RequirementID] | None,
 ) -> None:
     action_type = action.get_action_type()
     if action_type == ActionType.TestScenario:
@@ -262,7 +262,7 @@ def _populate_breakdown_with_action_declaration(
 def _populate_breakdown_with_scenario(
     breakdown: TestedBreakdown,
     scenario_type_name: TestScenarioTypeName,
-    req_set: Optional[Set[RequirementID]],
+    req_set: set[RequirementID] | None,
 ) -> None:
     scenario_type = get_scenario_type_by_name(scenario_type_name)
     scenario_doc = get_documentation(scenario_type)

@@ -1,5 +1,4 @@
 import re
-from typing import Dict, List, Optional
 
 from loguru import logger
 
@@ -24,21 +23,21 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 class AggregateChecks(GenericTestScenario):
     _rid_version: RIDVersion
-    _service_providers: List[NetRIDServiceProvider]
-    _observers: List[RIDSystemObserver]
-    _dss_instances: List[DSSInstance]
+    _service_providers: list[NetRIDServiceProvider]
+    _observers: list[RIDSystemObserver]
+    _dss_instances: list[DSSInstance]
 
-    _queries: List[fetch.Query]
-    _participants_by_base_url: Dict[str, ParticipantID] = dict()
+    _queries: list[fetch.Query]
+    _participants_by_base_url: dict[str, ParticipantID] = dict()
     _allow_cleartext_queries: bool = False
-    _queries_by_participant: Dict[ParticipantID, List[fetch.Query]]
+    _queries_by_participant: dict[ParticipantID, list[fetch.Query]]
 
     def __init__(
         self,
         service_providers: NetRIDServiceProviders,
         observers: NetRIDObserversResource,
         dss_instances: DSSInstancesResource,
-        test_exclusions: Optional[TestExclusionsResource] = None,
+        test_exclusions: TestExclusionsResource | None = None,
     ):
         super().__init__()
         self._service_providers = service_providers.service_providers
@@ -159,7 +158,7 @@ class AggregateChecks(GenericTestScenario):
             logger.warning(msg)
 
     def _inspect_participant_queries(
-        self, participant_id: str, participant_queries: List[fetch.Query]
+        self, participant_id: str, participant_queries: list[fetch.Query]
     ):
         cleartext_queries = []
         for query in participant_queries:
@@ -190,7 +189,7 @@ class AggregateChecks(GenericTestScenario):
         NetDpDetailsResponse95thPercentile (2s) and NetDpDetailsResponse99thPercentile (6s)
         """
         for participant, all_queries in self._queries_by_participant.items():
-            relevant_queries: List[fetch.Query] = list()
+            relevant_queries: list[fetch.Query] = list()
             for query in all_queries:
                 if (
                     query.status_code == 200
@@ -233,7 +232,7 @@ class AggregateChecks(GenericTestScenario):
     def _sp_flights_area_times_step(self):
         for participant, all_queries in self._queries_by_participant.items():
             # identify successful flights queries
-            relevant_queries: List[fetch.Query] = list()
+            relevant_queries: list[fetch.Query] = list()
             for query in all_queries:
                 if query.has_field_with_value("query_type") and (
                     # TODO find a cleaner way than checking for version here
@@ -280,7 +279,7 @@ class AggregateChecks(GenericTestScenario):
         pattern = re.compile(r"/display_data\?view=(-?\d+(.\d+)?,){3}-?\d+(.\d+)?")
         for participant, all_queries in self._queries_by_participant.items():
             # identify successful display_data queries
-            relevant_queries: List[fetch.Query] = list()
+            relevant_queries: list[fetch.Query] = list()
             for query in all_queries:
                 match = pattern.search(query.request.url)
                 if match is not None and query.status_code == 200:

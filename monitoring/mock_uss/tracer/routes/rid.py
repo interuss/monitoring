@@ -1,5 +1,4 @@
 import os
-from typing import Tuple
 
 import arrow
 import flask
@@ -29,7 +28,7 @@ RESULT = ("", 204)
 )
 def tracer_rid_isa_notification_v19(
     observation_area_id: str, isa_id: str
-) -> Tuple[str, int]:
+) -> tuple[str, int]:
     return tracer_rid_isa_notification(isa_id, observation_area_id, RIDVersion.f3411_19)
 
 
@@ -39,7 +38,7 @@ def tracer_rid_isa_notification_v19(
 )
 def tracer_rid_isa_notification_v22a(
     observation_area_id: str, isa_id: str
-) -> Tuple[str, int]:
+) -> tuple[str, int]:
     return tracer_rid_isa_notification(
         isa_id, observation_area_id, RIDVersion.f3411_22a
     )
@@ -47,7 +46,7 @@ def tracer_rid_isa_notification_v22a(
 
 def tracer_rid_isa_notification(
     isa_id: str, observation_area_id: str, rid_version: RIDVersion
-) -> Tuple[str, int]:
+) -> tuple[str, int]:
     """Implements RID ISA notification receiver."""
     logger.debug(f"Handling tracer_rid_isa_notification from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)

@@ -1,5 +1,4 @@
 import logging
-from typing import Dict, List
 
 from uas_standards.interuss.automated_testing.geo_awareness.v1.api import (
     GeozoneHttpsSourceFormat,
@@ -27,10 +26,10 @@ def combine_results(
     return GeozonesCheckResultGeozone.Absent
 
 
-def check_geozones(req: GeozonesCheckRequest) -> List[GeozonesCheckResultGeozone]:
-    sources: Dict[str, SourceRecord] = Database.get_sources(db)
+def check_geozones(req: GeozonesCheckRequest) -> list[GeozonesCheckResultGeozone]:
+    sources: dict[str, SourceRecord] = Database.get_sources(db)
 
-    results: List[GeozonesCheckResultGeozone] = [
+    results: list[GeozonesCheckResultGeozone] = [
         GeozonesCheckResultGeozone.Absent
     ] * len(req.checks)
 

@@ -36,7 +36,7 @@ class ClientIdentityResource(Resource[ClientIdentitySpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(ClientIdentityResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.specification = specification
         # Keep the adapter: we will only use it later at the moment it is required
         self._adapter = auth_adapter.adapter

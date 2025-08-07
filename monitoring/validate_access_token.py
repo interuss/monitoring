@@ -1,13 +1,12 @@
 import argparse
 import sys
-from typing import List
 
 import jwt
 
 from monitoring.monitorlib import auth_validation
 
 
-def parse_args(argv: List[str]):
+def parse_args(argv: list[str]):
     parser = argparse.ArgumentParser(description="Validate an access token")
     parser.add_argument(
         "--token",

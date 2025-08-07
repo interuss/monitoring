@@ -1,5 +1,3 @@
-from typing import Dict, List, Union
-
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.dicts import JSONPath
@@ -29,10 +27,10 @@ from monitoring.uss_qualifier.scenarios.documentation.parsing import (
 
 
 class ParticipantRequirementPerformance(ImplicitDict):
-    successes: List[JSONPath]
+    successes: list[JSONPath]
     """List of passed checks involving the requirement"""
 
-    failures: List[JSONPath]
+    failures: list[JSONPath]
     """List of failed checks involving the requirement"""
 
 
@@ -40,17 +38,17 @@ class TestedRequirement(ImplicitDict):
     requirement_id: RequirementID
     """Identity of the requirement"""
 
-    participant_performance: Dict[ParticipantID, ParticipantRequirementPerformance]
+    participant_performance: dict[ParticipantID, ParticipantRequirementPerformance]
     """The performance of each involved participant on the requirement"""
 
 
 def _add_check(
-    check: Union[PassedCheck, FailedCheck],
+    check: PassedCheck | FailedCheck,
     path: JSONPath,
     scenario_docs: TestScenarioDocumentation,
     case_docs: TestCaseDocumentation,
     step_docs: TestStepDocumentation,
-    requirements: Dict[RequirementID, TestedRequirement],
+    requirements: dict[RequirementID, TestedRequirement],
 ):
     if not check.requirements:
         # Generate an implied requirement ID
@@ -88,7 +86,7 @@ def _evaluate_requirements_in_step(
     scenario_docs: TestScenarioDocumentation,
     case_docs: TestCaseDocumentation,
     path: JSONPath,
-    requirements: Dict[RequirementID, TestedRequirement],
+    requirements: dict[RequirementID, TestedRequirement],
 ) -> None:
     step_docs = case_docs.get_step_by_name(report.name)
     for i, check in enumerate(report.passed_checks):
@@ -115,7 +113,7 @@ def _evaluate_requirements_in_case(
     report: TestCaseReport,
     scenario_docs: TestScenarioDocumentation,
     path: JSONPath,
-    requirements: Dict[RequirementID, TestedRequirement],
+    requirements: dict[RequirementID, TestedRequirement],
 ) -> None:
     case_docs = scenario_docs.get_case_by_name(report.name)
     for i, step in enumerate(report.steps):
@@ -127,7 +125,7 @@ def _evaluate_requirements_in_case(
 def _evaluate_requirements_in_scenario(
     report: TestScenarioReport,
     path: JSONPath,
-    requirements: Dict[RequirementID, TestedRequirement],
+    requirements: dict[RequirementID, TestedRequirement],
 ) -> None:
     scenario_docs = get_documentation_by_name(report.scenario_type)
     for i, case in enumerate(report.cases):
@@ -139,7 +137,7 @@ def _evaluate_requirements_in_scenario(
 def _evaluate_requirements_in_action(
     report: TestSuiteActionReport,
     path: JSONPath,
-    requirements: Dict[RequirementID, TestedRequirement],
+    requirements: dict[RequirementID, TestedRequirement],
 ) -> None:
     if "test_suite" in report:
         _evaluate_requirements_in_suite(
@@ -160,7 +158,7 @@ def _evaluate_requirements_in_action(
 def _evaluate_requirements_in_generator(
     report: ActionGeneratorReport,
     path: JSONPath,
-    requirements: Dict[RequirementID, TestedRequirement],
+    requirements: dict[RequirementID, TestedRequirement],
 ) -> None:
     for i, action in enumerate(report.actions):
         _evaluate_requirements_in_action(action, path + f".action[{i}]", requirements)
@@ -169,13 +167,13 @@ def _evaluate_requirements_in_generator(
 def _evaluate_requirements_in_suite(
     report: TestSuiteReport,
     path: JSONPath,
-    requirements: Dict[RequirementID, TestedRequirement],
+    requirements: dict[RequirementID, TestedRequirement],
 ) -> None:
     for i, action in enumerate(report.actions):
         _evaluate_requirements_in_action(action, path + f".action[{i}]", requirements)
 
 
-def evaluate_requirements(report: TestRunReport) -> List[TestedRequirement]:
+def evaluate_requirements(report: TestRunReport) -> list[TestedRequirement]:
     import_submodules(scenarios_module)
     reqs = {}
     _evaluate_requirements_in_action(report.report, "$.report", reqs)

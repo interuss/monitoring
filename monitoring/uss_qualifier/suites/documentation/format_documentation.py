@@ -35,7 +35,7 @@ def main(lint: bool) -> int:
     changes = False
     for suite_doc_file, suite_doc_content in test_suite_docs.items():
         if os.path.exists(suite_doc_file):
-            with open(suite_doc_file, "r") as f:
+            with open(suite_doc_file) as f:
                 existing_content = f.read()
             if existing_content == suite_doc_content:
                 # No changes needed

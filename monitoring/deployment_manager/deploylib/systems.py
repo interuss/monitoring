@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 from kubernetes.client import V1Deployment, V1Ingress, V1Namespace, V1Service
 from structlog import BoundLogger
@@ -13,7 +13,7 @@ from monitoring.deployment_manager.infrastructure import Clients
 
 
 def upsert_resources(
-    target_resources: List[Any],
+    target_resources: list[Any],
     namespace: V1Namespace,
     clients: Clients,
     log: BoundLogger,
@@ -29,17 +29,17 @@ def upsert_resources(
             services.upsert(clients.core, log, namespace, target_resource)
         else:
             raise NotImplementedError(
-                "Upserting {} is not yet supported".format(target_resource.__class__)
+                f"Upserting {target_resource.__class__} is not yet supported"
             )
 
 
 def get_resources(
-    target_resources: List[Any],
+    target_resources: list[Any],
     namespace: V1Namespace,
     clients: Clients,
     log: BoundLogger,
     cluster_name: str,
-) -> List[Any]:
+) -> list[Any]:
     existing_resources = []
     for target_resource in target_resources:
         if target_resource.__class__ == V1Deployment:
@@ -58,24 +58,19 @@ def get_resources(
             )
         else:
             raise NotImplementedError(
-                "Getting {} is not yet supported".format(target_resource.__class__)
+                f"Getting {target_resource.__class__} is not yet supported"
             )
 
         if existing_resource is None:
             log.warn(
-                "No existing {} {} found in `{}` namespace of `{}` cluster".format(
-                    target_resource.metadata.name,
-                    target_resource.__class__.__name__,
-                    namespace.metadata.name,
-                    cluster_name,
-                )
+                f"No existing {target_resource.metadata.name} {target_resource.__class__.__name__} found in `{namespace.metadata.name}` namespace of `{cluster_name}` cluster"
             )
         existing_resources.append(existing_resource)
     return existing_resources
 
 
 def delete_resources(
-    existing_resources: List[Any],
+    existing_resources: list[Any],
     namespace: V1Namespace,
     clients: Clients,
     log: BoundLogger,
@@ -107,5 +102,5 @@ def delete_resources(
             log.msg("Service deleted", message=svc.metadata.name)
         else:
             raise NotImplementedError(
-                "Deleting {} is not yet supported".format(existing_resource.__class__)
+                f"Deleting {existing_resource.__class__} is not yet supported"
             )

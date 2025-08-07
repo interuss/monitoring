@@ -1,6 +1,5 @@
 import datetime
 import uuid
-from typing import Tuple
 
 import arrow
 import flask
@@ -42,7 +41,7 @@ class ErrorResponse(ImplicitDict):
 @webapp.route("/ridsp/injection/tests/<test_id>", methods=["PUT"])
 @requires_scope(injection_api.SCOPE_RID_QUALIFIER_INJECT)
 @idempotent_request()
-def ridsp_create_test(test_id: str) -> Tuple[str, int]:
+def ridsp_create_test(test_id: str) -> tuple[str, int]:
     """Implements test creation in RID automated testing injection API."""
     logger.info(f"Create test {test_id}")
     rid_version = webapp.config[KEY_RID_VERSION]
@@ -57,7 +56,7 @@ def ridsp_create_test(test_id: str) -> Tuple[str, int]:
             version=str(uuid.uuid4()), flights=req_body.requested_flights
         )
     except ValueError as e:
-        msg = "Create test {} unable to parse JSON: {}".format(test_id, e)
+        msg = f"Create test {test_id} unable to parse JSON: {e}"
         return msg, 400
 
     # Create ISA in DSS
@@ -121,14 +120,14 @@ def ridsp_create_test(test_id: str) -> Tuple[str, int]:
 
 @webapp.route("/ridsp/injection/tests/<test_id>/<version>", methods=["DELETE"])
 @requires_scope(injection_api.SCOPE_RID_QUALIFIER_INJECT)
-def ridsp_delete_test(test_id: str, version: str) -> Tuple[str, int]:
+def ridsp_delete_test(test_id: str, version: str) -> tuple[str, int]:
     """Implements test deletion in RID automated testing injection API."""
     logger.info(f"Delete test {test_id}")
     rid_version = webapp.config[KEY_RID_VERSION]
     record = db.value.tests.get(test_id, None)
 
     if record is None:
-        return 'Test "{}" not found'.format(test_id), 404
+        return f'Test "{test_id}" not found', 404
 
     if record.version != version:
         return (
@@ -173,7 +172,7 @@ def ridsp_delete_test(test_id: str, version: str) -> Tuple[str, int]:
     methods=["GET"],
 )
 @requires_scope(injection_api.SCOPE_RID_QUALIFIER_INJECT)
-def ridsp_get_user_notifications() -> Tuple[str, int]:
+def ridsp_get_user_notifications() -> tuple[str, int]:
     """Returns the list of user notifications observed by the virtual user"""
 
     if "after" not in flask.request.args:

@@ -46,5 +46,5 @@ def test_subscription_with_invalid_start_time(ids, scd_api, scd_session):
     req = _make_sub_req(time_start, time_end, 200, 1000, 500, scd_api)
     req["extents"]["time_start"]["value"] = "something-invalid"
 
-    resp = scd_session.put("/subscriptions/{}".format(ids(SUB_TYPE)), json=req)
+    resp = scd_session.put(f"/subscriptions/{ids(SUB_TYPE)}", json=req)
     assert resp.status_code == 400, resp.content

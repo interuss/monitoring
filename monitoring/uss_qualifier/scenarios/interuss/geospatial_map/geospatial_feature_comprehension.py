@@ -1,5 +1,3 @@
-from typing import Dict
-
 import arrow
 
 from monitoring.monitorlib.clients.geospatial_info.client import (
@@ -70,7 +68,7 @@ class GeospatialFeatureComprehension(TestScenario):
 
         self.end_test_scenario()
 
-    def _map_query(self, times: Dict[TimeDuringTest, Time]):
+    def _map_query(self, times: dict[TimeDuringTest, Time]):
         query_check = [
             c
             for c in self._current_case.steps[0].checks

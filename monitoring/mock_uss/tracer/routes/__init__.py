@@ -1,5 +1,4 @@
 import os
-from typing import Tuple
 
 import arrow
 import flask
@@ -20,11 +19,11 @@ from monitoring.monitorlib import fetch, versioning
 @webapp.route("/tracer/status")
 def tracer_status():
     logger.debug(f"Handling tracer_status from {os.getpid()}")
-    return "Tracer ok {}".format(versioning.get_code_version())
+    return f"Tracer ok {versioning.get_code_version()}"
 
 
 @webapp.route("/tracer/<path:u_path>", methods=["GET", "PUT", "POST", "DELETE"])
-def tracer_catch_all(u_path) -> Tuple[str, int]:
+def tracer_catch_all(u_path) -> tuple[str, int]:
     logger.debug(f"Handling tracer_catch_all from {os.getpid()}")
     req = fetch.describe_flask_request(flask.request)
     log_name = context.tracer_logger.log_new(
@@ -34,6 +33,6 @@ def tracer_catch_all(u_path) -> Tuple[str, int]:
     claims = req.token
     owner = claims.get("sub", "<No owner in token>")
     label = colored("Bad route", "red")
-    logger.error("{} to {} ({}): {}".format(label, u_path, owner, log_name))
+    logger.error(f"{label} to {u_path} ({owner}): {log_name}")
 
     return f"Path is not a supported endpoint: {u_path}", 404

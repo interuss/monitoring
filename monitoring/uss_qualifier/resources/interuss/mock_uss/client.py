@@ -1,5 +1,3 @@
-from typing import List, Optional, Tuple
-
 from implicitdict import ImplicitDict, StringBasedDateTime
 
 from monitoring.monitorlib import fetch
@@ -28,7 +26,7 @@ from monitoring.uss_qualifier.resources.resource import Resource
 MOCK_USS_CONFIG_SCOPE = "interuss.mock_uss.configure"
 
 
-class MockUSSClient(object):
+class MockUSSClient:
     """Means to communicate with an InterUSS mock_uss instance"""
 
     flight_planner: FlightPlannerClient
@@ -38,7 +36,7 @@ class MockUSSClient(object):
         participant_id: str,
         base_url: str,
         auth_adapter: AuthAdapter,
-        timeout_seconds: Optional[float] = None,
+        timeout_seconds: float | None = None,
     ):
         self.base_url = base_url
         self.session = UTMClientSession(base_url, auth_adapter, timeout_seconds)
@@ -57,7 +55,7 @@ class MockUSSClient(object):
             participant_id=self.participant_id,
         )
 
-    def get_locality(self) -> Tuple[Optional[LocalityCode], fetch.Query]:
+    def get_locality(self) -> tuple[LocalityCode | None, fetch.Query]:
         query = fetch.query_and_describe(
             self.session,
             "GET",
@@ -88,7 +86,7 @@ class MockUSSClient(object):
 
     def get_interactions(
         self, from_time: StringBasedDateTime
-    ) -> Tuple[List[Interaction], fetch.Query]:
+    ) -> tuple[list[Interaction], fetch.Query]:
         """
         Requesting interuss interactions from mock_uss from a given time till now
         Args:
@@ -96,9 +94,7 @@ class MockUSSClient(object):
         Returns:
             List of Interactions
         """
-        url = "{}/mock_uss/interuss_logging/logs?from_time={}".format(
-            self.base_url, from_time
-        )
+        url = f"{self.base_url}/mock_uss/interuss_logging/logs?from_time={from_time}"
         query = fetch.query_and_describe(
             self.session,
             "GET",
@@ -140,7 +136,7 @@ class MockUSSSpecification(ImplicitDict):
     participant_id: ParticipantID
     """Test participant responsible for this mock USS."""
 
-    timeout_seconds: Optional[float] = None
+    timeout_seconds: float | None = None
     """Number of seconds to allow for requests to this mock_uss instance.  If None, use default."""
 
 
@@ -153,7 +149,7 @@ class MockUSSResource(Resource[MockUSSSpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(MockUSSResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.mock_uss = MockUSSClient(
             specification.participant_id,
             specification.mock_uss_base_url,
@@ -163,11 +159,11 @@ class MockUSSResource(Resource[MockUSSSpecification]):
 
 
 class MockUSSsSpecification(ImplicitDict):
-    instances: List[MockUSSSpecification]
+    instances: list[MockUSSSpecification]
 
 
 class MockUSSsResource(Resource[MockUSSsSpecification]):
-    mock_uss_instances: List[MockUSSClient]
+    mock_uss_instances: list[MockUSSClient]
 
     def __init__(
         self,
@@ -175,7 +171,7 @@ class MockUSSsResource(Resource[MockUSSsSpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(MockUSSsResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.mock_uss_instances = [
             MockUSSClient(s.participant_id, s.mock_uss_base_url, auth_adapter.adapter)
             for s in specification.instances

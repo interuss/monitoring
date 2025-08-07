@@ -1,5 +1,3 @@
-from typing import List
-
 from uas_standards.astm.f3548.v21.api import OperationalIntentReference
 
 from monitoring.monitorlib.fetch import QueryError
@@ -11,9 +9,9 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 def validate_clear_area(
     scenario: TestScenario,
     dss: DSSInstance,
-    areas: List[Volume4D],
+    areas: list[Volume4D],
     ignore_self: bool,
-) -> List[OperationalIntentReference]:
+) -> list[OperationalIntentReference]:
     found_intents = []
     for area in areas:
         with scenario.check("DSS responses", [dss.participant_id]) as check:

@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
 
 import loguru
 from uas_standards.astm.f3548.v21.api import Subscription, SubscriptionID
@@ -52,15 +51,15 @@ class SubscriptionSynchronization(TestScenario):
     _dss: DSSInstance
 
     # Separate DSS client for testing manager synchronization
-    _dss_separate_creds: Optional[DSSInstance]
+    _dss_separate_creds: DSSInstance | None
 
-    _dss_read_instances: List[DSSInstance]
+    _dss_read_instances: list[DSSInstance]
 
     # Base identifier for the subscriptions that will be created
     _sub_id: SubscriptionID
 
     # Extra sub IDs for testing only deletions
-    _ids_for_deletion: List[SubscriptionID]
+    _ids_for_deletion: list[SubscriptionID]
 
     # Extra sub id for testing manager sync
     _acl_sub_id: SubscriptionID
@@ -71,10 +70,10 @@ class SubscriptionSynchronization(TestScenario):
     _sub_params: SubscriptionParams
 
     # Keep track of the current subscription state
-    _current_subscription = Optional[Subscription]
+    _current_subscription = Subscription | None
 
     # For the secondary deletion test
-    _subs_for_deletion: Dict[SubscriptionID, Subscription]
+    _subs_for_deletion: dict[SubscriptionID, Subscription]
 
     def __init__(
         self,
@@ -82,7 +81,7 @@ class SubscriptionSynchronization(TestScenario):
         other_instances: DSSInstancesResource,
         id_generator: IDGeneratorResource,
         planning_area: PlanningAreaResource,
-        second_utm_auth: Optional[AuthAdapterResource] = None,
+        second_utm_auth: AuthAdapterResource | None = None,
     ):
         """
         Args:
@@ -308,7 +307,7 @@ class SubscriptionSynchronization(TestScenario):
         self,
         secondary_dss: DSSInstance,
         expected_sub_id: str,
-        involved_participants: List[str],
+        involved_participants: list[str],
     ):
         """Checks that the secondary DSS is also aware of the proper subscription's area:
         - searching for the subscription's area should yield the subscription
@@ -371,7 +370,7 @@ class SubscriptionSynchronization(TestScenario):
         self,
         secondary_dss: DSSInstance,
         expected_sub_params: SubscriptionParams,
-        involved_participants: List[str],
+        involved_participants: list[str],
     ):
         """Fetches the subscription from the secondary DSS and validates it."""
         with self.check(
@@ -795,7 +794,7 @@ class SubscriptionSynchronization(TestScenario):
         self,
         dss_instance: DSSInstance,
         sub_id: str,
-        other_participant_id: Optional[str],
+        other_participant_id: str | None,
     ):
         """Confirm that a DSS has no subscription.
         other_participant_id may be specified if a failed check may be caused by it."""

@@ -1,5 +1,3 @@
-from typing import Dict, Optional, Tuple
-
 import arrow
 from uas_standards.astm.f3548.v21.api import OperationalIntentReference
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -46,16 +44,16 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class ConflictHigherPriority(TestScenario):
-    times: Dict[TimeDuringTest, Time]
+    times: dict[TimeDuringTest, Time]
 
-    flight1_id: Optional[str] = None
+    flight1_id: str | None = None
     flight1_planned: FlightInfoTemplate
     flight1m_planned: FlightInfoTemplate
     flight1_activated: FlightInfoTemplate
     flight1m_activated: FlightInfoTemplate
     flight1c_activated: FlightInfoTemplate
 
-    flight2_id: Optional[str] = None
+    flight2_id: str | None = None
     flight2_planned: FlightInfoTemplate
     flight2_activated: FlightInfoTemplate
     flight2m_activated: FlightInfoTemplate
@@ -252,7 +250,7 @@ class ConflictHigherPriority(TestScenario):
 
     def _attempt_modify_planned_flight_conflict(
         self,
-    ) -> Tuple[Optional[OperationalIntentReference], FlightInfo]:
+    ) -> tuple[OperationalIntentReference | None, FlightInfo]:
         self.begin_test_step("Plan Flight 1")
         flight1_planned = self.resolve_flight(self.flight1_planned)
 
@@ -312,9 +310,9 @@ class ConflictHigherPriority(TestScenario):
 
     def _attempt_activate_flight_conflict(
         self,
-        flight_1_oi_ref: Optional[OperationalIntentReference],
+        flight_1_oi_ref: OperationalIntentReference | None,
         flight_1_intent: FlightInfo,
-    ) -> Optional[OperationalIntentReference]:
+    ) -> OperationalIntentReference | None:
         self.begin_test_step("Attempt to activate conflicting Flight 1")
         flight1_activated = self.resolve_flight(self.flight1_activated)
 
@@ -339,8 +337,8 @@ class ConflictHigherPriority(TestScenario):
         return flight_1_oi_ref
 
     def _modify_activated_flight_conflict_preexisting(
-        self, flight_1_oi_ref: Optional[OperationalIntentReference]
-    ) -> Tuple[FlightInfo, OperationalIntentReference, OperationalIntentReference]:
+        self, flight_1_oi_ref: OperationalIntentReference | None
+    ) -> tuple[FlightInfo, OperationalIntentReference, OperationalIntentReference]:
         self.begin_test_step("Delete Flight 2")
         _ = delete_flight(self, self.control_uss, self.flight2_id)
         self.flight2_id = None

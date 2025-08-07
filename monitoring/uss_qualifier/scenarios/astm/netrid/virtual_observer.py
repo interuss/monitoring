@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from datetime import datetime, timedelta
-from typing import Callable, List, Optional
 
 import arrow
 from loguru import logger
@@ -11,7 +11,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection i
 )
 
 
-class VirtualObserver(object):
+class VirtualObserver:
     """Defines the behavior of a virtual human-like observer.
 
     The observer wants to look at the specified collection of flights, and this
@@ -34,7 +34,7 @@ class VirtualObserver(object):
     _repeat_query_counter: int = 0
     """Number of repeated queries to the same rectangle; related to _repeat_query_rect_period"""
 
-    _last_rect: Optional[LatLngRect] = None
+    _last_rect: LatLngRect | None = None
     """The most recent query rectangle"""
 
     def __init__(
@@ -75,7 +75,7 @@ class VirtualObserver(object):
     def start_polling(
         self,
         interval: timedelta,
-        diagonals_m: List[float],
+        diagonals_m: list[float],
         poll_fct: Callable[[LatLngRect], bool],
     ) -> None:
         """

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 
 from uas_standards.astm.f3548.v21.api import Subscription, SubscriptionID
 
@@ -35,16 +34,16 @@ class SubscriptionValidator:
     Scenario in which this validator is being used. Will be used to register checks.
     """
 
-    _sub_params: Optional[SubscriptionParams]
-    _pid: List[str]
+    _sub_params: SubscriptionParams | None
+    _pid: list[str]
     """Participant ID(s) to use for the checks"""
 
     def __init__(
         self,
         main_check: PendingCheck,
         scenario: TestScenario,
-        participant_id: List[str],
-        sub_params: Optional[SubscriptionParams],
+        participant_id: list[str],
+        sub_params: SubscriptionParams | None,
     ):
         self._main_check = main_check
         self._scenario = scenario
@@ -78,8 +77,8 @@ class SubscriptionValidator:
         dss_sub: Subscription,
         t_dss: datetime,
         is_implicit: bool,
-        previous_version: Optional[str],
-        expected_version: Optional[str],
+        previous_version: str | None,
+        expected_version: str | None,
     ) -> None:
         """
         Args:

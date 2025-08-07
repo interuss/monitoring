@@ -1,5 +1,3 @@
-from typing import Dict, Optional
-
 import arrow
 from uas_standards.astm.f3548.v21.api import OperationalIntentReference
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -53,16 +51,16 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class ConflictEqualPriorityNotPermitted(TestScenario):
-    times: Dict[TimeDuringTest, Time]
+    times: dict[TimeDuringTest, Time]
 
-    flight1_id: Optional[str] = None
+    flight1_id: str | None = None
     flight1_planned: FlightInfoTemplate
     flight1_activated: FlightInfoTemplate
     flight1m_activated: FlightInfoTemplate
     flight1c_planned: FlightInfoTemplate
     flight1c_activated: FlightInfoTemplate
 
-    flight2_id: Optional[str] = None
+    flight2_id: str | None = None
     flight2m_planned: FlightInfoTemplate
     flight2_planned: FlightInfoTemplate
     flight2_activated: FlightInfoTemplate
@@ -77,7 +75,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
         tested_uss: FlightPlannerResource,
         control_uss: FlightPlannerResource,
         dss: DSSInstanceResource,
-        flight_intents: Optional[FlightIntentsResource] = None,
+        flight_intents: FlightIntentsResource | None = None,
     ):
         super().__init__()
         self.tested_uss = tested_uss.client
@@ -307,7 +305,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
 
     def _attempt_modify_planned_flight_conflict(
         self,
-    ) -> Optional[OperationalIntentReference]:
+    ) -> OperationalIntentReference | None:
         self.begin_test_step("Plan Flight 1c")
         flight1c_planned = self.resolve_flight(self.flight1c_planned)
 
@@ -350,8 +348,8 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
         return flight_1_oi_ref
 
     def _attempt_modify_activated_flight_conflict(
-        self, flight_1_oi_ref: Optional[OperationalIntentReference]
-    ) -> Optional[OperationalIntentReference]:
+        self, flight_1_oi_ref: OperationalIntentReference | None
+    ) -> OperationalIntentReference | None:
         self.begin_test_step("Activate Flight 1c")
         flight1c_activated = self.resolve_flight(self.flight1c_activated)
 
@@ -401,7 +399,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
 
     def _modify_activated_flight_preexisting_conflict(
         self,
-        flight_1_oi_ref: Optional[OperationalIntentReference],
+        flight_1_oi_ref: OperationalIntentReference | None,
     ):
         self.begin_test_step("Activate Flight 1")
         flight1_activated = self.resolve_flight(self.flight1_activated)

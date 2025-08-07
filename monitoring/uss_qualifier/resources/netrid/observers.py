@@ -1,5 +1,3 @@
-from typing import List, Optional, Tuple
-
 import s2sphere
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -15,7 +13,7 @@ from monitoring.uss_qualifier.resources.communications import AuthAdapterResourc
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
-class RIDSystemObserver(object):
+class RIDSystemObserver:
     participant_id: str
     base_url: str
     session: infrastructure.UTMClientSession
@@ -32,13 +30,8 @@ class RIDSystemObserver(object):
 
     def observe_system(
         self, rect: s2sphere.LatLngRect
-    ) -> Tuple[Optional[observation_api.GetDisplayDataResponse], fetch.Query]:
-        url = "/display_data?view={},{},{},{}".format(
-            rect.lo().lat().degrees,
-            rect.lo().lng().degrees,
-            rect.hi().lat().degrees,
-            rect.hi().lng().degrees,
-        )
+    ) -> tuple[observation_api.GetDisplayDataResponse | None, fetch.Query]:
+        url = f"/display_data?view={rect.lo().lat().degrees},{rect.lo().lng().degrees},{rect.hi().lat().degrees},{rect.hi().lng().degrees}"
         query = fetch.query_and_describe(
             self.session,
             "GET",
@@ -62,7 +55,7 @@ class RIDSystemObserver(object):
 
     def observe_flight_details(
         self, flight_id: str
-    ) -> Tuple[Optional[observation_api.GetDetailsResponse], fetch.Query]:
+    ) -> tuple[observation_api.GetDetailsResponse | None, fetch.Query]:
         query = fetch.query_and_describe(
             self.session,
             "GET",
@@ -96,11 +89,11 @@ class ObserverConfiguration(ImplicitDict):
 
 
 class NetRIDObserversSpecification(ImplicitDict):
-    observers: List[ObserverConfiguration]
+    observers: list[ObserverConfiguration]
 
 
 class NetRIDObserversResource(Resource[NetRIDObserversSpecification]):
-    observers: List[RIDSystemObserver]
+    observers: list[RIDSystemObserver]
 
     def __init__(
         self,
@@ -108,7 +101,7 @@ class NetRIDObserversResource(Resource[NetRIDObserversSpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(NetRIDObserversResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         auth_adapter.assert_scopes_available(
             scopes_required={
                 Scope.Observe: "observe RID flights visible to user from USSs under test"

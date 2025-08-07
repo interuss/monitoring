@@ -1,7 +1,6 @@
 import os
 import uuid
 from datetime import UTC, datetime
-from typing import List, Tuple, Union
 
 import arrow
 import flask
@@ -50,7 +49,7 @@ def tracer_list_observation_areas() -> flask.Response:
 @ui_auth.login_required(role="admin")
 def tracer_upsert_observation_area(
     area_id: str,
-) -> Union[Tuple[str, int], flask.Response]:
+) -> tuple[str, int] | flask.Response:
     try:
         req_body = flask.request.json
         if req_body is None:
@@ -60,7 +59,7 @@ def tracer_upsert_observation_area(
             req_body, PutObservationAreaRequest
         )
     except ValueError as e:
-        msg = "Upsert observation area for tracer unable to parse JSON: {}".format(e)
+        msg = f"Upsert observation area for tracer unable to parse JSON: {e}"
         return msg, 400
 
     with db as tx:
@@ -91,7 +90,7 @@ def tracer_upsert_observation_area(
 @ui_auth.login_required(role="admin")
 def tracer_delete_observation_area(
     area_id: str,
-) -> Union[Tuple[str, int], flask.Response]:
+) -> tuple[str, int] | flask.Response:
     with db as tx:
         if area_id not in tx.observation_areas:
             return "Specified observation area not in system", 404
@@ -108,7 +107,7 @@ def tracer_delete_observation_area(
 
 @webapp.route("/tracer/observation_areas/import_requests", methods=["POST"])
 @ui_auth.login_required(role="admin")
-def tracer_import_observation_areas() -> Union[Tuple[str, int], flask.Response]:
+def tracer_import_observation_areas() -> tuple[str, int] | flask.Response:
     try:
         req_body = flask.request.json
         if req_body is None:
@@ -118,7 +117,7 @@ def tracer_import_observation_areas() -> Union[Tuple[str, int], flask.Response]:
             req_body, ImportObservationAreasRequest
         )
     except ValueError as e:
-        msg = "Import observation area for tracer unable to parse JSON: {}".format(e)
+        msg = f"Import observation area for tracer unable to parse JSON: {e}"
         return msg, 400
 
     auth_spec = context.resolve_auth_spec(None)
@@ -219,7 +218,7 @@ def _shutdown():
     )
 
     with db as tx:
-        observation_areas: List[ObservationArea] = [v for _, v in tx.observation_areas]
+        observation_areas: list[ObservationArea] = [v for _, v in tx.observation_areas]
         tx.observation_areas.clear()
 
     for area in observation_areas:

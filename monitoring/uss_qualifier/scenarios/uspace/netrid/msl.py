@@ -1,5 +1,3 @@
-from typing import List
-
 import s2sphere
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
@@ -21,7 +19,7 @@ ACCEPTABLE_DATUMS = {AltitudeReference.EGM96, AltitudeReference.EGM2008}
 
 
 class MSLAltitude(TestScenario):
-    _ussps: List[ParticipantID]
+    _ussps: list[ParticipantID]
 
     def __init__(self, observers: NetRIDObserversResource):
         super().__init__()
@@ -53,7 +51,7 @@ class MSLAltitude(TestScenario):
 
         self.end_test_scenario()
 
-    def _evaluate_msl_altitude(self, queries: List[Query]):
+    def _evaluate_msl_altitude(self, queries: list[Query]):
         for query in queries:
             if (
                 "query_type" not in query

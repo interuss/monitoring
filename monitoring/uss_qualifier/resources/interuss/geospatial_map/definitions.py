@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import List, Optional
 
 from implicitdict import ImplicitDict
 
@@ -21,13 +20,13 @@ class FeatureCheck(ImplicitDict):
     geospatial_check_id: str
     """Unique (within table) test step/row identifier."""
 
-    requirement_ids: List[str]
+    requirement_ids: list[str]
     """Jurisdictional identifiers of the requirements this test step is evaluating."""
 
     description: str
     """Human-readable test step description to aid in the debugging and traceability."""
 
-    operation_rule_set: Optional[str] = None
+    operation_rule_set: str | None = None
     """The set of operating rules (or rule set) under which the operation described in the feature check should be performed."""
 
     volumes: Volume4DTemplateCollection
@@ -36,7 +35,7 @@ class FeatureCheck(ImplicitDict):
     A service provider is expected to provide geospatial features relevant to any of the entire area specified and for any of the entire time specified.
     """
 
-    restriction_source: Optional[str] = None
+    restriction_source: str | None = None
     """Which source for geospatial features describing restrictions should be considered when looking for the expected outcome."""
 
     expected_result: ExpectedFeatureCheckResult
@@ -44,4 +43,4 @@ class FeatureCheck(ImplicitDict):
 
 
 class FeatureCheckTable(ImplicitDict):
-    rows: List[FeatureCheck]
+    rows: list[FeatureCheck]

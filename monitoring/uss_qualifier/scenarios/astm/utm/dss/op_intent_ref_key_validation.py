@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Dict, List
 
 from uas_standards.astm.f3548.v21.api import (
     AirspaceConflictResponse,
@@ -48,10 +47,10 @@ class OIRKeyValidation(TestScenario):
 
     _dss: DSSInstance
 
-    _oir_ids: List[EntityID]
+    _oir_ids: list[EntityID]
 
     # Keep track of the current OIR state
-    _current_oirs: Dict[EntityID, OperationalIntentReference]
+    _current_oirs: dict[EntityID, OperationalIntentReference]
 
     def __init__(
         self,
@@ -174,7 +173,7 @@ class OIRKeyValidation(TestScenario):
         self.end_test_step()
 
     def _attempt_creation_expect_conflict(
-        self, oir_id: EntityID, oir_params, conflicting_ids: List[EntityID]
+        self, oir_id: EntityID, oir_params, conflicting_ids: list[EntityID]
     ):
         with self.check(
             "Create operational intent reference with missing OVN fails", self._pid
@@ -205,7 +204,7 @@ class OIRKeyValidation(TestScenario):
         self,
         oir_id: EntityID,
         oir_params,
-        conflicting_ids: List[EntityID],
+        conflicting_ids: list[EntityID],
         ovn: EntityID,
     ):
         with self.check(
@@ -315,7 +314,7 @@ class OIRKeyValidation(TestScenario):
         self._current_oirs[third_oir.id] = third_oir
 
     def _validate_conflict_response(
-        self, conflicting_ids: List[EntityID], query: fetch.Query
+        self, conflicting_ids: list[EntityID], query: fetch.Query
     ):
         """Checks that the conflict response body is as specified.
         If the missing_operational_intents field is defined, its content is checked against the list of passed conflicting ids.
@@ -432,7 +431,7 @@ class OIRKeyValidation(TestScenario):
 
 
 def _expect_conflict_code(
-    check: PendingCheck, conflicting_ids: List[EntityID], query: fetch.Query
+    check: PendingCheck, conflicting_ids: list[EntityID], query: fetch.Query
 ):
     if query.status_code != 409:
         check.record_failed(

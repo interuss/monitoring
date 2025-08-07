@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import Dict
 
 import arrow
 from implicitdict import StringBasedTimeDelta
@@ -50,7 +49,7 @@ class FlightIntentValidation(TestScenario):
     )
     PLAN_VALID_FLIGHT_STEP = "Plan Valid Flight"
 
-    times: Dict[TimeDuringTest, Time]
+    times: dict[TimeDuringTest, Time]
 
     valid_flight: FlightInfoTemplate
     valid_activated: FlightInfoTemplate

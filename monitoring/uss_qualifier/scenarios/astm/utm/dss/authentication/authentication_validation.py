@@ -1,5 +1,3 @@
-from typing import Optional
-
 from uas_standards.astm.f3548.v21.api import UssAvailabilityState
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -54,9 +52,9 @@ class AuthenticationValidation(TestScenario):
     _test_id: str
     """Base identifier for the entities that will be created"""
 
-    _scd_dss: Optional[DSSInstance] = None
-    _availability_dss: Optional[DSSInstance] = None
-    _constraints_dss: Optional[DSSInstance] = None
+    _scd_dss: DSSInstance | None = None
+    _availability_dss: DSSInstance | None = None
+    _constraints_dss: DSSInstance | None = None
 
     def __init__(
         self,

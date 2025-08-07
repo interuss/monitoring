@@ -1,4 +1,4 @@
-from typing import Dict, TypeVar
+from typing import TypeVar
 
 from implicitdict import ImplicitDict
 
@@ -20,7 +20,7 @@ class ActionGeneratorDefinition(ImplicitDict):
     specification: dict = {}
     """Specification of action generator; format is the ActionGeneratorSpecificationType that corresponds to the `generator_type`"""
 
-    resources: Dict[ResourceID, ResourceID]
+    resources: dict[ResourceID, ResourceID]
     """Mapping of the ID a resource will be known by in the child action -> the ID a resource is known by in the parent test suite.
 
     The child action resource ID <key> is supplied by the parent test suite resource ID <value>.

@@ -1,6 +1,6 @@
 import inspect
 import os
-from typing import Any, Dict, List, Optional, Type
+from typing import Any
 
 import marko
 import marko.element
@@ -29,7 +29,7 @@ TEST_STEP_FRAGMENT_SUFFIX = " test step fragment"
 TEST_CHECK_SUFFIX = " check"
 
 
-_test_step_cache: Dict[str, TestStepDocumentation] = {}
+_test_step_cache: dict[str, TestStepDocumentation] = {}
 
 
 def _length_of_section(values, start_of_section: int) -> int:
@@ -44,7 +44,7 @@ def _length_of_section(values, start_of_section: int) -> int:
     return c - start_of_section - 1
 
 
-def _requirements_in(values) -> List[RequirementID]:
+def _requirements_in(values) -> list[RequirementID]:
     reqs = []
     for v in values:
         if isinstance(v, marko.inline.StrongEmphasis):
@@ -55,7 +55,7 @@ def _requirements_in(values) -> List[RequirementID]:
 
 
 def _parse_test_check(
-    values, doc_filename: str, anchors: Dict[Any, str]
+    values, doc_filename: str, anchors: dict[Any, str]
 ) -> TestCheckDocumentation:
     name = text_of(values[0])[0 : -len(TEST_CHECK_SUFFIX)]
     url = repo_url_of(doc_filename + anchors[values[0]])
@@ -94,7 +94,7 @@ def _get_linked_test_step_fragment(
             raise ValueError(
                 f'Test step fragment document "{doc_filename}" linked from "{origin_filename}" does not exist at "{absolute_path}"'
             )
-        with open(absolute_path, "r") as f:
+        with open(absolute_path) as f:
             doc = marko.parse(f.read())
 
         if (
@@ -116,14 +116,14 @@ def _get_linked_test_step_fragment(
 
 
 def _parse_test_step(
-    values, doc_filename: str, anchors: Dict[Any, str]
+    values, doc_filename: str, anchors: dict[Any, str]
 ) -> TestStepDocumentation:
     name = text_of(values[0])
     if name.lower().endswith(TEST_STEP_SUFFIX):
         name = name[0 : -len(TEST_STEP_SUFFIX)]
     url = repo_url_of(doc_filename + anchors[values[0]])
 
-    checks: List[TestCheckDocumentation] = []
+    checks: list[TestCheckDocumentation] = []
     if values[0].children and isinstance(
         values[0].children[0], marko.block.inline.Link
     ):
@@ -159,13 +159,13 @@ def _parse_test_step(
 
 
 def _parse_test_case(
-    values, doc_filename: str, anchors: Dict[Any, str]
+    values, doc_filename: str, anchors: dict[Any, str]
 ) -> TestCaseDocumentation:
     name = text_of(values[0])[0 : -len(TEST_CASE_SUFFIX)]
 
     url = repo_url_of(doc_filename + anchors[values[0]])
 
-    steps: List[TestStepDocumentation] = []
+    steps: list[TestStepDocumentation] = []
     c = 1
     while c < len(values):
         if isinstance(values[c], marko.block.Heading):
@@ -183,9 +183,9 @@ def _parse_test_case(
     return TestCaseDocumentation(name=name, steps=steps, url=url)
 
 
-def _parse_resources(values) -> List[str]:
+def _parse_resources(values) -> list[str]:
     resource_level = values[0].level + 1
-    resources: List[str] = []
+    resources: list[str] = []
     c = 1
     while c < len(values):
         if (
@@ -198,13 +198,11 @@ def _parse_resources(values) -> List[str]:
     return resources
 
 
-def get_documentation_filename(scenario: Type) -> str:
+def get_documentation_filename(scenario: type) -> str:
     return os.path.splitext(inspect.getfile(scenario))[0] + ".md"
 
 
-def _get_anchors(
-    value, header_counts: Optional[Dict[str, int]] = None
-) -> Dict[Any, str]:
+def _get_anchors(value, header_counts: dict[str, int] | None = None) -> dict[Any, str]:
     if header_counts is None:
         header_counts = {}
     anchors = {}
@@ -231,16 +229,14 @@ def _get_anchors(
     return anchors
 
 
-def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
+def _parse_documentation(scenario: type) -> TestScenarioDocumentation:
     # Load the .md file matching the Python file where this scenario type is defined
     doc_filename = get_documentation_filename(scenario)
     if not os.path.exists(doc_filename):
         raise ValueError(
-            "Test scenario `{}` does not have the required documentation file `{}`".format(
-                fullname(scenario), doc_filename
-            )
+            f"Test scenario `{fullname(scenario)}` does not have the required documentation file `{doc_filename}`"
         )
-    with open(doc_filename, "r") as f:
+    with open(doc_filename) as f:
         doc = marko.parse(f.read())
     url = repo_url_of(doc_filename)
     anchors = _get_anchors(doc)
@@ -252,14 +248,12 @@ def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
         or not text_of(doc.children[0]).lower().endswith(TEST_SCENARIO_SUFFIX)
     ):
         raise ValueError(
-            'The first line of {} must be a level-1 heading with the name of the scenario + "{}" (e.g., "# ASTM NetRID nominal behavior{}")'.format(
-                doc_filename, TEST_SCENARIO_SUFFIX, TEST_SCENARIO_SUFFIX
-            )
+            f'The first line of {doc_filename} must be a level-1 heading with the name of the scenario + "{TEST_SCENARIO_SUFFIX}" (e.g., "# ASTM NetRID nominal behavior{TEST_SCENARIO_SUFFIX}")'
         )
     scenario_name = text_of(doc.children[0])[0 : -len(TEST_SCENARIO_SUFFIX)]
 
     # Step through the document to extract important structured components
-    test_cases: List[TestCaseDocumentation] = []
+    test_cases: list[TestCaseDocumentation] = []
     resources = None
     cleanup = None
     c = 1
@@ -313,7 +307,7 @@ def _parse_documentation(scenario: Type) -> TestScenarioDocumentation:
     return TestScenarioDocumentation(**kwargs)
 
 
-def get_documentation(scenario: Type) -> TestScenarioDocumentation:
+def get_documentation(scenario: type) -> TestScenarioDocumentation:
     DOC_CACHE_ATTRIBUTE = f"_md_documentation_{scenario.__name__}"
     if not hasattr(scenario, DOC_CACHE_ATTRIBUTE):
         setattr(scenario, DOC_CACHE_ATTRIBUTE, _parse_documentation(scenario))

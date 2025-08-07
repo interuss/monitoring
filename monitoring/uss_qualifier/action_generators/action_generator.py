@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import inspect
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, Iterator, List, Optional, Type, TypeVar
+from collections.abc import Iterator
+from typing import Any, TypeVar
 
 from implicitdict import ImplicitDict
 
@@ -23,14 +24,14 @@ from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.resource import ResourceType
 
 
-class ActionGenerator(ABC, Generic[ActionGeneratorSpecificationType]):
+class ActionGenerator[ActionGeneratorSpecificationType](ABC):
     definition: ActionGeneratorDefinition
 
     @abstractmethod
     def __init__(
         self,
         specification: ActionGeneratorSpecificationType,
-        resources: Dict[ResourceID, ResourceType],
+        resources: dict[ResourceID, ResourceType],
     ):
         """Create an instance of the action generator.
 
@@ -56,8 +57,8 @@ class ActionGenerator(ABC, Generic[ActionGeneratorSpecificationType]):
 
     @classmethod
     def list_potential_actions(
-        cls, specification: Optional[ActionGeneratorSpecificationType]
-    ) -> List[PotentialGeneratedAction]:
+        cls, specification: ActionGeneratorSpecificationType | None
+    ) -> list[PotentialGeneratedAction]:
         """Enumerate the potential actions that may be run by an instance of this generator type.
 
         Concrete subclasses of ActionGenerator must implement a classmethod that shadows this one according to this
@@ -86,7 +87,7 @@ class ActionGenerator(ABC, Generic[ActionGeneratorSpecificationType]):
 
     @staticmethod
     def make_from_definition(
-        definition: ActionGeneratorDefinition, resources: Dict[ResourceID, ResourceType]
+        definition: ActionGeneratorDefinition, resources: dict[ResourceID, ResourceType]
     ) -> ActionGeneratorType:
         action_generator_type = action_generator_type_from_name(
             definition.generator_type
@@ -109,7 +110,7 @@ ActionGeneratorType = TypeVar("ActionGeneratorType", bound=ActionGenerator)
 
 def action_generator_type_from_name(
     action_generator_type_name: GeneratorTypeName,
-) -> Type[ActionGenerator]:
+) -> type[ActionGenerator]:
     from monitoring.uss_qualifier import action_generators as action_generators_module
 
     import_submodules(action_generators_module)
@@ -119,16 +120,14 @@ def action_generator_type_from_name(
     )
     if not issubclass(action_generator_type, ActionGenerator):
         raise NotImplementedError(
-            "Action generator type {} is not a subclass of the ActionGenerator base class".format(
-                action_generator_type.__name__
-            )
+            f"Action generator type {action_generator_type.__name__} is not a subclass of the ActionGenerator base class"
         )
     return action_generator_type
 
 
 def action_generator_specification_type(
-    action_generator_type: Type[ActionGenerator],
-) -> Optional[Type]:
+    action_generator_type: type[ActionGenerator],
+) -> type | None:
     constructor_signature = inspect.signature(action_generator_type.__init__)
     specification_type = None
     for arg_name, arg in constructor_signature.parameters.items():

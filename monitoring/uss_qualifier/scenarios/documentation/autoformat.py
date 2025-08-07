@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Iterable, List
+from collections.abc import Iterable
 
 import marko.block
 import marko.element
@@ -17,14 +17,14 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 def format_scenario_documentation(
     test_scenarios: Iterable[TestScenarioType],
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Get new documentation content after autoformatting Scenario docs.
 
     Returns:
         Mapping from .md filename to content that file should contain (which is
         different from what it currently contains).
     """
-    new_versions: Dict[str, str] = {}
+    new_versions: dict[str, str] = {}
     to_check = []
     for test_scenario in test_scenarios:
         doc_filename = get_documentation_filename(test_scenario)
@@ -41,7 +41,7 @@ def format_scenario_documentation(
         checked.add(doc_filename)
 
         # Load the .md file if it exists
-        with open(doc_filename, "r") as f:
+        with open(doc_filename) as f:
             original = f.read()
         md = marko.Markdown(renderer=MarkdownRenderer)
         doc = md.parse(original)
@@ -113,7 +113,7 @@ def _add_requirement_links(parent: marko.element.Element, doc_path: str) -> None
 
 def _enumerate_linked_test_steps(
     parent: marko.element.Element, doc_path: str
-) -> List[str]:
+) -> list[str]:
     linked_test_steps = []
     if hasattr(parent, "children") and not isinstance(parent.children, str):
         for i, child in enumerate(parent.children):

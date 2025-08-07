@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
@@ -59,7 +58,7 @@ class NextDay(ImplicitDict):
       * "-08:00" (ISO time zone)
       * "US/Pacific" (IANA time zone)"""
 
-    days_of_the_week: Optional[List[DayOfTheWeek]] = None
+    days_of_the_week: list[DayOfTheWeek] | None = None
     """Acceptable days of the week.  Omit to indicate that any day of the week is acceptable."""
 
 
@@ -77,32 +76,32 @@ class TimeDuringTest(str, Enum):
 class TestTime(ImplicitDict):
     """Exactly one of the time option fields of this object must be specified."""
 
-    absolute_time: Optional[StringBasedDateTime] = None
+    absolute_time: StringBasedDateTime | None = None
     """Time option field to use a precise timestamp which does not change with test conditions.
 
     The value of absolute_time is limited given that the specific time a test will be started is unknown, and the jurisdictions usually impose a limit on how far in the future an operation can be planned.
     """
 
-    time_during_test: Optional[TimeDuringTest] = None
+    time_during_test: TimeDuringTest | None = None
     """Time option field to, if specified, use a timestamp relating to the current test run."""
 
-    next_day: Optional[NextDay] = None
+    next_day: NextDay | None = None
     """Time option field to use a timestamp equal to midnight beginning the next occurrence of any matching day following the specified reference timestamp."""
 
-    next_sun_position: Optional[NextSunPosition] = None
+    next_sun_position: NextSunPosition | None = None
     """Time option field to use a timestamp equal to the next time after the specified reference timestamp at which the sun will be at the specified angle above the horizon."""
 
-    offset_from: Optional[OffsetTime] = None
+    offset_from: OffsetTime | None = None
     """Time option field to use a timestamp that is offset by the specified amount from the specified time."""
 
-    use_timezone: Optional[str] = None
+    use_timezone: str | None = None
     """If specified, report the timestamp in the specified time zone.  Examples:
       * "local" (local time of machine running this code)
       * "Z" (Zulu time)
       * "-08:00" (ISO time zone)
       * "US/Pacific" (IANA time zone)"""
 
-    def resolve(self, times: Dict[TimeDuringTest, Time]) -> Time:
+    def resolve(self, times: dict[TimeDuringTest, Time]) -> Time:
         """Resolve TestTime into specific Time."""
         result = None
         if self.absolute_time is not None:

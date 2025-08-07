@@ -20,11 +20,9 @@ def test_ensure_clean_workspace(ids, scd_api, scd_session):
 @default_scope(SCOPE_SC)
 def test_op_accepted(ids, scd_api, scd_session):
     # Accepted for the first time
-    with open("./scd/resources/op_request_1.json", "r") as f:
+    with open("./scd/resources/op_request_1.json") as f:
         req = json.load(f)
-    resp = scd_session.put(
-        "/operational_intent_references/{}".format(ids(OP_TYPE)), json=req
-    )
+    resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
     assert resp.status_code == 201, resp.content
 
 
@@ -32,13 +30,13 @@ def test_op_accepted(ids, scd_api, scd_session):
 @default_scope(SCOPE_SC)
 def test_op_activated(ids, scd_api, scd_session):
     # GET current op
-    resp = scd_session.get("/operational_intent_references/{}".format(ids(OP_TYPE)))
+    resp = scd_session.get(f"/operational_intent_references/{ids(OP_TYPE)}")
     assert resp.status_code == 200, resp.content
     existing_op = resp.json().get("operational_intent_reference", None)
     assert existing_op is not None
 
     # Accepted to Activated
-    with open("./scd/resources/op_request_1.json", "r") as f:
+    with open("./scd/resources/op_request_1.json") as f:
         req = json.load(f)
         req["state"] = "Activated"
         req["old_version"] = 1
@@ -54,40 +52,34 @@ def test_op_activated(ids, scd_api, scd_session):
 @default_scope(SCOPE_SC)
 def test_op_accepted_bad1(ids, scd_api, scd_session):
     # GET current op
-    resp = scd_session.get("/operational_intent_references/{}".format(ids(OP_TYPE)))
+    resp = scd_session.get(f"/operational_intent_references/{ids(OP_TYPE)}")
     assert resp.status_code == 200, resp.content
     existing_op = resp.json().get("operational_intent_reference", None)
     assert existing_op is not None
 
     # Activated to Accepted with bad version number 0
-    with open("./scd/resources/op_request_1.json", "r") as f:
+    with open("./scd/resources/op_request_1.json") as f:
         req = json.load(f)
         req["key"] = [existing_op["ovn"]]
-    resp = scd_session.put(
-        "/operational_intent_references/{}".format(ids(OP_TYPE)), json=req
-    )
+    resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
     assert resp.status_code == 409, resp.content
 
 
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_op_bad_state_transition(ids, scd_api, scd_session):
-    resp = scd_session.get("/operational_intent_references/{}".format(ids(OP_TYPE)))
+    resp = scd_session.get(f"/operational_intent_references/{ids(OP_TYPE)}")
     assert resp.status_code == 200, resp.content
     ovn = resp.json().get("operational_intent_reference", {}).get("ovn", None)
     # Delete operation
-    resp = scd_session.delete(
-        "/operational_intent_references/{}/{}".format(ids(OP_TYPE), ovn)
-    )
+    resp = scd_session.delete(f"/operational_intent_references/{ids(OP_TYPE)}/{ovn}")
     assert resp.status_code == 200, resp.content
 
     # Create operation with Closed state
-    with open("./scd/resources/op_request_1.json", "r") as f:
+    with open("./scd/resources/op_request_1.json") as f:
         req = json.load(f)
         req["state"] = "Ended"
-    resp = scd_session.put(
-        "/operational_intent_references/{}".format(ids(OP_TYPE)), json=req
-    )
+    resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
     assert resp.status_code == 400, resp.content
 
 

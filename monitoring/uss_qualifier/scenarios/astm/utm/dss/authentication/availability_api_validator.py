@@ -1,5 +1,3 @@
-from typing import Optional
-
 from uas_standards.astm.f3548.v21.api import (
     OPERATIONS,
     OperationID,
@@ -19,7 +17,7 @@ from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenar
 
 
 class AvailabilityAuthValidator:
-    _current_availability: Optional[UssAvailabilityStatusResponse] = None
+    _current_availability: UssAvailabilityStatusResponse | None = None
 
     def __init__(
         self,
@@ -29,7 +27,7 @@ class AvailabilityAuthValidator:
         test_id: str,
         no_auth_session: UTMClientSession,
         invalid_token_session: UTMClientSession,
-        test_wrong_scope: Optional[str] = None,
+        test_wrong_scope: str | None = None,
         test_missing_scope: bool = False,
     ):
         """

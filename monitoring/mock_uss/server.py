@@ -1,11 +1,11 @@
 import os
 import signal
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 from multiprocessing import Process
-from typing import Callable, Dict, Optional, Tuple
 
 import arrow
 import flask
@@ -25,20 +25,20 @@ class TaskTrigger(str, Enum):
 
 
 @dataclass
-class OneTimeServerTask(object):
+class OneTimeServerTask:
     run: Callable[[], None]
     trigger: TaskTrigger
 
 
 @dataclass
-class PeriodicServerTask(object):
+class PeriodicServerTask:
     run: Callable[[], None]
 
 
 class MockUSS(flask.Flask):
     _pid: int
-    _one_time_tasks: Dict[str, OneTimeServerTask]
-    _periodic_tasks: Dict[str, PeriodicServerTask]
+    _one_time_tasks: dict[str, OneTimeServerTask]
+    _periodic_tasks: dict[str, PeriodicServerTask]
 
     jinja_loader = FileSystemLoader(
         [
@@ -52,7 +52,7 @@ class MockUSS(flask.Flask):
         logger.info(f"Initializing MockUSS from process {self._pid}")
         self._one_time_tasks = {}
         self._periodic_tasks = {}
-        super(MockUSS, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def add_one_time_task(
         self, task: Callable[[], None], name: str, trigger: TaskTrigger
@@ -86,7 +86,7 @@ class MockUSS(flask.Flask):
         return shutdown_task_decorator
 
     def _run_one_time_tasks(self, trigger: TaskTrigger):
-        tasks: Dict[str, OneTimeServerTask] = {}
+        tasks: dict[str, OneTimeServerTask] = {}
         with db as tx:
             for task_name, task in self._one_time_tasks.items():
                 if task.trigger == trigger and task_name not in tx.one_time_tasks:
@@ -143,7 +143,7 @@ class MockUSS(flask.Flask):
 
         return periodic_task_decorator
 
-    def set_task_period(self, task_name: str, period: Optional[timedelta]):
+    def set_task_period(self, task_name: str, period: timedelta | None):
         if task_name not in self._periodic_tasks:
             raise ValueError(
                 f"Periodic task '{task_name}' is not declared, so its period cannot be set"
@@ -183,9 +183,9 @@ class MockUSS(flask.Flask):
                         break
 
                     # Find the earliest scheduled task
-                    earliest_task: Optional[
-                        Tuple[str, datetime, PeriodicTaskStatus]
-                    ] = None
+                    earliest_task: tuple[str, datetime, PeriodicTaskStatus] | None = (
+                        None
+                    )
                     for task_name, task in tx.periodic_tasks.items():
                         if task.executing:
                             # Don't consider executing tasks that are already executing
@@ -285,7 +285,7 @@ class MockUSS(flask.Flask):
                 f"Process {os.getpid()} detected that server shutdown was already in process when stop was requested"
             )
 
-    def shutdown(self, signal_number: Optional[int], stack):
+    def shutdown(self, signal_number: int | None, stack):
         if os.getpid() != self._pid:
             logger.debug(f"Process {os.getpid()} skipping shutdown procedure")
             return

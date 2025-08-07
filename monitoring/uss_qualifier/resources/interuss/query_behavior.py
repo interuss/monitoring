@@ -1,5 +1,3 @@
-from typing import Optional
-
 from implicitdict import ImplicitDict
 from loguru import logger
 
@@ -8,19 +6,19 @@ from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class QueryBehaviorSpecification(ImplicitDict):
-    connect_timeout_seconds: Optional[float]
+    connect_timeout_seconds: float | None
     """Number of seconds to allow for establishing a connection.  Use 0 for no timeout."""
 
-    read_timeout_seconds: Optional[float]
+    read_timeout_seconds: float | None
     """Number of seconds to allow for a request to complete after establishing a connection.  Use 0 for no timeout."""
 
-    attempts: Optional[int]
+    attempts: int | None
     """Number of attempts to query when experiencing a retryable error like a timeout"""
 
-    add_request_id: Optional[bool]
+    add_request_id: bool | None
     """Whether to automatically add a `request_id` field to any request with a JSON body and no pre-existing `request_id` field"""
 
-    fake_netlocs: Optional[list[str]]
+    fake_netlocs: list[str] | None
     """Network locations well-known to be fake and for which a request should fail immediately without being attempted."""
 
 
@@ -36,7 +34,7 @@ class QueryBehaviorResource(Resource[QueryBehaviorSpecification]):
         specification: QueryBehaviorSpecification,
         resource_origin: str,
     ):
-        super(QueryBehaviorResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
 
         if (
             "connect_timeout_seconds" in specification

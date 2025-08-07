@@ -1,5 +1,4 @@
 import datetime
-from typing import Dict, List, Optional, Set, Union
 
 import s2sphere
 import uas_standards.astm.f3411.v19.api as v19_api
@@ -20,7 +19,7 @@ from monitoring.monitorlib.rid import RIDVersion
 class ChangedSubscription(RIDQuery):
     """Version-independent representation of a subscription following a change in the DSS."""
 
-    mutation: Optional[str] = None
+    mutation: str | None = None
 
     @property
     def _v19_response(self) -> v19_api.PutSubscriptionResponse:
@@ -37,9 +36,9 @@ class ChangedSubscription(RIDQuery):
         )
 
     @property
-    def errors(self) -> List[str]:
+    def errors(self) -> list[str]:
         if self.status_code != 200:
-            return ["Failed to mutate subscription ({})".format(self.status_code)]
+            return [f"Failed to mutate subscription ({self.status_code})"]
         if self.query.response.json is None:
             return ["Subscription response did not include valid JSON"]
 
@@ -64,7 +63,7 @@ class ChangedSubscription(RIDQuery):
         return []
 
     @property
-    def subscription(self) -> Optional[Subscription]:
+    def subscription(self) -> Subscription | None:
         if not self.success:
             return None
         if self.rid_version == RIDVersion.f3411_19:
@@ -77,7 +76,7 @@ class ChangedSubscription(RIDQuery):
             )
 
     @property
-    def isas(self) -> List[ISA]:
+    def isas(self) -> list[ISA]:
         if self.rid_version == RIDVersion.f3411_19:
             return [ISA(v19_value=isa) for isa in self._v19_response.service_areas]
         elif self.rid_version == RIDVersion.f3411_22a:
@@ -89,17 +88,17 @@ class ChangedSubscription(RIDQuery):
 
 
 def upsert_subscription(
-    area_vertices: List[s2sphere.LatLng],
+    area_vertices: list[s2sphere.LatLng],
     alt_lo: float,
     alt_hi: float,
-    start_time: Optional[datetime.datetime],
-    end_time: Optional[datetime.datetime],
+    start_time: datetime.datetime | None,
+    end_time: datetime.datetime | None,
     uss_base_url: str,
     subscription_id: str,
     rid_version: RIDVersion,
     utm_client: infrastructure.UTMClientSession,
-    subscription_version: Optional[str] = None,
-    participant_id: Optional[str] = None,
+    subscription_version: str | None = None,
+    participant_id: str | None = None,
 ) -> ChangedSubscription:
     mutation = "create" if subscription_version is None else "update"
     if rid_version == RIDVersion.f3411_19:
@@ -180,7 +179,7 @@ def delete_subscription(
     subscription_version: str,
     rid_version: RIDVersion,
     utm_client: infrastructure.UTMClientSession,
-    participant_id: Optional[str] = None,
+    participant_id: str | None = None,
 ) -> ChangedSubscription:
     if rid_version == RIDVersion.f3411_19:
         op = v19_api.OPERATIONS[v19_api.OperationID.DeleteSubscription]
@@ -220,18 +219,18 @@ class ISAChangeNotification(RIDQuery):
     """Version-independent representation of response to a USS notification following an ISA change in the DSS."""
 
     @property
-    def errors(self) -> List[str]:
+    def errors(self) -> list[str]:
         # Tolerate not-strictly-correct 200 response
         if self.status_code != 204 and self.status_code != 200:
-            return ["Failed to notify ({})".format(self.status_code)]
+            return [f"Failed to notify ({self.status_code})"]
         return []
 
 
 class SubscriberToNotify(ImplicitDict):
     """Version-independent representation of a subscriber to notify of a change in the DSS."""
 
-    v19_value: Optional[v19_api.SubscriberToNotify] = None
-    v22a_value: Optional[v22a_api.SubscriberToNotify] = None
+    v19_value: v19_api.SubscriberToNotify | None = None
+    v22a_value: v22a_api.SubscriberToNotify | None = None
 
     @property
     def rid_version(self) -> RIDVersion:
@@ -247,7 +246,7 @@ class SubscriberToNotify(ImplicitDict):
     @property
     def raw(
         self,
-    ) -> Union[v19_api.SubscriberToNotify, v22a_api.SubscriberToNotify]:
+    ) -> v19_api.SubscriberToNotify | v22a_api.SubscriberToNotify:
         if self.rid_version == RIDVersion.f3411_19:
             return self.v19_value
         elif self.rid_version == RIDVersion.f3411_22a:
@@ -261,8 +260,8 @@ class SubscriberToNotify(ImplicitDict):
         self,
         isa_id: str,
         utm_session: infrastructure.UTMClientSession,
-        isa: Optional[ISA] = None,
-        participant_id: Optional[str] = None,
+        isa: ISA | None = None,
+        participant_id: str | None = None,
     ) -> ISAChangeNotification:
         # Note that optional `extents` are not specified
         if self.rid_version == RIDVersion.f3411_19:
@@ -315,7 +314,7 @@ class SubscriberToNotify(ImplicitDict):
 class ChangedISA(RIDQuery):
     """Version-independent representation of a changed F3411 identification service area."""
 
-    mutation: Optional[str] = None
+    mutation: str | None = None
 
     @property
     def _v19_response(
@@ -336,13 +335,13 @@ class ChangedISA(RIDQuery):
         )
 
     @property
-    def errors(self) -> List[str]:
+    def errors(self) -> list[str]:
         # Tolerate reasonable-but-technically-incorrect code 201
         if not (
             self.status_code == 200
             or (self.mutation == "create" and self.status_code == 201)
         ):
-            return ["Failed to mutate ISA ({})".format(self.status_code)]
+            return [f"Failed to mutate ISA ({self.status_code})"]
         if self.query.response.json is None:
             return ["ISA response did not include valid JSON"]
 
@@ -384,7 +383,7 @@ class ChangedISA(RIDQuery):
             )
 
     @property
-    def subscribers(self) -> Optional[List[SubscriberToNotify]]:
+    def subscribers(self) -> list[SubscriberToNotify] | None:
         if self.rid_version == RIDVersion.f3411_19:
             if (
                 "subscribers" not in self._v19_response
@@ -410,7 +409,7 @@ class ChangedISA(RIDQuery):
             )
 
     @property
-    def sub_ids(self) -> Set[str]:
+    def sub_ids(self) -> set[str]:
         if self.rid_version == RIDVersion.f3411_19:
             return set(
                 [
@@ -440,24 +439,24 @@ class ISAChange(ImplicitDict):
 
     dss_query: ChangedISA
 
-    notifications: Dict[str, ISAChangeNotification]
+    notifications: dict[str, ISAChangeNotification]
     """Mapping from USS base URL to change notification query"""
 
     @property
-    def subscribers(self) -> Optional[List[SubscriberToNotify]]:
+    def subscribers(self) -> list[SubscriberToNotify] | None:
         """List of subscribers that required a notification for the change."""
         return self.dss_query.subscribers
 
 
 def build_isa_request_body(
-    area_vertices: List[s2sphere.LatLng],
+    area_vertices: list[s2sphere.LatLng],
     alt_lo: float,
     alt_hi: float,
     start_time: datetime.datetime,
     end_time: datetime.datetime,
     uss_base_url: str,
     rid_version: RIDVersion,
-) -> Dict[str, any]:
+) -> dict[str, any]:
     """Build the http request body expected to PUT or UPDATE an ISA on a DSS,
     in accordance with the specified rid_version."""
     if rid_version == RIDVersion.f3411_19:
@@ -490,7 +489,7 @@ def build_isa_request_body(
 
 
 def build_isa_url(
-    rid_version: RIDVersion, isa_id: str, isa_version: Optional[str] = None
+    rid_version: RIDVersion, isa_id: str, isa_version: str | None = None
 ) -> (Operation, str):
     """Build the required URL to create, get, update or delete an ISA on a DSS,
     in accordance with the specified rid_version and isa_version, if it is available.
@@ -520,7 +519,7 @@ def build_isa_url(
 
 
 def put_isa(
-    area_vertices: List[s2sphere.LatLng],
+    area_vertices: list[s2sphere.LatLng],
     alt_lo: float,
     alt_hi: float,
     start_time: datetime.datetime,
@@ -529,9 +528,9 @@ def put_isa(
     isa_id: str,
     rid_version: RIDVersion,
     utm_client: infrastructure.UTMClientSession,
-    isa_version: Optional[str] = None,
-    participant_id: Optional[str] = None,
-    do_not_notify: Optional[Union[str, List[str]]] = None,
+    isa_version: str | None = None,
+    participant_id: str | None = None,
+    do_not_notify: str | list[str] | None = None,
 ) -> ISAChange:
     is_creation = isa_version is None
     mutation = "create" if is_creation else "update"
@@ -606,8 +605,8 @@ def delete_isa(
     isa_version: str,
     rid_version: RIDVersion,
     utm_client: infrastructure.UTMClientSession,
-    participant_id: Optional[str] = None,
-    do_not_notify: Optional[Union[str, List[str]]] = None,
+    participant_id: str | None = None,
+    do_not_notify: str | list[str] | None = None,
 ) -> ISAChange:
     if rid_version == RIDVersion.f3411_19:
         op = v19_api.OPERATIONS[v19_api.OperationID.DeleteIdentificationServiceArea]
@@ -679,7 +678,7 @@ class UpdatedISA(RIDQuery):
         )
 
     @property
-    def isa(self) -> Optional[ISA]:
+    def isa(self) -> ISA | None:
         if self.rid_version == RIDVersion.f3411_19:
             return ISA(
                 v19_value=(

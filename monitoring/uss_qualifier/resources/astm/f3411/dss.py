@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import List
 from urllib.parse import urlparse
 
 from implicitdict import ImplicitDict
@@ -30,7 +29,7 @@ class DSSInstanceSpecification(ImplicitDict):
             raise ValueError("DSSInstanceConfiguration.base_url must be a URL")
 
 
-class DSSInstance(object):
+class DSSInstance:
     participant_id: ParticipantID
     rid_version: RIDVersion
     base_url: str
@@ -65,7 +64,7 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(DSSInstanceResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
 
         # Note that the current implementation does not support acting as just a
         # SP accessing the DSS or just a DP accessing the DSS, but this could be
@@ -96,11 +95,11 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
 
 
 class DSSInstancesSpecification(ImplicitDict):
-    dss_instances: List[DSSInstanceSpecification]
+    dss_instances: list[DSSInstanceSpecification]
 
 
 class DSSInstancesResource(Resource[DSSInstancesSpecification]):
-    dss_instances: List[DSSInstance]
+    dss_instances: list[DSSInstance]
 
     def __init__(
         self,
@@ -108,7 +107,7 @@ class DSSInstancesResource(Resource[DSSInstancesSpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(DSSInstancesResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.dss_instances = [
             DSSInstanceResource(
                 s, f"instance {i + 1} in {resource_origin}", auth_adapter

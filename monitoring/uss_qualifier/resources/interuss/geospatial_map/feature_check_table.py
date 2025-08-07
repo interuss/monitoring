@@ -16,5 +16,5 @@ class FeatureCheckTableResource(Resource[FeatureCheckTableSpecification]):
     def __init__(
         self, specification: FeatureCheckTableSpecification, resource_origin: str
     ):
-        super(FeatureCheckTableResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.table = specification.table

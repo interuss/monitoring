@@ -1,5 +1,4 @@
 import datetime
-from typing import List
 
 import arrow
 from future.backports.datetime import timedelta
@@ -39,10 +38,10 @@ class ServiceProviderNotifiesSlowUpdates(GenericTestScenario):
     _service_providers: NetRIDServiceProviders
     _evaluation_configuration: EvaluationConfigurationResource
 
-    _injected_flights: List[InjectedFlight]
-    _injected_tests: List[InjectedTest]
+    _injected_flights: list[InjectedFlight]
+    _injected_tests: list[InjectedTest]
 
-    _pre_injection_notifications: dict[str, List[str]] = {}
+    _pre_injection_notifications: dict[str, list[str]] = {}
     _notifications_before: datetime
     _notifications_after: datetime
 

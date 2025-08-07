@@ -1,5 +1,3 @@
-from typing import Optional
-
 from uas_standards.astm.f3548.v21.api import EntityID, SubscriptionID
 
 from monitoring.monitorlib.fetch import QueryError
@@ -19,8 +17,8 @@ def step_oir_has_correct_subscription(
     scenario: TestScenarioType,
     dss: DSSInstance,
     oir_id: EntityID,
-    expected_sub_id: Optional[SubscriptionID],
-    step_name: Optional[str] = None,
+    expected_sub_id: SubscriptionID | None,
+    step_name: str | None = None,
 ):
     """
     Ensure that an OIR is currently attached to the specified subscription,
@@ -53,7 +51,7 @@ def check_oir_has_correct_subscription(
     scenario: TestScenarioType,
     dss: DSSInstance,
     oir_id: EntityID,
-    expected_sub_id: Optional[SubscriptionID],
+    expected_sub_id: SubscriptionID | None,
 ):
     with scenario.check(
         "Get operational intent reference by ID", dss.participant_id

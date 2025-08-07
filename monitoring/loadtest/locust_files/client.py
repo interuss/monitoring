@@ -2,7 +2,6 @@
 
 import os
 import time
-import typing
 
 from locust import User
 from uas_standards.astm.f3411.v19.constants import Scope
@@ -58,11 +57,11 @@ class DSSClient(infrastructure.UTMClientSession):
 class USS(User):
     # Suggested by Locust 1.2.2 API Docs https://docs.locust.io/en/stable/api.html#locust.User.abstract
     abstract = True
-    isa_dict: typing.Dict[str, str] = {}
-    sub_dict: typing.Dict[str, str] = {}
+    isa_dict: dict[str, str] = {}
+    sub_dict: dict[str, str] = {}
 
     def __init__(self, *args, **kwargs):
-        super(USS, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         auth_spec = os.environ.get("AUTH_SPEC")
         oauth_adapter = auth.make_auth_adapter(auth_spec) if auth_spec else None
         self.client = DSSClient(self.host, oauth_adapter)

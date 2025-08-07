@@ -1,8 +1,9 @@
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from itertools import permutations
-from typing import Any, Callable, List, Optional, Tuple, TypeVar
+from typing import Any, TypeVar
 
 from implicitdict import ImplicitDict
 from uas_standards.ansi_cta_2063_a import SerialNumber
@@ -92,14 +93,14 @@ def _assert_operator_location(
 
 
 def test_operator_location():
-    valid_locations: List[
-        Tuple[
-            Optional[LatLngPoint],
-            Optional[Altitude],
-            Optional[OperatorAltitudeAltitudeType],
-            Optional[LatLngPoint],
-            Optional[Altitude],
-            Optional[OperatorAltitudeAltitudeType],
+    valid_locations: list[
+        tuple[
+            LatLngPoint | None,
+            Altitude | None,
+            OperatorAltitudeAltitudeType | None,
+            LatLngPoint | None,
+            Altitude | None,
+            OperatorAltitudeAltitudeType | None,
             int,
         ]
     ] = [
@@ -140,11 +141,11 @@ def test_operator_location():
     for valid_location in valid_locations:
         _assert_operator_location(*valid_location, 0)
 
-    invalid_locations: List[
-        Tuple[
-            Optional[LatLngPoint],
-            Optional[Altitude],
-            Optional[OperatorAltitudeAltitudeType],
+    invalid_locations: list[
+        tuple[
+            LatLngPoint | None,
+            Altitude | None,
+            OperatorAltitudeAltitudeType | None,
             int,
             int,
         ]
@@ -250,7 +251,7 @@ def mock_flight(
     last_position_time: datetime,
     positions_count: int,
     positions_time_delta_s: int,
-    position: Tuple[int, int] = (1.0, 1.0),
+    position: tuple[int, int] = (1.0, 1.0),
 ) -> Flight:
     v22a_flight = v22a.api.RIDFlight(
         id="flightId",
@@ -269,8 +270,8 @@ def mock_positions(
     last_time: datetime,
     amount: int,
     positions_time_delta_s: int,
-    position: Tuple[int, int] = (1.0, 1.0),
-) -> List[v22a.api.RIDRecentAircraftPosition]:
+    position: tuple[int, int] = (1.0, 1.0),
+) -> list[v22a.api.RIDRecentAircraftPosition]:
     """generate a list of positions with the last one at last_time and the next ones going back in time by 10 seconds"""
     return [
         v22a.api.RIDRecentAircraftPosition(
@@ -286,7 +287,7 @@ def mock_positions(
 
 
 def to_positions(
-    coords: List[Tuple[float, float]],
+    coords: list[tuple[float, float]],
     first_time: datetime,
     positions_time_delta_s: int = 1,
 ) -> v22a.api.RIDRecentAircraftPosition:
@@ -500,8 +501,8 @@ def _assert_generic_evaluator_call(
     sp_observed: Any,
     dp_observed: Any,
     outcome: bool,
-    rid_version: Optional[RIDVersion] = RIDVersion.f3411_22a,
-    wanted_fail: Optional[list[str]] = None,
+    rid_version: RIDVersion | None = RIDVersion.f3411_22a,
+    wanted_fail: list[str] | None = None,
 ):
     """
     Verify that the 'fct' function on the RIDCommonDictionaryEvaluator is returning the expected result.
@@ -569,8 +570,8 @@ def _assert_generic_evaluator_result(
     fct: str,
     *setters_and_values: list[Any],
     outcome: bool,
-    wanted_fail: Optional[list[str]] = None,
-    rid_version: Optional[RIDVersion] = None,
+    wanted_fail: list[str] | None = None,
+    rid_version: RIDVersion | None = None,
 ):
     """
     Helper to call _assert_generic_evaluator_call that build mocked objects first and do the call.
@@ -653,10 +654,10 @@ def _assert_generic_evaluator_correct_field_is_used(
     )
 
 
-def _assert_generic_evaluator_valid_value(
+def _assert_generic_evaluator_valid_value[T](
     *fct_and_setters: list[Any],
     valid_value: T,
-    rid_version: Optional[RIDVersion] = None,
+    rid_version: RIDVersion | None = None,
 ):
     """
     Test that a _evaluate function is handeling a specifc value as valid.
@@ -687,7 +688,7 @@ def _assert_generic_evaluator_invalid_value(
     *fct_and_setters: list[Any],
     invalid_value: T,
     valid_value: T,
-    rid_version: Optional[RIDVersion] = None,
+    rid_version: RIDVersion | None = None,
 ):
     """
     Test that a _evaluate function is handeling a specifc value as invalid.
@@ -730,10 +731,10 @@ def _assert_generic_evaluator_invalid_value(
     )
 
 
-def _assert_generic_evaluator_invalid_observed_value(
+def _assert_generic_evaluator_invalid_observed_value[T](
     *fct_and_setters: list[Any],
     invalid_value: T,
-    rid_version: Optional[RIDVersion] = None,
+    rid_version: RIDVersion | None = None,
 ):
     """
     Test that a _evaluate function is handeling a specifc value as invalid when observed.
@@ -759,7 +760,7 @@ def _assert_generic_evaluator_invalid_observed_value(
     )
 
 
-def _assert_generic_evaluator_defaults(
+def _assert_generic_evaluator_defaults[T2, T](
     *fct_and_setters: list[Any], default_value: T2, valid_value: T
 ):
     """
@@ -844,7 +845,7 @@ def _assert_generic_evaluator_dont_have_default(
 
 
 def _assert_generic_evaluator_equivalent(
-    *fct_and_setters: list[Any], v1: T, v2: T, rid_version: Optional[RIDVersion] = None
+    *fct_and_setters: list[Any], v1: T, v2: T, rid_version: RIDVersion | None = None
 ):
     """
     Test that a _evaluate function is considering two value as equivalent.
@@ -867,7 +868,7 @@ def _assert_generic_evaluator_equivalent(
 
 
 def _assert_generic_evaluator_not_equivalent(
-    *fct_and_setters: list[Any], v1: T, v2: T, rid_version: Optional[RIDVersion] = None
+    *fct_and_setters: list[Any], v1: T, v2: T, rid_version: RIDVersion | None = None
 ):
     """
     Test that a _evaluate function is considering two value as not equivalent.

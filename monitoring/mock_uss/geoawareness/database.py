@@ -1,5 +1,4 @@
 import json
-from typing import Dict, Optional
 
 from implicitdict import ImplicitDict
 from uas_standards.eurocae_ed269 import ED269Schema
@@ -18,14 +17,14 @@ class ExistingRecordException(ValueError):
 class SourceRecord(ImplicitDict):
     definition: CreateGeozoneSourceRequest
     state: GeozoneSourceResponseResult
-    message: Optional[str]
-    geozone_ed269: Optional[ED269Schema]
+    message: str | None
+    geozone_ed269: ED269Schema | None
 
 
 class Database(ImplicitDict):
     """Simple pseudo-database structure tracking the state of the mock system"""
 
-    sources: Dict[str, SourceRecord] = {}
+    sources: dict[str, SourceRecord] = {}
 
     @staticmethod
     def get_source(db: SynchronizedValue, id: str) -> SourceRecord:
@@ -41,7 +40,7 @@ class Database(ImplicitDict):
         id: str,
         definition: CreateGeozoneSourceRequest,
         state: GeozoneSourceResponseResult,
-        message: Optional[str] = None,
+        message: str | None = None,
     ) -> SourceRecord:
         with db as tx:
             if id in tx.sources.keys():
@@ -57,7 +56,7 @@ class Database(ImplicitDict):
         db: SynchronizedValue,
         id: str,
         state: GeozoneSourceResponseResult,
-        message: Optional[str] = None,
+        message: str | None = None,
     ):
         with db as tx:
             tx.sources[id]["state"] = state

@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 from uas_standards.astm.f3548.v21.api import OperationalIntentReference, Subscription
 
 from monitoring.monitorlib.fetch.rid import FetchedSubscription
@@ -15,7 +13,7 @@ def sub_create_query(
     scenario: TestScenarioType,
     dss: DSSInstance,
     sub_params: SubscriptionParams,
-) -> Tuple[Subscription, List[OperationalIntentReference], MutatedSubscription]:
+) -> tuple[Subscription, list[OperationalIntentReference], MutatedSubscription]:
     """Implements check documented in `create_query.md`."""
     with scenario.check(
         "Create subscription query succeeds",
@@ -38,7 +36,7 @@ def sub_get_query(
     scenario: TestScenarioType,
     dss: DSSInstance,
     sub_id: str,
-) -> Tuple[Subscription, FetchedSubscription]:
+) -> tuple[Subscription, FetchedSubscription]:
     with scenario.check("Get Subscription by ID", dss.participant_id) as check:
         fetched_sub = dss.get_subscription(sub_id)
         scenario.record_query(fetched_sub)
@@ -58,7 +56,7 @@ def sub_delete_query(
     dss: DSSInstance,
     sub_id: str,
     sub_version: str,
-) -> Tuple[Subscription, List[OperationalIntentReference], MutatedSubscription]:
+) -> tuple[Subscription, list[OperationalIntentReference], MutatedSubscription]:
     """Implements check documented in `delete_query.md`."""
     with scenario.check(
         "Subscription can be deleted",

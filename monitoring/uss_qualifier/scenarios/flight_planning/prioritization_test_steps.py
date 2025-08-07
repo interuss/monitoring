@@ -1,5 +1,3 @@
-from typing import Optional
-
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     BasicFlightPlanInformationUasState,
     BasicFlightPlanInformationUsageState,
@@ -23,7 +21,7 @@ def plan_priority_conflict_flight(
     scenario: TestScenarioType,
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
-    additional_fields: Optional[dict] = None,
+    additional_fields: dict | None = None,
 ) -> PlanningActivityResponse:
     """Attempt to plan a flight intent that should result in a conflict with a higher priority flight intent.
 
@@ -58,7 +56,7 @@ def modify_planned_priority_conflict_flight(
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     flight_id: str,
-    additional_fields: Optional[dict] = None,
+    additional_fields: dict | None = None,
 ) -> PlanningActivityResponse:
     """Attempt to modify a planned flight intent that should result in a conflict with a higher priority flight intent.
 
@@ -96,8 +94,8 @@ def activate_priority_conflict_flight(
     scenario: TestScenarioType,
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
-    flight_id: Optional[str] = None,
-    additional_fields: Optional[dict] = None,
+    flight_id: str | None = None,
+    additional_fields: dict | None = None,
 ) -> PlanningActivityResponse:
     """Attempt to activate a flight intent that should result in a conflict with a higher priority flight intent.
 
@@ -140,7 +138,7 @@ def modify_activated_priority_conflict_flight(
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     flight_id: str,
-    additional_fields: Optional[dict] = None,
+    additional_fields: dict | None = None,
 ) -> PlanningActivityResponse:
     """Attempt to modify an activated flight intent that should result in a conflict with a higher priority flight intent.
 
@@ -178,7 +176,7 @@ def plan_conflict_flight(
     scenario: TestScenarioType,
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
-    additional_fields: Optional[dict] = None,
+    additional_fields: dict | None = None,
 ) -> PlanningActivityResponse:
     """Attempt to plan a flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
@@ -212,7 +210,7 @@ def modify_planned_conflict_flight(
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     flight_id: str,
-    additional_fields: Optional[dict] = None,
+    additional_fields: dict | None = None,
 ) -> PlanningActivityResponse:
     """Attempt to modify a planned flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
@@ -250,8 +248,8 @@ def activate_conflict_flight(
     scenario: TestScenarioType,
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
-    flight_id: Optional[str] = None,
-    additional_fields: Optional[dict] = None,
+    flight_id: str | None = None,
+    additional_fields: dict | None = None,
 ) -> PlanningActivityResponse:
     """Attempt to activate a flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
@@ -294,7 +292,7 @@ def modify_activated_conflict_flight(
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     flight_id: str,
-    additional_fields: Optional[dict] = None,
+    additional_fields: dict | None = None,
 ) -> PlanningActivityResponse:
     """Attempt to modify an activated flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 

@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 import arrow
 
@@ -35,7 +34,7 @@ class ISAExpiry(GenericTestScenario):
         )  # TODO: delete once _delete_isa_if_exists updated to use dss_wrapper
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
         self._isa_id = id_generator.id_factory.make_id(ISAExpiry.ISA_TYPE)
-        self._isa_version: Optional[str] = None
+        self._isa_version: str | None = None
         self._isa = isa.specification
 
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]

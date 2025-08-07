@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Iterator, List
+from collections.abc import Iterator
 
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -169,7 +169,7 @@ def _compute_overview_rows(node: ActionNode) -> Iterator[OverviewRow]:
                 first_row = False
 
 
-def _align_overview_rows(rows: List[OverviewRow]) -> None:
+def _align_overview_rows(rows: list[OverviewRow]) -> None:
     max_suite_cols = max(len(r.suite_cells) for r in rows)
     to_fill = 0
     for row in rows:
@@ -210,7 +210,7 @@ def _align_overview_rows(rows: List[OverviewRow]) -> None:
             r0 += 1
 
 
-def _enumerate_all_participants(node: ActionNode) -> List[ParticipantID]:
+def _enumerate_all_participants(node: ActionNode) -> list[ParticipantID]:
     if node.node_type == ActionNodeType.Scenario:
         return list(node.scenario.participants)
     else:

@@ -1,7 +1,6 @@
 import functools
 import inspect
 import os
-from typing import Dict, Tuple
 
 import pytest
 
@@ -37,9 +36,7 @@ def depends_on(*args):
             for prerequisite in prerequisites:
                 if prerequisite.__name__ not in module_results:
                     pytest.fail(
-                        "Prerequisite test {} did not exist when evaluating the dependent test {}".format(
-                            prerequisite.__name__, func.__name__
-                        )
+                        f"Prerequisite test {prerequisite.__name__} did not exist when evaluating the dependent test {func.__name__}"
                     )
                 if not module_results[prerequisite.__name__].passed:
                     pytest.skip("Prerequisite task did not pass")
@@ -88,7 +85,7 @@ def for_api_versions(*args):
             if api_version in acceptable_versions:
                 return func(*args, **kwargs)
             else:
-                pytest.skip("Not applicable for API version {}".format(api_version))
+                pytest.skip(f"Not applicable for API version {api_version}")
 
         return wrapper_default_scope
 
@@ -96,7 +93,7 @@ def for_api_versions(*args):
 
 
 ResourceType = int
-resource_type_code_descriptions: Dict[ResourceType, str] = {}
+resource_type_code_descriptions: dict[ResourceType, str] = {}
 
 
 # Next code: 404
@@ -115,18 +112,16 @@ def register_resource_type(code: int, description: str) -> ResourceType:
     test_filename = inspect.stack()[1].filename
     this_folder = os.path.dirname(os.path.abspath(__file__))
     test = test_filename[len(this_folder) + 1 :]
-    full_description = "{}: {}".format(test, description)
+    full_description = f"{test}: {description}"
     if code in resource_type_code_descriptions:
         raise ValueError(
-            'Resource type code {} is already in use as "{}" so it cannot be used for "{}"'.format(
-                code, resource_type_code_descriptions[code], full_description
-            )
+            f'Resource type code {code} is already in use as "{resource_type_code_descriptions[code]}" so it cannot be used for "{full_description}"'
         )
     resource_type_code_descriptions[code] = full_description
     return code
 
 
-class IDFactory(object):
+class IDFactory:
     """Creates UUIDv4 (as described in RFC4122) formatted IDs encoding the kind of ID and owner.
 
     Format: 0000XXXX-YYYY-4ZYY-8YYY-YYYYYYYY0000
@@ -149,29 +144,19 @@ class IDFactory(object):
 
     def make_id(self, resource_type: ResourceType):
         """Make a test ID with the specified resource type code"""
-        return "0000{x}-{y1}-40{y2}-8{y3}-{y4}0000".format(
-            x=utils.encode_resource_type_code(resource_type),
-            y1=self.owner_id[0:4],
-            y2=self.owner_id[4:6],
-            y3=self.owner_id[6:9],
-            y4=self.owner_id[9:17],
-        )
+        return f"0000{utils.encode_resource_type_code(resource_type)}-{self.owner_id[0:4]}-40{self.owner_id[4:6]}-8{self.owner_id[6:9]}-{self.owner_id[9:17]}0000"
 
     @classmethod
-    def decode(cls, id: str) -> Tuple[str, ResourceType]:
+    def decode(cls, id: str) -> tuple[str, ResourceType]:
         hex_digits = id.replace("-", "")
         if len(hex_digits) != 32:
-            raise ValueError(
-                "ID {} has the wrong number of characters for a UUID".format(id)
-            )
+            raise ValueError(f"ID {id} has the wrong number of characters for a UUID")
         if hex_digits[0:4] != "0000" or hex_digits[-4:] != "0000":
             raise ValueError(
-                "ID {} does not have the leading and trailing zeros indicating a test ID".format(
-                    id
-                )
+                f"ID {id} does not have the leading and trailing zeros indicating a test ID"
             )
         if hex_digits[12:14] != "40":
-            raise ValueError("ID {} is not formatted like a v4 test ID".format(id))
+            raise ValueError(f"ID {id} is not formatted like a v4 test ID")
         x = hex_digits[4:8]
         y = hex_digits[8:12] + hex_digits[14:28]
         resource_type_code = ResourceType(int(x, 16))

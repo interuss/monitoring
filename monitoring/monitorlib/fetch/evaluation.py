@@ -1,12 +1,11 @@
 import statistics
 from operator import attrgetter
-from typing import Dict, List, Tuple
 
 from . import Query
 
 
-def classify_query_by_url(queries: List[Query]) -> Dict[str, List[Query]]:
-    queries_by_url: Dict[str, List[Query]] = dict()
+def classify_query_by_url(queries: list[Query]) -> dict[str, list[Query]]:
+    queries_by_url: dict[str, list[Query]] = dict()
     for query in queries:
         if query.request.url not in queries_by_url:
             queries_by_url[query.request.url] = list()
@@ -15,8 +14,8 @@ def classify_query_by_url(queries: List[Query]) -> Dict[str, List[Query]]:
 
 
 def get_init_subsequent_queries_durations(
-    min_session_length_sec: int, queries_by_url: Dict[str, List[Query]]
-) -> Tuple[List[float], List[float]]:
+    min_session_length_sec: int, queries_by_url: dict[str, list[Query]]
+) -> tuple[list[float], list[float]]:
     """
     Get the initial and subsequent durations of the provided queries.
     Initial and subsequent queries are identified through 1. their URL and 2. the time elapsed between the queries.
@@ -25,8 +24,8 @@ def get_init_subsequent_queries_durations(
     :return: list of durations of respectively initial and subsequent queries
     """
 
-    init_durations: List[float] = list()  # list of initial queries duration
-    subsequent_durations: List[float] = list()  # list of subsequent queries duration
+    init_durations: list[float] = list()  # list of initial queries duration
+    subsequent_durations: list[float] = list()  # list of subsequent queries duration
 
     for queries in queries_by_url.values():
         queries.sort(key=attrgetter("request.initiated_at"))  # sort queries by time
@@ -50,7 +49,7 @@ def get_init_subsequent_queries_durations(
     return init_durations, subsequent_durations
 
 
-def compute_percentiles(values: List[float], percentiles: List[int]) -> List[float]:
+def compute_percentiles(values: list[float], percentiles: list[int]) -> list[float]:
     """
     Compute percentiles of durations.
     :param values: list of durations for which to compute the percentiles

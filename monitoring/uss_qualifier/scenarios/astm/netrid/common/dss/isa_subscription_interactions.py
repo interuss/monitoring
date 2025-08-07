@@ -1,5 +1,3 @@
-from typing import Optional
-
 import arrow
 
 from monitoring.monitorlib import geo
@@ -37,7 +35,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
             ISASubscriptionInteractions.SUB_TYPE
         )
 
-        self._isa_version: Optional[str] = None
+        self._isa_version: str | None = None
         self._isa = isa.specification
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
         self._slight_overlap_area = geo.generate_slight_overlap_area(self._isa_area)

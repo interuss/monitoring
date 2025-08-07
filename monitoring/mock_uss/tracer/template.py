@@ -10,8 +10,6 @@ def _print_time_range(t0: str, t1: str) -> str:
     try:
         t0dt = arrow.get(t0) - now
         t1dt = arrow.get(t1) - now
-        return " {} to {}".format(
-            formatting.format_timedelta(t0dt), formatting.format_timedelta(t1dt)
-        )
+        return f" {formatting.format_timedelta(t0dt)} to {formatting.format_timedelta(t1dt)}"
     except ValueError:
         return ""

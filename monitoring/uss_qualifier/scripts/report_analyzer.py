@@ -11,7 +11,7 @@ from monitoring.uss_qualifier.reports.report import (
 
 
 def parse_report(path: str) -> TestRunReport:
-    with open(path, "r") as f:
+    with open(path) as f:
         report = json.load(f)
         return ImplicitDict.parse(report, TestRunReport)
 

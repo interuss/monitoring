@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 from monitoring.monitorlib.locality import LocalityCode
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
@@ -8,12 +7,12 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 @dataclass
-class MockUSSLocalityConfiguration(object):
+class MockUSSLocalityConfiguration:
     client: MockUSSClient
     locality_code: LocalityCode
 
 
-unconfigure_stack: List[List[MockUSSLocalityConfiguration]] = []
+unconfigure_stack: list[list[MockUSSLocalityConfiguration]] = []
 """The stack of mock_uss locality configurations that have been performed by configure_locality.
 
 UnconfigureLocality will reset localities according to the most recent stack addition."""

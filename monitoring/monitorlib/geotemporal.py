@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Union
 
 import s2sphere as s2sphere
 from implicitdict import ImplicitDict, StringBasedTimeDelta
@@ -20,31 +19,31 @@ from monitoring.monitorlib.transformations import Transformation
 
 
 class Volume4DTemplate(ImplicitDict):
-    outline_polygon: Optional[Polygon] = None
+    outline_polygon: Polygon | None = None
     """Polygonal 2D outline/footprint of the specified area.  May not be defined if outline_circle is defined."""
 
-    outline_circle: Optional[Circle] = None
+    outline_circle: Circle | None = None
     """Circular outline/footprint of the specified area.  May not be defined if outline_polygon is defined."""
 
-    start_time: Optional[TestTime] = None
+    start_time: TestTime | None = None
     """The time at which the virtual user may start using the specified geospatial area for their flight.  May not be defined if duration and end_time are defined."""
 
-    end_time: Optional[TestTime] = None
+    end_time: TestTime | None = None
     """The time at which the virtual user will be finished using the specified geospatial area for their flight.  May not be defined if duration and start_time are defined."""
 
-    duration: Optional[StringBasedTimeDelta] = None
+    duration: StringBasedTimeDelta | None = None
     """If only one of start_time and end_time is specified, then the other time should be separated from the specified time by this amount.  May not be defined in both start_time and end_time are defined."""
 
-    altitude_lower: Optional[Altitude] = None
+    altitude_lower: Altitude | None = None
     """The minimum altitude at which the virtual user will fly while using this volume for their flight."""
 
-    altitude_upper: Optional[Altitude] = None
+    altitude_upper: Altitude | None = None
     """The maximum altitude at which the virtual user will fly while using this volume for their flight."""
 
-    transformations: Optional[List[Transformation]] = None
+    transformations: list[Transformation] | None = None
     """If specified, transform this volume according to these transformations in order."""
 
-    def resolve(self, times: Dict[TimeDuringTest, Time]) -> Volume4D:
+    def resolve(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
         """Resolve Volume4DTemplate into concrete Volume4D."""
         # Make 3D volume
         kwargs = {}
@@ -103,8 +102,8 @@ class Volume4D(ImplicitDict):
     """Generic representation of a 4D volume, usable across multiple standards and formats."""
 
     volume: Volume3D
-    time_start: Optional[Time] = None
-    time_end: Optional[Time] = None
+    time_start: Time | None = None
+    time_end: Time | None = None
 
     def offset_time(self, dt: timedelta) -> Volume4D:
         kwargs = {"volume": self.volume}
@@ -143,7 +142,7 @@ class Volume4D(ImplicitDict):
             circle = self.volume.outline_circle
             if circle.radius.units != "M":
                 raise NotImplementedError(
-                    "Unsupported circle radius units: {}".format(circle.radius.units)
+                    f"Unsupported circle radius units: {circle.radius.units}"
                 )
             lat_radius = 360 * circle.radius.value / geo.EARTH_CIRCUMFERENCE_M
             lng_radius = (
@@ -161,12 +160,12 @@ class Volume4D(ImplicitDict):
 
     @staticmethod
     def from_values(
-        t0: Optional[datetime] = None,
-        t1: Optional[datetime] = None,
-        alt0: Optional[float] = None,
-        alt1: Optional[float] = None,
-        circle: Optional[Circle] = None,
-        polygon: Optional[Polygon] = None,
+        t0: datetime | None = None,
+        t1: datetime | None = None,
+        alt0: float | None = None,
+        alt1: float | None = None,
+        circle: Circle | None = None,
+        polygon: Polygon | None = None,
     ) -> Volume4D:
         kwargs = dict()
         if circle is not None:
@@ -246,7 +245,7 @@ class Volume4D(ImplicitDict):
         return geospatial_map_api.Volume4D(**kwargs)
 
 
-class Volume4DCollection(List[Volume4D]):
+class Volume4DCollection(list[Volume4D]):
     def __add__(self, other):
         if isinstance(other, Volume4D):
             full_list = []
@@ -274,7 +273,7 @@ class Volume4DCollection(List[Volume4D]):
             )
 
     @property
-    def time_start(self) -> Optional[Time]:
+    def time_start(self) -> Time | None:
         return (
             Time(min(v.time_start.datetime for v in self))
             if all("time_start" in v and v.time_start for v in self)
@@ -282,7 +281,7 @@ class Volume4DCollection(List[Volume4D]):
         )
 
     @property
-    def time_end(self) -> Optional[Time]:
+    def time_end(self) -> Time | None:
         return (
             Time(max(v.time_end.datetime for v in self))
             if all("time_end" in v and v.time_end for v in self)
@@ -313,9 +312,7 @@ class Volume4DCollection(List[Volume4D]):
                 circle = vol4.volume.outline_circle
                 if circle.radius.units != "M":
                     raise NotImplementedError(
-                        "Unsupported circle radius units: {}".format(
-                            circle.radius.units
-                        )
+                        f"Unsupported circle radius units: {circle.radius.units}"
                     )
                 lat_radius = 360 * circle.radius.value / geo.EARTH_CIRCUMFERENCE_M
                 lng_radius = (
@@ -360,7 +357,7 @@ class Volume4DCollection(List[Volume4D]):
         return Volume4D(**kwargs)
 
     @property
-    def meter_altitude_bounds(self) -> Tuple[float, float]:
+    def meter_altitude_bounds(self) -> tuple[float, float]:
         alt_lo = min(
             vol4.volume.altitude_lower.value
             for vol4 in self
@@ -399,21 +396,21 @@ class Volume4DCollection(List[Volume4D]):
         return False
 
     @staticmethod
-    def from_f3548v21(vol4s: List[f3548v21.Volume4D]) -> Volume4DCollection:
+    def from_f3548v21(vol4s: list[f3548v21.Volume4D]) -> Volume4DCollection:
         volumes = [Volume4D.from_f3548v21(v) for v in vol4s]
         return Volume4DCollection(volumes)
 
     @staticmethod
     def from_interuss_scd_api(
-        vol4s: List[interuss_scd_api.Volume4D],
+        vol4s: list[interuss_scd_api.Volume4D],
     ) -> Volume4DCollection:
         volumes = [Volume4D.from_interuss_scd_api(v) for v in vol4s]
         return Volume4DCollection(volumes)
 
-    def to_f3548v21(self) -> List[f3548v21.Volume4D]:
+    def to_f3548v21(self) -> list[f3548v21.Volume4D]:
         return [v.to_f3548v21() for v in self]
 
-    def to_interuss_scd_api(self) -> List[interuss_scd_api.Volume4D]:
+    def to_interuss_scd_api(self) -> list[interuss_scd_api.Volume4D]:
         return [v.to_interuss_scd_api() for v in self]
 
     def has_active_volume(self, time_ref: datetime) -> bool:
@@ -422,18 +419,16 @@ class Volume4DCollection(List[Volume4D]):
         )
 
 
-class Volume4DTemplateCollection(List[Volume4DTemplate]):
+class Volume4DTemplateCollection(list[Volume4DTemplate]):
     pass
 
 
 def end_time_of(
-    volume_or_volumes: Union[
-        f3548v21.Volume4D,
-        Volume4D,
-        List[Union[f3548v21.Volume4D, Volume4D]],
-        Volume4DCollection,
-    ],
-) -> Optional[Time]:
+    volume_or_volumes: f3548v21.Volume4D
+    | Volume4D
+    | list[f3548v21.Volume4D | Volume4D]
+    | Volume4DCollection,
+) -> Time | None:
     """Retrieve the end time of a volume or list of volumes."""
     if isinstance(volume_or_volumes, f3548v21.Volume4D):
         if "time_end" in volume_or_volumes and volume_or_volumes.time_end:

@@ -1,5 +1,4 @@
 import datetime
-from typing import List, Optional
 
 import arrow
 import s2sphere
@@ -24,7 +23,7 @@ class ISASimple(GenericTestScenario):
 
     ISA_TYPE = register_resource_type(348, "ISA")
 
-    _huge_are: List[s2sphere.LatLng]
+    _huge_are: list[s2sphere.LatLng]
 
     def __init__(
         self,
@@ -39,7 +38,7 @@ class ISASimple(GenericTestScenario):
         )  # TODO: delete once _delete_isa_if_exists updated to use dss_wrapper
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
         self._isa_id = id_generator.id_factory.make_id(ISASimple.ISA_TYPE)
-        self._isa_version: Optional[str] = None
+        self._isa_version: str | None = None
         self._isa = isa.specification
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
         self._huge_area = [

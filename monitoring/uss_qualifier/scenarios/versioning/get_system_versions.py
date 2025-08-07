@@ -13,7 +13,7 @@ class GetSystemVersions(TestScenario):
         version_providers: VersionProvidersResource,
         system_identity: SystemIdentityResource,
     ):
-        super(GetSystemVersions, self).__init__()
+        super().__init__()
         self._version_providers = version_providers.version_providers
         self._system_identity = system_identity.system_identity
 

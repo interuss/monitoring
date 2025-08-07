@@ -1,5 +1,4 @@
 import math
-from typing import Dict, List, Optional, Tuple
 
 import arrow
 import requests
@@ -19,7 +18,7 @@ class ServerVersion(ImplicitDict):
 
 
 class Locality(ImplicitDict):
-    tiers: List[dict]
+    tiers: list[dict]
 
 
 class Node(ImplicitDict):
@@ -37,8 +36,8 @@ class Node(ImplicitDict):
     updated_at: int
     liveness_status: int
 
-    def summarize(self) -> Tuple[str, Dict[str, str]]:
-        key = "Node {} ({})".format(self.node_id, self.address.address_field)
+    def summarize(self) -> tuple[str, dict[str, str]]:
+        key = f"Node {self.node_id} ({self.address.address_field})"
         t0 = arrow.get(math.floor(self.started_at / 1e9))
         values = {
             "locality": " ".join(
@@ -51,7 +50,7 @@ class Node(ImplicitDict):
         return key, values
 
 
-class ClusterAPI(object):
+class ClusterAPI:
     """Wrapper for retrieving CockroachDB cluster information.
 
     API: https://www.cockroachlabs.com/docs/api/cluster/v2
@@ -61,8 +60,8 @@ class ClusterAPI(object):
         self,
         session: requests.Session,
         base_url: str = "https://localhost:8080/api/v2",
-        username: Optional[str] = None,
-        password: Optional[str] = None,
+        username: str | None = None,
+        password: str | None = None,
     ):
         self._session = session
         self._base_url = base_url
@@ -74,7 +73,7 @@ class ClusterAPI(object):
         self.log_out()
 
     def is_ready(self) -> bool:
-        resp = self._session.get("{}/health/?ready=true".format(self._base_url))
+        resp = self._session.get(f"{self._base_url}/health/?ready=true")
         if resp.status_code == 200:
             return True
         elif resp.status_code == 500:
@@ -87,7 +86,7 @@ class ClusterAPI(object):
             )
 
     def is_up(self) -> bool:
-        resp = self._session.get("{}/health/".format(self._base_url))
+        resp = self._session.get(f"{self._base_url}/health/")
         if resp.status_code == 200:
             return True
         elif resp.status_code == 500:
@@ -102,18 +101,14 @@ class ClusterAPI(object):
     def log_in(self) -> str:
         if self._username is None:
             raise ValueError(
-                "Cannot log in to CockroachDB cluster at {} when username is not specified".format(
-                    self._base_url
-                )
+                f"Cannot log in to CockroachDB cluster at {self._base_url} when username is not specified"
             )
         if self._password is None:
             raise ValueError(
-                "Cannot log in to CockroachDB cluster at {} when password is not specified".format(
-                    self._base_url
-                )
+                f"Cannot log in to CockroachDB cluster at {self._base_url} when password is not specified"
             )
         resp = self._session.post(
-            "{}/login/".format(self._base_url),
+            f"{self._base_url}/login/",
             data={"username": self._username, "password": self._password},
         )
         resp.raise_for_status()
@@ -127,7 +122,7 @@ class ClusterAPI(object):
         self._session_auth = session
         return session
 
-    def _get_headers(self) -> Dict[str, str]:
+    def _get_headers(self) -> dict[str, str]:
         if self._session_auth is None:
             self.log_in()
         return {"X-Cockroach-API-Session": self._session_auth}
@@ -136,14 +131,14 @@ class ClusterAPI(object):
         if self._session_auth is None:
             return
         resp = self._session.post(
-            "{}/logout/".format(self._base_url), headers=self._get_headers()
+            f"{self._base_url}/logout/", headers=self._get_headers()
         )
         resp.raise_for_status()
         self._session_auth = None
 
-    def get_nodes(self) -> List[Node]:
+    def get_nodes(self) -> list[Node]:
         resp = self._session.get(
-            "{}/nodes/".format(self._base_url), headers=self._get_headers()
+            f"{self._base_url}/nodes/", headers=self._get_headers()
         )
         resp.raise_for_status()
         nodes = resp.json().get("nodes", None)

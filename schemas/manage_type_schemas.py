@@ -4,7 +4,7 @@ import inspect
 import json
 import os
 import sys
-from typing import Dict, Optional, Set, Type, get_args, get_origin, get_type_hints
+from typing import get_args, get_origin, get_type_hints
 
 import implicitdict
 import implicitdict.jsonschema
@@ -52,10 +52,10 @@ def parse_args() -> argparse.Namespace:
 
 
 def _make_type_schemas(
-    parent: Type[ImplicitDict],
+    parent: type[ImplicitDict],
     reference_resolver: SchemaVarsResolver,
-    repo: Dict[str, dict],
-    already_checked: Optional[Set[str]] = None,
+    repo: dict[str, dict],
+    already_checked: set[str] | None = None,
 ) -> None:
     implicitdict.jsonschema.make_json_schema(parent, reference_resolver, repo)
     if already_checked is None:
@@ -88,8 +88,8 @@ def _make_type_schemas(
 
 def _find_specifications(
     module,
-    repo: Dict[str, Type[ImplicitDict]],
-    already_checked: Optional[Set[str]] = None,
+    repo: dict[str, type[ImplicitDict]],
+    already_checked: set[str] | None = None,
 ) -> None:
     if already_checked is None:
         already_checked = set()
@@ -119,11 +119,11 @@ def main() -> int:
             "Invalid usage; action must be specified with --check or --generate flags"
         )
 
-    def schema_vars_resolver(schema_type: Type) -> SchemaVars:
+    def schema_vars_resolver(schema_type: type) -> SchemaVars:
         if schema_type.__module__ in {"builtins", "typing"}:
             return SchemaVars(name=schema_type.__name__)
 
-        def path_of_py_file(t: Type) -> str:
+        def path_of_py_file(t: type) -> str:
             top_module = t.__module__.split(".")[0]
             module_path = os.path.dirname(sys.modules[top_module].__file__)
             py_file_path = inspect.getfile(t)
@@ -131,13 +131,13 @@ def main() -> int:
                 top_module, os.path.relpath(py_file_path, start=module_path)
             )
 
-        def full_name(t: Type) -> str:
+        def full_name(t: type) -> str:
             return t.__module__ + "." + t.__qualname__
 
-        def path_of_schema_file(t: Type) -> str:
+        def path_of_schema_file(t: type) -> str:
             return "schemas/" + "/".join(full_name(t).split(".")) + ".json"
 
-        def path_to(t_dest: Type, t_src: Type) -> str:
+        def path_to(t_dest: type, t_src: type) -> str:
             path_to_dest = path_of_schema_file(t_dest)
             path_to_src = os.path.dirname(path_of_schema_file(t_src))
             rel_path = os.path.relpath(path_to_dest, start=path_to_src)
@@ -203,7 +203,7 @@ def main() -> int:
     for rel_filename, schema in schemas.items():
         filename = os.path.abspath(os.path.join(repo_root, rel_filename))
         if os.path.exists(filename):
-            with open(filename, "r") as f:
+            with open(filename) as f:
                 old_value = json.load(f)
             if schema == old_value:
                 continue

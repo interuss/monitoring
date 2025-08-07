@@ -1,5 +1,4 @@
 from functools import cmp_to_key
-from typing import List, Union
 
 from monitoring.uss_qualifier.reports.tested_requirements.data_types import (
     TestedBreakdown,
@@ -7,7 +6,7 @@ from monitoring.uss_qualifier.reports.tested_requirements.data_types import (
 )
 
 
-def _split_strings_numbers(s: str) -> List[Union[int, str]]:
+def _split_strings_numbers(s: str) -> list[int | str]:
     digits = "0123456789"
     current_number = ""
     current_string = ""
@@ -30,7 +29,7 @@ def _split_strings_numbers(s: str) -> List[Union[int, str]]:
     return parts
 
 
-def _requirement_id_parts(req_id: str) -> List[str]:
+def _requirement_id_parts(req_id: str) -> list[str]:
     """Split a requirement ID into sortable parts.
 
     Each ID is split into parts in multiple phases (example: astm.f3411.v22a.NET0260,Table1,1b):
