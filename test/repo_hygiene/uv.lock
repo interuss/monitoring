@@ -1,0 +1,23 @@
+version = 1
+revision = 2
+requires-python = "==3.13.*"
+
+[[package]]
+name = "marko"
+version = "1.2.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/54/ff/06f155ca20e9c9363d3733c3c8fafd3b5b651db1c7f0faa1597d9fe481de/marko-1.2.2.tar.gz", hash = "sha256:d467c3ad450be693505cb8eb7054718efe3f14fccc2310588f9bc9c1d992ef94", size = 140763, upload-time = "2022-09-22T01:38:52.083Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/81/f2/fdd9fc8f8c77dc5a6ebb778983c55f286287c90c59e7a944af7452e06b5d/marko-1.2.2-py3-none-any.whl", hash = "sha256:e2d4a299bfc5ef601ba0f0827c1927cee26e451581853c5333f2db098e609c0d", size = 39585, upload-time = "2022-09-22T01:38:50.91Z" },
+]
+
+[[package]]
+name = "repo-hygiene"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "marko" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "marko", specifier = "<1.3" }]
