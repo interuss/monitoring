@@ -21,7 +21,6 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class DSSInteroperability(TestScenario):
-
     _dss_primary: DSSInstance
     _dss_others: List[DSSInstance]
     _allow_private_addresses: bool = False
@@ -52,7 +51,6 @@ class DSSInteroperability(TestScenario):
             self._allow_private_addresses = test_exclusions.allow_private_addresses
 
     def run(self, context: ExecutionContext):
-
         self.begin_test_scenario(context)
 
         self.begin_test_case("Prerequisites")
@@ -104,7 +102,7 @@ class DSSInteroperability(TestScenario):
                     # scenario is concerned, the DSS is available.
                     if q.status_code == 999:
                         check.record_failed(
-                            summary=f"Could not reach DSS instance",
+                            summary="Could not reach DSS instance",
                             details=f"{q.response.get('content', '')}; {e}",
                             query_timestamps=[q.request.timestamp],
                         )

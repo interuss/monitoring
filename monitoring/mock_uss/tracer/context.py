@@ -4,7 +4,6 @@ import yaml
 from implicitdict import StringBasedDateTime
 from yaml.representer import Representer
 
-import monitoring.monitorlib.fetch.scd
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.config import KEY_AUTH_SPEC, KEY_DSS_URL
 from monitoring.mock_uss.tracer.config import (
@@ -14,15 +13,16 @@ from monitoring.mock_uss.tracer.config import (
 )
 from monitoring.mock_uss.tracer.observation_areas import ObservationAreaID
 from monitoring.mock_uss.tracer.tracerlog import Logger
-from monitoring.monitorlib import fetch, infrastructure
+from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.auth import make_auth_adapter
+from monitoring.monitorlib.fetch import scd
 from monitoring.monitorlib.infrastructure import AuthAdapter, AuthSpec, UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
 
 yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
 
-scd_cache: Dict[ObservationAreaID, Dict[str, fetch.scd.FetchedEntity]] = {}
+scd_cache: Dict[ObservationAreaID, Dict[str, scd.FetchedEntity]] = {}
 
 
 def _get_tracer_logger() -> Optional[Logger]:

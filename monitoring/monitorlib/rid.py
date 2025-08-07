@@ -2,11 +2,10 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 import arrow
-import uas_standards.astm.f3411.v19.api
-import uas_standards.astm.f3411.v19.constants
-import uas_standards.astm.f3411.v22a.api
-import uas_standards.astm.f3411.v22a.constants
-from uas_standards.astm.f3411 import v19, v22a
+import uas_standards.astm.f3411.v19.api as v19_api
+import uas_standards.astm.f3411.v19.constants as v19_constants
+import uas_standards.astm.f3411.v22a.api as v22a_api
+import uas_standards.astm.f3411.v22a.constants as v22a_constants
 
 from monitoring.monitorlib import schema_validation
 
@@ -87,45 +86,45 @@ class RIDVersion(str, Enum):
     @property
     def realtime_period(self) -> timedelta:
         if self == RIDVersion.f3411_19:
-            return timedelta(seconds=v19.constants.NetMaxNearRealTimeDataPeriodSeconds)
+            return timedelta(seconds=v19_constants.NetMaxNearRealTimeDataPeriodSeconds)
         elif self == RIDVersion.f3411_22a:
-            return timedelta(seconds=v22a.constants.NetMaxNearRealTimeDataPeriodSeconds)
+            return timedelta(seconds=v22a_constants.NetMaxNearRealTimeDataPeriodSeconds)
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def max_diagonal_km(self) -> float:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetMaxDisplayAreaDiagonalKm
+            return v19_constants.NetMaxDisplayAreaDiagonalKm
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetMaxDisplayAreaDiagonalKm
+            return v22a_constants.NetMaxDisplayAreaDiagonalKm
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def max_details_diagonal_km(self) -> float:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetDetailsMaxDisplayAreaDiagonalKm
+            return v19_constants.NetDetailsMaxDisplayAreaDiagonalKm
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetDetailsMaxDisplayAreaDiagonalKm
+            return v22a_constants.NetDetailsMaxDisplayAreaDiagonalKm
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def min_cluster_size_percent(self) -> float:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetMinClusterSizePercent
+            return v19_constants.NetMinClusterSizePercent
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetMinClusterSizePercent
+            return v22a_constants.NetMinClusterSizePercent
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def min_obfuscation_distance_m(self) -> float:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetMinObfuscationDistanceM
+            return v19_constants.NetMinObfuscationDistanceM
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetMinObfuscationDistanceM
+            return v22a_constants.NetMinObfuscationDistanceM
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
@@ -141,90 +140,90 @@ class RIDVersion(str, Enum):
     @property
     def min_session_length_s(self) -> int:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetMinSessionLengthSeconds
+            return v19_constants.NetMinSessionLengthSeconds
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetMinSessionLengthSeconds
+            return v22a_constants.NetMinSessionLengthSeconds
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def dp_init_resp_percentile95_s(self) -> float:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetDpInitResponse95thPercentileSeconds
+            return v19_constants.NetDpInitResponse95thPercentileSeconds
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetDpInitResponse95thPercentileSeconds
+            return v22a_constants.NetDpInitResponse95thPercentileSeconds
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def dp_init_resp_percentile99_s(self) -> float:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetDpInitResponse99thPercentileSeconds
+            return v19_constants.NetDpInitResponse99thPercentileSeconds
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetDpInitResponse99thPercentileSeconds
+            return v22a_constants.NetDpInitResponse99thPercentileSeconds
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def dp_data_resp_percentile95_s(self) -> float:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetDpDataResponse95thPercentileSeconds
+            return v19_constants.NetDpDataResponse95thPercentileSeconds
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetDpDataResponse95thPercentileSeconds
+            return v22a_constants.NetDpDataResponse95thPercentileSeconds
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def dp_details_resp_percentile95_s(self) -> float:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetDpDetailsResponse95thPercentileSeconds
+            return v19_constants.NetDpDetailsResponse95thPercentileSeconds
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetDpDetailsResponse95thPercentileSeconds
+            return v22a_constants.NetDpDetailsResponse95thPercentileSeconds
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def dp_details_resp_percentile99_s(self) -> float:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetDpDetailsResponse99thPercentileSeconds
+            return v19_constants.NetDpDetailsResponse99thPercentileSeconds
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetDpDetailsResponse99thPercentileSeconds
+            return v22a_constants.NetDpDetailsResponse99thPercentileSeconds
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def dp_data_resp_percentile99_s(self) -> float:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetDpDataResponse99thPercentileSeconds
+            return v19_constants.NetDpDataResponse99thPercentileSeconds
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetDpDataResponse99thPercentileSeconds
+            return v22a_constants.NetDpDataResponse99thPercentileSeconds
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def sp_data_resp_percentile95_s(self) -> float:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetSpDataResponseTime95thPercentileSeconds
+            return v19_constants.NetSpDataResponseTime95thPercentileSeconds
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetSpDataResponseTime95thPercentileSeconds
+            return v22a_constants.NetSpDataResponseTime95thPercentileSeconds
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def sp_data_resp_percentile99_s(self) -> float:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetSpDataResponseTime99thPercentileSeconds
+            return v19_constants.NetSpDataResponseTime99thPercentileSeconds
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetSpDataResponseTime99thPercentileSeconds
+            return v22a_constants.NetSpDataResponseTime99thPercentileSeconds
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     @property
     def dss_max_subscriptions_per_area(self) -> int:
         if self == RIDVersion.f3411_19:
-            return v19.constants.NetDSSMaxSubscriptionPerArea
+            return v19_constants.NetDSSMaxSubscriptionPerArea
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.NetDSSMaxSubscriptionPerArea
+            return v22a_constants.NetDSSMaxSubscriptionPerArea
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
@@ -238,26 +237,26 @@ class RIDVersion(str, Enum):
 
     def flights_url_of(self, base_url: str) -> str:
         if self == RIDVersion.f3411_19:
-            flights_path = v19.api.OPERATIONS[v19.api.OperationID.SearchFlights].path
+            flights_path = v19_api.OPERATIONS[v19_api.OperationID.SearchFlights].path
             return base_url + flights_path
         elif self == RIDVersion.f3411_22a:
-            flights_path = v22a.api.OPERATIONS[v22a.api.OperationID.SearchFlights].path
+            flights_path = v22a_api.OPERATIONS[v22a_api.OperationID.SearchFlights].path
             return base_url + flights_path
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     def scope_dp(self) -> str:
         if self == RIDVersion.f3411_19:
-            return v19.constants.Scope.Read
+            return v19_constants.Scope.Read
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.Scope.DisplayProvider
+            return v22a_constants.Scope.DisplayProvider
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))
 
     def scope_sp(self) -> str:
         if self == RIDVersion.f3411_19:
-            return v19.constants.Scope.Write
+            return v19_constants.Scope.Write
         elif self == RIDVersion.f3411_22a:
-            return v22a.constants.Scope.ServiceProvider
+            return v22a_constants.Scope.ServiceProvider
         else:
             raise ValueError("Unsupported RID version '{}'".format(self))

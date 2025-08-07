@@ -6,7 +6,6 @@ import arrow
 import flask
 from implicitdict import ImplicitDict
 from loguru import logger
-from uas_standards.astm.f3411.v19.api import ErrorResponse
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     OPERATIONS,
     ChangeTestResponse,

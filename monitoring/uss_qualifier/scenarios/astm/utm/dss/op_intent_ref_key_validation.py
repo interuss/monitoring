@@ -413,7 +413,6 @@ class OIRKeyValidation(TestScenario):
         self.end_test_case()
 
     def _ensure_clean_workspace_step(self):
-
         # Delete any active OIR we might own
         test_step_fragments.cleanup_active_oirs(
             self,

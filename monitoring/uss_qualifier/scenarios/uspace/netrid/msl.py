@@ -1,6 +1,4 @@
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Dict, List, Set
+from typing import List
 
 import s2sphere
 from implicitdict import ImplicitDict
@@ -41,7 +39,7 @@ class MSLAltitude(TestScenario):
         if not reports:
             self.record_note(
                 "Skip reason",
-                f"Nominal behavior test scenario report could not be found for any of the scenario types {', '.join(SCENARIO_TYPES)}",
+                "Nominal behavior test scenario report could not be found for any of the scenario types",
             )
             self.end_test_scenario()
             return
@@ -69,7 +67,7 @@ class MSLAltitude(TestScenario):
                 resp: GetDisplayDataResponse = ImplicitDict.parse(
                     query.response.json, GetDisplayDataResponse
                 )
-            except ValueError as e:
+            except ValueError:
                 # Invalid observation; this should already have been recorded as a failure
                 continue
             if "flights" not in resp or not resp.flights:

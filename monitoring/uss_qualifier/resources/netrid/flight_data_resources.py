@@ -6,7 +6,6 @@ from typing import List, Optional, Self
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
-from uas_standards.astm.f3411.v22a.api import UASID
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     RIDAircraftState,
     TestFlightDetails,

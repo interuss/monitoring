@@ -17,8 +17,7 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     DeleteFlightResponseResult,
 )
 
-import monitoring.mock_uss.uspace.flight_auth
-from monitoring.mock_uss import require_config_value, uspace, webapp
+from monitoring.mock_uss import require_config_value, webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
@@ -37,6 +36,7 @@ from monitoring.mock_uss.flights.planning import (
     lock_flight,
     release_flight_lock,
 )
+from monitoring.mock_uss.uspace import flight_auth
 from monitoring.monitorlib import versioning
 from monitoring.monitorlib.clients import scd as scd_client
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
@@ -167,7 +167,7 @@ def inject_flight(
     # Validate request
     try:
         if locality.is_uspace_applicable():
-            uspace.flight_auth.validate_request(new_flight.flight_info)
+            flight_auth.validate_request(new_flight.flight_info)
         validate_request(new_flight.op_intent)
     except PlanningError as e:
         return unsuccessful(PlanningActivityResult.Rejected, str(e))

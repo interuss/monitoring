@@ -1,1 +1,1 @@
-from .noop import NoOp
+from .noop import NoOp as NoOp

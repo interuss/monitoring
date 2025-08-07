@@ -156,7 +156,6 @@ class ISAValidation(GenericTestScenario):
         return q.dss_query.query.request.url, q.dss_query.query.request.json
 
     def _isa_empty_vertices_check(self):
-
         with self.check(
             "ISA empty vertices", [self._dss_wrapper.participant_id]
         ) as check:

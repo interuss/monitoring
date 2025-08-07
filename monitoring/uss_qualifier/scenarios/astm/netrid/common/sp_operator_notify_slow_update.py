@@ -127,7 +127,6 @@ class ServiceProviderNotifiesSlowUpdates(GenericTestScenario):
         )
 
     def _poll_during_flights(self):
-
         config = self._evaluation_configuration.configuration
 
         virtual_observer = VirtualObserver(
@@ -173,7 +172,7 @@ class ServiceProviderNotifiesSlowUpdates(GenericTestScenario):
                 if sp.participant_id in no_notif_participants:
                     check.record_failed(
                         summary="No operator notification found",
-                        details=f"No operator notification was found when at least one would have been expected due to the too low update rate of the injected telemetry.",
+                        details="No operator notification was found when at least one would have been expected due to the too low update rate of the injected telemetry.",
                     )
 
     def cleanup(self):

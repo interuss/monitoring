@@ -1,5 +1,5 @@
 import json
-from typing import Any, Iterator, List, Tuple, Union
+from typing import Any, List, Tuple, Union
 
 from implicitdict import ImplicitDict
 

@@ -40,9 +40,9 @@ class AggregateChecks(TestScenario):
                     query.query_type
                     not in self._attributed_queries[query.participant_id]
                 ):
-                    self._attributed_queries[query.participant_id][
-                        query.query_type
-                    ] = list()
+                    self._attributed_queries[query.participant_id][query.query_type] = (
+                        list()
+                    )
                 self._attributed_queries[query.participant_id][query.query_type].append(
                     query
                 )
@@ -113,7 +113,7 @@ class AggregateChecks(TestScenario):
             ) as check:
                 if p95 > constants.MaxRespondToOIDetailsRequestSeconds:
                     check.record_failed(
-                        summary=f"95th percentile of durations for operational intent details requests to USS is higher than threshold",
+                        summary="95th percentile of durations for operational intent details requests to USS is higher than threshold",
                         details=f"threshold: {constants.MaxRespondToOIDetailsRequestSeconds}s, 95th percentile: {p95:.3g}s",
                     )
 

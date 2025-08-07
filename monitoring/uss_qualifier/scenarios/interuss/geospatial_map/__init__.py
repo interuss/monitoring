@@ -1,1 +1,3 @@
-from .geospatial_feature_comprehension import GeospatialFeatureComprehension
+from .geospatial_feature_comprehension import (
+    GeospatialFeatureComprehension as GeospatialFeatureComprehension,
+)

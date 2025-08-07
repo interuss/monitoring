@@ -10,7 +10,6 @@ class IDGeneratorSpecification(ImplicitDict):
 
 
 class IDGeneratorResource(Resource[IDGeneratorSpecification]):
-
     _client_identity: ClientIdentityResource
 
     # Not initialised before it's actually used

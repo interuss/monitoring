@@ -50,11 +50,9 @@ class ServiceProviderUserNotifications(ImplicitDict):
 def check_and_generate_missing_fields_notifications(
     injected_flights: List[TestFlight],
 ) -> List[Tuple[datetime.datetime, str]]:
-
     missing_fields_notifications = []
 
     for flight in injected_flights:
-
         # Default to now if we don't find anything
         default_timestamp = arrow.utcnow()
 
@@ -64,7 +62,6 @@ def check_and_generate_missing_fields_notifications(
             default_timestamp = arrow.get(f_start)
 
         for tpos, telemetry in enumerate(flight.raw_telemetry):
-
             best_timestamp = telemetry.get(
                 "timestamp", default_timestamp
             )  # We try to use the timestamp of the faulty telemetry

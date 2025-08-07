@@ -3,23 +3,16 @@ USER_GROUP := $(shell id -u):$(shell id -g)
 UPSTREAM_OWNER := $(shell scripts/git/upstream_owner.sh)
 COMMIT := $(shell scripts/git/commit.sh)
 
-BLACK_EXCLUDES := "/interfaces|/venv|/.venv"
-ISORT_EXCLUDES := "--extend-skip=/interfaces --extend-skip=/venv --extends-skip=/.venv/"
-
 ifeq ($(OS),Windows_NT)
   detected_OS := Windows
 else
   detected_OS := $(shell uname -s)
 endif
 
-.PHONY: isort-image
-isort-image:
-	cd test/isort && docker image build . -t interuss/isort
-
 .PHONY: format
-format: isort-image
-	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/code" -w /code pyfound/black:25.1.0 black --exclude=$(BLACK_EXCLUDES) .
-	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/code" -w /code interuss/isort --profile black ${ISORT_EXCLUDES} .
+format: image
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run ruff format
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run ruff check --fix
 	cd monitoring && make format
 	cd schemas && make format
 
@@ -29,13 +22,14 @@ lint: shell-lint python-lint
 	cd schemas && make lint
 
 .PHONY: check-hygiene
-check-hygiene: lint validate-uss-qualifier-docs
+check-hygiene: image lint validate-uss-qualifier-docs
 	test/repo_hygiene/repo_hygiene.sh
 
 .PHONY: python-lint
-python-lint: isort-image
-	docker run --rm -v "$(CURDIR):/code" -w /code pyfound/black:25.1.0 black --check --exclude=$(BLACK_EXCLUDES) . || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
-	docker run --rm -v "$(CURDIR):/code" -w /code interuss/isort --check-only --profile black ${ISORT_EXCLUDES} . || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
+python-lint: image
+
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run ruff format --check || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run ruff check || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
 
 .PHONY: validate-uss-qualifier-docs
 validate-uss-qualifier-docs:

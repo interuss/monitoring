@@ -178,7 +178,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             "Response to the mutation of the ISA contains subscription ID",
             [self._dss.participant_id],
         ) as check:
-
             subs_to_mutated_isa = {}
             for returned_subscriber in mutated_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:
@@ -231,7 +230,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             "Response to the deletion of the ISA contains subscription ID",
             [self._dss.participant_id],
         ) as check:
-
             subs_to_deleted_isa = {}
             for returned_subscriber in deleted_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:
@@ -401,7 +399,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             "Response to the mutation of the ISA contains subscription ID",
             [self._dss.participant_id],
         ) as check:
-
             subs_to_mutated_isa = {}
             for returned_subscriber in mutated_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:
@@ -456,7 +453,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
             "Response to the deletion of the ISA contains subscription ID",
             [self._dss.participant_id],
         ) as check:
-
             subs_to_deleted_isa = {}
             for returned_subscriber in deleted_isa.dss_query.subscribers:
                 for sub_in_subscriber in returned_subscriber.raw.subscriptions:

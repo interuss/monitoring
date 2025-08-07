@@ -8,10 +8,10 @@ from gevent import monkey
 
 monkey.patch_all()
 
-from loguru import logger
-from werkzeug.middleware.proxy_fix import ProxyFix
+from loguru import logger  # noqa E402
+from werkzeug.middleware.proxy_fix import ProxyFix  # noqa E402
 
-from monitoring.mock_uss.server import MockUSS
+from monitoring.mock_uss.server import MockUSS  # noqa E402
 
 SERVICE_GEOAWARENESS = "geoawareness"
 SERVICE_RIDSP = "ridsp"
@@ -74,38 +74,45 @@ def require_config_value(config_key: str) -> None:
         )
 
 
-from monitoring.mock_uss import config, logging
-from monitoring.mock_uss import routes as basic_routes
+from monitoring.mock_uss import config  # noqa E402
+from monitoring.mock_uss import logging as logging  # noqa E402
+from monitoring.mock_uss import routes as basic_routes  # noqa F401,F402
 
 if SERVICE_GEOAWARENESS in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_GEOAWARENESS)
-    from monitoring.mock_uss import geoawareness
-    from monitoring.mock_uss.geoawareness import routes as geoawareness_routes
+    from monitoring.mock_uss import geoawareness as geoawareness
+    from monitoring.mock_uss.geoawareness import (
+        routes as geoawareness_routes,  # noqa F401
+    )
 
 if SERVICE_RIDSP in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_RIDSP)
-    from monitoring.mock_uss import ridsp
-    from monitoring.mock_uss.ridsp import routes as ridsp_routes
+    from monitoring.mock_uss import ridsp as ridsp
+    from monitoring.mock_uss.ridsp import routes as ridsp_routes  # noqa F401
 
 if SERVICE_RIDDP in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_RIDDP)
-    from monitoring.mock_uss import riddp
-    from monitoring.mock_uss.riddp import routes as riddp_routes
+    from monitoring.mock_uss import riddp as riddp
+    from monitoring.mock_uss.riddp import routes as riddp_routes  # noqa F401
 
 if SERVICE_SCDSC in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_SCDSC)
-    from monitoring.mock_uss.f3548v21 import routes_scd
-    from monitoring.mock_uss.scd_injection import routes as scd_injection_routes
+    from monitoring.mock_uss.f3548v21 import routes_scd as routes_scd
+    from monitoring.mock_uss.scd_injection import (
+        routes as scd_injection_routes,  # noqa F401
+    )
 
 if SERVICE_MESSAGESIGNING in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_MESSAGESIGNING)
-    from monitoring.mock_uss import msgsigning
-    from monitoring.mock_uss.msgsigning import routes as msgsigning_routes
+    from monitoring.mock_uss import msgsigning as msgsigning  # noqa F401
+    from monitoring.mock_uss.msgsigning import routes as msgsigning_routes  # noqa F401
 
 if SERVICE_INTERACTION_LOGGING in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_INTERACTION_LOGGING)
-    from monitoring.mock_uss.interaction_logging import logger as interactions_logger
-    from monitoring.mock_uss.interaction_logging import routes_interactions_log
+    from monitoring.mock_uss.interaction_logging import logger as interactions_logger  # noqa F401
+    from monitoring.mock_uss.interaction_logging import (
+        routes_interactions_log as routes_interactions_log,
+    )
 
     logger.info("Interaction logging enabled")
 else:
@@ -113,16 +120,16 @@ else:
 
 if SERVICE_TRACER in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_TRACER)
-    from monitoring.mock_uss import tracer
-    from monitoring.mock_uss.tracer import routes as tracer_routes
+    from monitoring.mock_uss import tracer as tracer
+    from monitoring.mock_uss.tracer import routes as tracer_routes  # noqa F401
 
 if SERVICE_VERSIONING in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_VERSIONING)
-    from monitoring.mock_uss.versioning import routes as versioning_routes
+    from monitoring.mock_uss.versioning import routes as versioning_routes  # noqa F401
 
 if SERVICE_FLIGHT_PLANNING in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_FLIGHT_PLANNING)
-    from monitoring.mock_uss.flight_planning import routes as flight_planning_routes
+    from monitoring.mock_uss.flight_planning import routes as flight_planning_routes  # noqa F401
 
 msg = (
     "################################################################################\n"

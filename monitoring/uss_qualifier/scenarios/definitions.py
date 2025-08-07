@@ -2,7 +2,6 @@ from typing import Dict, Optional
 
 from implicitdict import ImplicitDict
 
-from monitoring.uss_qualifier.fileio import FileReference
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 
 TestScenarioTypeName = str

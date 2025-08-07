@@ -6,10 +6,9 @@ from typing import Optional, Type
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 
-from monitoring.monitorlib.fetch import RequestDescription
+from monitoring.monitorlib.fetch import RequestDescription, summarize
 from monitoring.monitorlib.fetch import rid as rid_fetch
 from monitoring.monitorlib.fetch import scd as scd_fetch
-from monitoring.monitorlib.fetch import summarize
 from monitoring.monitorlib.fetch.rid import FetchedISAs
 from monitoring.monitorlib.mutate import rid as rid_mutate
 from monitoring.monitorlib.mutate import scd as scd_mutate
@@ -68,7 +67,7 @@ class TracerLogEntry(ImplicitDict):
             for name, cls in sys.modules[__name__].__dict__.items()
             if isinstance(cls, type)
             and issubclass(cls, TracerLogEntry)
-            and not cls is TracerLogEntry
+            and cls is not TracerLogEntry
             and cls.prefix_code() == prefix_code
         ]
         if not matches:
