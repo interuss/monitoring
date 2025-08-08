@@ -103,7 +103,7 @@ def flight_planning_v1_upsert_flight_plan(flight_plan_id: str) -> Tuple[str, int
 @requires_scope(Scope.Plan)
 def flight_planning_v1_delete_flight(flight_plan_id: str) -> Tuple[str, int]:
     """Implements flight deletion in SCD automated testing injection API."""
-    del_resp = delete_flight(flight_plan_id)
+    del_resp, status_code = delete_flight(flight_plan_id)
 
     resp = api.DeleteFlightPlanResponse(
         planning_result=api.PlanningActivityResult(del_resp.activity_result),
@@ -112,7 +112,7 @@ def flight_planning_v1_delete_flight(flight_plan_id: str) -> Tuple[str, int]:
     for k, v in del_resp.items():
         if k not in {"planning_result", "flight_plan_status"}:
             resp[k] = v
-    return flask.jsonify(resp), 200
+    return flask.jsonify(resp), status_code
 
 
 @webapp.route("/flight_planning/v1/clear_area_requests", methods=["POST"])
