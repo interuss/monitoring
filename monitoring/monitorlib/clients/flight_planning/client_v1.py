@@ -148,19 +148,26 @@ class V1FlightPlannerClient(FlightPlannerClient):
                 query.response.json, api.DeleteFlightPlanResponse
             )
         except ValueError as e:
-            raise PlanningActivityError(
-                f"Response to delete flight plan could not be parsed: {str(e)}", query
-            )
+
+            # We only except a proper response when the status code is 200
+            if query.status_code == 200:
+                raise PlanningActivityError(
+                    f"Response to delete flight plan could not be parsed: {str(e)}",
+                    query,
+                )
+            else:
+                resp = None
+
         self.created_flight_ids.discard(flight_id)
         response = PlanningActivityResponse(
             flight_id=flight_id,
             queries=[query],
-            activity_result=resp.planning_result,
-            flight_plan_status=resp.flight_plan_status,
-            notes=resp.notes if "notes" in resp else None,
+            activity_result=resp.planning_result if resp else None,
+            flight_plan_status=resp.flight_plan_status if resp else None,
+            notes=resp.notes if resp and "notes" in resp else None,
             includes_advisories=(
                 resp.includes_advisories
-                if "includes_advisories" in resp
+                if resp and "includes_advisories" in resp
                 else AdvisoryInclusion.Unknown
             ),
         )
