@@ -3,6 +3,7 @@ import typing
 from datetime import UTC, datetime
 from typing import Dict, List
 
+import aiohttp
 import arrow
 import requests
 from uas_standards.astm.f3411 import v19, v22a
@@ -11,6 +12,7 @@ from monitoring.monitorlib.fetch import (
     Query,
     QueryType,
     describe_aiohttp_response,
+    describe_failed_aiohttp_response,
     describe_request,
 )
 from monitoring.monitorlib.fetch.rid import FetchedISA
@@ -146,24 +148,18 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
     def _get_isas_by_id_concurrent_step(self):
         loop = asyncio.get_event_loop()
+        results = loop.run_until_complete(
+            asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
+        )
+
+        results = typing.cast(Dict[str, FetchedISA], results)
+
+        for _, fetched_isa in results:
+            self.record_query(fetched_isa.query)
 
         with self.check(
             "Successful Concurrent ISA query", [self._dss_wrapper.participant_id]
         ) as main_check:
-            try:
-                results = loop.run_until_complete(
-                    asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
-                )
-            except Exception as e:
-                main_check.record_failed(
-                    "Concurrent ISA retrieval failed",
-                    details=f"Concurrent ISA retrieval failed with exception: {e}\n{e.__traceback__}",
-                )
-
-            results = typing.cast(Dict[str, FetchedISA], results)
-
-            for _, fetched_isa in results:
-                self.record_query(fetched_isa.query)
             for isa_id, fetched_isa in results:
                 if fetched_isa.status_code != 200:
                     main_check.record_failed(
@@ -215,18 +211,25 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             prep = self._dss.client.prepare_request(r)
             t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
-            status, headers, resp_json = await self._async_session.get(
-                url=url, scope=self._read_scope()
-            )
-            duration = datetime.now(UTC) - t0
+            try:
+                status, headers, resp_json = await self._async_session.get(
+                    url=url, scope=self._read_scope()
+                )
+                duration = datetime.now(UTC) - t0
+                response = describe_aiohttp_response(
+                    status, headers, resp_json, duration
+                )
+            except aiohttp.ClientError as e:
+                duration = datetime.now(UTC) - t0
+                response = describe_failed_aiohttp_response(e, duration)
+
             rq = Query(
                 request=req_descr,
-                response=describe_aiohttp_response(
-                    status, headers, resp_json, duration
-                ),
+                response=response,
                 participant_id=self._dss.participant_id,
                 query_type=QueryType.dss_get_isa(self._dss.rid_version),
             )
+
             return isa_id, self._wrap_isa_get_query(rq)
 
     async def _create_isa(self, isa_id):
@@ -244,15 +247,21 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             prep = self._dss.client.prepare_request(r)
             t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
-            status, headers, resp_json = await self._async_session.put(
-                url=url, json=payload, scope=self._write_scope()
-            )
-            duration = datetime.now(UTC) - t0
+            try:
+                status, headers, resp_json = await self._async_session.put(
+                    url=url, json=payload, scope=self._write_scope()
+                )
+                duration = datetime.now(UTC) - t0
+                response = describe_aiohttp_response(
+                    status, headers, resp_json, duration
+                )
+            except aiohttp.ClientError as e:
+                duration = datetime.now(UTC) - t0
+                response = describe_failed_aiohttp_response(e, duration)
+
             rq = Query(
                 request=req_descr,
-                response=describe_aiohttp_response(
-                    status, headers, resp_json, duration
-                ),
+                response=response,
                 participant_id=self._dss.participant_id,
                 query_type=QueryType.dss_create_isa(self._dss.rid_version),
             )
@@ -268,18 +277,25 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             prep = self._dss.client.prepare_request(r)
             t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
-            status, headers, resp_json = await self._async_session.delete(
-                url=url, scope=self._write_scope()
-            )
-            duration = datetime.now(UTC) - t0
+            try:
+                status, headers, resp_json = await self._async_session.delete(
+                    url=url, scope=self._write_scope()
+                )
+                duration = datetime.now(UTC) - t0
+                response = describe_aiohttp_response(
+                    status, headers, resp_json, duration
+                )
+            except aiohttp.ClientError as e:
+                duration = datetime.now(UTC) - t0
+                response = describe_failed_aiohttp_response(e, duration)
+
             rq = Query(
                 request=req_descr,
-                response=describe_aiohttp_response(
-                    status, headers, resp_json, duration
-                ),
+                response=response,
                 participant_id=self._dss.participant_id,
                 query_type=QueryType.dss_delete_isa(self._dss.rid_version),
             )
+
             return isa_id, self._wrap_isa_put_query(rq, "delete")
 
     def _write_scope(self):
@@ -300,26 +316,18 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
     def _create_isas_concurrent_step(self):
         loop = asyncio.get_event_loop()
+        results = loop.run_until_complete(
+            asyncio.gather(*[self._create_isa(isa_id) for isa_id in self._isa_ids])
+        )
+
+        results = typing.cast(Dict[str, ChangedISA], results)
+
+        for _, fetched_isa in results:
+            self.record_query(fetched_isa.query)
 
         with self.check(
             "Concurrent ISAs creation", [self._dss_wrapper.participant_id]
         ) as main_check:
-            try:
-                results = loop.run_until_complete(
-                    asyncio.gather(
-                        *[self._create_isa(isa_id) for isa_id in self._isa_ids]
-                    )
-                )
-            except Exception as e:
-                main_check.record_failed(
-                    "Concurrent ISA creation failed",
-                    details=f"Concurrent ISA creation failed with exception: {e}\n{e.__traceback__}",
-                )
-
-            results = typing.cast(Dict[str, ChangedISA], results)
-
-            for _, fetched_isa in results:
-                self.record_query(fetched_isa.query)
             for isa_id, changed_isa in results:
                 with self.check(
                     "ISA response code", [self._dss_wrapper.participant_id]
@@ -385,29 +393,23 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
     def _delete_isas(self):
         loop = asyncio.get_event_loop()
+        results = loop.run_until_complete(
+            asyncio.gather(
+                *[
+                    self._delete_isa(isa_id, self._isa_versions[isa_id])
+                    for isa_id in self._isa_ids
+                ]
+            )
+        )
+
+        results = typing.cast(Dict[str, ChangedISA], results)
+
+        for _, fetched_isa in results:
+            self.record_query(fetched_isa.query)
 
         with self.check(
             "ISAs deletion query success", [self._dss_wrapper.participant_id]
         ) as main_check:
-            try:
-                results = loop.run_until_complete(
-                    asyncio.gather(
-                        *[
-                            self._delete_isa(isa_id, self._isa_versions[isa_id])
-                            for isa_id in self._isa_ids
-                        ]
-                    )
-                )
-            except Exception as e:
-                main_check.record_failed(
-                    "Concurrent ISA deletion failed",
-                    details=f"Concurrent ISA deletion failed with exception: {e}\n{e.__traceback__}",
-                )
-
-            results = typing.cast(Dict[str, ChangedISA], results)
-
-            for _, fetched_isa in results:
-                self.record_query(fetched_isa.query)
             for isa_id, deleted_isa in results:
                 if deleted_isa.query.response.code != 200:
                     main_check.record_failed(
@@ -430,22 +432,16 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
     def _get_deleted_isas(self):
         loop = asyncio.get_event_loop()
+        results = loop.run_until_complete(
+            asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
+        )
+
+        results = typing.cast(Dict[str, ChangedISA], results)
+
+        for _, fetched_isa in results:
+            self.record_query(fetched_isa.query)
 
         with self.check("ISAs not found", [self._dss_wrapper.participant_id]) as check:
-            try:
-                results = loop.run_until_complete(
-                    asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
-                )
-            except Exception as e:
-                check.record_failed(
-                    "Concurrent ISA retrieval failed",
-                    details=f"Concurrent ISA retrieval failed with exception: {e}\n{e.__traceback__}",
-                )
-
-            results = typing.cast(Dict[str, ChangedISA], results)
-
-            for _, fetched_isa in results:
-                self.record_query(fetched_isa.query)
             for isa_id, fetched_isa in results:
                 if fetched_isa.status_code != 404:
                     check.record_failed(
