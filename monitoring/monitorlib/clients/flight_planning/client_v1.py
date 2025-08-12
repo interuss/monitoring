@@ -57,6 +57,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
         # below. This should ward off unexpected exceptions, timeouts or error responses returned
         # by the server despite the flight having been created.
         # The cleanup logic supports cleanup attempts for flights that do not exist.
+        # In some case, the flight is removed later in this function, see comments bellow.
         self.created_flight_ids.add(flight_plan_id)
 
         op = api.OPERATIONS[api.OperationID.UpsertFlightPlan]
@@ -96,6 +97,14 @@ class V1FlightPlannerClient(FlightPlannerClient):
                 else AdvisoryInclusion.Unknown
             ),
         )
+
+        # If we know that the flight was successfully not created
+        # (the server explicitly refused to), we remove it from set of flights.
+        # That the only case when we do this, if we recieve no response after a
+        # timeout, the flight may still have been created (and cleanup_flights
+        # handle gracefully such cases).
+        if resp.flight_plan_status == FlightPlanStatus.NotPlanned:
+            self.created_flight_ids.remove(flight_plan_id)
 
         return response
 
