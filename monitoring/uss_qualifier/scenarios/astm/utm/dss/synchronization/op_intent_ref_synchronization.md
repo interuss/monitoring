@@ -39,7 +39,7 @@ This test case creates an operational intent reference on the main DSS, and veri
 
 It then goes on to mutate and delete it, each time confirming that all other DSSes return the expected results.
 
-### [Create OIR validation test step](../fragments/oir/crud/create_correct.md)
+### [Create OIR validation test step](../fragments/oir/crud/create_successfully.md)
 
 ### Retrieve newly created OIR test step
 
@@ -74,7 +74,7 @@ primary DSS instance, this check will fail per **[astm.f3548.v21.DSS0210,A2-7-2,
 This test step mutates the previously created operational intent reference to verify that the DSS reacts properly: notably, it checks that the operational intent reference version is updated,
 including for changes that are not directly visible, such as changing the operational intent reference's footprint.
 
-#### [Update OIR](../fragments/oir/crud/update_correct.md)
+#### [Update OIR](../fragments/oir/crud/update_successfully.md)
 
 ### Retrieve updated OIR test step
 

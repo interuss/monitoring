@@ -1,14 +1,10 @@
 # Read constraint reference test step fragment
 
-This test step fragment validates that constraint references can be read
+This test step fragment validates that a known constraint references can be read, and that its content is as expected.
 
-## [Read query succeeds](./read_query.md)
+## [Verify query succeeds](./read_query.md)
 
-Check query succeeds.
-
-## [Read response format](./read_format.md)
-
-Check response format
+## [Validate response format](./read_format.md)
 
 ## 🛑 Get constraint reference response content is correct check
 

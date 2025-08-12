@@ -70,7 +70,7 @@ This test step creates multiple subscriptions with different combinations of the
 
 All subscriptions are left on the DSS when this step ends, as they are expected to be present for the subsequent step.
 
-#### [Create subscription](../fragments/sub/crud/create_correct.md)
+#### [Create subscription](../fragments/sub/crud/create.md)
 
 ### Query newly created subscription test step
 
@@ -78,7 +78,7 @@ Query the created subscription at every DSS provided in `dss_instances` to confi
 and that it can be accessed directly by ID or searched for by area.
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
-#### [Get subscription](../fragments/sub/crud/read_correct.md)
+#### [Get subscription](../fragments/sub/crud/read_known.md)
 
 #### [Search subscription](../fragments/sub/crud/search_query.md)
 
@@ -87,7 +87,7 @@ and that it can be accessed directly by ID or searched for by area.
 This test step mutates the previously created subscription, by accessing the primary DSS, to verify that the update is propagated to all other DSSes.
 Notably, it checks that the subscription version is updated, including for changes that are not directly visible, such as changing the subscription's footprint.
 
-#### [Update subscription](../fragments/sub/crud/update_correct.md)
+#### [Update subscription](../fragments/sub/crud/update.md)
 
 ### Query updated subscription test step
 
@@ -95,7 +95,7 @@ Query the updated subscription at every DSS provided in `dss_instances` to confi
 
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
-#### [Get subscription](../fragments/sub/crud/read_correct.md)
+#### [Get subscription](../fragments/sub/crud/read_known.md)
 
 #### [Search subscription](../fragments/sub/crud/search_query.md)
 
@@ -122,7 +122,7 @@ Note that this step is repeated for every secondary DSS instance.
 
 #### [Subscription is synchronized](../fragments/sub/sync.md)
 
-#### [Get subscription](../fragments/sub/crud/read_correct.md)
+#### [Get subscription](../fragments/sub/crud/read_known.md)
 
 #### [Search subscription](../fragments/sub/crud/search_query.md)
 
@@ -132,8 +132,6 @@ If the second set of credentials is provided, this test step will create a subsc
 in order to prepare the next step that checks manager synchronization.
 
 #### [Create subscription](../fragments/sub/crud/create_query.md)
-
-Verify that a subscription can be created on the primary DSS using the separate set of credentials.
 
 ### Verify manager synchronization test step
 
@@ -154,7 +152,7 @@ and ensure that the DSS reacts properly.
 
 This also checks that the subscription data returned by a successful deletion is correct.
 
-#### [Delete subscription](../fragments/sub/crud/delete_correct.md)
+#### [Delete subscription](../fragments/sub/crud/delete_known.md)
 
 ### Query deleted subscription test step
 
@@ -174,7 +172,7 @@ As a result, the DSS pool under test is failing to meet **[astm.f3548.v21.DSS002
 
 Attempt to delete subscriptions that were created through the primary DSS via the secondary DSS instances.
 
-#### [Delete subscription](../fragments/sub/crud/delete_correct.md)
+#### [Delete subscription](../fragments/sub/crud/delete_known.md)
 
 #### 🛑 DSS should not return the deleted subscription check
 

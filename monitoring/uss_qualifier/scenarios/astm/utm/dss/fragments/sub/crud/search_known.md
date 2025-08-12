@@ -1,10 +1,8 @@
 # Search subscription test step fragment
 
-This test step fragment validates that subscriptions can be searched for.
+This test step fragment validates that known subscriptions can be searched for, and that their content is as expected.
 
-## [Search query succeeds](./search_query.md)
-
-Check query succeeds.
+## [Verify search query succeeds](./search_query.md)
 
 ## 🛑 Created Subscription is in search results check
 

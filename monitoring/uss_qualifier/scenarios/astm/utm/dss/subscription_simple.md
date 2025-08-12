@@ -38,7 +38,7 @@ This test step creates multiple subscriptions with different combinations of the
 
 All subscriptions are left on the DSS when this step ends, as they are expected to be present for the subsequent step.
 
-#### [Create subscription](./fragments/sub/crud/create_correct.md)
+#### [Create subscription](./fragments/sub/crud/create.md)
 
 ### Query Existing Subscription test step
 

@@ -1,10 +1,8 @@
 # Read operational intent reference test step fragment
 
-This test step fragment validates that operational intent references can be read
+This test step fragment validates that a known operational intent references can be read, and that its content is as expected.
 
-## [Read query succeeds](./read_query.md)
-
-Check query succeeds.
+## [Verify read query succeeds](./read_query.md)
 
 ## 🛑 Get operational intent reference response format conforms to spec check
 
