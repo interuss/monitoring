@@ -112,6 +112,7 @@ class DatastoreDBNode(object):
             is_reachable = (
                 "password authentication failed" in err_msg
                 or "server did not complete authentication" in err_msg
+                or "server requested a hashed password" in err_msg
             )
             return is_reachable, e
         return True, None
