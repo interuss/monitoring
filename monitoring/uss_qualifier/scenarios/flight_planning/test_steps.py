@@ -423,7 +423,6 @@ def cleanup_flights(
 
                 # A non-existing flight is considered successfully deleted
                 if query.status_code in [200, 404]:
-
                     if (
                         resp.flight_plan_status != FlightPlanStatus.Closed
                         or query.status_code == 404
