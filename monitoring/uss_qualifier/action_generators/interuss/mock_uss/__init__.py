@@ -1,1 +1,1 @@
-from .with_locality import WithLocality
+from .with_locality import WithLocality as WithLocality

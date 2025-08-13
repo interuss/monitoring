@@ -160,7 +160,6 @@ class OpIntentReferenceAccessControl(TestScenario):
         return extents.bounding_volume
 
     def _clean_known_op_intents_ids(self):
-
         with self.check(
             "Operational intent references can be queried by ID",
             self._pid,
@@ -174,7 +173,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 # If the Op Intent does not exist, it's fine to run into a 404.
                 if q.response.status_code != 404:
                     check.record_failed(
-                        f"Could not access operational intent using main credentials",
+                        "Could not access operational intent using main credentials",
                         details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_1}; {e}",
                         query_timestamps=[q.request.timestamp],
                     )
@@ -193,7 +192,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                     self.record_queries(e.queries)
                     dq = e.queries[0]
                     check.record_failed(
-                        f"Could not delete operational intent using main credentials",
+                        "Could not delete operational intent using main credentials",
                         details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_1}; {e}",
                         query_timestamps=[dq.request.timestamp],
                     )
@@ -212,7 +211,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 q = e.queries[0]
                 if q.response.status_code != 404:
                     check.record_failed(
-                        f"Could not access operational intent using second credentials",
+                        "Could not access operational intent using second credentials",
                         details=f"DSS responded with {q.response.status_code} to attempt to access OI {self._oid_2}; {e}",
                         query_timestamps=[q.request.timestamp],
                     )
@@ -227,7 +226,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                     self.record_queries(e.queries)
                     dq = e.queries[0]
                     check.record_failed(
-                        f"Could not delete operational intent using second credentials",
+                        "Could not delete operational intent using second credentials",
                         details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_2}; {e}",
                         query_timestamps=[dq.request.timestamp],
                     )
@@ -250,7 +249,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 self.record_queries(e.queries)
                 q = e.queries[0]
                 check.record_failed(
-                    f"Could not search operational intent references using main credentials",
+                    "Could not search operational intent references using main credentials",
                     details=f"DSS responded with {q.response.status_code} to attempt to search OIs; {e}",
                     query_timestamps=[q.request.timestamp],
                 )
@@ -271,7 +270,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                         self.record_queries(e.queries)
                         dq = e.queries[0]
                         check.record_failed(
-                            f"Could not delete operational intent using main credentials",
+                            "Could not delete operational intent using main credentials",
                             details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}; {e}",
                             query_timestamps=[dq.request.timestamp],
                         )
@@ -289,7 +288,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 self.record_queries(e.queries)
                 q = e.queries[0]
                 check.record_failed(
-                    f"Could not search operational intent references using second credentials",
+                    "Could not search operational intent references using second credentials",
                     details=f"DSS responded with {q.response.status_code} to attempt to search OIs; {e}",
                     query_timestamps=[q.request.timestamp],
                 )
@@ -313,7 +312,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                         self.record_queries(e.queries)
                         dq = e.queries[0]
                         check.record_failed(
-                            f"Could not delete operational intent using second credentials",
+                            "Could not delete operational intent using second credentials",
                             details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {op_intent.id}; {e}",
                             query_timestamps=[dq.request.timestamp],
                         )
@@ -350,7 +349,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 self.record_queries(e.queries)
                 q = e.queries[0]
                 check.record_failed(
-                    f"Could not search operational intent references using main credentials",
+                    "Could not search operational intent references using main credentials",
                     details=f"DSS responded with {q.response.status_code} to attempt to search OIs; {e}",
                     query_timestamps=[q.request.timestamp],
                 )
@@ -360,7 +359,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         ) as check:
             if len(stray_oir) > 0:
                 check.record_failed(
-                    f"Found operational intents that cannot be cleaned up",
+                    "Found operational intents that cannot be cleaned up",
                     details=f"Operational intents that cannot be cleaned up were found: {stray_oir}",
                     query_timestamps=[q.request.timestamp],
                 )
@@ -386,7 +385,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 self.record_queries(e.queries)
                 q1 = e.queries[0]
                 check.record_failed(
-                    f"Could not create operational intent using main credentials",
+                    "Could not create operational intent using main credentials",
                     details=f"DSS responded with {q1.response.status_code} to attempt to create OI {self._oid_1}; {e}",
                     query_timestamps=[q1.request.timestamp],
                 )
@@ -412,7 +411,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 self.record_queries(e.queries)
                 q2 = e.queries[0]
                 check.record_failed(
-                    f"Could not create operational intent using second credentials",
+                    "Could not create operational intent using second credentials",
                     details=f"DSS responded with {q2.response.status_code} to attempt to create OI {self._oid_2}",
                     query_timestamps=[q2.request.timestamp],
                 )
@@ -429,7 +428,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 == self._dss.client.auth_adapter.get_sub()
             ):
                 check.record_failed(
-                    f"Second set of credentials is not different from the first",
+                    "Second set of credentials is not different from the first",
                     details=f"The same credentials were provided for the main 'dss' and the additional 'second_utm_auth'"
                     f" resources ({self._dss.client.auth_adapter.get_sub()}),",
                 )
@@ -509,7 +508,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 )
                 self.record_query(dq)
                 check.record_failed(
-                    f"Could delete operational intent using second credentials",
+                    "Could delete operational intent using second credentials",
                     details=f"DSS responded with {dq.response.status_code} to attempt to delete OI {self._oid_1}",
                     query_timestamps=[dq.request.timestamp],
                 )
@@ -535,7 +534,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 self.record_queries(e.queries)
                 qcheck = e.queries[0]
                 check.record_failed(
-                    f"Could not access operational intent using main credentials",
+                    "Could not access operational intent using main credentials",
                     details=f"DSS responded with {qcheck.response.status_code} to attempt to access OI {self._oid_1} "
                     f"while this OI should have been available; {e}",
                     query_timestamps=[qcheck.request.timestamp],
@@ -547,7 +546,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         ) as check:
             if op_1_current != self._current_ref_1:
                 check.record_failed(
-                    f"Could update operational intent using second credentials",
+                    "Could update operational intent using second credentials",
                     details=f"Operational intent {self._oid_1} was modified by second credentials",
                     query_timestamps=[q.request.timestamp, qcheck.request.timestamp],
                 )

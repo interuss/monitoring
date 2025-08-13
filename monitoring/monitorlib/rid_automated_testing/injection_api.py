@@ -31,7 +31,6 @@ MANDATORY_POSITION_FIELDS = ["lat", "lng", "alt"]
 
 
 class TestFlight(injection.TestFlight):
-
     raw_telemetry: Optional[List[RIDAircraftState]]
     """Copy of original telemetry with potential invalid data"""
 
@@ -54,7 +53,6 @@ class TestFlight(injection.TestFlight):
             filtered_telemetry = []
 
             for telemetry in self.telemetry:
-
                 is_ok = True
 
                 for mandatory_field in MANDATORY_TELEMETRY_FIELDS:
@@ -84,7 +82,6 @@ class TestFlight(injection.TestFlight):
         # if none are present
 
         for detail in self.details_responses:
-
             # Values outside uas_id
             serial_number = detail.details.get("serial_number")
             registration_number = detail.details.get("registration_number")
@@ -103,9 +100,7 @@ class TestFlight(injection.TestFlight):
                     raise ValueError(
                         f"Impossible to validate test flight: details.serial_number ({serial_number}) is not equal to details.uas_id.serial_number ({detail.details.uas_id.serial_number})"
                     )
-            elif (
-                serial_number
-            ):  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
+            elif serial_number:  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
                 detail.details.uas_id.serial_number = serial_number
 
             if detail.details.uas_id.registration_id:
@@ -119,9 +114,7 @@ class TestFlight(injection.TestFlight):
                     raise ValueError(
                         f"Impossible to validate test flight: details.registration_number ({registration_number}) is not eqal to details.uas_id.registration_id ({detail.details.uas_id.registration_id})"
                     )
-            elif (
-                registration_number
-            ):  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
+            elif registration_number:  # No serial_number is uas_id, but we do have one externally: we do set it in uas_id
                 detail.details.uas_id.registration_id = registration_number
 
     def get_span(

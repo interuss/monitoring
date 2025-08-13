@@ -103,7 +103,7 @@ def check_oir_has_correct_subscription(
     attached_check_name = (
         "OIR is not attached to a subscription"
         if expected_sub_id is None
-        else f"OIR is attached to expected subscription"
+        else "OIR is attached to expected subscription"
     )
 
     with scenario.check(attached_check_name, dss.participant_id) as check:

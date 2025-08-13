@@ -4,7 +4,6 @@ from typing import List
 
 import s2sphere
 from implicitdict import ImplicitDict
-from loguru import logger
 from s2sphere import LatLngRect
 from uas_standards.interuss.automated_testing.rid.v1 import (
     observation as observation_api,
@@ -132,9 +131,7 @@ def make_clusters(
         cluster = cluster.extend(rid_version, view_area_sqm)
 
         # Offset cluster
-        cluster = (
-            cluster.randomize()
-        )  # TODO: Set random seed according to view extents so a static view will have static cluster subdivisions
+        cluster = cluster.randomize()  # TODO: Set random seed according to view extents so a static view will have static cluster subdivisions
 
         corners = LatLngRect(
             geo.unflatten(view_min, (cluster.x_min, cluster.y_min)),

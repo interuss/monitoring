@@ -114,7 +114,7 @@ class OIRValidator:
             if dss_oir.id != expected_entity_id:
                 self._fail_sub_check(
                     check,
-                    summary=f"Returned OIR ID is incorrect",
+                    summary="Returned OIR ID is incorrect",
                     details=f"Expected OIR ID {expected_entity_id}, got {dss_oir.id}",
                     t_dss=t_dss,
                 )
@@ -492,7 +492,6 @@ class OIRValidator:
         expected_ovn: str,
         expected_version: int,
     ) -> None:
-
         t_dss = deleted_oir.request.timestamp
 
         # Validate the response schema

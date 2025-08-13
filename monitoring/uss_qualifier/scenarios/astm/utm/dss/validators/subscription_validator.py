@@ -97,7 +97,7 @@ class SubscriptionValidator:
             if dss_sub.id != expected_sub_id:
                 self._fail_sub_check(
                     check,
-                    summary=f"Returned subscription ID is incorrect",
+                    summary="Returned subscription ID is incorrect",
                     details=f"Expected subscription ID {expected_sub_id} but got {dss_sub.id}",
                     t_dss=t_dss,
                 )
@@ -258,7 +258,7 @@ class SubscriptionValidator:
 
         with self._scenario.check(
             "Constraints notification flag is as requested", self._pid
-        ) as checK:
+        ):
             if (
                 dss_sub.notify_for_constraints
                 != self._sub_params.notify_for_constraints
@@ -296,7 +296,7 @@ class SubscriptionValidator:
         """Validate a subscription that was just explicitly created, meaning
         we don't have a previous version to compare to, and we expect it to not be an implicit one.
         """
-        (t_dss, sub) = (new_sub.request.timestamp, new_sub.subscription)
+        (t_dss, _sub) = (new_sub.request.timestamp, new_sub.subscription)
 
         # Validate the response schema
         self._validate_put_sub_response_schema(new_sub, t_dss, "create")

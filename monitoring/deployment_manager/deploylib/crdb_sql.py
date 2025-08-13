@@ -76,7 +76,7 @@ def get_monitoring_user(
     username = prefix + suffix
 
     # Create a new password
-    r = random.Random()
+    random.Random()
     password = "".join(
         random.choice(
             'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=_+[]\\{}|;:",./<>?'

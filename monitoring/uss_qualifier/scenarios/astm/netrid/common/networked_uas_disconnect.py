@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import List, Optional
+from typing import List
 
 from requests.exceptions import RequestException
 from s2sphere import LatLngRect

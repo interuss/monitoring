@@ -1,2 +1,2 @@
-from .configure_locality import ConfigureLocality
-from .unconfigure_locality import UnconfigureLocality
+from .configure_locality import ConfigureLocality as ConfigureLocality
+from .unconfigure_locality import UnconfigureLocality as UnconfigureLocality

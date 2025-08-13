@@ -1,5 +1,3 @@
-import datetime
-
 import arrow
 
 from monitoring.monitorlib import formatting
@@ -15,5 +13,5 @@ def _print_time_range(t0: str, t1: str) -> str:
         return " {} to {}".format(
             formatting.format_timedelta(t0dt), formatting.format_timedelta(t1dt)
         )
-    except ValueError as e:
+    except ValueError:
         return ""

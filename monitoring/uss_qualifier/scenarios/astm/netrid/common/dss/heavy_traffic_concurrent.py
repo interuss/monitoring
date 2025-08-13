@@ -312,7 +312,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 ) as sub_check:
                     if changed_isa.status_code == 201:
                         sub_check.record_failed(
-                            summary=f"PUT ISA returned technically-incorrect 201",
+                            summary="PUT ISA returned technically-incorrect 201",
                             details="DSS should return 200 from PUT ISA, but instead returned the reasonable-but-technically-incorrect code 201",
                             query_timestamps=[changed_isa.timestamp],
                         )
@@ -409,7 +409,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 )
 
     def _get_deleted_isas(self):
-
         loop = asyncio.get_event_loop()
         results = loop.run_until_complete(
             asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])

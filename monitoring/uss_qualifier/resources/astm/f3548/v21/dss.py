@@ -42,7 +42,7 @@ from uas_standards.astm.f3548.v21.api import (
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
-from monitoring.monitorlib import fetch, infrastructure
+from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.fetch import Query, QueryError, QueryType, query_and_describe
 from monitoring.monitorlib.fetch import scd as fetch
 from monitoring.monitorlib.fetch.scd import FetchedSubscription, FetchedSubscriptions

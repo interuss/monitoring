@@ -22,6 +22,7 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     GenericTestScenario,
     PendingCheck,
     ScenarioPhase,
+    uss_qualifier_module,
 )
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestCheckDocumentation as _TestCheckDocumentation,
@@ -29,9 +30,6 @@ from monitoring.uss_qualifier.scenarios.scenario import (
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario as _TestScenario
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestStepReport as _TestStepReport,
-)
-from monitoring.uss_qualifier.scenarios.scenario import (
-    uss_qualifier_module,
 )
 
 
@@ -60,7 +58,6 @@ def build_fake_scenarios_module():
     fake_module = _build_module("test")
 
     class TestScenarioA(_TestScenario):
-
         def __init__(self, test_resource, optional_test_resource=None):
             self.test_resource = test_resource
             self.optional_test_resource = optional_test_resource
@@ -277,7 +274,6 @@ def run_a_set_of_calls_on_gtsi(gtsi: GenericTestScenario, calls: list[str]):
     """Run a list of call on the GenericTestScenario, with default arguments"""
 
     for call in calls:
-
         if call == "nop":
             continue
 

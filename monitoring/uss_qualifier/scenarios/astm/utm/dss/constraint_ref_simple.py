@@ -143,7 +143,6 @@ class CRSimple(TestScenario):
         self.end_test_step()
 
     def _step_attempt_delete_incorrect_ovn(self):
-
         self.begin_test_step("Attempt deletion with incorrect OVN")
 
         with self.check(
@@ -262,7 +261,6 @@ class CRSimple(TestScenario):
         self.end_test_case()
 
     def _ensure_clean_workspace_step(self):
-
         # Delete any active CR we might own
         test_step_fragments.cleanup_active_constraint_refs(
             self,

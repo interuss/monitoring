@@ -1,6 +1,5 @@
 from typing import Optional
 
-import loguru
 from uas_standards.astm.f3548.v21.api import EntityID, Volume4D
 
 from monitoring.monitorlib import fetch

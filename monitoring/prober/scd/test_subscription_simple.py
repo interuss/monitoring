@@ -56,12 +56,12 @@ def _check_sub1(data, sub_id, scd_api):
     assert data["subscription"]["time_start"]["format"] == api.TimeFormat.RFC3339
     assert data["subscription"]["time_end"]["format"] == api.TimeFormat.RFC3339
     assert ("notify_for_constraints" not in data["subscription"]) or (
-        data["subscription"]["notify_for_constraints"] == False
+        not data["subscription"]["notify_for_constraints"]
     )
     assert ("implicit_subscription" not in data["subscription"]) or (
-        data["subscription"]["implicit_subscription"] == False
+        not data["subscription"]["implicit_subscription"]
     )
-    assert data["subscription"]["notify_for_operational_intents"] == True
+    assert data["subscription"]["notify_for_operational_intents"]
     assert ("dependent_operational_intents" not in data["subscription"]) or len(
         data["subscription"]["dependent_operational_intents"]
     ) == 0

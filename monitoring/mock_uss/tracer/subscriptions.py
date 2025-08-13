@@ -5,10 +5,10 @@ import yaml
 from implicitdict import StringBasedDateTime
 from yaml.representer import Representer
 
-import monitoring.monitorlib.fetch.rid
-import monitoring.monitorlib.fetch.scd
-import monitoring.monitorlib.mutate.rid
-import monitoring.monitorlib.mutate.scd
+import monitoring.monitorlib.fetch.rid as fetch_rid
+import monitoring.monitorlib.fetch.scd as fetch_scd
+import monitoring.monitorlib.mutate.rid as mutate_rid
+import monitoring.monitorlib.mutate.scd as mutate_scd
 from monitoring.mock_uss import config, webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.log_types import (
@@ -18,7 +18,6 @@ from monitoring.mock_uss.tracer.log_types import (
     SCDUnsubscribe,
 )
 from monitoring.mock_uss.tracer.observation_areas import ObservationAreaID
-from monitoring.monitorlib import fetch, mutate
 from monitoring.monitorlib.geo import get_latlngrect_vertices, make_latlng_rect
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
@@ -51,7 +50,7 @@ def subscribe_rid(
             f"Cannot subscribe to ISA updates using RID version {rid_version}"
         )
 
-    create_result = mutate.rid.upsert_subscription(
+    create_result = mutate_rid.upsert_subscription(
         area_vertices=vertices,
         alt_lo=area.volume.altitude_lower_wgs84_m(0),
         alt_hi=area.volume.altitude_upper_wgs84_m(3048),
@@ -86,7 +85,7 @@ def subscribe_scd(
     base_url = webapp.config[config.KEY_BASE_URL]
     uss_base_url = f"{base_url}/tracer/f3548v21/{area_id}"
 
-    create_result = mutate.scd.upsert_subscription(
+    create_result = mutate_scd.upsert_subscription(
         scd_client,
         box,
         area.time_start.datetime,
@@ -115,7 +114,7 @@ def unsubscribe_rid(
     subscription_id: str, rid_version: RIDVersion, rid_client: UTMClientSession
 ) -> None:
     logger = context.tracer_logger
-    existing_result = fetch.rid.subscription(subscription_id, rid_version, rid_client)
+    existing_result = fetch_rid.subscription(subscription_id, rid_version, rid_client)
     if existing_result.status_code != 404 and not existing_result.success:
         logfile = logger.log_new(
             RIDUnsubscribe(
@@ -128,7 +127,7 @@ def unsubscribe_rid(
         )
 
     if existing_result.subscription is not None:
-        del_result = mutate.rid.delete_subscription(
+        del_result = mutate_rid.delete_subscription(
             subscription_id=subscription_id,
             subscription_version=existing_result.subscription.version,
             rid_version=rid_version,
@@ -149,7 +148,7 @@ def unsubscribe_rid(
 
 def unsubscribe_scd(subscription_id: str, scd_client: UTMClientSession) -> None:
     logger = context.tracer_logger
-    get_result = fetch.scd.get_subscription(scd_client, subscription_id)
+    get_result = fetch_scd.get_subscription(scd_client, subscription_id)
     if not (get_result.success or get_result.was_not_found):
         logfile = logger.log_new(
             SCDUnsubscribe(
@@ -162,7 +161,7 @@ def unsubscribe_scd(subscription_id: str, scd_client: UTMClientSession) -> None:
         )
 
     if get_result.subscription is not None:
-        del_result = mutate.scd.delete_subscription(
+        del_result = mutate_scd.delete_subscription(
             scd_client,
             subscription_id,
             get_result.subscription.version,
