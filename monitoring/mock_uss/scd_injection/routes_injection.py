@@ -228,7 +228,7 @@ def inject_flight(
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def scdsc_delete_flight(flight_id: str) -> Tuple[str, int]:
     """Implements flight deletion in SCD automated testing injection API."""
-    del_resp = delete_flight(flight_id)
+    del_resp, status_code = delete_flight(flight_id)
 
     if del_resp.activity_result == PlanningActivityResult.Completed:
         if del_resp.flight_plan_status != FlightPlanStatus.Closed:
@@ -248,10 +248,10 @@ def scdsc_delete_flight(flight_id: str) -> Tuple[str, int]:
     resp = DeleteFlightResponse(result=result)
     if notes is not None:
         resp.notes = notes
-    return flask.jsonify(resp), 200
+    return flask.jsonify(resp), status_code
 
 
-def delete_flight(flight_id) -> PlanningActivityResponse:
+def delete_flight(flight_id) -> Tuple[PlanningActivityResponse, int]:
     pid = os.getpid()
 
     def log(msg: str):
@@ -274,7 +274,7 @@ def delete_flight(flight_id) -> PlanningActivityResponse:
         )
 
     if flight is None:
-        return unsuccessful("Flight {} does not exist".format(flight_id))
+        return unsuccessful("Flight {} does not exist".format(flight_id)), 404
 
     # Delete operational intent from DSS
     step_name = "performing unknown operation"
@@ -295,28 +295,31 @@ def delete_flight(flight_id) -> PlanningActivityResponse:
             f"{e.__class__.__name__} while {step_name} for flight {flight_id}: {str(e)}"
         )
         log(notes)
-        return unsuccessful(notes)
+        return unsuccessful(notes), 500
     except requests.exceptions.ConnectionError as e:
         notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
         log(notes)
         response = unsuccessful(notes)
         response["stacktrace"] = stacktrace_string(e)
-        return response
+        return response, 500
     except QueryError as e:
         notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
         log(notes)
         response = unsuccessful(notes)
         response["queries"] = e.queries
         response["stacktrace"] = e.stacktrace
-        return response
+        return response, 500
 
     log("Complete.")
-    return PlanningActivityResponse(
-        flight_id=flight_id,
-        queries=[],
-        activity_result=PlanningActivityResult.Completed,
-        flight_plan_status=FlightPlanStatus.Closed,
-        notes=notes,
+    return (
+        PlanningActivityResponse(
+            flight_id=flight_id,
+            queries=[],
+            activity_result=PlanningActivityResult.Completed,
+            flight_plan_status=FlightPlanStatus.Closed,
+            notes=notes,
+        ),
+        200,
     )
 
 
@@ -392,7 +395,7 @@ def clear_area(extent: Volume4D) -> ClearAreaResponse:
             if flight.op_intent.reference.id not in op_intent_ids:
                 continue
 
-            del_resp = delete_flight(flight_id)
+            del_resp, _status_code = delete_flight(flight_id)
             if (
                 del_resp.activity_result == PlanningActivityResult.Completed
                 and del_resp.flight_plan_status == FlightPlanStatus.Closed
