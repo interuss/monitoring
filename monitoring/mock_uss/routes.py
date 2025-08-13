@@ -65,4 +65,4 @@ def handle_exception(e):
     )
 
 
-from .dynamic_configuration import routes
+from .dynamic_configuration import routes as routes  # noqa E402

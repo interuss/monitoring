@@ -132,7 +132,6 @@ class DownUSS(TestScenario):
         self.end_test_scenario()
 
     def _setup(self):
-
         self.begin_test_step("Resolve USS ID of virtual USS")
         with self.check("Successful dummy query", [self.dss.participant_id]) as check:
             try:
@@ -229,7 +228,6 @@ class DownUSS(TestScenario):
         return oi_ref
 
     def _plan_flight_conflict_planned(self):
-
         # Virtual USS creates conflicting operational intent test step
         flight1_planned = self.resolve_flight(self.flight1_planned)
         self._put_conflicting_op_intent_step(
@@ -281,7 +279,6 @@ class DownUSS(TestScenario):
         self.end_test_step()
 
     def _clear_op_intents(self):
-
         with self.check(
             "Successful operational intents cleanup", [self.dss.participant_id]
         ) as check:

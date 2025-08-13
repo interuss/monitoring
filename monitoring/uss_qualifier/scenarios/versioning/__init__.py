@@ -1,1 +1,1 @@
-from .get_system_versions import GetSystemVersions
+from .get_system_versions import GetSystemVersions as GetSystemVersions

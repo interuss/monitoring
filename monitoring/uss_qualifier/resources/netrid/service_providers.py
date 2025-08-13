@@ -84,7 +84,7 @@ class NetRIDServiceProvider(object):
         q = fetch.query_and_describe(
             self.injection_client,
             "GET",
-            url=f"/user_notifications",
+            url="/user_notifications",
             scope=SCOPE_RID_QUALIFIER_INJECT,
             participant_id=self.participant_id,
             query_type=fetch.QueryType.InterussRIDAutomatedTestingV1UserNotifications,

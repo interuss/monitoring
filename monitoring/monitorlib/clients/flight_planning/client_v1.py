@@ -18,7 +18,6 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     AdvisoryInclusion,
     FlightPlanStatus,
     PlanningActivityResponse,
-    PlanningActivityResult,
 )
 from monitoring.monitorlib.clients.flight_planning.test_preparation import (
     TestPreparationActivityResponse,

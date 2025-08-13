@@ -66,7 +66,7 @@ def inject_flights(
             if "json" not in query.response or query.response.json is None:
                 check.record_failed(
                     summary="Response to test flight injection request did not contain a JSON body",
-                    details=f"Expected a JSON body in response to flight injection request",
+                    details="Expected a JSON body in response to flight injection request",
                     query_timestamps=[query.request.timestamp],
                 )
 
@@ -117,7 +117,7 @@ def inject_flights(
         else:
             test_scenario.record_note(
                 f"{test_id} time range",
-                f"Injected flights have no timestamps",
+                "Injected flights have no timestamps",
             )
 
     # Make sure the injected flights can be identified correctly by the test harness

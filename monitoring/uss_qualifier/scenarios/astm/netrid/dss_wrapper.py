@@ -64,7 +64,7 @@ class DSSWrapper(object):
         for q in e.queries:
             self._scenario.record_query(q)
         check.record_failed(
-            summary=f"Error when querying DSS",
+            summary="Error when querying DSS",
             details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
             query_timestamps=[q.request.timestamp for q in e.queries],
         )
@@ -217,7 +217,7 @@ class DSSWrapper(object):
 
             if isa_id != isa.isa.id:
                 check.record_failed(
-                    summary=f"DSS did not return correct ISA",
+                    summary="DSS did not return correct ISA",
                     details=f"Expected ISA ID {isa_id} but got {isa.id}",
                     query_timestamps=[isa.query.request.timestamp],
                 )
@@ -349,7 +349,7 @@ class DSSWrapper(object):
         with self._scenario.check("ISA response code", dss_id) as sub_check:
             if mutated_isa.dss_query.query.status_code == 201:
                 sub_check.record_failed(
-                    summary=f"PUT ISA returned technically-incorrect 201",
+                    summary="PUT ISA returned technically-incorrect 201",
                     details="DSS should return 200 from PUT ISA, but instead returned the reasonable-but-technically-incorrect code 201",
                     query_timestamps=[t_dss],
                 )
@@ -673,7 +673,7 @@ class DSSWrapper(object):
 
             if sub_id != sub.subscription.id:
                 check.record_failed(
-                    summary=f"DSS did not return correct subscription",
+                    summary="DSS did not return correct subscription",
                     details=f"Expected Subscription ID {sub_id} but got {sub.subscription.id}",
                     query_timestamps=[sub.query.request.timestamp],
                 )
@@ -871,7 +871,7 @@ class DSSWrapper(object):
 
             if sub_version != del_sub.subscription.version:
                 check.record_failed(
-                    summary=f"Deleted subscription did not match",
+                    summary="Deleted subscription did not match",
                     details=f"DSS reported deletion of version {sub_version} while expecting {del_sub.subscription.version}",
                     query_timestamps=[del_sub.query.request.timestamp],
                 )

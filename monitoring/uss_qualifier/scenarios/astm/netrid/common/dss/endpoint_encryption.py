@@ -3,9 +3,8 @@ import socket
 from urllib.parse import urlparse
 
 import requests
-import uas_standards.astm.f3411.v19.api
-import uas_standards.astm.f3411.v22a.api
-from uas_standards.astm.f3411 import v19, v22a
+import uas_standards.astm.f3411.v19.api as v19_api
+import uas_standards.astm.f3411.v22a.api as v22a_api
 
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
@@ -30,9 +29,9 @@ class EndpointEncryption(GenericTestScenario):
         self._dss = dss.dss_instance
 
         if self._dss.rid_version == RIDVersion.f3411_19:
-            op = v19.api.OPERATIONS[v19.api.OperationID.GetIdentificationServiceArea]
+            op = v19_api.OPERATIONS[v19_api.OperationID.GetIdentificationServiceArea]
         elif self._dss.rid_version == RIDVersion.f3411_22a:
-            op = v22a.api.OPERATIONS[v22a.api.OperationID.GetIdentificationServiceArea]
+            op = v22a_api.OPERATIONS[v22a_api.OperationID.GetIdentificationServiceArea]
         else:
             raise NotImplementedError(
                 f"Scenario does not support RID version {self._dss.rid_version}"

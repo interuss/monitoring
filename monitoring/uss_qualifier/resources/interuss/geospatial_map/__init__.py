@@ -1,1 +1,1 @@
-from .feature_check_table import FeatureCheckTableResource
+from .feature_check_table import FeatureCheckTableResource as FeatureCheckTableResource

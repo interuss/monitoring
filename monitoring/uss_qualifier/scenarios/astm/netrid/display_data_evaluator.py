@@ -459,7 +459,6 @@ class RIDObservationEvaluator(object):
 
         # Check details of flights (once per flight)
         for mapping in mapping_by_injection_id.values():
-
             with self._test_scenario.check(
                 "Successful details observation",
                 [mapping.injected_flight.uss_participant_id],
@@ -697,7 +696,6 @@ class RIDObservationEvaluator(object):
             "Individual flights obfuscation",
             [observer.participant_id],
         ) as check:
-
             # check that no expected or uncertain flight is at the center of the cluster
             for center in [rect.get_center() for rect in cluster_rects]:
                 for injected_flight in expected_flights + uncertain_flights:
@@ -721,7 +719,6 @@ class RIDObservationEvaluator(object):
             for injected_flight in expected_flights:
                 flight_in_cluster = False
                 for tel in injected_flight.flight.telemetry:
-
                     # go to next flight if the flight has already been validated by a previous telemetry point
                     if flight_in_cluster:
                         break
@@ -784,7 +781,6 @@ class RIDObservationEvaluator(object):
         sp_observation: FetchedFlights,
         mappings: Dict[str, TelemetryMapping],
     ) -> None:
-
         _evaluate_flight_presence(
             "uss_qualifier, acting as Display Provider",
             sp_observation.queries,
@@ -1117,7 +1113,6 @@ class DisconnectedUASObservationEvaluator(object):
         sp_observation: FetchedFlights,
         mappings: Dict[str, TelemetryMapping],
     ) -> None:
-
         # TODO we will want to reuse the code in RIDObservationEvaluator rather than copy-pasting it
         _evaluate_flight_presence(
             "uss_qualifier, acting as Display Provider",
@@ -1154,7 +1149,7 @@ class DisconnectedUASObservationEvaluator(object):
                     "Disconnected flight is shown as such",
                     [expected_flight.uss_participant_id],
                 ) as check:
-                    if not expected_flight.flight.injection_id in mappings:
+                    if expected_flight.flight.injection_id not in mappings:
                         check.record_failed(
                             summary="Expected flight not observed",
                             details="A flight for which telemetry was injected was not observed by the Service Provider",
@@ -1254,7 +1249,6 @@ class NotificationsEvaluator(object):
         return not self.remaining_notifications_to_observe()
 
     def _retrieve_notifications(self):
-
         self._current_notifications = injection.get_user_notifications(
             self._test_scenario,
             self._service_providers,

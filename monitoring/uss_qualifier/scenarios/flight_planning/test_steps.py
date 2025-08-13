@@ -272,7 +272,7 @@ def submit_flight(
             check.skip()
             return resp, None
 
-        msg = f'{flight_planner.participant_id} indicated flight planning activity {resp.activity_result} leaving flight plan {resp.flight_plan_status} rather than the expected {" or ".join([f"(Activity {expected_result[0]}, flight plan {expected_result[1]})" for expected_result in expected_results])}'
+        msg = f"{flight_planner.participant_id} indicated flight planning activity {resp.activity_result} leaving flight plan {resp.flight_plan_status} rather than the expected {' or '.join([f'(Activity {expected_result[0]}, flight plan {expected_result[1]})' for expected_result in expected_results])}"
         if "notes" in resp and resp.notes:
             msg += f' with notes "{resp.notes}"'
         else:
@@ -423,7 +423,6 @@ def cleanup_flights(
 
                 # A non-existing flight is considered successfully deleted
                 if query.status_code in [200, 404]:
-
                     if (
                         resp.flight_plan_status != FlightPlanStatus.Closed
                         or query.status_code == 404

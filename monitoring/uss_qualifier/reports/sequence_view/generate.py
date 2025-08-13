@@ -72,7 +72,7 @@ def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
             )
         else:
             raise ValueError(
-                f"Cannot process skipped action for test suite that does not define suite_type nor suite_definition"
+                "Cannot process skipped action for test suite that does not define suite_type nor suite_definition"
             )
         name = "All actions in test suite"
     elif report.declaration.get_action_type() == ActionType.TestScenario:
@@ -92,7 +92,7 @@ def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
             node_type=ActionNodeType.ActionGenerator,
             children=[],
         )
-        name = f"All actions from action generator"
+        name = "All actions from action generator"
     else:
         raise ValueError(
             f"Cannot process skipped action of type '{report.declaration.get_action_type()}'"

@@ -15,7 +15,7 @@ def __getattr__(name):
 
         return PlanningAreaResource
     elif name in {"DSSInstanceResource", "DSSInstancesResource"}:
-        from .dss import DSSInstanceResource, DSSInstancesResource
+        from .dss import DSSInstanceResource, DSSInstancesResource  # noqa F401
 
         return locals()[name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

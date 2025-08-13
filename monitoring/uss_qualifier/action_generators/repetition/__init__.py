@@ -1,1 +1,3 @@
-from monitoring.uss_qualifier.action_generators.repetition.repeat import Repeat
+from monitoring.uss_qualifier.action_generators.repetition.repeat import (
+    Repeat as Repeat,
+)

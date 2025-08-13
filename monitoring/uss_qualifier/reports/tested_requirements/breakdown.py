@@ -248,7 +248,7 @@ def _populate_breakdown_with_action_declaration(
             for a in action.test_suite.suite_definition.actions:
                 _populate_breakdown_with_action_declaration(breakdown, a, req_set)
         else:
-            raise ValueError(f"Test suite action missing suite type or definition")
+            raise ValueError("Test suite action missing suite type or definition")
     elif action_type == ActionType.ActionGenerator:
         potential_actions = list_potential_actions_for_action_generator_definition(
             action.action_generator

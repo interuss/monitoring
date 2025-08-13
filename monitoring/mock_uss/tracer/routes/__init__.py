@@ -10,6 +10,10 @@ from termcolor import colored
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.log_types import BadRoute
+from monitoring.mock_uss.tracer.routes import observation_areas as observation_areas
+from monitoring.mock_uss.tracer.routes import rid as rid
+from monitoring.mock_uss.tracer.routes import scd as scd
+from monitoring.mock_uss.tracer.routes import ui as ui
 from monitoring.monitorlib import fetch, versioning
 
 
@@ -17,9 +21,6 @@ from monitoring.monitorlib import fetch, versioning
 def tracer_status():
     logger.debug(f"Handling tracer_status from {os.getpid()}")
     return "Tracer ok {}".format(versioning.get_code_version())
-
-
-from monitoring.mock_uss.tracer.routes import observation_areas, rid, scd, ui
 
 
 @webapp.route("/tracer/<path:u_path>", methods=["GET", "PUT", "POST", "DELETE"])

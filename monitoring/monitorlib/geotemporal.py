@@ -4,7 +4,6 @@ import math
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Union
 
-import arrow
 import s2sphere as s2sphere
 from implicitdict import ImplicitDict, StringBasedTimeDelta
 from uas_standards.astm.f3548.v21 import api as f3548v21

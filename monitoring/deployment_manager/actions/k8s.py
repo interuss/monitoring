@@ -1,5 +1,3 @@
-from kubernetes.client import V1IngressClass
-
 from monitoring.deployment_manager.infrastructure import Context, deployment_action
 
 

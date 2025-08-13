@@ -45,9 +45,9 @@ def check_if_vertex_is_correct(point1, point2, point3, flight_distance):
     points_distance_difference = math.sqrt(
         (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
     ) - math.sqrt((x2 - x3) * (x2 - x3) + (y2 - y3) * (y2 - y3))
-    assert (
-        abs(points_distance_difference - flight_distance) < 0.2
-    ), f"Generated vertex is not correct. {point1}, {point2}, {point3}, {flight_distance}"
+    assert abs(points_distance_difference - flight_distance) < 0.2, (
+        f"Generated vertex is not correct. {point1}, {point2}, {point3}, {flight_distance}"
+    )
 
 
 def get_track_angle(point1, point2):

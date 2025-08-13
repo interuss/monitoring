@@ -45,7 +45,7 @@ def sub_get_query(
         if not fetched_sub.success:
             check.record_failed(
                 summary="Subscription query failed",
-                details=f"Failed to query subscription {sub_id} referenced by oid {self._oir_a_id} with code {fetched_sub.response.status_code}. Message: {fetched_sub.error_message}",
+                details=f"Failed to query subscription {sub_id} referenced by oid {scenario._oir_a_id} with code {fetched_sub.response.status_code}. Message: {fetched_sub.error_message}",
                 query_timestamps=fetched_sub.query_timestamps,
             )
             return None

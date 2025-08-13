@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Set
 
 import marko
 import marko.element

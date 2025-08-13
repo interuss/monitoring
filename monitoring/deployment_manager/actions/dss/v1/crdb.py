@@ -1,5 +1,4 @@
 import base64
-import os
 
 import cryptography.exceptions
 import cryptography.hazmat.backends

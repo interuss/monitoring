@@ -34,7 +34,6 @@ def _assert_evaluate_sp_flight_recent_positions(
 
 
 def test_evaluate_sp_flight_recent_positions():
-
     some_time = datetime.now(timezone.utc)
     # All samples within last minute: should pass
     _assert_evaluate_sp_flight_recent_positions(

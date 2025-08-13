@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 
 import jwt
 import requests
-from aiohttp import ClientResponse, ClientSession
+from aiohttp import ClientSession
 
 ALL_SCOPES = [
     "dss.write.identification_service_areas",

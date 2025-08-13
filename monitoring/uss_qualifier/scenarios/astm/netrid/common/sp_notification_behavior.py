@@ -1,8 +1,6 @@
-import time
 from datetime import timedelta
-from typing import Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import Callable, Dict, List, Optional, Set, Type, TypeVar, Union
 
-import loguru
 from future.backports.datetime import datetime
 from implicitdict import ImplicitDict
 from requests.exceptions import RequestException

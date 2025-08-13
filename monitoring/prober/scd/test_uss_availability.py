@@ -6,7 +6,7 @@ from monitoring.prober.infrastructure import depends_on
 @default_scope(SCOPE_AA)
 def test_set_uss_availability(ids, scd_session2):
     resp = scd_session2.put(
-        f"/uss_availability/uss1", scope=SCOPE_AA, json={"availability": "normal"}
+        "/uss_availability/uss1", scope=SCOPE_AA, json={"availability": "normal"}
     )
     assert resp.status_code == 200, resp.content
     data = resp.json()
@@ -15,7 +15,7 @@ def test_set_uss_availability(ids, scd_session2):
     assert data["version"]
 
     resp = scd_session2.put(
-        f"/uss_availability/uss1", scope=SCOPE_AA, json={"availability": "pUrPlE"}
+        "/uss_availability/uss1", scope=SCOPE_AA, json={"availability": "pUrPlE"}
     )
     assert resp.status_code == 400, resp.content
 
@@ -23,13 +23,13 @@ def test_set_uss_availability(ids, scd_session2):
 @default_scope(SCOPE_AA)
 @depends_on(test_set_uss_availability)
 def test_get_uss_availability(ids, scd_session2):
-    resp = scd_session2.get(f"/uss_availability/unknown_uss2", scope=SCOPE_AA)
+    resp = scd_session2.get("/uss_availability/unknown_uss2", scope=SCOPE_AA)
     assert resp.status_code == 200, resp.content
     data = resp.json()
     assert data["status"]["availability"] == "Unknown"
     assert data["version"] == ""
 
-    resp = scd_session2.get(f"/uss_availability/uss1", scope=SCOPE_AA)
+    resp = scd_session2.get("/uss_availability/uss1", scope=SCOPE_AA)
     assert resp.status_code == 200, resp.content
     data = resp.json()
     assert data["status"]["uss"] == "uss1"

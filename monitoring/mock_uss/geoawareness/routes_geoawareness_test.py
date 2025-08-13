@@ -282,7 +282,7 @@ def test_geozone_simple_check(client, client_options):
     ]
 
     response = client.post(
-        f"/geoawareness/check",
+        "/geoawareness/check",
         json={"checks": [c[0] for c in checks]},
         **client_options,
     )

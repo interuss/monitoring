@@ -14,7 +14,6 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 
 def validate(test_scenarios: List[TestScenarioType]):
-
     for test_scenario in test_scenarios:
         # Verify that documentation parses
         docs = get_documentation(test_scenario)
