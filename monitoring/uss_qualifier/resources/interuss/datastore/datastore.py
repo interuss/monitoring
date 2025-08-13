@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import socket
 from typing import List, Optional, Tuple
 
 import psycopg
@@ -145,16 +146,57 @@ class DatastoreDBNode(object):
         This is detected by attempting to establish a connection with the node
         forcing the client to use a TLS version < 1.2 and validating that the
         connection fails with the expected error message.
+
+        Modern libraries and Python have dropped support for TLS versions older than 1.2, as these are now considered legacy.
+
+        To be able to test those old protocols, we manually send TLS packets (captured from legacy code) and parse the result.
+        Parsing is limited, but should be good enough for our cases.
         """
-        try:
-            c = self.connect(
-                sslmode="require",
-                ssl_min_protocol_version="TLSv1",
-                ssl_max_protocol_version="TLSv1.1",
+
+        def _build_client_hello():
+            """Builds a client hello"""
+
+            return bytes.fromhex(
+                "16"  # Handshake
+                "0301"  # TLS Version: 1.0
+                "0063"  # Length
+                "01"  # Handshake type: Client hello
+                "00005f"  # Length
+                "0302"  # TLS Version: 1.1
+                "4895335bae2d2d929e34bdd5ccc89d800807bb01bbaaa7bf86efbb83a9249206"  # Random value
+                "00"  # Session ID Length
+                "0012"  # Cipher suite Length
+                "c00ac0140039c009c01300330035002f00ff"  # Cipher suites
+                "01"  # Compression method length
+                "00"  # No compression
+                "0024"  # Extentions length
+                "000b000403000102000a000c000a001d0017001e00190018002300000016000000170000"  # Extensions
             )
-            c.close()
-        except psycopg.OperationalError as e:
-            err_msg = str(e)
-            legacy_rejected = "tlsv1 alert protocol version" in err_msg
-            return legacy_rejected, e
-        return False, None
+
+        def _is_protocol_failure(data):
+            """Tests whether the server sends a protocol failure."""
+            # Format:
+            # 15     TLS Alert
+            # 03 01  TLS Version (Ignored)
+            # 00 02  Length (Ignored)
+            # 02     Level: Fatal (Ignored)
+            # 46     Description: Protocol version
+
+            content_type = data[0]
+            alert_description = data[6]
+
+            return content_type == 0x15 and alert_description == 0x46
+
+        try:
+            with socket.create_connection((self.host, self.port), timeout=5) as sock:
+                sock.sendall(bytes.fromhex("0000000804d2162f"))  # Postgres hello
+                sock.recv(16)
+                sock.sendall(_build_client_hello())
+                data = sock.recv(1024)
+
+                if not data:
+                    return False, "No response from server"
+
+                return _is_protocol_failure(data), None
+        except Exception as e:
+            return False, str(e)
