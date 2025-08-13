@@ -7,6 +7,7 @@ requires-python = "==3.13.5"
 dependencies = [
     "aiohttp",
     "arrow",
+    "basedpyright>=1.31.1",
     "bc-jsonpath-ng",
     "cryptography",
     "faker",
@@ -60,3 +61,6 @@ lint.select = [
 ]
 extend-exclude = ["interfaces/*"]
 line-length = 88
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
