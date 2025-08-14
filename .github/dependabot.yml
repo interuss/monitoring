@@ -1,0 +1,25 @@
+version: 2
+
+updates:
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "uv"
+    directory: "/test/repo_hygiene/"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "docker"
+    directory: "/monitoring/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "docker"
+    directory: "/test/repo_hygiene/"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
