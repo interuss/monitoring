@@ -146,8 +146,8 @@ class V1FlightPlannerClient(FlightPlannerClient):
             participant_id=self.participant_id,
             query_type=QueryType.InterUSSFlightPlanningV1DeleteFlightPlan,
         )
-        # 404 is acceptable, as the end state we are interested in is already effective.
-        if query.status_code not in [200, 404]:
+
+        if query.status_code != 200:
             raise PlanningActivityError(
                 f"Attempt to delete flight plan returned status {query.status_code} rather than 200 as expected",
                 query,
@@ -157,9 +157,12 @@ class V1FlightPlannerClient(FlightPlannerClient):
                 query.response.json, api.DeleteFlightPlanResponse
             )
         except ValueError as e:
+
             raise PlanningActivityError(
-                f"Response to delete flight plan could not be parsed: {str(e)}", query
+                f"Response to delete flight plan could not be parsed: {str(e)}",
+                query,
             )
+
         self.created_flight_ids.discard(flight_id)
         response = PlanningActivityResponse(
             flight_id=flight_id,
