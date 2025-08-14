@@ -196,6 +196,18 @@ def describe_aiohttp_response(
     return ResponseDescription(**kwargs)
 
 
+def describe_failed_aiohttp_response(
+    exception: Exception, duration: datetime.timedelta
+) -> ResponseDescription:
+    kwargs = {
+        "failure": str(exception),
+        "elapsed_s": duration.total_seconds(),
+        "reported": StringBasedDateTime(datetime.datetime.now(datetime.UTC)),
+    }
+
+    return ResponseDescription(**kwargs)
+
+
 def describe_flask_response(resp: flask.Response, elapsed_s: float):
     headers = {k: v for k, v in resp.headers.items()}
     kwargs = {

@@ -3,6 +3,7 @@ import typing
 from datetime import UTC, datetime
 from typing import Dict, List
 
+import aiohttp
 import arrow
 import requests
 from uas_standards.astm.f3411 import v19, v22a
@@ -11,6 +12,7 @@ from monitoring.monitorlib.fetch import (
     Query,
     QueryType,
     describe_aiohttp_response,
+    describe_failed_aiohttp_response,
     describe_request,
 )
 from monitoring.monitorlib.fetch.rid import FetchedISA
@@ -209,18 +211,25 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             prep = self._dss.client.prepare_request(r)
             t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
-            status, headers, resp_json = await self._async_session.get(
-                url=url, scope=self._read_scope()
-            )
-            duration = datetime.now(UTC) - t0
+            try:
+                status, headers, resp_json = await self._async_session.get(
+                    url=url, scope=self._read_scope()
+                )
+                duration = datetime.now(UTC) - t0
+                response = describe_aiohttp_response(
+                    status, headers, resp_json, duration
+                )
+            except aiohttp.ClientError as e:
+                duration = datetime.now(UTC) - t0
+                response = describe_failed_aiohttp_response(e, duration)
+
             rq = Query(
                 request=req_descr,
-                response=describe_aiohttp_response(
-                    status, headers, resp_json, duration
-                ),
+                response=response,
                 participant_id=self._dss.participant_id,
                 query_type=QueryType.dss_get_isa(self._dss.rid_version),
             )
+
             return isa_id, self._wrap_isa_get_query(rq)
 
     async def _create_isa(self, isa_id):
@@ -238,15 +247,21 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             prep = self._dss.client.prepare_request(r)
             t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
-            status, headers, resp_json = await self._async_session.put(
-                url=url, json=payload, scope=self._write_scope()
-            )
-            duration = datetime.now(UTC) - t0
+            try:
+                status, headers, resp_json = await self._async_session.put(
+                    url=url, json=payload, scope=self._write_scope()
+                )
+                duration = datetime.now(UTC) - t0
+                response = describe_aiohttp_response(
+                    status, headers, resp_json, duration
+                )
+            except aiohttp.ClientError as e:
+                duration = datetime.now(UTC) - t0
+                response = describe_failed_aiohttp_response(e, duration)
+
             rq = Query(
                 request=req_descr,
-                response=describe_aiohttp_response(
-                    status, headers, resp_json, duration
-                ),
+                response=response,
                 participant_id=self._dss.participant_id,
                 query_type=QueryType.dss_create_isa(self._dss.rid_version),
             )
@@ -262,18 +277,25 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             prep = self._dss.client.prepare_request(r)
             t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
-            status, headers, resp_json = await self._async_session.delete(
-                url=url, scope=self._write_scope()
-            )
-            duration = datetime.now(UTC) - t0
+            try:
+                status, headers, resp_json = await self._async_session.delete(
+                    url=url, scope=self._write_scope()
+                )
+                duration = datetime.now(UTC) - t0
+                response = describe_aiohttp_response(
+                    status, headers, resp_json, duration
+                )
+            except aiohttp.ClientError as e:
+                duration = datetime.now(UTC) - t0
+                response = describe_failed_aiohttp_response(e, duration)
+
             rq = Query(
                 request=req_descr,
-                response=describe_aiohttp_response(
-                    status, headers, resp_json, duration
-                ),
+                response=response,
                 participant_id=self._dss.participant_id,
                 query_type=QueryType.dss_delete_isa(self._dss.rid_version),
             )
+
             return isa_id, self._wrap_isa_put_query(rq, "delete")
 
     def _write_scope(self):
@@ -409,7 +431,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 )
 
     def _get_deleted_isas(self):
-
         loop = asyncio.get_event_loop()
         results = loop.run_until_complete(
             asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
