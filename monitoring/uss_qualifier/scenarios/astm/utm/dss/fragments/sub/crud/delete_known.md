@@ -2,9 +2,7 @@
 
 This test step fragment validates that subscriptions can be deleted.
 
-## [Delete query succeeds](./delete_query.md)
-
-Check query succeeds.
+## [Verify delete query succeeds](./delete_query.md)
 
 ## 🛑 Delete subscription response format conforms to spec check
 

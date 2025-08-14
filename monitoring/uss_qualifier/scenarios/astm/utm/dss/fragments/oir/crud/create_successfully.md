@@ -5,13 +5,9 @@ This test step fragment validates that:
  - the response to the query conforms to the OpenAPI specification
  - the content of the response reflects the created operational intent reference
 
-## [Query Success](./create_query.md)
+## [Verify query Success](./create_query.md)
 
-Check query succeeds
-
-## [Response Format](./create_format.md)
-
-Check response format
+## [Validate response format](./create_format.md)
 
 ## 🛑 Create operational intent reference response content is correct check
 

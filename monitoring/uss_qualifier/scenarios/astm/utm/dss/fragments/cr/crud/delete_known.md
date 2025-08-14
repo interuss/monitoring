@@ -6,9 +6,7 @@ This test step fragment validates that constraint references can be deleted
 
 A query to delete a constraint reference, by its owner and when the correct OVN is provided, should succeed, otherwise the DSS is in violation of **[astm.f3548.v21.DSS0005,3](../../../../../../../requirements/astm/f3548/v21.md)**.
 
-## [Response format](./delete_format.md)
-
-Check response format
+## [Validate response format](./delete_format.md)
 
 ## 🛑 Delete constraint reference response content is correct check
 

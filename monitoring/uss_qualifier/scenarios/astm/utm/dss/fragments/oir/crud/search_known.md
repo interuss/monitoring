@@ -1,10 +1,8 @@
 # Search operational intent reference test step fragment
 
-This test step fragment validates that operational intent references can be searched for
+This test step fragment validates that known operational intent references can be searched for, and that their content is as expected.
 
-## [Search query succeeds](./search_query.md)
-
-Check query succeeds.
+## [Verify search query succeeds](./search_query.md)
 
 ## 🛑 Search operational intent reference response format conforms to spec check
 
