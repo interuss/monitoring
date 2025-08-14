@@ -149,7 +149,7 @@ class MakeUssReport(TestScenario):
                 except (ValueError, TypeError, KeyError) as e:
                     check.record_failed(
                         summary="Error parsing makeUssReport response",
-                        details=f"{type(e).__name__}: {e.msg}",
+                        details=f"{type(e).__name__}: {str(e)}",
                         query_timestamps=[query.timestamp],
                     )
                     continue
