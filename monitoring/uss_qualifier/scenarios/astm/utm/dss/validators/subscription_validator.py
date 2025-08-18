@@ -114,16 +114,17 @@ class SubscriptionValidator:
                     t_dss=t_dss,
                 )
 
-        with self._scenario.check(
-            "Returned USS base URL has correct base URL", self._pid
-        ) as check:
-            if dss_sub.uss_base_url != self._sub_params.base_url:
-                self._fail_sub_check(
-                    check,
-                    summary="Returned USS Base URL does not match provided one",
-                    details=f"Provided: {self._sub_params.base_url}, Returned: {dss_sub.uss_base_url}",
-                    t_dss=t_dss,
-                )
+        if self._sub_params:
+            with self._scenario.check(
+                "Returned USS base URL has correct base URL", self._pid
+            ) as check:
+                if dss_sub.uss_base_url != self._sub_params.base_url:
+                    self._fail_sub_check(
+                        check,
+                        summary="Returned USS Base URL does not match provided one",
+                        details=f"Provided: {self._sub_params.base_url}, Returned: {dss_sub.uss_base_url}",
+                        t_dss=t_dss,
+                    )
 
         with self._scenario.check(
             "Returned subscription has a start time", self._pid
@@ -149,39 +150,44 @@ class SubscriptionValidator:
 
         # When expect_start_time and expect_end_time have not been defined, there is no clear specification on
         # what the returned times should be, so we only check them when we have requested them.
-        if self._sub_params.start_time is not None:
-            with self._scenario.check(
-                "Returned start time is correct", self._pid
-            ) as check:
-                if (
-                    abs(
-                        dss_sub.time_start.value.datetime - self._sub_params.start_time
-                    ).total_seconds()
-                    > TIME_TOLERANCE_SEC
-                ):
-                    self._fail_sub_check(
-                        check,
-                        summary="Returned start time does not match provided one",
-                        details=f"Provided: {self._sub_params.start_time}, Returned: {dss_sub.time_start}",
-                        t_dss=t_dss,
-                    )
+        if self._sub_params:
+            if (
+                self._sub_params.start_time is not None
+                and dss_sub.time_start is not None
+            ):
+                with self._scenario.check(
+                    "Returned start time is correct", self._pid
+                ) as check:
+                    if (
+                        abs(
+                            dss_sub.time_start.value.datetime
+                            - self._sub_params.start_time
+                        ).total_seconds()
+                        > TIME_TOLERANCE_SEC
+                    ):
+                        self._fail_sub_check(
+                            check,
+                            summary="Returned start time does not match provided one",
+                            details=f"Provided: {self._sub_params.start_time}, Returned: {dss_sub.time_start}",
+                            t_dss=t_dss,
+                        )
 
-        if self._sub_params.end_time is not None:
-            with self._scenario.check(
-                "Returned end time is correct", self._pid
-            ) as check:
-                if (
-                    abs(
-                        dss_sub.time_end.value.datetime - self._sub_params.end_time
-                    ).total_seconds()
-                    > TIME_TOLERANCE_SEC
-                ):
-                    self._fail_sub_check(
-                        check,
-                        summary="Returned end time does not match provided one",
-                        details=f"Provided: {self._sub_params.end_time}, Returned: {dss_sub.time_end}",
-                        t_dss=t_dss,
-                    )
+            if self._sub_params.end_time is not None and dss_sub.time_end is not None:
+                with self._scenario.check(
+                    "Returned end time is correct", self._pid
+                ) as check:
+                    if (
+                        abs(
+                            dss_sub.time_end.value.datetime - self._sub_params.end_time
+                        ).total_seconds()
+                        > TIME_TOLERANCE_SEC
+                    ):
+                        self._fail_sub_check(
+                            check,
+                            summary="Returned end time does not match provided one",
+                            details=f"Provided: {self._sub_params.end_time}, Returned: {dss_sub.time_end}",
+                            t_dss=t_dss,
+                        )
 
         with self._scenario.check(
             "Returned subscription has a version", self._pid
@@ -242,33 +248,34 @@ class SubscriptionValidator:
                         t_dss=t_dss,
                     )
 
-        with self._scenario.check(
-            "Operational intents notification flag is as requested", self._pid
-        ) as check:
-            if (
-                dss_sub.notify_for_operational_intents
-                != self._sub_params.notify_for_op_intents
-            ):
-                self._fail_sub_check(
-                    check,
-                    summary="Operational intents notification flag is not as requested",
-                    details=f"Provided: {self._sub_params.notify_for_op_intents}, Returned: {dss_sub.notify_for_operational_intents}",
-                    t_dss=t_dss,
-                )
+        if self._sub_params:
+            with self._scenario.check(
+                "Operational intents notification flag is as requested", self._pid
+            ) as check:
+                if (
+                    dss_sub.notify_for_operational_intents
+                    != self._sub_params.notify_for_op_intents
+                ):
+                    self._fail_sub_check(
+                        check,
+                        summary="Operational intents notification flag is not as requested",
+                        details=f"Provided: {self._sub_params.notify_for_op_intents}, Returned: {dss_sub.notify_for_operational_intents}",
+                        t_dss=t_dss,
+                    )
 
-        with self._scenario.check(
-            "Constraints notification flag is as requested", self._pid
-        ):
-            if (
-                dss_sub.notify_for_constraints
-                != self._sub_params.notify_for_constraints
+            with self._scenario.check(
+                "Constraints notification flag is as requested", self._pid
             ):
-                self._fail_sub_check(
-                    check,
-                    summary="Constraints notification flag is not as requested",
-                    details=f"Provided: {self._sub_params.notify_for_constraints}, Returned: {dss_sub.notify_for_constraints}",
-                    t_dss=t_dss,
-                )
+                if (
+                    dss_sub.notify_for_constraints
+                    != self._sub_params.notify_for_constraints
+                ):
+                    self._fail_sub_check(
+                        check,
+                        summary="Constraints notification flag is not as requested",
+                        details=f"Provided: {self._sub_params.notify_for_constraints}, Returned: {dss_sub.notify_for_constraints}",
+                        t_dss=t_dss,
+                    )
 
     def _validate_put_sub_response_schema(
         self, new_sub: MutatedSubscription, t_dss: datetime, action: str

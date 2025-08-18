@@ -149,6 +149,9 @@ class TestSuiteAction(object):
     def _run_test_scenario(self, context: ExecutionContext) -> TestScenarioReport:
         scenario = self.test_scenario
 
+        if not scenario:
+            raise Exception("Cannot execute _run_test_scenario when no scenario is set")
+
         logger.info(f'Running "{scenario.documentation.name}" scenario...')
         scenario.on_failed_check = _print_failed_check
         try:
@@ -169,7 +172,7 @@ class TestSuiteAction(object):
         if report.successful:
             logger.info(f'SUCCESS for "{scenario.documentation.name}" scenario')
         else:
-            if "execution_error" in report:
+            if "execution_error" in report and report.execution_error:
                 lines = report.execution_error.stacktrace.split("\n")
                 logger.error(
                     "Execution error:\n{}", "\n".join("  " + line for line in lines)
@@ -178,12 +181,20 @@ class TestSuiteAction(object):
         return report
 
     def _run_test_suite(self, context: ExecutionContext) -> TestSuiteReport:
+        if not self.test_suite:
+            raise Exception("Cannot execute _run_test_suite when no test suite is set")
+
         logger.info(f"Beginning test suite {self.test_suite.definition.name}...")
         report = self.test_suite.run(context)
         logger.info(f"Completed test suite {self.test_suite.definition.name}")
         return report
 
     def _run_action_generator(self, context: ExecutionContext) -> ActionGeneratorReport:
+        if not self.action_generator:
+            raise Exception(
+                "Cannot execute _run_action_generator when no action generator is set"
+            )
+
         report = ActionGeneratorReport(
             actions=[],
             generator_type=self.action_generator.definition.generator_type,
@@ -407,7 +418,7 @@ class ExecutionContext(object):
         self.start_time = arrow.utcnow().datetime
 
     def sibling_queries(self) -> Iterator[Query]:
-        if self.current_frame.parent is None:
+        if self.current_frame is None or self.current_frame.parent is None:
             return
         for child in self.current_frame.parent.children:
             if child.report is not None:
