@@ -38,7 +38,7 @@ def no_ssl_cockroach(request):
 @pytest.fixture(scope="module")
 def old_ssl_cockroach(request):
     server = DockerContainer(
-        image="mcuoorb/insecurecockroach:latest",
+        image="interuss/insecurecockroach:latest",
         ports=[26257],
         command="start-single-node",
     )

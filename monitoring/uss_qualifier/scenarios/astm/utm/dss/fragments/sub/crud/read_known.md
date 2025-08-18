@@ -1,10 +1,8 @@
 # Read subscription test step fragment
 
-This test step fragment validates that subscriptions can be read.
+This test step fragment validates that a known subscriptions can be read, and that its content is correct.
 
-## [Read query succeeds](./read_query.md)
-
-Check query succeeds.
+## [Verify read query succeeds](./read_query.md)
 
 ## 🛑 Get subscription response format conforms to spec check
 

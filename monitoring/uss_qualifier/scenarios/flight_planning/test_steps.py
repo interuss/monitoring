@@ -412,34 +412,30 @@ def cleanup_flights(
                     resp, query = cleanup_flight(flight_planner, flight_id)
                     scenario.record_query(query)
                 except QueryError as e:
+
                     for q in e.queries:
                         scenario.record_query(q)
-                    check.record_failed(
-                        summary=f"Failed to clean up flight {flight_id} from {flight_planner.participant_id}",
-                        details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
-                        query_timestamps=[q.request.timestamp for q in e.queries],
-                    )
-                    continue
 
-                # A non-existing flight is considered successfully deleted
-                if query.status_code in [200, 404]:
                     if (
-                        resp.flight_plan_status != FlightPlanStatus.Closed
-                        or query.status_code == 404
-                    ):
+                        e.queries and e.queries[0].status_code == 404
+                    ):  # We allow 404 during cleanup
                         scenario.record_note(
                             f"Deletion of {flight_id}",
-                            f"Deletion of flight {flight_id} returned a status of '{resp.flight_plan_status}' ({FlightPlanStatus.Closed} wanted), with a {query.status_code} status code (200 wanted)",
+                            f"Deletion of flight {flight_id} returned a status code of 404 (instead of a 200)",
                         )
 
-                    removed.append(flight_id)
-                else:
-                    check.record_failed(
-                        summary="Failed to delete flight",
-                        details=(
-                            f"USS indicated {resp.activity_result} with flight plan status {resp.flight_plan_status} rather than the expected Completed with flight plan status Closed.  Its notes were: {resp.notes}"
-                            if "notes" in resp
-                            else "See query"
-                        ),
-                        query_timestamps=[query.request.timestamp],
+                    else:
+                        check.record_failed(
+                            summary=f"Failed to clean up flight {flight_id} from {flight_planner.participant_id}",
+                            details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
+                            query_timestamps=[q.request.timestamp for q in e.queries],
+                        )
+                    continue
+
+                if resp.flight_plan_status != FlightPlanStatus.Closed:
+                    scenario.record_note(
+                        f"Deletion of {flight_id}",
+                        f"Deletion of flight {flight_id} returned a status of '{resp.flight_plan_status}' ({FlightPlanStatus.Closed} wanted)",
                     )
+
+                removed.append(flight_id)

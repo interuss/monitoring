@@ -1,14 +1,10 @@
 # Search constraint reference test step fragment
 
-This test step fragment validates that constraint references can be searched for.
+This test step fragment validates that known constraint references can be searched for, and that the returned content is as expected.
 
-## [Search query succeeds](./search_query.md)
+## [Verify search query succeeds](./search_query.md)
 
-Check query succeeds.
-
-## [Response format](./search_format.md)
-
-Check response format.
+## [Validate response format](./search_format.md)
 
 ## 🛑 Expected constraint reference is in search results check
 

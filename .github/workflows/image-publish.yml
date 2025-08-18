@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.9.1
+        uses: sigstore/cosign-installer@v3.9.2
       - name: Job information
         run: |
           echo "Job information"
@@ -39,13 +39,13 @@ jobs:
           cosign version
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
           fetch-depth: 0
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7  # v1.14.1
+        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1  # v3.5.0
         with:
           registry: docker.io
           username: ${{ secrets.DOCKER_USERNAME }}

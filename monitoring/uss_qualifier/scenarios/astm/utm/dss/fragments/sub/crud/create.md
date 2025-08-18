@@ -2,7 +2,7 @@
 
 This test step fragment validates that subscriptions can be created.
 
-## [Query Success](./create_query.md)
+## [Verify query succeeds](./create_query.md)
 
 ## 🛑 Create subscription response format conforms to spec check
 

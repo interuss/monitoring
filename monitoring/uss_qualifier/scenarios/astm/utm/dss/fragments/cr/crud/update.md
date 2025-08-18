@@ -2,13 +2,9 @@
 
 This test step fragment validates that constraint references can be updated.
 
-## [Update query succeeds](./update_query.md)
+## [Verify update query succeeds](./update_query.md)
 
-Check query succeeds.
-
-## [Response Format](./update_format.md)
-
-Check response format
+## [Validate response format](./update_format.md)
 
 ## 🛑 Mutate constraint reference response content is correct check
 
