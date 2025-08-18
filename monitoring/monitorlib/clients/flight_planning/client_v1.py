@@ -18,7 +18,6 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     AdvisoryInclusion,
     FlightPlanStatus,
     PlanningActivityResponse,
-    PlanningActivityResult,
 )
 from monitoring.monitorlib.clients.flight_planning.test_preparation import (
     TestPreparationActivityResponse,
@@ -157,7 +156,6 @@ class V1FlightPlannerClient(FlightPlannerClient):
                 query.response.json, api.DeleteFlightPlanResponse
             )
         except ValueError as e:
-
             raise PlanningActivityError(
                 f"Response to delete flight plan could not be parsed: {str(e)}",
                 query,

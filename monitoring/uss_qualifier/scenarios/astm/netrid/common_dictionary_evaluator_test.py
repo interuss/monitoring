@@ -8,7 +8,6 @@ from implicitdict import ImplicitDict
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
 from uas_standards.astm.f3411.v22a.api import (
-    UASID,
     Altitude,
     HorizontalAccuracy,
     LatLngPoint,
@@ -353,7 +352,6 @@ def _assert_generic_evaluator(testcase: GenericEvaluatorTestCase, outcome: bool)
         )
 
         if not testcase.ignore_dp_test:
-
             # DP Check
             evaluator._generic_evaluator(
                 injected_field_name="test",
@@ -377,7 +375,6 @@ def _assert_generic_evaluator(testcase: GenericEvaluatorTestCase, outcome: bool)
     assert unit_test_scenario.get_report().successful == outcome
 
     if not outcome:
-
         found_correct_reason = False
 
         for c in unit_test_scenario.get_report().cases:
@@ -552,7 +549,6 @@ def _assert_generic_evaluator_call(
     assert unit_test_scenario.get_report().successful == outcome
 
     if wanted_fail:
-
         found_correct_reason = False
 
         for c in unit_test_scenario.get_report().cases:
@@ -819,7 +815,7 @@ def _assert_generic_evaluator_dont_have_default(
         _assert_generic_evaluator_result(
             *fct_and_setters, None, valid_value, valid_value, outcome=False
         )
-    except:
+    except Exception:
         got_exception = True
 
     assert got_exception
@@ -1481,7 +1477,6 @@ def test_evaluate_operational_status():
     v22a_only_values = ["Emergency", "RemoteIDSystemFailure"]
 
     for v22a_only_value in v22a_only_values:
-
         _assert_generic_evaluator_valid_value(
             *base_args, valid_value=v22a_only_value, rid_version=RIDVersion.f3411_22a
         )
@@ -1855,7 +1850,6 @@ def test_evaluate_uas_id():
     """Test uas id base part, about the presence of at least one field in observed values"""
 
     def do_checkfor_uas_id_presence(sp_observed, rid_version):
-
         def step_under_test(self: UnitTestScenario):
             evaluator = RIDCommonDictionaryEvaluator(
                 config=EvaluationConfiguration(),
@@ -1881,9 +1875,7 @@ def test_evaluate_uas_id():
     for v in range(0, 4):  # We activate or not 2 fields, 2^2 == 4
 
         class SpObservedV19(ImplicitDict):
-
             def __init__(self, v):
-
                 if v & 0b1:
                     self.registration_id = "x"
                 if v & 0b10:
@@ -1897,9 +1889,7 @@ def test_evaluate_uas_id():
     for v in range(0, 16):  # We activate or not 4 field, 2^4 == 16
 
         class SpObservedV22a(ImplicitDict):
-
             def __init__(self, v):
-
                 if v & 0b1:
                     self.registration_id = "x"
                 if v & 0b10:
@@ -1917,7 +1907,6 @@ def test_evaluate_uas_id():
 
 
 def test_evaluate_uas_id_serial_number():
-
     def injected_field_setter(flight: Any, value: T) -> Any:
         flight["uas_id"] = {"serial_number": value}
         return flight
@@ -1953,7 +1942,6 @@ def test_evaluate_uas_id_serial_number():
 
 
 def test_evaluate_uas_id_registration_id():
-
     def injected_field_setter(flight: Any, value: T) -> Any:
         flight["uas_id"] = {"registration_id": value}
         return flight
@@ -1983,7 +1971,6 @@ def test_evaluate_uas_id_registration_id():
 
 
 def test_evaluate_uas_id_utm_id():
-
     def injected_field_setter(flight: Any, value: T) -> Any:
         flight["uas_id"] = {"utm_id": value}
         return flight
@@ -2035,7 +2022,6 @@ def test_evaluate_uas_id_utm_id():
 
 
 def test_evaluate_uas_id_specific_session_id():
-
     def injected_field_setter(flight: Any, value: T) -> Any:
         flight["uas_id"] = {"specific_session_id": value}
         return flight

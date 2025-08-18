@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional, Set, TypedDict, Unpack
+from typing import Callable, List, Set, Unpack
 
 import s2sphere
 from requests.exceptions import RequestException
@@ -281,7 +281,6 @@ class Misbehavior(GenericTestScenario):
             )
 
             with self.check(check_name, [participant_id]) as check:
-
                 # check uss flights query
                 uss_flights_query = rid.uss_flights(
                     flights_url,

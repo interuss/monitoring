@@ -18,7 +18,7 @@ from monitoring.uss_qualifier.reports.artifacts import (
     default_output_path,
     generate_artifacts,
 )
-from monitoring.uss_qualifier.reports.report import TestRunReport, redact_access_tokens
+from monitoring.uss_qualifier.reports.report import TestRunReport
 
 
 def parseArgs() -> argparse.Namespace:

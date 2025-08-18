@@ -30,7 +30,6 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class SoloHappyPath(TestScenario):
-
     times: Dict[TimeDuringTest, Time]
 
     flight1_id: Optional[str] = None

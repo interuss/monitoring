@@ -2,12 +2,10 @@ import argparse
 from typing import Callable, Optional
 
 import pytest
-import uas_standards.astm.f3411.v19.constants
-import uas_standards.astm.f3411.v22a.constants
-import uas_standards.astm.f3548.v21.constants
-from uas_standards.astm import f3411, f3548
+import uas_standards.astm.f3411.v19.constants as v19_constants
+import uas_standards.astm.f3548.v21.constants as v21_constants
 
-from monitoring.monitorlib import auth, rid_v1, scd
+from monitoring.monitorlib import auth, scd
 from monitoring.monitorlib.infrastructure import AsyncUTMTestSession, UTMClientSession
 from monitoring.prober.infrastructure import (
     IDFactory,
@@ -200,23 +198,19 @@ def subscriber(pytestconfig) -> Optional[str]:
     """Subscriber of USS making UTM API calls"""
     if pytestconfig.getoption(OPT_RID_AUTH):
         session = make_session(pytestconfig, BASE_URL_RID, OPT_RID_AUTH)
-        session.get("/healthy", scope=f3411.v19.constants.Scope.Read)
+        session.get("/healthy", scope=v19_constants.Scope.Read)
         rid_sub = session.auth_adapter.get_sub()
         if rid_sub:
             return rid_sub
     if pytestconfig.getoption(OPT_SCD_AUTH1):
         scd_session = make_session(pytestconfig, BASE_URL_SCD, OPT_SCD_AUTH1)
-        scd_session.get(
-            "/healthy", scope=f3548.v21.constants.Scope.StrategicCoordination
-        )
+        scd_session.get("/healthy", scope=v21_constants.Scope.StrategicCoordination)
         scd_sub = scd_session.auth_adapter.get_sub()
         if scd_sub:
             return scd_sub
     if pytestconfig.getoption(OPT_SCD_AUTH2):
         scd_session2 = make_session(pytestconfig, BASE_URL_SCD, OPT_SCD_AUTH2)
-        scd_session2.get(
-            "/healthy", scope=f3548.v21.constants.Scope.StrategicCoordination
-        )
+        scd_session2.get("/healthy", scope=v21_constants.Scope.StrategicCoordination)
         scd2_sub = scd_session2.auth_adapter.get_sub()
         if scd2_sub:
             return scd2_sub

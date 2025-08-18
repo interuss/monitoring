@@ -47,7 +47,7 @@ class ConfigureLocality(TestScenario):
                     )
                 elif locality_code is None:
                     check.record_failed(
-                        f"Missing current locality code",
+                        "Missing current locality code",
                         "Query to get current locality value did not produce a valid locality code",
                         query_timestamps=[query.request.initiated_at.datetime],
                     )

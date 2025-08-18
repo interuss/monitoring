@@ -8,7 +8,6 @@ from implicitdict import ImplicitDict
 from loguru import logger
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api
 from uas_standards.interuss.automated_testing.flight_planning.v1.constants import Scope
-from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
 from monitoring.mock_uss import require_config_value, webapp
 from monitoring.mock_uss.auth import requires_scope

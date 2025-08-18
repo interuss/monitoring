@@ -1,7 +1,6 @@
 from typing import List, Optional, Tuple
 
 from implicitdict import ImplicitDict, StringBasedDateTime
-from loguru import logger
 
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
@@ -116,7 +115,7 @@ class MockUSSClient(object):
             response = ImplicitDict.parse(query.response.get("json"), ListLogsResponse)
         except KeyError:
             raise QueryError(
-                msg=f"RecordedInteractionsResponse from mock_uss response did not contain JSON body",
+                msg="RecordedInteractionsResponse from mock_uss response did not contain JSON body",
                 queries=[query],
             )
         except ValueError as e:

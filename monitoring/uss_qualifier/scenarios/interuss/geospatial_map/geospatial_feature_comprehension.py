@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Dict
 
 import arrow
@@ -187,7 +186,7 @@ class GeospatialFeatureComprehension(TestScenario):
                         if "message" in result and result.message:
                             details += f" with message '{result.message}'"
                         check.record_failed(
-                            summary=f"Blocking and/or advisory geospatial features unexpectedly found",
+                            summary="Blocking and/or advisory geospatial features unexpectedly found",
                             details=details,
                             query_timestamps=query_timestamps,
                         )

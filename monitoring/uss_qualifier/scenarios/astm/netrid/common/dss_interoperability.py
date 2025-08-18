@@ -166,7 +166,6 @@ class DSSInteroperability(GenericTestScenario):
         isa_1 = self._context["isa_1"]
 
         for index, dss in enumerate([self._dss_primary] + self._dss_others):
-
             with self.check(
                 "Subscription[n] created with proper response", [dss.participant_id]
             ) as check:
@@ -438,7 +437,7 @@ class DSSInteroperability(GenericTestScenario):
 
                 if missing_subs:
                     check.record_failed(
-                        summary=f"DSS returned too few subscriptions",
+                        summary="DSS returned too few subscriptions",
                         details=f"Missing: {', '.join(missing_subs)}",
                         query_timestamps=[subs.query.request.timestamp],
                     )
@@ -541,7 +540,6 @@ class DSSInteroperability(GenericTestScenario):
         all_sub_1_ids = self._get_entities_by_prefix("sub_1_").keys()
 
         for dss in [self._dss_primary] + self._dss_others:
-
             with self.check(
                 "Subscriptions queried successfully", [dss.participant_id]
             ) as check:
@@ -626,7 +624,7 @@ class DSSInteroperability(GenericTestScenario):
 
             if missing_subs:
                 check.record_failed(
-                    summary=f"DSS returned too few Subscriptions",
+                    summary="DSS returned too few Subscriptions",
                     details=f"Missing Subscriptions: {', '.join(missing_subs)}",
                     query_timestamps=[mutated_isa.dss_query.query.request.timestamp],
                 )
@@ -656,7 +654,7 @@ class DSSInteroperability(GenericTestScenario):
 
             if missing_subs:
                 check.record_failed(
-                    summary=f"DSS returned too few Subscriptions",
+                    summary="DSS returned too few Subscriptions",
                     details=f"Missing Subscriptions: {', '.join(missing_subs)}",
                     query_timestamps=[del_isa.dss_query.query.request.timestamp],
                 )

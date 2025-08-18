@@ -468,8 +468,8 @@ def test_mutate_op1_bad_key(ids, scd_api, scd_session, scd_session2):
     assert resp.status_code == 409, resp.content
     missing_ops, _, ovns = _parse_conflicts(resp.json())
     assert ids(OP2_TYPE) in missing_ops
-    assert not (op2_ovn in ovns)
-    assert not (op1_ovn in ovns)
+    assert op2_ovn not in ovns
+    assert op1_ovn not in ovns
 
 
 # Successfully mutate Op1

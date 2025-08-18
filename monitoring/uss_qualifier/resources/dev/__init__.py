@@ -1,2 +1,2 @@
-from .noop import NoOpResource
-from .test_exclusions import TestExclusionsResource
+from .noop import NoOpResource as NoOpResource
+from .test_exclusions import TestExclusionsResource as TestExclusionsResource

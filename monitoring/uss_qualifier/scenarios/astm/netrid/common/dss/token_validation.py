@@ -162,7 +162,6 @@ class TokenValidation(GenericTestScenario):
             self._isa_version = new_isa.dss_query.isa.version
 
     def _wrong_auth_get(self):
-
         get_no_token = self._get_isa_tweak_auth(self._no_token_session)
         with self.check(
             "Missing token prevents reading an ISA",
@@ -624,7 +623,6 @@ class TokenValidation(GenericTestScenario):
         start_time: Optional[datetime.datetime],
         end_time: Optional[datetime.datetime],
     ) -> FetchedISAs:
-
         url_time_params = ""
         if start_time is not None:
             url_time_params += (
@@ -681,7 +679,6 @@ class TokenValidation(GenericTestScenario):
     def _query_scope_for_auth_params(
         self, utm_client: infrastructure.UTMClientSession, scope_intent: str
     ) -> Optional[str]:
-
         if utm_client.auth_adapter is not None:
             if self._dss.rid_version == RIDVersion.f3411_19:
                 if scope_intent == "read":

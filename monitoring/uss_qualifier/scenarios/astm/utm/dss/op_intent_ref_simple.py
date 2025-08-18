@@ -117,7 +117,6 @@ class OIRSimple(TestScenario):
         self.end_test_scenario()
 
     def _step_attempt_delete_missing_ovn(self):
-
         self.begin_test_step("Attempt deletion with missing OVN")
 
         with self.check(
@@ -148,7 +147,6 @@ class OIRSimple(TestScenario):
         self.end_test_step()
 
     def _step_attempt_delete_incorrect_ovn(self):
-
         self.begin_test_step("Attempt deletion with incorrect OVN")
 
         with self.check(
@@ -180,7 +178,6 @@ class OIRSimple(TestScenario):
         self.end_test_step()
 
     def _step_attempt_mutation_missing_ovn(self):
-
         self.begin_test_step("Attempt mutation with missing OVN")
 
         oir_params = self._test_params_for_current_time()
@@ -218,7 +215,6 @@ class OIRSimple(TestScenario):
         self.end_test_step()
 
     def _step_attempt_mutation_incorrect_ovn(self):
-
         self.begin_test_step("Attempt mutation with incorrect OVN")
 
         oir_params = self._test_params_for_current_time()
@@ -255,7 +251,6 @@ class OIRSimple(TestScenario):
         self.end_test_step()
 
     def _step_attempt_mutation_correct_ovn(self):
-
         self.begin_test_step("Attempt mutation with correct OVN")
 
         self._current_oir_params = self._test_params_for_current_time()

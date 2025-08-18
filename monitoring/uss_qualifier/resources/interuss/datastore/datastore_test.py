@@ -7,7 +7,6 @@ from . import DatastoreDBNode
 
 @pytest.fixture(scope="module")
 def good_cockroach(request):
-
     server = DockerContainer(
         image="cockroachdb/cockroach:v24.1.3",
         ports=[26257],
@@ -23,7 +22,6 @@ def good_cockroach(request):
 
 @pytest.fixture(scope="module")
 def no_ssl_cockroach(request):
-
     server = DockerContainer(
         image="cockroachdb/cockroach:v24.1.3",
         ports=[26257],
@@ -39,7 +37,6 @@ def no_ssl_cockroach(request):
 
 @pytest.fixture(scope="module")
 def old_ssl_cockroach(request):
-
     server = DockerContainer(
         image="interuss/insecurecockroach:latest",
         ports=[26257],
@@ -55,7 +52,6 @@ def old_ssl_cockroach(request):
 
 @pytest.fixture(scope="module")
 def good_yugabyte(request):
-
     server = DockerContainer(
         image="yugabytedb/yugabyte:2.25.2.0-b359",
         ports=[5433],
@@ -71,7 +67,6 @@ def good_yugabyte(request):
 
 @pytest.fixture(scope="module")
 def no_ssl_yugabyte(request):
-
     server = DockerContainer(
         image="yugabytedb/yugabyte:2.25.2.0-b359",
         ports=[5433],
@@ -87,7 +82,6 @@ def no_ssl_yugabyte(request):
 
 @pytest.fixture(scope="module")
 def old_ssl_yugabyte(request):
-
     import base64
 
     config = '{"tserver_flags": "ysql_pg_conf_csv=\\"ssl_min_protocol_version=\'TLSv1.1\'\\""}'
@@ -96,7 +90,7 @@ def old_ssl_yugabyte(request):
     server = DockerContainer(
         image="yugabytedb/yugabyte:2.25.2.0-b359",
         ports=[5433],
-        command=f"bash -c \"echo {config.decode('utf-8')} | base64 -d > /conf.conf && cat /conf.conf && bin/yugabyted cert generate_server_certs --base_dir /yugabyte/certs --hostnames `hostname` && bin/yugabyted start --secure --certs_dir=/yugabyte/certs/generated_certs/`hostname` --advertise_address=`hostname` --background=false --conf /conf.conf\"",
+        command=f'bash -c "echo {config.decode("utf-8")} | base64 -d > /conf.conf && cat /conf.conf && bin/yugabyted cert generate_server_certs --base_dir /yugabyte/certs --hostnames `hostname` && bin/yugabyted start --secure --certs_dir=/yugabyte/certs/generated_certs/`hostname` --advertise_address=`hostname` --background=false --conf /conf.conf"',
     )
     server.start()
     wait_for_logs(server, "Data placement constraint successfully verified")

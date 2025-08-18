@@ -51,7 +51,7 @@ def convert_distance(
 def evaluate_position(feature: UASZoneVersion, position: Optional[Position]) -> bool:
     logger.debug(f"      _evaluate_position: position:{position} feature:{feature}")
     if position is None:
-        logger.debug(f"        * position is None => True")
+        logger.debug("        * position is None => True")
         return True
 
     # TODO: Implement height check in AGL and AMSL
@@ -69,7 +69,7 @@ def evaluate_position(feature: UASZoneVersion, position: Optional[Position]) -> 
                 flatten(ref, LatLng.from_degrees(position.latitude, position.longitude))
             )
             if position_2d.within(circle_2d):
-                logger.debug(f"        * position is within circle => True")
+                logger.debug("        * position is within circle => True")
                 return True
         else:
             for coord in g.horizontalProjection.coordinates:  # Lng / Lat
@@ -90,10 +90,10 @@ def evaluate_position(feature: UASZoneVersion, position: Optional[Position]) -> 
                 )
 
                 if position_2d.within(polygon_2d):
-                    logger.debug(f"      * position is within polygon => True")
+                    logger.debug("      * position is within polygon => True")
                     return True
 
-    logger.debug(f"      * position outside geometry => False")
+    logger.debug("      * position outside geometry => False")
     return False
 
 
@@ -103,7 +103,6 @@ def _is_in_date_range(
     after: Optional[StringBasedDateTime],
     before: Optional[StringBasedDateTime],
 ) -> bool:
-
     if after is None and before is None:
         return True
 
@@ -131,7 +130,7 @@ def evaluate_timing(
 
     for a in feature.applicability:
         if a.permanent == YESNO.YES:
-            logger.debug(f"     * Permanent applicability => True")
+            logger.debug("     * Permanent applicability => True")
             return True
 
         start = a.get("startDateTime", StringBasedDateTime(datetime.min))
@@ -143,7 +142,7 @@ def evaluate_timing(
 
         schedule = a.get("schedule", None)
         if schedule is None:
-            logger.debug(f"     * Date in range without schedule => True")
+            logger.debug("     * Date in range without schedule => True")
             return True
         else:
             # TODO Implement schedule checks
@@ -247,7 +246,7 @@ def evaluate_features(
         if evaluate_feature(feature, filter_set):
             return GeozonesCheckResultGeozone.Present
 
-    logger.info(f" => No match - Absent")
+    logger.info(" => No match - Absent")
     return GeozonesCheckResultGeozone.Absent
 
 

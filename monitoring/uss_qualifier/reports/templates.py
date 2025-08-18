@@ -1,10 +1,8 @@
-import fileinput
 import hashlib
 import io
 import json
 import os
 import pathlib
-import shutil
 import zipfile
 from typing import List
 
@@ -12,7 +10,6 @@ import requests
 from loguru import logger
 
 from monitoring.uss_qualifier.configurations.configuration import (
-    ArtifactsConfiguration,
     TemplatedReportConfiguration,
     TemplatedReportInjectedConfiguration,
 )
@@ -70,9 +67,7 @@ class TemplateRenderer:
         # Configure application
         rendered_configuration = json.dumps(
             InjectedConfiguration(self._template.configuration, report=self._report)
-        ).replace(
-            "</", "<\\d/"
-        )  # Replace closing html tags in json strings
+        ).replace("</", "<\\d/")  # Replace closing html tags in json strings
         injected_configuration = f"""
 <script id="interuss_report_json" type="application/json">
     {rendered_configuration}

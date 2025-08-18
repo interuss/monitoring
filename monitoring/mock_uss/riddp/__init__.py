@@ -5,7 +5,7 @@ from monitoring.monitorlib import auth
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
 
-from . import config
+from . import config as config
 
 require_config_value(KEY_DSS_URL)
 require_config_value(KEY_AUTH_SPEC)
