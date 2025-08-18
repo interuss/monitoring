@@ -504,6 +504,8 @@ class TokenValidation(GenericTestScenario):
                     **({} if query_scope is None else {"scope": query_scope}),
                 ),
             )
+        else:
+            raise Exception(f"Unknown rid_version {self._dss.rid_version}")
 
         if dss_response.success:
             isa = dss_response.isa
