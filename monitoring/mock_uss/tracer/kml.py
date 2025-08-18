@@ -9,7 +9,7 @@ from enum import Enum
 from typing import Dict, List, Optional, Protocol, Type
 
 import yaml
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict
 from loguru import logger
 from lxml import etree
 from pykml.factory import KML_ElementMaker as kml

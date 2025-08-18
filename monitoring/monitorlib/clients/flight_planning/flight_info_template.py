@@ -12,7 +12,6 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
     RPAS26FlightDetails,
     UasState,
 )
-from monitoring.monitorlib.geo import LatLngPoint
 from monitoring.monitorlib.geotemporal import (
     Volume4DCollection,
     Volume4DTemplateCollection,
@@ -73,14 +72,14 @@ class FlightInfoTemplate(ImplicitDict):
         info = self.resolve(times)
         if "astm_f3548_21" not in info or not info.astm_f3548_21:
             raise ValueError(
-                f"Legacy SCD injection API requires astm_f3548_21 operational intent priority to be specified in FlightInfo"
+                "Legacy SCD injection API requires astm_f3548_21 operational intent priority to be specified in FlightInfo"
             )
         if (
             "uspace_flight_authorisation" not in info
             or not info.uspace_flight_authorisation
         ):
             raise ValueError(
-                f"Legacy SCD injection API requires uspace_flight_authorisation to be specified in FlightInfo"
+                "Legacy SCD injection API requires uspace_flight_authorisation to be specified in FlightInfo"
             )
         volumes = [v.to_interuss_scd_api() for v in info.basic_information.area]
         off_nominal_volumes = []

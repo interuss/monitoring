@@ -34,7 +34,6 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class SubscriptionInteractionsDeletion(TestScenario):
-
     _oir_ids: List[EntityID]
     _sub_ids: List[SubscriptionID]
 

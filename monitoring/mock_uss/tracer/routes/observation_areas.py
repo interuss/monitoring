@@ -9,7 +9,6 @@ import s2sphere
 from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 
-import monitoring.monitorlib.fetch.rid
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.database import db
@@ -32,7 +31,7 @@ from monitoring.mock_uss.tracer.observation_areas import (
 )
 from monitoring.mock_uss.tracer.tracer_poll import TASK_POLL_OBSERVATION_AREAS
 from monitoring.mock_uss.ui import auth as ui_auth
-from monitoring.monitorlib import fetch
+from monitoring.monitorlib.fetch import rid
 from monitoring.monitorlib.geo import Volume3D
 from monitoring.monitorlib.geotemporal import Volume4D
 
@@ -56,7 +55,6 @@ def tracer_upsert_observation_area(
         req_body = flask.request.json
         if req_body is None:
             raise ValueError("Request did not contain a JSON payload")
-        import json
 
         request: PutObservationAreaRequest = ImplicitDict.parse(
             req_body, PutObservationAreaRequest
@@ -115,7 +113,6 @@ def tracer_import_observation_areas() -> Union[Tuple[str, int], flask.Response]:
         req_body = flask.request.json
         if req_body is None:
             raise ValueError("Request did not contain a JSON payload")
-        import json
 
         request: ImportObservationAreasRequest = ImplicitDict.parse(
             req_body, ImportObservationAreasRequest
@@ -143,7 +140,7 @@ def tracer_import_observation_areas() -> Union[Tuple[str, int], flask.Response]:
             )
         dss_base_url = context.resolve_rid_dss_base_url("", request.f3411)
         rid_client = context.get_client(auth_spec, dss_base_url)
-        rid_subscriptions = fetch.rid.subscriptions(
+        rid_subscriptions = rid.subscriptions(
             area=points,
             rid_version=request.f3411,
             session=rid_client,

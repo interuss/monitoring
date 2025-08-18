@@ -22,7 +22,6 @@ from monitoring.uss_qualifier.action_generators.documentation.documentation impo
     list_potential_actions_for_action_generator_definition,
 )
 from monitoring.uss_qualifier.fileio import (
-    FileReference,
     get_package_name,
     load_dict_with_references,
     resolve_filename,

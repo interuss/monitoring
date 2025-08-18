@@ -1,5 +1,5 @@
-from abc import ABC, abstractmethod
-from typing import Dict, Generic, Optional, Set, Tuple, Type, TypeVar, get_type_hints
+from abc import ABC
+from typing import Dict, Generic, Set, Tuple, Type, TypeVar, get_type_hints
 
 from implicitdict import ImplicitDict
 from loguru import logger

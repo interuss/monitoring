@@ -272,7 +272,7 @@ def submit_flight(
             check.skip()
             return resp, None
 
-        msg = f'{flight_planner.participant_id} indicated flight planning activity {resp.activity_result} leaving flight plan {resp.flight_plan_status} rather than the expected {" or ".join([f"(Activity {expected_result[0]}, flight plan {expected_result[1]})" for expected_result in expected_results])}'
+        msg = f"{flight_planner.participant_id} indicated flight planning activity {resp.activity_result} leaving flight plan {resp.flight_plan_status} rather than the expected {' or '.join([f'(Activity {expected_result[0]}, flight plan {expected_result[1]})' for expected_result in expected_results])}"
         if "notes" in resp and resp.notes:
             msg += f' with notes "{resp.notes}"'
         else:
@@ -412,7 +412,6 @@ def cleanup_flights(
                     resp, query = cleanup_flight(flight_planner, flight_id)
                     scenario.record_query(query)
                 except QueryError as e:
-
                     for q in e.queries:
                         scenario.record_query(q)
 

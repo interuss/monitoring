@@ -42,7 +42,6 @@ class ISAValidator(object):
     def _fail_sub_check(
         self, _sub_check: PendingCheck, _summary: str, _details: str, t_dss: datetime
     ) -> None:
-
         _sub_check.record_failed(
             summary=_summary,
             details=_details,

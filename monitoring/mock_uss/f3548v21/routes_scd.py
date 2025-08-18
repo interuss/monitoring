@@ -9,7 +9,6 @@ from uas_standards.astm.f3548.v21.api import (
     ErrorReport,
     ErrorResponse,
     GetOperationalIntentDetailsResponse,
-    GetOperationalIntentTelemetryResponse,
     OperationalIntentState,
 )
 

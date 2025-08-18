@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.versioning.api import GetVersionResponse

@@ -1,1 +1,3 @@
-from .authentication_validation import AuthenticationValidation
+from .authentication_validation import (
+    AuthenticationValidation as AuthenticationValidation,
+)

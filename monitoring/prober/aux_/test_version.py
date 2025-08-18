@@ -2,8 +2,6 @@
 
 from uas_standards.astm.f3411 import v19
 
-from monitoring.monitorlib import rid_v1
-
 
 def test_version(aux_session):
     resp = aux_session.get("/version", scope=v19.constants.Scope.Read)

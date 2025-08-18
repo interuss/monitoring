@@ -133,7 +133,6 @@ def test_report_failed_stopfast_non_low():
     """Test the PendingCheck's record_failed function behavior with stop_fast parameter, with non-low severities that should stop the test"""
 
     for severity in [Severity.Medium, Severity.High, Severity.Critical]:
-
         pc, report = build_testable_pending_check(severity=severity, stop_fast=True)
 
         with pc:
@@ -170,7 +169,6 @@ def test_report_failed_stopfast_outside_cleanup():
         ScenarioPhase.ReadyForCleanup,
         ScenarioPhase.Complete,
     ]:
-
         pc, report = build_testable_pending_check(
             severity=Severity.Medium, phase=phase, stop_fast=True
         )
@@ -232,7 +230,6 @@ def test_report_failed_no_exceptions():
     """Test the PendingCheck's record_failed function behavior with medium and low severities that shouldn't raise an exception"""
 
     for severity in [Severity.Medium, Severity.Low]:
-
         pc, report = build_testable_pending_check(severity=severity)
 
         with pc:
