@@ -12,7 +12,6 @@ def test_get_scenario_type_by_name():
     """Test the get_scenario_type_by_name function, retrieving various mock TestScenarios by name and ensuring invalid or non-existing classes are returning errors"""
 
     with InjectFakeScenariosModule() as fake_module:
-
         assert (
             get_scenario_type_by_name("scenarios.test.TestScenarioA")
             == fake_module.TestScenarioA
@@ -20,7 +19,9 @@ def test_get_scenario_type_by_name():
 
         try:
             get_scenario_type_by_name("scenarios.test.NotATestScenarioC")
-            assert False  # NotImplementedError should have been raised (not a TestScenario)
+            assert (
+                False
+            )  # NotImplementedError should have been raised (not a TestScenario)
         except NotImplementedError:
             pass
 

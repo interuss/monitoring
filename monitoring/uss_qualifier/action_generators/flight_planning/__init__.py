@@ -1,1 +1,1 @@
-from .planner_combinations import FlightPlannerCombinations
+from .planner_combinations import FlightPlannerCombinations as FlightPlannerCombinations

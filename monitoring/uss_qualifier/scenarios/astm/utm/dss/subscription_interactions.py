@@ -126,7 +126,6 @@ class SubscriptionInteractions(TestScenario):
         self.end_test_scenario()
 
     def _step_create_background_sub(self):
-
         self.begin_test_step("Create background subscription")
 
         sub_now_params = self._planning_area.get_new_subscription_params(

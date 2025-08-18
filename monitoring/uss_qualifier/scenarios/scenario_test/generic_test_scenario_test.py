@@ -63,7 +63,6 @@ def test_make_test_scenario_base():
     """Test the scenario returned by make_test_scenario in the normal case"""
 
     with InjectFakeScenariosModule():
-
         declaration = _TestScenarioDeclaration(
             scenario_type="scenarios.test.TestScenarioA"
         )
@@ -89,7 +88,6 @@ def test_make_test_scenario_missing_resource():
     """Test that make_test_scenario is raising exceptions when resources are missing"""
 
     with InjectFakeScenariosModule():
-
         declaration = _TestScenarioDeclaration(
             scenario_type="scenarios.test.TestScenarioA"
         )
@@ -105,7 +103,6 @@ def test_make_test_scenario_resource():
     """Test the make_test_scenario method process resources correctly"""
 
     with InjectFakeScenariosModule():
-
         declaration = _TestScenarioDeclaration(
             scenario_type="scenarios.test.TestScenarioA"
         )
@@ -206,7 +203,6 @@ def test_state_machine():
     ]
 
     for call_order in itertools.permutations(possible_calls, len(possible_calls)):
-
         gtsi = _build_generic_test_scenario_instance()
         failled = False
 
@@ -639,7 +635,6 @@ def test_go_to_cleanup():
     ]
 
     for steps_to_do in range(1, len(steps_and_result) + 1):
-
         steps_and_result_to_test = steps_and_result[:steps_to_do]
 
         gtsi = _build_generic_test_scenario_instance()
@@ -921,7 +916,6 @@ def test_get_report_state_machine():
     steps = FINISHED_TEST_STEPS
 
     for steps_to_do in range(1, len(steps) + 1):
-
         gtsi = _build_generic_test_scenario_instance()
         run_a_set_of_calls_on_gtsi(gtsi, steps[:steps_to_do])
 
@@ -976,7 +970,6 @@ def test_record_execution_error_during_flow():
     steps = FINISHED_TEST_STEPS
 
     for steps_to_do in range(1, len(steps) + 1):
-
         gtsi = _build_generic_test_scenario_instance()
         run_a_set_of_calls_on_gtsi(gtsi, steps[:steps_to_do])
 
@@ -990,7 +983,6 @@ def test_record_execution_error_during_flow():
                     in str(e)
                 )
         else:
-
             gtsi.record_execution_error(ErrorForTests("test-exception"))
             report = gtsi.get_report()
 
@@ -1178,7 +1170,6 @@ def test_record_note_state_machine():
     steps = FINISHED_TEST_STEPS
 
     for steps_to_do in range(1, len(steps) + 1):
-
         gtsi = _build_generic_test_scenario_instance()
         run_a_set_of_calls_on_gtsi(gtsi, steps[:steps_to_do])
 
@@ -1617,7 +1608,6 @@ def test_stop_fast_enabled():
     gtsi.begin_test_step("test-step-1-1")
 
     with HideLogOutput():
-
         with gtsi.check("test-check-1-1-2-low") as check:
             check.record_failed("")
         try:

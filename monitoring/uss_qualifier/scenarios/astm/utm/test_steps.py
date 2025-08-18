@@ -285,7 +285,7 @@ class OpIntentValidator(object):
             if not expected_validation_failure_found:
                 check.record_failed(
                     summary="This negative test case requires specific invalid data shared with other USS in Operational intent details ",
-                    details=f"Data shared by Mock USS with other USSes did not have the specified invalid data, as expected for test case.",
+                    details="Data shared by Mock USS with other USSes did not have the specified invalid data, as expected for test case.",
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
 
@@ -296,7 +296,6 @@ class OpIntentValidator(object):
         flight_intent: FlightInfo,
         skip_if_not_found: bool,
     ) -> Optional[OperationalIntentReference]:
-
         with self._scenario.check(
             "Operational intent shared correctly", [self._flight_planner.participant_id]
         ) as check:

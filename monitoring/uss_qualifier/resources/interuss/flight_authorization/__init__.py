@@ -1,1 +1,1 @@
-from .flight_check_table import FlightCheckTableResource
+from .flight_check_table import FlightCheckTableResource as FlightCheckTableResource

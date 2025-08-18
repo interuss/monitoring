@@ -8,12 +8,8 @@ from marko.md_renderer import MarkdownRenderer
 
 from monitoring.uss_qualifier.documentation import text_of
 from monitoring.uss_qualifier.requirements.documentation import RequirementID
-from monitoring.uss_qualifier.scenarios.documentation.definitions import (
-    TestCaseDocumentation,
-)
 from monitoring.uss_qualifier.scenarios.documentation.parsing import (
     TEST_STEP_SUFFIX,
-    get_documentation,
     get_documentation_filename,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType

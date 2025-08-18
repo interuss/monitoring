@@ -43,7 +43,9 @@ circle1 = UASZoneAirspaceVolume(
     upperLimit=200,
     upperVerticalReference=VerticalReferenceType.AGL,
     horizontalProjection=CircleOrPolygonType(
-        type="Circle", center=[6.143158, 46.204391], radius=3000  # lng / lat
+        type="Circle",
+        center=[6.143158, 46.204391],
+        radius=3000,  # lng / lat
     ),
 )
 

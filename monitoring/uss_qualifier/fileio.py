@@ -98,7 +98,7 @@ def _get_web_content(url: str) -> str:
             pat_defs = os.environ.get(github_private_repos_key).split(";")
             for pat_def in pat_defs:
                 patdef_match = re.match(
-                    f"^(?P<org>[^/]*)/(?P<repos>[^:]*):(?P<token>.*)$", pat_def
+                    "^(?P<org>[^/]*)/(?P<repos>[^:]*):(?P<token>.*)$", pat_def
                 )
                 if not patdef_match:
                     raise ValueError(
@@ -302,7 +302,7 @@ def _identify_refs(content: dict) -> List[str]:
                 break
         if ref_to_add is None:
             raise ValueError(
-                f'Likely circular dependency in $refs; could not add any of the refs {{{", ".join(remaining_internal_refs)}}} to dependency list of [{" <- ".join(internal_refs)}]'
+                f"Likely circular dependency in $refs; could not add any of the refs {{{', '.join(remaining_internal_refs)}}} to dependency list of [{' <- '.join(internal_refs)}]"
             )
         internal_refs.append(ref_to_add)
         del remaining_internal_refs[ref_to_add]
@@ -385,7 +385,7 @@ def _select_path(content: dict, path: str) -> dict:
         )
     path = path[1:]
     if "/" not in path:
-        if not path in content:
+        if path not in content:
             raise KeyError(
                 f'Could not find key "{path}" in dict; found keys: {", ".join(content)}'
             )

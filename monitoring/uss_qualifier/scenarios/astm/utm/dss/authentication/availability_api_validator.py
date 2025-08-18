@@ -1,6 +1,5 @@
 from typing import Optional
 
-from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import (
     OPERATIONS,
     OperationID,
@@ -20,7 +19,6 @@ from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenar
 
 
 class AvailabilityAuthValidator:
-
     _current_availability: Optional[UssAvailabilityStatusResponse] = None
 
     def __init__(

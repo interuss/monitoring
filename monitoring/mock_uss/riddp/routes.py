@@ -12,12 +12,13 @@ def riddp_status():
 
 
 if rid_version == RIDVersion.f3411_19:
-    from . import routes_riddp_v19
+    from . import routes_riddp_v19 as routes_riddp_v19
 elif rid_version == RIDVersion.f3411_22a:
-    from . import routes_riddp_v22a
+    from . import routes_riddp_v22a as routes_riddp_v22a
 else:
     raise NotImplementedError(
         f"Mock USS does not yet support RID version {rid_version}"
     )
 
-from . import routes_behavior, routes_observation
+from . import routes_behavior as routes_behavior  # noqa E402
+from . import routes_observation as routes_observation  # noqa E402

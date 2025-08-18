@@ -101,7 +101,7 @@ def expect_no_interuss_post_interactions(
                     )
                 except (ValueError, TypeError, KeyError) as e:
                     check.record_failed(
-                        summary=f"Failed to parse request of a 'NotifyOperationalIntentDetailsChanged' interaction with mock_uss as a PutOperationalIntentDetailsParameters",
+                        summary="Failed to parse request of a 'NotifyOperationalIntentDetailsChanged' interaction with mock_uss as a PutOperationalIntentDetailsParameters",
                         details=f"{str(e)}\nRequest: {interaction.query.request.json}\n\nStack trace:\n{e.stacktrace}",
                         query_timestamps=[query.request.timestamp],
                     )

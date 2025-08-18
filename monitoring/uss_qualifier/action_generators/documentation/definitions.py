@@ -3,7 +3,6 @@ from typing import Optional
 from implicitdict import ImplicitDict
 
 from monitoring.uss_qualifier.action_generators.definitions import GeneratorTypeName
-from monitoring.uss_qualifier.fileio import FileReference
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.suites.definitions import (
     ActionType,

@@ -111,7 +111,6 @@ class CRSynchronization(TestScenario):
         self._current_cr = None
 
     def run(self, context: ExecutionContext):
-
         # Check that we actually have at least one other DSS to test against:
         if not self._secondary_dss_instances:
             raise ScenarioCannotContinueError(
@@ -183,7 +182,6 @@ class CRSynchronization(TestScenario):
         self.end_test_case()
 
     def _ensure_clean_workspace_step(self):
-
         # Delete any active CRs we might own
         test_step_fragments.cleanup_active_constraint_refs(
             self,
@@ -196,7 +194,6 @@ class CRSynchronization(TestScenario):
         test_step_fragments.cleanup_constraint_ref(self, self._dss, self._cr_id)
 
     def _create_cr_with_params(self, creation_params: PutConstraintReferenceParameters):
-
         with self.check(
             "Create constraint reference query succeeds", [self._primary_pid]
         ) as check:

@@ -11,7 +11,6 @@ from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.kml.generation import (
     GREEN,
     RED,
-    TRANSLUCENT_GRAY,
     TRANSLUCENT_GREEN,
     TRANSLUCENT_LIGHTGRAY,
     TRANSLUCENT_LIGHTGREEN,

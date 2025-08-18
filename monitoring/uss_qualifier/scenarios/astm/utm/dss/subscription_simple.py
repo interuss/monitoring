@@ -364,7 +364,6 @@ class SubscriptionSimple(TestScenario):
         Mutate all existing subscriptions by updating their footprint.
         """
         for sub_id, sub in self._current_subscriptions.items():
-
             new_params = self._sub_params_by_sub_id[sub_id].copy()
 
             # Shift all previous vertices west by 0.001 degrees
@@ -475,7 +474,6 @@ class SubscriptionSimple(TestScenario):
     def _test_delete_sub_faulty(self):
         """Try to delete subscription in an incorrect way"""
         for sub_id in self._current_subscriptions.keys():
-
             del_missing_version = self._dss.delete_subscription(
                 sub_id=sub_id, sub_version=""
             )

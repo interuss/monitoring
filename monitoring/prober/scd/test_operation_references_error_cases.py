@@ -292,7 +292,6 @@ def test_missing_conflicted_operation(ids, scd_api, scd_session):
     assert resp.status_code == 409, resp.content
 
     # checking entity conflicts
-    conflicts = []
     data = resp.json()
     assert "missing_operational_intents" in data
     assert ids(OP_TYPE2) in [

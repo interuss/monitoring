@@ -143,7 +143,7 @@ class AggregateChecks(GenericTestScenario):
         else:
             self.record_note(
                 "https-check",
-                f"cleartext queries are allowed by test exclusions, skipping HTTPS check",
+                "cleartext queries are allowed by test exclusions, skipping HTTPS check",
             )
 
         # Check that all queries have been attributed to a participant
@@ -215,12 +215,12 @@ class AggregateChecks(GenericTestScenario):
             ) as check:
                 if p95 > self._rid_version.dp_details_resp_percentile95_s:
                     check.record_failed(
-                        summary=f"95th percentile of durations for DP display_data details queries is higher than threshold",
+                        summary="95th percentile of durations for DP display_data details queries is higher than threshold",
                         details=f"threshold: {self._rid_version.dp_details_resp_percentile95_s}s, 95th percentile: {p95:.3g}s",
                     )
                 if p99 > self._rid_version.dp_details_resp_percentile99_s:
                     check.record_failed(
-                        summary=f"99th percentile of durations for DP display_data details queries is higher than threshold",
+                        summary="99th percentile of durations for DP display_data details queries is higher than threshold",
                         details=f"threshold: {self._rid_version.dp_details_resp_percentile99_s}s, 99th percentile: {p99:.3g}s",
                     )
 
@@ -313,12 +313,12 @@ class AggregateChecks(GenericTestScenario):
             ) as check:
                 if init_95th > self._rid_version.dp_init_resp_percentile95_s:
                     check.record_failed(
-                        summary=f"95th percentile of durations for initial DP display_data queries is higher than threshold",
+                        summary="95th percentile of durations for initial DP display_data queries is higher than threshold",
                         details=f"threshold: {self._rid_version.dp_init_resp_percentile95_s}, 95th percentile: {init_95th:.3g}",
                     )
                 if init_99th > self._rid_version.dp_init_resp_percentile99_s:
                     check.record_failed(
-                        summary=f"99th percentile of durations for initial DP display_data queries is higher than threshold",
+                        summary="99th percentile of durations for initial DP display_data queries is higher than threshold",
                         details=f"threshold: {self._rid_version.dp_init_resp_percentile99_s}, 99th percentile: {init_99th:.3g}",
                     )
 
@@ -327,12 +327,12 @@ class AggregateChecks(GenericTestScenario):
             ) as check:
                 if subsequent_95th > self._rid_version.dp_data_resp_percentile95_s:
                     check.record_failed(
-                        summary=f"95th percentile of durations for subsequent DP display_data queries is higher than threshold",
+                        summary="95th percentile of durations for subsequent DP display_data queries is higher than threshold",
                         details=f"threshold: {self._rid_version.dp_data_resp_percentile95_s}, 95th percentile: {subsequent_95th:.3g}",
                     )
                 if subsequent_99th > self._rid_version.dp_data_resp_percentile99_s:
                     check.record_failed(
-                        summary=f"99th percentile of durations for subsequent DP display_data queries is higher than threshold",
+                        summary="99th percentile of durations for subsequent DP display_data queries is higher than threshold",
                         details=f"threshold: {self._rid_version.dp_data_resp_percentile99_s}, 95th percentile: {subsequent_99th:.3g}",
                     )
 

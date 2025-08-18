@@ -3,7 +3,6 @@ from typing import List, Optional
 from uas_standards.astm.f3548.v21.api import OperationalIntentReference
 from uas_standards.astm.f3548.v21.constants import Scope
 
-from monitoring.monitorlib.fetch import QueryError
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import (

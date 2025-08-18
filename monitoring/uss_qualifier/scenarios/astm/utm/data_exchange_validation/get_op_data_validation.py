@@ -89,7 +89,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         )
 
         if not flight_intents:
-            msg = f"No FlightIntentsResource was provided as input to this test, it is assumed that the jurisdiction does not allow any same priority conflicts, execution of the scenario was stopped without failure"
+            msg = "No FlightIntentsResource was provided as input to this test, it is assumed that the jurisdiction does not allow any same priority conflicts, execution of the scenario was stopped without failure"
             self.record_note(
                 "Jurisdiction of tested USS does not allow any same priority conflicts",
                 msg,
@@ -320,5 +320,5 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights(self, (self.mock_uss_client, self.tested_uss_client)),
+        (cleanup_flights(self, (self.mock_uss_client, self.tested_uss_client)),)
         self.end_cleanup()

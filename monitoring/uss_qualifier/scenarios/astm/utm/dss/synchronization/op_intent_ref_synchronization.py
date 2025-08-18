@@ -184,7 +184,6 @@ class OIRSynchronization(TestScenario):
         self.end_test_case()
 
     def _ensure_clean_workspace_step(self):
-
         # Delete any active OIR we might own
         test_step_fragments.cleanup_active_oirs(
             self,
@@ -199,7 +198,6 @@ class OIRSynchronization(TestScenario):
     def _create_oir_with_params(
         self, creation_params: PutOperationalIntentReferenceParameters
     ):
-
         with self.check(
             "Create operational intent reference query succeeds", [self._primary_pid]
         ) as check:
@@ -345,7 +343,6 @@ class OIRSynchronization(TestScenario):
         main_check_name: str,
         involved_participants: List[str],
     ):
-
         # TODO: this main check mechanism may be removed if we are able to specify requirements to be validated in test step fragments
 
         with self.check(main_check_name, involved_participants) as main_check:
