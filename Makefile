@@ -13,6 +13,7 @@ endif
 format: image
 	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run ruff format
 	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run ruff check --fix
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run basedpyright
 	cd monitoring && make format
 	cd schemas && make format
 
@@ -30,6 +31,10 @@ python-lint: image
 
 	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run ruff format --check || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
 	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run ruff check || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
+	sha256sum .basedpyright/baseline.json > /tmp/baseline-before.hash
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run basedpyright || (echo "Typing check didn't succeed. Please fix issue and run make format to validate changes." && exit 1)
+	sha256sum .basedpyright/baseline.json > /tmp/baseline-after.hash
+	diff /tmp/baseline-before.hash /tmp/baseline-after.hash || (echo "Basedpyright baseline changed, probably dues to issues that have been cleanup. Use the following command to update baseline: make format" && exit 1)
 
 .PHONY: validate-uss-qualifier-docs
 validate-uss-qualifier-docs:
