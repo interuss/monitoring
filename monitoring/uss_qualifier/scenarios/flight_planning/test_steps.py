@@ -412,7 +412,6 @@ def cleanup_flights(
                     resp, query = cleanup_flight(flight_planner, flight_id)
                     scenario.record_query(query)
                 except QueryError as e:
-
                     for q in e.queries:
                         scenario.record_query(q)
 

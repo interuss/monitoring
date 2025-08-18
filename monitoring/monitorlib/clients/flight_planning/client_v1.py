@@ -156,7 +156,6 @@ class V1FlightPlannerClient(FlightPlannerClient):
                 query.response.json, api.DeleteFlightPlanResponse
             )
         except ValueError as e:
-
             raise PlanningActivityError(
                 f"Response to delete flight plan could not be parsed: {str(e)}",
                 query,
