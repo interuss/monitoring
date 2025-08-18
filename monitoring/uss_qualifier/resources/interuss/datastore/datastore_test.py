@@ -41,7 +41,7 @@ def no_ssl_cockroach(request):
 def old_ssl_cockroach(request):
 
     server = DockerContainer(
-        image="mcuoorb/insecurecockroach:latest",
+        image="interuss/insecurecockroach:latest",
         ports=[26257],
         command="start-single-node",
     )
