@@ -917,7 +917,7 @@ class OIRImplicitSubHandling(TestScenario):
 
         with self.check(
             "OIR is attached to expected subscription",
-            self._oir_a_id,
+            self._pid,
         ) as check:
             if sub_implicit.id != oir_queried.subscription_id:
                 check.record_failed(
