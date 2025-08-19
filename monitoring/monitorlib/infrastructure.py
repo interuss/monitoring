@@ -3,7 +3,6 @@ import datetime
 import functools
 import urllib.parse
 from enum import Enum
-from typing import Dict, List, Optional
 
 import jwt
 import requests
@@ -27,18 +26,18 @@ AuthSpec = str
 """Specification for means by which to obtain access tokens."""
 
 
-class AuthAdapter(object):
+class AuthAdapter:
     """Base class for an adapter that add JWTs to requests."""
 
     def __init__(self):
         self._tokens = {}
 
-    def issue_token(self, intended_audience: str, scopes: List[str]) -> str:
+    def issue_token(self, intended_audience: str, scopes: list[str]) -> str:
         """Subclasses must return a bearer token for the given audience."""
 
         raise NotImplementedError()
 
-    def get_headers(self, url: str, scopes: List[str] = None) -> Dict[str, str]:
+    def get_headers(self, url: str, scopes: list[str] = None) -> dict[str, str]:
         if scopes is None:
             scopes = ALL_SCOPES
         scopes = [s.value if isinstance(s, Enum) else s for s in scopes]
@@ -57,11 +56,11 @@ class AuthAdapter(object):
         self._tokens[intended_audience][scope_string] = token
         return {"Authorization": "Bearer " + token}
 
-    def add_headers(self, request: requests.PreparedRequest, scopes: List[str]):
+    def add_headers(self, request: requests.PreparedRequest, scopes: list[str]):
         for k, v in self.get_headers(request.url, scopes).items():
             request.headers[k] = v
 
-    def get_sub(self) -> Optional[str]:
+    def get_sub(self) -> str | None:
         """Retrieve `sub` claim from one of the existing tokens"""
         for _, tokens_by_scope in self._tokens.items():
             for token in tokens_by_scope.values():
@@ -85,8 +84,8 @@ class UTMClientSession(requests.Session):
     def __init__(
         self,
         prefix_url: str,
-        auth_adapter: Optional[AuthAdapter] = None,
-        timeout_seconds: Optional[float] = None,
+        auth_adapter: AuthAdapter | None = None,
+        timeout_seconds: float | None = None,
     ):
         super().__init__()
 
@@ -147,8 +146,8 @@ class AsyncUTMTestSession:
     def __init__(
         self,
         prefix_url: str,
-        auth_adapter: Optional[AuthAdapter] = None,
-        timeout_seconds: Optional[float] = None,
+        auth_adapter: AuthAdapter | None = None,
+        timeout_seconds: float | None = None,
     ):
         self._client = None
         loop = asyncio.get_event_loop()
@@ -241,7 +240,7 @@ class AsyncUTMTestSession:
             )
 
 
-def default_scopes(scopes: List[str]):
+def default_scopes(scopes: list[str]):
     """Decorator for tests that modifies UTMClientSession args to use scopes.
 
     A test function decorated with this decorator will modify all arguments which
@@ -308,7 +307,7 @@ def default_scope(scope: str):
     return default_scopes([scope])
 
 
-def get_token_claims(headers: Dict) -> Dict:
+def get_token_claims(headers: dict) -> dict:
     auth_key = [key for key in headers if key.lower() == "authorization"]
     if len(auth_key) == 0:
         return {"error": "Missing Authorization header"}

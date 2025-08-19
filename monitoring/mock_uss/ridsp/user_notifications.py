@@ -1,5 +1,4 @@
 import datetime
-from typing import List, Optional, Tuple
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -23,8 +22,8 @@ class ServiceProviderUserNotifications(ImplicitDict):
 
     def record_notification(
         self,
-        message: Optional[str] = None,
-        observed_at: Optional[datetime.datetime] = None,
+        message: str | None = None,
+        observed_at: datetime.datetime | None = None,
     ):
         if not observed_at:
             observed_at = arrow.utcnow().datetime
@@ -48,8 +47,8 @@ class ServiceProviderUserNotifications(ImplicitDict):
 
 
 def check_and_generate_missing_fields_notifications(
-    injected_flights: List[TestFlight],
-) -> List[Tuple[datetime.datetime, str]]:
+    injected_flights: list[TestFlight],
+) -> list[tuple[datetime.datetime, str]]:
     missing_fields_notifications = []
 
     for flight in injected_flights:
@@ -94,13 +93,13 @@ def check_and_generate_missing_fields_notifications(
 
 
 def check_and_generate_slow_update_notification(
-    injected_flights: List[injection_api.TestFlight],
-) -> List[datetime]:
+    injected_flights: list[injection_api.TestFlight],
+) -> list[datetime]:
     """
     Iterate over the provided list of injected TestFlight objects and, for any flight that has
     an average update rate under 1Hz, return a time for which a notification should be sent to the operator.
     """
-    operator_slow_update_notifications: List[datetime] = []
+    operator_slow_update_notifications: list[datetime] = []
     for f in injected_flights:
         # Mean rate is not technically correct as per Net0040
         # (20% of the samples may be above 1Hz with a mean rate below 1Hz),

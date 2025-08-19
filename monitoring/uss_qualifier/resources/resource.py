@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Dict, Generic, Set, Tuple, Type, TypeVar, get_type_hints
+from typing import TypeVar, get_type_hints
 
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -15,7 +15,7 @@ from monitoring.uss_qualifier.resources.definitions import (
 SpecificationType = TypeVar("SpecificationType", bound=ImplicitDict)
 
 
-class Resource(ABC, Generic[SpecificationType]):
+class Resource[SpecificationType: ImplicitDict](ABC):
     resource_origin: str
     """The origin of this resource (usually the resource name in the top-level resource pool for a test configuration,
     though occasionally local to a test suite, derived from another resource, default, or something else)"""
@@ -47,15 +47,15 @@ class MissingResourceError(ValueError):
     missing_resource_name: str
 
     def __init__(self, msg: str, missing_resource_name: str):
-        super(MissingResourceError, self).__init__(msg)
+        super().__init__(msg)
         self.missing_resource_name = missing_resource_name
 
 
 def create_resources(
-    resource_declarations: Dict[ResourceID, ResourceDeclaration],
+    resource_declarations: dict[ResourceID, ResourceDeclaration],
     resource_source: str,
     stop_when_not_created: bool = False,
-) -> Dict[ResourceID, ResourceType]:
+) -> dict[ResourceID, ResourceType]:
     """Instantiate all resources from the provided declarations.
 
     Note that some declarations, such as resources whose specifications contain ExternalFiles, may be mutated while the
@@ -68,8 +68,8 @@ def create_resources(
 
     Returns: Mapping between resource ID and an instance of that declared resource.
     """
-    resource_pool: Dict[ResourceID, ResourceType] = {}
-    could_not_create: Set[ResourceID] = set()
+    resource_pool: dict[ResourceID, ResourceType] = {}
+    could_not_create: set[ResourceID] = set()
 
     resources_created = 1
     unmet_dependencies_by_resource = {}
@@ -132,7 +132,7 @@ _resources_module_imported = False
 
 def get_resource_types(
     declaration: ResourceDeclaration,
-) -> Tuple[Type[Resource], Type[ImplicitDict]]:
+) -> tuple[type[Resource], type[ImplicitDict]]:
     """Get the resource and specification types from the declaration, validating against the resource's constructor signature.
 
     Args:
@@ -152,9 +152,7 @@ def get_resource_types(
     )
     if not issubclass(resource_type, Resource):
         raise NotImplementedError(
-            "Resource type {} is not a subclass of the Resource base class".format(
-                resource_type.__name__
-            )
+            f"Resource type {resource_type.__name__} is not a subclass of the Resource base class"
         )
 
     constructor_signature = get_type_hints(resource_type.__init__)
@@ -179,7 +177,7 @@ def get_resource_types(
 
 def _make_resource(
     declaration: ResourceDeclaration,
-    resource_pool: Dict[ResourceID, Resource],
+    resource_pool: dict[ResourceID, Resource],
     resource_origin: str,
 ) -> Resource:
     resource_type, specification_type = get_resource_types(declaration)
@@ -188,9 +186,7 @@ def _make_resource(
     for arg_name, pool_source in declaration.dependencies.items():
         if pool_source not in resource_pool:
             raise ValueError(
-                'Resource "{}" was not found in the resource pool when trying to create {} resource'.format(
-                    pool_source, declaration.resource_type
-                )
+                f'Resource "{pool_source}" was not found in the resource pool when trying to create {declaration.resource_type} resource'
             )
         constructor_args[arg_name] = resource_pool[pool_source]
     if specification_type is not None:
@@ -204,11 +200,11 @@ def _make_resource(
     return resource
 
 
-def make_child_resources(
-    parent_resources: Dict[ResourceID, ResourceType],
-    child_resource_map: Dict[ResourceID, ResourceID],
+def make_child_resources[ResourceType: Resource](
+    parent_resources: dict[ResourceID, ResourceType],
+    child_resource_map: dict[ResourceID, ResourceID],
     subject: str,
-) -> Dict[ResourceID, ResourceType]:
+) -> dict[ResourceID, ResourceType]:
     child_resources = {}
     for child_id, parent_id in child_resource_map.items():
         is_optional = parent_id.endswith("?")

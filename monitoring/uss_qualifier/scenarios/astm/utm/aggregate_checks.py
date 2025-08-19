@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from uas_standards.astm.f3548.v21 import constants
 
 from monitoring.monitorlib import fetch
@@ -11,8 +9,8 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class AggregateChecks(TestScenario):
-    _queries: List[fetch.Query]
-    _attributed_queries: Dict[ParticipantID, Dict[QueryType, List[fetch.Query]]] = {}
+    _queries: list[fetch.Query]
+    _attributed_queries: dict[ParticipantID, dict[QueryType, list[fetch.Query]]] = {}
 
     def __init__(
         self,
@@ -135,12 +133,12 @@ class AggregateChecks(TestScenario):
     def _validate_participant_test_interop_instance(
         self,
         participant_id: str,
-        participant_queries: dict[QueryType, List[fetch.Query]],
+        participant_queries: dict[QueryType, list[fetch.Query]],
     ):
         # Keep track of how many interactions we've found for this participant
         # if there is None the condition is not met
         test_interactions = 0
-        success_by_type: Dict[QueryType, bool] = {}
+        success_by_type: dict[QueryType, bool] = {}
         for query_type, queries in participant_queries.items():
             if _is_interop_test_interaction(query_type):
                 test_interactions += len(queries)

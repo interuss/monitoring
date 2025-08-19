@@ -1,7 +1,6 @@
 import os
 import uuid
 from datetime import timedelta
-from typing import Tuple
 
 import flask
 from implicitdict import ImplicitDict
@@ -35,12 +34,12 @@ DEADLOCK_TIMEOUT = timedelta(seconds=5)
 
 @webapp.route("/flight_planning/v1/status", methods=["GET"])
 @requires_scope(Scope.DirectAutomatedTest)
-def flight_planning_v1_status() -> Tuple[str, int]:
+def flight_planning_v1_status() -> tuple[str, int]:
     json, code = injection_status()
     return flask.jsonify(json), code
 
 
-def injection_status() -> Tuple[dict, int]:
+def injection_status() -> tuple[dict, int]:
     return (
         api.StatusResponse(
             status=api.StatusResponseStatus.Ready,
@@ -54,7 +53,7 @@ def injection_status() -> Tuple[dict, int]:
 @webapp.route("/flight_planning/v1/flight_plans/<flight_plan_id>", methods=["PUT"])
 @requires_scope(Scope.Plan)
 @idempotent_request()
-def flight_planning_v1_upsert_flight_plan(flight_plan_id: str) -> Tuple[str, int]:
+def flight_planning_v1_upsert_flight_plan(flight_plan_id: str) -> tuple[str, int]:
     def log(msg: str) -> None:
         logger.debug(f"[upsert_plan/{os.getpid()}:{flight_plan_id}] {msg}")
 
@@ -67,7 +66,7 @@ def flight_planning_v1_upsert_flight_plan(flight_plan_id: str) -> Tuple[str, int
             json, MockUSSUpsertFlightPlanRequest
         )
     except ValueError as e:
-        msg = "Create flight {} unable to parse JSON: {}".format(flight_plan_id, e)
+        msg = f"Create flight {flight_plan_id} unable to parse JSON: {e}"
         return msg, 400
 
     existing_flight = lock_flight(flight_plan_id, log)
@@ -100,7 +99,7 @@ def flight_planning_v1_upsert_flight_plan(flight_plan_id: str) -> Tuple[str, int
 
 @webapp.route("/flight_planning/v1/flight_plans/<flight_plan_id>", methods=["DELETE"])
 @requires_scope(Scope.Plan)
-def flight_planning_v1_delete_flight(flight_plan_id: str) -> Tuple[str, int]:
+def flight_planning_v1_delete_flight(flight_plan_id: str) -> tuple[str, int]:
     """Implements flight deletion in SCD automated testing injection API."""
     del_resp, status_code = delete_flight(flight_plan_id)
 
@@ -117,14 +116,14 @@ def flight_planning_v1_delete_flight(flight_plan_id: str) -> Tuple[str, int]:
 @webapp.route("/flight_planning/v1/clear_area_requests", methods=["POST"])
 @requires_scope(Scope.DirectAutomatedTest)
 @idempotent_request()
-def flight_planning_v1_clear_area() -> Tuple[str, int]:
+def flight_planning_v1_clear_area() -> tuple[str, int]:
     try:
         json = flask.request.json
         if json is None:
             raise ValueError("Request did not contain a JSON payload")
         req: api.ClearAreaRequest = ImplicitDict.parse(json, api.ClearAreaRequest)
     except ValueError as e:
-        msg = "Unable to parse ClearAreaRequest JSON request: {}".format(e)
+        msg = f"Unable to parse ClearAreaRequest JSON request: {e}"
         return msg, 400
 
     clear_resp = clear_area(Volume4D.from_flight_planning_api(req.extent))

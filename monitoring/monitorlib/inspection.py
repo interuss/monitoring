@@ -1,7 +1,6 @@
 import importlib
 import inspect
 import pkgutil
-from typing import Type
 
 
 def import_submodules(module) -> None:
@@ -22,15 +21,13 @@ def get_module_object_by_name(parent_module, object_name: str):
     for component in object_name.split("."):
         if not hasattr(module_object, component):
             raise ValueError(
-                "Could not find component {} defined in {} while trying to locate {}".format(
-                    component, module_object.__name__, object_name
-                )
+                f"Could not find component {component} defined in {module_object.__name__} while trying to locate {object_name}"
             )
         module_object = getattr(module_object, component)
     return module_object
 
 
-def fullname(class_type: Type) -> str:
+def fullname(class_type: type) -> str:
     module = class_type.__module__
     if module == "builtins":
         if hasattr(class_type, "__qualname__"):

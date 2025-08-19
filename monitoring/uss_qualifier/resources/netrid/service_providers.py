@@ -1,5 +1,4 @@
 import datetime
-from typing import List, Optional, Tuple
 from urllib.parse import urlparse
 
 from implicitdict import ImplicitDict
@@ -35,10 +34,10 @@ class ServiceProviderConfiguration(ImplicitDict):
 
 
 class NetRIDServiceProvidersSpecification(ImplicitDict):
-    service_providers: List[ServiceProviderConfiguration]
+    service_providers: list[ServiceProviderConfiguration]
 
 
-class NetRIDServiceProvider(object):
+class NetRIDServiceProvider:
     participant_id: str
     injection_base_url: str
     injection_client: infrastructure.UTMClientSession
@@ -80,7 +79,7 @@ class NetRIDServiceProvider(object):
         self,
         after: datetime.datetime,
         before: datetime.datetime,
-    ) -> Tuple[Optional[QueryUserNotificationsResponse], fetch.Query]:
+    ) -> tuple[QueryUserNotificationsResponse | None, fetch.Query]:
         q = fetch.query_and_describe(
             self.injection_client,
             "GET",
@@ -108,7 +107,7 @@ class NetRIDServiceProvider(object):
 
 
 class NetRIDServiceProviders(Resource[NetRIDServiceProvidersSpecification]):
-    service_providers: List[NetRIDServiceProvider]
+    service_providers: list[NetRIDServiceProvider]
 
     def __init__(
         self,
@@ -116,7 +115,7 @@ class NetRIDServiceProviders(Resource[NetRIDServiceProvidersSpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(NetRIDServiceProviders, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         auth_adapter.assert_scopes_available(
             scopes_required={
                 SCOPE_RID_QUALIFIER_INJECT: "inject RID test flight data into USSs under test"

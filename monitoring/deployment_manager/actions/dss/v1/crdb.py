@@ -57,9 +57,7 @@ def print_ca_public_certs(context: Context):
         for i in range(len(certs))
         if public_key_bytes == _public_key_bytes(certs[i].public_key())
     ]
-    match_words = ["first", "second", "third"] + [
-        "{}th".format(i) for i in range(4, 50)
-    ]
+    match_words = ["first", "second", "third"] + [f"{i}th" for i in range(4, 50)]
     if not matches:
         context.log.warn(
             "This DSS instance's public key does not appear in any of the listed certificates"
@@ -86,7 +84,7 @@ def crdb_status(context: Context):
     )
     cluster = ClusterAPI(
         pod_session,
-        base_url="https://{}/api/v2".format(host_port),
+        base_url=f"https://{host_port}/api/v2",
         username=username,
         password=password,
     )
@@ -101,9 +99,9 @@ def crdb_status(context: Context):
         for n in nodes:
             k, v = n.summarize()
             summary[k] = v
-        context.log.msg("{} reports:\n".format(source) + yaml.dump(summary))
+        context.log.msg(f"{source} reports:\n" + yaml.dump(summary))
     else:
-        context.log.msg("{} not ready to query nodes".format(source))
+        context.log.msg(f"{source} not ready to query nodes")
 
 
 @deployment_action("dss/crdb/print_monitoring_user")
@@ -119,5 +117,5 @@ def print_monitoring_user(context: Context):
     username, password = crdb_sql.get_monitoring_user(
         context.clients.core, context.spec.dss.v1.namespace, context.spec.cluster.name
     )
-    context.log.msg("Username: {} Password: {}".format(username, password))
+    context.log.msg(f"Username: {username} Password: {password}")
     return

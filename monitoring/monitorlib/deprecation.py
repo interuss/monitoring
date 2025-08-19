@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import traceback
 from dataclasses import dataclass
-from typing import List, Optional
 
 from loguru import logger
 
@@ -11,12 +10,12 @@ import monitoring
 
 
 @dataclass
-class CallSite(object):
+class CallSite:
     func: str
     file: str
-    line: Optional[int]
+    line: int | None
 
-    def __init__(self, func: str, file: str, line: Optional[int] = None):
+    def __init__(self, func: str, file: str, line: int | None = None):
         """Define a site that may call a deprecated function.
 
         Args:
@@ -29,7 +28,7 @@ class CallSite(object):
         self.line = line
 
     @staticmethod
-    def from_frame_summary(stack: List[traceback.FrameSummary]) -> CallSite:
+    def from_frame_summary(stack: list[traceback.FrameSummary]) -> CallSite:
         monitoring_path = os.path.dirname(monitoring.__file__)
 
         i = -1
@@ -53,7 +52,7 @@ class DeprecatedUsageError(RuntimeError):
     pass
 
 
-def assert_deprecated(legacy_callers: Optional[List[CallSite]] = None) -> None:
+def assert_deprecated(legacy_callers: list[CallSite] | None = None) -> None:
     """Assert that the function calling this function is deprecated.
 
     If the calling function is not explicitly listed in legacy_callers, then a DeprecatedUsageError will be thrown.

@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 from kubernetes import client as k8s
 
@@ -24,8 +24,8 @@ def _define_webserver_deployment() -> k8s.V1Deployment:
         image="hashicorp/http-echo",
         command=[
             "/http-echo",
-            "-listen=:{}".format(CONTAINER_PORT),
-            '-text="Echo server on port {}"'.format(CONTAINER_PORT),
+            f"-listen=:{CONTAINER_PORT}",
+            f'-text="Echo server on port {CONTAINER_PORT}"',
         ],
         ports=[k8s.V1ContainerPort(container_port=CONTAINER_PORT)],
         resources=k8s.V1ResourceRequirements(
@@ -109,7 +109,7 @@ def _define_webserver_ingress() -> k8s.V1Ingress:
     return ingress
 
 
-def define_resources() -> List[Any]:
+def define_resources() -> list[Any]:
     return [
         _define_webserver_deployment(),
         _define_webserver_service(),

@@ -28,7 +28,7 @@ yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
 class SubscriptionManagementError(RuntimeError):
     def __init__(self, msg):
-        super(SubscriptionManagementError, self).__init__(msg)
+        super().__init__(msg)
 
 
 def subscribe_rid(
@@ -105,7 +105,7 @@ def subscribe_scd(
     )
     if not create_result.success:
         raise SubscriptionManagementError(
-            "Could not create new SCD Subscription -> {}".format(logfile)
+            f"Could not create new SCD Subscription -> {logfile}"
         )
     return subscription_id
 
@@ -123,7 +123,7 @@ def unsubscribe_rid(
             )
         )
         raise SubscriptionManagementError(
-            "Could not query existing RID Subscription -> {}".format(logfile)
+            f"Could not query existing RID Subscription -> {logfile}"
         )
 
     if existing_result.subscription is not None:
@@ -142,7 +142,7 @@ def unsubscribe_rid(
         )
         if not del_result.success:
             raise SubscriptionManagementError(
-                "Could not delete existing RID Subscription -> {}".format(logfile)
+                f"Could not delete existing RID Subscription -> {logfile}"
             )
 
 
@@ -157,7 +157,7 @@ def unsubscribe_scd(subscription_id: str, scd_client: UTMClientSession) -> None:
             )
         )
         raise SubscriptionManagementError(
-            "Could not query existing SCD Subscription -> {}".format(logfile)
+            f"Could not query existing SCD Subscription -> {logfile}"
         )
 
     if get_result.subscription is not None:
@@ -175,5 +175,5 @@ def unsubscribe_scd(subscription_id: str, scd_client: UTMClientSession) -> None:
         )
         if not del_result.success:
             raise SubscriptionManagementError(
-                "Could not delete existing SCD Subscription -> {}".format(logfile)
+                f"Could not delete existing SCD Subscription -> {logfile}"
             )

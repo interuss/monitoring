@@ -39,12 +39,10 @@ def main() -> int:
     # Retrieve action function
     action_method = infrastructure.actions.get(args.action, None)
     if action_method is None:
-        raise ValueError(
-            "Could not find definition for action `{}`".format(args.action)
-        )
+        raise ValueError(f"Could not find definition for action `{args.action}`")
 
     # Parse deployment spec
-    with open(args.deployment_spec, "r") as f:
+    with open(args.deployment_spec) as f:
         spec = ImplicitDict.parse(json.load(f), DeploymentSpec)
     original_spec = json.dumps(spec)
     context = make_context(spec)
@@ -59,9 +57,7 @@ def main() -> int:
     new_spec = json.dumps(context.spec)
     if new_spec != original_spec:
         context.log.msg(
-            "Deployment spec updated; writing changes to {}".format(
-                args.deployment_spec
-            )
+            f"Deployment spec updated; writing changes to {args.deployment_spec}"
         )
         with open(args.deployment_spec, "w") as f:
             json.dump(context.spec, f, indent=2)

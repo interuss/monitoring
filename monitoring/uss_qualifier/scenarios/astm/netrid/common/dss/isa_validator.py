@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Dict, List, Optional
 
 from monitoring.monitorlib import schema_validation
 from monitoring.monitorlib.fetch.rid import ISA, FetchedISA, FetchedISAs
@@ -13,7 +12,7 @@ from monitoring.uss_qualifier.scenarios.scenario import (
 MAX_SKEW = 1e-6  # seconds maximum difference between expected and actual timestamps
 
 
-class ISAValidator(object):
+class ISAValidator:
     """Wraps the validation logic for an ISA that was returned by the DSS.
     It will compare the returned ISA with the parameters specified at its creation.
     """
@@ -21,16 +20,16 @@ class ISAValidator(object):
     _main_check: PendingCheck
     _scenario: GenericTestScenario
     # Params are optional: if they are not set, the field contents will not be checked
-    _isa_params: Optional[Dict[str, any]]
-    _dss_id: List[str]
+    _isa_params: dict[str, any] | None
+    _dss_id: list[str]
     _rid_version: RIDVersion
 
     def __init__(
         self,
         main_check: PendingCheck,
         scenario: GenericTestScenario,
-        isa_params: Optional[Dict[str, any]],
-        dss_id: List[str],
+        isa_params: dict[str, any] | None,
+        dss_id: list[str],
         rid_version: RIDVersion,
     ):
         self._main_check = main_check
@@ -59,12 +58,10 @@ class ISAValidator(object):
         expected_isa_id: str,
         dss_isa: ISA,
         t_dss: datetime,
-        previous_version: Optional[
-            str
-        ] = None,  # If set, we control that the version changed
-        expected_version: Optional[
-            str
-        ] = None,  # If set, we control that the version has not changed
+        previous_version: str
+        | None = None,  # If set, we control that the version changed
+        expected_version: str
+        | None = None,  # If set, we control that the version has not changed
     ) -> None:
         isa_id = expected_isa_id
         dss_id = self._dss_id
@@ -179,7 +176,7 @@ class ISAValidator(object):
         self,
         expected_isa_id: str,
         mutated_isa: ChangedISA,
-        previous_version: Optional[str] = None,
+        previous_version: str | None = None,
     ):
         """
         Validates the DSS reply to an ISA mutation request.
@@ -243,7 +240,7 @@ class ISAValidator(object):
     def validate_searched_isas(
         self,
         fetched_isas: FetchedISAs,
-        expected_versions: Dict[str, str],
+        expected_versions: dict[str, str],
     ):
         """Validates the DSS reply to an ISA search request:
         based on the ISA ID's present in expected_versions, it will verify the content of the returned ISA's.

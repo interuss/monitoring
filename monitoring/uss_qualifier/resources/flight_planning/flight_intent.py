@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict
 
@@ -24,7 +23,7 @@ class DeltaFlightIntent(ImplicitDict):
     source: FlightIntentID
     """Base the flight intent for this element of a FlightIntentCollection on the element of the collection identified by this field."""
 
-    mutation: Optional[dict]
+    mutation: dict | None
     """For each leaf subfield specified in this object, override the value in the corresponding subfield of the flight intent for this element with the specified value.
 
     Consider subfields prefixed with + as leaf subfields."""
@@ -33,27 +32,27 @@ class DeltaFlightIntent(ImplicitDict):
 class FlightIntentCollectionElement(ImplicitDict):
     """Definition of a single flight intent within a FlightIntentCollection.  Exactly one field must be specified."""
 
-    full: Optional[FlightInfoTemplate]
+    full: FlightInfoTemplate | None
     """If specified, the full definition of the flight planning intent."""
 
-    delta: Optional[DeltaFlightIntent]
+    delta: DeltaFlightIntent | None
     """If specified, a flight planning intent based on another flight intent, but with some changes."""
 
 
 class FlightIntentCollection(ImplicitDict):
     """Specification for a collection of flight intents, each identified by a FlightIntentID."""
 
-    intents: Dict[FlightIntentID, FlightIntentCollectionElement]
+    intents: dict[FlightIntentID, FlightIntentCollectionElement]
     """Flight planning actions that users want to perform."""
 
-    transformations: Optional[List[Transformation]]
+    transformations: list[Transformation] | None
     """Transformations to append to all FlightInfoTemplates."""
 
-    def resolve(self) -> Dict[FlightIntentID, FlightInfoTemplate]:
+    def resolve(self) -> dict[FlightIntentID, FlightInfoTemplate]:
         """Resolve the underlying delta flight intents."""
 
         # process intents in order of dependency to resolve deltas
-        processed_intents: Dict[FlightIntentID, FlightInfoTemplate] = {}
+        processed_intents: dict[FlightIntentID, FlightInfoTemplate] = {}
         unprocessed_intent_ids = list(self.intents.keys())
 
         while unprocessed_intent_ids:
@@ -108,11 +107,11 @@ class FlightIntentCollection(ImplicitDict):
 class FlightIntentsSpecification(ImplicitDict):
     """Exactly one field must be specified."""
 
-    intent_collection: Optional[FlightIntentCollection]
+    intent_collection: FlightIntentCollection | None
     """Full flight intent collection, or a $ref to an external file containing a FlightIntentCollection."""
 
-    file: Optional[ExternalFile]
+    file: ExternalFile | None
     """Location of file to load, containing a FlightIntentCollection"""
 
-    transformations: Optional[List[Transformation]]
+    transformations: list[Transformation] | None
     """Transformations to apply to all flight intents' 4D volumes after resolution (if specified)"""

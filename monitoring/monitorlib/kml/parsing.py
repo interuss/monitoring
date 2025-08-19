@@ -48,9 +48,7 @@ def get_folder_details(folder_elem):
             if placemark_name.startswith("speed:"):
                 if not get_polygon_speed(placemark_name):
                     raise ValueError(
-                        'Could not determine Polygon speed from Placemark "{}"'.format(
-                            placemark_name
-                        )
+                        f'Could not determine Polygon speed from Placemark "{placemark_name}"'
                     )
                 polygon_coords = get_coordinates_from_kml(
                     polygons[0].outerBoundaryIs.LinearRing.coordinates

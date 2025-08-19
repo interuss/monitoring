@@ -3,7 +3,7 @@
 import json
 import sys
 
-with open(sys.argv[2], "r") as f:
+with open(sys.argv[2]) as f:
     try:
         obj = json.load(f)
     except ValueError as e:

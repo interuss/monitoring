@@ -1,5 +1,3 @@
-from typing import Optional
-
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3411.v19.api import RIDFlight
 
@@ -10,10 +8,10 @@ FEET_PER_METER = 1 / 0.3048
 
 
 class ServiceProviderBehavior(ImplicitDict):
-    switch_latitude_and_longitude_when_reporting: Optional[bool] = False
-    use_agl_instead_of_wgs84_for_altitude: Optional[bool] = False
-    use_feet_instead_of_meters_for_altitude: Optional[bool] = False
-    delay_flight_report_s: Optional[int] = 0
+    switch_latitude_and_longitude_when_reporting: bool | None = False
+    use_agl_instead_of_wgs84_for_altitude: bool | None = False
+    use_feet_instead_of_meters_for_altitude: bool | None = False
+    delay_flight_report_s: int | None = 0
 
 
 def adjust_reported_flight(

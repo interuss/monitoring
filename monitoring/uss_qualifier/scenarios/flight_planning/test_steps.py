@@ -1,5 +1,5 @@
 import inspect
-from typing import Dict, Iterable, Optional, Set, Tuple
+from collections.abc import Iterable
 
 import arrow
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
@@ -46,9 +46,9 @@ def plan_flight(
     scenario: TestScenarioType,
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
-    additional_fields: Optional[dict] = None,
+    additional_fields: dict | None = None,
     nearby_potential_conflict: bool = False,
-) -> Tuple[PlanningActivityResponse, Optional[str]]:
+) -> tuple[PlanningActivityResponse, str | None]:
     """Plan a flight intent that should result in success.
 
     This function implements the test step fragment described in
@@ -88,7 +88,7 @@ def modify_planned_flight(
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     flight_id: str,
-    additional_fields: Optional[dict] = None,
+    additional_fields: dict | None = None,
 ) -> PlanningActivityResponse:
     """Modify a planned flight intent that should result in success.
 
@@ -122,7 +122,7 @@ def modify_activated_flight(
     flight_info: FlightInfo,
     flight_id: str,
     preexisting_conflict: bool = False,
-    additional_fields: Optional[dict] = None,
+    additional_fields: dict | None = None,
 ) -> PlanningActivityResponse:
     """Modify an activated flight intent that should result in success.
 
@@ -190,9 +190,9 @@ def activate_flight(
     scenario: TestScenarioType,
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
-    flight_id: Optional[str] = None,
-    additional_fields: Optional[dict] = None,
-) -> Tuple[PlanningActivityResponse, Optional[str]]:
+    flight_id: str | None = None,
+    additional_fields: dict | None = None,
+) -> tuple[PlanningActivityResponse, str | None]:
     """Activate a flight intent that should result in success.
 
     This function implements the test step fragment described in
@@ -217,15 +217,15 @@ def activate_flight(
 def submit_flight(
     scenario: TestScenarioType,
     success_check: str,
-    expected_results: Set[Tuple[PlanningActivityResult, FlightPlanStatus]],
-    failed_checks: Dict[PlanningActivityResult, str],
+    expected_results: set[tuple[PlanningActivityResult, FlightPlanStatus]],
+    failed_checks: dict[PlanningActivityResult, str],
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
-    flight_id: Optional[str] = None,
-    additional_fields: Optional[dict] = None,
+    flight_id: str | None = None,
+    additional_fields: dict | None = None,
     skip_if_not_supported: bool = False,
     may_end_in_past: bool = False,
-) -> Tuple[PlanningActivityResponse, Optional[str]]:
+) -> tuple[PlanningActivityResponse, str | None]:
     """Submit a flight intent with an expected result.
     A check fail is considered by default of high severity and as such will raise an ScenarioCannotContinueError.
     The severity of each failed check may be overridden if needed.
@@ -302,9 +302,9 @@ def submit_flight(
 def request_flight(
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
-    flight_id: Optional[str],
-    additional_fields: Optional[dict] = None,
-) -> Tuple[PlanningActivityResponse, Query, str]:
+    flight_id: str | None,
+    additional_fields: dict | None = None,
+) -> tuple[PlanningActivityResponse, Query, str]:
     """
     Uses FlightPlannerClient to plan the flight
 
@@ -334,7 +334,7 @@ def request_flight(
 
 def cleanup_flight(
     flight_planner: FlightPlannerClient, flight_id: str
-) -> Tuple[PlanningActivityResponse, Query]:
+) -> tuple[PlanningActivityResponse, Query]:
     try:
         resp = flight_planner.try_end_flight(flight_id, ExecutionStyle.IfAllowed)
     except PlanningActivityError as e:

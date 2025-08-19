@@ -1,6 +1,5 @@
 import hashlib
 import json
-from typing import Optional
 
 from implicitdict import ImplicitDict
 
@@ -12,7 +11,7 @@ class ExternalFile(ImplicitDict):
     path: FileReference
     """Location of the external file."""
 
-    hash_sha512: Optional[str]
+    hash_sha512: str | None
     """SHA-512 hash of the external file.
 
     If specified, the external file's content will be verified to have this hash or else produce an error.

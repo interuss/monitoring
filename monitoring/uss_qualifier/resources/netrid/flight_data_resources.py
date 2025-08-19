@@ -2,7 +2,7 @@ import copy
 import json
 import uuid
 from datetime import timedelta
-from typing import List, Optional, Self
+from typing import Self
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -34,7 +34,7 @@ class FlightDataResource(Resource[FlightDataSpecification]):
     _field_to_clean = None
 
     def __init__(self, specification: FlightDataSpecification, resource_origin: str):
-        super(FlightDataResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         if "record_source" in specification:
             self.flight_collection = ImplicitDict.parse(
                 load_dict(specification.record_source),
@@ -58,15 +58,15 @@ class FlightDataResource(Resource[FlightDataSpecification]):
             )
         self._flight_start_delay = specification.flight_start_delay.timedelta
 
-    def get_test_flights(self) -> List[TestFlight]:
+    def get_test_flights(self) -> list[TestFlight]:
         t0 = arrow.utcnow() + self._flight_start_delay
 
-        test_flights: List[TestFlight] = []
+        test_flights: list[TestFlight] = []
 
         for flight in self.flight_collection.flights:
             dt = t0 - flight.reference_time.datetime
 
-            telemetry: List[RIDAircraftState] = []
+            telemetry: list[RIDAircraftState] = []
 
             removed_field = False
 
@@ -181,10 +181,10 @@ class FlightDataResource(Resource[FlightDataSpecification]):
 
 
 class FlightDataStorageSpecification(ImplicitDict):
-    flight_record_collection_path: Optional[str]
+    flight_record_collection_path: str | None
     """Path, usually ending with .json, at which to store the FlightRecordCollection"""
 
-    geojson_tracks_path: Optional[str]
+    geojson_tracks_path: str | None
     """Path (folder) in which to store track_XX.geojson files, 1 for each flight"""
 
 
@@ -194,5 +194,5 @@ class FlightDataStorageResource(Resource[FlightDataStorageSpecification]):
     def __init__(
         self, specification: FlightDataStorageSpecification, resource_origin: str
     ):
-        super(FlightDataStorageResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.storage_configuration = specification

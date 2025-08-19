@@ -1,4 +1,3 @@
-from typing import List
 from urllib.parse import urlparse
 
 from uas_standards.ansi_cta_2063_a import SerialNumber
@@ -13,8 +12,8 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 
 def problems_with_flight_authorisation(
     flight_auth: FlightAuthorisationData,
-) -> List[str]:
-    problems: List[str] = []
+) -> list[str]:
+    problems: list[str] = []
     if not SerialNumber(flight_auth.uas_serial_number).valid:
         problems.append("Invalid serial number")
     if not OperatorRegistrationNumber(flight_auth.operator_id).valid:

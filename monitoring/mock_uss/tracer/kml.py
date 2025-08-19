@@ -6,7 +6,7 @@ import re
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Protocol, Type
+from typing import Protocol
 
 import yaml
 from implicitdict import ImplicitDict
@@ -32,8 +32,8 @@ from monitoring.monitorlib.kml.generation import make_placemark_from_volume
 from monitoring.monitorlib.temporal import Time
 
 
-class Stopwatch(object):
-    _start_time: Optional[datetime] = None
+class Stopwatch:
+    _start_time: datetime | None = None
     elapsed_time: timedelta = timedelta(seconds=0)
 
     def __enter__(self):
@@ -48,7 +48,7 @@ class VolumeType(str, Enum):
 
 
 @dataclass
-class HistoricalVolumesCollection(object):
+class HistoricalVolumesCollection:
     type: VolumeType
     name: str
     version: str
@@ -61,8 +61,8 @@ class HistoricalVolumesRenderer(Protocol):
     def __call__(
         self,
         log_entry: TracerLogEntry,
-        existing_volume_collections: List[HistoricalVolumesCollection],
-    ) -> List[HistoricalVolumesCollection]:
+        existing_volume_collections: list[HistoricalVolumesCollection],
+    ) -> list[HistoricalVolumesCollection]:
         """Function that generates named collections of 4D volumes from a tracer log entry.
 
         Args:
@@ -74,17 +74,17 @@ class HistoricalVolumesRenderer(Protocol):
 
 
 @dataclass
-class HistoricalVolumesRenderInfo(object):
+class HistoricalVolumesRenderInfo:
     renderer: HistoricalVolumesRenderer
-    log_entry_type: Type[TracerLogEntry]
+    log_entry_type: type[TracerLogEntry]
 
 
-_historical_volumes_renderers: Dict[
-    Type[TracerLogEntry], HistoricalVolumesRenderInfo
+_historical_volumes_renderers: dict[
+    type[TracerLogEntry], HistoricalVolumesRenderInfo
 ] = {}
 
 
-def historical_volumes_renderer(log_entry_type: Type[TracerLogEntry]):
+def historical_volumes_renderer(log_entry_type: type[TracerLogEntry]):
     """Decorator to label a function that renders historical volumes for a tracer log entry.
 
     Decorated functions should follow the HistoricalVolumesRenderer Protocol.
@@ -123,8 +123,8 @@ def _op_intent_volumes(op_intent: OperationalIntent) -> Volume4DCollection:
 @historical_volumes_renderer(OperationalIntentNotification)
 def _historical_volumes_op_intent_notification(
     log_entry: OperationalIntentNotification,
-    existing_volume_collections: List[HistoricalVolumesCollection],
-) -> List[HistoricalVolumesCollection]:
+    existing_volume_collections: list[HistoricalVolumesCollection],
+) -> list[HistoricalVolumesCollection]:
     try:
         req = ImplicitDict.parse(
             log_entry.request.json, PutOperationalIntentDetailsParameters
@@ -175,9 +175,9 @@ def _historical_volumes_op_intent_notification(
 @historical_volumes_renderer(PollOperationalIntents)
 def _historical_volumes_op_intent_poll(
     log_entry: PollOperationalIntents,
-    existing_volume_collections: List[HistoricalVolumesCollection],
-) -> List[HistoricalVolumesCollection]:
-    hvcs: List[HistoricalVolumesCollection] = []
+    existing_volume_collections: list[HistoricalVolumesCollection],
+) -> list[HistoricalVolumesCollection]:
+    hvcs: list[HistoricalVolumesCollection] = []
     current_op_intents = set()
 
     # Add newly-polled operational intents
@@ -258,18 +258,18 @@ def _historical_volumes_op_intent_poll(
 
 
 @dataclass
-class StyledVolume(object):
+class StyledVolume:
     name: str
     volume: Volume4D
     style: str
 
 
 @dataclass
-class VolumesFolder(object):
+class VolumesFolder:
     name: str
-    volumes: List[StyledVolume]
-    children: List[VolumesFolder]
-    reference_time: Optional[Time] = None
+    volumes: list[StyledVolume]
+    children: list[VolumesFolder]
+    reference_time: Time | None = None
 
     def truncate(self, latest_time: Time) -> None:
         to_remove = []
@@ -319,7 +319,7 @@ def render_historical_kml(log_folder: str) -> str:
     generation_time = Stopwatch()
     rendering_time = Stopwatch()
 
-    historical_volume_collections: List[HistoricalVolumesCollection] = []
+    historical_volume_collections: list[HistoricalVolumesCollection] = []
     log_files = glob.glob(os.path.join(log_folder, "*.yaml"))
     log_files.sort()
     for log_file in log_files:
@@ -353,7 +353,7 @@ def render_historical_kml(log_folder: str) -> str:
             continue
 
         # Render log entry into historical volume collections
-        with open(log_file, "r") as f:
+        with open(log_file) as f:
             try:
                 with loading_time:
                     content = yaml.load(f, Loader=yaml.CLoader)
@@ -373,7 +373,7 @@ def render_historical_kml(log_folder: str) -> str:
 
     # Render historical volume collections into a folder structure
     with generation_time:
-        top_folder: Dict[VolumeType, VolumesFolder] = {}
+        top_folder: dict[VolumeType, VolumesFolder] = {}
         for hvc in historical_volume_collections:
             if hvc.type not in top_folder:
                 top_folder[hvc.type] = VolumesFolder(

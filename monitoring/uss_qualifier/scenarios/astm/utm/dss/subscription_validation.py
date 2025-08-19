@@ -1,5 +1,5 @@
 from datetime import UTC, datetime, timedelta
-from typing import Any, Dict
+from typing import Any
 
 from uas_standards.astm.f3548.v21.constants import (
     DSSMaxSubscriptionDurationHours,
@@ -43,7 +43,7 @@ class SubscriptionValidation(TestScenario):
 
     _planning_area_volume4d: Volume4D
 
-    _sub_generation_kwargs: Dict[str, Any]
+    _sub_generation_kwargs: dict[str, Any]
     """
         Parameters used to create subscriptions.
         `subscription_id`: ID of F3548-21 subscription to create/modify.

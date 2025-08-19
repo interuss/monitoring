@@ -1,10 +1,8 @@
-from typing import Optional
-
 from monitoring.monitorlib import formatting
 from monitoring.monitorlib.fetch import rid, scd, summarize
 
 
-def isa_diff_text(a: Optional[rid.FetchedISAs], b: Optional[rid.FetchedISAs]) -> str:
+def isa_diff_text(a: rid.FetchedISAs | None, b: rid.FetchedISAs | None) -> str:
     """Create text to display to a real-time user describing a change in ISAs."""
     a_summary = summarize.isas(a) if a else {}
     a_summary = summarize.limit_long_arrays(a_summary, 6)
@@ -19,7 +17,7 @@ def isa_diff_text(a: Optional[rid.FetchedISAs], b: Optional[rid.FetchedISAs]) ->
 
 
 def entity_diff_text(
-    a: Optional[scd.FetchedEntities], b: Optional[scd.FetchedEntities]
+    a: scd.FetchedEntities | None, b: scd.FetchedEntities | None
 ) -> str:
     """Create text to display to a real-time user describing a change in Entities."""
     entity_type = (

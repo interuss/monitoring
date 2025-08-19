@@ -1,4 +1,5 @@
-from typing import Callable, List, Set, Unpack
+from collections.abc import Callable
+from typing import Unpack
 
 import s2sphere
 from requests.exceptions import RequestException
@@ -46,8 +47,8 @@ class Misbehavior(GenericTestScenario):
     _service_providers: NetRIDServiceProviders
     _evaluation_configuration: EvaluationConfigurationResource
 
-    _injected_flights: List[InjectedFlight]
-    _injected_tests: List[InjectedTest]
+    _injected_flights: list[InjectedFlight]
+    _injected_tests: list[InjectedTest]
 
     def __init__(
         self,
@@ -135,9 +136,9 @@ class Misbehavior(GenericTestScenario):
 
     def _poll_during_flights(
         self,
-        diagonals_m: List[float],
+        diagonals_m: list[float],
         evaluation_func: Callable[
-            [LatLngRect, Unpack[dict[str, auth.AuthAdapter | str]]], Set[str]
+            [LatLngRect, Unpack[dict[str, auth.AuthAdapter | str]]], set[str]
         ],
         evaluation_kwargs: dict[str, auth.AuthAdapter | str],
     ):
@@ -203,7 +204,7 @@ class Misbehavior(GenericTestScenario):
     def _evaluate_and_test_too_large_area_requests(
         self,
         rect: LatLngRect,
-    ) -> Set[str]:
+    ) -> set[str]:
         """Queries all flights from the DSS to discover flights urls and query them using a larger area than allowed.
 
         :returns: set of injection IDs that were encountered and tested
@@ -258,7 +259,7 @@ class Misbehavior(GenericTestScenario):
         auth: auth.AuthAdapter,
         check_name: str,
         credentials_type_description: str,
-    ) -> Set[str]:
+    ) -> set[str]:
         """Queries all flights in the expected way, then repeats the queries to SPs without credentials.
 
         returns true once queries to SPS have been made without credentials. False otherwise, such as when

@@ -1,11 +1,10 @@
 import argparse
 import sys
-from typing import List
 
 from monitoring.monitorlib import auth
 
 
-def parse_args(argv: List[str]):
+def parse_args(argv: list[str]):
     parser = argparse.ArgumentParser(description="Retrieve an access token")
     parser.add_argument(
         "--spec",

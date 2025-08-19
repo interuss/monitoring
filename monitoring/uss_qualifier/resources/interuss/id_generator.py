@@ -21,7 +21,7 @@ class IDGeneratorResource(Resource[IDGeneratorSpecification]):
         resource_origin: str,
         client_identity: ClientIdentityResource,
     ):
-        super(IDGeneratorResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self._client_identity = client_identity
 
     @property

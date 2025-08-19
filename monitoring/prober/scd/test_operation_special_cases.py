@@ -35,20 +35,16 @@ def test_ensure_clean_workspace(ids, scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_op_request_1(ids, scd_api, scd_session):
-    with open("./scd/resources/op_request_1.json", "r") as f:
+    with open("./scd/resources/op_request_1.json") as f:
         req = json.load(f)
-    resp = scd_session.put(
-        "/operational_intent_references/{}".format(ids(OP1_TYPE)), json=req
-    )
+    resp = scd_session.put(f"/operational_intent_references/{ids(OP1_TYPE)}", json=req)
     assert resp.status_code == 201, resp.content
     data = resp.json()
     assert "operational_intent_reference" in data, data
     assert "ovn" in resp.json()["operational_intent_reference"], data
     ovn = data["operational_intent_reference"]["ovn"]
 
-    resp = scd_session.delete(
-        "/operational_intent_references/{}/{}".format(ids(OP1_TYPE), ovn)
-    )
+    resp = scd_session.delete(f"/operational_intent_references/{ids(OP1_TYPE)}/{ovn}")
     assert resp.status_code == 200, resp.content
 
 
@@ -57,11 +53,9 @@ def test_op_request_1(ids, scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_op_request_2(ids, scd_api, scd_session):
-    with open("./scd/resources/op_request_2.json", "r") as f:
+    with open("./scd/resources/op_request_2.json") as f:
         req = json.load(f)
-    resp = scd_session.put(
-        "/operational_intent_references/{}".format(ids(OP2_TYPE)), json=req
-    )
+    resp = scd_session.put(f"/operational_intent_references/{ids(OP2_TYPE)}", json=req)
     assert resp.status_code == 400, resp.content
 
 
@@ -70,7 +64,7 @@ def test_op_request_2(ids, scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_op_query_degenerate_polygon(scd_api, scd_session):
-    with open("./scd/resources/op_request_3.json", "r") as f:
+    with open("./scd/resources/op_request_3.json") as f:
         req = json.load(f)
     resp = scd_session.post("/operational_intent_references/query", json=req)
     assert resp.status_code == 400, resp.content
@@ -81,7 +75,7 @@ def test_op_query_degenerate_polygon(scd_api, scd_session):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 def test_op_query_not_area_too_large(scd_api, scd_session):
-    with open("./scd/resources/op_request_4.json", "r") as f:
+    with open("./scd/resources/op_request_4.json") as f:
         req = json.load(f)
     resp = scd_session.post("/operational_intent_references/query", json=req)
     assert resp.status_code == 200, resp.content
@@ -121,7 +115,7 @@ def test_id_conversion_bug(ids, scd_api, scd_session):
         "uss_base_url": make_fake_url("uss/v1/"),
         "notify_for_constraints": True,
     }
-    resp = scd_session.put("/subscriptions/{}".format(sub_uuid), json=req)
+    resp = scd_session.put(f"/subscriptions/{sub_uuid}", json=req)
     assert resp.status_code == 200, resp.content
 
     req["extents"]["time_start"]["value"] = (
@@ -135,7 +129,7 @@ def test_id_conversion_bug(ids, scd_api, scd_session):
             json=req,
         )
     else:
-        raise NotImplementedError("Unsupported API version {}".format(scd_api))
+        raise NotImplementedError(f"Unsupported API version {scd_api}")
     assert resp.status_code == 200, resp.content
 
     if scd_api == scd.API_0_3_17:
@@ -145,7 +139,7 @@ def test_id_conversion_bug(ids, scd_api, scd_session):
             )
         )
     else:
-        raise NotImplementedError("Unsupported API version {}".format(scd_api))
+        raise NotImplementedError(f"Unsupported API version {scd_api}")
     assert resp.status_code == 200, resp.content
 
 

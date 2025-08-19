@@ -4,7 +4,6 @@ import argparse
 import json
 import os
 import sys
-from typing import Optional
 
 import yaml
 from implicitdict import ImplicitDict
@@ -88,8 +87,8 @@ class TestDefinitionDescription(ImplicitDict):
 
     codebase_version: str
     commit_hash: str
-    baseline_signature: Optional[str] = None
-    environment_signature: Optional[str] = None
+    baseline_signature: str | None = None
+    environment_signature: str | None = None
 
     def sign(self, whole_config: USSQualifierConfiguration) -> None:
         logger.debug("Computing signatures of inputs")
@@ -170,8 +169,8 @@ def run_config(
     config_output: str,
     skip_validation: bool,
     exit_before_execution: bool,
-    output_path: Optional[str],
-    runtime_metadata: Optional[dict],
+    output_path: str | None,
+    runtime_metadata: dict | None,
     disallow_unredacted: bool,
 ):
     config_src = load_dict_with_references(config_name)

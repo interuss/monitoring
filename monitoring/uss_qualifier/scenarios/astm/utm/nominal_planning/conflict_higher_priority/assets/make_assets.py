@@ -2,12 +2,11 @@
 
 import inspect
 from textwrap import dedent
-from typing import List
 
 import svg
 
 
-def translate(points: List[float], dx: float, dy: float) -> List[float]:
+def translate(points: list[float], dx: float, dy: float) -> list[float]:
     result = []
     x = True
     for p in points:

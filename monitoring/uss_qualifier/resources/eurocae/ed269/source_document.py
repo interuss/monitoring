@@ -18,6 +18,6 @@ class SourceDocument(Resource[SourceDocumentSpecification]):
     def __init__(
         self, specification: SourceDocumentSpecification, resource_origin: str
     ):
-        super(SourceDocument, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.specification = specification
         self.raw_document = fileio.load_content(specification.url)

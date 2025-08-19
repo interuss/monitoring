@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, List, Optional
+from collections.abc import Iterable
 
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.flight_planning.v1.constants import (
@@ -30,7 +30,7 @@ class FlightPlannerResource(Resource[FlightPlannerSpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(FlightPlannerResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         if (
             "scd_injection_base_url" in specification.flight_planner
             and specification.flight_planner.scd_injection_base_url
@@ -62,11 +62,11 @@ class FlightPlannerResource(Resource[FlightPlannerSpecification]):
 
 
 class FlightPlannersSpecification(ImplicitDict):
-    flight_planners: List[FlightPlannerConfiguration]
+    flight_planners: list[FlightPlannerConfiguration]
 
 
 class FlightPlannersResource(Resource[FlightPlannersSpecification]):
-    flight_planners: List[FlightPlannerResource]
+    flight_planners: list[FlightPlannerResource]
 
     def __init__(
         self,
@@ -74,7 +74,7 @@ class FlightPlannersResource(Resource[FlightPlannersSpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(FlightPlannersResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self._specification = specification
         self._auth_adapter = auth_adapter
         self.flight_planners = [
@@ -86,15 +86,15 @@ class FlightPlannersResource(Resource[FlightPlannersSpecification]):
             for i, p in enumerate(specification.flight_planners)
         ]
 
-    def make_subset(self, select_indices: Iterable[int]) -> List[FlightPlannerResource]:
+    def make_subset(self, select_indices: Iterable[int]) -> list[FlightPlannerResource]:
         return [self.flight_planners[i] for i in select_indices]
 
 
 class FlightPlannerCombinationSelectorSpecification(ImplicitDict):
-    must_include: Optional[List[ParticipantID]]
+    must_include: list[ParticipantID] | None
     """The set of flight planners which must be included in every combination"""
 
-    maximum_roles: Optional[Dict[ParticipantID, int]]
+    maximum_roles: dict[ParticipantID, int] | None
     """Maximum number of roles a particular participant may fill in any given combination"""
 
 
@@ -108,13 +108,11 @@ class FlightPlannerCombinationSelectorResource(
         specification: FlightPlannerCombinationSelectorSpecification,
         resource_origin: str,
     ):
-        super(FlightPlannerCombinationSelectorResource, self).__init__(
-            specification, resource_origin
-        )
+        super().__init__(specification, resource_origin)
         self._specification = specification
 
     def is_valid_combination(
-        self, flight_planners: Dict[ResourceID, FlightPlannerResource]
+        self, flight_planners: dict[ResourceID, FlightPlannerResource]
     ):
         participants = [p.participant_id for p in flight_planners.values()]
 

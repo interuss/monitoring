@@ -1,5 +1,3 @@
-from typing import Dict, Optional
-
 import yaml
 from implicitdict import StringBasedDateTime
 from yaml.representer import Representer
@@ -22,10 +20,10 @@ from monitoring.monitorlib.rid import RIDVersion
 yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
 
-scd_cache: Dict[ObservationAreaID, Dict[str, scd.FetchedEntity]] = {}
+scd_cache: dict[ObservationAreaID, dict[str, scd.FetchedEntity]] = {}
 
 
-def _get_tracer_logger() -> Optional[Logger]:
+def _get_tracer_logger() -> Logger | None:
     kml_server = webapp.config[KEY_TRACER_KML_SERVER]
     kml_folder = webapp.config[KEY_TRACER_KML_FOLDER]
     output_folder = webapp.config[KEY_TRACER_OUTPUT_FOLDER]
@@ -44,10 +42,10 @@ def _get_tracer_logger() -> Optional[Logger]:
 tracer_logger: Logger = _get_tracer_logger()
 
 
-_adapters: Dict[AuthSpec, AuthAdapter] = {}
+_adapters: dict[AuthSpec, AuthAdapter] = {}
 
 
-def resolve_auth_spec(requested_auth_spec: Optional[AuthSpec]) -> AuthSpec:
+def resolve_auth_spec(requested_auth_spec: AuthSpec | None) -> AuthSpec:
     if not requested_auth_spec:
         if KEY_AUTH_SPEC not in webapp.config or not webapp.config[KEY_AUTH_SPEC]:
             raise ValueError(

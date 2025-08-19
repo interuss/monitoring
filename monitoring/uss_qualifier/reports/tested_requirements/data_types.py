@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict
 
@@ -64,7 +63,7 @@ class TestedCheck(ImplicitDict):
 class TestedStep(ImplicitDict):
     name: str
     url: str
-    checks: List[TestedCheck]
+    checks: list[TestedCheck]
 
     @property
     def rows(self) -> int:
@@ -86,7 +85,7 @@ class TestedStep(ImplicitDict):
 class TestedCase(ImplicitDict):
     name: str
     url: str
-    steps: List[TestedStep]
+    steps: list[TestedStep]
 
     @property
     def rows(self) -> int:
@@ -109,7 +108,7 @@ class TestedScenario(ImplicitDict):
     type: TestScenarioTypeName
     name: str
     url: str
-    cases: List[TestedCase]
+    cases: list[TestedCase]
 
     @property
     def rows(self) -> int:
@@ -130,7 +129,7 @@ class TestedScenario(ImplicitDict):
 
 class TestedRequirement(ImplicitDict):
     id: str
-    scenarios: List[TestedScenario]
+    scenarios: list[TestedScenario]
 
     @property
     def rows(self) -> int:
@@ -155,7 +154,7 @@ class TestedPackage(ImplicitDict):
     id: PackageID
     url: str
     name: str
-    requirements: List[TestedRequirement]
+    requirements: list[TestedRequirement]
 
     @property
     def rows(self) -> int:
@@ -163,13 +162,13 @@ class TestedPackage(ImplicitDict):
 
 
 class TestedBreakdown(ImplicitDict):
-    packages: List[TestedPackage]
+    packages: list[TestedPackage]
 
 
 class TestRunInformation(ImplicitDict):
     test_run_id: str
-    start_time: Optional[str] = None
-    end_time: Optional[str] = None
+    start_time: str | None = None
+    end_time: str | None = None
     baseline: str
     environment: str
 
@@ -207,7 +206,7 @@ class ParticipantVerificationInfo(ImplicitDict):
     status: ParticipantVerificationStatus
     """Verification status of participant for the associated requirements set."""
 
-    system_version: Optional[str] = None
+    system_version: str | None = None
     """The version of the participant's system that was tested, if this information was acquired during testing."""
 
 
@@ -215,9 +214,9 @@ class RequirementsVerificationReport(ImplicitDict):
     test_run_information: TestRunInformation
     """Information about the test run during which the participant_verifications were determined."""
 
-    participant_verifications: Dict[ParticipantID, ParticipantVerificationInfo]
+    participant_verifications: dict[ParticipantID, ParticipantVerificationInfo]
     """Information regarding verification of compliance for each participant."""
 
-    artifact_configuration: Optional[str]
+    artifact_configuration: str | None
     """Name of the tested requirements artifact configuration from the test run configuration, or "post-hoc" if the
     artifact configuration generating this verification report is not specified in the test run configuration."""

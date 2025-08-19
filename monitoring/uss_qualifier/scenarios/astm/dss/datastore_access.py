@@ -1,5 +1,3 @@
-from typing import List
-
 from monitoring.uss_qualifier.resources.interuss.datastore import (
     DatastoreDBClusterResource,
     DatastoreDBNode,
@@ -9,7 +7,7 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class DatastoreAccess(GenericTestScenario):
-    datastore_nodes: List[DatastoreDBNode] = []
+    datastore_nodes: list[DatastoreDBNode] = []
 
     def __init__(
         self,

@@ -53,7 +53,7 @@ def encode_owner(owner_name: str) -> str:
     for letter in string_val:
         ord_val = get_ord_val(letter)
         bits += dec_to_bin(ord_val)
-    return "".join((bin_to_hex(s) for s in split_by(bits)))
+    return "".join(bin_to_hex(s) for s in split_by(bits))
 
 
 def encode_resource_type_code(resource_type: int) -> str:

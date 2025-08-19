@@ -1,6 +1,6 @@
 import uuid
+from collections.abc import Callable
 from datetime import datetime
-from typing import Callable, Dict, List, Optional, Tuple
 
 import arrow
 import requests
@@ -92,10 +92,10 @@ def validate_request(op_intent: f3548_v21.OperationalIntent) -> None:
 
 def check_for_disallowed_conflicts(
     new_op_intent: f3548_v21.OperationalIntent,
-    existing_flight: Optional[FlightRecord],
-    op_intents: List[f3548_v21.OperationalIntent],
+    existing_flight: FlightRecord | None,
+    op_intents: list[f3548_v21.OperationalIntent],
     locality: Locality,
-    log: Optional[Callable[[str], None]] = None,
+    log: Callable[[str], None] | None = None,
 ) -> None:
     """Raise a PlannerError if there are any disallowed conflicts.
 
@@ -172,8 +172,8 @@ def check_for_disallowed_conflicts(
 
 
 def op_intent_transition_valid(
-    transition_from: Optional[scd_api.OperationalIntentState],
-    transition_to: Optional[scd_api.OperationalIntentState],
+    transition_from: scd_api.OperationalIntentState | None,
+    transition_to: scd_api.OperationalIntentState | None,
 ) -> bool:
     valid_states = {
         scd_api.OperationalIntentState.Accepted,
@@ -323,7 +323,7 @@ def op_intent_from_flightinfo(
         ovn="UNKNOWN",
         time_start=v4c.time_start.to_f3548v21(),
         time_end=v4c.time_end.to_f3548v21(),
-        uss_base_url="{}/mock/scd".format(webapp.config[KEY_BASE_URL]),
+        uss_base_url=f"{webapp.config[KEY_BASE_URL]}/mock/scd",
         subscription_id="UNKNOWN",
     )
     if "astm_f3548_21" in flight_info and flight_info.astm_f3548_21:
@@ -373,7 +373,7 @@ def op_intent_from_flightrecord(
 def query_operational_intents(
     locality: Locality,
     area_of_interest: f3548_v21.Volume4D,
-) -> List[f3548_v21.OperationalIntent]:
+) -> list[f3548_v21.OperationalIntent]:
     """Retrieve a complete set of operational intents in an area, including details.
 
     :param locality: Locality applicable to this query
@@ -490,10 +490,10 @@ def get_down_uss_op_intent(
 
 def check_op_intent(
     new_flight: FlightRecord,
-    existing_flight: Optional[FlightRecord],
+    existing_flight: FlightRecord | None,
     locality: Locality,
     log: Callable[[str], None],
-) -> List[f3548_v21.EntityOVN]:
+) -> list[f3548_v21.EntityOVN]:
     # Check the transition is valid
     state_transition_from = (
         f3548_v21.OperationalIntentState(existing_flight.op_intent.reference.state)
@@ -555,10 +555,10 @@ def check_op_intent(
 
 def share_op_intent(
     new_flight: FlightRecord,
-    existing_flight: Optional[FlightRecord],
-    key: List[f3548_v21.EntityOVN],
+    existing_flight: FlightRecord | None,
+    key: list[f3548_v21.EntityOVN],
     log: Callable[[str], None],
-) -> Tuple[FlightRecord, Dict[f3548_v21.SubscriptionUssBaseURL, Exception]]:
+) -> tuple[FlightRecord, dict[f3548_v21.SubscriptionUssBaseURL, Exception]]:
     """Share the operational intent reference with the DSS in compliance with ASTM F3548-21.
 
     Returns:
@@ -619,7 +619,7 @@ def share_op_intent(
 
 def delete_op_intent(
     op_intent_ref: f3548_v21.OperationalIntentReference, log: Callable[[str], None]
-) -> Dict[f3548_v21.SubscriptionUssBaseURL, Exception]:
+) -> dict[f3548_v21.SubscriptionUssBaseURL, Exception]:
     """Remove the operational intent reference from the DSS in compliance with ASTM F3548-21.
 
     Args:
@@ -646,18 +646,18 @@ def delete_op_intent(
 
 def notify_subscribers(
     op_intent_id: f3548_v21.EntityID,
-    op_intent: Optional[f3548_v21.OperationalIntent],
-    subscribers: List[f3548_v21.SubscriberToNotify],
+    op_intent: f3548_v21.OperationalIntent | None,
+    subscribers: list[f3548_v21.SubscriberToNotify],
     log: Callable[[str], None],
-) -> Dict[f3548_v21.SubscriptionUssBaseURL, Exception]:
+) -> dict[f3548_v21.SubscriptionUssBaseURL, Exception]:
     """
     Notify subscribers of a changed or deleted operational intent.
     This function will attempt all notifications, even if some of them fail.
 
     :return: Notification errors if any, by subscriber.
     """
-    notif_errors: Dict[f3548_v21.SubscriptionUssBaseURL, Exception] = {}
-    base_url = "{}/mock/scd".format(webapp.config[KEY_BASE_URL])
+    notif_errors: dict[f3548_v21.SubscriptionUssBaseURL, Exception] = {}
+    base_url = f"{webapp.config[KEY_BASE_URL]}/mock/scd"
     for subscriber in subscribers:
         if subscriber.uss_base_url == base_url:
             # Do not notify ourselves

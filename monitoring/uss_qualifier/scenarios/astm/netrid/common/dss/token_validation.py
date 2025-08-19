@@ -1,5 +1,4 @@
 import datetime
-from typing import Dict, List, Optional
 
 import arrow
 import s2sphere
@@ -44,7 +43,7 @@ class TokenValidation(GenericTestScenario):
         self._dss = dss.dss_instance
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
         self._isa_id = id_generator.id_factory.make_id(ISASimple.ISA_TYPE)
-        self._isa_version: Optional[str] = None
+        self._isa_version: str | None = None
         self._isa = isa.specification
 
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
@@ -407,7 +406,7 @@ class TokenValidation(GenericTestScenario):
                     )
             self._verify_notifications(deleted.notifications)
 
-    def _verify_notifications(self, notifications: Dict[str, ISAChangeNotification]):
+    def _verify_notifications(self, notifications: dict[str, ISAChangeNotification]):
         for subscriber_url, notification in notifications.items():
             pid = (
                 notification.query.participant_id
@@ -425,7 +424,7 @@ class TokenValidation(GenericTestScenario):
     def _put_isa_tweak_auth(
         self,
         utm_client: infrastructure.UTMClientSession,
-        isa_version: Optional[str] = None,
+        isa_version: str | None = None,
         scope_intent: str = "read",
     ) -> ISAChange:
         """A local version of mutate.rid.put_isa that lets us control authentication parameters"""
@@ -621,9 +620,9 @@ class TokenValidation(GenericTestScenario):
     def _search_isas_tweak_auth(
         self,
         utm_client: infrastructure.UTMClientSession,
-        area: List[s2sphere.LatLng],
-        start_time: Optional[datetime.datetime],
-        end_time: Optional[datetime.datetime],
+        area: list[s2sphere.LatLng],
+        start_time: datetime.datetime | None,
+        end_time: datetime.datetime | None,
     ) -> FetchedISAs:
         url_time_params = ""
         if start_time is not None:
@@ -680,7 +679,7 @@ class TokenValidation(GenericTestScenario):
 
     def _query_scope_for_auth_params(
         self, utm_client: infrastructure.UTMClientSession, scope_intent: str
-    ) -> Optional[str]:
+    ) -> str | None:
         if utm_client.auth_adapter is not None:
             if self._dss.rid_version == RIDVersion.f3411_19:
                 if scope_intent == "read":

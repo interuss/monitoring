@@ -1,6 +1,5 @@
 import os
 from enum import Enum
-from typing import Dict, List, Optional, Set
 
 from implicitdict import ImplicitDict
 
@@ -17,22 +16,22 @@ class AuthAdapterSpecification(ImplicitDict):
       * environment_variable_containing_auth_spec
     """
 
-    auth_spec: Optional[str]
+    auth_spec: str | None
     """Literal representation of auth spec.  WARNING: Specifying this directly may cause sensitive information to be included in reports and unprotected configuration files."""
 
-    environment_variable_containing_auth_spec: Optional[str]
+    environment_variable_containing_auth_spec: str | None
     """Name of environment variable containing the auth spec.  This is the preferred method of providing the auth spec."""
 
-    scopes_authorized: List[str]
+    scopes_authorized: list[str]
     """List of scopes the user in the auth spec is authorized to obtain."""
 
 
 class AuthAdapterResource(Resource[AuthAdapterSpecification]):
     adapter: infrastructure.AuthAdapter
-    scopes: Set[str]
+    scopes: set[str]
 
     def __init__(self, specification: AuthAdapterSpecification, resource_origin: str):
-        super(AuthAdapterResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         if (
             "environment_variable_containing_auth_spec" in specification
             and specification.environment_variable_containing_auth_spec
@@ -42,9 +41,7 @@ class AuthAdapterResource(Resource[AuthAdapterSpecification]):
                 not in os.environ
             ):
                 raise ValueError(
-                    "Environment variable {} could not be found".format(
-                        specification.environment_variable_containing_auth_spec
-                    )
+                    f"Environment variable {specification.environment_variable_containing_auth_spec} could not be found"
                 )
             spec = os.environ[specification.environment_variable_containing_auth_spec]
         elif "auth_spec" in specification and specification.auth_spec:
@@ -55,7 +52,7 @@ class AuthAdapterResource(Resource[AuthAdapterSpecification]):
         self.scopes = set(specification.scopes_authorized)
 
     def assert_scopes_available(
-        self, scopes_required: Dict[str, str], consumer_name: str
+        self, scopes_required: dict[str, str], consumer_name: str
     ) -> None:
         """Raise a MissingResourceError if any of the scopes_required are not available.
 

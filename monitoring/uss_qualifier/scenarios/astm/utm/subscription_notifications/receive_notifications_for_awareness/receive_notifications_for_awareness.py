@@ -1,5 +1,3 @@
-from typing import Dict, Optional
-
 import arrow
 from uas_standards.astm.f3548.v21.api import OperationalIntentReference
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -63,7 +61,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
         tested_uss: FlightPlannerResource,
         mock_uss: MockUSSResource,
         dss: DSSInstanceResource,
-        flight_intents: Optional[FlightIntentsResource] = None,
+        flight_intents: FlightIntentsResource | None = None,
     ):
         super().__init__()
         self.tested_uss_client = tested_uss.client
@@ -146,7 +144,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
         self.end_test_scenario()
 
     def _receive_notification_successfully_when_activated_test_case(
-        self, times: Dict[TimeDuringTest, Time]
+        self, times: dict[TimeDuringTest, Time]
     ):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
 
@@ -220,7 +218,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
         self.end_test_step()
 
     def _receive_notification_successfully_when_activated_modified_test_case(
-        self, times: Dict[TimeDuringTest, Time]
+        self, times: dict[TimeDuringTest, Time]
     ):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         flight_2_planned_modified = self.flight_2_planned_modified.resolve(times)

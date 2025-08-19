@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import List, Optional
 
 from uas_standards.astm.f3548.v21.api import OperationalIntentDetails, Volume4D
 
@@ -13,16 +12,14 @@ def validate_op_intent_details(
     op_intent_details: OperationalIntentDetails,
     expected_priority: int,
     expected_extent: Volume4D,
-) -> Optional[str]:
-    errors_text: List[str] = []
+) -> str | None:
+    errors_text: list[str] = []
 
     # Check that the USS is providing matching priority
     actual_priority = priority_of(op_intent_details)
     if actual_priority != expected_priority:
         errors_text.append(
-            "Priority specified by USS in operational intent details ({}) is different than the priority in the injected flight ({})".format(
-                actual_priority, expected_priority
-            )
+            f"Priority specified by USS in operational intent details ({actual_priority}) is different than the priority in the injected flight ({expected_priority})"
         )
 
     # Check that the USS is providing reasonable volume 4D
@@ -39,31 +36,23 @@ def validate_op_intent_details(
     resp_end = vol4c.time_end.datetime
     if resp_alts[0] > expected_extent.volume.altitude_lower.value + NUMERIC_PRECISION:
         errors_text.append(
-            "Lower altitude specified by USS in operational intent details ({} m WGS84) is above the lower altitude in the injected flight ({} m WGS84)".format(
-                resp_alts[0], expected_extent.volume.altitude_lower.value
-            )
+            f"Lower altitude specified by USS in operational intent details ({resp_alts[0]} m WGS84) is above the lower altitude in the injected flight ({expected_extent.volume.altitude_lower.value} m WGS84)"
         )
     elif resp_alts[1] < expected_extent.volume.altitude_upper.value - NUMERIC_PRECISION:
         errors_text.append(
-            "Upper altitude specified by USS in operational intent details ({} m WGS84) is below the upper altitude in the injected flight ({} m WGS84)".format(
-                resp_alts[1], expected_extent.volume.altitude_upper.value
-            )
+            f"Upper altitude specified by USS in operational intent details ({resp_alts[1]} m WGS84) is below the upper altitude in the injected flight ({expected_extent.volume.altitude_upper.value} m WGS84)"
         )
     elif resp_start > expected_extent.time_start.value.datetime + timedelta(
         seconds=NUMERIC_PRECISION
     ):
         errors_text.append(
-            "Start time specified by USS in operational intent details ({}) is past the start time of the injected flight ({})".format(
-                resp_start.isoformat(), expected_extent.time_start.value
-            )
+            f"Start time specified by USS in operational intent details ({resp_start.isoformat()}) is past the start time of the injected flight ({expected_extent.time_start.value})"
         )
     elif resp_end < expected_extent.time_end.value.datetime - timedelta(
         seconds=NUMERIC_PRECISION
     ):
         errors_text.append(
-            "End time specified by USS in operational intent details ({}) is prior to the end time of the injected flight ({})".format(
-                resp_end.isoformat(), expected_extent.time_end.value
-            )
+            f"End time specified by USS in operational intent details ({resp_end.isoformat()}) is prior to the end time of the injected flight ({expected_extent.time_end.value})"
         )
 
     return "; ".join(errors_text) if len(errors_text) > 0 else None

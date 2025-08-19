@@ -1,6 +1,5 @@
 import math
 from datetime import datetime, timedelta
-from typing import List, Optional
 from urllib.parse import parse_qs, urlparse
 
 import arrow
@@ -45,14 +44,14 @@ class DisplayProviderBehavior(GenericTestScenario):
 
     SUB_TYPE = register_resource_type(400, "ISA")
 
-    _observers: List[RIDSystemObserver]
+    _observers: list[RIDSystemObserver]
     _mock_uss: MockUSSClient
 
-    _dss_wrapper: Optional[DSSWrapper]
+    _dss_wrapper: DSSWrapper | None
     _isa_id: str
-    _isa_area: List[s2sphere.LatLng]
+    _isa_area: list[s2sphere.LatLng]
 
-    _identification: Optional[USSIdentificationResource]
+    _identification: USSIdentificationResource | None
 
     def __init__(
         self,
@@ -61,7 +60,7 @@ class DisplayProviderBehavior(GenericTestScenario):
         id_generator: IDGeneratorResource,  # provides the ISA IS to be used
         dss_pool: DSSInstancesResource,
         isa: ServiceAreaResource,  # area for which the ISA is created
-        uss_identification: Optional[USSIdentificationResource] = None,
+        uss_identification: USSIdentificationResource | None = None,
     ):
         super().__init__()
         self._observers = observers.observers

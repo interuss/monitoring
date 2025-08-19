@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import s2sphere
 
@@ -34,7 +34,7 @@ def _assert_evaluate_sp_flight_recent_positions(
 
 
 def test_evaluate_sp_flight_recent_positions():
-    some_time = datetime.now(timezone.utc)
+    some_time = datetime.now(UTC)
     # All samples within last minute: should pass
     _assert_evaluate_sp_flight_recent_positions(
         mock_flight(some_time, 7, 10), some_time, True
@@ -74,7 +74,7 @@ def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():
             s2sphere.LatLng.from_degrees(0.0, 0.0),
             s2sphere.LatLng.from_degrees(0.5, 0.5),
         ),
-        mock_flight(datetime.now(timezone.utc), 0, 10),
+        mock_flight(datetime.now(UTC), 0, 10),
         True,
     )
     # Mock flight with one recent position: should pass event if outside of area
@@ -83,7 +83,7 @@ def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():
             s2sphere.LatLng.from_degrees(0.0, 0.0),
             s2sphere.LatLng.from_degrees(0.5, 0.5),
         ),
-        mock_flight(datetime.now(timezone.utc), 1, 10),
+        mock_flight(datetime.now(UTC), 1, 10),
         True,
     )
 
@@ -93,7 +93,7 @@ def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():
             s2sphere.LatLng.from_degrees(0.0, 0.0),
             s2sphere.LatLng.from_degrees(2, 2),
         ),
-        mock_flight(datetime.now(timezone.utc), 2, 10),
+        mock_flight(datetime.now(UTC), 2, 10),
         True,
     )
 
@@ -103,14 +103,14 @@ def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():
             s2sphere.LatLng.from_degrees(0.0, 0.0),
             s2sphere.LatLng.from_degrees(0.5, 0.5),
         ),
-        mock_flight(datetime.now(timezone.utc), 2, 10),
+        mock_flight(datetime.now(UTC), 2, 10),
         False,
     )
 
     # Mock flight with two recent positions, one of which is outside area: should pass
-    f2_1 = mock_flight(datetime.now(timezone.utc), 0, 0)
+    f2_1 = mock_flight(datetime.now(UTC), 0, 0)
     f2_1.v22a_value.recent_positions = to_positions(
-        [(1.0, 1.0), (-1.0, -1.0)], datetime.now(timezone.utc)
+        [(1.0, 1.0), (-1.0, -1.0)], datetime.now(UTC)
     )
     _assert_evaluate_sp_flight_recent_positions_crossing_area_boundary(
         s2sphere.LatLngRect(
@@ -121,9 +121,9 @@ def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():
         True,
     )
 
-    f2_2 = mock_flight(datetime.now(timezone.utc), 0, 0)
+    f2_2 = mock_flight(datetime.now(UTC), 0, 0)
     f2_2.v22a_value.recent_positions = to_positions(
-        [(-1.0, -1.0), (1.0, 1.0)], datetime.now(timezone.utc)
+        [(-1.0, -1.0), (1.0, 1.0)], datetime.now(UTC)
     )
     _assert_evaluate_sp_flight_recent_positions_crossing_area_boundary(
         s2sphere.LatLngRect(
@@ -140,14 +140,14 @@ def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():
             s2sphere.LatLng.from_degrees(0.0, 0.0),
             s2sphere.LatLng.from_degrees(0.5, 0.5),
         ),
-        mock_flight(datetime.now(timezone.utc), 3, 10),
+        mock_flight(datetime.now(UTC), 3, 10),
         False,
     )
 
     # Mock flight with 3 recent positions, the second of which is in the area: should pass
-    f3_1 = mock_flight(datetime.now(timezone.utc), 0, 0)
+    f3_1 = mock_flight(datetime.now(UTC), 0, 0)
     f3_1.v22a_value.recent_positions = to_positions(
-        [(-1.0, -1.0), (1.0, 1.0), (3.0, 3.0)], datetime.now(timezone.utc)
+        [(-1.0, -1.0), (1.0, 1.0), (3.0, 3.0)], datetime.now(UTC)
     )
     _assert_evaluate_sp_flight_recent_positions_crossing_area_boundary(
         s2sphere.LatLngRect(
@@ -159,9 +159,9 @@ def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():
     )
 
     # Mock flight with 3 recent positions, only the last of which is in the area: should fail
-    f3_2 = mock_flight(datetime.now(timezone.utc), 0, 0)
+    f3_2 = mock_flight(datetime.now(UTC), 0, 0)
     f3_2.v22a_value.recent_positions = to_positions(
-        [(-1.0, -1.0), (3.0, 3.0), (1.0, 1.0)], datetime.now(timezone.utc)
+        [(-1.0, -1.0), (3.0, 3.0), (1.0, 1.0)], datetime.now(UTC)
     )
     _assert_evaluate_sp_flight_recent_positions_crossing_area_boundary(
         s2sphere.LatLngRect(
@@ -173,9 +173,9 @@ def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():
     )
 
     # Mock flight with 3 recent positions, only the first of which is in the area: should fail
-    f3_3 = mock_flight(datetime.now(timezone.utc), 0, 0)
+    f3_3 = mock_flight(datetime.now(UTC), 0, 0)
     f3_3.v22a_value.recent_positions = to_positions(
-        [(1.0, 1.0), (3.0, 3.0), (-1.0, -1.0)], datetime.now(timezone.utc)
+        [(1.0, 1.0), (3.0, 3.0), (-1.0, -1.0)], datetime.now(UTC)
     )
     _assert_evaluate_sp_flight_recent_positions_crossing_area_boundary(
         s2sphere.LatLngRect(
@@ -192,14 +192,14 @@ def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():
             s2sphere.LatLng.from_degrees(0.0, 0.0),
             s2sphere.LatLng.from_degrees(2, 2),
         ),
-        mock_flight(datetime.now(timezone.utc), 3, 10),
+        mock_flight(datetime.now(UTC), 3, 10),
         True,
     )
 
     # Mock flight with 4 recent positions, last position outside requested area: should pass
-    f4_1 = mock_flight(datetime.now(timezone.utc), 0, 0)
+    f4_1 = mock_flight(datetime.now(UTC), 0, 0)
     f4_1.v22a_value.recent_positions = to_positions(
-        [(1.0, 1.0), (1.0, 1.0), (1.0, 1.0), (3.0, 3.0)], datetime.now(timezone.utc)
+        [(1.0, 1.0), (1.0, 1.0), (1.0, 1.0), (3.0, 3.0)], datetime.now(UTC)
     )
     _assert_evaluate_sp_flight_recent_positions_crossing_area_boundary(
         s2sphere.LatLngRect(
@@ -211,9 +211,9 @@ def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():
     )
 
     # Mock flight with 4 recent positions, first position outside requested area: should pass
-    f4_2 = mock_flight(datetime.now(timezone.utc), 0, 0)
+    f4_2 = mock_flight(datetime.now(UTC), 0, 0)
     f4_2.v22a_value.recent_positions = to_positions(
-        [(3.0, 3.0), (1.0, 1.0), (1.0, 1.0), (1.0, 1.0)], datetime.now(timezone.utc)
+        [(3.0, 3.0), (1.0, 1.0), (1.0, 1.0), (1.0, 1.0)], datetime.now(UTC)
     )
     _assert_evaluate_sp_flight_recent_positions_crossing_area_boundary(
         s2sphere.LatLngRect(
@@ -230,7 +230,7 @@ def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():
             s2sphere.LatLng.from_degrees(0.0, 0.0),
             s2sphere.LatLng.from_degrees(2, 2),
         ),
-        mock_flight(datetime.now(timezone.utc), 7, 10),
+        mock_flight(datetime.now(UTC), 7, 10),
         True,
     )
 
@@ -240,6 +240,6 @@ def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():
             s2sphere.LatLng.from_degrees(0.0, 0.0),
             s2sphere.LatLng.from_degrees(0.5, 0.5),
         ),
-        mock_flight(datetime.now(timezone.utc), 7, 10),
+        mock_flight(datetime.now(UTC), 7, 10),
         False,
     )

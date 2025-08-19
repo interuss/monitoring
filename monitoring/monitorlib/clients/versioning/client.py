@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional
 
 from monitoring.monitorlib.fetch import Query, QueryError
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -11,7 +10,7 @@ class VersionQueryError(QueryError):
 
 
 @dataclass
-class GetVersionResponse(object):
+class GetVersionResponse:
     version: str
     query: Query
 
@@ -25,7 +24,7 @@ class VersioningClient(ABC):
         self.participant_id = participant_id
 
     @abstractmethod
-    def get_version(self, version_type: Optional[str]) -> GetVersionResponse:
+    def get_version(self, version_type: str | None) -> GetVersionResponse:
         """Retrieve the version of the specified system.
 
         Args:

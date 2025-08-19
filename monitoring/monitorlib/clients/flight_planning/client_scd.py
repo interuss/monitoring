@@ -1,5 +1,4 @@
 import uuid
-from typing import Dict, Optional
 
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
@@ -34,10 +33,10 @@ from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 class SCDFlightPlannerClient(FlightPlannerClient):
     SCD_SCOPE = scd_api_constants.Scope.Inject
     _session: UTMClientSession
-    _plan_statuses: Dict[FlightID, FlightPlanStatus]
+    _plan_statuses: dict[FlightID, FlightPlanStatus]
 
     def __init__(self, session: UTMClientSession, participant_id: ParticipantID):
-        super(SCDFlightPlannerClient, self).__init__(participant_id=participant_id)
+        super().__init__(participant_id=participant_id)
         self._session = session
         self._plan_statuses = {}
 
@@ -46,7 +45,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         flight_id: FlightID,
         flight_info: FlightInfo,
         execution_style: ExecutionStyle,
-        additional_fields: Optional[dict] = None,
+        additional_fields: dict | None = None,
     ) -> PlanningActivityResponse:
         if execution_style != ExecutionStyle.IfAllowed:
             raise PlanningActivityError(
@@ -156,7 +155,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         self,
         flight_info: FlightInfo,
         execution_style: ExecutionStyle,
-        additional_fields: Optional[dict] = None,
+        additional_fields: dict | None = None,
     ) -> PlanningActivityResponse:
         return self._inject(
             str(uuid.uuid4()), flight_info, execution_style, additional_fields
@@ -167,7 +166,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         flight_id: FlightID,
         updated_flight_info: FlightInfo,
         execution_style: ExecutionStyle,
-        additional_fields: Optional[dict] = None,
+        additional_fields: dict | None = None,
     ) -> PlanningActivityResponse:
         return self._inject(
             flight_id, updated_flight_info, execution_style, additional_fields
