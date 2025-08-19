@@ -91,6 +91,10 @@ class SpOperatorNotifyMissingFields(GenericTestScenario):
 
             self._poll_during_flights()
 
+            self.begin_test_step("Intermediate cleanup")
+            self._cleanup()
+            self.end_test_step()
+
         self.end_test_case()
         self.end_test_scenario()
 
@@ -169,8 +173,7 @@ class SpOperatorNotifyMissingFields(GenericTestScenario):
                     )
         self.end_test_step()
 
-    def cleanup(self):
-        self.begin_cleanup()
+    def _cleanup(self):
         while self._injected_tests:
             injected_test = self._injected_tests.pop()
             matching_sps = [
@@ -199,4 +202,8 @@ class SpOperatorNotifyMissingFields(GenericTestScenario):
                     summary="Error while trying to delete test flight",
                     details=f"While trying to delete a test flight from {sp.participant_id}, encountered error:\n{stacktrace}",
                 )
+
+    def cleanup(self):
+        self.begin_cleanup()
+        self._cleanup()
         self.end_cleanup()
