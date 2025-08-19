@@ -3,15 +3,25 @@ v1:
   test_run:
     resources:
       resource_declarations:
-        source_document:
+        source_document_ed269:
           resource_type: resources.eurocae.ed269.source_document.SourceDocument
           specification:
             url: file://./test_data/che/geoawareness/cis_source_sample.json
+        source_document_ed318:
+          resource_type: resources.eurocae.ed318.source_document.SourceDocument
+          specification:
+            url: file://./test_data/che/geoawareness/SwissGeozones_ED318_Testdaten.json
+        source_schema_ed318_geozones:
+          resource_type: resources.eurocae.ed318.source_schema.SourceSchema
+          specification:
+            url: file://./test_data/che/geoawareness/flattened_schema.json
     action:
       test_suite:
         suite_type: suites.uspace.geo_awareness_cis
         resources:
-          source_document: source_document
+          source_document_ed269: source_document_ed269
+          source_document_ed318: source_document_ed318
+          source_schema_ed318_geozones: source_schema_ed318_geozones
     execution:
       stop_fast: true
   artifacts:

@@ -1,0 +1,47 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "authority",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "array",
+            "items": {
+                "minItems": 1,
+                "$ref": "./Schema_GeoZoneDataTypes.json#/definitions/textShortType"
+            }
+        },
+        "service": {
+            "type": "array",
+            "items": {
+                "minItems": 1,
+                "$ref": "./Schema_GeoZoneDataTypes.json#/definitions/textShortType"
+            }
+        },
+        "contactName": {
+            "type": "array",
+            "items": {
+                "minItems": 1,
+                "$ref": "./Schema_GeoZoneDataTypes.json#/definitions/textShortType"
+            }
+        },
+        "siteURL": {
+            "type": "string",
+            "format": "uri"
+        },
+        "email": {
+            "type": "string",
+            "format": "email"
+        },
+        "phone": {
+            "type": "string",
+            "maxLength": 200
+        },
+        "purpose": {"$ref": "./Schema_GeoZoneDataTypes.json#/definitions/authorityRole"},
+        "intervalBefore": {
+            "description": "A period of time expressed according to the ISO 8601 rules for time intervals.",
+            "type": "string",
+            "format": "duration"
+        }
+    },
+    "required": ["purpose"]
+}

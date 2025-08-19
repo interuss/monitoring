@@ -1,0 +1,66 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "GeoJSON FeatureCollection",
+    "type": "object",
+    "required": [
+        "type",
+        "features"
+    ],
+    "properties": {
+        "type": {
+            "type": "string",
+            "enum": ["FeatureCollection"]
+        },
+        "name": {
+            "type": "string",
+            "maxLength": 200
+        },
+        "bbox": {
+            "type": "array",
+            "minItems": 4,
+            "items": {"type": "number"}
+        },
+        "metadata": {"$ref": "./Schema_GeoZoneCollectionMetadata.json"},
+        "features": {
+            "type": "array",
+            "items": {
+                "title": "GeoJSON Feature",
+                "type": "object",
+                "required": [
+                    "type",
+                    "properties",
+                    "geometry"
+                ],
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": ["Feature"]
+                    },
+                    "id": {
+                        "oneOf": [
+                            {"type": "number"},
+                            {"type": "string"}
+                        ]
+                    },
+                    "properties": {
+                        "oneOf": [
+                            {"type": "null"},
+                            {"$ref": "./Schema_GeoZoneProperties.json"}
+                        ]
+                    },
+                    "geometry": {
+                        "oneOf": [
+                            {"type": "null"},
+                            {"$ref": "./Schema_GeoJSONGeometries.json"}
+                        ]
+                    },
+                    "bbox": {
+                        "type": "array",
+                        "minItems": 4,
+                        "items": {"type": "number"}
+                    }
+                }
+            }
+        }
+    }
+}

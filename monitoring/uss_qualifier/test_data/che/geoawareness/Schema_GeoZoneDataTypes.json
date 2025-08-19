@@ -1,0 +1,127 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "geoZonesDataTypes",
+    "type": "object",
+    "additionalProperties": false,
+    "definitions": {
+        "zoneType": {
+            "type": "string",
+            "enum": [
+                "USPACE",
+                "PROHIBITED",
+                "REQ_AUTHORIZATION",
+                "CONDITIONAL",
+                "NO_RESTRICTION"
+            ]
+        },
+        "zoneVariant": {
+            "type": "string",
+            "enum": [
+                "COMMON",
+                "CUSTOMIZED"
+            ]
+        },
+        "zoneReason" : {
+            "type": "array",
+            "maxItems": 9,
+            "items": {
+                "type": "string",
+                "enum": [
+                    "AIR_TRAFFIC",
+                    "SENSITIVE",
+                    "PRIVACY",
+                    "POPULATION",
+                    "NATURE",
+                    "NOISE",
+                    "EMERGENCY",
+                    "DAR",
+                    "OTHER"
+                ]
+            }
+        },
+        "weekDayType": {
+            "type": "string",
+            "enum": [
+                "MON",
+                "TUE",
+                "WED",
+                "THU",
+                "FRI",
+                "SAT",
+                "SUN",
+                "ANY"
+            ]
+        },
+        "daylightEventType": {
+            "type": "string",
+            "enum": [
+                "BMCT",
+                "SR",
+                "SS",
+                "EECT"
+            ]
+        },
+        "authorityRole": {
+            "type": "string",
+            "enum": [
+                "AUTHORIZATION",
+                "NOTIFICATION",
+                "INFORMATION"
+            ]
+        },
+        "yesNoType" : {
+            "type": "string",
+            "enum": [
+                "YES",
+                "NO"
+            ]
+        },
+        "textShortType": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "lang": {
+                    "type": "string",
+                    "maxLength": 5
+                }
+            },
+            "required": ["lang"]
+        },
+        "textLongType": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "maxLength": 1000
+                },
+                "lang": {
+                    "type": "string",
+                    "maxLength": 5
+                }
+            },
+            "required": ["lang"]
+        },
+        "URNType": {"type": "string"},
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "creationDate": {
+                    "type": "string",
+                    "format": "DateTimeType"
+                },
+                "updateDateTime": {
+                    "type": "string",
+                    "format": "DateTimeType"
+                },
+                "originator": {
+                    "$ref": "#/definitions/textShortType"
+                }
+            }
+        }
+    },
+    "properties": {},
+    "required": []
+}

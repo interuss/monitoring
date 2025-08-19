@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LayeredGeoJSON members",
+  "description": "A vertical layer extent for all standard GeoJSON geometries",
+  "type": "object",
+  "definitions": {
+    "verticalReference": {
+      "description": "A code indicating a vertical reference system. Allowed values:\nAGL = Above ground level (or above water surface, as applicable)\nAMSL = Above Mean Sea Level\nWGS84 = Above the surface of the WGS-84 ellipsoid (Ellipsoidal height)",
+      "type": "string",
+      "enum": [
+        "AGL",
+        "AMSL",
+        "WGS84"
+      ]
+    }
+  },
+  "properties": {
+    "layer": {
+      "type": "object",
+      "properties": {
+        "upper": {
+          "description": "The value of the upper limit of the airspace layer expressed in metres (m) or feet (ft), in relation with the vertical datum specified in the upperReference property. A positive value is interpreted as meaning \"above\" the reference surface.",
+          "type": "number"
+        },
+        "upperReference": {
+          "$ref": "#/definitions/verticalReference"
+        },
+        "lower": {
+          "description": "The value of the lower limit of the airspace layer expressed in metres (m) or feet (ft), in relation with the vertical datum specified in the lowerReference property. A positive value is interpreted as meaning \"above\" the reference surface.",
+          "type": "number"
+        },
+        "lowerReference": {
+          "$ref": "#/definitions/verticalReference"
+        },
+        "uom": {
+          "description": "The unit of measurement in which the upper and lower values are expressed. Allowable values:\nm = metres\nft = feet\nIf this member is not specified, the units should be assumed to be metres.",
+          "type": "string",
+          "enum": [
+            "m",
+            "ft"
+          ],
+          "default": "m"
+        }
+      }
+    }
+  }
+}
