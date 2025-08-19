@@ -392,14 +392,30 @@ class FetchedSubscription(fetch.Query):
 
     @property
     def subscription(self) -> Subscription | None:
+        if self.json_result is None:
+            return None
         try:
             # We get a ValueError if .parse is fed a None,
             # or if the JSON can't be parsed as a Subscription.
             return ImplicitDict.parse(
-                self.json_result.get("subscription", None), Subscription
+                self.json_result.get("subscription", {}), Subscription
             )
         except ValueError:
             return None
+
+    @property
+    def subscription_unsafe(self) -> Subscription:
+        """
+        Same as subscription but will throw a ValueError if the subscription data is missing or malformed.
+        Use in contexts where the reply content is expected to be valid.
+
+        :raises ValueError: if the subscription data is missing or malformed.
+        """
+        if self.json_result is None:
+            raise ValueError("Request to get Subscription did not return valid JSON")
+        return ImplicitDict.parse(
+            self.json_result.get("subscription", {}), Subscription
+        )
 
 
 yaml.add_representer(FetchedSubscription, Representer.represent_dict)

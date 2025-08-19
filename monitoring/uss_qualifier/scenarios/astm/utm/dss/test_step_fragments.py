@@ -1,8 +1,12 @@
-from uas_standards.astm.f3548.v21.api import EntityID, Volume4D
+from typing import TypeVar
+
+from uas_standards.astm.f3548.v21.api import (
+    EntityID,
+    Volume4D,
+)
 
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.mutate.scd import MutatedSubscription
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
@@ -62,11 +66,15 @@ def remove_constraint_ref(
 
 
 def cleanup_sub(
-    scenario: TestScenarioType, dss: DSSInstance, sub_id: EntityID
-) -> MutatedSubscription | None:
-    """Cleanup a subscription at the DSS. Does not fail if it is not found.
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    sub_id: EntityID,
+    delete_if_exists: bool = True,
+) -> bool:
+    """Determines if the subscription identified by sub_id exists at the passed DSS, and
+    removes it if it was found and delete_if_exists is True (the default).
 
-    :return: the DSS response if the subscription exists
+    :return: True if the subscription was found to exist, False if no subscription was found.
     """
     existing_sub = dss.get_subscription(sub_id)
     scenario.record_query(existing_sub)
@@ -81,19 +89,24 @@ def cleanup_sub(
             )
 
     if existing_sub.status_code != 200:
-        return None
+        return False
 
-    deleted_sub = dss.delete_subscription(sub_id, existing_sub.subscription.version)
-    scenario.record_query(deleted_sub)
-    with scenario.check("Subscription can be deleted", [dss.participant_id]) as check:
-        if deleted_sub.status_code != 200:
-            check.record_failed(
-                summary=f"Could not delete subscription {sub_id}",
-                details=f"When attempting to delete subscription {sub_id} from the DSS, received {deleted_sub.status_code} with body {deleted_sub.error_message}",
-                query_timestamps=[deleted_sub.request.timestamp],
-            )
+    if delete_if_exists:
+        deleted_sub = dss.delete_subscription(
+            sub_id, existing_sub.subscription_unsafe.version
+        )
+        scenario.record_query(deleted_sub)
+        with scenario.check(
+            "Subscription can be deleted", [dss.participant_id]
+        ) as check:
+            if deleted_sub.status_code != 200:
+                check.record_failed(
+                    summary=f"Could not delete subscription {sub_id}",
+                    details=f"When attempting to delete subscription {sub_id} from the DSS, received {deleted_sub.status_code} with body {deleted_sub.error_message}",
+                    query_timestamps=[deleted_sub.request.timestamp],
+                )
 
-    return deleted_sub
+    return True
 
 
 def cleanup_active_subs(
@@ -179,10 +192,16 @@ def cleanup_active_oirs(
 
 
 def cleanup_op_intent(
-    scenario: TestScenarioType, dss: DSSInstance, oi_id: EntityID
-) -> None:
-    """Remove the specified operational intent reference from the DSS, if it exists."""
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    oi_id: EntityID,
+    delete_if_exists: bool = True,
+) -> bool:
+    """Determines if the operational intent reference identified by oi_id exists at the passed DSS, and
+    removes it if it was found and delete_if_exists is True (the default).
 
+    :return: True if the OIR was found to exist, False if no OIR was found.
+    """
     with scenario.check(
         "Operational intent references can be queried by ID", [dss.participant_id]
     ) as check:
@@ -197,10 +216,12 @@ def cleanup_op_intent(
                     details=e.msg,
                     query_timestamps=e.query_timestamps,
                 )
-            else:
-                return
+            return False
 
-    remove_op_intent(scenario, dss, oi_id, oir.ovn)
+    if delete_if_exists:
+        remove_op_intent(scenario, dss, oi_id, require(oir.ovn))
+
+    return True
 
 
 def cleanup_constraint_ref(
@@ -232,3 +253,13 @@ def cleanup_constraint_ref(
                 return
 
     remove_constraint_ref(scenario, dss, cr_id, cr.ovn)
+
+
+# TODO move these elsewhere if/when satisfied with the approach
+T = TypeVar("T")
+
+
+def require[T](x: T | None, msg: str = "") -> T:
+    if x is None:
+        raise AssertionError(msg)
+    return x

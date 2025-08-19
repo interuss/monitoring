@@ -28,13 +28,25 @@ Create and mutate subscriptions as well as entities, and verify that the DSS han
 
 ## Setup test case
 
-### Ensure clean workspace test step
+Ensure that no subscriptions and OIRs with the known test IDs exists in the DSS deployment.
+
+### Ensure clean workspace on primary DSS test step
 
 #### [Clean any existing OIRs with known test IDs](clean_workspace_op_intents.md)
 
 #### [Clean any existing subscriptions with known test IDs](clean_workspace_subs.md)
 
-This step ensures that no subscriptions and OIRs with the known test IDs exists in the DSS deployment.
+### Verify secondary DSS instances are clean test step
+
+This test step queries all secondary instances to confirm that none of the test IDs that are used in the scenario exist.
+
+#### [Verify secondary DSS contains no OIRs with a test ID](./fragments/oir/verify_clean_secondary_workspace.md)
+
+#### [Verify secondary DSS contains no Subscriptions with a test ID](./fragments/sub/verify_clean_secondary_workspace.md)
+
+#### OIRs with known test IDs do not exist on secondary DSS instance check
+
+#### Subscriptions with known test IDs do not exist on secondary DSS instance check
 
 ## OIR creation and modification trigger relevant notifications test case
 
