@@ -44,6 +44,14 @@ Compare after polling the notification of each service providers retrieved durin
 
 The "after" set of operator notifications should contain at least one more entry than the "before" set of operator notifications. If there was no new operator notification, the Service Provider will not have met **[astm.f3411.v22a.NET0030](../../../../requirements/astm/f3411/v22a.md)**.
 
+### Intermediate cleanup test step
+
+This step attempts to remove injected data from all SPs, avoiding multiple flights with the same data at the same time.
+
+#### ⚠️ Successful test deletion check
+
+**[interuss.automated_testing.rid.injection.DeleteTestSuccess](../../../../requirements/interuss/automated_testing/rid/injection.md)**
+
 ## Cleanup
 
 The cleanup phase of this test scenario attempts to remove injected data from all SPs.
