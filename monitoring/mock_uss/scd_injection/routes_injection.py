@@ -1,6 +1,5 @@
 import os
 from datetime import UTC, datetime, timedelta
-from typing import Dict, List, Optional, Tuple
 
 import flask
 import requests.exceptions
@@ -68,13 +67,13 @@ DEADLOCK_TIMEOUT = timedelta(seconds=5)
 
 @webapp.route("/scdsc/v1/status", methods=["GET"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
-def scdsc_injection_status() -> Tuple[str, int]:
+def scdsc_injection_status() -> tuple[str, int]:
     """Implements USS status in SCD automated testing injection API."""
     json, code = injection_status()
     return flask.jsonify(json), code
 
 
-def injection_status() -> Tuple[dict, int]:
+def injection_status() -> tuple[dict, int]:
     return (
         {"status": "Ready", "version": versioning.get_code_version()},
         200,
@@ -83,13 +82,13 @@ def injection_status() -> Tuple[dict, int]:
 
 @webapp.route("/scdsc/v1/capabilities", methods=["GET"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
-def scdsc_scd_capabilities() -> Tuple[str, int]:
+def scdsc_scd_capabilities() -> tuple[str, int]:
     """Implements USS capabilities in SCD automated testing injection API."""
     json, code = scd_capabilities()
     return flask.jsonify(json), code
 
 
-def scd_capabilities() -> Tuple[dict, int]:
+def scd_capabilities() -> tuple[dict, int]:
     return (
         CapabilitiesResponse(
             capabilities=[
@@ -105,7 +104,7 @@ def scd_capabilities() -> Tuple[dict, int]:
 @webapp.route("/scdsc/v1/flights/<flight_id>", methods=["PUT"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 @idempotent_request()
-def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
+def scdsc_inject_flight(flight_id: str) -> tuple[str, int]:
     """Implements flight injection in SCD automated testing injection API."""
 
     def log(msg):
@@ -118,7 +117,7 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
             raise ValueError("Request did not contain a JSON payload")
         req_body = ImplicitDict.parse(json, MockUSSInjectFlightRequest)
     except ValueError as e:
-        msg = "Create flight {} unable to parse JSON: {}".format(flight_id, e)
+        msg = f"Create flight {flight_id} unable to parse JSON: {e}"
         return msg, 400
     existing_flight = lock_flight(flight_id, log)
 
@@ -141,7 +140,7 @@ def scdsc_inject_flight(flight_id: str) -> Tuple[str, int]:
 def inject_flight(
     flight_id: str,
     new_flight: FlightRecord,
-    existing_flight: Optional[FlightRecord],
+    existing_flight: FlightRecord | None,
 ) -> PlanningActivityResponse:
     pid = os.getpid()
     locality = get_locality()
@@ -173,7 +172,7 @@ def inject_flight(
         return unsuccessful(PlanningActivityResult.Rejected, str(e))
 
     step_name = "performing unknown operation"
-    notes: Optional[str] = None
+    notes: str | None = None
     try:
         step_name = "checking F3548-21 operational intent"
         try:
@@ -226,7 +225,7 @@ def inject_flight(
 
 @webapp.route("/scdsc/v1/flights/<flight_id>", methods=["DELETE"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
-def scdsc_delete_flight(flight_id: str) -> Tuple[str, int]:
+def scdsc_delete_flight(flight_id: str) -> tuple[str, int]:
     """Implements flight deletion in SCD automated testing injection API."""
     del_resp, status_code = delete_flight(flight_id)
 
@@ -251,7 +250,7 @@ def scdsc_delete_flight(flight_id: str) -> Tuple[str, int]:
     return flask.jsonify(resp), status_code
 
 
-def delete_flight(flight_id) -> Tuple[PlanningActivityResponse, int]:
+def delete_flight(flight_id) -> tuple[PlanningActivityResponse, int]:
     pid = os.getpid()
 
     def log(msg: str):
@@ -274,11 +273,11 @@ def delete_flight(flight_id) -> Tuple[PlanningActivityResponse, int]:
         )
 
     if flight is None:
-        return unsuccessful("Flight {} does not exist".format(flight_id)), 404
+        return unsuccessful(f"Flight {flight_id} does not exist"), 404
 
     # Delete operational intent from DSS
     step_name = "performing unknown operation"
-    notes: Optional[str] = None
+    notes: str | None = None
     try:
         step_name = f"deleting operational intent {flight.op_intent.reference.id} with OVN {flight.op_intent.reference.ovn} from DSS"
         log(step_name)
@@ -326,14 +325,14 @@ def delete_flight(flight_id) -> Tuple[PlanningActivityResponse, int]:
 @webapp.route("/scdsc/v1/clear_area_requests", methods=["POST"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 @idempotent_request()
-def scdsc_clear_area() -> Tuple[str, int]:
+def scdsc_clear_area() -> tuple[str, int]:
     try:
         json = flask.request.json
         if json is None:
             raise ValueError("Request did not contain a JSON payload")
         req: ClearAreaRequest = ImplicitDict.parse(json, ClearAreaRequest)
     except ValueError as e:
-        msg = "Unable to parse ClearAreaRequest JSON request: {}".format(e)
+        msg = f"Unable to parse ClearAreaRequest JSON request: {e}"
         return msg, 400
     clear_resp = clear_area(Volume4D.from_interuss_scd_api(req.extent))
 
@@ -351,12 +350,12 @@ def scdsc_clear_area() -> Tuple[str, int]:
 
 
 def clear_area(extent: Volume4D) -> ClearAreaResponse:
-    flights_deleted: List[FlightID] = []
-    flight_deletion_errors: Dict[FlightID, dict] = {}
-    op_intents_removed: List[f3548v21.EntityOVN] = []
-    op_intent_removal_errors: Dict[f3548v21.EntityOVN, dict] = {}
+    flights_deleted: list[FlightID] = []
+    flight_deletion_errors: dict[FlightID, dict] = {}
+    op_intents_removed: list[f3548v21.EntityOVN] = []
+    op_intent_removal_errors: dict[f3548v21.EntityOVN, dict] = {}
 
-    def make_result(error: Optional[dict] = None) -> ClearAreaResponse:
+    def make_result(error: dict | None = None) -> ClearAreaResponse:
         resp = ClearAreaResponse(
             flights_deleted=flights_deleted,
             flight_deletion_errors=flight_deletion_errors,

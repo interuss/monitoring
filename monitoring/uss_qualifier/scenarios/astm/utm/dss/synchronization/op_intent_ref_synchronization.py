@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import List, Optional
 
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
@@ -50,7 +49,7 @@ class OIRSynchronization(TestScenario):
 
     _dss: DSSInstance
 
-    _dss_read_instances: List[DSSInstance]
+    _dss_read_instances: list[DSSInstance]
 
     # Base identifier for the OIR that will be created
     _oir_id: EntityID
@@ -59,7 +58,7 @@ class OIRSynchronization(TestScenario):
     _oir_params: PutOperationalIntentReferenceParameters
 
     # Keep track of the current OIR state
-    _current_oir: Optional[OperationalIntentReference]
+    _current_oir: OperationalIntentReference | None
 
     _expected_manager: str
 
@@ -311,7 +310,7 @@ class OIRSynchronization(TestScenario):
                 "Propagated operational intent reference general area is synchronized",
                 involved_participants,
             ) as check:
-                oir: Optional[OperationalIntentReference] = None
+                oir: OperationalIntentReference | None = None
                 for _oir in oirs:
                     if _oir.id == self._oir_id:
                         oir = _oir
@@ -341,7 +340,7 @@ class OIRSynchronization(TestScenario):
         q: Query,
         expected_oir_params: PutOperationalIntentReferenceParameters,
         main_check_name: str,
-        involved_participants: List[str],
+        involved_participants: list[str],
     ):
         # TODO: this main check mechanism may be removed if we are able to specify requirements to be validated in test step fragments
 

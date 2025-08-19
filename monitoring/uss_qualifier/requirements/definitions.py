@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import List, Optional
 
 from implicitdict import ImplicitDict
 
@@ -121,14 +120,14 @@ class RequirementSetID(str):
 
 
 class RequirementCollection(ImplicitDict):
-    requirements: Optional[List[RequirementID]]
+    requirements: list[RequirementID] | None
     """This collection includes all of these requirements."""
 
-    requirement_sets: Optional[List[RequirementSetID]]
+    requirement_sets: list[RequirementSetID] | None
     """This collection includes all requirements in all of these requirement sets."""
 
-    requirement_collections: Optional[List[RequirementCollection]]
+    requirement_collections: list[RequirementCollection] | None
     """This collection includes all of the requirements in all of these requirement collections."""
 
-    exclude: Optional[RequirementCollection]
+    exclude: RequirementCollection | None
     """This collection does not include any of these requirements, despite all previous fields."""

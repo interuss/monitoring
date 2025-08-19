@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 import os
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Dict, Iterator, List, Optional, Type, Union
 
 import arrow
 import yaml
@@ -73,16 +73,16 @@ def _print_failed_check(failed_check: FailedCheck) -> None:
         )
 
 
-class TestSuiteAction(object):
+class TestSuiteAction:
     declaration: TestSuiteActionDeclaration
-    test_scenario: Optional[TestScenario] = None
-    test_suite: Optional[TestSuite] = None
-    action_generator: Optional[ActionGeneratorType] = None
+    test_scenario: TestScenario | None = None
+    test_suite: TestSuite | None = None
+    action_generator: ActionGeneratorType | None = None
 
     def __init__(
         self,
         action: TestSuiteActionDeclaration,
-        resources: Dict[ResourceID, ResourceType],
+        resources: dict[ResourceID, ResourceType],
     ):
         self.declaration = action
         resources_for_child = make_child_resources(
@@ -206,17 +206,17 @@ class TestSuiteAction(object):
         return report
 
 
-class TestSuite(object):
+class TestSuite:
     declaration: TestSuiteDeclaration
     definition: TestSuiteDefinition
     documentation_url: str
-    local_resources: Dict[ResourceID, ResourceType]
-    actions: List[Union[TestSuiteAction, SkippedActionReport]]
+    local_resources: dict[ResourceID, ResourceType]
+    actions: list[TestSuiteAction | SkippedActionReport]
 
     def __init__(
         self,
         declaration: TestSuiteDeclaration,
-        resources: Dict[ResourceID, ResourceType],
+        resources: dict[ResourceID, ResourceType],
     ):
         # Determine the suite's documentation URL
         if "suite_type" in declaration and declaration.suite_type:
@@ -276,7 +276,7 @@ class TestSuite(object):
                 raise ValueError(
                     f'Test suite "{self.definition.name}" expected resource {resource_id} to be {resource_type}, but instead it was provided {fullname(self.local_resources[resource_id].__class__)}'
                 )
-        actions: List[Union[TestSuiteAction, SkippedActionReport]] = []
+        actions: list[TestSuiteAction | SkippedActionReport] = []
         for a, action_dec in enumerate(self.definition.actions):
             try:
                 actions.append(
@@ -305,9 +305,8 @@ class TestSuite(object):
             capability_evaluations=[],
         )
 
-        def actions() -> Iterator[Union[TestSuiteAction, SkippedActionReport]]:
-            for a in self.actions:
-                yield a
+        def actions() -> Iterator[TestSuiteAction | SkippedActionReport]:
+            yield from self.actions
 
         _run_actions(actions(), context, report)
 
@@ -343,9 +342,9 @@ class TestSuite(object):
 
 
 def _run_actions(
-    actions: Iterator[Union[TestSuiteAction, SkippedActionReport]],
+    actions: Iterator[TestSuiteAction | SkippedActionReport],
     context: ExecutionContext,
-    report: Union[TestSuiteReport, ActionGeneratorReport],
+    report: TestSuiteReport | ActionGeneratorReport,
 ) -> None:
     success = True
     for a, action in enumerate(actions):
@@ -372,11 +371,11 @@ def _run_actions(
 
 
 @dataclass
-class ActionStackFrame(object):
+class ActionStackFrame:
     action: TestSuiteAction
-    parent: Optional[ActionStackFrame]
-    children: List[ActionStackFrame]
-    report: Optional[TestSuiteActionReport] = None
+    parent: ActionStackFrame | None
+    children: list[ActionStackFrame]
+    report: TestSuiteActionReport | None = None
 
     def address(self) -> JSONAddress:
         if self.action.test_scenario is not None:
@@ -405,13 +404,13 @@ class ActionStackFrame(object):
         return f"{self.parent.address()}.actions[{index}].{addr}"
 
 
-class ExecutionContext(object):
+class ExecutionContext:
     start_time: datetime
-    config: Optional[ExecutionConfiguration]
-    top_frame: Optional[ActionStackFrame]
-    current_frame: Optional[ActionStackFrame]
+    config: ExecutionConfiguration | None
+    top_frame: ActionStackFrame | None
+    current_frame: ActionStackFrame | None
 
-    def __init__(self, config: Optional[ExecutionConfiguration]):
+    def __init__(self, config: ExecutionConfiguration | None):
         self.config = config
         self.top_frame = None
         self.current_frame = None
@@ -422,18 +421,17 @@ class ExecutionContext(object):
             return
         for child in self.current_frame.parent.children:
             if child.report is not None:
-                for q in child.report.queries():
-                    yield q
+                yield from child.report.queries()
 
     def find_test_scenario_reports(
-        self, scenario_type: Type[TestScenario]
-    ) -> List[TestScenarioReport]:
+        self, scenario_type: type[TestScenario]
+    ) -> list[TestScenarioReport]:
         """Find reports for all currently-completed instances of the specified test scenario type."""
         return self._find_test_scenario_reports(scenario_type, self.top_frame)
 
     def _find_test_scenario_reports(
-        self, scenario_type: Type[TestScenario], frame: ActionStackFrame
-    ) -> List[TestScenarioReport]:
+        self, scenario_type: type[TestScenario], frame: ActionStackFrame
+    ) -> list[TestScenarioReport]:
         results = []
         if (
             frame.report is not None
@@ -479,9 +477,9 @@ class ExecutionContext(object):
 
     def _ancestor_selected_by(
         self,
-        frame: Optional[ActionStackFrame],
-        of_generation: Optional[int],
-        which: List[TestSuiteActionSelectionCondition],
+        frame: ActionStackFrame | None,
+        of_generation: int | None,
+        which: list[TestSuiteActionSelectionCondition],
     ) -> bool:
         if frame is None:
             return False
@@ -586,7 +584,7 @@ class ExecutionContext(object):
 
         return result
 
-    def evaluate_skip(self) -> Optional[SkippedActionReport]:
+    def evaluate_skip(self) -> SkippedActionReport | None:
         """Decide whether to skip the action in the current_frame or not.
 
         Should be called in between self.begin_action and self.end_action, and before executing the action.

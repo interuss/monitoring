@@ -3,7 +3,6 @@ from __future__ import annotations
 import html
 import math
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
 
 from implicitdict import ImplicitDict
 
@@ -31,9 +30,9 @@ UNATTRIBUTED_PARTICIPANT = "unattributed"
 def _note_events(
     note_parent: ImplicitDict,
     indexer: Indexer,
-    after: Optional[datetime] = None,
-    before: Optional[datetime] = None,
-) -> List[Event]:
+    after: datetime | None = None,
+    before: datetime | None = None,
+) -> list[Event]:
     if "notes" not in note_parent or not note_parent.notes:
         return []
     events = []
@@ -65,10 +64,10 @@ def _step_events(
     step: TestStepReport,
     note_parent: ImplicitDict,
     indexer: Indexer,
-    scenario_participants: Dict[ParticipantID, TestedParticipant],
-    all_events: List[Event],
-    after: Optional[datetime],
-) -> Tuple[TestedStep, datetime]:
+    scenario_participants: dict[ParticipantID, TestedParticipant],
+    all_events: list[Event],
+    after: datetime | None,
+) -> tuple[TestedStep, datetime]:
     events = []
 
     # Create events for this step's passed checks
@@ -190,7 +189,7 @@ def compute_tested_scenario(
     epochs = []
     all_events = []
     indexer = Indexer(index=1)
-    scenario_participants: Dict[ParticipantID, TestedParticipant] = {}
+    scenario_participants: dict[ParticipantID, TestedParticipant] = {}
 
     # Add any notes that occurred before the first test step
     latest_step_time = (

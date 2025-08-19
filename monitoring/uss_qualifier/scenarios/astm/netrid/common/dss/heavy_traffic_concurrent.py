@@ -1,7 +1,6 @@
 import asyncio
 import typing
 from datetime import UTC, datetime
-from typing import Dict, List
 
 import aiohttp
 import arrow
@@ -46,11 +45,11 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
     ISA_TYPE = register_resource_type(374, "ISA")
 
-    _isa_ids: List[str]
+    _isa_ids: list[str]
 
-    _isa_params: Dict[str, any]
+    _isa_params: dict[str, any]
 
-    _isa_versions: Dict[str, str]
+    _isa_versions: dict[str, str]
 
     _async_session: AsyncUTMTestSession
 
@@ -66,7 +65,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         )  # TODO: delete once _delete_isa_if_exists updated to use dss_wrapper
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
 
-        self._isa_versions: Dict[str, str] = {}
+        self._isa_versions: dict[str, str] = {}
         self._isa = isa.specification
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
 
@@ -152,7 +151,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
         )
 
-        results = typing.cast(Dict[str, FetchedISA], results)
+        results = typing.cast(dict[str, FetchedISA], results)
 
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
@@ -320,7 +319,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             asyncio.gather(*[self._create_isa(isa_id) for isa_id in self._isa_ids])
         )
 
-        results = typing.cast(Dict[str, ChangedISA], results)
+        results = typing.cast(dict[str, ChangedISA], results)
 
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
@@ -402,7 +401,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             )
         )
 
-        results = typing.cast(Dict[str, ChangedISA], results)
+        results = typing.cast(dict[str, ChangedISA], results)
 
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
@@ -436,7 +435,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
         )
 
-        results = typing.cast(Dict[str, ChangedISA], results)
+        results = typing.cast(dict[str, ChangedISA], results)
 
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)

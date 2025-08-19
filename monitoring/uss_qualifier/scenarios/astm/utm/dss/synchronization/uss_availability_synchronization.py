@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from uas_standards.astm.f3548.v21.api import UssAvailabilityState
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -28,11 +26,11 @@ class USSAvailabilitySynchronization(TestScenario):
 
     _dss: DSSInstance
 
-    _dss_read_instances: List[DSSInstance]
+    _dss_read_instances: list[DSSInstance]
 
     _uss_id: str
 
-    _current_version: Optional[str] = None
+    _current_version: str | None = None
 
     def __init__(
         self,

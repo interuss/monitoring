@@ -1,6 +1,6 @@
 import datetime
 import importlib
-from typing import Callable, Optional, Tuple
+from collections.abc import Callable
 
 import arrow
 from implicitdict import StringBasedDateTime
@@ -108,11 +108,11 @@ def assert_date_is_close_to_now(d: datetime.datetime):
 
 
 def build_testable_pending_check(
-    phase: Optional[ScenarioPhase] = None,
-    severity: Optional[Severity] = None,
+    phase: ScenarioPhase | None = None,
+    severity: Severity | None = None,
     stop_fast: bool = False,
-    on_failed_check: Optional[Callable[[FailedCheck], None]] = None,
-) -> Tuple[PendingCheck, _TestStepReport]:
+    on_failed_check: Callable[[FailedCheck], None] | None = None,
+) -> tuple[PendingCheck, _TestStepReport]:
     """Return a (PendingCheck, Report) instances with mocked relative objects"""
 
     if not phase:

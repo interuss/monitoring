@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 import arrow
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
@@ -42,10 +40,10 @@ class OpIntentReferenceStateTransitions(TestScenario):
 
     # The DSS under test
     _dss: DSSInstance
-    _pid: List[str]
+    _pid: list[str]
 
     # Participant IDs of users using this DSS instance
-    _uids: List[str]
+    _uids: list[str]
 
     _flight: FlightInfoTemplate
 
@@ -118,7 +116,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
 
         self.end_test_scenario()
 
-    def _get_extents(self, times: Dict[TimeDuringTest, Time]) -> Volume4D:
+    def _get_extents(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
         return self._flight.resolve(times).basic_information.area.bounding_volume
 
     def _clean_known_op_intents_ids(self):
@@ -156,7 +154,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                     )
 
     def _attempt_to_delete_remaining_op_intents(
-        self, times: Dict[TimeDuringTest, Time]
+        self, times: dict[TimeDuringTest, Time]
     ):
         """Search for op intents and attempt to delete them"""
 
@@ -198,7 +196,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                             query_timestamps=e.query_timestamps,
                         )
 
-    def _ensure_clean_workspace(self, times: Dict[TimeDuringTest, Time]) -> bool:
+    def _ensure_clean_workspace(self, times: dict[TimeDuringTest, Time]) -> bool:
         """
         Tries to provide a clean workspace. If it fails to do so and the underlying check
         has a severity below HIGH, this function will return false.
@@ -242,7 +240,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
 
         return True
 
-    def _check_unauthorized_state_creation(self, times: Dict[TimeDuringTest, Time]):
+    def _check_unauthorized_state_creation(self, times: dict[TimeDuringTest, Time]):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         # Reuse info from flight 1 for the third Operational Intent Ref
         flight_3 = self._flight.resolve(times)
@@ -305,7 +303,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                     )
 
     def _steps_check_unauthorized_state_transitions(
-        self, times: Dict[TimeDuringTest, Time]
+        self, times: dict[TimeDuringTest, Time]
     ):
         """This checks for UNAUTHORIZED state transitions, that is, transitions that require the correct scope,
         but are not otherwise disallowed by the standard."""

@@ -1,7 +1,6 @@
 import json
 import os
 from datetime import datetime
-from typing import List, Tuple
 
 from flask import Response, jsonify, request
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -24,7 +23,7 @@ from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
 
 @webapp.route("/mock_uss/interuss_logging/logs", methods=["GET"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
-def interaction_logs() -> Tuple[Response, int]:
+def interaction_logs() -> tuple[Response, int]:
     """
     Returns all the interaction logs with requests that were
     received or initiated between 'from_time' and now
@@ -39,7 +38,7 @@ def interaction_logs() -> Tuple[Response, int]:
 
     # individual interactions are logged to a file of the form <index>_<direction>_<method>_<timestamp>.json, eg
     # 000001_Incoming_GET_2023-08-30T20-48-21.900000Z.json
-    interactions: List[Interaction] = []
+    interactions: list[Interaction] = []
 
     for fname in os.listdir(log_path):
         # Parse the interaction time from the file name:
@@ -57,7 +56,7 @@ def interaction_logs() -> Tuple[Response, int]:
         )
         if interaction_time.datetime < from_time.datetime:
             continue
-        with open(os.path.join(log_path, fname), "r") as f:
+        with open(os.path.join(log_path, fname)) as f:
             try:
                 obj = json.load(f)
                 interaction = ImplicitDict.parse(obj, Interaction)
@@ -74,7 +73,7 @@ def interaction_logs() -> Tuple[Response, int]:
 
 @webapp.route("/mock_uss/interuss_logging/logs", methods=["DELETE"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
-def delete_interaction_logs() -> Tuple[str, int]:
+def delete_interaction_logs() -> tuple[str, int]:
     """Deletes all the files under the logging directory"""
     log_path = webapp.config[KEY_INTERACTIONS_LOG_DIR]
 

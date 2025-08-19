@@ -1,5 +1,3 @@
-from typing import Dict
-
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
 from uas_standards.astm.f3548.v21 import constants
@@ -54,7 +52,7 @@ class MakeUssReport(TestScenario):
         self.end_test_case()
         self.end_test_scenario()
 
-    def _get_uss_base_urls(self, context: ExecutionContext) -> Dict[str, ParticipantID]:
+    def _get_uss_base_urls(self, context: ExecutionContext) -> dict[str, ParticipantID]:
         base_urls_by_participant = {}
         for report in context.find_test_scenario_reports(FlightIntentValidation):
             cases = [
@@ -112,7 +110,7 @@ class MakeUssReport(TestScenario):
 
         return base_urls_by_participant
 
-    def _call_make_uss_report(self, base_urls: Dict[str, ParticipantID]) -> None:
+    def _call_make_uss_report(self, base_urls: dict[str, ParticipantID]) -> None:
         for base_url, participant_id in base_urls.items():
             client = UTMClientSession(base_url, self._auth)
             url = base_url + OPERATIONS[OperationID.MakeUssReport].path

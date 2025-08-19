@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List
 
 from monitoring.monitorlib.clients.geospatial_info.querying import (
     GeospatialFeatureCheck,
@@ -25,7 +24,7 @@ class GeospatialInfoClient(ABC):
 
     @abstractmethod
     def query_geospatial_features(
-        self, checks: List[GeospatialFeatureCheck]
+        self, checks: list[GeospatialFeatureCheck]
     ) -> GeospatialFeatureQueryResponse:
         """Instruct the USS to emulate a normal user/app trying to check for the specified geospatial information.
 

@@ -1,6 +1,5 @@
 import json
 from datetime import timedelta
-from typing import Dict
 
 from implicitdict import ImplicitDict, StringBasedTimeDelta
 
@@ -23,7 +22,7 @@ class Database(ImplicitDict):
     cleanup_initiated: bool = False
     """True only when a process has already initiated cleanup"""
 
-    observation_areas: Dict[ObservationAreaID, ObservationArea]
+    observation_areas: dict[ObservationAreaID, ObservationArea]
     """Set of active observation areas, keyed by ID"""
 
     polling_interval: StringBasedTimeDelta = StringBasedTimeDelta(timedelta(seconds=15))

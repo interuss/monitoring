@@ -1,5 +1,4 @@
 import math
-from typing import List, Optional, Union
 
 import s2sphere
 from pykml.factory import KML_ElementMaker as kml
@@ -40,7 +39,7 @@ def _altitude_mode_of(altitude: Altitude) -> str:
         )
 
 
-def _distance_value_of(distance: Union[Altitude, Radius]) -> float:
+def _distance_value_of(distance: Altitude | Radius) -> float:
     if distance.units == DistanceUnits.M:
         return distance.value
     elif distance.units == DistanceUnits.FT:
@@ -51,9 +50,9 @@ def _distance_value_of(distance: Union[Altitude, Radius]) -> float:
 
 def make_placemark_from_volume(
     v4: Volume4D,
-    name: Optional[str] = None,
-    style_url: Optional[str] = None,
-    description: Optional[str] = None,
+    name: str | None = None,
+    style_url: str | None = None,
+    description: str | None = None,
 ) -> kml.Placemark:
     if "outline_polygon" in v4.volume and v4.volume.outline_polygon:
         vertices = v4.volume.outline_polygon.vertices
@@ -188,7 +187,7 @@ def make_placemark_from_volume(
     return placemark
 
 
-def query_styles() -> List[kml.Style]:
+def query_styles() -> list[kml.Style]:
     """Provides KML styles for query areas."""
     return [
         kml.Style(

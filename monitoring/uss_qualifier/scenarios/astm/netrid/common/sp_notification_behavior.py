@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from datetime import timedelta
-from typing import Callable, Dict, List, Optional, Set, Type, TypeVar, Union
+from typing import TypeVar
 
 from future.backports.datetime import datetime
 from implicitdict import ImplicitDict
@@ -49,10 +50,10 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
     _service_providers: NetRIDServiceProviders
     _mock_uss: MockUSSClient
 
-    _injected_flights: List[InjectedFlight]
-    _injected_tests: List[InjectedTest]
+    _injected_flights: list[InjectedFlight]
+    _injected_tests: list[InjectedTest]
 
-    _dss_wrapper: Optional[DSSWrapper]
+    _dss_wrapper: DSSWrapper | None
     _subscription_id: str
 
     def __init__(
@@ -112,7 +113,7 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
     def _subscribe_mock_uss(self):
         # Get all bounding rects for flights
         flight_rects = [f.get_rect() for f in self._flights_data.get_test_flights()]
-        flight_union: Optional[LatLngRect] = None
+        flight_union: LatLngRect | None = None
         for fr in flight_rects:
             if flight_union is None:
                 flight_union = fr
@@ -159,7 +160,7 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
                 in interaction.query.request.url
             )
 
-        def fetch_interactions() -> List[Interaction]:
+        def fetch_interactions() -> list[Interaction]:
             return get_mock_uss_interactions(
                 self,
                 self._mock_uss,
@@ -169,7 +170,7 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
                 post_isa_filter,
             )[0]
 
-        def includes_all_notifications(raw_interactions: List[Interaction]) -> bool:
+        def includes_all_notifications(raw_interactions: list[Interaction]) -> bool:
             pids_having_notified = self._relevant_notified_subs(
                 raw_interactions, relevant_participant_ids, notifications_received_after
             )
@@ -209,7 +210,7 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
                     )
                     continue
 
-    def _notif_operation_id(self) -> Union[api_v19.OperationID | api_v22a.OperationID]:
+    def _notif_operation_id(self) -> api_v19.OperationID | api_v22a.OperationID:
         if self._rid_version.f3411_19:
             return api_v19.OperationID.PostIdentificationServiceArea
         elif self._rid_version.f3411_22a:
@@ -219,7 +220,7 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
 
     def _notif_param_type(
         self,
-    ) -> Type[
+    ) -> type[
         api_v19.PutIdentificationServiceAreaNotificationParameters
         | api_v22a.PutIdentificationServiceAreaNotificationParameters
     ]:
@@ -232,10 +233,10 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
 
     def _relevant_notified_subs(
         self,
-        raw_interactions: List[Interaction],
-        relevant_pids: Set[str],
+        raw_interactions: list[Interaction],
+        relevant_pids: set[str],
         received_after: datetime,
-    ) -> Dict[str, List[datetime]]:
+    ) -> dict[str, list[datetime]]:
         # Parse version-specific notification parameters
         PutIsaParamsType = self._notif_param_type()
 
@@ -256,7 +257,7 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
                 ):
                     relevant.append((received_at, notification.service_area.owner))
 
-        notifs_by_participant: Dict[str, List[datetime]] = {}
+        notifs_by_participant: dict[str, list[datetime]] = {}
         for received_at, participant_id in relevant:
             if participant_id not in notifs_by_participant:
                 notifs_by_participant[participant_id] = []

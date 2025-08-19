@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from requests.exceptions import RequestException
 from s2sphere import LatLngRect
 
@@ -36,8 +34,8 @@ class NominalBehavior(GenericTestScenario):
     _observers: NetRIDObserversResource
     _evaluation_configuration: EvaluationConfigurationResource
 
-    _injected_flights: List[InjectedFlight]
-    _injected_tests: List[InjectedTest]
+    _injected_flights: list[InjectedFlight]
+    _injected_tests: list[InjectedTest]
 
     def __init__(
         self,
@@ -45,7 +43,7 @@ class NominalBehavior(GenericTestScenario):
         service_providers: NetRIDServiceProviders,
         observers: NetRIDObserversResource,
         evaluation_configuration: EvaluationConfigurationResource,
-        dss_pool: Optional[DSSInstancesResource] = None,
+        dss_pool: DSSInstancesResource | None = None,
     ):
         super().__init__()
         self._flights_data = flights_data

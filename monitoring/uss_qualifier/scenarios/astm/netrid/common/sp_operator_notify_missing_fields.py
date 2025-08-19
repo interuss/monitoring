@@ -1,5 +1,3 @@
-from typing import List
-
 import arrow
 from requests.exceptions import RequestException
 from s2sphere import LatLngRect
@@ -38,8 +36,8 @@ class SpOperatorNotifyMissingFields(GenericTestScenario):
     _service_providers: NetRIDServiceProviders
     _evaluation_configuration: EvaluationConfigurationResource
 
-    _injected_flights: List[InjectedFlight]
-    _injected_tests: List[InjectedTest]
+    _injected_flights: list[InjectedFlight]
+    _injected_tests: list[InjectedTest]
 
     def __init__(
         self,

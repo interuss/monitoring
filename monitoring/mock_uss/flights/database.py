@@ -1,6 +1,5 @@
 import json
 from datetime import timedelta
-from typing import Dict, Optional
 
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import OperationalIntent
@@ -19,15 +18,15 @@ class FlightRecord(ImplicitDict):
 
     flight_info: FlightInfo
     op_intent: OperationalIntent
-    mod_op_sharing_behavior: Optional[MockUssFlightBehavior] = None
+    mod_op_sharing_behavior: MockUssFlightBehavior | None = None
     locked: bool = False
 
 
 class Database(ImplicitDict):
     """Simple in-memory pseudo-database tracking the state of the mock system"""
 
-    flights: Dict[str, Optional[FlightRecord]] = {}
-    cached_operations: Dict[str, OperationalIntent] = {}
+    flights: dict[str, FlightRecord | None] = {}
+    cached_operations: dict[str, OperationalIntent] = {}
 
 
 db = SynchronizedValue(

@@ -1,6 +1,5 @@
 import random
 from datetime import timedelta
-from typing import List
 
 import arrow
 import shapely.geometry
@@ -44,13 +43,13 @@ class AdjacentCircularFlightsSimulator:
 
         self.altitude_agl = 50.0
 
-        self.grid_cells_flight_tracks: List[GridCellFlight] = []
+        self.grid_cells_flight_tracks: list[GridCellFlight] = []
 
         # This object holds the name and the polygon object of the query boxes. The number of bboxes are controlled by the `box_diagonals` variable
-        self.query_bboxes: List[QueryBoundingBox] = []
+        self.query_bboxes: list[QueryBoundingBox] = []
 
-        self.flights: List[FullFlightRecord] = []
-        self.bbox_center: List[shapely.geometry.Point] = []
+        self.flights: list[FullFlightRecord] = []
+        self.bbox_center: list[shapely.geometry.Point] = []
 
         self.geod = Geod(ellps="WGS84")
 
@@ -136,8 +135,8 @@ class AdjacentCircularFlightsSimulator:
             )
 
     def generate_flight_speed_bearing(
-        self, adjacent_points: List, delta_time_secs: int
-    ) -> List[float]:
+        self, adjacent_points: list, delta_time_secs: int
+    ) -> list[float]:
         """A method to generate flight speed, assume that the flight has to traverse two adjecent points in x number of seconds provided, calculating speed in meters / second. It also generates bearing between this and next point, this is used to populate the 'track' paramater in the Aircraft State JSON."""
 
         first_point = adjacent_points[0]
@@ -148,7 +147,7 @@ class AdjacentCircularFlightsSimulator:
         )
 
         speed_mts_per_sec = adjacent_point_distance_mts / delta_time_secs
-        speed_mts_per_sec = float("{:.2f}".format(speed_mts_per_sec))
+        speed_mts_per_sec = float(f"{speed_mts_per_sec:.2f}")
 
         if fwd_azimuth < 0:
             fwd_azimuth = 360 + fwd_azimuth
@@ -173,9 +172,7 @@ class AdjacentCircularFlightsSimulator:
         elif point_or_polygon == "Point":
             new_coordinates = proj(*coordinates, inverse=inverse)
         else:
-            raise RuntimeError(
-                "Unexpected geo_interface type: {}".format(point_or_polygon)
-            )
+            raise RuntimeError(f"Unexpected geo_interface type: {point_or_polygon}")
 
         return shapely.geometry.shape(
             {"type": point_or_polygon, "coordinates": tuple(new_coordinates)}
@@ -267,7 +264,7 @@ class AdjacentCircularFlightsSimulator:
 
 
         """
-        all_flight_telemetry: List[List[injection.RIDAircraftState]] = []
+        all_flight_telemetry: list[list[injection.RIDAircraftState]] = []
         flight_track_details = {}  # Develop a index of flight length and their index
         # Store where on the track the current index is, since the tracks are circular, once the end of the track is reached, the index is reset to 0 to indicate beginning of the track again.
         flight_current_index = {}

@@ -1,5 +1,3 @@
-from typing import List
-
 from implicitdict import ImplicitDict
 from uas_standards.interuss.automated_testing.geospatial_map.v1.api import (
     OPERATIONS,
@@ -27,11 +25,11 @@ class GeospatialMapClient(GeospatialInfoClient):
     _session: UTMClientSession
 
     def __init__(self, session: UTMClientSession, participant_id: ParticipantID):
-        super(GeospatialMapClient, self).__init__(participant_id)
+        super().__init__(participant_id)
         self._session = session
 
     def query_geospatial_features(
-        self, checks: List[GeospatialFeatureCheck]
+        self, checks: list[GeospatialFeatureCheck]
     ) -> GeospatialFeatureQueryResponse:
         req_checks = [c.to_geospatial_map() for c in checks]
 

@@ -1,5 +1,4 @@
 import inspect
-from typing import List
 
 from monitoring.monitorlib.inspection import fullname
 from monitoring.uss_qualifier.requirements.documentation import get_requirement
@@ -13,7 +12,7 @@ from monitoring.uss_qualifier.scenarios.documentation.parsing import (
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
 
-def validate(test_scenarios: List[TestScenarioType]):
+def validate(test_scenarios: list[TestScenarioType]):
     for test_scenario in test_scenarios:
         # Verify that documentation parses
         docs = get_documentation(test_scenario)

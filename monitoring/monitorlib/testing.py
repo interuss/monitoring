@@ -1,6 +1,5 @@
 import inspect
 import os
-from typing import Optional
 
 from monitoring.monitorlib.formatting import make_datetime
 
@@ -10,14 +9,14 @@ def assert_datetimes_are_equal(t1, t2, tolerance_seconds: float = 0) -> None:
         t1_datetime = make_datetime(t1)
         t2_datetime = make_datetime(t2)
     except ValueError as e:
-        assert False, "Error interpreting value as datetime: {}".format(e)
+        assert False, f"Error interpreting value as datetime: {e}"
     if tolerance_seconds == 0:
         assert t1_datetime == t2_datetime
     else:
         assert abs((t1_datetime - t2_datetime).total_seconds()) < tolerance_seconds
 
 
-def make_fake_url(suffix: Optional[str] = None, frames_above: int = 1) -> str:
+def make_fake_url(suffix: str | None = None, frames_above: int = 1) -> str:
     """Create a dummy URL revealing the location from which this function was called.
 
     The URL generated is a function solely of the file from which this function is called and the provided suffix.

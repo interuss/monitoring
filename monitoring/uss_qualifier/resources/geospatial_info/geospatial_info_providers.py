@@ -1,4 +1,3 @@
-from typing import Optional
 from urllib.parse import urlparse
 
 from implicitdict import ImplicitDict
@@ -20,10 +19,10 @@ class GeospatialInfoProviderConfiguration(ImplicitDict):
     participant_id: str
     """ID of the geospatial information provider for which geospatial data can be queried"""
 
-    geospatial_map_v1_base_url: Optional[str]
+    geospatial_map_v1_base_url: str | None
     """Base URL for the geospatial information provider's implementation of the interfaces/automated_testing/geospatial_map/v1/geospatial_map.yaml API"""
 
-    timeout_seconds: Optional[float] = None
+    timeout_seconds: float | None = None
     """Number of seconds to allow for requests to this geospatial information provider.  If None, use default."""
 
     def __init__(self, *args, **kwargs):
@@ -61,9 +60,7 @@ class GeospatialInfoProviderResource(Resource[GeospatialInfoProviderSpecificatio
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(GeospatialInfoProviderResource, self).__init__(
-            specification, resource_origin
-        )
+        super().__init__(specification, resource_origin)
         if (
             "geospatial_map_v1_base_url" in specification.geospatial_info_provider
             and specification.geospatial_info_provider.geospatial_map_v1_base_url

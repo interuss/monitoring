@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 from implicitdict import ImplicitDict
 
 from monitoring.uss_qualifier.requirements.definitions import RequirementCollection
@@ -23,7 +21,7 @@ class AllConditions(SpecificCondition):
 
     Note that an empty list of conditions will result in a successful evaluation."""
 
-    conditions: List[CapabilityVerificationCondition]
+    conditions: list[CapabilityVerificationCondition]
 
 
 class AnyCondition(SpecificCondition):
@@ -31,7 +29,7 @@ class AnyCondition(SpecificCondition):
 
     Note that an empty list of conditions will result in an unsuccessful evaluation."""
 
-    conditions: List[CapabilityVerificationCondition]
+    conditions: list[CapabilityVerificationCondition]
 
 
 class RequirementsCheckedCondition(SpecificCondition):
@@ -59,10 +57,10 @@ class CapabilityVerifiedCondition(SpecificCondition):
     Note that a capability which do not declare any requirement will result in an unsuccessful evaluation.
     """
 
-    capability_ids: List[CapabilityID]
+    capability_ids: list[CapabilityID]
     """List of identifier of capability that must be verified for this condition to be satisfied."""
 
-    capability_location: Optional[JSONPathExpression]
+    capability_location: JSONPathExpression | None
     """Location of report to inspect for the verification of the specified capability, relative to the report in which
     the capability is defined.  Implicit default value is "$" (look for verified capability in the report in which the
     dependant capability is defined).
@@ -85,11 +83,11 @@ class CapabilityVerificationCondition(ImplicitDict):
 
     Exactly one field must be specified."""
 
-    all_conditions: Optional[AllConditions]
-    any_conditions: Optional[AnyCondition]
-    no_failed_checks: Optional[NoFailedChecksCondition]
-    requirements_checked: Optional[RequirementsCheckedCondition]
-    capability_verified: Optional[CapabilityVerifiedCondition]
+    all_conditions: AllConditions | None
+    any_conditions: AnyCondition | None
+    no_failed_checks: NoFailedChecksCondition | None
+    requirements_checked: RequirementsCheckedCondition | None
+    capability_verified: CapabilityVerifiedCondition | None
 
 
 class ParticipantCapabilityDefinition(ImplicitDict):

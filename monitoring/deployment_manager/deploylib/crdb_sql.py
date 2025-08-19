@@ -2,20 +2,19 @@ import datetime
 import hashlib
 import random
 from dataclasses import dataclass
-from typing import List, Tuple
 
 import kubernetes.stream
 from kubernetes import client as k8s
 
 
 @dataclass
-class User(object):
+class User:
     username: str
-    options: List[str]
-    member_of: List[str]
+    options: list[str]
+    member_of: list[str]
 
 
-def execute_sql(client: k8s.CoreV1Api, namespace: str, sql_commands: List[str]) -> str:
+def execute_sql(client: k8s.CoreV1Api, namespace: str, sql_commands: list[str]) -> str:
     """Execute the specfied sql_commands directly on a CRDB node.
 
     :param client: Kubernetes core client which can access the CRDB node
@@ -40,7 +39,7 @@ def execute_sql(client: k8s.CoreV1Api, namespace: str, sql_commands: List[str]) 
     return resp
 
 
-def list_users(client: k8s.CoreV1Api, namespace: str) -> List[User]:
+def list_users(client: k8s.CoreV1Api, namespace: str) -> list[User]:
     lines = execute_sql(client, namespace, ["SHOW USERS"]).split("\n")
     lines = [line for line in lines[1:] if line]
     users = []
@@ -56,7 +55,7 @@ def list_users(client: k8s.CoreV1Api, namespace: str) -> List[User]:
 
 def get_monitoring_user(
     client: k8s.CoreV1Api, namespace: str, cluster_name: str
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     """Get the username and password for a CRDB user intended for monitoring.
 
     Whenever this routine is called, it sets the validity of the user to 1-2
@@ -92,11 +91,9 @@ def get_monitoring_user(
         client,
         namespace,
         [
-            "CREATE USER IF NOT EXISTS {}".format(username),
-            "GRANT admin TO {}".format(username),
-            "ALTER USER {} WITH LOGIN PASSWORD '{}' VALID UNTIL '{}'".format(
-                username, password, valid_until
-            ),
+            f"CREATE USER IF NOT EXISTS {username}",
+            f"GRANT admin TO {username}",
+            f"ALTER USER {username} WITH LOGIN PASSWORD '{password}' VALID UNTIL '{valid_until}'",
         ],
     )
 

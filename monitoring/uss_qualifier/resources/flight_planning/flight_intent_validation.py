@@ -1,6 +1,6 @@
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Dict, Iterator, List, Optional
 
 import arrow
 from implicitdict import StringBasedTimeDelta
@@ -27,25 +27,25 @@ MAX_TEST_RUN_DURATION = timedelta(minutes=45)
 
 
 @dataclass
-class ExpectedFlightIntent(object):
+class ExpectedFlightIntent:
     intent_id: FlightIntentID
     name: FlightIntentName
-    must_conflict_with: Optional[List[FlightIntentName]] = None
-    must_not_conflict_with: Optional[List[FlightIntentName]] = None
-    usage_state: Optional[AirspaceUsageState] = None
-    uas_state: Optional[UasState] = None
-    f3548v21_priority_higher_than: Optional[List[FlightIntentName]] = None
-    f3548v21_priority_equal_to: Optional[List[FlightIntentName]] = None
-    earliest_time_start: Optional[StringBasedTimeDelta] = None
-    latest_time_start: Optional[StringBasedTimeDelta] = None
-    earliest_time_end: Optional[StringBasedTimeDelta] = None
-    latest_time_end: Optional[StringBasedTimeDelta] = None
-    valid_uspace_flight_auth: Optional[bool] = None
+    must_conflict_with: list[FlightIntentName] | None = None
+    must_not_conflict_with: list[FlightIntentName] | None = None
+    usage_state: AirspaceUsageState | None = None
+    uas_state: UasState | None = None
+    f3548v21_priority_higher_than: list[FlightIntentName] | None = None
+    f3548v21_priority_equal_to: list[FlightIntentName] | None = None
+    earliest_time_start: StringBasedTimeDelta | None = None
+    latest_time_start: StringBasedTimeDelta | None = None
+    earliest_time_end: StringBasedTimeDelta | None = None
+    latest_time_end: StringBasedTimeDelta | None = None
+    valid_uspace_flight_auth: bool | None = None
 
 
 def validate_flight_intent_templates(
-    templates: Dict[FlightIntentID, FlightInfoTemplate],
-    expected_intents: List[ExpectedFlightIntent],
+    templates: dict[FlightIntentID, FlightInfoTemplate],
+    expected_intents: list[ExpectedFlightIntent],
 ) -> Volume4D:
     """
     Returns: the bounding extents of the flight intent templates
@@ -78,8 +78,8 @@ def validate_flight_intent_templates(
 
 
 def validate_flight_intents(
-    intents: Dict[FlightIntentID, FlightInfo],
-    expected_intents: List[ExpectedFlightIntent],
+    intents: dict[FlightIntentID, FlightInfo],
+    expected_intents: list[ExpectedFlightIntent],
     now: Time,
 ) -> None:
     """Validate that `intents` contains all intents meeting all the criteria in `expected_intents`.

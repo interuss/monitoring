@@ -1,10 +1,11 @@
 import json
 import multiprocessing
 import multiprocessing.shared_memory
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 
-class SynchronizedValue(object):
+class SynchronizedValue:
     """Represents a value synchronized across multiple processes.
 
     The shared value can be read with .value or updated in a transaction.  A
@@ -33,8 +34,8 @@ class SynchronizedValue(object):
         self,
         initial_value,
         capacity_bytes: int = 10e6,
-        encoder: Optional[Callable[[Any], bytes]] = None,
-        decoder: Optional[Callable[[bytes], Any]] = None,
+        encoder: Callable[[Any], bytes] | None = None,
+        decoder: Callable[[bytes], Any] | None = None,
     ):
         """Creates a value synchronized across multiple processes.
 
@@ -64,9 +65,7 @@ class SynchronizedValue(object):
         )
         if content_len + self.SIZE_BYTES > self._shared_memory.size:
             raise RuntimeError(
-                "Shared memory claims to have {} bytes of content when buffer size only allows {}".format(
-                    content_len, self._shared_memory.size - self.SIZE_BYTES
-                )
+                f"Shared memory claims to have {content_len} bytes of content when buffer size only allows {self._shared_memory.size - self.SIZE_BYTES}"
             )
         content = bytes(
             self._shared_memory.buf[self.SIZE_BYTES : content_len + self.SIZE_BYTES]
@@ -78,9 +77,7 @@ class SynchronizedValue(object):
         content_len = len(content)
         if content_len + self.SIZE_BYTES > self._shared_memory.size:
             raise RuntimeError(
-                "Tried to write {} bytes into a SynchronizedValue with only {} bytes of capacity".format(
-                    content_len, self._shared_memory.size - self.SIZE_BYTES
-                )
+                f"Tried to write {content_len} bytes into a SynchronizedValue with only {self._shared_memory.size - self.SIZE_BYTES} bytes of capacity"
             )
         self._shared_memory.buf[0 : self.SIZE_BYTES] = content_len.to_bytes(
             self.SIZE_BYTES, "big"

@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Dict, List
 
 from uas_standards.astm.f3548.v21.api import Subscription, SubscriptionID
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -46,16 +45,16 @@ class SubscriptionSimple(TestScenario):
     # Base identifier for the subscriptions that will be created
     _base_sub_id: SubscriptionID
 
-    _test_subscription_ids: List[SubscriptionID]
+    _test_subscription_ids: list[SubscriptionID]
 
     # Base parameters used for subscription creation variations
     _sub_generation_params: SubscriptionParams
 
     # Effective parameters used for each subscription, indexed by subscription ID
-    _sub_params_by_sub_id: Dict[SubscriptionID, SubscriptionParams]
+    _sub_params_by_sub_id: dict[SubscriptionID, SubscriptionParams]
 
     # Keep track of the latest subscription returned by the DSS
-    _current_subscriptions: Dict[SubscriptionID, Subscription]
+    _current_subscriptions: dict[SubscriptionID, Subscription]
 
     # An area designed to be too big to be allowed to search by the DSS
     _problematically_big_area_vol: Polygon
@@ -581,7 +580,7 @@ class SubscriptionSimple(TestScenario):
         sub_under_test: Subscription,
         creation_params: SubscriptionParams,
         was_mutated: bool,
-        query_timestamps: List[datetime],
+        query_timestamps: list[datetime],
     ):
         """Compare the passed subscription with the data we specified when creating it"""
         self._validate_subscription(
@@ -612,7 +611,7 @@ class SubscriptionSimple(TestScenario):
         sub_under_test: Subscription,
         creation_params: SubscriptionParams,
         was_mutated: bool,
-        query_timestamps: List[datetime],
+        query_timestamps: list[datetime],
     ):
         """
         Validate the subscription against the parameters used to create it.

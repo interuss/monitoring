@@ -1,6 +1,5 @@
 import datetime
 from datetime import timedelta
-from typing import List, Optional
 
 import arrow
 import flask
@@ -58,7 +57,7 @@ def _make_state(s: injection.RIDAircraftState) -> RIDAircraftState:
 
 
 def _make_operator_location(
-    position: injection.LatLngPoint, altitude: Optional[injection.OperatorAltitude]
+    position: injection.LatLngPoint, altitude: injection.OperatorAltitude | None
 ) -> OperatorLocation:
     """Convert injection information to F3411-22a OperatorLocation"""
     operator_location = OperatorLocation(
@@ -108,7 +107,7 @@ def _get_report(
     t_request: datetime.datetime,
     view: s2sphere.LatLngRect,
     recent_positions_duration: float,
-) -> Optional[RIDFlight]:
+) -> RIDFlight | None:
     details = flight.get_details(t_request)
     if not details:
         return None
@@ -130,7 +129,7 @@ def _get_report(
         simulated=True,
     )
     if recent_positions_duration > 0:
-        recent_positions: List[RIDRecentAircraftPosition] = []
+        recent_positions: list[RIDRecentAircraftPosition] = []
         now = arrow.utcnow().datetime
         for recent_state in recent_states:
             if (
@@ -175,7 +174,7 @@ def ridsp_flights_v22a():
         view = geo.make_latlng_rect(flask.request.args["view"])
     except ValueError as e:
         return (
-            flask.jsonify(ErrorResponse(message="Error parsing view: {}".format(e))),
+            flask.jsonify(ErrorResponse(message=f"Error parsing view: {e}")),
             400,
         )
 
@@ -204,9 +203,7 @@ def ridsp_flights_v22a():
 
     diagonal = geo.get_latlngrect_diagonal_km(view)
     if diagonal > NetMaxDisplayAreaDiagonalKm:
-        msg = "Requested diagonal of {} km exceeds limit of {} km".format(
-            diagonal, NetMaxDisplayAreaDiagonalKm
-        )
+        msg = f"Requested diagonal of {diagonal} km exceeds limit of {NetMaxDisplayAreaDiagonalKm} km"
         return flask.jsonify(ErrorResponse(message=msg)), 413
 
     now = arrow.utcnow().datetime
@@ -243,6 +240,6 @@ def ridsp_flight_details_v22a(id: str):
                     200,
                 )
     return (
-        flask.jsonify(ErrorResponse(message="Flight {} not found".format(id))),
+        flask.jsonify(ErrorResponse(message=f"Flight {id} not found")),
         404,
     )

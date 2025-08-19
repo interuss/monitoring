@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, List
+from collections.abc import Iterator
 
 from implicitdict import ImplicitDict
 
@@ -23,13 +23,13 @@ class RepeatSpecification(ImplicitDict):
 
 
 class Repeat(ActionGenerator[RepeatSpecification]):
-    _actions: List[TestSuiteAction]
+    _actions: list[TestSuiteAction]
     _current_action: int
 
     @classmethod
     def list_potential_actions(
         cls, specification: RepeatSpecification
-    ) -> List[PotentialGeneratedAction]:
+    ) -> list[PotentialGeneratedAction]:
         return list_potential_actions_for_action_declaration(
             specification.action_to_repeat
         )
@@ -37,7 +37,7 @@ class Repeat(ActionGenerator[RepeatSpecification]):
     def __init__(
         self,
         specification: RepeatSpecification,
-        resources: Dict[ResourceID, ResourceType],
+        resources: dict[ResourceID, ResourceType],
     ):
         self._actions = [
             TestSuiteAction(specification.action_to_repeat, resources)
@@ -46,5 +46,4 @@ class Repeat(ActionGenerator[RepeatSpecification]):
         self._current_action = 0
 
     def actions(self) -> Iterator[TestSuiteAction]:
-        for a in self._actions:
-            yield a
+        yield from self._actions

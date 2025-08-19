@@ -72,7 +72,7 @@ def _check_sub1(data, sub_id, scd_api):
 def test_sub_does_not_exist_get(ids, scd_api, scd_session):
     if scd_session is None:
         return
-    resp = scd_session.get("/subscriptions/{}".format(ids(SUB_TYPE)))
+    resp = scd_session.get(f"/subscriptions/{ids(SUB_TYPE)}")
     assert resp.status_code == 404, resp.content
 
 
@@ -101,7 +101,7 @@ def test_create_sub(ids, scd_api, scd_session):
     if scd_session is None:
         return
     req = _make_sub1_req(scd_api)
-    resp = scd_session.put("/subscriptions/{}".format(ids(SUB_TYPE)), json=req)
+    resp = scd_session.put(f"/subscriptions/{ids(SUB_TYPE)}", json=req)
     assert resp.status_code == 200, resp.content
 
     data = resp.json()
@@ -122,7 +122,7 @@ def test_create_sub(ids, scd_api, scd_session):
 def test_get_sub_by_id(ids, scd_api, scd_session):
     if scd_session is None:
         return
-    resp = scd_session.get("/subscriptions/{}".format(ids(SUB_TYPE)))
+    resp = scd_session.get(f"/subscriptions/{ids(SUB_TYPE)}")
     assert resp.status_code == 200, resp.content
 
     data = resp.json()
@@ -156,7 +156,7 @@ def test_mutate_sub(ids, scd_api, scd_session):
         return
 
     # GET current sub1 before mutation
-    resp = scd_session.get("/subscriptions/{}".format(ids(SUB_TYPE)))
+    resp = scd_session.get(f"/subscriptions/{ids(SUB_TYPE)}")
     assert resp.status_code == 200, resp.content
     existing_sub = resp.json().get("subscription", None)
     assert existing_sub is not None
@@ -171,7 +171,7 @@ def test_mutate_sub(ids, scd_api, scd_session):
             json=req,
         )
     else:
-        raise NotImplementedError("Unsupported API version {}".format(scd_api))
+        raise NotImplementedError(f"Unsupported API version {scd_api}")
     assert resp.status_code == 200, resp.content
 
     data = resp.json()
@@ -192,7 +192,7 @@ def test_delete_sub(ids, scd_api, scd_session):
     if scd_session is None:
         return
     if scd_api == scd.API_0_3_17:
-        resp = scd_session.get("/subscriptions/{}".format(ids(SUB_TYPE)))
+        resp = scd_session.get(f"/subscriptions/{ids(SUB_TYPE)}")
         assert resp.status_code == 200, resp.content
         resp = scd_session.delete(
             "/subscriptions/{}/{}".format(
@@ -200,7 +200,7 @@ def test_delete_sub(ids, scd_api, scd_session):
             )
         )
     else:
-        raise NotImplementedError("Unsupported API version {}".format(scd_api))
+        raise NotImplementedError(f"Unsupported API version {scd_api}")
     assert resp.status_code == 200, resp.content
 
 
@@ -209,7 +209,7 @@ def test_delete_sub(ids, scd_api, scd_session):
 def test_get_deleted_sub_by_id(ids, scd_api, scd_session):
     if scd_session is None:
         return
-    resp = scd_session.get("/subscriptions/{}".format(ids(SUB_TYPE)))
+    resp = scd_session.get(f"/subscriptions/{ids(SUB_TYPE)}")
     assert resp.status_code == 404, resp.content
 
 

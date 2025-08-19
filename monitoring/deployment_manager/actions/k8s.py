@@ -7,7 +7,7 @@ def list_pods(context: Context):
     ret = context.clients.core.list_pod_for_all_namespaces(watch=False)
     msg = "\n".join(
         [
-            "{}\t{}\t{}".format(i.status.pod_ip, i.metadata.namespace, i.metadata.name)
+            f"{i.status.pod_ip}\t{i.metadata.namespace}\t{i.metadata.name}"
             for i in ret.items
         ]
     )
@@ -20,7 +20,7 @@ def list_ingress_controllers(context: Context):
     class_list = context.clients.networking.list_ingress_class()
     msg = "\n".join(
         [
-            "{}\t{}\t{}".format(c.metadata.name, c.spec.controller, c.spec.parameters)
+            f"{c.metadata.name}\t{c.spec.controller}\t{c.spec.parameters}"
             for c in class_list.items
         ]
     )

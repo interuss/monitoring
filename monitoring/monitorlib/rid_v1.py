@@ -1,5 +1,4 @@
 import datetime
-from typing import Dict, List, Optional
 
 import s2sphere
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -11,20 +10,20 @@ DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 UPP2_SCOPE_ENHANCED_DETAILS = "rid.read.enhanced_details"
 
 
-def geo_polygon_string(vertices: List[Dict[str, float]]) -> str:
+def geo_polygon_string(vertices: list[dict[str, float]]) -> str:
     return ",".join("{},{}".format(v["lat"], v["lng"]) for v in vertices)
 
 
-def geo_polygon_string_from_s2(vertices: List[s2sphere.LatLng]) -> str:
-    return ",".join("{},{}".format(v.lat().degrees, v.lng().degrees) for v in vertices)
+def geo_polygon_string_from_s2(vertices: list[s2sphere.LatLng]) -> str:
+    return ",".join(f"{v.lat().degrees},{v.lng().degrees}" for v in vertices)
 
 
 def make_volume_4d(
-    vertices: List[s2sphere.LatLng],
+    vertices: list[s2sphere.LatLng],
     alt_lo: float,
     alt_hi: float,
-    start_time: Optional[datetime.datetime],
-    end_time: Optional[datetime.datetime],
+    start_time: datetime.datetime | None,
+    end_time: datetime.datetime | None,
 ) -> Volume4D:
     return ImplicitDict.parse(
         {
@@ -55,22 +54,22 @@ def make_volume_4d(
 
 class ISA(dict):
     @property
-    def errors(self) -> List[str]:
-        errors: List[str] = []
+    def errors(self) -> list[str]:
+        errors: list[str] = []
         if "flights_url" not in self:
             errors.append("flights_url field missing")
         return errors
 
     @property
-    def id(self) -> Optional[str]:
+    def id(self) -> str | None:
         return self.get("id", None)
 
     @property
-    def owner(self) -> Optional[str]:
+    def owner(self) -> str | None:
         return self.get("owner", None)
 
     @property
-    def flights_url(self) -> Optional[str]:
+    def flights_url(self) -> str | None:
         return self.get("flights_url", None)
 
 
@@ -94,5 +93,5 @@ class Subscription(dict):
         return True
 
     @property
-    def version(self) -> Optional[str]:
+    def version(self) -> str | None:
         return self.get("version", None)

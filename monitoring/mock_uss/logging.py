@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-from typing import List, Optional
 
 import flask
 import loguru
@@ -19,11 +18,11 @@ def _get_request_id(req: Request) -> str:
         return ""
 
 
-class RequestLogger(object):
+class RequestLogger:
     _request_id: str
-    _loguru_hook: Optional[int] = None
+    _loguru_hook: int | None = None
     _report_log: bool = True
-    messages: List[str]
+    messages: list[str]
 
     def __init__(self):
         self.messages = []
@@ -63,7 +62,7 @@ class RequestLogger(object):
 _REQUEST_LOGGER_FIELD = "request_logger"
 
 
-def get_request_logger() -> Optional[RequestLogger]:
+def get_request_logger() -> RequestLogger | None:
     if hasattr(flask.request, _REQUEST_LOGGER_FIELD):
         return getattr(flask.request, _REQUEST_LOGGER_FIELD)
     else:
@@ -93,7 +92,7 @@ def add_request_log(resp: Response):
 
 
 @webapp.teardown_request
-def end_request_log(e: Optional[BaseException]) -> None:
+def end_request_log(e: BaseException | None) -> None:
     request_logger = get_request_logger()
     if request_logger is not None:
         request_logger.remove_from_loguru()

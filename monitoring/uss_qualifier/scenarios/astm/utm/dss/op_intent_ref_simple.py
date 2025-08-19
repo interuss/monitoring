@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Optional
 
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
@@ -48,8 +47,8 @@ class OIRSimple(TestScenario):
     _oir_id: EntityID
 
     # Keep track of the current OIR state
-    _current_oir: Optional[OperationalIntentReference]
-    _current_oir_params: Optional[PutOperationalIntentReferenceParameters]
+    _current_oir: OperationalIntentReference | None
+    _current_oir_params: PutOperationalIntentReferenceParameters | None
     _expected_manager: str
     _planning_area: PlanningAreaSpecification
     _planning_area_volume4d: Volume4D
@@ -349,7 +348,7 @@ class OIRSimple(TestScenario):
         )
 
     def _default_oir_params(
-        self, subscription_id: Optional[SubscriptionID]
+        self, subscription_id: SubscriptionID | None
     ) -> PutOperationalIntentReferenceParameters:
         return self._planning_area.get_new_operational_intent_ref_params(
             key=[],

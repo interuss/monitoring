@@ -1,14 +1,13 @@
 import inspect
 import os
 import subprocess
-from typing import Optional
 
 import monitoring
 
-_commit_hash: Optional[str] = None
-_code_version: Optional[str] = None
-_github_base_url: Optional[str] = None
-_repo_root: Optional[str] = None
+_commit_hash: str | None = None
+_code_version: str | None = None
+_github_base_url: str | None = None
+_repo_root: str | None = None
 
 
 def repo_url_of(abspath: str) -> str:

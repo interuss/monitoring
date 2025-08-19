@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, List, Optional, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 import bc_jsonpath_ng.ext
 
@@ -34,10 +35,12 @@ ConditionEvaluator = Callable[
     [SpecificConditionType, ParticipantID, TestSuiteReport],
     ParticipantCapabilityConditionEvaluationReport,
 ]
-_capability_condition_evaluators: Dict[SpecificConditionType, ConditionEvaluator] = {}
+_capability_condition_evaluators: dict[SpecificConditionType, ConditionEvaluator] = {}
 
 
-def capability_condition_evaluator(condition_type: SpecificConditionType):
+def capability_condition_evaluator[SpecificConditionType: SpecificCondition](
+    condition_type: SpecificConditionType,
+):
     """Decorator to label a function that evaluates a specific condition for verifying a capability.
 
     Args:
@@ -94,8 +97,8 @@ def evaluate_condition_for_test_suite(
 def evaluate_all_conditions_condition(
     condition: AllConditions, participant_id: ParticipantID, report: TestSuiteReport
 ) -> ParticipantCapabilityConditionEvaluationReport:
-    satisfied_conditions: List[ParticipantCapabilityConditionEvaluationReport] = []
-    unsatisfied_conditions: List[ParticipantCapabilityConditionEvaluationReport] = []
+    satisfied_conditions: list[ParticipantCapabilityConditionEvaluationReport] = []
+    unsatisfied_conditions: list[ParticipantCapabilityConditionEvaluationReport] = []
     for subcondition in condition.conditions:
         subreport = evaluate_condition_for_test_suite(
             subcondition, participant_id, report
@@ -118,8 +121,8 @@ def evaluate_all_conditions_condition(
 def evaluate_any_condition_condition(
     condition: AnyCondition, participant_id: ParticipantID, report: TestSuiteReport
 ) -> ParticipantCapabilityConditionEvaluationReport:
-    satisfied_options: List[ParticipantCapabilityConditionEvaluationReport] = []
-    unsatisfied_options: List[ParticipantCapabilityConditionEvaluationReport] = []
+    satisfied_options: list[ParticipantCapabilityConditionEvaluationReport] = []
+    unsatisfied_options: list[ParticipantCapabilityConditionEvaluationReport] = []
     for subcondition in condition.conditions:
         subreport = evaluate_condition_for_test_suite(
             subcondition, participant_id, report
@@ -159,7 +162,7 @@ def evaluate_requirements_checked_conditions(
     participant_id: ParticipantID,
     report: TestSuiteReport,
 ) -> ParticipantCapabilityConditionEvaluationReport:
-    req_checks: Dict[RequirementID, CheckedRequirement] = {
+    req_checks: dict[RequirementID, CheckedRequirement] = {
         req_id: CheckedRequirement(
             requirement_id=req_id, passed_checks=[], failed_checks=[]
         )
@@ -193,7 +196,7 @@ def evaluate_requirements_checked_conditions(
     )
 
 
-def _jsonpath_of(descendant: Any, ancestor: Any) -> Optional[str]:
+def _jsonpath_of(descendant: Any, ancestor: Any) -> str | None:
     """Construct a relative JSONPath to descendant from ancestor by exhaustive reference equality search.
 
     One would think this functionality would be part of the jsonpath_ng package when producing matches, but one would

@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, List, Optional, Type
+from collections.abc import Callable
+from typing import Any
 
 from kubernetes.client import (
     V1Deployment,
@@ -9,11 +10,11 @@ from kubernetes.client import (
     V1Service,
 )
 
-_special_comparisons: Dict[Type, Callable[[Any, Any], bool]] = {}
+_special_comparisons: dict[type, Callable[[Any, Any], bool]] = {}
 
 
 def specs_are_the_same(
-    obj1: Any, obj2: Any, field_paths: Optional[List[str]] = None
+    obj1: Any, obj2: Any, field_paths: list[str] | None = None
 ) -> bool:
     """Determine if the specifications for two Kubernetes objects are equivalent
 
@@ -48,13 +49,13 @@ def specs_are_the_same(
         else:
             return obj1 == obj2
 
-    sub_paths: Dict[str, Optional[List[str]]] = {}
+    sub_paths: dict[str, list[str] | None] = {}
     for field_path in field_paths:
         parts = field_path.split(".")
         if len(parts) == 1:
             if parts[0] in sub_paths:
                 raise ValueError(
-                    "Cannot compare {} and its subfield {}".format(parts[0], field_path)
+                    f"Cannot compare {parts[0]} and its subfield {field_path}"
                 )
             sub_paths[parts[0]] = None
         else:
@@ -76,7 +77,7 @@ def specs_are_the_same(
     return True
 
 
-def _special_comparison(type: Type):
+def _special_comparison(type: type):
     def decorator_declare_comparison(compare: Callable[[Any, Any], bool]):
         global _special_comparisons
         _special_comparisons[type] = compare

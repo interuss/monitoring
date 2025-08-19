@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict
 
@@ -23,20 +22,20 @@ TestSuiteTypeName = FileReference
 
 
 class TestSuiteDeclaration(ImplicitDict):
-    suite_type: Optional[TestSuiteTypeName]
+    suite_type: TestSuiteTypeName | None
     """Type/location of test suite.  Usually expressed as the file name of the suite definition (without extension) qualified relative to the `uss_qualifier` folder"""
 
-    suite_definition: Optional[TestSuiteDefinition]
+    suite_definition: TestSuiteDefinition | None
     """Definition of test suite internal to the configuration -- specified instead of `suite_type`."""
 
-    resources: Optional[Dict[ResourceID, ResourceID]]
+    resources: dict[ResourceID, ResourceID] | None
     """Mapping of the ID a resource will be known by in the child test suite -> the ID a resource is known by in the parent test suite.
 
     The child suite resource <key> is supplied by the parent suite resource <value>.
     """
 
     def __init__(self, *args, **kwargs):
-        super(TestSuiteDeclaration, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if (
             "suite_type" in self
             and self.suite_type
@@ -87,13 +86,13 @@ class TestSuiteActionDeclaration(ImplicitDict):
     Exactly one of `test_scenario`, `test_suite`, or `action_generator` must be specified.
     """
 
-    test_scenario: Optional[TestScenarioDeclaration]
+    test_scenario: TestScenarioDeclaration | None
     """If this field is populated, declaration of the test scenario to run"""
 
-    test_suite: Optional[TestSuiteDeclaration]
+    test_suite: TestSuiteDeclaration | None
     """If this field is populated, declaration of the test suite to run"""
 
-    action_generator: Optional[ActionGeneratorDefinition]
+    action_generator: ActionGeneratorDefinition | None
     """If this field is populated, declaration of a generator that will produce 0 or more test suite actions"""
 
     on_failure: ReactionToFailure = ReactionToFailure.Continue
@@ -105,7 +104,7 @@ class TestSuiteActionDeclaration(ImplicitDict):
             ActionType.raise_invalid_action_declaration()
         return ActionType(matches[0])
 
-    def get_resource_links(self) -> Dict[ResourceID, ResourceID]:
+    def get_resource_links(self) -> dict[ResourceID, ResourceID]:
         action_type = self.get_action_type()
         if action_type == ActionType.TestScenario:
             return self.test_scenario.resources
@@ -138,16 +137,16 @@ class TestSuiteDefinition(ImplicitDict):
     name: str
     """Name of the test suite"""
 
-    resources: Dict[ResourceID, ResourceTypeNameSpecifyingOptional]
+    resources: dict[ResourceID, ResourceTypeNameSpecifyingOptional]
     """Enumeration of the resources used by this test suite"""
 
-    local_resources: Optional[Dict[ResourceID, ResourceDeclaration]]
+    local_resources: dict[ResourceID, ResourceDeclaration] | None
     """Declarations of resources originating in this test suite.  If a resource is defined in both `resources` and `local_resources`, the resource in `local_resources` will be ignored (`resources` overrides `local_resources`)."""
 
-    actions: List[TestSuiteActionDeclaration]
+    actions: list[TestSuiteActionDeclaration]
     """The actions to take when running the test suite.  Components will be executed in order."""
 
-    participant_verifiable_capabilities: Optional[List[ParticipantCapabilityDefinition]]
+    participant_verifiable_capabilities: list[ParticipantCapabilityDefinition] | None
     """Definitions of capabilities verified by this test suite for individual participants."""
 
     @staticmethod

@@ -2,7 +2,6 @@ import base64
 import json
 import os
 import re
-from typing import Dict, List, Optional, Tuple, Union
 
 import _jsonnet
 import bc_jsonpath_ng
@@ -126,7 +125,7 @@ def _load_content_from_file_name(file_name: str) -> str:
         # http(s):// web file reference
         file_content = _get_web_content(file_name)
     else:
-        with open(file_name, "r") as f:
+        with open(file_name) as f:
             file_content = f.read()
 
     return file_content
@@ -136,7 +135,7 @@ def load_content(data_file: FileReference) -> str:
     return _load_content_from_file_name(resolve_filename(data_file))
 
 
-def _split_anchor(file_name: str) -> Tuple[str, Optional[str]]:
+def _split_anchor(file_name: str) -> tuple[str, str | None]:
     if "#" in file_name:
         anchor_location = file_name.index("#")
         base_file_name = file_name[0:anchor_location]
@@ -171,8 +170,8 @@ def load_dict_with_references(data_file: FileReference) -> dict:
 
 
 def _jsonnet_import_callback(
-    base_file_name: str, folder: str, rel: str, cache: Optional[Dict[str, dict]]
-) -> Tuple[str, bytes]:
+    base_file_name: str, folder: str, rel: str, cache: dict[str, dict] | None
+) -> tuple[str, bytes]:
     if rel.endswith(".libsonnet"):
         # Do not attempt to parse libsonnet content (e.g., resolve $refs);
         # it will be parsed after loading the full top-level Jsonnet.
@@ -187,8 +186,8 @@ def _jsonnet_import_callback(
 
 
 def _load_dict_with_references_from_file_name(
-    file_name: str, context_file_name: str, cache: Optional[Dict[str, dict]] = None
-) -> Tuple[dict, str]:
+    file_name: str, context_file_name: str, cache: dict[str, dict] | None = None
+) -> tuple[dict, str]:
     if cache is None:
         cache = {}
 
@@ -278,7 +277,7 @@ def _is_descendant(potential_descendant: str, ancestor: str) -> bool:
     return result
 
 
-def _identify_refs(content: dict) -> List[str]:
+def _identify_refs(content: dict) -> list[str]:
     refs = _find_refs(content)
     external_refs = [k for k, v in refs.items() if not v.startswith("#")]
     remaining_internal_refs = {k: v for k, v in refs.items() if v.startswith("#")}
@@ -310,7 +309,7 @@ def _identify_refs(content: dict) -> List[str]:
     return external_refs + internal_refs
 
 
-def _find_refs(content: Union[dict, list], root: str = "$") -> Dict[str, str]:
+def _find_refs(content: dict | list, root: str = "$") -> dict[str, str]:
     paths = {}
     if isinstance(content, dict):
         if "$ref" in content and isinstance(content["$ref"], str):
@@ -328,9 +327,9 @@ def _find_refs(content: Union[dict, list], root: str = "$") -> Dict[str, str]:
 def _replace_refs(
     content: dict,
     context_file_name: str,
-    ref_parent_paths: List[str],
-    allof_paths: List[str],
-    cache: Optional[Dict[str, dict]] = None,
+    ref_parent_paths: list[str],
+    allof_paths: list[str],
+    cache: dict[str, dict] | None = None,
 ) -> None:
     for path in ref_parent_paths:
         parent = [m.value for m in bc_jsonpath_ng.parse(path).find(content)]
@@ -401,7 +400,7 @@ def _select_path(content: dict, path: str) -> dict:
         return _select_path(content[component], subpath)
 
 
-def _identify_allofs(content: Union[dict, list], root: str = "$") -> List[str]:
+def _identify_allofs(content: dict | list, root: str = "$") -> list[str]:
     paths = []
     if isinstance(content, dict):
         if (

@@ -3,7 +3,6 @@ from __future__ import annotations
 import datetime
 import uuid
 from enum import Enum
-from typing import Dict, List, Optional, Set, Tuple
 from urllib.parse import urlparse
 
 import s2sphere
@@ -57,13 +56,13 @@ class DSSInstanceSpecification(ImplicitDict):
     participant_id: str
     """ID of the USS responsible for this DSS instance"""
 
-    user_participant_ids: Optional[List[str]]
+    user_participant_ids: list[str] | None
     """IDs of any participants using this DSS instance, apart from the USS responsible for this DSS instance."""
 
     base_url: str
     """Base URL for the DSS instance according to the ASTM F3548-21 API"""
 
-    supports_ovn_request: Optional[bool]
+    supports_ovn_request: bool | None
     """Whether this DSS instance supports the optional extension not part of the original F3548 standard API allowing a USS to request a specific OVN when creating or updating an operational intent."""
 
     def __init__(self, *args, **kwargs):
@@ -74,20 +73,20 @@ class DSSInstanceSpecification(ImplicitDict):
             raise ValueError("DSSInstanceConfiguration.base_url must be a URL")
 
 
-class DSSInstance(object):
+class DSSInstance:
     participant_id: str
-    user_participant_ids: List[str]
+    user_participant_ids: list[str]
     base_url: str
     client: infrastructure.UTMClientSession
-    _scopes_authorized: Set[str]
+    _scopes_authorized: set[str]
 
     def __init__(
         self,
         participant_id: str,
-        user_participant_ids: List[str],
+        user_participant_ids: list[str],
         base_url: str,
         auth_adapter: infrastructure.AuthAdapter,
-        scopes_authorized: List[str],
+        scopes_authorized: list[str],
     ):
         self.participant_id = participant_id
         self.user_participant_ids = user_participant_ids
@@ -97,7 +96,7 @@ class DSSInstance(object):
             s.value if isinstance(s, Enum) else s for s in scopes_authorized
         )
 
-    def _uses_scope(self, *scopes: Tuple[str]) -> None:
+    def _uses_scope(self, *scopes: tuple[str]) -> None:
         for scope in scopes:
             if scope not in self._scopes_authorized:
                 raise ValueError(
@@ -118,7 +117,7 @@ class DSSInstance(object):
         return scope in self._scopes_authorized
 
     def with_different_auth(
-        self, auth_adapter: AuthAdapterResource, scopes_required: Dict[str, str]
+        self, auth_adapter: AuthAdapterResource, scopes_required: dict[str, str]
     ) -> DSSInstance:
         auth_adapter.assert_scopes_available(
             scopes_required, "DSSInstance.with_different_auth"
@@ -133,7 +132,7 @@ class DSSInstance(object):
 
     def find_op_intent(
         self, extent: Volume4D
-    ) -> Tuple[List[OperationalIntentReference], Query]:
+    ) -> tuple[list[OperationalIntentReference], Query]:
         """
         Find operational intents overlapping with a given volume 4D.
         Raises:
@@ -163,7 +162,7 @@ class DSSInstance(object):
     def get_op_intent_reference(
         self,
         op_intent_id: str,
-    ) -> Tuple[OperationalIntentReference, Query]:
+    ) -> tuple[OperationalIntentReference, Query]:
         """
         Retrieve an OP Intent from the DSS, using only its ID
         Raises:
@@ -191,8 +190,8 @@ class DSSInstance(object):
     def get_full_op_intent(
         self,
         op_intent_ref: OperationalIntentReference,
-        uss_participant_id: Optional[str] = None,
-    ) -> Tuple[OperationalIntent, Query]:
+        uss_participant_id: str | None = None,
+    ) -> tuple[OperationalIntent, Query]:
         """
         Retrieve a full operational intent from its managing USS.
         Raises:
@@ -220,8 +219,8 @@ class DSSInstance(object):
     def get_op_intent_telemetry(
         self,
         op_intent_ref: OperationalIntentReference,
-        uss_participant_id: Optional[str] = None,
-    ) -> Tuple[Optional[VehicleTelemetry], Query]:
+        uss_participant_id: str | None = None,
+    ) -> tuple[VehicleTelemetry | None, Query]:
         """
         Get telemetry of an operational intent.
         Returns:
@@ -252,19 +251,19 @@ class DSSInstance(object):
 
     def put_op_intent(
         self,
-        extents: List[Volume4D],
-        key: List[EntityOVN],
+        extents: list[Volume4D],
+        key: list[EntityOVN],
         state: OperationalIntentState,
         base_url: UssBaseURL,
-        oi_id: Optional[str] = None,
-        ovn: Optional[str] = None,
-        subscription_id: Optional[str] = None,
-        force_query_scopes: Optional[Scope] = None,
+        oi_id: str | None = None,
+        ovn: str | None = None,
+        subscription_id: str | None = None,
+        force_query_scopes: Scope | None = None,
         force_no_implicit_subscription: bool = False,
-        requested_ovn_suffix: Optional[UUIDv7Format] = None,
-    ) -> Tuple[
+        requested_ovn_suffix: UUIDv7Format | None = None,
+    ) -> tuple[
         OperationalIntentReference,
-        List[SubscriberToNotify],
+        list[SubscriberToNotify],
         Query,
     ]:
         """
@@ -357,7 +356,7 @@ class DSSInstance(object):
         self,
         id: str,
         ovn: str,
-    ) -> Tuple[OperationalIntentReference, List[SubscriberToNotify], Query]:
+    ) -> tuple[OperationalIntentReference, list[SubscriberToNotify], Query]:
         """
         Delete an operational intent.
         Raises:
@@ -386,7 +385,7 @@ class DSSInstance(object):
         self,
         uss_id: str,
         scope: Scope = Scope.StrategicCoordination,
-    ) -> Tuple[UssAvailabilityStatusResponse, Query]:
+    ) -> tuple[UssAvailabilityStatusResponse, Query]:
         """
         Request the availability status for the specified USS.
 
@@ -417,9 +416,9 @@ class DSSInstance(object):
     def set_uss_availability(
         self,
         uss_id: str,
-        available: Optional[bool],
+        available: bool | None,
         version: str = "",
-    ) -> Tuple[str, Query]:
+    ) -> tuple[str, Query]:
         """
         Set the availability for the USS identified by 'uss_id'.
 
@@ -467,10 +466,10 @@ class DSSInstance(object):
     def put_constraint_ref(
         self,
         cr_id: str,
-        extents: List[Volume4D],
+        extents: list[Volume4D],
         uss_base_url: UssBaseURL,
-        ovn: Optional[str] = None,
-    ) -> Tuple[ConstraintReference, List[SubscriberToNotify], Query]:
+        ovn: str | None = None,
+    ) -> tuple[ConstraintReference, list[SubscriberToNotify], Query]:
         """
         Create or update a constraint reference.
         Returns:
@@ -514,7 +513,7 @@ class DSSInstance(object):
                 query,
             )
 
-    def get_constraint_ref(self, id: str) -> Tuple[ConstraintReference, Query]:
+    def get_constraint_ref(self, id: str) -> tuple[ConstraintReference, Query]:
         """
         Retrieve a constraint reference from the DSS, using only its ID
         Raises:
@@ -541,7 +540,7 @@ class DSSInstance(object):
 
     def find_constraint_ref(
         self, extent: Volume4D
-    ) -> Tuple[List[ConstraintReference], Query]:
+    ) -> tuple[list[ConstraintReference], Query]:
         """
         Find constraint references overlapping with a given volume 4D.
         Raises:
@@ -572,7 +571,7 @@ class DSSInstance(object):
         self,
         id: str,
         ovn: str,
-    ) -> Tuple[ConstraintReference, List[SubscriberToNotify], Query]:
+    ) -> tuple[ConstraintReference, list[SubscriberToNotify], Query]:
         """
         Delete a constraint reference.
         Raises:
@@ -600,7 +599,7 @@ class DSSInstance(object):
     def make_report(
         self,
         exchange: ExchangeRecord,
-    ) -> Tuple[Optional[str], Query]:
+    ) -> tuple[str | None, Query]:
         """
         Make a DSS report.
         Returns:
@@ -662,7 +661,7 @@ class DSSInstance(object):
         notify_for_constraints: bool,
         min_alt_m: float,
         max_alt_m: float,
-        version: Optional[str] = None,
+        version: str | None = None,
     ) -> MutatedSubscription:
         self._uses_scope(Scope.StrategicCoordination)
         return mutate.upsert_subscription(
@@ -712,14 +711,14 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(DSSInstanceResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self._specification = specification
         self._auth_adapter = auth_adapter
 
     def can_use_scope(self, scope: str) -> bool:
         return scope in self._auth_adapter.scopes
 
-    def get_authorized_scopes(self) -> Set[str]:
+    def get_authorized_scopes(self) -> set[str]:
         return self._auth_adapter.scopes.copy()
 
     @property
@@ -739,7 +738,7 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
             else False
         )
 
-    def get_authorized_scope_not_in(self, ignored_scopes: List[str]) -> Optional[Scope]:
+    def get_authorized_scope_not_in(self, ignored_scopes: list[str]) -> Scope | None:
         """Returns a scope that this DSS Resource is allowed to use but that is not any of the ones that are passed
         in 'ignored_scopes'. If no such scope is found, None is returned.
 
@@ -756,7 +755,7 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
 
         return None
 
-    def get_instance(self, scopes_required: Dict[str, str]) -> DSSInstance:
+    def get_instance(self, scopes_required: dict[str, str]) -> DSSInstance:
         """Get a client object ready to be used.
 
         This method should generally be called in the constructor of a test
@@ -800,11 +799,11 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
 
 
 class DSSInstancesSpecification(ImplicitDict):
-    dss_instances: List[DSSInstanceSpecification]
+    dss_instances: list[DSSInstanceSpecification]
 
 
 class DSSInstancesResource(Resource[DSSInstancesSpecification]):
-    dss_instances: List[DSSInstanceResource]
+    dss_instances: list[DSSInstanceResource]
 
     def __init__(
         self,
@@ -812,7 +811,7 @@ class DSSInstancesResource(Resource[DSSInstancesSpecification]):
         resource_origin: str,
         auth_adapter: AuthAdapterResource,
     ):
-        super(DSSInstancesResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.dss_instances = [
             DSSInstanceResource(
                 specification=s,

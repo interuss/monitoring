@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 
@@ -15,7 +15,7 @@ class ServiceAreaSpecification(ImplicitDict):
 
     This URL will probably not identify a real resource in tests."""
 
-    footprint: List[LatLngPoint]
+    footprint: list[LatLngPoint]
     """2D outline of service area"""
 
     altitude_min: float = 0
@@ -47,7 +47,7 @@ class ServiceAreaSpecification(ImplicitDict):
 
     def get_new_subscription_params(
         self, sub_id: str, start_time: datetime.datetime, duration: datetime.timedelta
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Builds a dict of parameters that can be used to create a subscription, using this ISA's parameters
         and the passed start time and duration
@@ -67,5 +67,5 @@ class ServiceAreaResource(Resource[ServiceAreaSpecification]):
     specification: ServiceAreaSpecification
 
     def __init__(self, specification: ServiceAreaSpecification, resource_origin: str):
-        super(ServiceAreaResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self.specification = specification

@@ -1,6 +1,7 @@
 import inspect
 import os
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 # Because mock_uss uses gevent, we need to monkey-patch before anything else is loaded.
 # https://www.gevent.org/intro.html#monkey-patching
@@ -35,8 +36,8 @@ enabled_services = set()
 def import_environment_variable(
     var_name: str,
     required: bool = True,
-    default: Optional[str] = None,
-    mutator: Optional[Callable[[str], Any]] = None,
+    default: str | None = None,
+    mutator: Callable[[str], Any] | None = None,
 ) -> None:
     """Import a value from a named environment variable into the webapp configuration.
 
@@ -134,7 +135,7 @@ if SERVICE_FLIGHT_PLANNING in webapp.config[config.KEY_SERVICES]:
 msg = (
     "################################################################################\n"
     + "################################ Configuration  ################################\n"
-    + "\n".join("## {}: {}".format(key, webapp.config[key]) for key in webapp.config)
+    + "\n".join(f"## {key}: {webapp.config[key]}" for key in webapp.config)
     + "\n"
     + "################################################################################"
 )
