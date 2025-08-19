@@ -1,5 +1,4 @@
 from datetime import UTC, datetime, timedelta
-from typing import Dict, List, Set
 
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
@@ -47,11 +46,11 @@ class SubscriptionInteractions(TestScenario):
 
     _background_sub_id: SubscriptionID
 
-    _oir_ids: List[EntityID]
-    _sub_ids: List[SubscriptionID]
+    _oir_ids: list[EntityID]
+    _sub_ids: list[SubscriptionID]
 
-    _current_subs: Dict[SubscriptionID, Subscription]
-    _current_oirs: Dict[EntityID, OperationalIntentReference]
+    _current_subs: dict[SubscriptionID, Subscription]
+    _current_oirs: dict[EntityID, OperationalIntentReference]
 
     # Reference times for the subscriptions and operational intents
     _time_start: datetime
@@ -162,7 +161,7 @@ class SubscriptionInteractions(TestScenario):
                     )
 
         def _implicit_subs_check(
-            _participants: List[ParticipantID],
+            _participants: list[ParticipantID],
             _notif_ids: set[str],
             _query_timestamp: datetime,
         ):
@@ -182,7 +181,7 @@ class SubscriptionInteractions(TestScenario):
                         )
 
         self.begin_test_step("Create an OIR at every DSS in sequence")
-        possible_culprits: List[ParticipantID] = []
+        possible_culprits: list[ParticipantID] = []
         for i, dss in enumerate([self._dss] + self._secondary_instances):
             oir_id = self._oir_ids[i]
             oir = self._planning_area.get_new_operational_intent_ref_params(
@@ -462,7 +461,7 @@ class SubscriptionInteractions(TestScenario):
         self.end_cleanup()
 
 
-def to_sub_ids(subscribers: List[SubscriberToNotify]) -> Set[SubscriptionID]:
+def to_sub_ids(subscribers: list[SubscriberToNotify]) -> set[SubscriptionID]:
     """Flatten the passed list of subscribers to notify to a set of subscription IDs"""
     sub_ids = set()
     for subscriber in subscribers:

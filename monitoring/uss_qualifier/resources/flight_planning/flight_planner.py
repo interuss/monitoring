@@ -1,4 +1,3 @@
-from typing import Optional
 from urllib.parse import urlparse
 
 from implicitdict import ImplicitDict
@@ -17,13 +16,13 @@ class FlightPlannerConfiguration(ImplicitDict):
     participant_id: str
     """ID of the flight planner into which test data can be injected"""
 
-    scd_injection_base_url: Optional[str]
+    scd_injection_base_url: str | None
     """Base URL for the flight planner's implementation of the interfaces/automated_testing/scd/v1/scd.yaml API"""
 
-    v1_base_url: Optional[str]
+    v1_base_url: str | None
     """Base URL for the flight planner's implementation of the interfaces/automated_testing/flight_planning/v1/flight_planning.yaml API"""
 
-    timeout_seconds: Optional[float] = None
+    timeout_seconds: float | None = None
     """Number of seconds to allow for requests to this flight planner.  If None, use default."""
 
     def __init__(self, *args, **kwargs):

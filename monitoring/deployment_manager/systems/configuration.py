@@ -1,5 +1,3 @@
-from typing import Optional
-
 from implicitdict import ImplicitDict
 
 from monitoring.deployment_manager.systems.dss.configuration import DSS
@@ -16,11 +14,11 @@ class KubernetesCluster(ImplicitDict):
 
 
 class DeploymentSpec(ImplicitDict):
-    cluster: Optional[KubernetesCluster]
+    cluster: KubernetesCluster | None
     """Definition of Kubernetes cluster containing this deployment."""
 
-    test: Optional[Test]
+    test: Test | None
     """Test systems in this deployment."""
 
-    dss: Optional[DSS]
+    dss: DSS | None
     """DSS instance in this deployment."""

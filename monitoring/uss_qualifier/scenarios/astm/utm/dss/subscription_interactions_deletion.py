@@ -1,5 +1,4 @@
 from datetime import UTC, datetime, timedelta
-from typing import Dict, List
 
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
@@ -34,11 +33,11 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class SubscriptionInteractionsDeletion(TestScenario):
-    _oir_ids: List[EntityID]
-    _sub_ids: List[SubscriptionID]
+    _oir_ids: list[EntityID]
+    _sub_ids: list[SubscriptionID]
 
-    _current_subs: Dict[SubscriptionID, Subscription]
-    _current_oirs: Dict[EntityID, OperationalIntentReference]
+    _current_subs: dict[SubscriptionID, Subscription]
+    _current_oirs: dict[EntityID, OperationalIntentReference]
 
     _time_start: datetime
     _time_end: datetime

@@ -1,5 +1,3 @@
-from typing import Dict
-
 import arrow
 
 from monitoring.monitorlib.clients.flight_planning.client import (
@@ -78,7 +76,7 @@ class GeneralFlightAuthorization(TestScenario):
 
         self.end_test_scenario()
 
-    def _plan_flights(self, times: Dict[TimeDuringTest, Time]):
+    def _plan_flights(self, times: dict[TimeDuringTest, Time]):
         for row in self.table.rows:
             # Collect checks applicable to this row/test step
             checks = [

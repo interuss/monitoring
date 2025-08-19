@@ -60,7 +60,7 @@ def tracer_download_logs():
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
         for log in logs:
-            with open(os.path.join(context.tracer_logger.log_path, log), "r") as f:
+            with open(os.path.join(context.tracer_logger.log_path, log)) as f:
                 zip_file.writestr(log, f.read())
     zip_name = (
         f"logs_{datetime.datetime.now(datetime.UTC).isoformat().split('.')[0]}.zip"
@@ -115,7 +115,7 @@ def tracer_logs(log):
     logfile = os.path.join(context.tracer_logger.log_path, log)
     if not os.path.exists(logfile):
         flask.abort(404)
-    with open(logfile, "r") as f:
+    with open(logfile) as f:
         objs = [obj for obj in yaml.full_load_all(f)]
     if len(objs) == 1:
         obj = objs[0]

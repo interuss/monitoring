@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, List, Optional
+from collections.abc import Iterator
 
 from implicitdict import ImplicitDict
 
@@ -30,23 +30,23 @@ class FlightPlannerCombinationsSpecification(ImplicitDict):
     flight_planners_source: ResourceID
     """ID of the resource providing all available flight planners"""
 
-    combination_selector_source: Optional[ResourceID] = None
+    combination_selector_source: ResourceID | None = None
     """If specified and contained in the provided resources, the resource containing a FlightPlannerCombinationSelectorResource to select only a subset of combinations"""
 
-    roles: List[ResourceID]
+    roles: list[ResourceID]
     """Resource IDs of FlightPlannerResource inputs to the action_to_repeat"""
 
 
 class FlightPlannerCombinations(
     ActionGenerator[FlightPlannerCombinationsSpecification]
 ):
-    _actions: List[TestSuiteAction]
+    _actions: list[TestSuiteAction]
     _current_action: int
 
     @classmethod
     def list_potential_actions(
         cls, specification: FlightPlannerCombinationsSpecification
-    ) -> List[PotentialGeneratedAction]:
+    ) -> list[PotentialGeneratedAction]:
         return list_potential_actions_for_action_declaration(
             specification.action_to_repeat
         )
@@ -58,7 +58,7 @@ class FlightPlannerCombinations(
     def __init__(
         self,
         specification: FlightPlannerCombinationsSpecification,
-        resources: Dict[ResourceID, ResourceType],
+        resources: dict[ResourceID, ResourceType],
     ):
         if specification.flight_planners_source not in resources:
             raise MissingResourceError(
@@ -122,5 +122,4 @@ class FlightPlannerCombinations(
         self._current_action = 0
 
     def actions(self) -> Iterator[TestSuiteAction]:
-        for a in self._actions:
-            yield a
+        yield from self._actions

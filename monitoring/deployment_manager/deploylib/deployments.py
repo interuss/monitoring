@@ -1,5 +1,3 @@
-from typing import Optional
-
 from kubernetes.client import AppsV1Api, V1Deployment, V1Namespace
 from structlog import BoundLogger
 
@@ -8,7 +6,7 @@ from monitoring.deployment_manager.deploylib import common_k8s
 
 def get(
     client: AppsV1Api, log: BoundLogger, namespace: V1Namespace, dep: V1Deployment
-) -> Optional[V1Deployment]:
+) -> V1Deployment | None:
     return common_k8s.get_resource(
         lambda: client.list_namespaced_deployment(namespace=namespace.metadata.name),
         log,

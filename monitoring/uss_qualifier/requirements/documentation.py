@@ -1,5 +1,4 @@
 import os
-from typing import Dict, List, Set
 
 import marko
 import marko.element
@@ -15,12 +14,12 @@ from monitoring.uss_qualifier.requirements.definitions import (
 )
 
 
-class Requirement(object):
+class Requirement:
     def __init__(self, requirement_id: RequirementID):
         self.requirement_id = requirement_id
 
 
-_verified_requirements: Set[RequirementID] = set()
+_verified_requirements: set[RequirementID] = set()
 
 
 def _verify_requirements(parent: marko.element.Element, package: PackageID) -> None:
@@ -47,7 +46,7 @@ def _load_requirement(requirement_id: RequirementID) -> None:
         raise ValueError(
             f'Could not load requirement "{requirement_id}" because the file "{md_filename}" does not exist'
         )
-    with open(md_filename, "r") as f:
+    with open(md_filename) as f:
         doc = marko.parse(f.read())
     _verify_requirements(doc, requirement_id.package())
     if requirement_id not in _verified_requirements:
@@ -64,13 +63,13 @@ def get_requirement(requirement_id: RequirementID) -> Requirement:
 
 class RequirementSet(ImplicitDict):
     name: str
-    requirement_ids: List[RequirementID]
+    requirement_ids: list[RequirementID]
 
 
 REQUIREMENT_SET_SUFFIX = " requirement set"
 
 
-_requirement_sets: Dict[RequirementSetID, RequirementSet] = {}
+_requirement_sets: dict[RequirementSetID, RequirementSet] = {}
 
 
 def _length_of_section(values, start_of_section: int) -> int:
@@ -95,7 +94,7 @@ def _find_section(values, section_title: str) -> int:
 
 def _parse_requirements(
     parent: marko.element.Element, start_index: int = 0, end_index: int = 0
-) -> List[RequirementID]:
+) -> list[RequirementID]:
     reqs = []
     if hasattr(parent, "children") and not isinstance(parent.children, str):
         if end_index <= start_index:
@@ -121,7 +120,7 @@ def _load_requirement_set(requirement_set_id: RequirementSetID) -> RequirementSe
         raise ValueError(
             f'Could not load requirement set "{requirement_set_id}" because the file "{md_filename}" does not exist'
         )
-    with open(md_filename, "r") as f:
+    with open(md_filename) as f:
         doc = marko.parse(f.read())
 
     # Extract the file-level name from the first top-level header
@@ -169,7 +168,7 @@ def get_requirement_set(requirement_set_id: RequirementSetID) -> RequirementSet:
 
 def resolve_requirements_collection(
     collection: RequirementCollection,
-) -> Set[RequirementID]:
+) -> set[RequirementID]:
     """Compute the set of requirement IDs identified by the specified requirements collection.
 
     Args:
@@ -177,7 +176,7 @@ def resolve_requirements_collection(
 
     Returns: Set of IDs of requirements identified by the specified collection.
     """
-    reqs: Set[RequirementID] = set()
+    reqs: set[RequirementID] = set()
 
     if "requirements" in collection and collection.requirements:
         for req_id in collection.requirements:

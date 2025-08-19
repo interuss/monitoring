@@ -13,7 +13,7 @@ def test_validate(aux_session):
 
 @default_scope(Scope.Read)
 def test_validate_token_good_user(aux_session, subscriber):
-    resp = aux_session.get("/validate_oauth?owner={}".format(subscriber))
+    resp = aux_session.get(f"/validate_oauth?owner={subscriber}")
     assert resp.status_code == 200
 
 

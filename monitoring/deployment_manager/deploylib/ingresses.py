@@ -1,5 +1,3 @@
-from typing import Optional
-
 from kubernetes.client import NetworkingV1Api, V1Ingress, V1Namespace
 from structlog import BoundLogger
 
@@ -11,7 +9,7 @@ def get(
     log: BoundLogger,
     namespace: V1Namespace,
     ingress: V1Ingress,
-) -> Optional[V1Ingress]:
+) -> V1Ingress | None:
     return common_k8s.get_resource(
         lambda: client.list_namespaced_ingress(namespace=namespace.metadata.name),
         log,

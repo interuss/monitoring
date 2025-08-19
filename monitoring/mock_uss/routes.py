@@ -31,8 +31,9 @@ def handle_exception(e):
         return (
             flask.jsonify(
                 {
-                    "message": "Invalid scope; expected one of {%s}, but received only {%s}"
-                    % (" ".join(e.permitted_scopes), " ".join(e.provided_scopes))
+                    "message": "Invalid scope; expected one of {{{}}}, but received only {{{}}}".format(
+                        " ".join(e.permitted_scopes), " ".join(e.provided_scopes)
+                    )
                 }
             ),
             403,

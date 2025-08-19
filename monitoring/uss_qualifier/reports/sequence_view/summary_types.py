@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Union
 
 from implicitdict import ImplicitDict
 
@@ -33,11 +32,11 @@ class EventType(str, Enum):
 
 class Event(ImplicitDict):
     event_index: int = 0
-    passed_check: Optional[PassedCheck] = None
-    failed_check: Optional[FailedCheck] = None
-    query_events: Optional[List[Union[Event, str]]] = None
-    query: Optional[Query] = None
-    note: Optional[NoteEvent] = None
+    passed_check: PassedCheck | None = None
+    failed_check: FailedCheck | None = None
+    query_events: list[Event | str] | None = None
+    query: Query | None = None
+    note: NoteEvent | None = None
 
     @property
     def type(self) -> EventType:
@@ -78,7 +77,7 @@ class Event(ImplicitDict):
 class TestedStep(ImplicitDict):
     name: str
     url: str
-    events: List[Event]
+    events: list[Event]
 
     @property
     def rows(self) -> int:
@@ -88,7 +87,7 @@ class TestedStep(ImplicitDict):
 class TestedCase(ImplicitDict):
     name: str
     url: str
-    steps: List[TestedStep]
+    steps: list[TestedStep]
 
     @property
     def rows(self) -> int:
@@ -101,8 +100,8 @@ class EpochType(str, Enum):
 
 
 class Epoch(ImplicitDict):
-    case: Optional[TestedCase] = None
-    events: Optional[List[Event]] = None
+    case: TestedCase | None = None
+    events: list[Event] | None = None
 
     @property
     def type(self) -> EpochType:
@@ -124,7 +123,7 @@ class Epoch(ImplicitDict):
 
 
 @dataclass
-class TestedParticipant(object):
+class TestedParticipant:
     has_failures: bool = False
     has_infos: bool = False
     has_successes: bool = False
@@ -132,16 +131,16 @@ class TestedParticipant(object):
 
 
 @dataclass
-class TestedScenario(object):
+class TestedScenario:
     type: TestScenarioTypeName
     name: str
     url: str
     scenario_index: int
     duration: str
-    epochs: List[Epoch]
-    participants: Dict[ParticipantID, TestedParticipant]
-    execution_error: Optional[ErrorReport]
-    resource_origins: Dict[ResourceID, str]
+    epochs: list[Epoch]
+    participants: dict[ParticipantID, TestedParticipant]
+    execution_error: ErrorReport | None
+    resource_origins: dict[ResourceID, str]
 
     @property
     def rows(self) -> int:
@@ -149,7 +148,7 @@ class TestedScenario(object):
 
 
 @dataclass
-class SkippedAction(object):
+class SkippedAction:
     reason: str
 
 
@@ -163,9 +162,9 @@ class ActionNodeType(str, Enum):
 class ActionNode(ImplicitDict):
     name: str
     node_type: ActionNodeType
-    children: List[ActionNode]
-    scenario: Optional[TestedScenario] = None
-    skipped_action: Optional[SkippedAction] = None
+    children: list[ActionNode]
+    scenario: TestedScenario | None = None
+    skipped_action: SkippedAction | None = None
 
     @property
     def rows(self) -> int:
@@ -177,21 +176,21 @@ class ActionNode(ImplicitDict):
 
 
 @dataclass
-class Indexer(object):
+class Indexer:
     index: int = 1
 
 
 @dataclass
-class SuiteCell(object):
-    node: Optional[ActionNode]
+class SuiteCell:
+    node: ActionNode | None
     first_row: bool
     rowspan: int = 1
     colspan: int = 1
 
 
 @dataclass
-class OverviewRow(object):
-    suite_cells: List[SuiteCell]
-    scenario_node: Optional[ActionNode] = None
-    skipped_action_node: Optional[ActionNode] = None
+class OverviewRow:
+    suite_cells: list[SuiteCell]
+    scenario_node: ActionNode | None = None
+    skipped_action_node: ActionNode | None = None
     filled: bool = False

@@ -1,13 +1,11 @@
-from typing import Optional
-
 from implicitdict import ImplicitDict
 
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class TestExclusionsSpecification(ImplicitDict):
-    allow_private_addresses: Optional[bool]
-    allow_cleartext_queries: Optional[bool]
+    allow_private_addresses: bool | None
+    allow_cleartext_queries: bool | None
 
 
 class TestExclusionsResource(Resource[TestExclusionsSpecification]):
@@ -20,7 +18,7 @@ class TestExclusionsResource(Resource[TestExclusionsSpecification]):
         specification: TestExclusionsSpecification,
         resource_origin: str,
     ):
-        super(TestExclusionsResource, self).__init__(specification, resource_origin)
+        super().__init__(specification, resource_origin)
         self._spec = specification
 
     @property

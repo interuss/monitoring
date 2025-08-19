@@ -28,9 +28,7 @@ def destroy(context: Context) -> None:
     )
     if namespace is None:
         context.log.warn(
-            "Namespace `{}` does not exist in `{}` cluster".format(
-                context.spec.test.v1.namespace, context.spec.cluster.name
-            )
+            f"Namespace `{context.spec.test.v1.namespace}` does not exist in `{context.spec.cluster.name}` cluster"
         )
         return
 
@@ -41,9 +39,7 @@ def destroy(context: Context) -> None:
     )
 
     context.log.warn(
-        "Destroying hello_world system in `{}` namespace of `{}` cluster in 15 seconds...".format(
-            namespace.metadata.name, context.spec.cluster.name
-        )
+        f"Destroying hello_world system in `{namespace.metadata.name}` namespace of `{context.spec.cluster.name}` cluster in 15 seconds..."
     )
     sleep(15, "destruction of hello_world system may take a few seconds")
 

@@ -1,5 +1,4 @@
 import datetime
-from typing import List, Optional
 
 import s2sphere
 import yaml
@@ -20,25 +19,21 @@ from monitoring.monitorlib.geotemporal import Volume4D
 
 
 class MutatedSubscription(fetch.Query):
-    mutation: Optional[str] = None
+    mutation: str | None = None
 
     @property
     def success(self) -> bool:
         return not self.errors
 
     @property
-    def errors(self) -> List[str]:
+    def errors(self) -> list[str]:
         if self.status_code != 200:
-            return [
-                "Failed to {} SCD Subscription ({})".format(
-                    self.mutation, self.status_code
-                )
-            ]
+            return [f"Failed to {self.mutation} SCD Subscription ({self.status_code})"]
         if self.json_result is None:
             return ["Response did not contain valid JSON"]
 
     @property
-    def subscription(self) -> Optional[Subscription]:
+    def subscription(self) -> Subscription | None:
         if self.json_result is None:
             return None
         try:
@@ -52,7 +47,7 @@ class MutatedSubscription(fetch.Query):
             return None
 
     @property
-    def operational_intent_references(self) -> List[OperationalIntentReference]:
+    def operational_intent_references(self) -> list[OperationalIntentReference]:
         if self.json_result is None:
             return []
         try:
@@ -82,8 +77,8 @@ def upsert_subscription(
     notify_for_constraints: bool,
     min_alt_m: float = 0,
     max_alt_m: float = 3048,
-    version: Optional[str] = None,
-    participant_id: Optional[str] = None,
+    version: str | None = None,
+    participant_id: str | None = None,
 ) -> MutatedSubscription:
     is_creation = version is None
     if is_creation:
@@ -123,7 +118,7 @@ def upsert_subscription(
 
 def build_upsert_subscription_params(
     area_vertices: s2sphere.LatLngRect,
-    start_time: Optional[datetime.datetime],
+    start_time: datetime.datetime | None,
     end_time: datetime.datetime,
     base_url: str,
     notify_for_op_intents: bool,
@@ -149,7 +144,7 @@ def delete_subscription(
     utm_client: infrastructure.UTMClientSession,
     subscription_id: str,
     version: str,
-    participant_id: Optional[str] = None,
+    participant_id: str | None = None,
 ) -> MutatedSubscription:
     op = OPERATIONS[OperationID.DeleteSubscription]
     result = MutatedSubscription(

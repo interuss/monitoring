@@ -1,5 +1,4 @@
 import copy
-from typing import Dict, Optional
 
 from . import rid, scd
 
@@ -14,14 +13,14 @@ def limit_long_arrays(obj, limit: int):
         return obj
     elif isinstance(obj, list):
         if len(obj) > limit:
-            return "<list of {} items>".format(len(obj))
+            return f"<list of {len(obj)} items>"
         else:
             return [limit_long_arrays(item, limit) for item in obj]
     else:
         return obj
 
 
-def isas(fetched: rid.FetchedISAs) -> Dict:
+def isas(fetched: rid.FetchedISAs) -> dict:
     summary = {}
     if fetched.success:
         for isa_id, isa in fetched.isas.items():
@@ -32,14 +31,14 @@ def isas(fetched: rid.FetchedISAs) -> Dict:
                 del isa_summary["id"]
             if "owner" in isa_summary:
                 del isa_summary["owner"]
-            isa_key = "{} ({})".format(isa.id, isa.owner)
+            isa_key = f"{isa.id} ({isa.owner})"
             summary[isa.flights_url][isa_key] = isa_summary
     else:
         summary["error"] = fetched.errors
     return summary
 
 
-def _entity(fetched: scd.FetchedEntities, id: str) -> Dict:
+def _entity(fetched: scd.FetchedEntities, id: str) -> dict:
     entity = fetched.entities_by_id[id]
     if entity.success:
         return {
@@ -55,7 +54,7 @@ def _entity(fetched: scd.FetchedEntities, id: str) -> Dict:
         }
 
 
-def entities(fetched: scd.FetchedEntities, entity_type: Optional[str] = None) -> Dict:
+def entities(fetched: scd.FetchedEntities, entity_type: str | None = None) -> dict:
     if fetched.success:
         if entity_type is not None:
             return {
@@ -76,7 +75,7 @@ def entities(fetched: scd.FetchedEntities, entity_type: Optional[str] = None) ->
         }
 
 
-def flights(fetched: rid.FetchedFlights) -> Dict:
+def flights(fetched: rid.FetchedFlights) -> dict:
     if fetched.success:
         isas_by_url = {}
         owners_by_url = {}
@@ -101,7 +100,7 @@ def flights(fetched: rid.FetchedFlights) -> Dict:
                         flight["details"] = fetched.uss_flight_details_queries[
                             rid_flight.id
                         ].details
-                    summary["{} ({})".format(rid_flight.id, owner)] = flight
+                    summary[f"{rid_flight.id} ({owner})"] = flight
         return summary
     else:
         return {"errors": fetched.errors}

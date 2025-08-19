@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Dict, List, Optional
 
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21 import api as f3548v21
@@ -51,7 +50,7 @@ class FlightPlanStatus(str, Enum):
     """The flight plan was closed successfully by the USS and is now out of the UTM system."""
 
     @staticmethod
-    def from_flightinfo(info: Optional[FlightInfo]) -> FlightPlanStatus:
+    def from_flightinfo(info: FlightInfo | None) -> FlightPlanStatus:
         if info is None:
             return FlightPlanStatus.NotPlanned
         if info.basic_information.uas_state != UasState.Nominal:
@@ -78,7 +77,7 @@ class PlanningActivityResponse(ImplicitDict):
     flight_id: FlightID
     """Identity of flight for which the planning activity was conducted."""
 
-    queries: List[Query]
+    queries: list[Query]
     """Queries used to accomplish this activity."""
 
     activity_result: PlanningActivityResult
@@ -87,10 +86,10 @@ class PlanningActivityResponse(ImplicitDict):
     flight_plan_status: FlightPlanStatus
     """Status of the flight plan following the flight planning activity."""
 
-    notes: Optional[str]
+    notes: str | None
     """Any human-readable notes regarding the activity."""
 
-    includes_advisories: Optional[AdvisoryInclusion] = AdvisoryInclusion.Unknown
+    includes_advisories: AdvisoryInclusion | None = AdvisoryInclusion.Unknown
 
     def to_inject_flight_response(self) -> scd_api.InjectFlightResponse:
         if self.activity_result == PlanningActivityResult.Completed:
@@ -127,19 +126,19 @@ class PlanningActivityResponse(ImplicitDict):
 
 
 class ClearAreaResponse(ImplicitDict):
-    flights_deleted: List[FlightID]
+    flights_deleted: list[FlightID]
     """List of IDs of flights that were deleted during this area clearing operation."""
 
-    flight_deletion_errors: Dict[FlightID, dict]
+    flight_deletion_errors: dict[FlightID, dict]
     """When an error was encountered deleting a particular flight, information about that error."""
 
-    op_intents_removed: List[f3548v21.EntityOVN]
+    op_intents_removed: list[f3548v21.EntityOVN]
     """List of IDs of ASTM F3548-21 operational intent references that were removed during this area clearing operation."""
 
-    op_intent_removal_errors: Dict[f3548v21.EntityOVN, dict]
+    op_intent_removal_errors: dict[f3548v21.EntityOVN, dict]
     """When an error was encountered removing a particular operational intent reference, information about that error."""
 
-    error: Optional[dict] = None
+    error: dict | None = None
     """If an error was encountered that could not be linked to a specific flight or operational intent, information about it will be populated here."""
 
     @property

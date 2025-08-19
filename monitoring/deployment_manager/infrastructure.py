@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Dict, Optional
 
 import kubernetes
 import structlog
@@ -8,17 +8,17 @@ from monitoring.deployment_manager.systems.configuration import DeploymentSpec
 
 
 @dataclass
-class Clients(object):
+class Clients:
     core: kubernetes.client.CoreV1Api
     apps: kubernetes.client.AppsV1Api
     networking: kubernetes.client.NetworkingV1Api
 
 
 @dataclass
-class Context(object):
+class Context:
     spec: DeploymentSpec
     log: structlog.BoundLogger
-    clients: Optional[Clients]
+    clients: Clients | None
 
 
 def make_context(spec: DeploymentSpec):
@@ -31,15 +31,11 @@ def make_context(spec: DeploymentSpec):
         ]
         if not matching_contexts:
             raise ValueError(
-                "Cannot find definition for context `{}` in kube-config file".format(
-                    spec.cluster.name
-                )
+                f"Cannot find definition for context `{spec.cluster.name}` in kube-config file"
             )
         if len(matching_contexts) > 1:
             raise ValueError(
-                "Found multiple context definitions with the name `{}` in kube-config file".format(
-                    spec.cluster.name
-                )
+                f"Found multiple context definitions with the name `{spec.cluster.name}` in kube-config file"
             )
 
         api_client = kubernetes.config.new_client_from_config(
@@ -58,7 +54,7 @@ def make_context(spec: DeploymentSpec):
     return Context(spec=spec, log=log, clients=clients)
 
 
-actions: Dict[str, Callable[[Context], None]] = {}
+actions: dict[str, Callable[[Context], None]] = {}
 
 
 def deployment_action(name: str):

@@ -1,5 +1,3 @@
-from typing import List
-
 import arrow
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
@@ -54,7 +52,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
         return scopes
 
     @property
-    def _expected_flight_intents(self) -> List[ExpectedFlightIntent]:
+    def _expected_flight_intents(self) -> list[ExpectedFlightIntent]:
         return [
             ExpectedFlightIntent(
                 "flight2_planned",

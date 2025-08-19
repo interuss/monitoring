@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import List, Optional, Self
+from typing import Self
 
 import s2sphere
 from implicitdict import ImplicitDict
@@ -19,16 +19,16 @@ class SubscriptionParams(ImplicitDict):
     sub_id: str
     """Uniquely identifies the subscription"""
 
-    area_vertices: List[LatLngPoint]
+    area_vertices: list[LatLngPoint]
     """List of vertices of a polygon defining the area of interest"""
 
-    min_alt_m: Optional[float]
+    min_alt_m: float | None
     """Minimum altitude in meters"""
 
-    max_alt_m: Optional[float]
+    max_alt_m: float | None
     """Maximum altitude in meters"""
 
-    start_time: Optional[datetime.datetime] = None
+    start_time: datetime.datetime | None = None
     """Start time of subscription"""
 
     end_time: datetime.datetime

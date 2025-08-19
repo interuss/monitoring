@@ -5,7 +5,7 @@ import traceback
 import uuid
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Type, TypeVar, Union
+from typing import TypeVar
 from urllib.parse import urlparse
 
 import flask
@@ -24,10 +24,10 @@ from monitoring.monitorlib.rid import RIDVersion
 
 @dataclass
 class Settings:
-    connect_timeout_seconds: Optional[float] = 3.1
+    connect_timeout_seconds: float | None = 3.1
     """Number of seconds to allow for establishing a connection."""
 
-    read_timeout_seconds: Optional[float] = 6.1
+    read_timeout_seconds: float | None = 6.1
     """Number of seconds to allow for a request to complete after establishing a connection."""
 
     attempts: int = 2
@@ -47,20 +47,20 @@ settings = Settings()
 class RequestDescription(ImplicitDict):
     method: str
     url: str
-    headers: Optional[dict]
-    json: Optional[dict] = None
-    body: Optional[str] = None
+    headers: dict | None
+    json: dict | None = None
+    body: str | None = None
 
-    initiated_at: Optional[StringBasedDateTime]
-    received_at: Optional[StringBasedDateTime]
+    initiated_at: StringBasedDateTime | None
+    received_at: StringBasedDateTime | None
 
     def __init__(self, *args, **kwargs):
-        super(RequestDescription, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if "headers" not in self:
             self.headers = {}
 
     @property
-    def token(self) -> Dict:
+    def token(self) -> dict:
         return infrastructure.get_token_claims(self.headers)
 
     @property
@@ -88,7 +88,7 @@ class RequestDescription(ImplicitDict):
         return urlparse(self.url).hostname
 
     @property
-    def content(self) -> Optional[str]:
+    def content(self) -> str | None:
         if self.json is not None:
             return json.dumps(self.json)
         else:
@@ -139,16 +139,16 @@ def describe_request(
 
 
 class ResponseDescription(ImplicitDict):
-    code: Optional[int] = None
-    failure: Optional[str]
-    headers: Optional[dict]
+    code: int | None = None
+    failure: str | None
+    headers: dict | None
     elapsed_s: float
     reported: StringBasedDateTime
-    json: Optional[dict] = None
-    body: Optional[str] = None
+    json: dict | None = None
+    body: str | None = None
 
     def __init__(self, *args, **kwargs):
-        super(ResponseDescription, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if "headers" not in self:
             self.headers = {}
 
@@ -157,7 +157,7 @@ class ResponseDescription(ImplicitDict):
         return self.code or 999
 
     @property
-    def content(self) -> Optional[str]:
+    def content(self) -> str | None:
         if self.json is not None:
             return json.dumps(self.json)
         else:
@@ -183,7 +183,7 @@ def describe_response(resp: requests.Response) -> ResponseDescription:
 
 
 def describe_aiohttp_response(
-    status: int, headers: Dict, resp_json: Dict, duration: datetime.timedelta
+    status: int, headers: dict, resp_json: dict, duration: datetime.timedelta
 ) -> ResponseDescription:
     kwargs = {
         "code": status,
@@ -447,10 +447,10 @@ class Query(ImplicitDict):
     request: RequestDescription
     response: ResponseDescription
 
-    participant_id: Optional[str]
+    participant_id: str | None
     """If specified, identifier of the USS/participant hosting the server involved in this query."""
 
-    query_type: Optional[QueryType]
+    query_type: QueryType | None
     """If specified, the recognized type of this query."""
 
     @property
@@ -464,11 +464,11 @@ class Query(ImplicitDict):
         return self.response.status_code
 
     @property
-    def json_result(self) -> Optional[Dict]:
+    def json_result(self) -> dict | None:
         return self.response.json
 
     @property
-    def error_message(self) -> Optional[str]:
+    def error_message(self) -> str | None:
         return (
             self.json_result["message"]
             if self.json_result is not None and "message" in self.json_result
@@ -476,7 +476,7 @@ class Query(ImplicitDict):
         )
 
     @property
-    def failure_details(self) -> Optional[str]:
+    def failure_details(self) -> str | None:
         """
         Returns the error message if one is available, otherwise returns the response content.
         To be used to fill in the details of a check failure.
@@ -497,7 +497,7 @@ class Query(ImplicitDict):
             )
             return payload["sub"]
 
-    def parse_json_result(self, parse_type: Type[ResponseType]) -> ResponseType:
+    def parse_json_result(self, parse_type: type[ResponseType]) -> ResponseType:
         """Parses the JSON result into the specified type.
 
         Args:
@@ -521,16 +521,16 @@ class QueryError(RuntimeError):
     This error will usually wrap one query that failed and that caused the error,
     and may be accompanied by additional queries for context."""
 
-    queries: List[Query]
+    queries: list[Query]
 
-    def __init__(self, msg: str, queries: Optional[Union[Query, List[Query]]] = None):
+    def __init__(self, msg: str, queries: Query | list[Query] | None = None):
         """
         Args:
             msg: description of the error
             queries: 0, one or multiple queries related to the error. If multiple queries are provided,
             the first one in the list should be the main cause of the error.
         """
-        super(QueryError, self).__init__(msg)
+        super().__init__(msg)
         self.msg = msg
         if queries is None:
             self.queries = []
@@ -548,12 +548,12 @@ class QueryError(RuntimeError):
         return self.queries[0].status_code
 
     @property
-    def query_timestamps(self) -> List[datetime.datetime]:
+    def query_timestamps(self) -> list[datetime.datetime]:
         """Returns the timestamps of all queries present in this QueryError."""
         return [q.request.timestamp for q in self.queries]
 
     @property
-    def cause(self) -> Optional[Query]:
+    def cause(self) -> Query | None:
         """Returns the query that caused this error."""
         if len(self.queries) == 0:
             return None
@@ -572,8 +572,8 @@ yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 def describe_query(
     resp: requests.Response,
     initiated_at: datetime.datetime,
-    query_type: Optional[QueryType] = None,
-    participant_id: Optional[str] = None,
+    query_type: QueryType | None = None,
+    participant_id: str | None = None,
 ) -> Query:
     query = Query(
         request=describe_request(resp.request, initiated_at),
@@ -587,11 +587,11 @@ def describe_query(
 
 
 def query_and_describe(
-    client: Optional[infrastructure.UTMClientSession],
+    client: infrastructure.UTMClientSession | None,
     verb: str,
     url: str,
-    query_type: Optional[QueryType] = None,
-    participant_id: Optional[str] = None,
+    query_type: QueryType | None = None,
+    participant_id: str | None = None,
     expect_failure: bool = False,
     **kwargs,
 ) -> Query:

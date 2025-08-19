@@ -1,5 +1,3 @@
-from typing import List
-
 from monitoring.monitorlib.locality import LocalityCode
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
@@ -17,14 +15,14 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class ConfigureLocality(TestScenario):
-    mock_uss_instances: List[MockUSSClient]
+    mock_uss_instances: list[MockUSSClient]
     locality_code: LocalityCode
-    to_unconfigure: List[MockUSSLocalityConfiguration]
+    to_unconfigure: list[MockUSSLocalityConfiguration]
 
     def __init__(
         self, mock_uss_instances: MockUSSsResource, locality: LocalityResource
     ):
-        super(ConfigureLocality, self).__init__()
+        super().__init__()
         self.mock_uss_instances = mock_uss_instances.mock_uss_instances
         self.locality_code = locality.locality_code
         self.to_unconfigure = []

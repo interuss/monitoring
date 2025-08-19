@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import List
 
 from implicitdict import ImplicitDict
 
@@ -35,7 +34,7 @@ class FlightCheck(ImplicitDict):
     flight_check_id: str
     """Unique (within table) test step/row identifier."""
 
-    requirement_ids: List[str]
+    requirement_ids: list[str]
     """Jurisdictional identifiers of the requirements this test step is evaluating."""
 
     description: str
@@ -55,4 +54,4 @@ class FlightCheck(ImplicitDict):
 
 
 class FlightCheckTable(ImplicitDict):
-    rows: List[FlightCheck]
+    rows: list[FlightCheck]

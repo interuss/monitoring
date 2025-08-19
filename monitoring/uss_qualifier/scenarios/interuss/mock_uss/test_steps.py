@@ -1,5 +1,5 @@
 import re
-from typing import Callable, Iterable, List, Tuple
+from collections.abc import Callable, Iterable
 
 from implicitdict import StringBasedDateTime
 from uas_standards.astm.f3548.v21 import api
@@ -19,7 +19,7 @@ def get_mock_uss_interactions(
     mock_uss: MockUSSClient,
     since: StringBasedDateTime,
     *is_applicable: Callable[[Interaction], bool],
-) -> Tuple[List[Interaction], Query]:
+) -> tuple[list[Interaction], Query]:
     """Retrieves mock_uss interactions given specific criteria.
     Implements test step fragment in `get_mock_uss_interactions.md`."""
 
@@ -41,8 +41,8 @@ def get_mock_uss_interactions(
 
 
 def filter_interactions(
-    interactions: List[Interaction], filters: Iterable[Callable[[Interaction], bool]]
-) -> List[Interaction]:
+    interactions: list[Interaction], filters: Iterable[Callable[[Interaction], bool]]
+) -> list[Interaction]:
     return list(filter(lambda x: all(f(x) for f in filters), interactions))
 
 

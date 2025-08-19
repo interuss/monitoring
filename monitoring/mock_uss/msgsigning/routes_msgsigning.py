@@ -16,7 +16,7 @@ def get_public_key():
         webapp.config.get(config.KEY_CERT_BASE_PATH), db.value.public_key_name
     )
 
-    logger.info("Retrieving public key file from {}".format(public_key_file_location))
+    logger.info(f"Retrieving public key file from {public_key_file_location}")
 
     return flask.send_file(public_key_file_location)
 

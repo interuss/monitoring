@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Union
+from collections.abc import Iterable
 
 from implicitdict import StringBasedDateTime
 
@@ -17,7 +17,7 @@ from monitoring.uss_qualifier.signatures import compute_signature
 
 
 def compute_test_run_information(report: TestRunReport) -> TestRunInformation:
-    def print_datetime(t: Optional[StringBasedDateTime]) -> Optional[str]:
+    def print_datetime(t: StringBasedDateTime | None) -> str | None:
         if t is None:
             return None
         return t.datetime.strftime("%Y-%m-%d %H:%M:%S %Z")
@@ -53,8 +53,8 @@ def compute_overall_status(
 
 def find_participant_system_versions(
     report: TestSuiteActionReport,
-    participant_ids: Union[ParticipantID, Iterable[ParticipantID]],
-) -> List[str]:
+    participant_ids: ParticipantID | Iterable[ParticipantID],
+) -> list[str]:
     if isinstance(participant_ids, ParticipantID):
         participant_ids = [participant_ids]
     test_suite, test_scenario, action_generator = report.get_applicable_report()
@@ -83,7 +83,7 @@ def find_participant_system_versions(
     return result
 
 
-def get_system_version(system_versions: List[str]) -> Optional[str]:
+def get_system_version(system_versions: list[str]) -> str | None:
     if not system_versions:
         return None
     elif len(system_versions) > 1 and any(

@@ -1,5 +1,4 @@
 import errno
-import socket
 from urllib.parse import urlparse
 
 import requests
@@ -86,7 +85,7 @@ class EndpointEncryption(GenericTestScenario):
                 pass
             except requests.exceptions.Timeout:
                 pass
-            except socket.error as e:
+            except OSError as e:
                 if e.errno not in [
                     errno.ECONNREFUSED,
                     errno.ETIMEDOUT,

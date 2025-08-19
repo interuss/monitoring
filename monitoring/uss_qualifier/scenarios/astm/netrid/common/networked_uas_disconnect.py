@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import List
 
 from requests.exceptions import RequestException
 from s2sphere import LatLngRect
@@ -37,8 +36,8 @@ class NetworkedUASDisconnect(GenericTestScenario):
     _service_providers: NetRIDServiceProviders
     _evaluation_configuration: EvaluationConfigurationResource
 
-    _injected_flights: List[InjectedFlight]
-    _injected_tests: List[InjectedTest]
+    _injected_flights: list[InjectedFlight]
+    _injected_tests: list[InjectedTest]
 
     def __init__(
         self,

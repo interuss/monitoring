@@ -1,5 +1,4 @@
 import datetime
-from typing import Dict, List, Optional
 
 import s2sphere
 import yaml
@@ -22,28 +21,22 @@ from monitoring.monitorlib.geotemporal import Volume4D
 class FetchedEntityReferences(fetch.Query):
     """Wrapper to interpret a DSS Entity query as a set of Entity references."""
 
-    entity_type: Optional[str] = None
+    entity_type: str | None = None
 
     @property
     def success(self) -> bool:
         return self.error is None
 
     @property
-    def error(self) -> Optional[str]:
+    def error(self) -> str | None:
         # Handle any errors
         if self.status_code != 200:
-            return "Failed to search {} in DSS ({})".format(
-                self.entity_type, self.status_code
-            )
+            return f"Failed to search {self.entity_type} in DSS ({self.status_code})"
         if self.json_result is None:
-            return "DSS response to search {} was not valid JSON".format(
-                self.entity_type
-            )
+            return f"DSS response to search {self.entity_type} was not valid JSON"
         for entity_ref in self.json_result.get(self.entity_type, []):
             if "id" not in entity_ref:
-                return "DSS response to search {} included entry without id".format(
-                    self.entity_type
-                )
+                return f"DSS response to search {self.entity_type} included entry without id"
             if "manager" not in entity_ref:
                 return "DSS response to search {} included {} without manager".format(
                     self.entity_type, entity_ref["id"]
@@ -57,7 +50,7 @@ class FetchedEntityReferences(fetch.Query):
         return None
 
     @property
-    def references_by_id(self) -> Dict:
+    def references_by_id(self) -> dict:
         if self.json_result is None:
             return {}
         return {e["id"]: e for e in self.json_result.get(self.entity_type, [])}
@@ -101,7 +94,7 @@ def _entity_references(
             polygon=Polygon.from_latlng_rect(latlngrect=area),
         ).to_f3548v21()
     }
-    url = "/dss/v1/{}/query".format(dss_resource_name)
+    url = f"/dss/v1/{dss_resource_name}/query"
     scope = scd.SCOPE_CP if "constraint" in dss_resource_name else scd.SCOPE_SC
     entity_references = FetchedEntityReferences(
         fetch.query_and_describe(
@@ -132,38 +125,38 @@ def operational_intent_references(
 
 
 class FetchedEntity(fetch.Query):
-    id_requested: Optional[str] = None
-    entity_type: Optional[str] = None
+    id_requested: str | None = None
+    entity_type: str | None = None
 
     @property
     def success(self) -> bool:
         return self.error is None
 
     @property
-    def reference(self) -> Optional[Dict]:
+    def reference(self) -> dict | None:
         if self.json_result is None:
             return None
         return self.json_result.get(self.entity_type, {}).get("reference", None)
 
     @property
-    def details(self) -> Optional[Dict]:
+    def details(self) -> dict | None:
         if self.json_result is None:
             return None
         return self.json_result.get(self.entity_type, {}).get("details", None)
 
     @property
-    def error(self) -> Optional[str]:
-        prefix = "USS query for {} {} ".format(self.entity_type, self.id_requested)
+    def error(self) -> str | None:
+        prefix = f"USS query for {self.entity_type} {self.id_requested} "
 
         if self.status_code != 200:
-            msg = prefix + "indicated failure ({})".format(self.status_code)
+            msg = prefix + f"indicated failure ({self.status_code})"
             if "failure" in self.response:
                 msg += ": " + self.response["failure"]
             return msg
         if self.json_result is None:
             return prefix + "did not return valid JSON"
         if self.entity_type not in self.json_result:
-            return prefix + "did not contain {} field".format(self.entity_type)
+            return prefix + f"did not contain {self.entity_type} field"
         if self.reference is None:
             return prefix + "did not contain reference field"
         if self.details is None:
@@ -192,9 +185,7 @@ def _full_entity(
     entity_id: str,
     utm_client: infrastructure.UTMClientSession,
 ) -> FetchedEntity:
-    uss_entity_url = uss_base_url + "/uss/v1/{}s/{}".format(
-        uss_resource_name, entity_id
-    )
+    uss_entity_url = uss_base_url + f"/uss/v1/{uss_resource_name}s/{entity_id}"
 
     # Query the USS for Entity details
     scope = scd.SCOPE_CP if "constraint" in uss_resource_name else scd.SCOPE_SC
@@ -214,33 +205,33 @@ def operational_intent(
 
 class FetchedEntities(ImplicitDict):
     dss_query: FetchedEntityReferences
-    uss_queries: Dict[str, FetchedEntity]
-    cached_uss_queries: Dict[str, FetchedEntity]
+    uss_queries: dict[str, FetchedEntity]
+    cached_uss_queries: dict[str, FetchedEntity]
 
     @property
     def success(self) -> bool:
         return not self.error
 
     @property
-    def error(self) -> Optional[str]:
+    def error(self) -> str | None:
         dss_error = self.dss_query.error
         if dss_error is not None:
             return dss_error
         return None
 
     @property
-    def entities_by_id(self) -> Dict[str, FetchedEntity]:
+    def entities_by_id(self) -> dict[str, FetchedEntity]:
         entities = self.cached_entities_by_id.copy()
         for k, v in self.new_entities_by_id.items():
             entities[k] = v
         return entities
 
     @property
-    def new_entities_by_id(self) -> Dict[str, FetchedEntity]:
+    def new_entities_by_id(self) -> dict[str, FetchedEntity]:
         return self.uss_queries
 
     @property
-    def cached_entities_by_id(self) -> Dict[str, FetchedEntity]:
+    def cached_entities_by_id(self) -> dict[str, FetchedEntity]:
         return self.cached_uss_queries
 
     def has_different_content_than(self, other):
@@ -275,7 +266,7 @@ class CachedEntity(ImplicitDict):
         return self.fetched_entity.success
 
     @property
-    def reference(self) -> Dict:
+    def reference(self) -> dict:
         return self.reference
 
     @property
@@ -292,14 +283,14 @@ def _entities(
     end_time: datetime.datetime,
     alt_min_m: float = 0,
     alt_max_m: float = 3048,
-    entity_cache: Optional[Dict[str, CachedEntity]] = None,
+    entity_cache: dict[str, CachedEntity] | None = None,
 ) -> FetchedEntities:
     fetched_references = _entity_references(
         dss_resource_name, utm_client, area, start_time, end_time, alt_min_m, alt_max_m
     )
 
-    uss_queries: Dict[str, FetchedEntity] = {}
-    cached_queries: Dict[str, FetchedEntity] = {}
+    uss_queries: dict[str, FetchedEntity] = {}
+    cached_queries: dict[str, FetchedEntity] = {}
     if fetched_references.success:
         if entity_cache is None:
             entity_cache = {}
@@ -336,7 +327,7 @@ def operations(
     end_time: datetime.datetime,
     alt_min_m: float = 0,
     alt_max_m: float = 3048,
-    operation_cache: Optional[Dict[str, FetchedEntity]] = None,
+    operation_cache: dict[str, FetchedEntity] | None = None,
 ) -> FetchedEntities:
     return _entities(
         "operational_intent_references",
@@ -358,7 +349,7 @@ def constraints(
     end_time: datetime.datetime,
     alt_min_m: float = 0,
     alt_max_m: float = 3048,
-    constraint_cache: Optional[Dict[str, FetchedEntity]] = None,
+    constraint_cache: dict[str, FetchedEntity] | None = None,
 ) -> FetchedEntities:
     return _entities(
         "constraint_references",
@@ -388,11 +379,11 @@ class FetchedSubscription(fetch.Query):
         return self.status_code == 404
 
     @property
-    def errors(self) -> List[str]:
+    def errors(self) -> list[str]:
         if self.status_code == 404:
             return ["Subscription not found"]
         if self.status_code != 200:
-            return ["Request to get Subscription failed ({})".format(self.status_code)]
+            return [f"Request to get Subscription failed ({self.status_code})"]
         if self.json_result is None:
             return ["Request to get Subscription did not return valid JSON"]
         if self.subscription is None:
@@ -400,7 +391,7 @@ class FetchedSubscription(fetch.Query):
         return []
 
     @property
-    def subscription(self) -> Optional[Subscription]:
+    def subscription(self) -> Subscription | None:
         try:
             # We get a ValueError if .parse is fed a None,
             # or if the JSON can't be parsed as a Subscription.
@@ -420,11 +411,11 @@ class FetchedSubscriptions(fetch.Query):
         return not self.errors
 
     @property
-    def errors(self) -> List[str]:
+    def errors(self) -> list[str]:
         if self.status_code == 404:
             return []
         if self.status_code != 200:
-            return ["Request to get Subscriptions failed ({})".format(self.status_code)]
+            return [f"Request to get Subscriptions failed ({self.status_code})"]
         if self.json_result is None:
             return ["Request to get Subscriptions did not return valid JSON"]
         try:
@@ -435,14 +426,14 @@ class FetchedSubscriptions(fetch.Query):
         return []
 
     @property
-    def _subscriptions(self) -> List[Subscription]:
+    def _subscriptions(self) -> list[Subscription]:
         return [
             ImplicitDict.parse(sub, Subscription)
             for sub in self.json_result.get("subscriptions", [])
         ]
 
     @property
-    def subscriptions(self) -> Dict[str, Subscription]:
+    def subscriptions(self) -> dict[str, Subscription]:
         if not self.success or self.status_code == 404:
             return {}
         else:
@@ -455,7 +446,7 @@ yaml.add_representer(FetchedSubscriptions, Representer.represent_dict)
 def get_subscription(
     utm_client: infrastructure.UTMClientSession,
     subscription_id: str,
-    participant_id: Optional[str] = None,
+    participant_id: str | None = None,
 ) -> FetchedSubscription:
     op = OPERATIONS[OperationID.GetSubscription]
     return FetchedSubscription(
@@ -473,7 +464,7 @@ def get_subscription(
 def query_subscriptions(
     utm_client: infrastructure.UTMClientSession,
     volume: SCDVolume4D,
-    participant_id: Optional[str] = None,
+    participant_id: str | None = None,
 ) -> FetchedSubscriptions:
     op = OPERATIONS[OperationID.QuerySubscriptions]
     return FetchedSubscriptions(

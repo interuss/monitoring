@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 import arrow
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -44,10 +42,10 @@ class OpIntentReferenceAccessControl(TestScenario):
 
     # The DSS under test
     _dss: DSSInstance
-    _pid: List[str]
+    _pid: list[str]
 
     # Participant IDs of users using this DSS instance
-    _uids: List[str]
+    _uids: list[str]
 
     # The same DSS, available via a separate auth adapter
     _dss_separate_creds: DSSInstance
@@ -152,7 +150,7 @@ class OpIntentReferenceAccessControl(TestScenario):
 
         self.end_test_scenario()
 
-    def _get_extents(self, times: Dict[TimeDuringTest, Time]) -> Volume4D:
+    def _get_extents(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
         extents = Volume4DCollection()
         for info in (self._flight_1.resolve(times), self._flight_2.resolve(times)):
             extents.extend(info.basic_information.area)
@@ -232,7 +230,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                     )
 
     def _attempt_to_delete_remaining_op_intents(
-        self, times: Dict[TimeDuringTest, Time]
+        self, times: dict[TimeDuringTest, Time]
     ):
         """Search for op intents and attempt to delete them using the main credentials"""
 
@@ -317,7 +315,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                             query_timestamps=[dq.request.timestamp],
                         )
 
-    def _ensure_clean_workspace(self, times: Dict[TimeDuringTest, Time]) -> bool:
+    def _ensure_clean_workspace(self, times: dict[TimeDuringTest, Time]) -> bool:
         """
         Tries to provide a clean workspace. If it fails to do so and the underlying check
         has a severity below HIGH, this function will return false.
@@ -367,7 +365,7 @@ class OpIntentReferenceAccessControl(TestScenario):
 
         return True
 
-    def _create_op_intents(self, times: Dict[TimeDuringTest, Time]):
+    def _create_op_intents(self, times: dict[TimeDuringTest, Time]):
         flight_1 = self._flight_1.resolve(times)
         with self.check(
             "Can create an operational intent with valid credentials", self._pid
@@ -434,7 +432,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 )
 
     def _check_mutation_on_non_owned_intent_fails(
-        self, times: Dict[TimeDuringTest, Time]
+        self, times: dict[TimeDuringTest, Time]
     ):
         flight_1 = self._flight_1.resolve(times)
         with self.check(

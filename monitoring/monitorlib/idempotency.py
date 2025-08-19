@@ -1,8 +1,8 @@
 import base64
 import hashlib
 import json
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, Dict, Optional
 
 import arrow
 import flask
@@ -21,17 +21,17 @@ class Response(ImplicitDict):
     Note that this object is never actually used (in order to maximize performance); instead it serves as documentation
     of the structure of the fields within a plain JSON dict/object."""
 
-    json: Optional[dict]
-    body: Optional[str]
+    json: dict | None
+    body: str | None
     code: int
     timestamp: StringBasedDateTime
 
 
-def _get_responses(raw: bytes) -> Dict[str, Response]:
+def _get_responses(raw: bytes) -> dict[str, Response]:
     return json.loads(raw.decode("utf-8"))
 
 
-def _set_responses(responses: Dict[str, Response]) -> bytes:
+def _set_responses(responses: dict[str, Response]) -> bytes:
     while True:
         s = json.dumps(responses)
         if len(s) <= _max_request_buffer_size:
@@ -58,7 +58,7 @@ _fulfilled_requests = SynchronizedValue(
 )
 
 
-def get_hashed_request_id() -> Optional[str]:
+def get_hashed_request_id() -> str | None:
     """Retrieves an identifier for the request by hashing key characteristics of the request."""
     characteristics = flask.request.method + flask.request.url
     if flask.request.json:
@@ -70,7 +70,7 @@ def get_hashed_request_id() -> Optional[str]:
     ).decode("utf-8")
 
 
-def idempotent_request(get_request_id: Optional[Callable[[], Optional[str]]] = None):
+def idempotent_request(get_request_id: Callable[[], str | None] | None = None):
     """Decorator for idempotent Flask view handlers.
 
     When subsequent requests are received with the same request identifier, this decorator will use a recent cached

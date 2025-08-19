@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-from typing import List, Tuple
 
 import arrow
 from implicitdict import ImplicitDict
@@ -36,13 +35,13 @@ def inject_flights(
     test_scenario: TestScenario,
     flights_data_res: FlightDataResource,
     service_providers_res: NetRIDServiceProviders,
-) -> Tuple[List[InjectedFlight], List[InjectedTest]]:
+) -> tuple[list[InjectedFlight], list[InjectedTest]]:
     test_id = str(uuid.uuid4())
     test_flights = flights_data_res.get_test_flights()
     service_providers = service_providers_res.service_providers
 
-    injected_flights: List[InjectedFlight] = []
-    injected_tests: List[InjectedTest] = []
+    injected_flights: list[InjectedFlight] = []
+    injected_tests: list[InjectedTest] = []
 
     if len(service_providers) > len(test_flights):
         raise ValueError(
@@ -134,7 +133,7 @@ def inject_flights(
     return injected_flights, injected_tests
 
 
-def injected_flights_errors(injected_flights: List[InjectedFlight]) -> List[str]:
+def injected_flights_errors(injected_flights: list[InjectedFlight]) -> list[str]:
     """Determine whether each telemetry in each injected flight can be easily distinguished from each other.
 
     Args:
@@ -142,7 +141,7 @@ def injected_flights_errors(injected_flights: List[InjectedFlight]) -> List[str]
 
     Returns: List of error messages, or an empty list if no errors.
     """
-    errors: List[str] = []
+    errors: list[str] = []
     for f1, injected_flight in enumerate(injected_flights):
         for t1, injected_telemetry in enumerate(injected_flight.flight.telemetry):
             for t2, other_telemetry in enumerate(
@@ -170,7 +169,7 @@ def get_user_notifications(
     service_providers_res: NetRIDServiceProviders,
     after: datetime,
     before: datetime,
-) -> dict[str, List[str]]:
+) -> dict[str, list[str]]:
     service_providers = service_providers_res.service_providers
 
     notifications = {}

@@ -1,6 +1,6 @@
 import hashlib
 import json
-from typing import Any, Union
+from typing import Any
 
 
 def compute_baseline_signature(
@@ -42,12 +42,12 @@ def _with_integer_zeros(obj: Any) -> Any:
     elif isinstance(obj, list):
         return [_with_integer_zeros(v) for v in obj]
     elif isinstance(obj, float) and obj == 0:
-        return int(0)
+        return 0
     else:
         return obj
 
 
-def compute_signature(obj: Union[dict, list, str]) -> str:
+def compute_signature(obj: dict | list | str) -> str:
     """Compute a hash/signature of the content of the dict object."""
     if isinstance(obj, str):
         sig = hashlib.sha256()

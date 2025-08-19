@@ -1,6 +1,5 @@
 from datetime import datetime
 from enum import Enum
-from typing import List
 
 import yaml
 from implicitdict import ImplicitDict
@@ -47,4 +46,4 @@ yaml.add_representer(Interaction, Representer.represent_dict)
 
 
 class ListLogsResponse(ImplicitDict):
-    interactions: List[Interaction]
+    interactions: list[Interaction]

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import (
@@ -42,8 +41,8 @@ class OIRValidator:
     Scenario in which this validator is being used. Will be used to register checks.
     """
 
-    _oir_params: Optional[PutOperationalIntentReferenceParameters]
-    _pid: List[str]
+    _oir_params: PutOperationalIntentReferenceParameters | None
+    _pid: list[str]
     """Participant ID(s) to use for the checks"""
 
     def __init__(
@@ -51,8 +50,8 @@ class OIRValidator:
         main_check: PendingCheck,
         scenario: TestScenario,
         expected_manager: str,
-        participant_id: List[str],
-        oir_params: Optional[PutOperationalIntentReferenceParameters],
+        participant_id: list[str],
+        oir_params: PutOperationalIntentReferenceParameters | None,
     ):
         self._main_check = main_check
         self._scenario = scenario
@@ -92,10 +91,10 @@ class OIRValidator:
         expected_entity_id: EntityID,
         dss_oir: OperationalIntentReference,
         t_dss: datetime,
-        previous_version: Optional[int],
-        expected_version: Optional[int],
-        previous_ovn: Optional[str],
-        expected_ovn: Optional[str],
+        previous_version: int | None,
+        expected_version: int | None,
+        previous_ovn: str | None,
+        expected_ovn: str | None,
     ) -> None:
         """
         Args:

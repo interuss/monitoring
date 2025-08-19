@@ -1,6 +1,6 @@
 import re
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Any
 
 import s2sphere
 
@@ -30,19 +30,19 @@ class SubscriptionSimple(GenericTestScenario):
     # The value for 'owner' we'll expect the DSS to set on subscriptions
     _client_identity: ClientIdentityResource
 
-    _test_subscription_ids: List[str]
+    _test_subscription_ids: list[str]
 
     # Base parameters used for subscription creation variations
-    _default_creation_params: Dict[str, Any]
+    _default_creation_params: dict[str, Any]
 
     # Effective parameters used for each subscription, indexed by subscription ID
-    _sub_params_by_sub_id: Dict[str, Dict[str, Any]]
+    _sub_params_by_sub_id: dict[str, dict[str, Any]]
 
     # Keep track of the latest subscription returned by the DSS
-    _current_subscriptions: Dict[str, Subscription]
+    _current_subscriptions: dict[str, Subscription]
 
     # An area designed to be too big to be allowed to search by the DSS
-    _problematically_big_area: List[s2sphere.LatLng]
+    _problematically_big_area: list[s2sphere.LatLng]
 
     def __init__(
         self,
@@ -215,7 +215,7 @@ class SubscriptionSimple(GenericTestScenario):
         all_set_params["sub_id"] = self._test_subscription_ids[3]
         self._create_sub_with_params(all_set_params)
 
-    def _create_sub_with_params(self, creation_params: Dict[str, Any]):
+    def _create_sub_with_params(self, creation_params: dict[str, Any]):
         with self.check(
             "Create subscription", [self._dss_wrapper.participant_id]
         ) as check:
@@ -254,7 +254,7 @@ class SubscriptionSimple(GenericTestScenario):
         self,
         sub_id: str,
         creation_resp_under_test: ChangedSubscription,
-        creation_params: Dict[str, Any],
+        creation_params: dict[str, Any],
         was_mutated: bool,
     ):
         """
@@ -517,9 +517,9 @@ class SubscriptionSimple(GenericTestScenario):
         self,
         sub_id: str,
         sub_under_test: Subscription,
-        creation_params: Dict[str, Any],
+        creation_params: dict[str, Any],
         was_mutated: bool,
-        query_timestamps: List[datetime],
+        query_timestamps: list[datetime],
     ):
         """Compare the passed subscription with the data we specified when creating it"""
         self._validate_subscription(
@@ -548,9 +548,9 @@ class SubscriptionSimple(GenericTestScenario):
         self,
         sub_id: str,
         sub_under_test: Subscription,
-        creation_params: Dict[str, Any],
+        creation_params: dict[str, Any],
         was_mutated: bool,
-        query_timestamps: List[datetime],
+        query_timestamps: list[datetime],
     ):
         """
         Validate the subscription against the parameters used to create it.

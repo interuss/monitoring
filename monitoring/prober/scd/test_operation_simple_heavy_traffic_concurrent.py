@@ -34,8 +34,7 @@ from monitoring.prober.scd import actions
 BASE_URL = make_fake_url()
 # TODO(#742): Increase number of concurrent operations from 20 to 100
 OP_TYPES = [
-    register_resource_type(110 + i, "Operational intent {}".format(i))
-    for i in range(20)
+    register_resource_type(110 + i, f"Operational intent {i}") for i in range(20)
 ]
 GROUP_SIZE = len(OP_TYPES) // 3 + (1 if len(OP_TYPES) % 3 > 0 else 0)
 # Semaphore is added to limit the number of simultaneous requests,
@@ -150,15 +149,13 @@ async def _put_operation_async(
     async with SEMAPHORE:
         if scd_api == scd.API_0_3_17:
             if create_new:
-                req_url = "/operational_intent_references/{}".format(op_id)
+                req_url = f"/operational_intent_references/{op_id}"
                 result = await scd_session_async.put(req_url, data=req), req_url, req
             else:
-                req_url = "/operational_intent_references/{}/{}".format(
-                    op_id, ovn_map[op_id]
-                )
+                req_url = f"/operational_intent_references/{op_id}/{ovn_map[op_id]}"
                 result = await scd_session_async.put(req_url, data=req), req_url, req
         else:
-            raise ValueError("Unsupported SCD API version: {}".format(scd_api))
+            raise ValueError(f"Unsupported SCD API version: {scd_api}")
     return result
 
 
@@ -166,10 +163,10 @@ async def _get_operation_async(op_id, scd_session_async, scd_api):
     async with SEMAPHORE:
         if scd_api == scd.API_0_3_17:
             result = await scd_session_async.get(
-                "/operational_intent_references/{}".format(op_id), scope=SCOPE_SC
+                f"/operational_intent_references/{op_id}", scope=SCOPE_SC
             )
         else:
-            raise ValueError("Unsupported SCD API version: {}".format(scd_api))
+            raise ValueError(f"Unsupported SCD API version: {scd_api}")
     return result
 
 
@@ -186,20 +183,20 @@ async def _query_operation_async(idx, scd_session_async, scd_api):
                 "/operational_intent_references/query", json=req_json, scope=SCOPE_SC
             )
         else:
-            raise ValueError("Unsupported SCD API version: {}".format(scd_api))
+            raise ValueError(f"Unsupported SCD API version: {scd_api}")
     return result
 
 
 def _build_mutate_request(idx, op_id, op_map, scd_session, scd_api):
     # GET current op
     if scd_api == scd.API_0_3_17:
-        resp = scd_session.get("/operational_intent_references/{}".format(op_id))
+        resp = scd_session.get(f"/operational_intent_references/{op_id}")
         assert resp.status_code == 200, resp.content
         existing_op = resp.json().get("operational_intent_reference", None)
         assert existing_op is not None
         op_map[op_id] = existing_op
     else:
-        raise ValueError("Unsupported SCD API version: {}".format(scd_api))
+        raise ValueError(f"Unsupported SCD API version: {scd_api}")
 
     # mutate requests should be constructed at a good time gap from the create requests.
     additional_time_gap = idx * 10
@@ -218,11 +215,11 @@ def _build_mutate_request(idx, op_id, op_map, scd_session, scd_api):
 async def _delete_operation_async(op_id, scd_session_async, scd_api):
     if scd_api == scd.API_0_3_17:
         result = await scd_session_async.delete(
-            "/operational_intent_references/{}/{}".format(op_id, ovn_map[op_id]),
+            f"/operational_intent_references/{op_id}/{ovn_map[op_id]}",
             scope=SCOPE_SC,
         )
     else:
-        raise ValueError("Unsupported SCD API version: {}".format(scd_api))
+        raise ValueError(f"Unsupported SCD API version: {scd_api}")
     return result
 
 
@@ -441,11 +438,9 @@ def test_mutate_ops_concurrent(ids, scd_api, scd_session, scd_session_async):
         op_id for op_id, resp in op_resp_map.items() if resp["status_code"] != 200
     ]
     if ops_with_bad_status:
-        msg = "{} operational intents failed to mutate:\n".format(
-            len(ops_with_bad_status)
-        )
+        msg = f"{len(ops_with_bad_status)} operational intents failed to mutate:\n"
         msg += "\n".join(
-            "{}: {}".format(op_id, op_resp_map[op_id]) for op_id in ops_with_bad_status
+            f"{op_id}: {op_resp_map[op_id]}" for op_id in ops_with_bad_status
         )
         assert False, msg
 
