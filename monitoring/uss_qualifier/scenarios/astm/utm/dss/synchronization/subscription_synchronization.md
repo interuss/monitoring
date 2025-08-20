@@ -58,6 +58,12 @@ this will be verified at runtime, and the depending checks will not be run if th
 This includes the main test subscription used in this test, as well as the extra subscription
 used for testing the `manager` field sync, if the test is configured to test for it.
 
+### Verify secondary DSS instances are clean test step
+
+This test step queries all secondary instances to confirm that none of the test IDs that are used in the scenario exist.
+
+#### [Verify secondary DSS contains no Subscriptions with a test ID](../fragments/sub/verify_clean_secondary_workspace.md)
+
 ## Subscription Synchronization test case
 
 This test case create a subscription on the main DSS, and verifies that it is properly synchronized to the other DSS instances.
