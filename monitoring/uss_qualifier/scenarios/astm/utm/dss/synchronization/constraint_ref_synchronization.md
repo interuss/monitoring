@@ -29,9 +29,9 @@ are properly propagated to every other DSS instance participating in the deploym
 
 ## Setup test case
 
-### Ensure clean workspace test step
+### [Ensure clean workspace test step](../clean_workspace_constraints.md)
 
-#### [Clean any existing constraint references with known test IDs](../clean_workspace_constraints.md)
+### [Verify secondary DSS instances are clean test step](../fragments/cr/verify_clean_secondary_workspace.md)
 
 ## CR synchronization test case
 
