@@ -119,6 +119,22 @@ def cleanup_sub(
     return True
 
 
+def verify_subscription_does_not_exist(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    sub_id: EntityID,
+):
+    sub_found = cleanup_sub(scenario, dss, sub_id, delete_if_exists=False)
+    with scenario.check(
+        "Subscription with test ID does not exist", dss.participant_id
+    ) as check:
+        if sub_found:
+            check.record_failed(
+                summary=f"Subscription {sub_id} was still found on DSS {dss.participant_id}",
+                details=f"Expected subscription {sub_id} to not be found on secondary DSS because it was not present on, or has been removed, from the primary DSS, but it was returned.",
+            )
+
+
 def cleanup_active_subs(
     scenario: TestScenarioType, dss: DSSInstance, volume: Volume4D
 ) -> None:
@@ -239,6 +255,21 @@ def cleanup_op_intent(
         remove_op_intent(scenario, dss, oi_id, oir.ovn)
 
     return True
+
+
+def verify_op_intent_does_not_exist(
+    scenario: TestScenarioType, dss: DSSInstance, oi_id: EntityID
+):
+    oir_found = cleanup_op_intent(scenario, dss, oi_id, delete_if_exists=False)
+    with scenario.check(
+        "Operational intent reference with test ID does not exist",
+        dss.participant_id,
+    ) as check:
+        if oir_found:
+            check.record_failed(
+                summary=f"Operational intent reference {oi_id} was still found on DSS {dss.participant_id}",
+                details=f"Expected operational intent reference {oi_id} to not be found on secondary DSS because it was not present on, or has been removed, from the primary DSS, but it was returned.",
+            )
 
 
 def cleanup_constraint_ref(
