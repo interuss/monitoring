@@ -1,5 +1,3 @@
-from typing import TypeVar
-
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
     Volume4D,
@@ -8,7 +6,10 @@ from uas_standards.astm.f3548.v21.api import (
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
+from monitoring.uss_qualifier.scenarios.scenario import (
+    ScenarioDidNotStopError,
+    TestScenarioType,
+)
 
 
 def remove_op_intent(
@@ -87,14 +88,23 @@ def cleanup_sub(
                 details=f"When attempting to query subscription {sub_id} from the DSS, received {existing_sub.status_code}: {existing_sub.error_message}",
                 query_timestamps=[existing_sub.request.timestamp],
             )
+            raise ScenarioDidNotStopError(check)
+        if existing_sub.status_code != 200:
+            return False
+        sub_to_delete = existing_sub.subscription
+        if sub_to_delete is None:
+            check.record_failed(
+                summary=f"Subscription {sub_id} is not defined in the response",
+                details=f"When attempting to query subscription {sub_id} from the DSS, the response did not include a valid subscription object: {existing_sub.errors}",
+                query_timestamps=[existing_sub.request.timestamp],
+            )
+            raise ScenarioDidNotStopError(check)
 
     if existing_sub.status_code != 200:
         return False
 
     if delete_if_exists:
-        deleted_sub = dss.delete_subscription(
-            sub_id, existing_sub.subscription_unsafe.version
-        )
+        deleted_sub = dss.delete_subscription(sub_id, sub_to_delete.version)
         scenario.record_query(deleted_sub)
         with scenario.check(
             "Subscription can be deleted", [dss.participant_id]
@@ -217,9 +227,16 @@ def cleanup_op_intent(
                     query_timestamps=e.query_timestamps,
                 )
             return False
+        if oir.ovn is None:
+            check.record_failed(
+                summary=f"OIR {oi_id} is missing OVN",
+                details="The OIR retrieved from the DSS did not include an OVN, despite the OIR being owned by uss_qualifier. The scenario cannot proceed.",
+                query_timestamps=[q.request.timestamp],
+            )
+            return False
 
     if delete_if_exists:
-        remove_op_intent(scenario, dss, oi_id, require(oir.ovn))
+        remove_op_intent(scenario, dss, oi_id, oir.ovn)
 
     return True
 
@@ -253,13 +270,3 @@ def cleanup_constraint_ref(
                 return
 
     remove_constraint_ref(scenario, dss, cr_id, cr.ovn)
-
-
-# TODO move these elsewhere if/when satisfied with the approach
-T = TypeVar("T")
-
-
-def require[T](x: T | None, msg: str = "") -> T:
-    if x is None:
-        raise AssertionError(msg)
-    return x
