@@ -178,11 +178,12 @@ class OIRSynchronization(TestScenario):
     def _setup_case(self):
         self.begin_test_case("Setup")
         self.begin_test_step("Ensure clean workspace")
-        self._ensure_clean_workspace_step()
+        self._ensure_clean_primary_workspace_step()
         self.end_test_step()
+        self._verify_clean_secondaries_step()
         self.end_test_case()
 
-    def _ensure_clean_workspace_step(self):
+    def _ensure_clean_primary_workspace_step(self):
         # Delete any active OIR we might own
         test_step_fragments.cleanup_active_oirs(
             self,
@@ -193,6 +194,13 @@ class OIRSynchronization(TestScenario):
 
         # Make sure the OIR ID we are going to use is available
         test_step_fragments.cleanup_op_intent(self, self._dss, self._oir_id)
+
+    def _verify_clean_secondaries_step(self):
+        self.begin_test_step("Verify secondary DSS instances are clean")
+        for dss in self._dss_read_instances:
+            test_step_fragments.verify_op_intent_does_not_exist(self, dss, self._oir_id)
+
+        self.end_test_step()
 
     def _create_oir_with_params(
         self, creation_params: PutOperationalIntentReferenceParameters
@@ -578,5 +586,5 @@ class OIRSynchronization(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        self._ensure_clean_workspace_step()
+        self._ensure_clean_primary_workspace_step()
         self.end_cleanup()

@@ -1,8 +1,12 @@
-from uas_standards.astm.f3548.v21.api import EntityID, Volume4D
+from typing import TypeVar
+
+from uas_standards.astm.f3548.v21.api import (
+    EntityID,
+    Volume4D,
+)
 
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.mutate.scd import MutatedSubscription
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
@@ -62,11 +66,15 @@ def remove_constraint_ref(
 
 
 def cleanup_sub(
-    scenario: TestScenarioType, dss: DSSInstance, sub_id: EntityID
-) -> MutatedSubscription | None:
-    """Cleanup a subscription at the DSS. Does not fail if it is not found.
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    sub_id: EntityID,
+    delete_if_exists: bool = True,
+) -> bool:
+    """Determines if the subscription identified by sub_id exists at the passed DSS, and
+    removes it if it was found and delete_if_exists is True (the default).
 
-    :return: the DSS response if the subscription exists
+    :return: True if the subscription was found to exist, False if no subscription was found.
     """
     existing_sub = dss.get_subscription(sub_id)
     scenario.record_query(existing_sub)
@@ -81,19 +89,40 @@ def cleanup_sub(
             )
 
     if existing_sub.status_code != 200:
-        return None
+        return False
 
-    deleted_sub = dss.delete_subscription(sub_id, existing_sub.subscription.version)
-    scenario.record_query(deleted_sub)
-    with scenario.check("Subscription can be deleted", [dss.participant_id]) as check:
-        if deleted_sub.status_code != 200:
+    if delete_if_exists:
+        deleted_sub = dss.delete_subscription(
+            sub_id, existing_sub.subscription_unsafe.version
+        )
+        scenario.record_query(deleted_sub)
+        with scenario.check(
+            "Subscription can be deleted", [dss.participant_id]
+        ) as check:
+            if deleted_sub.status_code != 200:
+                check.record_failed(
+                    summary=f"Could not delete subscription {sub_id}",
+                    details=f"When attempting to delete subscription {sub_id} from the DSS, received {deleted_sub.status_code} with body {deleted_sub.error_message}",
+                    query_timestamps=[deleted_sub.request.timestamp],
+                )
+
+    return True
+
+
+def verify_subscription_does_not_exist(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    sub_id: EntityID,
+):
+    sub_found = cleanup_sub(scenario, dss, sub_id, delete_if_exists=False)
+    with scenario.check(
+        "Subscription with test ID does not exist", dss.participant_id
+    ) as check:
+        if sub_found:
             check.record_failed(
-                summary=f"Could not delete subscription {sub_id}",
-                details=f"When attempting to delete subscription {sub_id} from the DSS, received {deleted_sub.status_code} with body {deleted_sub.error_message}",
-                query_timestamps=[deleted_sub.request.timestamp],
+                summary=f"Subscription {sub_id} was still found on DSS {dss.participant_id}",
+                details=f"Expected subscription {sub_id} to not be found on secondary DSS because it was not present on, or has been removed, from the primary DSS, but it was returned.",
             )
-
-    return deleted_sub
 
 
 def cleanup_active_subs(
@@ -179,10 +208,16 @@ def cleanup_active_oirs(
 
 
 def cleanup_op_intent(
-    scenario: TestScenarioType, dss: DSSInstance, oi_id: EntityID
-) -> None:
-    """Remove the specified operational intent reference from the DSS, if it exists."""
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    oi_id: EntityID,
+    delete_if_exists: bool = True,
+) -> bool:
+    """Determines if the operational intent reference identified by oi_id exists at the passed DSS, and
+    removes it if it was found and delete_if_exists is True (the default).
 
+    :return: True if the OIR was found to exist, False if no OIR was found.
+    """
     with scenario.check(
         "Operational intent references can be queried by ID", [dss.participant_id]
     ) as check:
@@ -197,21 +232,43 @@ def cleanup_op_intent(
                     details=e.msg,
                     query_timestamps=e.query_timestamps,
                 )
-            else:
-                return
+            return False
 
-    remove_op_intent(scenario, dss, oi_id, oir.ovn)
+    if delete_if_exists:
+        remove_op_intent(scenario, dss, oi_id, require(oir.ovn))
+
+    return True
+
+
+def verify_op_intent_does_not_exist(
+    scenario: TestScenarioType, dss: DSSInstance, oi_id: EntityID
+):
+    oir_found = cleanup_op_intent(scenario, dss, oi_id, delete_if_exists=False)
+    with scenario.check(
+        "Operational intent reference with test ID does not exist",
+        dss.participant_id,
+    ) as check:
+        if oir_found:
+            check.record_failed(
+                summary=f"Operational intent reference {oi_id} was still found on DSS {dss.participant_id}",
+                details=f"Expected operational intent reference {oi_id} to not be found on secondary DSS because it was not present on, or has been removed, from the primary DSS, but it was returned.",
+            )
 
 
 def cleanup_constraint_ref(
-    scenario: TestScenarioType, dss: DSSInstance, cr_id: EntityID
-) -> None:
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    cr_id: EntityID,
+    delete_if_exists: bool = False,
+) -> bool:
     """
     Remove the specified constraint reference from the DSS, if it exists.
 
     This function implements some of the test step fragment described in clean_workspace.md:
         - Constraint references can be queried by ID
         - Constraint reference removed
+
+    :return: True if the constraint reference was found to exist, False if no constraint reference was found.
     """
 
     with scenario.check(
@@ -228,7 +285,34 @@ def cleanup_constraint_ref(
                     details=e.msg,
                     query_timestamps=e.query_timestamps,
                 )
-            else:
-                return
+            return False
 
-    remove_constraint_ref(scenario, dss, cr_id, cr.ovn)
+    if delete_if_exists:
+        remove_constraint_ref(scenario, dss, cr_id, require(cr.ovn))
+
+    return True
+
+
+def verify_constraint_does_not_exist(
+    scenario: TestScenarioType, dss: DSSInstance, cr_id: EntityID
+):
+    cr_found = cleanup_constraint_ref(scenario, dss, cr_id, delete_if_exists=False)
+    with scenario.check(
+        "constraint reference with test ID does not exist",
+        dss.participant_id,
+    ) as check:
+        if cr_found:
+            check.record_failed(
+                summary=f"Constraint intent reference {cr_id} was still found on DSS {dss.participant_id}",
+                details=f"Expected constraint reference {cr_id} to not be found on secondary DSS because it was not present on, or has been removed, from the primary DSS, but it was returned.",
+            )
+
+
+# TODO move these elsewhere if/when satisfied with the approach
+T = TypeVar("T")
+
+
+def require[T](x: T | None, msg: str = "") -> T:
+    if x is None:
+        raise AssertionError(msg)
+    return x
