@@ -646,68 +646,83 @@ class OpIntentValidationFailure(ImplicitDict):
             )
 
 
-def set_uss_available(
+def get_uss_availability(
     scenario: TestScenarioType,
     dss: DSSInstance,
     uss_sub: str,
-) -> str:
-    """Set the USS availability to 'Available'.
-
-    This function implements the test step fragment described in set_uss_available.md.
-
-    Returns:
-        The new version of the USS availability.
-    """
+    scope: Scope = Scope.StrategicCoordination,
+) -> tuple[UssAvailabilityState, str]:
+    availability = UssAvailabilityState.Unknown
+    version = ""
     with scenario.check(
-        "USS availability successfully set to 'Available'", [dss.participant_id]
+        "USS Availability can be requested", dss.participant_id
     ) as check:
         try:
-            availability_version, avail_query = dss.set_uss_availability(
+            avail_response, avail_query = dss.get_uss_availability(uss_sub, scope)
+            scenario.record_query(avail_query)
+
+            availability = avail_response.status.availability
+            version = avail_response.version
+        except QueryError as e:
+            scenario.record_queries(e.queries)
+            avail_query = e.queries[0]
+            check.record_failed(
+                summary=f"Availability of USS {uss_sub} could not be requested",
+                details=f"DSS responded code {avail_query.status_code}; {e}",
+                query_timestamps=[avail_query.request.timestamp],
+            )
+    return availability, version
+
+
+def set_uss_availability(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    uss_sub: str,
+    uss_availability: UssAvailabilityState,
+    version: str = "",
+) -> str:
+    version = ""
+    with scenario.check(
+        "USS Availability can be updated", [dss.participant_id]
+    ) as check:
+        try:
+            version, avail_query = dss.set_uss_availability(
                 uss_sub,
-                UssAvailabilityState.Normal,
+                uss_availability,
+                version,
             )
             scenario.record_query(avail_query)
         except QueryError as e:
             scenario.record_queries(e.queries)
             avail_query = e.queries[0]
             check.record_failed(
-                summary=f"Availability of USS {uss_sub} could not be set to available",
+                summary=f"Availability of USS {uss_sub} could not be updated to {uss_availability}",
                 details=f"DSS responded code {avail_query.status_code}; {e}",
                 query_timestamps=[avail_query.request.timestamp],
             )
-    return availability_version
+    return version
+
+
+def set_uss_available(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    uss_sub: str,
+):
+    _, version = get_uss_availability(
+        scenario, dss, uss_sub, Scope.AvailabilityArbitration
+    )
+    set_uss_availability(scenario, dss, uss_sub, UssAvailabilityState.Normal, version)
 
 
 def set_uss_down(
     scenario: TestScenarioType,
     dss: DSSInstance,
     uss_sub: str,
-) -> str:
-    """Set the USS availability to 'Down'.
-
-    This function implements the test step fragment described in set_uss_down.md.
-
-    Returns:
-        The new version of the USS availability.
-    """
-    with scenario.check(
-        "USS availability successfully set to 'Down'", [dss.participant_id]
-    ) as check:
-        try:
-            availability_version, avail_query = dss.set_uss_availability(
-                uss_sub,
-                UssAvailabilityState.Down,
-            )
-            scenario.record_query(avail_query)
-        except QueryError as e:
-            scenario.record_queries(e.queries)
-            avail_query = e.queries[0]
-            check.record_failed(
-                summary=f"Availability of USS {uss_sub} could not be set to down",
-                details=f"DSS responded code {avail_query.status_code}; {e}",
-                query_timestamps=[avail_query.request.timestamp],
-            )
-    return availability_version
+):
+    _, version = get_uss_availability(
+        scenario, dss, uss_sub, Scope.AvailabilityArbitration
+    )
+    set_uss_availability(scenario, dss, uss_sub, UssAvailabilityState.Down, version)
 
 
 def make_dss_report(
