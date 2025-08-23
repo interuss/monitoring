@@ -6,10 +6,10 @@ import s2sphere
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
+from monitoring.uss_qualifier.resources.volume import VolumeResource
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss.isa_validator import (
     ISAValidator,
 )
@@ -30,7 +30,7 @@ class ISASimple(GenericTestScenario):
         dss: DSSInstanceResource,
         id_generator: IDGeneratorResource,
         isa: ServiceAreaResource,
-        problematically_big_area: VerticesResource,
+        problematically_big_area: VolumeResource,
     ):
         super().__init__()
         self._dss = (
@@ -41,9 +41,7 @@ class ISASimple(GenericTestScenario):
         self._isa_version: str | None = None
         self._isa = isa.specification
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
-        self._huge_area = [
-            v.as_s2sphere() for v in problematically_big_area.specification.vertices
-        ]
+        self._huge_area = problematically_big_area.specification.vertices()
 
     def run(self, context: ExecutionContext):
         self._shift_isa_time_relative_to_now()

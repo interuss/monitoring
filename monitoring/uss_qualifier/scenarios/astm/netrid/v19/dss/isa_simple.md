@@ -21,7 +21,7 @@ after its time of applicability.
 
 ### problematically_big_area
 
-[`VerticesResource`](../../../../../resources/vertices.py) describing an area designed to be too big to be accepted by the DSS.
+[`VolumeResource`](../../../../../resources/volume.py) describing an area designed to be too big to be accepted by the DSS.
 
 ## Setup test case
 

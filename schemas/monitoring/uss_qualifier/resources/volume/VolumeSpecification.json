@@ -1,0 +1,18 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/volume/VolumeSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Specifies a volume in time and three-dimensional space.\nThe time-bounds, as well as the lower and upper bounds of the Volume3D may be omitted if a timeless and altitude-free two-dimensional area is required.\nSee monitoring.monitorlib.geotemporal.Volume4DTemplate for details.\n\nmonitoring.uss_qualifier.resources.volume.VolumeSpecification, as defined in monitoring/uss_qualifier/resources/volume.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "template": {
+      "$ref": "../../../monitorlib/geotemporal/Volume4DTemplate.json"
+    }
+  },
+  "required": [
+    "template"
+  ],
+  "type": "object"
+}

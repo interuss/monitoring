@@ -10,10 +10,10 @@ from monitoring.monitorlib.fetch import QueryType, query_and_describe
 from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
+from monitoring.uss_qualifier.resources.volume import VolumeResource
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss import utils
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
@@ -36,7 +36,7 @@ class ISAValidation(GenericTestScenario):
         dss: DSSInstanceResource,
         id_generator: IDGeneratorResource,
         isa: ServiceAreaResource,
-        problematically_big_area: VerticesResource,
+        problematically_big_area: VolumeResource,
     ):
         super().__init__()
         self._dss = (
@@ -49,9 +49,7 @@ class ISAValidation(GenericTestScenario):
 
         self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
 
-        self._huge_area = [
-            v.as_s2sphere() for v in problematically_big_area.specification.vertices
-        ]
+        self._huge_area = problematically_big_area.specification.vertices()
 
         if self._dss.rid_version == RIDVersion.f3411_19:
             self.create_isa_path = v19.api.OPERATIONS[
