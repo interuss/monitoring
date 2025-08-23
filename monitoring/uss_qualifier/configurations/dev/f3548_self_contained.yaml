@@ -221,17 +221,19 @@ v1:
         # An area designed to be soo big as to be refused by systems queries with it.
         problematically_big_area:
           $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-          resource_type: resources.VerticesResource
+          resource_type: resources.VolumeResource
           specification:
-            vertices:
-              - lat: 38
-                lng: -81
-              - lat: 37
-                lng: -81
-              - lat: 37
-                lng: -80
-              - lat: 38
-                lng: -80
+            template:
+              outline_polygon:
+                vertices:
+                  - lat: 38
+                    lng: -81
+                  - lat: 37
+                    lng: -81
+                  - lat: 37
+                    lng: -80
+                  - lat: 38
+                    lng: -80
 
         # Details of conflicting flights (used in nominal planning scenario)
         conflicting_flights:
