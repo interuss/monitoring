@@ -68,30 +68,34 @@ kentland_planning_area:
 
 au_problematically_big_area: # A huge (as in "too big") area for checks around area sizes
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.VerticesResource
+  resource_type: resources.VolumeResource
   specification:
-    vertices:
-      - lat: -23
-        lng: 130
-      - lat: -24
-        lng: 130
-      - lat: -24
-        lng: 132
-      - lat: -23
-        lng: 132
+    template:
+      outline_polygon:
+        vertices:
+          - lat: -23
+            lng: 130
+          - lat: -24
+            lng: 130
+          - lat: -24
+            lng: 132
+          - lat: -23
+            lng: 132
 
 kentland_problematically_big_area:
-  resource_type: resources.VerticesResource
+  resource_type: resources.VolumeResource
   specification:
-    vertices:
-      - lat: 38
-        lng: -81
-      - lat: 37
-        lng: -81
-      - lat: 37
-        lng: -80
-      - lat: 38
-        lng: -80
+    template:
+      outline_polygon:
+        vertices:
+          - lat: 38
+            lng: -81
+          - lat: 37
+            lng: -81
+          - lat: 37
+            lng: -80
+          - lat: 38
+            lng: -80
 
 zurich_service_area:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -240,17 +244,19 @@ che_planning_area:
         units: M
 
 che_problematically_big_area:
-  resource_type: resources.VerticesResource
+  resource_type: resources.VolumeResource
   specification:
-    vertices:
-      - lat: 45
-        lng: 7
-      - lat: 45
-        lng: 8
-      - lat: 46
-        lng: 8
-      - lat: 46
-        lng: 7
+    template:
+      outline_polygon:
+        vertices:
+          - lat: 45
+            lng: 7
+          - lat: 45
+            lng: 8
+          - lat: 46
+            lng: 8
+          - lat: 46
+            lng: 7
 
 che_invalid_flight_auth_flights:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
