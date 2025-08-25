@@ -68,6 +68,9 @@ HEALTHCHECK --interval=3s CMD sh /app/health_check.sh
 # Discover `monitoring` module in Python
 ENV PYTHONPATH=/app
 
+# Add venv to path
+ENV PATH="/venv/bin/:$PATH"
+
 # This image should be built by passing in `version` and `commit_hash` based on information from git (see `make image`)
 # This version information becomes available in the environment variables specified below
 ARG version
