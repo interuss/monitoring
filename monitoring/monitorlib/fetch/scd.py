@@ -392,11 +392,13 @@ class FetchedSubscription(fetch.Query):
 
     @property
     def subscription(self) -> Subscription | None:
+        if self.json_result is None:
+            return None
         try:
             # We get a ValueError if .parse is fed a None,
             # or if the JSON can't be parsed as a Subscription.
             return ImplicitDict.parse(
-                self.json_result.get("subscription", None), Subscription
+                self.json_result.get("subscription", {}), Subscription
             )
         except ValueError:
             return None

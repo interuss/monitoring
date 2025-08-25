@@ -176,6 +176,26 @@ class PendingCheck:
     def skip(self) -> None:
         self._outcome_recorded = True
 
+    def describe(self) -> str:
+        participant_str = (
+            " for participants " + ", ".join(self._participants)
+            if self._participants
+            else ""
+        )
+        return f'check "{self._documentation.name}"{participant_str} (severity {self._documentation.severity}, doc: {self._documentation.url})'
+
+
+class ScenarioLogicError(Exception):
+    def __init__(self, msg: str):
+        super().__init__(msg)
+
+
+class ScenarioDidNotStopError(ScenarioLogicError):
+    def __init__(self, check: PendingCheck):
+        super().__init__(
+            f"Scenario did not stop as expected upon failed check: {check.describe()}"
+        )
+
 
 def get_scenario_type_by_name(scenario_type_name: TestScenarioTypeName) -> type:
     inspection.import_submodules(scenarios_module)
