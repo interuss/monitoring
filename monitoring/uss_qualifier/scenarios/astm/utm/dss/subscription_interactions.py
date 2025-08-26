@@ -427,13 +427,46 @@ class SubscriptionInteractions(TestScenario):
         self._current_subs = {}
         self._current_oirs = {}
 
-        self._ensure_clean_workspace_step()
+        self._ensure_clean_primary_workspace_step()
+        self._verify_clean_secondaries_step()
 
         self.end_test_case()
 
-    def _ensure_clean_workspace_step(self):
-        self.begin_test_step("Ensure clean workspace")
+    def _ensure_clean_primary_workspace_step(self):
+        self.begin_test_step("Ensure clean workspace on primary DSS")
         self._clean_workspace()
+        self.end_test_step()
+
+    def _verify_clean_secondaries_step(self):
+        self.begin_test_step("Verify secondary DSS instances are clean")
+        for dss in self._secondary_instances:
+            for oir_id in self._oir_ids:
+                oir_found = test_step_fragments.cleanup_op_intent(
+                    self, dss, oir_id, delete_if_exists=False
+                )
+                with self.check(
+                    "Operational intent reference with test ID does not exist",
+                    dss.participant_id,
+                ) as check:
+                    if oir_found:
+                        check.record_failed(
+                            summary=f"Operational intent reference {oir_id} was still found on DSS {dss.participant_id}",
+                            details=f"Expected operational intent reference {oir_id} to not be found on secondary DSS because it was not present on, or has been removed, from the primary DSS, but it was returned.",
+                        )
+
+            for sub_id in self._sub_ids:
+                sub_found = test_step_fragments.cleanup_sub(
+                    self, dss, sub_id, delete_if_exists=False
+                )
+                with self.check(
+                    "Subscription with test ID does not exist",
+                    [self._dss.participant_id, dss.participant_id],
+                ) as check:
+                    if sub_found:
+                        check.record_failed(
+                            summary=f"Subscription {sub_id} was still found on DSS {dss.participant_id}",
+                            details=f"Expected subscription {sub_id} to not be found on secondary DSS because it was not present on, or has been removed, from the primary DSS, but it was returned.",
+                        )
         self.end_test_step()
 
     def _clean_workspace(self):
