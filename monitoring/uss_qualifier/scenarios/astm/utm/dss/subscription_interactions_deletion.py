@@ -267,13 +267,27 @@ class SubscriptionInteractionsDeletion(TestScenario):
         self._current_subs = {}
         self._current_oirs = {}
 
-        self._ensure_clean_workspace_step()
+        self._ensure_clean_primary_workspace_step()
+        self._verify_clean_secondaries_step()
 
         self.end_test_case()
 
-    def _ensure_clean_workspace_step(self):
+    def _ensure_clean_primary_workspace_step(self):
         self.begin_test_step("Ensure clean workspace")
         self._clean_workspace()
+        self.end_test_step()
+
+    def _verify_clean_secondaries_step(self):
+        self.begin_test_step("Verify secondary DSS instances are clean")
+        for dss in self._secondary_instances:
+            for oir_id in self._oir_ids:
+                test_step_fragments.verify_op_intent_does_not_exist(self, dss, oir_id)
+
+            for sub_id in self._sub_ids:
+                test_step_fragments.verify_subscription_does_not_exist(
+                    self, dss, sub_id
+                )
+
         self.end_test_step()
 
     def _clean_workspace(self):
