@@ -228,10 +228,11 @@ class SubscriptionSynchronization(TestScenario):
 
     def _step_setup_case(self):
         self.begin_test_case("Setup")
-        self._ensure_clean_workspace_step()
+        self._ensure_clean_primary_workspace_step()
+        self._verify_clean_secondaries_step()
         self.end_test_case()
 
-    def _ensure_clean_workspace_step(self):
+    def _ensure_clean_primary_workspace_step(self):
         self.begin_test_step("Ensure clean workspace")
         # Start by dropping any active sub
         self._ensure_no_active_subs_exist()
@@ -254,6 +255,16 @@ class SubscriptionSynchronization(TestScenario):
             self._dss,
             self._planning_area_volume4d,
         )
+
+    def _verify_clean_secondaries_step(self):
+        self.begin_test_step("Verify secondary DSS instances are clean")
+        for dss in self._dss_read_instances:
+            for sub_id in [self._sub_id] + self._ids_for_deletion:
+                test_step_fragments.verify_subscription_does_not_exist(
+                    self, dss, sub_id
+                )
+
+        self.end_test_step()
 
     def _step_create_subscriptions(self):
         # Create the 'main' test subscription:
