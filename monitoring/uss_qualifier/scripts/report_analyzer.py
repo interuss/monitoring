@@ -29,11 +29,11 @@ def look_at_scenario(ts: TestScenarioReport):
         for step in tcr.steps:
             print("   step: ", step.name)
             (
-                print("   has #queries: ", len(step.queries))
+                print("   has #queries: ", len(step.queries or []))
                 if step.get("queries") is not None
                 else print("   has #queries: 0")
             )
-            for q in step.queries if step.get("queries") is not None else []:
+            for q in step.get("queries", []):
                 print(f"    {q.response.elapsed_s} - {q.request.url}")
 
 
@@ -52,19 +52,23 @@ def main():
 
     r = parse_report(sys.argv[1])
 
+    if r.report.test_suite is None:
+        print("No test_suite in report")
+        return 0
+
     for a in r.report.test_suite.actions:
         print("Types of actions (test_suite, test_scenario, action_generator): ")
         print(a._get_applicable_report())
 
     suite_reports = {
-        r.test_suite.name: r.test_suite
-        for r in r.report.test_suite.actions
-        if r.get("test_suite") is not None
+        subr.test_suite.name: subr.test_suite
+        for subr in r.report.test_suite.actions
+        if "test_suite" in subr and subr.test_suite is not None
     }
     scenario_reports = {
-        r.test_scenario.name: r.test_scenario
-        for r in r.report.test_suite.actions
-        if r.get("test_scenario") is not None
+        subr.test_scenario.name: subr.test_scenario
+        for subr in r.report.test_suite.actions
+        if "test_scenario" in subr and subr.test_scenario is not None
     }
 
     print("Available suite reports: ", suite_reports.keys())

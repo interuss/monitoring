@@ -38,5 +38,5 @@ class PotentialGeneratedAction(ImplicitDict):
     def get_action_type(self) -> ActionType:
         matches = [v for v in ActionType if v in self and self[v]]
         if len(matches) != 1:
-            ActionType.raise_invalid_action_declaration()
+            raise ActionType.build_invalid_action_declaration()
         return ActionType(matches[0])

@@ -139,7 +139,7 @@ def make_test_suite_documentation(
         lines.append("  </tr>")
 
         req_ids_by_package: dict[str, list[RequirementID]] = {}
-        for req_id, req in reqs.items():
+        for req_id in reqs.keys():
             package = req_ids_by_package.get(req_id.package(), [])
             if req_id not in package:
                 package.append(req_id)
@@ -286,9 +286,9 @@ def _render_action(
     context: TestSuiteRenderContext,
 ) -> list[str]:
     action_type = action.get_action_type()
-    if action_type == ActionType.TestScenario:
+    if action_type == ActionType.TestScenario and action.test_scenario:
         return _render_scenario(action.test_scenario.scenario_type, context)
-    elif action_type == ActionType.TestSuite:
+    elif action_type == ActionType.TestSuite and action.test_suite:
         if "suite_type" in action.test_suite and action.test_suite.suite_type:
             return _render_suite_by_type(action.test_suite.suite_type, context)
         elif (
@@ -302,7 +302,7 @@ def _render_action(
             raise ValueError(
                 f"Test suite action {context.list_index} missing suite type or definition"
             )
-    elif action_type == ActionType.ActionGenerator:
+    elif action_type == ActionType.ActionGenerator and action.action_generator:
         return _render_action_generator(action.action_generator, context)
     else:
         raise NotImplementedError(f"Unsupported test suite action type: {action_type}")
@@ -343,9 +343,9 @@ def _collect_requirements_from_action(
     action: TestSuiteActionDeclaration | PotentialGeneratedAction,
 ) -> dict[RequirementID, RequirementInSuite]:
     action_type = action.get_action_type()
-    if action_type == ActionType.TestScenario:
+    if action_type == ActionType.TestScenario and action.test_scenario:
         return _collect_requirements_from_scenario(action.test_scenario.scenario_type)
-    elif action_type == ActionType.TestSuite:
+    elif action_type == ActionType.TestSuite and action.test_suite:
         if "suite_type" in action.test_suite and action.test_suite.suite_type:
             suite_def = ImplicitDict.parse(
                 load_dict_with_references(action.test_suite.suite_type),
@@ -363,7 +363,7 @@ def _collect_requirements_from_action(
             raise ValueError(
                 "Neither suite_type nor suite_definition specified in test_suite action"
             )
-    elif action_type == ActionType.ActionGenerator:
+    elif action_type == ActionType.ActionGenerator and action.action_generator:
         return _collect_requirements_from_action_generator(action.action_generator)
     else:
         raise NotImplementedError(
