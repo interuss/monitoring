@@ -661,9 +661,14 @@ def set_uss_available(
         "USS availability successfully set to 'Available'", [dss.participant_id]
     ) as check:
         try:
+            availability_response, avail_query = dss.get_uss_availability(
+                uss_sub,
+                scope=Scope.AvailabilityArbitration,
+            )
             availability_version, avail_query = dss.set_uss_availability(
                 uss_sub,
                 True,
+                availability_response.version,
             )
             scenario.record_query(avail_query)
         except QueryError as e:
@@ -693,9 +698,14 @@ def set_uss_down(
         "USS availability successfully set to 'Down'", [dss.participant_id]
     ) as check:
         try:
+            availability_response, avail_query = dss.get_uss_availability(
+                uss_sub,
+                scope=Scope.AvailabilityArbitration,
+            )
             availability_version, avail_query = dss.set_uss_availability(
                 uss_sub,
                 False,
+                availability_response.version,
             )
             scenario.record_query(avail_query)
         except QueryError as e:
