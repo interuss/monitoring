@@ -224,6 +224,7 @@ def test_missing_conflicted_operation(ids, scd_api, scd_session):
     with open("./scd/resources/op_missing_initial.yaml") as f:
         req = yaml.full_load(f)
     extents = Volume4DCollection.from_f3548v21(req["extents"])
+    assert extents.time_start
     dt = arrow.utcnow().datetime - extents.time_start.datetime
     req["extents"] = extents.offset_times(dt).to_f3548v21()
     resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
@@ -282,6 +283,7 @@ def test_big_operation_search(scd_api, scd_session):
     with open("./scd/resources/op_big_operation.json") as f:
         req = json.load(f)
     aoi = Volume4D.from_f3548v21(req["area_of_interest"])
+    assert aoi.time_start
     dt = arrow.utcnow().datetime - aoi.time_start.datetime
     req["area_of_interest"] = aoi.offset_time(dt).to_f3548v21()
     resp = scd_session.post("/operational_intent_references/query", json=req)

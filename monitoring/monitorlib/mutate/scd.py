@@ -31,16 +31,17 @@ class MutatedSubscription(fetch.Query):
             return [f"Failed to {self.mutation} SCD Subscription ({self.status_code})"]
         if self.json_result is None:
             return ["Response did not contain valid JSON"]
+        return []
 
     @property
     def subscription(self) -> Subscription | None:
-        if self.json_result is None:
+        if self.json_result is None or "subscription" not in self.json_result:
             return None
         try:
             # We get a ValueError if .parse is fed a None,
             # or if the JSON can't be parsed as a Subscription.
             return ImplicitDict.parse(
-                self.json_result.get("subscription", None),
+                self.json_result["subscription"],
                 Subscription,
             )
         except ValueError:
@@ -123,8 +124,8 @@ def build_upsert_subscription_params(
     base_url: str,
     notify_for_op_intents: bool,
     notify_for_constraints: bool,
-    min_alt_m: float,
-    max_alt_m: float,
+    min_alt_m: float | None,
+    max_alt_m: float | None,
 ) -> PutSubscriptionParameters:
     return PutSubscriptionParameters(
         extents=Volume4D.from_values(

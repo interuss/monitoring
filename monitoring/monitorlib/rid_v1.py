@@ -76,21 +76,17 @@ class ISA(dict):
 class Flight(dict):
     @property
     def valid(self) -> bool:
-        if self.id is None:
-            return False
-        return True
+        return self.id is not None
 
     @property
-    def id(self) -> str:
+    def id(self) -> str | None:
         return self.get("id", None)
 
 
 class Subscription(dict):
     @property
     def valid(self) -> bool:
-        if self.version is None:
-            return False
-        return True
+        return self.version is not None
 
     @property
     def version(self) -> str | None:

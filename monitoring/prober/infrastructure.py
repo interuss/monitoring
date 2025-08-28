@@ -31,7 +31,7 @@ def depends_on(*args):
             module_results = {
                 k.name: _test_results[k]
                 for k in _test_results
-                if k.fspath == test_module.__file__
+                if test_module and k.fspath == test_module.__file__
             }
             for prerequisite in prerequisites:
                 if prerequisite.__name__ not in module_results:
@@ -96,7 +96,7 @@ ResourceType = int
 resource_type_code_descriptions: dict[ResourceType, str] = {}
 
 
-# Next code: 404
+# Next code: 405
 def register_resource_type(code: int, description: str) -> ResourceType:
     """Register that the specified code refers to the described resource.
 
@@ -172,4 +172,8 @@ check_scd_write_constraint_id = register_resource_type(
 )
 check_scd_write_operational_intent_id = register_resource_type(
     346, "Operational intent reference created by build/dev/check_scd_write.sh"
+)
+
+unknown_resource_id = register_resource_type(
+    404, "<Unknown resource ID / Unknown purpose>"
 )

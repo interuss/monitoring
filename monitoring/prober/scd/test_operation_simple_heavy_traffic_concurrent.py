@@ -28,6 +28,7 @@ from monitoring.prober.infrastructure import (
     for_api_versions,
     register_resource_type,
     resource_type_code_descriptions,
+    unknown_resource_id,
 )
 from monitoring.prober.scd import actions
 
@@ -263,7 +264,7 @@ def test_create_ops_concurrent(ids, scd_api, scd_session_async):
                 owner_name, id_code = IDFactory.decode(op_id)
             except ValueError:
                 owner_name = "<Unknown owner>"
-                id_code = "<Unknown resource ID>"
+                id_code = unknown_resource_id
             print(
                 "Error with op_id {}: {}'s {}".format(
                     op_id,
@@ -283,7 +284,7 @@ def test_create_ops_concurrent(ids, scd_api, scd_session_async):
                         owner_name, id_code = IDFactory.decode(missing_id)
                     except ValueError:
                         owner_name = "<Unknown owner>"
-                        id_code = "<Unknown resource ID>"
+                        id_code = unknown_resource_id
                     print(
                         "--- Missing op {}: {}'s {}".format(
                             missing_id,

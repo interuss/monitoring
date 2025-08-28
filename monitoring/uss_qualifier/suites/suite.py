@@ -18,7 +18,6 @@ from monitoring.monitorlib.inspection import fullname
 from monitoring.monitorlib.versioning import repo_url_of
 from monitoring.uss_qualifier.action_generators.action_generator import (
     ActionGenerator,
-    ActionGeneratorType,
     action_generator_type_from_name,
 )
 from monitoring.uss_qualifier.configurations.configuration import (
@@ -73,11 +72,11 @@ def _print_failed_check(failed_check: FailedCheck) -> None:
         )
 
 
-class TestSuiteAction:
+class TestSuiteAction[T: ActionGenerator]:
     declaration: TestSuiteActionDeclaration
     test_scenario: TestScenario | None = None
     test_suite: TestSuite | None = None
-    action_generator: ActionGeneratorType | None = None
+    action_generator: T | None = None
 
     def __init__(
         self,
@@ -92,21 +91,21 @@ class TestSuiteAction:
         )
 
         action_type = action.get_action_type()
-        if action_type == ActionType.TestScenario:
+        if action_type == ActionType.TestScenario and action.test_scenario:
             self.test_scenario = TestScenario.make_test_scenario(
                 declaration=action.test_scenario, resource_pool=resources_for_child
             )
-        elif action_type == ActionType.TestSuite:
+        elif action_type == ActionType.TestSuite and action.test_suite:
             self.test_suite = TestSuite(
                 declaration=action.test_suite,
                 resources=resources,
             )
-        elif action_type == ActionType.ActionGenerator:
+        elif action_type == ActionType.ActionGenerator and action.action_generator:
             self.action_generator = ActionGenerator.make_from_definition(
                 definition=action.action_generator, resources=resources_for_child
             )
         else:
-            ActionType.raise_invalid_action_declaration()
+            raise ActionType.build_invalid_action_declaration()
 
     def get_name(self) -> str:
         if self.test_suite:
@@ -210,7 +209,6 @@ class TestSuite:
     declaration: TestSuiteDeclaration
     definition: TestSuiteDefinition
     documentation_url: str
-    local_resources: dict[ResourceID, ResourceType]
     actions: list[TestSuiteAction | SkippedActionReport]
 
     def __init__(
@@ -427,6 +425,8 @@ class ExecutionContext:
         self, scenario_type: type[TestScenario]
     ) -> list[TestScenarioReport]:
         """Find reports for all currently-completed instances of the specified test scenario type."""
+        if not self.top_frame:
+            return []
         return self._find_test_scenario_reports(scenario_type, self.top_frame)
 
     def _find_test_scenario_reports(
@@ -462,7 +462,11 @@ class ExecutionContext:
         self, target: TestSuiteAction, condition: TestSuiteActionSelectionCondition
     ) -> int:
         n = 0
-        queue = [self.top_frame]
+        queue: list[ActionStackFrame] = []
+
+        if self.top_frame:
+            queue.append(self.top_frame)
+
         while queue:
             frame = queue.pop(0)
             if self._is_selected_by(frame, condition):
@@ -595,6 +599,9 @@ class ExecutionContext:
         if not self.config:
             return None
 
+        if not self.current_frame:
+            return None
+
         if "include_action_when" in self.config and self.config.include_action_when:
             include = False
             for condition in self.config.include_action_when:
@@ -627,11 +634,17 @@ class ExecutionContext:
             self.current_frame = ActionStackFrame(
                 action=action, parent=self.current_frame, children=[]
             )
-            self.current_frame.parent.children.append(self.current_frame)
+            if self.current_frame.parent:
+                self.current_frame.parent.children.append(self.current_frame)
 
     def end_action(
         self, action: TestSuiteAction, report: TestSuiteActionReport
     ) -> None:
+        if not self.current_frame:
+            raise RuntimeError(
+                "end_action has been called, but there is not current frame"
+            )
+
         if self.current_frame.action is not action:
             raise RuntimeError(
                 f"Action {self.current_frame.action.declaration.get_action_type()} {self.current_frame.action.declaration.get_child_type()} was started, but a different action {action.declaration.get_action_type()} {action.declaration.get_child_type()} was ended"
