@@ -144,7 +144,9 @@ class TestTime(ImplicitDict):
             # Step linearly through the day looking for two adjacent times that surround the target sun elevation.
             # Note that this will fail to capture the very peak sun elevation if it is targeted.
             t2 = t0
+            t1 = t2
             el2 = _sun_elevation(t2, lat, lng)
+            el1 = el2
             found = False
             while t2 <= t0 + timedelta(days=1):
                 t1 = t2
@@ -209,7 +211,7 @@ def _sun_elevation(t: datetime, lat_deg: float, lng_deg: float) -> float:
 
     Returns: Degrees above the horizon of the center of the sun.
     """
-    return get_solarposition(t, lat_deg, lng_deg).elevation.values[0]
+    return get_solarposition(t, lat_deg, lng_deg).elevation.values[0]  # pyright:ignore[reportAttributeAccessIssue]
 
 
 class Time(StringBasedDateTime):

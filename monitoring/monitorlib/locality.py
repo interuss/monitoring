@@ -3,7 +3,6 @@ from __future__ import annotations
 import inspect
 import sys
 from abc import ABC, abstractmethod
-from typing import TypeVar
 
 LocalityCode = str
 """Case-sensitive string naming a subclass of the Locality base class"""
@@ -42,7 +41,7 @@ class Locality(ABC):
         return self.__class__.__name__
 
     @staticmethod
-    def from_locale(locality_code: LocalityCode) -> LocalityType:
+    def from_locale(locality_code: LocalityCode) -> Locality:
         current_module = sys.modules[__name__]
         for name, obj in inspect.getmembers(current_module, inspect.isclass):
             if issubclass(obj, Locality) and obj != Locality:
@@ -51,9 +50,6 @@ class Locality(ABC):
         raise ValueError(
             f"Could not find Locality implementation for Locality code '{locality_code}' (expected to find a subclass of the Locality astract base class where classmethod locality_code returns '{locality_code}')"
         )
-
-
-LocalityType = TypeVar("LocalityType", bound=Locality)
 
 
 class Switzerland(Locality):
