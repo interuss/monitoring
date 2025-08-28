@@ -99,7 +99,7 @@ class UssAvaiabilitySimple(TestScenario):
     def _step_attempt_update_incorrect_version(self):
         self.begin_test_step("Attempt update with incorrect version")
         with self.check(
-            "Request to update USS availability status with empty version fails",
+            "Request to update USS availability status with incorrect version fails",
             self._pid,
         ) as check:
             try:
