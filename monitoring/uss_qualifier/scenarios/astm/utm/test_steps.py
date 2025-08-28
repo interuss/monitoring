@@ -661,23 +661,24 @@ def set_uss_available(
         "USS availability successfully set to 'Available'", [dss.participant_id]
     ) as check:
         try:
-            availability_response, avail_query = dss.get_uss_availability(
+            availability_response, get_avail_query = dss.get_uss_availability(
                 uss_sub,
                 scope=Scope.AvailabilityArbitration,
             )
-            availability_version, avail_query = dss.set_uss_availability(
+            scenario.record_query(get_avail_query)
+            availability_version, set_avail_query = dss.set_uss_availability(
                 uss_sub,
                 True,
                 availability_response.version,
             )
-            scenario.record_query(avail_query)
+            scenario.record_query(set_avail_query)
         except QueryError as e:
             scenario.record_queries(e.queries)
-            avail_query = e.queries[0]
+            q = e.queries[0]
             check.record_failed(
                 summary=f"Availability of USS {uss_sub} could not be set to available",
-                details=f"DSS responded code {avail_query.status_code}; {e}",
-                query_timestamps=[avail_query.request.timestamp],
+                details=f"DSS responded code {q.status_code}; {e}",
+                query_timestamps=[q.request.timestamp],
             )
     return availability_version
 
@@ -698,23 +699,24 @@ def set_uss_down(
         "USS availability successfully set to 'Down'", [dss.participant_id]
     ) as check:
         try:
-            availability_response, avail_query = dss.get_uss_availability(
+            availability_response, get_avail_query = dss.get_uss_availability(
                 uss_sub,
                 scope=Scope.AvailabilityArbitration,
             )
-            availability_version, avail_query = dss.set_uss_availability(
+            scenario.record_query(get_avail_query)
+            availability_version, set_avail_query = dss.set_uss_availability(
                 uss_sub,
                 False,
                 availability_response.version,
             )
-            scenario.record_query(avail_query)
+            scenario.record_query(set_avail_query)
         except QueryError as e:
             scenario.record_queries(e.queries)
-            avail_query = e.queries[0]
+            q = e.queries[0]
             check.record_failed(
                 summary=f"Availability of USS {uss_sub} could not be set to down",
-                details=f"DSS responded code {avail_query.status_code}; {e}",
-                query_timestamps=[avail_query.request.timestamp],
+                details=f"DSS responded code {q.status_code}; {e}",
+                query_timestamps=[q.request.timestamp],
             )
     return availability_version
 
