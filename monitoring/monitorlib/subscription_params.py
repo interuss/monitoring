@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-from typing import Self
 
 import s2sphere
 from implicitdict import ImplicitDict
@@ -47,7 +46,7 @@ class SubscriptionParams(ImplicitDict):
     notify_for_constraints: bool
     """Whether to notify for constraints"""
 
-    def copy(self) -> Self:
+    def copy(self) -> SubscriptionParams:
         return SubscriptionParams(super().copy())
 
     def to_upsert_subscription_params(

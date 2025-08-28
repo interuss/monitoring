@@ -46,7 +46,8 @@ def _set_responses(responses: dict[str, Response]) -> bytes:
                 oldest_id = request_id
                 oldest_timestamp = t
 
-        del responses[oldest_id]
+        if oldest_id:
+            del responses[oldest_id]
     return s.encode("utf-8")
 
 
