@@ -32,7 +32,7 @@ If the DSS under test allows the qualifier to update the USS availability status
 
 ### Attempt update with incorrect version test step
 
-This step verifies that an existing OIR cannot be mutated with an incorrect OVN.
+This step verifies that an existing OIR cannot be mutated with an incorrect version.
 
 #### 🛑 Request to update USS availability status with incorrect version fails check
 
