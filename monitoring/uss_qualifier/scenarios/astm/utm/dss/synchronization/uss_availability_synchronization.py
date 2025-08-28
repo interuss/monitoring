@@ -46,7 +46,7 @@ class USSAvailabilitySynchronization(TestScenario):
         """
         super().__init__()
         scopes_primary = {
-            Scope.AvailabilityArbitration: "Set and read USS availability states"
+            Scope.AvailabilityArbitration: "set and read USS availability states"
         }
         scopes_read = {Scope.StrategicCoordination: "read USS availability states"}
 
