@@ -40,3 +40,5 @@ The release notes should contain at least the following sections:
 ## Optional migration tasks
 
 ## Important information
+
+* The RID test data of the [U-Space test configuration](monitoring/uss_qualifier/configurations/dev/uspace.yaml) has been adjusted to cover the Zurich area. ([#1142](https://github.com/interuss/monitoring/pull/1142))
