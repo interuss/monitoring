@@ -135,6 +135,12 @@ class UTMClientSession(requests.Session):
     def get_prefix_url(self):
         return self._prefix_url
 
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        return super().delete(*args, **kwargs)
+
 
 class AsyncUTMTestSession:
     """

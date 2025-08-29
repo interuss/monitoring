@@ -108,7 +108,7 @@ def pytest_runtest_makereport(item, call):
 
 def make_session(
     pytestconfig, endpoint_suffix: str, auth_option: str | None = None
-) -> UTMClientSession | None:
+) -> UTMClientSession:
     dss_endpoint = pytestconfig.getoption("dss_endpoint")
     if dss_endpoint is None:
         pytest.skip("dss-endpoint option not set")
@@ -126,7 +126,7 @@ def make_session(
 
 def make_session_async(
     pytestconfig, endpoint_suffix: str, auth_option: str | None = None
-) -> AsyncUTMTestSession | None:
+) -> AsyncUTMTestSession:
     dss_endpoint = pytestconfig.getoption("dss_endpoint")
     if dss_endpoint is None:
         pytest.skip("dss-endpoint option not set")
@@ -199,21 +199,25 @@ def subscriber(pytestconfig) -> str | None:
     if pytestconfig.getoption(OPT_RID_AUTH):
         session = make_session(pytestconfig, BASE_URL_RID, OPT_RID_AUTH)
         session.get("/healthy", scope=v19_constants.Scope.Read)
-        rid_sub = session.auth_adapter.get_sub()
-        if rid_sub:
-            return rid_sub
+
+        if session.auth_adapter:
+            rid_sub = session.auth_adapter.get_sub()
+            if rid_sub:
+                return rid_sub
     if pytestconfig.getoption(OPT_SCD_AUTH1):
         scd_session = make_session(pytestconfig, BASE_URL_SCD, OPT_SCD_AUTH1)
         scd_session.get("/healthy", scope=v21_constants.Scope.StrategicCoordination)
-        scd_sub = scd_session.auth_adapter.get_sub()
-        if scd_sub:
-            return scd_sub
+        if scd_session.auth_adapter:
+            scd_sub = scd_session.auth_adapter.get_sub()
+            if scd_sub:
+                return scd_sub
     if pytestconfig.getoption(OPT_SCD_AUTH2):
         scd_session2 = make_session(pytestconfig, BASE_URL_SCD, OPT_SCD_AUTH2)
         scd_session2.get("/healthy", scope=v21_constants.Scope.StrategicCoordination)
-        scd2_sub = scd_session2.auth_adapter.get_sub()
-        if scd2_sub:
-            return scd2_sub
+        if scd_session2.auth_adapter:
+            scd2_sub = scd_session2.auth_adapter.get_sub()
+            if scd2_sub:
+                return scd2_sub
     return None
 
 

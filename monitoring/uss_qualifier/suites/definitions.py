@@ -74,8 +74,8 @@ class ActionType(str, Enum):
     ActionGenerator = "action_generator"
 
     @staticmethod
-    def raise_invalid_action_declaration():
-        raise ValueError(
+    def build_invalid_action_declaration() -> Exception:
+        return ValueError(
             f"Exactly one of ({', '.join(a for a in ActionType)}) must be specified in a TestSuiteActionDeclaration"
         )
 
@@ -101,30 +101,30 @@ class TestSuiteActionDeclaration(ImplicitDict):
     def get_action_type(self) -> ActionType:
         matches = [v for v in ActionType if v in self and self[v]]
         if len(matches) != 1:
-            ActionType.raise_invalid_action_declaration()
+            raise ActionType.build_invalid_action_declaration()
         return ActionType(matches[0])
 
     def get_resource_links(self) -> dict[ResourceID, ResourceID]:
         action_type = self.get_action_type()
-        if action_type == ActionType.TestScenario:
-            return self.test_scenario.resources
-        elif action_type == ActionType.TestSuite:
-            return self.test_suite.resources
-        elif action_type == ActionType.ActionGenerator:
+        if action_type == ActionType.TestScenario and self.test_scenario:
+            return self.test_scenario.resources or {}
+        elif action_type == ActionType.TestSuite and self.test_suite:
+            return self.test_suite.resources or {}
+        elif action_type == ActionType.ActionGenerator and self.action_generator:
             return self.action_generator.resources
         else:
-            ActionType.raise_invalid_action_declaration()
+            raise ActionType.build_invalid_action_declaration()
 
     def get_child_type(self) -> str:
         action_type = self.get_action_type()
-        if action_type == ActionType.TestScenario:
+        if action_type == ActionType.TestScenario and self.test_scenario:
             return self.test_scenario.scenario_type
-        elif action_type == ActionType.TestSuite:
+        elif action_type == ActionType.TestSuite and self.test_suite:
             return self.test_suite.type_name
-        elif action_type == ActionType.ActionGenerator:
+        elif action_type == ActionType.ActionGenerator and self.action_generator:
             return self.action_generator.generator_type
         else:
-            ActionType.raise_invalid_action_declaration()
+            raise ActionType.build_invalid_action_declaration()
 
 
 ResourceTypeNameSpecifyingOptional = ResourceTypeName
@@ -153,11 +153,11 @@ class TestSuiteDefinition(ImplicitDict):
     def load_from_declaration(
         declaration: TestSuiteDeclaration,
     ) -> TestSuiteDefinition:
-        if "suite_type" in declaration:
+        if "suite_type" in declaration and declaration.suite_type:
             return ImplicitDict.parse(
                 load_dict_with_references(declaration.suite_type), TestSuiteDefinition
             )
-        elif "suite_definition" in declaration:
+        elif "suite_definition" in declaration and declaration.suite_definition:
             return declaration.suite_definition
         else:
             raise ValueError(
