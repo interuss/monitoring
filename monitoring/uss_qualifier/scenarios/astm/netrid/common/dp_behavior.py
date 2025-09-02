@@ -158,7 +158,8 @@ class DisplayProviderBehavior(GenericTestScenario):
             self._step_validate_queries_to_sp(obs, test_case_start_time)
             self.end_test_step()
 
-        self.end_test_case()
+            self.end_test_case()
+
         self.end_test_scenario()
 
     def _mock_sp_base_url(self):
