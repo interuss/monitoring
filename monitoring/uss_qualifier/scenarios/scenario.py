@@ -186,7 +186,7 @@ class PendingCheck:
             else ""
         )
         url_str = f", doc: {url}" if url else ""
-        return f"check '{doc.name}'{participant_str} (severity {severity}{url_str})"
+        return f"'{doc.name} check' ({severity} severity involving {participant_str}) documented at {url_str})"
 
 
 class ScenarioLogicError(Exception):
