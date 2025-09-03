@@ -39,6 +39,7 @@ class MSLAltitude(TestScenario):
                 "Skip reason",
                 "Nominal behavior test scenario report could not be found for any of the scenario types",
             )
+            self.end_test_case()
             self.end_test_scenario()
             return
 
