@@ -1,4 +1,6 @@
 function(env) {
+  // env: Specifies environment of test configuration; see usage below and contents of ./env_template_a.libsonnet for required blocks.
+
   // See the file below (in the `schemas` folder of this repo) for the schema this file's content follows
   '$content_schema': 'monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json',
 
@@ -19,10 +21,12 @@ function(env) {
             test_env_version_providers: 'test_env_version_providers',
             prod_env_version_providers: 'prod_env_version_providers',
             flight_planners: 'flight_planners',
-            flight_planners_to_clear: 'flight_planners',
+            flight_planners_to_clear: 'flight_planners_to_clear',
             conflicting_flights: 'conflicting_flights',
+            priority_preemption_flights: 'conflicting_flights',
             invalid_flight_intents: 'invalid_flight_intents',
             non_conflicting_flights: 'non_conflicting_flights',
+            test_exclusions: 'test_exclusions',
             dss: 'dss',
             dss_instances: 'dss_instances',
             mock_uss: 'mock_uss',
@@ -32,7 +36,6 @@ function(env) {
             problematically_big_area: 'problematically_big_area',
             system_identity: 'system_identity',
             // dss_datastore_cluster: dss_datastore_cluster  # TODO: Provide once local DSS uses a multi-node cluster
-            test_exclusions: 'test_exclusions',
           },
         },
       },
@@ -43,9 +46,11 @@ function(env) {
       non_baseline_inputs: [
         'v1.test_run.resources.resource_declarations.utm_auth',
         'v1.test_run.resources.resource_declarations.second_utm_auth',
+        'v1.test_run.resources.resource_declarations.next_env_auth',
         'v1.test_run.resources.resource_declarations.test_env_version_providers',
         'v1.test_run.resources.resource_declarations.prod_env_version_providers',
         'v1.test_run.resources.resource_declarations.flight_planners',
+        'v1.test_run.resources.resource_declarations.flight_planners_to_clear',
         'v1.test_run.resources.resource_declarations.dss',
         'v1.test_run.resources.resource_declarations.dss_instances',
         'v1.test_run.resources.resource_declarations.mock_uss',
@@ -55,7 +60,7 @@ function(env) {
       ],
 
       // This block defines all the resources available in the resource pool.
-      // All resources defined below should be used either
+      // All resources defined below should generally be used either
       //   1) directly in the test suite or
       //   2) to create another resource in the pool
       resources: {
@@ -253,7 +258,7 @@ function(env) {
       raw_report: {},
 
       tested_requirements: [
-        // Write out a human-readable reports of the F3548-21 requirements tested
+        // Write out a human-readable reports of the requirements tested
         {
           report_name: 'scd',
           aggregate_participants: env.aggregate_participants,
@@ -273,6 +278,10 @@ function(env) {
                 'astm.f3548.v21.USS0005',
                 'astm.f3548.v21.SCD0005',
                 'astm.f3548.v21.SCD0010',
+                'astm.f3548.v21.SCD0015',
+                'astm.f3548.v21.SCD0020',
+                'astm.f3548.v21.SCD0025',
+                'astm.f3548.v21.SCD0030',
                 'astm.f3548.v21.SCD0035',
                 'astm.f3548.v21.SCD0040',
                 'astm.f3548.v21.SCD0045',
@@ -280,6 +289,8 @@ function(env) {
                 'astm.f3548.v21.SCD0075',
                 'astm.f3548.v21.SCD0080',
                 'astm.f3548.v21.SCD0085',
+                'astm.f3548.v21.SCD0090',
+                'astm.f3548.v21.SCD0095',
                 'astm.f3548.v21.GEN0500',
                 'astm.f3548.v21.USS0105,1',
                 'astm.f3548.v21.USS0105,3',
@@ -337,7 +348,6 @@ function(env) {
                 'interuss.automated_testing.flight_planning.Readiness',
                 'interuss.f3548.notification_requirements.NoDssEntityNoNotification',
                 'versioning.ReportSystemVersion',
-                'astm.f3548.v21.GEN0305',
               ],
             },
           },
@@ -395,7 +405,7 @@ function(env) {
               count: {
                 // We currently expect this amount of skipped scenarios: making it an equality
                 // to make sure this is reduced if some scenarios start to be executed
-                equal_to: 7,
+                equal_to: 6,
               },
             },
           },

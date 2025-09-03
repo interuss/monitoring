@@ -89,4 +89,4 @@ class UnitedStatesIndustryCollaboration(Locality):
         return -1
 
     def highest_priority(self) -> int:
-        return 0  # as of the time of writing this, this value has not been subject to a firm decision
+        return 100

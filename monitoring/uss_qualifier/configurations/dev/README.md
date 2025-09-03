@@ -51,11 +51,11 @@ Verifies requirements for U-space Service Providers using ASTM standards (F3411-
 
 Same configuration as [uspace](#uspace), except only the portions related to ASTM F3548-21 verification are executed (other parts are skipped).
 
-## [utm_implementation_us](utm_implementation_us.jsonnet)
+## [utm_implementation_us](utm_implementation_us)
 
-Intended to be an InterUSS interpretation of how to verify the requirements of the [US Shared Airspace group](https://github.com/utmimplementationus/getstarted) verified via automated testing as documented in their [Requirements Traceability Matrix for Strategic Coordination](https://github.com/utmimplementationus/getstarted/blob/main/docs/Strategic_Coordination_Compliance_Matrix_v1.0.xlsx).  Note that this is merely InterUSS's interpretation of the publicly-available information for that project and this test configuration may not exactly match the test configuration actually in use by that group (which is not organizationally affiliated with InterUSS).  InterUSS welcomes contributions to change this test configuration to better align with the intent of that group.
+Intended to be an InterUSS interpretation of how to verify the requirements of the [US Shared Airspace group](https://github.com/utmimplementationus/getstarted) verified via automated testing as documented in their [Requirements Traceability Matrix for Strategic Coordination](https://github.com/utmimplementationus/getstarted/blob/main/docs).  Note that this is merely InterUSS's interpretation of the publicly-available information for that project and this test configuration may not exactly match the test configuration actually in use by that group (which is not organizationally affiliated with InterUSS).  InterUSS welcomes contributions to change this test configuration to better align with the intent of that group.
 
-The baseline portion of the test configuration is found in [baseline.libsonnet](utm_implementation_us_lib/baseline.libsonnet) and the environmental portion of the test configuration is found in [env_all.libsonnet](utm_implementation_us_lib/local/env_all.libsonnet).  The top-level test configuration [utm_implementation_us.jsonnet](utm_implementation_us.jsonnet) combines the test baseline with the test environment to form a full test configuration.
+The baseline portion of the test configuration is found in [baseline.libsonnet](utm_implementation_us/definitions/baseline_a.libsonnet) and the environmental portion of the test configuration is found in template form in [env_template_a.libsonnet](utm_implementation_us/definitions/env_template_a.libsonnet).  The top-level test configuration [test1.jsonnet](utm_implementation_us/environments/local/test1.jsonnet) combines the test baseline with the test environment to form a full test configuration.
 
 ### Environment characteristics
 
