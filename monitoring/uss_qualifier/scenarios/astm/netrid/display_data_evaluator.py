@@ -626,7 +626,7 @@ class RIDObservationEvaluator:
 
                 # evaluate clusters that are actually obfuscated flights
                 obfuscated_clusters = [
-                    c for c in observation.clusters if c.number_of_flights == 1
+                    c for c in observation.clusters if c.number_of_flights > 0
                 ]
                 self._evaluate_obfuscated_clusters_observation(
                     observer, obfuscated_clusters, expected, uncertain
