@@ -34,7 +34,7 @@ configurations.dev.message_signing,\
 configurations.dev.minimal_probing,\
 configurations.dev.dss_probing,\
 configurations.dev.f3548_self_contained,\
-configurations.dev.utm_implementation_us.environments.local.test1,\
+configurations.dev.utm_implementation_us.environments.local.test_1,\
 configurations.dev.netrid_v22a,\
 configurations.dev.netrid_v19,\
 configurations.dev.uspace"
