@@ -33,7 +33,7 @@ The release notes should contain at least the following sections:
 
 --------------------------------------------------------------------------------------------------------------------
 
-# Release Notes for v0.19.2
+# Release Notes for v0.19.0
 
 ## Mandatory migration tasks
 
@@ -65,7 +65,7 @@ Can be straightforwardly replaced with:
 ```yaml
 planning_area:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.PlanningAreaResource
+  resource_type: resources.VolumeResource
   specification:
     template:
       outline_polygon:

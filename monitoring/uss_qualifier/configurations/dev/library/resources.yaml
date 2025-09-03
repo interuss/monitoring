@@ -156,17 +156,19 @@ zurich_planning_area:
 
 zurich_problematically_big_area: # A huge (as in "too big") area for checks around area sizes
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.VerticesResource
+  resource_type: resources.VolumeResource
   specification:
-    vertices:
-      - lat: 48
-        lng: 9
-      - lat: 47
-        lng: 9
-      - lat: 47
-        lng: 8
-      - lat: 48
-        lng: 8
+    template:
+      outline_polygon:
+        vertices:
+          - lat: 48
+            lng: 9
+          - lat: 47
+            lng: 9
+          - lat: 47
+            lng: 8
+          - lat: 48
+            lng: 8
 
 # ===== NetRID flights data =====
 
