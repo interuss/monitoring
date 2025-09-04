@@ -134,12 +134,10 @@ class DisplayProviderBehavior(GenericTestScenario):
         self.end_test_step()
         self.end_test_case()
 
-        for obs in self._observers:
-            test_case_start_time = arrow.utcnow().datetime
-            # We run the entire test case for each provided observer
-            # (Otherwise we can't differentiate which queries are from which observer)
-            self.begin_test_case("Display Provider Behavior")
+        self.begin_test_case("Display Provider Behavior")
 
+        for obs in self._observers:
+            test_step_start_time = arrow.utcnow().datetime
             self.begin_test_step("Query acceptable diagonal area")
             # Query the DP for the exact area of the ISA
             self._step_query_ok_diagonal(obs)
@@ -155,11 +153,10 @@ class DisplayProviderBehavior(GenericTestScenario):
             self.end_test_step()
 
             self.begin_test_step("Verify query to SP")
-            self._step_validate_queries_to_sp(obs, test_case_start_time)
+            self._step_validate_queries_to_sp(obs, test_step_start_time)
             self.end_test_step()
 
-            self.end_test_case()
-
+        self.end_test_case()
         self.end_test_scenario()
 
     def _mock_sp_base_url(self):
@@ -248,7 +245,7 @@ class DisplayProviderBehavior(GenericTestScenario):
                 )
 
     def _step_validate_queries_to_sp(
-        self, observer: RIDSystemObserver, test_case_start_time: datetime
+        self, observer: RIDSystemObserver, test_step_start_time: datetime
     ):
         def flight_search_filter(interaction: Interaction) -> bool:
             return (
@@ -259,7 +256,7 @@ class DisplayProviderBehavior(GenericTestScenario):
         interactions, q = get_mock_uss_interactions(
             self,
             self._mock_uss,
-            Time(test_case_start_time),
+            Time(test_step_start_time),
             direction_filter(QueryDirection.Incoming),
             flight_search_filter,
         )
