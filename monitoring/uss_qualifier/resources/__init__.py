@@ -1,2 +1,2 @@
 from .planning_area import PlanningAreaResource as PlanningAreaResource
-from .vertices import VerticesResource as VerticesResource
+from .volume import VolumeResource as VolumeResource

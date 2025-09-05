@@ -422,6 +422,18 @@ class Volume3D(ImplicitDict):
     def to_f3548v21(self) -> f3548v21.Volume3D:
         return ImplicitDict.parse(self, f3548v21.Volume3D)
 
+    def s2_vertices(self) -> list[s2sphere.LatLng]:
+        """Returns the vertices of the 2D area represented by this volume. If the underlying volume is a Polygon, its
+        original vertices are returned. If it is a Circle, the vertices of the bounding rectangle are returned.
+        """
+        if (
+            self.outline_polygon is not None
+            and self.outline_polygon.vertices is not None
+        ):
+            return [v.as_s2sphere() for v in self.outline_polygon.vertices]
+        else:
+            return get_latlngrect_vertices(make_latlng_rect(self))
+
 
 def make_latlng_rect(area) -> s2sphere.LatLngRect:
     """Make an S2 LatLngRect from the provided input.
