@@ -37,11 +37,15 @@ class AuthAdapter:
 
         raise NotImplementedError()
 
-    def get_headers(self, url: str, scopes: list[str] = None) -> dict[str, str]:
+    def get_headers(self, url: str, scopes: list[str] | None = None) -> dict[str, str]:
         if scopes is None:
             scopes = ALL_SCOPES
         scopes = [s.value if isinstance(s, Enum) else s for s in scopes]
         intended_audience = urllib.parse.urlparse(url).hostname
+
+        if not intended_audience:
+            return {}
+
         scope_string = " ".join(scopes)
         if intended_audience not in self._tokens:
             self._tokens[intended_audience] = {}
@@ -57,8 +61,9 @@ class AuthAdapter:
         return {"Authorization": "Bearer " + token}
 
     def add_headers(self, request: requests.PreparedRequest, scopes: list[str]):
-        for k, v in self.get_headers(request.url, scopes).items():
-            request.headers[k] = v
+        if request.url:
+            for k, v in self.get_headers(request.url, scopes).items():
+                request.headers[k] = v
 
     def get_sub(self) -> str | None:
         """Retrieve `sub` claim from one of the existing tokens"""
@@ -91,7 +96,7 @@ class UTMClientSession(requests.Session):
 
         self._prefix_url = prefix_url[0:-1] if prefix_url[-1] == "/" else prefix_url
         self.auth_adapter = auth_adapter
-        self.default_scopes = None
+        self.default_scopes: list[str] | None = None
         self.timeout_seconds = timeout_seconds or CLIENT_TIMEOUT
 
     # Overrides method on requests.Session
@@ -117,7 +122,7 @@ class UTMClientSession(requests.Session):
             def auth(
                 prepared_request: requests.PreparedRequest,
             ) -> requests.PreparedRequest:
-                if scopes:
+                if scopes and self.auth_adapter:
                     self.auth_adapter.add_headers(prepared_request, scopes)
                 return prepared_request
 
@@ -126,11 +131,11 @@ class UTMClientSession(requests.Session):
             kwargs["timeout"] = self.timeout_seconds
         return kwargs
 
-    def request(self, method, url, **kwargs):
+    def request(self, method, url, *args, **kwargs):
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(kwargs)
 
-        return super().request(method, url, **kwargs)
+        return super().request(method, url, *args, **kwargs)
 
     def get_prefix_url(self):
         return self._prefix_url
@@ -161,15 +166,16 @@ class AsyncUTMTestSession:
 
         self._prefix_url = prefix_url[0:-1] if prefix_url[-1] == "/" else prefix_url
         self.auth_adapter = auth_adapter
-        self.default_scopes = None
+        self.default_scopes: list[str] | None = None
         self.timeout_seconds = timeout_seconds or CLIENT_TIMEOUT
 
     async def build_session(self):
         self._client = ClientSession()
 
     def close(self):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self._client.close())
+        if self._client:
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(self._client.close())
 
     def adjust_request_kwargs(self, url, method, kwargs):
         if self.auth_adapter:
@@ -202,6 +208,10 @@ class AsyncUTMTestSession:
         url = self._prefix_url + url
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "PUT", kwargs)
+
+        if not self._client:
+            raise ValueError("Client is not ready")
+
         async with self._client.put(url, **kwargs) as response:
             return (
                 response.status,
@@ -214,6 +224,10 @@ class AsyncUTMTestSession:
         url = self._prefix_url + url
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "GET", kwargs)
+
+        if not self._client:
+            raise ValueError("Client is not ready")
+
         async with self._client.get(url, **kwargs) as response:
             return (
                 response.status,
@@ -226,6 +240,10 @@ class AsyncUTMTestSession:
         url = self._prefix_url + url
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "POST", kwargs)
+
+        if not self._client:
+            raise ValueError("Client is not ready")
+
         async with self._client.post(url, **kwargs) as response:
             return (
                 response.status,
@@ -238,6 +256,10 @@ class AsyncUTMTestSession:
         url = self._prefix_url + url
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "DELETE", kwargs)
+
+        if not self._client:
+            raise ValueError("Client is not ready")
+
         async with self._client.delete(url, **kwargs) as response:
             return (
                 response.status,

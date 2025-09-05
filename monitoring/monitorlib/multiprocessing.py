@@ -2,6 +2,7 @@ import json
 import multiprocessing
 import multiprocessing.shared_memory
 from collections.abc import Callable
+from multiprocessing.synchronize import RLock as RLockT
 from typing import Any
 
 
@@ -24,7 +25,7 @@ class SynchronizedValue:
     SIZE_BYTES = 4
     """Number of bytes at the beginning of the memory buffer dedicated to defining the size of the content."""
 
-    _lock: multiprocessing.RLock
+    _lock: RLockT
     _shared_memory: multiprocessing.shared_memory.SharedMemory
     _encoder: Callable[[Any], bytes]
     _decoder: Callable[[bytes], Any]
@@ -33,7 +34,7 @@ class SynchronizedValue:
     def __init__(
         self,
         initial_value,
-        capacity_bytes: int = 10e6,
+        capacity_bytes: int = 10000000,
         encoder: Callable[[Any], bytes] | None = None,
         decoder: Callable[[bytes], Any] | None = None,
     ):
