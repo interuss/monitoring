@@ -416,14 +416,11 @@ class DSSInstance:
     def set_uss_availability(
         self,
         uss_id: str,
-        available: bool | None,
+        availability: UssAvailabilityState,
         version: str = "",
     ) -> tuple[str, Query]:
         """
         Set the availability for the USS identified by 'uss_id'.
-
-        If 'available' is None, the availability will be set to 'Unknown'.
-        True will set it to 'Normal', and False to 'Down'.
 
         Returns:
             A tuple composed of
@@ -433,13 +430,6 @@ class DSSInstance:
             * QueryError: if request failed, if HTTP status code is different than 200, or if the parsing of the response failed.
         """
         self._uses_scope(Scope.AvailabilityArbitration)
-        if available is None:
-            availability = UssAvailabilityState.Unknown
-        elif available:
-            availability = UssAvailabilityState.Normal
-        else:
-            availability = UssAvailabilityState.Down
-
         req = SetUssAvailabilityStatusParameters(
             old_version=version,
             availability=availability,
