@@ -2,6 +2,7 @@ import arrow
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
     OperationalIntentState,
+    UssAvailabilityState,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -319,7 +320,7 @@ class DownUSS(TestScenario):
             try:
                 availability_version, avail_query = self.dss.set_uss_availability(
                     self.uss_qualifier_sub,
-                    True,
+                    UssAvailabilityState.Normal,
                 )
                 self.record_query(avail_query)
             except QueryError as e:

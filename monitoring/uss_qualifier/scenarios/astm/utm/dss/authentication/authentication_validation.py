@@ -391,7 +391,7 @@ class AuthenticationValidation(TestScenario):
             with self.check("USS Availability can be updated", self._pid) as check:
                 try:
                     availability, q = self._availability_dss.set_uss_availability(
-                        self._test_id, available=None, version=availability.version
+                        self._test_id, UssAvailabilityState.Unknown, availability.version
                     )
                     self.record_query(q)
                 except QueryError as e:
