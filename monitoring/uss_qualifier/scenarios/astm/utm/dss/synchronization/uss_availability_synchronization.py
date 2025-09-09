@@ -30,7 +30,7 @@ class USSAvailabilitySynchronization(TestScenario):
 
     _uss_id: str
 
-    _current_version: str | None = None
+    _current_version: str = ""
 
     def __init__(
         self,
@@ -61,7 +61,7 @@ class USSAvailabilitySynchronization(TestScenario):
         self._uss_id = client_identity.subject()
 
     def run(self, context: ExecutionContext):
-        self._current_version = None
+        self._current_version = ""
 
         self.begin_test_scenario(context)
 
@@ -226,7 +226,9 @@ class USSAvailabilitySynchronization(TestScenario):
             with self.check("USS Availability can be set to Unknown") as check:
                 try:
                     self._current_version, q = self._dss.set_uss_availability(
-                        self._uss_id, UssAvailabilityState.Unknown, self._current_version
+                        self._uss_id,
+                        UssAvailabilityState.Unknown,
+                        self._current_version,
                     )
                     self.record_query(q)
                 except QueryError as qe:
