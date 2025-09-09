@@ -9,6 +9,7 @@ from uas_standards.astm.f3548.v21.api import (
     GetOperationalIntentDetailsResponse,
     OperationalIntentReference,
     OperationalIntentState,
+    UssAvailabilityState,
     Volume4D,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -663,7 +664,7 @@ def set_uss_available(
         try:
             availability_version, avail_query = dss.set_uss_availability(
                 uss_sub,
-                True,
+                UssAvailabilityState.Normal,
             )
             scenario.record_query(avail_query)
         except QueryError as e:
@@ -695,7 +696,7 @@ def set_uss_down(
         try:
             availability_version, avail_query = dss.set_uss_availability(
                 uss_sub,
-                False,
+                UssAvailabilityState.Down,
             )
             scenario.record_query(avail_query)
         except QueryError as e:
