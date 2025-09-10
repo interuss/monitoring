@@ -43,14 +43,43 @@ class Cluster(ImplicitDict):
         u_max = max(p.x for p in self.points)
         v_max = max(p.y for p in self.points)
 
-        x_offset = random.uniform(-u_max, u_min)
-        y_offset = random.uniform(-v_max, v_min)
+        # We create a base shift so the current x_min/y_min are on the minimum
+        # value possible
+        x_offset = u_min - self.x_min
+        y_offset = v_min - self.y_min
+
+        # We move back the shift value to at most (shifted x_max - u_max), to keep the
+        # windows with all points.
+        # If the size is too small, this will fail, but the cluster is already
+        # bad
+        x_offset -= random.uniform(0, self.x_max + x_offset - u_max)
+        y_offset -= random.uniform(0, self.y_max + y_offset - v_max)
+
+        # Proof it work:
+        #
+        # If random choose the minimum value:
+        # x_offset = u_min - self.x_min - 0
+        # x_min = self.x_min + x_offset
+        #       = self.x_min + u_min - self.x_min
+        #       = u_min
+        # So if the cluster is big enough, our min will be on the minimum edge of our
+        # points
+        #
+        # If random choose the maximium value:
+        # x_offset = u_min - self.x_min - (self.x_max + x_offset - u_max)
+        # x_offset = u_min - self.x_min - self.x_max - x_offset + u_max
+        # x_max = self.x_max + x_offset
+        # x_max = self.x_max + u_min - self.x_min - self.x_max - u_min + self.x_min + u_max
+        #       = u_max
+        # So if the cluster is big enough, our max will be on the maximum edge of our
+        # points
+
         return Cluster(
             x_min=self.x_min + x_offset,
             y_min=self.y_min + y_offset,
             x_max=self.x_max + x_offset,
             y_max=self.y_max + y_offset,
-            points=self.points,
+            points=list(self.points),
         )
 
     def extend(self, rid_version: RIDVersion, view_area_sqm: float):
@@ -66,7 +95,7 @@ class Cluster(ImplicitDict):
                 x_max=cluster.x_max + delta,
                 y_min=cluster.y_min,
                 y_max=cluster.y_max,
-                points=cluster.points,
+                points=list(cluster.points),
             )
 
         # Extend cluster height to match the minimum distance required by NET0490
@@ -77,19 +106,19 @@ class Cluster(ImplicitDict):
                 x_max=cluster.x_max,
                 y_min=cluster.y_min - delta,
                 y_max=cluster.y_max + delta,
-                points=cluster.points,
+                points=list(cluster.points),
             )
 
         # Extend cluster to the minimum area size required by NET0480
         min_cluster_area = view_area_sqm * rid_version.min_cluster_size_percent / 100
-        if self.area() < min_cluster_area:
-            scale = math.sqrt(min_cluster_area / self.area()) / 2
+        if cluster.area() < min_cluster_area:
+            scale = math.sqrt(min_cluster_area / cluster.area()) / 2
             cluster = Cluster(
-                x_min=self.x_min - scale * self.width(),
-                x_max=self.x_max + scale * self.width(),
-                y_min=self.y_min - scale * self.height(),
-                y_max=self.y_max + scale * self.height(),
-                points=self.points,
+                x_min=cluster.x_min - scale * cluster.width(),
+                x_max=cluster.x_max + scale * cluster.width(),
+                y_min=cluster.y_min - scale * cluster.height(),
+                y_max=cluster.y_max + scale * cluster.height(),
+                points=list(cluster.points),
             )
 
         return cluster
