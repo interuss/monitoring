@@ -65,7 +65,7 @@ class Cluster(ImplicitDict):
         # So if the cluster is big enough, our min will be on the minimum edge of our
         # points
         #
-        # If random choose the maximium value:
+        # If random choose the maximum value:
         # x_offset = u_min - self.x_min - (self.x_max + x_offset - u_max)
         # x_offset = u_min - self.x_min - self.x_max - x_offset + u_max
         # x_max = self.x_max + x_offset
