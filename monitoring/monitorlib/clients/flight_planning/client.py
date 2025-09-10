@@ -1,3 +1,4 @@
+import datetime
 from abc import ABC, abstractmethod
 
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
@@ -7,11 +8,12 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
+    QueryUserNotificationsResponse,
 )
 from monitoring.monitorlib.clients.flight_planning.test_preparation import (
     TestPreparationActivityResponse,
 )
-from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.fetch import Query, QueryError
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 
@@ -86,6 +88,19 @@ class FlightPlannerClient(ABC):
     @abstractmethod
     def clear_area(self, area: Volume4D) -> TestPreparationActivityResponse:
         """Acting as test director, instruct the USS to close/end/remove all flights it manages within the specified area.
+
+        Raises:
+            * PlanningActivityError
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_user_notifications(
+        self,
+        after: datetime.datetime,
+        before: datetime.datetime,
+    ) -> tuple[QueryUserNotificationsResponse | None, Query]:
+        """Acting as test director, retrive notification send by the USS.
 
         Raises:
             * PlanningActivityError
