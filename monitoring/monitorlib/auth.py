@@ -547,6 +547,24 @@ class ClientIdClientSecret(AuthAdapter):
         return response.json()["access_token"]
 
 
+class Keycloak(ClientIdClientSecret):
+    """Auth adpater for Keycloak. Assume Keycloak is configured to add the correct audience in the token via a client scope, named as the intended audience"""
+
+    def __init__(
+        self,
+        token_endpoint: str,
+        client_id: str,
+        client_secret: str,
+    ):
+        super().__init__(token_endpoint, client_id, client_secret, True)
+
+    def issue_token(self, intended_audience: str, scopes: list[str]) -> str:
+        if intended_audience not in scopes:
+            scopes.append(intended_audience)
+
+        return super().issue_token(intended_audience, scopes)
+
+
 class FlightPassport(ClientIdClientSecret):
     """Auth adpater for Flight Passport OAUTH server (https://www.github.com/openskies-sh/flight_passport)"""
 
