@@ -2,6 +2,7 @@ import json
 
 from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
 
+from monitoring.monitorlib.clients.flight_planning.planning import UserNotification
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 
@@ -46,8 +47,16 @@ class Database(ImplicitDict):
     most_recent_periodic_check: StringBasedDateTime | None
     """Timestamp of most recent time periodic task loop iterated"""
 
+    flight_planning_notifications: list[UserNotification]
+    """List of notifications send during flight planning operations"""
+
 
 db = SynchronizedValue(
-    Database(one_time_tasks=[], task_errors=[], periodic_tasks={}),
+    Database(
+        one_time_tasks=[],
+        task_errors=[],
+        periodic_tasks={},
+        flight_planning_notifications=[],
+    ),
     decoder=lambda b: ImplicitDict.parse(json.loads(b.decode("utf-8")), Database),
 )

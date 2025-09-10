@@ -1,3 +1,4 @@
+import datetime
 import uuid
 
 from implicitdict import ImplicitDict
@@ -17,11 +18,12 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     AdvisoryInclusion,
     FlightPlanStatus,
     PlanningActivityResponse,
+    QueryUserNotificationsResponse,
 )
 from monitoring.monitorlib.clients.flight_planning.test_preparation import (
     TestPreparationActivityResponse,
 )
-from monitoring.monitorlib.fetch import QueryType, query_and_describe
+from monitoring.monitorlib.fetch import Query, QueryType, query_and_describe
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -248,3 +250,28 @@ class V1FlightPlannerClient(FlightPlannerClient):
 
     def get_base_url(self):
         return self._session.get_prefix_url()
+
+    def get_user_notifications(
+        self,
+        after: datetime.datetime,
+        before: datetime.datetime,
+    ) -> tuple[QueryUserNotificationsResponse | None, Query]:
+        op = api.OPERATIONS[api.OperationID.QueryUserNotifications]
+        q = query_and_describe(
+            self._session,
+            op.verb,
+            op.path,
+            scope=Scope.Plan,
+            participant_id=self.participant_id,
+            query_type=QueryType.InterUSSFlightPlanningV1ClearAreaQueryUserNotifications,
+            params={
+                "after": after.isoformat(),
+                "before": before.isoformat(),
+            },
+        )
+        try:
+            return ImplicitDict.parse(
+                q.response.json or {}, QueryUserNotificationsResponse
+            ), q
+        except ValueError:
+            return None, q

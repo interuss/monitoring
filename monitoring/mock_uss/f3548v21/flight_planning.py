@@ -26,6 +26,10 @@ class PlanningError(Exception):
     pass
 
 
+class PlanningConflictError(PlanningError):
+    pass
+
+
 def validate_request(op_intent: f3548_v21.OperationalIntent) -> None:
     """Raise a PlannerError if the request is not valid.
 
@@ -166,7 +170,7 @@ def check_for_disallowed_conflicts(
                 continue
 
         if v1.intersects_vol4s(v2):
-            raise PlanningError(
+            raise PlanningConflictError(
                 f"Requested flight (priority {new_priority}) intersected {op_intent.reference.manager}'s operational intent {op_intent.reference.id} (priority {old_priority})"
             )
 

@@ -1,3 +1,4 @@
+import datetime
 import uuid
 
 from implicitdict import ImplicitDict
@@ -20,11 +21,12 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     FlightPlanStatus,
     PlanningActivityResponse,
     PlanningActivityResult,
+    QueryUserNotificationsResponse,
 )
 from monitoring.monitorlib.clients.flight_planning.test_preparation import (
     TestPreparationActivityResponse,
 )
-from monitoring.monitorlib.fetch import QueryType, query_and_describe
+from monitoring.monitorlib.fetch import Query, QueryType, query_and_describe
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -298,3 +300,12 @@ class SCDFlightPlannerClient(FlightPlannerClient):
 
     def get_base_url(self):
         return self._session.get_prefix_url()
+
+    def get_user_notifications(
+        self,
+        after: datetime.datetime,
+        before: datetime.datetime,
+    ) -> tuple[QueryUserNotificationsResponse | None, Query]:
+        raise PlanningActivityError(
+            "Legacy scd automated testing API don't support user notification retrival"
+        )
