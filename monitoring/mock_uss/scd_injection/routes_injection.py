@@ -22,6 +22,7 @@ from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
 from monitoring.mock_uss.f3548v21 import utm_client
 from monitoring.mock_uss.f3548v21.flight_planning import (
+    PlanningConflictError,
     PlanningError,
     check_op_intent,
     delete_op_intent,
@@ -153,7 +154,7 @@ def inject_flight(
     )
 
     def unsuccessful(
-        result: PlanningActivityResult, msg: str
+        result: PlanningActivityResult, msg: str, has_conflict=None
     ) -> PlanningActivityResponse:
         return PlanningActivityResponse(
             flight_id=flight_id,
@@ -161,6 +162,7 @@ def inject_flight(
             activity_result=result,
             flight_plan_status=old_status,
             notes=msg,
+            has_conflict=has_conflict,
         )
 
     # Validate request
@@ -178,7 +180,11 @@ def inject_flight(
         try:
             key = check_op_intent(new_flight, existing_flight, locality, log)
         except PlanningError as e:
-            return unsuccessful(PlanningActivityResult.Rejected, str(e))
+            return unsuccessful(
+                PlanningActivityResult.Rejected,
+                str(e),
+                isinstance(e, PlanningConflictError),
+            )
 
         step_name = "sharing operational intent in DSS"
         record, notif_errors = share_op_intent(new_flight, existing_flight, key, log)
