@@ -148,26 +148,30 @@ function(env) {
 
           // An area designed to be soo big as to be refused by systems queries with it.
           problematically_big_area: {
-            resource_type: 'resources.VerticesResource',
+            resource_type: 'resources.VolumeResource',
             specification: {
-              vertices: [
-                {
-                  lat: 33,
-                  lng: -96,
-                },
-                {
-                  lat: 32,
-                  lng: -96,
-                },
-                {
-                  lat: 32,
-                  lng: -95,
-                },
-                {
-                  lat: 33,
-                  lng: -95,
-                },
-              ],
+              template: {
+                outline_polygon: {
+                  vertices: [
+                    {
+                      lat: 33,
+                      lng: -96,
+                    },
+                    {
+                      lat: 32,
+                      lng: -96,
+                    },
+                    {
+                      lat: 32,
+                      lng: -95,
+                    },
+                    {
+                      lat: 33,
+                      lng: -95,
+                    },
+                  ],
+                }
+              },
             },
           },
 
