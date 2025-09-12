@@ -297,10 +297,10 @@ def cleanup_constraint_ref(
             if cr.ovn is None:
                 check.record_failed(
                     summary=f"CR {cr_id} is missing OVN",
-                    details="The CR retrieved from the DSS did not include an OVN, despite the CR being owned by uss_qualifier. The scenario cannot proceed.",
+                    details="The CR retrieved from the DSS did not include an OVN, despite the CR being owned by uss_qualifier.",
                     query_timestamps=[q.request.timestamp],
                 )
-                return False
+                raise ScenarioDidNotStopError(check)
         except fetch.QueryError as e:
             scenario.record_queries(e.queries)
             if e.cause_status_code != 404:
@@ -309,6 +309,7 @@ def cleanup_constraint_ref(
                     details=e.msg,
                     query_timestamps=e.query_timestamps,
                 )
+                raise ScenarioDidNotStopError(check)
             return False
 
     if delete_if_exists:
