@@ -7,11 +7,11 @@ import s2sphere
 from monitoring.monitorlib.fetch.rid import Subscription
 from monitoring.monitorlib.mutate.rid import ChangedSubscription
 from monitoring.prober.infrastructure import register_resource_type
-from monitoring.uss_qualifier.resources import VerticesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
+from monitoring.uss_qualifier.resources.volume import VolumeResource
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -49,7 +49,7 @@ class SubscriptionSimple(GenericTestScenario):
         dss: DSSInstanceResource,
         id_generator: IDGeneratorResource,
         isa: ServiceAreaResource,
-        problematically_big_area: VerticesResource,
+        problematically_big_area: VolumeResource,
         client_identity: ClientIdentityResource,
     ):
         """
@@ -77,10 +77,9 @@ class SubscriptionSimple(GenericTestScenario):
             self._base_sub_id[:-1] + f"{i}" for i in range(4)
         ]
 
-        self._problematically_big_area = [
-            vertex.as_s2sphere()
-            for vertex in problematically_big_area.specification.vertices
-        ]
+        self._problematically_big_area = (
+            problematically_big_area.specification.s2_vertices()
+        )
 
         self._client_identity = client_identity
 

@@ -176,11 +176,11 @@ class CRSynchronization(TestScenario):
             time_end=datetime.now() + timedelta(minutes=20),
         )
         self.begin_test_step("Ensure clean workspace")
-        self._ensure_clean_workspace_step()
+        self._ensure_clean_primary_workspace_step()
         self.end_test_step()
         self.end_test_case()
 
-    def _ensure_clean_workspace_step(self):
+    def _ensure_clean_primary_workspace_step(self):
         # Delete any active CRs we might own
         test_step_fragments.cleanup_active_constraint_refs(
             self,
@@ -191,6 +191,13 @@ class CRSynchronization(TestScenario):
 
         # Make sure the CR ID we are going to use is available
         test_step_fragments.cleanup_constraint_ref(self, self._dss, self._cr_id)
+
+    def _verify_clean_secondaries_step(self):
+        self.begin_test_step("Verify secondary DSS instances are clean")
+        for dss in self._secondary_dss_instances:
+            test_step_fragments.verify_constraint_does_not_exist(self, dss, self._cr_id)
+
+        self.end_test_step()
 
     def _create_cr_with_params(self, creation_params: PutConstraintReferenceParameters):
         with self.check(
@@ -583,5 +590,5 @@ class CRSynchronization(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        self._ensure_clean_workspace_step()
+        self._ensure_clean_primary_workspace_step()
         self.end_cleanup()

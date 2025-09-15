@@ -358,6 +358,9 @@ class QueryType(str, Enum):
     InterUSSFlightPlanningV1DeleteFlightPlan = (
         "interuss.automated_testing.flight_planning.v1.DeleteFlightPlan"
     )
+    InterUSSFlightPlanningV1ClearAreaQueryUserNotifications = (
+        "interuss.automated_testing.flight_planning.v1.QueryUserNotifications"
+    )
 
     # InterUSS automated testing geospatial_map interface
     InterUSSGeospatialMapV1QueryGeospatialMap = (

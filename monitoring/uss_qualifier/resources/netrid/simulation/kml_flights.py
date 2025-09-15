@@ -413,7 +413,7 @@ def get_flight_records(
             flight_state_speeds,
             flight_track_angles,
             reference_time,
-            random_seed,
+            f"{random_seed}{flight_name}{flight_details}",  # Ensure seed is unique per flight
         )
         flight_records.append(flight_record)
     return FlightRecordCollection(flights=flight_records)

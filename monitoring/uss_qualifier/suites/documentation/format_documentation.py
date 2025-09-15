@@ -54,10 +54,10 @@ def main(lint: bool) -> int:
                 print(
                     f"^^^ Test suite documentation must be regenerated with `make format`: {suite_doc_file}"
                 )
-        else:
-            with open(suite_doc_file, "w") as f:
-                f.write(suite_doc_content)
-            print(f"Wrote test suite documentation: {suite_doc_file}")
+            else:
+                with open(suite_doc_file, "w") as f:
+                    f.write(suite_doc_content)
+                print(f"Wrote test suite documentation: {suite_doc_file}")
 
     if lint and changes:
         return -1

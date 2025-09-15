@@ -119,6 +119,22 @@ def cleanup_sub(
     return True
 
 
+def verify_subscription_does_not_exist(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    sub_id: EntityID,
+):
+    sub_found = cleanup_sub(scenario, dss, sub_id, delete_if_exists=False)
+    with scenario.check(
+        "Subscription with test ID does not exist", dss.participant_id
+    ) as check:
+        if sub_found:
+            check.record_failed(
+                summary=f"Subscription {sub_id} was still found on DSS {dss.participant_id}",
+                details=f"Expected subscription {sub_id} to not be found on secondary DSS because it was not present on, or has been removed, from the primary DSS, but it was returned.",
+            )
+
+
 def cleanup_active_subs(
     scenario: TestScenarioType, dss: DSSInstance, volume: Volume4D
 ) -> None:
@@ -241,15 +257,35 @@ def cleanup_op_intent(
     return True
 
 
+def verify_op_intent_does_not_exist(
+    scenario: TestScenarioType, dss: DSSInstance, oi_id: EntityID
+):
+    oir_found = cleanup_op_intent(scenario, dss, oi_id, delete_if_exists=False)
+    with scenario.check(
+        "Operational intent reference with test ID does not exist",
+        dss.participant_id,
+    ) as check:
+        if oir_found:
+            check.record_failed(
+                summary=f"Operational intent reference {oi_id} was still found on DSS {dss.participant_id}",
+                details=f"Expected operational intent reference {oi_id} to not be found on secondary DSS because it was not present on, or has been removed, from the primary DSS, but it was returned.",
+            )
+
+
 def cleanup_constraint_ref(
-    scenario: TestScenarioType, dss: DSSInstance, cr_id: EntityID
-) -> None:
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    cr_id: EntityID,
+    delete_if_exists: bool = False,
+) -> bool:
     """
     Remove the specified constraint reference from the DSS, if it exists.
 
     This function implements some of the test step fragment described in clean_workspace.md:
         - Constraint references can be queried by ID
         - Constraint reference removed
+
+    :return: True if the constraint reference was found to exist, False if no constraint reference was found.
     """
 
     with scenario.check(
@@ -258,6 +294,13 @@ def cleanup_constraint_ref(
         try:
             cr, q = dss.get_constraint_ref(cr_id)
             scenario.record_query(q)
+            if cr.ovn is None:
+                check.record_failed(
+                    summary=f"CR {cr_id} is missing OVN",
+                    details="The CR retrieved from the DSS did not include an OVN, despite the CR being owned by uss_qualifier.",
+                    query_timestamps=[q.request.timestamp],
+                )
+                raise ScenarioDidNotStopError(check)
         except fetch.QueryError as e:
             scenario.record_queries(e.queries)
             if e.cause_status_code != 404:
@@ -266,7 +309,25 @@ def cleanup_constraint_ref(
                     details=e.msg,
                     query_timestamps=e.query_timestamps,
                 )
-            else:
-                return
+                raise ScenarioDidNotStopError(check)
+            return False
 
-    remove_constraint_ref(scenario, dss, cr_id, cr.ovn)
+    if delete_if_exists:
+        remove_constraint_ref(scenario, dss, cr_id, cr.ovn)
+
+    return True
+
+
+def verify_constraint_does_not_exist(
+    scenario: TestScenarioType, dss: DSSInstance, cr_id: EntityID
+):
+    cr_found = cleanup_constraint_ref(scenario, dss, cr_id, delete_if_exists=False)
+    with scenario.check(
+        "constraint reference with test ID does not exist",
+        dss.participant_id,
+    ) as check:
+        if cr_found:
+            check.record_failed(
+                summary=f"Constraint intent reference {cr_id} was still found on DSS {dss.participant_id}",
+                details=f"Expected constraint reference {cr_id} to not be found on secondary DSS because it was not present on, or has been removed, from the primary DSS, but it was returned.",
+            )

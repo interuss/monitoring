@@ -4,6 +4,9 @@ from enum import Enum
 
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21 import api as f3548v21
+from uas_standards.interuss.automated_testing.flight_planning.v1 import (
+    api as flight_planning_api,
+)
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
@@ -91,6 +94,9 @@ class PlanningActivityResponse(ImplicitDict):
 
     includes_advisories: AdvisoryInclusion | None = AdvisoryInclusion.Unknown
 
+    has_conflict: bool | None
+    """If the planning activity has at least one conflict"""
+
     def to_inject_flight_response(self) -> scd_api.InjectFlightResponse:
         if self.activity_result == PlanningActivityResult.Completed:
             if self.flight_plan_status == FlightPlanStatus.Planned:
@@ -148,3 +154,29 @@ class ClearAreaResponse(ImplicitDict):
             and not self.op_intent_removal_errors
             and self.error is None
         )
+
+
+class Conflict(str, Enum):
+    """Conflict status as indicated in the notification."""
+
+    Unknown = "Unknown"
+    """Notification doesn't contain information regarding conflicts."""
+
+    None_ = "None"
+    """Notification indicates no conflicts."""
+
+    Single = "Single"
+    """Notification indicates the presence of one conflict."""
+
+    Multiple = "Multiple"
+    """Notification indicates the presence of multiple conflicts."""
+
+
+class UserNotification(ImplicitDict):
+    observed_at: flight_planning_api.Time
+    conflicts: Conflict
+
+
+class QueryUserNotificationsResponse(ImplicitDict):
+    user_notifications: list[UserNotification]
+    """List of applicable observed user notifications."""

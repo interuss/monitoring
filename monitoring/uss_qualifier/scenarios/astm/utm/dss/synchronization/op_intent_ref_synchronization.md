@@ -33,6 +33,10 @@ are properly propagated to every other DSS instance participating in the deploym
 
 #### [Clean any existing operational intents references with known test IDs](../clean_workspace_op_intents.md)
 
+### Verify secondary DSS instances are clean test step
+
+#### [Verify secondary DSS contains no operational intents references with a test ID](../fragments/oir/verify_clean_secondary_workspace.md)
+
 ## OIR synchronization test case
 
 This test case creates an operational intent reference on the main DSS, and verifies that it is properly synchronized to the other DSS instances.

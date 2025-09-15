@@ -20,7 +20,7 @@ Perform basic operations on a single DSS instance to create, update and delete s
 
 ### problematically_big_area
 
-[`VerticesResource`](../../../../../resources/vertices.py) describing an area designed to be too big to be accepted by the DSS.
+[`VolumeResource`](../../../../../resources/volume.py) describing an area designed to be too big to be accepted by the DSS as a subscription area.
 
 ### client_identity
 
