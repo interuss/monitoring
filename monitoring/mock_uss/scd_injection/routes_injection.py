@@ -178,7 +178,9 @@ def inject_flight(
     try:
         step_name = "checking F3548-21 operational intent"
         try:
-            key = check_op_intent(new_flight, existing_flight, locality, log)
+            key, has_conflict = check_op_intent(
+                new_flight, existing_flight, locality, log
+            )
         except PlanningError as e:
             return unsuccessful(
                 PlanningActivityResult.Rejected,
@@ -210,6 +212,7 @@ def inject_flight(
             activity_result=PlanningActivityResult.Completed,
             flight_plan_status=FlightPlanStatus.from_flightinfo(record.flight_info),
             notes=notes,
+            has_conflict=has_conflict,
         )
     except (ValueError, ConnectionError) as e:
         notes = (

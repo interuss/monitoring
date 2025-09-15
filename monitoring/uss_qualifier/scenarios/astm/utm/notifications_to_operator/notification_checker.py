@@ -20,23 +20,17 @@ from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 class NotificationChecker(GenericTestScenario, ABC):
     """Helper class to do notification checks"""
 
-    tested_uss: FlightPlannerClient
-
-    def _record_current_notifications(self):
+    def _record_current_notifications(self, uss: FlightPlannerClient):
         self._notifications_start_point = arrow.utcnow().datetime
 
-        with self.check(
-            "Retrive notifications", [self.tested_uss.participant_id]
-        ) as check:
+        with self.check("Retrive notifications", [uss.participant_id]) as check:
             try:
-                self._base_notifications_response, query = (
-                    self.tested_uss.get_user_notifications(
-                        before=self._notifications_start_point
-                        + timedelta(
-                            seconds=ConflictingOIMaxUserNotificationTimeSeconds + 2
-                        ),
-                        after=self._notifications_start_point,
-                    )
+                self._base_notifications_response, query = uss.get_user_notifications(
+                    before=self._notifications_start_point
+                    + timedelta(
+                        seconds=ConflictingOIMaxUserNotificationTimeSeconds + 2
+                    ),
+                    after=self._notifications_start_point,
                 )
 
                 self.record_query(query)
@@ -53,12 +47,12 @@ class NotificationChecker(GenericTestScenario, ABC):
             ):
                 check.record_failed(
                     summary="Unable to retrive base notifications",
-                    details=f"USS {self.tested_uss.participant_id} didn't returned a list of notification before the action to compare as a base.",
+                    details=f"USS {uss.participant_id} didn't returned a list of notification before the action to compare as a base.",
                     query_timestamps=[query.request.timestamp] if query else [],
                 )
                 self._base_notifications_response = None
 
-    def _wait_for_conflit_notification(self):
+    def _wait_for_conflit_notification(self, uss: FlightPlannerClient):
         def _notification_filter(n):
             return "conflicts" not in n or n.conflicts in [
                 Conflict.Unknown,
@@ -67,7 +61,7 @@ class NotificationChecker(GenericTestScenario, ABC):
             ]
 
         with self.check(
-            "New notification about conflict", [self.tested_uss.participant_id]
+            "New notification about conflict", [uss.participant_id]
         ) as check:
             if not self._base_notifications_response:
                 # No query: not supported API
@@ -84,7 +78,7 @@ class NotificationChecker(GenericTestScenario, ABC):
             )
 
             def _check():
-                notifications, query = self.tested_uss.get_user_notifications(
+                notifications, query = uss.get_user_notifications(
                     before=self._notifications_start_point
                     + timedelta(
                         seconds=ConflictingOIMaxUserNotificationTimeSeconds + 2
@@ -97,7 +91,7 @@ class NotificationChecker(GenericTestScenario, ABC):
                 if not notifications or "user_notifications" not in notifications:
                     check.record_failed(
                         summary="No notification returned",
-                        details=f"USS {self.tested_uss.participant_id} didn't returned a list of notification when quering for new notifications.",
+                        details=f"USS {uss.participant_id} didn't returned a list of notification when quering for new notifications.",
                         query_timestamps=[query.request.timestamp],
                     )
                     return
@@ -130,5 +124,5 @@ class NotificationChecker(GenericTestScenario, ABC):
                 # these notifications were received within that threshold
                 check.record_failed(
                     summary="No new notification about conflict recieved",
-                    details=f"USS {self.tested_uss.participant_id} didn't created a new notifications about conflict.",
+                    details=f"USS {uss.participant_id} didn't created a new notifications about conflict.",
                 )

@@ -234,7 +234,7 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Record current notifications")
-        self._record_current_notifications()
+        self._record_current_notifications(self.tested_uss)
         self.end_test_step()
 
         self.begin_test_step("Attempt to plan Flight 1")
@@ -254,8 +254,8 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             validator.expect_not_shared()
         self.end_test_step()
 
-        self.begin_test_step("Check for conflict notification")
-        self._wait_for_conflit_notification()
+        self.begin_test_step("Check for Flight 1 conflict notification")
+        self._wait_for_conflit_notification(self.tested_uss)
         self.end_test_step()
 
         self.begin_test_step("Delete Flight 2")
@@ -283,6 +283,10 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             flight_1_oi_ref = validator.expect_shared(flight1_planned)
         self.end_test_step()
 
+        self.begin_test_step("Record current notifications")
+        self._record_current_notifications(self.control_uss)
+        self.end_test_step()
+
         self.begin_test_step("Plan Flight 2")
         flight2_planned = self.resolve_flight(self.flight2_planned)
 
@@ -300,8 +304,12 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             validator.expect_shared(flight2_planned)
         self.end_test_step()
 
+        self.begin_test_step("Check for Flight 2 conflict notification")
+        self._wait_for_conflit_notification(self.control_uss)
+        self.end_test_step()
+
         self.begin_test_step("Record current notifications")
-        self._record_current_notifications()
+        self._record_current_notifications(self.tested_uss)
         self.end_test_step()
 
         self.begin_test_step("Attempt to modify planned Flight 1 in conflict")
@@ -325,8 +333,8 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             )
         self.end_test_step()
 
-        self.begin_test_step("Check for conflict notification")
-        self._wait_for_conflit_notification()
+        self.begin_test_step("Check for Flight 1 conflict notification")
+        self._wait_for_conflit_notification(self.tested_uss)
         self.end_test_step()
 
         return flight_1_oi_ref, flight1_planned
@@ -337,7 +345,7 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
         flight_1_intent: FlightInfo,
     ) -> OperationalIntentReference | None:
         self.begin_test_step("Record current notifications")
-        self._record_current_notifications()
+        self._record_current_notifications(self.tested_uss)
         self.end_test_step()
 
         self.begin_test_step("Attempt to activate conflicting Flight 1")
@@ -361,8 +369,8 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             )
         self.end_test_step()
 
-        self.begin_test_step("Check for conflict notification")
-        self._wait_for_conflit_notification()
+        self.begin_test_step("Check for Flight 1 conflict notification")
+        self._wait_for_conflit_notification(self.tested_uss)
         self.end_test_step()
 
         return flight_1_oi_ref
@@ -394,6 +402,10 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             flight_1_oi_ref = validator.expect_shared(flight1_activated)
         self.end_test_step()
 
+        self.begin_test_step("Record current notifications")
+        self._record_current_notifications(self.control_uss)
+        self.end_test_step()
+
         self.begin_test_step("Plan Flight 2")
         flight2_planned = self.resolve_flight(self.flight2_planned)
 
@@ -409,6 +421,14 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
                 flight2_planned,
             )
             flight_2_oi_ref = validator.expect_shared(flight2_planned)
+        self.end_test_step()
+
+        self.begin_test_step("Check for Flight 2 conflict notification")
+        self._wait_for_conflit_notification(self.control_uss)
+        self.end_test_step()
+
+        self.begin_test_step("Record current notifications")
+        self._record_current_notifications(self.control_uss)
         self.end_test_step()
 
         self.begin_test_step("Activate Flight 2")
@@ -428,6 +448,10 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
                 self.flight2_id,
             )
             flight_2_oi_ref = validator.expect_shared(flight2_activated)
+        self.end_test_step()
+
+        self.begin_test_step("Check for Flight 2 conflict notification")
+        self._wait_for_conflit_notification(self.control_uss)
         self.end_test_step()
 
         self.begin_test_step(
@@ -487,7 +511,7 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Record current notifications")
-        self._record_current_notifications()
+        self._record_current_notifications(self.tested_uss)
         self.end_test_step()
 
         self.begin_test_step("Attempt to modify activated Flight 1 in conflict")
@@ -512,8 +536,8 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             )
         self.end_test_step()
 
-        self.begin_test_step("Check for conflict notification")
-        self._wait_for_conflit_notification()
+        self.begin_test_step("Check for Flight 1 conflict notification")
+        self._wait_for_conflit_notification(self.tested_uss)
         self.end_test_step()
 
     def cleanup(self):

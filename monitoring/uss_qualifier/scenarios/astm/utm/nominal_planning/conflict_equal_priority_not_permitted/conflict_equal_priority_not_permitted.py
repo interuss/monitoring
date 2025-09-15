@@ -275,7 +275,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Record current notifications")
-        self._record_current_notifications()
+        self._record_current_notifications(self.tested_uss)
         self.end_test_step()
 
         self.begin_test_step("Attempt to plan Flight 1")
@@ -296,12 +296,12 @@ class ConflictEqualPriorityNotPermitted(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Check for conflict notification")
-        self._wait_for_conflit_notification()
+        self._wait_for_conflit_notification(self.tested_uss)
         self.end_test_step()
 
     def _attempt_activate_flight_conflict(self):
         self.begin_test_step("Record current notifications")
-        self._record_current_notifications()
+        self._record_current_notifications(self.tested_uss)
         self.end_test_step()
 
         self.begin_test_step("Attempt to directly activate conflicting Flight 1")
@@ -323,7 +323,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Check for conflict notification")
-        self._wait_for_conflit_notification()
+        self._wait_for_conflit_notification(self.tested_uss)
         self.end_test_step()
 
     def _attempt_modify_planned_flight_conflict(
@@ -348,7 +348,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Record current notifications")
-        self._record_current_notifications()
+        self._record_current_notifications(self.tested_uss)
         self.end_test_step()
 
         self.begin_test_step("Attempt to modify planned Flight 1c into conflict")
@@ -373,7 +373,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Check for conflict notification")
-        self._wait_for_conflit_notification()
+        self._wait_for_conflit_notification(self.tested_uss)
         self.end_test_step()
 
         return flight_1_oi_ref
@@ -401,7 +401,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Record current notifications")
-        self._record_current_notifications()
+        self._record_current_notifications(self.tested_uss)
         self.end_test_step()
 
         self.begin_test_step("Attempt to modify activated Flight 1c into conflict")
@@ -426,7 +426,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Check for conflict notification")
-        self._wait_for_conflit_notification()
+        self._wait_for_conflit_notification(self.tested_uss)
         self.end_test_step()
 
         self.begin_test_step("Delete Flight 2")
@@ -508,7 +508,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Record current notifications")
-        self._record_current_notifications()
+        self._record_current_notifications(self.tested_uss)
         self.end_test_step()
 
         self.begin_test_step(
@@ -544,7 +544,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Check for conflict notification")
-        self._wait_for_conflit_notification()
+        self._wait_for_conflit_notification(self.tested_uss)
         self.end_test_step()
 
     def cleanup(self):

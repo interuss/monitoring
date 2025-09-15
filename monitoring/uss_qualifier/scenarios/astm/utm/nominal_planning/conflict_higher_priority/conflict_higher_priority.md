@@ -109,7 +109,7 @@ higher priority. As such it should be rejected per **[astm.f3548.v21.SCD0015](..
 
 #### [Validate Flight 1 not shared](../../validate_not_shared_operational_intent.md)
 
-### Check for conflict notification test step
+### Check for Flight 1 conflict notification test step
 #### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ### [Delete Flight 2 test step](../../../../flight_planning/delete_flight_intent.md)
@@ -125,6 +125,9 @@ The first flight should be successfully planned by the tested USS.
 
 #### [Validate Flight 1 sharing](../../validate_shared_operational_intent.md)
 
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
+
 ### Plan Flight 2 test step
 
 #### [Plan Flight 2](../../../../flight_planning/plan_flight_intent.md)
@@ -132,6 +135,9 @@ The second flight should be successfully planned by the control USS.
 It conflicts with Flight 1, but it has higher priority.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
+
+### Check for Flight 2 conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ### Record current notifications test step
 #### [Record current notifications](../../record_current_notification.md)
@@ -147,7 +153,7 @@ As such it should be rejected per **[astm.f3548.v21.SCD0020](../../../../../requ
 Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
-### Check for conflict notification test step
+### Check for Flight 1 conflict notification test step
 #### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ## Attempt to activate flight in conflict test case
@@ -167,7 +173,7 @@ As such it should be rejected per **[astm.f3548.v21.SCD0025](../../../../../requ
 Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
-### Check for conflict notification test step
+### Check for Flight 1 conflict notification test step
 #### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ## Modify activated flight with pre-existing conflict test case
@@ -184,6 +190,9 @@ directly activated without being planned beforehand.
 
 #### [Validate Flight 1 sharing](../../validate_shared_operational_intent.md)
 
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
+
 ### Plan Flight 2 test step
 
 #### [Plan Flight 2](../../../../flight_planning/plan_flight_intent.md)
@@ -191,12 +200,21 @@ The second flight should be successfully planned by the control USS.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
+### Check for Flight 2 conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
+
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
+
 ### Activate Flight 2 test step
 
 #### [Activate Flight 2](../../../../flight_planning/activate_flight_intent.md)
 The test driver activates Flight 2, which should be done successfully given that it is the highest-priority flight.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
+
+### Check for Flight 2 conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ### Modify activated Flight 1 in conflict with activated Flight 2 test step
 
@@ -253,7 +271,7 @@ per **[astm.f3548.v21.SCD0030](../../../../../requirements/astm/f3548/v21.md)**.
 Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
-### Check for conflict notification test step
+### Check for Flight 1 conflict notification test step
 #### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ## Cleanup
