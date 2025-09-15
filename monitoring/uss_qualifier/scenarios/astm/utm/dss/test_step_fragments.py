@@ -342,7 +342,14 @@ def get_uss_availability(
     uss_sub: str,
     scope: Scope = Scope.StrategicCoordination,
 ) -> tuple[UssAvailabilityState, str]:
-    """TODO"""
+    """
+    Get the USS availability.
+
+    This function implements the test step fragment described in dss/fragments/availability/read.md.
+
+    Returns:
+        The state and version of the USS availability.
+    """
     availability = UssAvailabilityState.Unknown
     version = ""
     with scenario.check(
@@ -372,7 +379,14 @@ def set_uss_availability(
     uss_availability: UssAvailabilityState,
     version: str = "",
 ) -> str:
-    """TODO"""
+    """
+    Set the USS availability.
+
+    This function implements the test step fragment described in dss/fragments/availability/update.md.
+
+    Returns:
+        The new version of the USS availability.
+    """
     version = ""
     with scenario.check(
         "USS Availability can be updated", [dss.participant_id]
@@ -402,7 +416,7 @@ def make_dss_report(
 ) -> str | None:
     """Make a DSS report.
 
-    This function implements the test step fragment described in report.md.
+    This function implements the test step fragment described in dss/fragments/report/report.md.
 
     Returns:
         The report ID.
