@@ -22,7 +22,6 @@ from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
 from monitoring.mock_uss.f3548v21 import utm_client
 from monitoring.mock_uss.f3548v21.flight_planning import (
-    PlanningConflictError,
     PlanningError,
     check_op_intent,
     delete_op_intent,
@@ -178,12 +177,13 @@ def inject_flight(
     try:
         step_name = "checking F3548-21 operational intent"
         try:
-            key = check_op_intent(new_flight, existing_flight, locality, log)
+            key, has_conflict = check_op_intent(
+                new_flight, existing_flight, locality, log
+            )
         except PlanningError as e:
             return unsuccessful(
                 PlanningActivityResult.Rejected,
                 str(e),
-                isinstance(e, PlanningConflictError),
             )
 
         step_name = "sharing operational intent in DSS"
@@ -210,6 +210,7 @@ def inject_flight(
             activity_result=PlanningActivityResult.Completed,
             flight_plan_status=FlightPlanStatus.from_flightinfo(record.flight_info),
             notes=notes,
+            has_conflict=has_conflict,
         )
     except (ValueError, ConnectionError) as e:
         notes = (
