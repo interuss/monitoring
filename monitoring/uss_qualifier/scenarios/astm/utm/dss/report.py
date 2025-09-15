@@ -60,5 +60,6 @@ class Report(TestScenario):
         self.begin_test_step("Make valid DSS report")
         dummy_record = gen_record()
         report_id = make_dss_report(self, self._dss, dummy_record)
-        self.record_note(f"{self._dss.participant_id}/report_id", report_id)
+        if report_id:
+            self.record_note(f"{self._dss.participant_id}/report_id", report_id)
         self.end_test_step()
