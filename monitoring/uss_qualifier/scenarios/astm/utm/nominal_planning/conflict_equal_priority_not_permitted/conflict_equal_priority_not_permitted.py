@@ -1,8 +1,12 @@
 import arrow
 from uas_standards.astm.f3548.v21.api import OperationalIntentReference
-from uas_standards.astm.f3548.v21.constants import Scope
+from uas_standards.astm.f3548.v21.constants import (
+    Scope,
+)
 
-from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
+from monitoring.monitorlib.clients.flight_planning.client import (
+    FlightPlannerClient,
+)
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     FlightInfo,
@@ -29,6 +33,9 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
 from monitoring.uss_qualifier.scenarios.astm.utm.clear_area_validation import (
     validate_clear_area,
 )
+from monitoring.uss_qualifier.scenarios.astm.utm.notifications_to_operator.notification_checker import (
+    NotificationChecker,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import OpIntentValidator
 from monitoring.uss_qualifier.scenarios.flight_planning.prioritization_test_steps import (
     activate_conflict_flight,
@@ -50,7 +57,7 @@ from monitoring.uss_qualifier.scenarios.scenario import (
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
-class ConflictEqualPriorityNotPermitted(TestScenario):
+class ConflictEqualPriorityNotPermitted(TestScenario, NotificationChecker):
     times: dict[TimeDuringTest, Time]
 
     flight1_id: str | None = None
@@ -267,6 +274,10 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             validator.expect_shared(flight2_activated)
         self.end_test_step()
 
+        self.begin_test_step("Record current notifications")
+        self._record_current_notifications()
+        self.end_test_step()
+
         self.begin_test_step("Attempt to plan Flight 1")
         flight1_planned = self.resolve_flight(self.flight1_planned)
 
@@ -284,7 +295,15 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             validator.expect_not_shared()
         self.end_test_step()
 
+        self.begin_test_step("Check for conflict notification")
+        self._wait_for_conflit_notification()
+        self.end_test_step()
+
     def _attempt_activate_flight_conflict(self):
+        self.begin_test_step("Record current notifications")
+        self._record_current_notifications()
+        self.end_test_step()
+
         self.begin_test_step("Attempt to directly activate conflicting Flight 1")
         flight1_activated = self.resolve_flight(self.flight1_activated)
 
@@ -301,6 +320,10 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 self.flight1_id,
             )
             validator.expect_not_shared()
+        self.end_test_step()
+
+        self.begin_test_step("Check for conflict notification")
+        self._wait_for_conflit_notification()
         self.end_test_step()
 
     def _attempt_modify_planned_flight_conflict(
@@ -324,6 +347,10 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             flight_1_oi_ref = validator.expect_shared(flight1c_planned)
         self.end_test_step()
 
+        self.begin_test_step("Record current notifications")
+        self._record_current_notifications()
+        self.end_test_step()
+
         self.begin_test_step("Attempt to modify planned Flight 1c into conflict")
         flight1_planned = self.resolve_flight(self.flight1_planned)
 
@@ -343,6 +370,10 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             flight_1_oi_ref = validator.expect_shared(
                 flight1c_planned, skip_if_not_found=True
             )
+        self.end_test_step()
+
+        self.begin_test_step("Check for conflict notification")
+        self._wait_for_conflit_notification()
         self.end_test_step()
 
         return flight_1_oi_ref
@@ -369,6 +400,10 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             flight_1_oi_ref = validator.expect_shared(flight1c_activated)
         self.end_test_step()
 
+        self.begin_test_step("Record current notifications")
+        self._record_current_notifications()
+        self.end_test_step()
+
         self.begin_test_step("Attempt to modify activated Flight 1c into conflict")
         flight1_activated = self.resolve_flight(self.flight1_activated)
 
@@ -388,6 +423,10 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             flight_1_oi_ref = validator.expect_shared(
                 flight1c_activated, skip_if_not_found=True
             )
+        self.end_test_step()
+
+        self.begin_test_step("Check for conflict notification")
+        self._wait_for_conflit_notification()
         self.end_test_step()
 
         self.begin_test_step("Delete Flight 2")
@@ -468,6 +507,10 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             validator.expect_shared(flight2_nonconforming)
         self.end_test_step()
 
+        self.begin_test_step("Record current notifications")
+        self._record_current_notifications()
+        self.end_test_step()
+
         self.begin_test_step(
             "Attempt to modify activated Flight 1 in conflict with nonconforming Flight 2"
         )
@@ -498,6 +541,10 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 validator.expect_shared(flight1m_activated)
             elif resp_flight_1.activity_result == PlanningActivityResult.Rejected:
                 validator.expect_shared(flight1_activated, skip_if_not_found=True)
+        self.end_test_step()
+
+        self.begin_test_step("Check for conflict notification")
+        self._wait_for_conflit_notification()
         self.end_test_step()
 
     def cleanup(self):

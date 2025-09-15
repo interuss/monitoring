@@ -121,6 +121,9 @@ Flight 2 should be successfully activated by the control USS.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
+
 ### Attempt to plan Flight 1 test step
 
 #### [Attempt to plan Flight 1](../../../../flight_planning/plan_conflict_flight_intent.md)
@@ -131,9 +134,14 @@ per **[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**.
 #### [Validate Flight 1 not shared](../../validate_not_shared_operational_intent.md)
 Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
 
+### Check for conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ## Attempt to activate flight into conflict test case
 ![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict.svg)
+
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
 
 ### Attempt to directly activate conflicting Flight 1 test step
 
@@ -144,6 +152,9 @@ per **[astm.f3548.v21.SCD0045](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Validate Flight 1 not shared](../../validate_not_shared_operational_intent.md)
 Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
+
+### Check for conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 
 ## Attempt to modify planned flight into conflict test case
@@ -162,6 +173,9 @@ This check is not relevant if the planning is rejected.
 
 #### [Validate Flight 1c sharing](../../validate_shared_operational_intent.md)
 
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
+
 ### Attempt to modify planned Flight 1c into conflict test step
 
 #### [Attempt to modify Flight 1c](../../../../flight_planning/modify_planned_conflict_flight_intent.md)
@@ -172,6 +186,9 @@ As such the change to Flight 1c should be rejected per **[astm.f3548.v21.SCD0040
 #### [Validate Flight 1c not modified](../../validate_shared_operational_intent.md)
 Because the modification attempt was invalid, either Flight 1c should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
+
+### Check for conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ## Attempt to modify activated flight into conflict test case
 ![Test case summary illustration](assets/attempt_to_modify_activated_flight_into_conflict.svg)
@@ -185,6 +202,9 @@ directly activate the flight without planning it beforehand.
 
 #### [Validate Flight 1c sharing](../../validate_shared_operational_intent.md)
 
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
+
 ### Attempt to modify activated Flight 1c into conflict test step
 
 #### [Attempt to modify Flight 1c](../../../../flight_planning/modify_activated_conflict_flight_intent.md)
@@ -195,6 +215,9 @@ exist when the modification was initiated, it should be rejected per **[astm.f35
 #### [Validate Flight 1c not modified](../../validate_shared_operational_intent.md)
 Because the modification attempt was invalid, either Flight 1c should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
+
+### Check for conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ### [Delete Flight 2 test step](../../../../flight_planning/delete_flight_intent.md)
 To prepare for the next test case, Flight 2 must be removed from the system.
@@ -238,6 +261,9 @@ to reject or accept the flight. If the USS indicates that the injection attempt 
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
+
 ### Attempt to modify activated Flight 1 in conflict with nonconforming Flight 2 test step
 Before execution of this step, Flight 1 is activated (onto time range A) and Flight 2 is non-conforming (onto time range
 A), and both are in conflict. The test driver modifies Flight 1 in a way that still conflicts with Flight 2 by extending
@@ -262,6 +288,9 @@ This step validates that the response of the USS is consistent with the flight s
 modified, or the USS considered the attempt invalid. In the latter case, because the modification attempt was invalid,
 either Flight 1 should not have been modified (because the USS kept the original accepted request), or it should have
 been removed (because the USS rejected the replacement plan provided).
+
+### Check for conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ## Cleanup
 ### ⚠️ Successful flight deletion check

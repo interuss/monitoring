@@ -8,12 +8,12 @@ from monitoring.monitorlib.fetch import QueryError
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioDidNotStopError,
-    TestScenarioType,
+    TestScenario,
 )
 
 
 def remove_op_intent(
-    scenario: TestScenarioType, dss: DSSInstance, oi_id: EntityID, ovn: str
+    scenario: TestScenario, dss: DSSInstance, oi_id: EntityID, ovn: str
 ) -> None:
     """Remove the specified operational intent reference from the DSS.
 
@@ -40,7 +40,7 @@ def remove_op_intent(
 
 
 def remove_constraint_ref(
-    scenario: TestScenarioType, dss: DSSInstance, cr_id: EntityID, ovn: str
+    scenario: TestScenario, dss: DSSInstance, cr_id: EntityID, ovn: str
 ) -> None:
     """Remove the specified constraint reference from the DSS.
 
@@ -67,7 +67,7 @@ def remove_constraint_ref(
 
 
 def cleanup_sub(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     dss: DSSInstance,
     sub_id: EntityID,
     delete_if_exists: bool = True,
@@ -120,7 +120,7 @@ def cleanup_sub(
 
 
 def verify_subscription_does_not_exist(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     dss: DSSInstance,
     sub_id: EntityID,
 ):
@@ -136,7 +136,7 @@ def verify_subscription_does_not_exist(
 
 
 def cleanup_active_subs(
-    scenario: TestScenarioType, dss: DSSInstance, volume: Volume4D
+    scenario: TestScenario, dss: DSSInstance, volume: Volume4D
 ) -> None:
     """Search for and delete all active subscriptions at the DSS.
 
@@ -159,7 +159,7 @@ def cleanup_active_subs(
 
 
 def cleanup_active_constraint_refs(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     dss: DSSInstance,
     volume: Volume4D,
     manager_identity: str,
@@ -192,7 +192,7 @@ def cleanup_active_constraint_refs(
 
 
 def cleanup_active_oirs(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     dss: DSSInstance,
     volume: Volume4D,
     manager_identity: str,
@@ -218,7 +218,7 @@ def cleanup_active_oirs(
 
 
 def cleanup_op_intent(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     dss: DSSInstance,
     oi_id: EntityID,
     delete_if_exists: bool = True,
@@ -258,7 +258,7 @@ def cleanup_op_intent(
 
 
 def verify_op_intent_does_not_exist(
-    scenario: TestScenarioType, dss: DSSInstance, oi_id: EntityID
+    scenario: TestScenario, dss: DSSInstance, oi_id: EntityID
 ):
     oir_found = cleanup_op_intent(scenario, dss, oi_id, delete_if_exists=False)
     with scenario.check(
@@ -273,7 +273,7 @@ def verify_op_intent_does_not_exist(
 
 
 def cleanup_constraint_ref(
-    scenario: TestScenarioType, dss: DSSInstance, cr_id: EntityID
+    scenario: TestScenario, dss: DSSInstance, cr_id: EntityID
 ) -> None:
     """
     Remove the specified constraint reference from the DSS, if it exists.

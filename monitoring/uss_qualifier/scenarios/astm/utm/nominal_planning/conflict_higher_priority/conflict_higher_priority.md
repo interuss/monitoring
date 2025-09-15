@@ -98,6 +98,9 @@ The higher priority flight should be successfully planned by the control USS.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
+
 ### Attempt to plan Flight 1 test step
 
 #### [Attempt to plan Flight 1](../../../../flight_planning/plan_priority_conflict_flight_intent.md)
@@ -105,6 +108,9 @@ The test driver attempts to plan the Flight 1 via the tested USS. However, it co
 higher priority. As such it should be rejected per **[astm.f3548.v21.SCD0015](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Validate Flight 1 not shared](../../validate_not_shared_operational_intent.md)
+
+### Check for conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ### [Delete Flight 2 test step](../../../../flight_planning/delete_flight_intent.md)
 
@@ -127,6 +133,9 @@ It conflicts with Flight 1, but it has higher priority.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
+
 ### Attempt to modify planned Flight 1 in conflict test step
 
 #### [Attempt to modify Flight 1](../../../../flight_planning/modify_planned_priority_conflict_flight_intent.md)
@@ -138,9 +147,14 @@ As such it should be rejected per **[astm.f3548.v21.SCD0020](../../../../../requ
 Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
+### Check for conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ## Attempt to activate flight in conflict test case
 ![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict.svg)
+
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
 
 ### Attempt to activate conflicting Flight 1 test step
 
@@ -153,6 +167,8 @@ As such it should be rejected per **[astm.f3548.v21.SCD0025](../../../../../requ
 Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
+### Check for conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ## Modify activated flight with pre-existing conflict test case
 ![Test case summary illustration](assets/modify_activated_flight_with_preexisting_conflict.svg)
@@ -223,6 +239,9 @@ As Flight 2 is of higher priority, this should succeed and leave Flight 1 clear 
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
+
 ### Attempt to modify activated Flight 1 in conflict test step
 
 #### [Attempt to modify Flight 1](../../../../flight_planning/modify_activated_priority_conflict_flight_intent.md)
@@ -233,6 +252,9 @@ per **[astm.f3548.v21.SCD0030](../../../../../requirements/astm/f3548/v21.md)**.
 #### [Validate Flight 1 not modified](../../validate_shared_operational_intent.md)
 Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
+
+### Check for conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ## Cleanup
 ### ⚠️ Successful flight deletion check
