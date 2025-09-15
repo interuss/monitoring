@@ -1,5 +1,6 @@
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
+    ExchangeRecord,
     UssAvailabilityState,
     Volume4D,
 )
@@ -341,6 +342,7 @@ def get_uss_availability(
     uss_sub: str,
     scope: Scope = Scope.StrategicCoordination,
 ) -> tuple[UssAvailabilityState, str]:
+    """TODO"""
     availability = UssAvailabilityState.Unknown
     version = ""
     with scenario.check(
@@ -370,6 +372,7 @@ def set_uss_availability(
     uss_availability: UssAvailabilityState,
     version: str = "",
 ) -> str:
+    """TODO"""
     version = ""
     with scenario.check(
         "USS Availability can be updated", [dss.participant_id]
@@ -390,3 +393,43 @@ def set_uss_availability(
                 query_timestamps=[avail_query.request.timestamp],
             )
     return version
+
+
+def make_dss_report(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    exchange: ExchangeRecord,
+) -> str | None:
+    """Make a DSS report.
+
+    This function implements the test step fragment described in report.md.
+
+    Returns:
+        The report ID.
+    """
+    report_id = None
+    with scenario.check(
+        "DSS report successfully submitted", [dss.participant_id]
+    ) as check:
+        try:
+            report_id, report_query = dss.make_report(exchange)
+            scenario.record_query(report_query)
+        except QueryError as e:
+            scenario.record_queries(e.queries)
+            report_query = e.queries[0]
+            check.record_failed(
+                summary="DSS report could not be submitted",
+                details=f"DSS responded code {report_query.status_code}; {e}",
+                query_timestamps=[report_query.request.timestamp],
+            )
+
+    with scenario.check(
+        "DSS returned a valid report ID", [dss.participant_id]
+    ) as check:
+        if not report_id:
+            check.record_failed(
+                summary="Submitted DSS report returned no or empty ID",
+                details=f"DSS responded code {report_query.status_code} but with no ID for the report",
+                query_timestamps=[report_query.request.timestamp],
+            )
+    return report_id
