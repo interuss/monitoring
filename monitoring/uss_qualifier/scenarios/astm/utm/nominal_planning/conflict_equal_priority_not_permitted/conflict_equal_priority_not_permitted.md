@@ -131,7 +131,6 @@ per **[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**.
 #### [Validate Flight 1 not shared](../../validate_not_shared_operational_intent.md)
 Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
 
-
 ## Attempt to activate flight into conflict test case
 ![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict.svg)
 
@@ -144,7 +143,6 @@ per **[astm.f3548.v21.SCD0045](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [Validate Flight 1 not shared](../../validate_not_shared_operational_intent.md)
 Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
-
 
 ## Attempt to modify planned flight into conflict test case
 ![Test case summary illustration](assets/attempt_to_modify_planned_flight_into_conflict.svg)

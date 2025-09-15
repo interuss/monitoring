@@ -1,8 +1,12 @@
 import arrow
 from uas_standards.astm.f3548.v21.api import OperationalIntentReference
-from uas_standards.astm.f3548.v21.constants import Scope
+from uas_standards.astm.f3548.v21.constants import (
+    Scope,
+)
 
-from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
+from monitoring.monitorlib.clients.flight_planning.client import (
+    FlightPlannerClient,
+)
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     FlightInfo,
