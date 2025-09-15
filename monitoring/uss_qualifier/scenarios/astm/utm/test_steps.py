@@ -24,6 +24,10 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.test_step_fragments import (
+    get_uss_availability,
+    set_uss_availability,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.evaluation import (
     validate_op_intent_details,
 )
@@ -650,64 +654,22 @@ def set_uss_available(
     scenario: TestScenarioType,
     dss: DSSInstance,
     uss_sub: str,
-) -> str:
-    """Set the USS availability to 'Available'.
-
-    This function implements the test step fragment described in set_uss_available.md.
-
-    Returns:
-        The new version of the USS availability.
-    """
-    with scenario.check(
-        "USS availability successfully set to 'Available'", [dss.participant_id]
-    ) as check:
-        try:
-            availability_version, avail_query = dss.set_uss_availability(
-                uss_sub,
-                UssAvailabilityState.Normal,
-            )
-            scenario.record_query(avail_query)
-        except QueryError as e:
-            scenario.record_queries(e.queries)
-            avail_query = e.queries[0]
-            check.record_failed(
-                summary=f"Availability of USS {uss_sub} could not be set to available",
-                details=f"DSS responded code {avail_query.status_code}; {e}",
-                query_timestamps=[avail_query.request.timestamp],
-            )
-    return availability_version
+):
+    _, version = get_uss_availability(
+        scenario, dss, uss_sub, Scope.AvailabilityArbitration
+    )
+    set_uss_availability(scenario, dss, uss_sub, UssAvailabilityState.Normal, version)
 
 
 def set_uss_down(
     scenario: TestScenarioType,
     dss: DSSInstance,
     uss_sub: str,
-) -> str:
-    """Set the USS availability to 'Down'.
-
-    This function implements the test step fragment described in set_uss_down.md.
-
-    Returns:
-        The new version of the USS availability.
-    """
-    with scenario.check(
-        "USS availability successfully set to 'Down'", [dss.participant_id]
-    ) as check:
-        try:
-            availability_version, avail_query = dss.set_uss_availability(
-                uss_sub,
-                UssAvailabilityState.Down,
-            )
-            scenario.record_query(avail_query)
-        except QueryError as e:
-            scenario.record_queries(e.queries)
-            avail_query = e.queries[0]
-            check.record_failed(
-                summary=f"Availability of USS {uss_sub} could not be set to down",
-                details=f"DSS responded code {avail_query.status_code}; {e}",
-                query_timestamps=[avail_query.request.timestamp],
-            )
-    return availability_version
+):
+    _, version = get_uss_availability(
+        scenario, dss, uss_sub, Scope.AvailabilityArbitration
+    )
+    set_uss_availability(scenario, dss, uss_sub, UssAvailabilityState.Down, version)
 
 
 def make_dss_report(

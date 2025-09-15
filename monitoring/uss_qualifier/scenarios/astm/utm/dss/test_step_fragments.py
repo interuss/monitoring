@@ -1,7 +1,9 @@
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
+    UssAvailabilityState,
     Volume4D,
 )
+from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.fetch import QueryError
@@ -331,3 +333,60 @@ def verify_constraint_does_not_exist(
                 summary=f"Constraint intent reference {cr_id} was still found on DSS {dss.participant_id}",
                 details=f"Expected constraint reference {cr_id} to not be found on secondary DSS because it was not present on, or has been removed, from the primary DSS, but it was returned.",
             )
+
+
+def get_uss_availability(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    uss_sub: str,
+    scope: Scope = Scope.StrategicCoordination,
+) -> tuple[UssAvailabilityState, str]:
+    availability = UssAvailabilityState.Unknown
+    version = ""
+    with scenario.check(
+        "USS Availability can be requested", dss.participant_id
+    ) as check:
+        try:
+            avail_response, avail_query = dss.get_uss_availability(uss_sub, scope)
+            scenario.record_query(avail_query)
+
+            availability = avail_response.status.availability
+            version = avail_response.version
+        except QueryError as e:
+            scenario.record_queries(e.queries)
+            avail_query = e.queries[0]
+            check.record_failed(
+                summary=f"Availability of USS {uss_sub} could not be requested",
+                details=f"DSS responded code {avail_query.status_code}; {e}",
+                query_timestamps=[avail_query.request.timestamp],
+            )
+    return availability, version
+
+
+def set_uss_availability(
+    scenario: TestScenarioType,
+    dss: DSSInstance,
+    uss_sub: str,
+    uss_availability: UssAvailabilityState,
+    version: str = "",
+) -> str:
+    version = ""
+    with scenario.check(
+        "USS Availability can be updated", [dss.participant_id]
+    ) as check:
+        try:
+            version, avail_query = dss.set_uss_availability(
+                uss_sub,
+                uss_availability,
+                version,
+            )
+            scenario.record_query(avail_query)
+        except QueryError as e:
+            scenario.record_queries(e.queries)
+            avail_query = e.queries[0]
+            check.record_failed(
+                summary=f"Availability of USS {uss_sub} could not be updated to {uss_availability}",
+                details=f"DSS responded code {avail_query.status_code}; {e}",
+                query_timestamps=[avail_query.request.timestamp],
+            )
+    return version
