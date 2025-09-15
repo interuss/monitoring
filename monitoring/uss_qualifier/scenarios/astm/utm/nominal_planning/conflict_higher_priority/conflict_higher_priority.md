@@ -119,6 +119,9 @@ The first flight should be successfully planned by the tested USS.
 
 #### [Validate Flight 1 sharing](../../validate_shared_operational_intent.md)
 
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
+
 ### Plan Flight 2 test step
 
 #### [Plan Flight 2](../../../../flight_planning/plan_flight_intent.md)
@@ -126,6 +129,9 @@ The second flight should be successfully planned by the control USS.
 It conflicts with Flight 1, but it has higher priority.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
+
+### Check for conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ### Attempt to modify planned Flight 1 in conflict test step
 
@@ -137,7 +143,6 @@ As such it should be rejected per **[astm.f3548.v21.SCD0020](../../../../../requ
 #### [Validate Flight 1 not modified](../../validate_shared_operational_intent.md)
 Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
-
 
 ## Attempt to activate flight in conflict test case
 ![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict.svg)
@@ -152,7 +157,6 @@ As such it should be rejected per **[astm.f3548.v21.SCD0025](../../../../../requ
 #### [Validate Flight 1 not activated](../../validate_shared_operational_intent.md)
 Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
-
 
 ## Modify activated flight with pre-existing conflict test case
 ![Test case summary illustration](assets/modify_activated_flight_with_preexisting_conflict.svg)
@@ -175,12 +179,18 @@ The second flight should be successfully planned by the control USS.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
+### Record current notifications test step
+#### [Record current notifications](../../record_current_notification.md)
+
 ### Activate Flight 2 test step
 
 #### [Activate Flight 2](../../../../flight_planning/activate_flight_intent.md)
 The test driver activates Flight 2, which should be done successfully given that it is the highest-priority flight.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
+
+### Check for conflict notification test step
+#### [Check for conflict notification](../../check_for_conflict_notification.md)
 
 ### Modify activated Flight 1 in conflict with activated Flight 2 test step
 

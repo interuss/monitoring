@@ -26,10 +26,6 @@ class PlanningError(Exception):
     pass
 
 
-class PlanningConflictError(PlanningError):
-    pass
-
-
 def validate_request(op_intent: f3548_v21.OperationalIntent) -> None:
     """Raise a PlannerError if the request is not valid.
 
@@ -100,8 +96,9 @@ def check_for_disallowed_conflicts(
     op_intents: list[f3548_v21.OperationalIntent],
     locality: Locality,
     log: Callable[[str], None] | None = None,
-) -> None:
+) -> bool:
     """Raise a PlannerError if there are any disallowed conflicts.
+       Return a boolean, set to True if there are allowed conflicts.
 
     Args:
         new_op_intent: The prospective operational intent.
@@ -121,9 +118,11 @@ def check_for_disallowed_conflicts(
         scd_api.OperationalIntentState.Activated,
     ):
         # No conflicts are disallowed if the flight is not nominal
-        return
+        return False
 
     v1 = Volume4DCollection.from_interuss_scd_api(new_op_intent.details.volumes)
+
+    found_conflict = False
 
     for op_intent in op_intents:
         if (
@@ -134,12 +133,19 @@ def check_for_disallowed_conflicts(
                 f"intersection with {op_intent.reference.id} not considered: intersection with a past version of this flight"
             )
             continue
+
+        v2 = Volume4DCollection.from_interuss_scd_api(
+            op_intent.details.volumes + op_intent.details.off_nominal_volumes
+        )
+
         new_priority = priority_of(new_op_intent.details)
         old_priority = priority_of(op_intent.details)
         if new_priority > old_priority:
             log(
                 f"intersection with {op_intent.reference.id} not considered: intersection with lower-priority operational intents"
             )
+
+            found_conflict |= v1.intersects_vol4s(v2)
             continue
         if new_priority == old_priority and locality.allows_same_priority_intersections(
             old_priority
@@ -147,11 +153,8 @@ def check_for_disallowed_conflicts(
             log(
                 f"intersection with {op_intent.reference.id} not considered: intersection with same-priority operational intents (if allowed)"
             )
+            found_conflict |= v1.intersects_vol4s(v2)
             continue
-
-        v2 = Volume4DCollection.from_interuss_scd_api(
-            op_intent.details.volumes + op_intent.details.off_nominal_volumes
-        )
 
         modifying_activated = (
             existing_flight
@@ -170,9 +173,11 @@ def check_for_disallowed_conflicts(
                 continue
 
         if v1.intersects_vol4s(v2):
-            raise PlanningConflictError(
+            raise PlanningError(
                 f"Requested flight (priority {new_priority}) intersected {op_intent.reference.manager}'s operational intent {op_intent.reference.id} (priority {old_priority})"
             )
+
+    return found_conflict
 
 
 def op_intent_transition_valid(
@@ -497,7 +502,7 @@ def check_op_intent(
     existing_flight: FlightRecord | None,
     locality: Locality,
     log: Callable[[str], None],
-) -> list[f3548_v21.EntityOVN]:
+) -> tuple[list[f3548_v21.EntityOVN], bool]:
     # Check the transition is valid
     state_transition_from = (
         f3548_v21.OperationalIntentState(existing_flight.op_intent.reference.state)
@@ -541,7 +546,7 @@ def check_op_intent(
         log(
             f"Checking for intersections with {', '.join(op_intent.reference.id for op_intent in op_intents)}"
         )
-        check_for_disallowed_conflicts(
+        has_conflicts = check_for_disallowed_conflicts(
             new_flight.op_intent, existing_flight, op_intents, locality, log
         )
 
@@ -553,8 +558,9 @@ def check_op_intent(
     else:
         # Flight is not nominal and therefore doesn't need to check intersections
         key = []
+        has_conflicts = False
 
-    return key
+    return key, has_conflicts
 
 
 def share_op_intent(
