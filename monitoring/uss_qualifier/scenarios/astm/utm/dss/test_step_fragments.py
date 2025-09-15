@@ -337,7 +337,7 @@ def verify_constraint_does_not_exist(
 
 
 def get_uss_availability(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     dss: DSSInstance,
     uss_sub: str,
     scope: Scope = Scope.StrategicCoordination,
@@ -373,7 +373,7 @@ def get_uss_availability(
 
 
 def set_uss_availability(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     dss: DSSInstance,
     uss_sub: str,
     uss_availability: UssAvailabilityState,
@@ -410,7 +410,7 @@ def set_uss_availability(
 
 
 def make_dss_report(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     dss: DSSInstance,
     exchange: ExchangeRecord,
 ) -> str | None:
