@@ -98,6 +98,17 @@ def flight_planning_v1_upsert_flight_plan(flight_plan_id: str) -> tuple[str, int
                     )
                 )
 
+        if "has_local_conflict" in inject_resp and inject_resp.has_local_conflict:
+            with db as tx:
+                tx.flight_planning_notifications.append(
+                    api.UserNotification(
+                        observed_at=api.Time(
+                            value=StringBasedDateTime(arrow.utcnow().datetime)
+                        ),
+                        conflicts="Single",
+                    )
+                )
+
     finally:
         release_flight_lock(flight_plan_id, log)
 
