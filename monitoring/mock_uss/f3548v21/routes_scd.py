@@ -1,19 +1,26 @@
 import json
 import uuid
 
+import arrow
 import flask
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 from uas_standards.astm.f3548.v21.api import (
     ErrorReport,
     ErrorResponse,
     GetOperationalIntentDetailsResponse,
     OperationalIntentState,
+    PutOperationalIntentDetailsParameters,
 )
+from uas_standards.interuss.automated_testing.flight_planning.v1 import api
 
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
-from monitoring.mock_uss.f3548v21.flight_planning import op_intent_from_flightrecord
+from monitoring.mock_uss.database import db as core_db
+from monitoring.mock_uss.f3548v21.flight_planning import (
+    check_for_local_conflits,
+    op_intent_from_flightrecord,
+)
 from monitoring.mock_uss.flights.database import FlightRecord, db
 from monitoring.monitorlib import scd
 
@@ -104,8 +111,34 @@ def scdsc_get_operational_intent_telemetry(entityid: str):
 def scdsc_notify_operational_intent_details_changed():
     """Implements notifyOperationalIntentDetailsChanged in ASTM SCD API."""
 
-    # Do nothing because this USS is unsophisticated and polls the DSS for every
-    # change in its operational intents
+    # We check if there is a conflits with our own flights
+    try:
+        op_intent_data: PutOperationalIntentDetailsParameters = ImplicitDict.parse(
+            flask.request.json or {}, PutOperationalIntentDetailsParameters
+        )
+    except ValueError as e:
+        return (
+            flask.jsonify(ErrorResponse(message=f"Error parsing request: {str(e)}")),
+            400,
+        )
+
+    if "operational_intent" in op_intent_data and op_intent_data.operational_intent:
+        with db as tx:
+            if check_for_local_conflits(
+                op_intent_data.operational_intent, tx.flights.values()
+            ):
+                with core_db as core_tx:
+                    core_tx.flight_planning_notifications.append(
+                        api.UserNotification(
+                            observed_at=api.Time(
+                                value=StringBasedDateTime(arrow.utcnow().datetime)
+                            ),
+                            conflicts="Single",
+                        )
+                    )
+
+    # Do nothing else because this USS is unsophisticated and polls the DSS for
+    # every change in its operational intents
     return "", 204
 
 

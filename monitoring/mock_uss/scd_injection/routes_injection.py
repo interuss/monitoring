@@ -23,6 +23,7 @@ from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
 from monitoring.mock_uss.f3548v21 import utm_client
 from monitoring.mock_uss.f3548v21.flight_planning import (
     PlanningError,
+    check_for_local_conflits,
     check_op_intent,
     delete_op_intent,
     op_intent_from_flightinfo,
@@ -201,6 +202,10 @@ def inject_flight(
         with db as tx:
             tx.flights[flight_id] = record
 
+            has_local_conflict = check_for_local_conflits(
+                record.op_intent, tx.flights.values()
+            )
+
         step_name = "returning final successful result"
         log("Complete.")
 
@@ -211,6 +216,7 @@ def inject_flight(
             flight_plan_status=FlightPlanStatus.from_flightinfo(record.flight_info),
             notes=notes,
             has_conflict=has_conflict,
+            has_local_conflict=has_local_conflict,
         )
     except (ValueError, ConnectionError) as e:
         notes = (

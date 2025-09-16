@@ -97,6 +97,9 @@ class PlanningActivityResponse(ImplicitDict):
     has_conflict: bool | None
     """If the planning activity has at least one conflict"""
 
+    has_local_conflict: bool | None
+    """If the planning activity has at least one conflict with a local flight"""
+
     def to_inject_flight_response(self) -> scd_api.InjectFlightResponse:
         if self.activity_result == PlanningActivityResult.Completed:
             if self.flight_plan_status == FlightPlanStatus.Planned:

@@ -90,6 +90,46 @@ def validate_request(op_intent: f3548_v21.OperationalIntent) -> None:
         )
 
 
+def check_for_local_conflits(
+    op_intent: f3548_v21.OperationalIntent, flights: list[FlightRecord]
+) -> bool:
+    """
+    Return true if an OperationalIntent conflict with any of existing flights
+    """
+
+    if op_intent.reference.state not in (
+        scd_api.OperationalIntentState.Accepted,
+        scd_api.OperationalIntentState.Activated,
+    ):
+        # No conflicts are disallowed if the flight is not nominal
+        return False
+
+    v1 = Volume4DCollection.from_f3548v21(
+        (op_intent.details.volumes or [])
+        + (op_intent.details.off_nominal_volumes or [])
+    )
+
+    for other_flight in flights:
+        if other_flight.op_intent.reference.state not in (
+            scd_api.OperationalIntentState.Accepted,
+            scd_api.OperationalIntentState.Activated,
+        ):
+            continue
+
+        if other_flight.op_intent.reference.id == op_intent.reference.id:  # Same flight
+            continue
+
+        v2 = Volume4DCollection.from_f3548v21(
+            (other_flight.op_intent.details.volumes or [])
+            + (other_flight.op_intent.details.off_nominal_volumes or [])
+        )
+
+        if v1.intersects_vol4s(v2):
+            return True
+
+    return False
+
+
 def check_for_disallowed_conflicts(
     new_op_intent: f3548_v21.OperationalIntent,
     existing_flight: FlightRecord | None,

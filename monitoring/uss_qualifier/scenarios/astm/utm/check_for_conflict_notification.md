@@ -2,9 +2,16 @@
 
 This test step fragment verifies that a notification reporting the conflict was sent to the UAS personnel.
 
-## 🛑 New notification about conflict check
+## 🛑 New notification about conflict on creation/modification check
 
 If the USS doesn't send a notification within ConflictingOIMaxUserNotificationTime + 2 seconds,
 then we conclude it is very likely to be in violation of **[astm.f3548.v21.SCD0090](../../../requirements/astm/f3548/v21.md)**, and therefore this check will fail.
+
+Due to test design, the testing suite cannot verify that notifications are sent at least 95% of the time as stated in the standard and always expects a notification.
+
+## 🛑 New notification about conflict on awareness check
+
+If the USS doesn't send a notification within ConflictingOIMaxUserNotificationTime + 2 seconds,
+then we conclude it is very likely to be in violation of **[astm.f3548.v21.SCD0095](../../../requirements/astm/f3548/v21.md)**, and therefore this check will fail.
 
 Due to test design, the testing suite cannot verify that notifications are sent at least 95% of the time as stated in the standard and always expects a notification.
