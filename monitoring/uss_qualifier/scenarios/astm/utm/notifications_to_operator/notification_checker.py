@@ -28,7 +28,7 @@ _ACCEPTABLE_CONFLICTS = {Conflict.Single, Conflict.Multiple}
 
 @dataclass
 class Notifications:
-    notifications: list[UserNotification]
+    notifications: list[UserNotification] | None
     query: Query
 
 
@@ -59,11 +59,11 @@ class NotificationChecker(GenericTestScenario, ABC):
                     if not resp or "user_notifications" not in resp:
                         print(resp)
                         notifications[client.participant_id] = Notifications(
-                            notifications=[], query=query
+                            notifications=None, query=query
                         )
                         check.record_failed(
                             summary="No notifications returned",
-                            details=f"USS {client.participant_id} didn't return a list of notifications when querying for new notifications.",
+                            details=f"{client.participant_id} didn't return a list of notifications when querying for new notifications",
                             query_timestamps=[query.request.timestamp],
                         )
                         continue
@@ -130,9 +130,13 @@ class NotificationChecker(GenericTestScenario, ABC):
             return NOTIFICATION_NOTE_FORMAT.format(
                 participant_id=client.participant_id,
                 latency=_latency_of(
-                    new_notifications[client.participant_id].notifications
+                    new_notifications[client.participant_id].notifications or []
                 ),
             )
 
-        self.record_note(SCD0090_NOTE_PREFIX, _note_for(causing_conflict))
-        self.record_note(SCD0095_NOTE_PREFIX, _note_for(observing_conflict))
+        def _maybe_record_note(prefix: str, client: FlightPlannerClient) -> None:
+            if new_notifications[client.participant_id].notifications is not None:
+                self.record_note(prefix, _note_for(client))
+
+        _maybe_record_note(SCD0090_NOTE_PREFIX, causing_conflict)
+        _maybe_record_note(SCD0095_NOTE_PREFIX, observing_conflict)
