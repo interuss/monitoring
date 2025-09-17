@@ -34,3 +34,23 @@ This check ensures that interactions with the interoperability test instance tha
 If all interactions fail, or if no test instance can be reached, the USS is failing to meet **[astm.f3548.v21.GEN0300](../../../requirements/astm/f3548/v21.md)**.
 
 If no interaction with a test instance was found, this check is skipped.
+
+## Notifications to operator test case
+
+When certain circumstances occur, USSs must notify UAS personnel or the operator's automation system within a fixed amount of time a certain fraction of time.  This test case examines notification latency across all tests performed during this test run.
+
+### Notifications for causing conflicts test step
+
+#### ⚠️ Notifications for causing conflicts check
+
+If 95% of the USS's notifications regarding conflicts caused by the operator's flight do not appear in the USS's list of user notifications within `ConflictingOIMaxUserNotificationTime` (5 seconds) of completing the planning operation, this check will fail per **[astm.f3548.v21.SCD0090](../../../requirements/astm/f3548/v21.md)**.
+
+To find the notifications considered, review the reports for "Nominal planning: conflict with higher priority" scenarios.
+
+### Notifications for observing conflicts test step
+
+#### ⚠️ Notifications for observing conflicts check
+
+If 95% of the USS's notifications regarding conflicts affecting the operator's flight do not appear in the USS's list of user notifications within `ConflictingOIMaxUserNotificationTime` (5 seconds) of completing the planning operation, this check will fail per **[astm.f3548.v21.SCD0095](../../../requirements/astm/f3548/v21.md)**.
+
+To find the notifications considered, review the reports for "Nominal planning: conflict with higher priority" scenarios.

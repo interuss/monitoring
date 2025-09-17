@@ -19,6 +19,8 @@ from monitoring.monitorlib.fetch import Query
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 
+SCD0090_NOTE_PREFIX = "scd0090_notification"
+SCD0095_NOTE_PREFIX = "scd0095_notification"
 NOTIFICATION_NOTE_FORMAT = "{participant_id} notification latency: >{latency}s"
 MAX_LATENCY = f"{ConflictingOIMaxUserNotificationTimeSeconds}"
 _ACCEPTABLE_CONFLICTS = {Conflict.Single, Conflict.Multiple}
@@ -132,8 +134,5 @@ class NotificationChecker(GenericTestScenario, ABC):
                 ),
             )
 
-        self.record_note(
-            "scd0090_notification",
-            _note_for(causing_conflict),
-        )
-        self.record_note("scd0095_notification", _note_for(observing_conflict))
+        self.record_note(SCD0090_NOTE_PREFIX, _note_for(causing_conflict))
+        self.record_note(SCD0095_NOTE_PREFIX, _note_for(observing_conflict))
