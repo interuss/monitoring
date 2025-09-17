@@ -698,7 +698,6 @@ def notify_subscribers(
     :return: Notification errors if any, by subscriber.
     """
     notif_errors: dict[f3548_v21.SubscriptionUssBaseURL, Exception] = {}
-    # our_base_url = f"{webapp.config[KEY_BASE_URL]}/mock/scd"
     for subscriber in subscribers:
         update = f3548_v21.PutOperationalIntentDetailsParameters(
             operational_intent_id=op_intent_id,

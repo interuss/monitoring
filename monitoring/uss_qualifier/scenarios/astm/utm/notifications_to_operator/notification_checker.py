@@ -57,7 +57,6 @@ class NotificationChecker(GenericTestScenario, ABC):
                     "Retrieve notifications", client.participant_id
                 ) as check:
                     if not resp or "user_notifications" not in resp:
-                        print(resp)
                         notifications[client.participant_id] = Notifications(
                             notifications=None, query=query
                         )
@@ -111,20 +110,16 @@ class NotificationChecker(GenericTestScenario, ABC):
         def _latency_of(notifications: list[UserNotification]) -> str:
             if not notifications:
                 return MAX_LATENCY
+            dt = (
+                max(notification.observed_at.datetime for notification in notifications)
+                - latest_action_time
+            )
+            if dt.total_seconds() > ConflictingOIMaxUserNotificationTimeSeconds:
+                return MAX_LATENCY
+            elif dt.total_seconds() < 0:
+                return "0"
             else:
-                dt = (
-                    max(
-                        notification.observed_at.datetime
-                        for notification in notifications
-                    )
-                    - latest_action_time
-                )
-                if dt.total_seconds() > ConflictingOIMaxUserNotificationTimeSeconds:
-                    return MAX_LATENCY
-                elif dt.total_seconds() < 0:
-                    return "0"
-                else:
-                    return f"{dt.total_seconds():.1f}"
+                return f"{dt.total_seconds():.1f}"
 
         def _note_for(client: FlightPlannerClient) -> str:
             return NOTIFICATION_NOTE_FORMAT.format(

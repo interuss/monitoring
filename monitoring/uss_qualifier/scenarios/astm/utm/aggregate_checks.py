@@ -226,12 +226,13 @@ class AggregateChecks(TestScenario):
                         details=f"The actual delivery rate of {percentage:.2f}% ({n_ok}/{n_total}) for notifications regarding {notification_type_long} does not meet the 95% threshold",
                     )
                 else:
-                    avg_latency = (
-                        sum(dt.total_seconds() for dt in latency_list) / n_total
-                    )
+                    latency_list.sort()
+                    median_latency = latency_list[
+                        int((len(latency_list) + 1) / 2)
+                    ].total_seconds()
                     self.record_note(
                         f"{participant_id}/{prefix}",
-                        f"Average latency >{avg_latency:.2f}s, max >{max(latency_list).total_seconds()}s, min >{min(latency_list).total_seconds()}s",
+                        f"Median latency >{median_latency:.2f}s, max >{max(latency_list).total_seconds()}s, min >{min(latency_list).total_seconds()}s",
                     )
 
 
