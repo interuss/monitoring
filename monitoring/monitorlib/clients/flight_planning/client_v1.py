@@ -16,9 +16,11 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
     AdvisoryInclusion,
+    Conflict,
     FlightPlanStatus,
     PlanningActivityResponse,
     QueryUserNotificationsResponse,
+    UserNotification,
 )
 from monitoring.monitorlib.clients.flight_planning.test_preparation import (
     TestPreparationActivityResponse,
@@ -254,9 +256,12 @@ class V1FlightPlannerClient(FlightPlannerClient):
     def get_user_notifications(
         self,
         after: datetime.datetime,
-        before: datetime.datetime,
+        before: datetime.datetime | None = None,
     ) -> tuple[QueryUserNotificationsResponse | None, Query]:
         op = api.OPERATIONS[api.OperationID.QueryUserNotifications]
+        params = {"after": after.isoformat()}
+        if before is not None:
+            params["before"] = before.isoformat()
         q = query_and_describe(
             self._session,
             op.verb,
@@ -264,14 +269,19 @@ class V1FlightPlannerClient(FlightPlannerClient):
             scope=Scope.Plan,
             participant_id=self.participant_id,
             query_type=QueryType.InterUSSFlightPlanningV1ClearAreaQueryUserNotifications,
-            params={
-                "after": after.isoformat(),
-                "before": before.isoformat(),
-            },
+            params=params,
         )
         try:
-            return ImplicitDict.parse(
-                q.response.json or {}, QueryUserNotificationsResponse
+            resp: api.QueryUserNotificationsResponse = ImplicitDict.parse(
+                q.response.json or {}, api.QueryUserNotificationsResponse
+            )
+            return QueryUserNotificationsResponse(
+                user_notifications=[
+                    UserNotification(
+                        observed_at=n.observed_at.value, conflicts=Conflict(n.conflicts)
+                    )
+                    for n in resp.user_notifications
+                ]
             ), q
         except ValueError:
             return None, q

@@ -396,12 +396,12 @@
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">SCD0090</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a></td>
+    <td><a href="../../../scenarios/astm/utm/aggregate_checks.md">ASTM F3548 UTM aggregate checks</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">SCD0095</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a></td>
+    <td><a href="../../../scenarios/astm/utm/aggregate_checks.md">ASTM F3548 UTM aggregate checks</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">SCD0100</a></td>

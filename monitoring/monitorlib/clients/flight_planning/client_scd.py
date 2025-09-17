@@ -1,7 +1,8 @@
 import datetime
 import uuid
 
-from implicitdict import ImplicitDict
+import arrow
+from implicitdict import ImplicitDict, StringBasedDateTime
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 from uas_standards.interuss.automated_testing.scd.v1 import (
     constants as scd_api_constants,
@@ -26,7 +27,13 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
 from monitoring.monitorlib.clients.flight_planning.test_preparation import (
     TestPreparationActivityResponse,
 )
-from monitoring.monitorlib.fetch import Query, QueryType, query_and_describe
+from monitoring.monitorlib.fetch import (
+    Query,
+    QueryType,
+    RequestDescription,
+    ResponseDescription,
+    query_and_describe,
+)
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -304,8 +311,21 @@ class SCDFlightPlannerClient(FlightPlannerClient):
     def get_user_notifications(
         self,
         after: datetime.datetime,
-        before: datetime.datetime,
+        before: datetime.datetime | None = None,
     ) -> tuple[QueryUserNotificationsResponse | None, Query]:
-        raise PlanningActivityError(
-            "Legacy scd automated testing API don't support user notification retrival"
+        query = Query(
+            request=RequestDescription(
+                method="NONE",
+                url="https://testdummy.interuss.org/interuss/monitoring/monitorlib/clients/flight_planning/client_scd/get_user_notifications",
+                initiated_at=StringBasedDateTime(arrow.utcnow().datetime),
+            ),
+            response=ResponseDescription(
+                code=999,
+                failure="Legacy scd automated testing API does not support user notification retrieval",
+                elapsed_s=0,
+                reported=StringBasedDateTime(arrow.utcnow().datetime),
+            ),
+            participant_id=self.participant_id,
+            query_type=QueryType.InterUSSNone,
         )
+        return None, query

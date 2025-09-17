@@ -425,28 +425,29 @@ class ExecutionContext:
         self, scenario_type: type[TestScenario]
     ) -> list[TestScenarioReport]:
         """Find reports for all currently-completed instances of the specified test scenario type."""
-        if not self.top_frame:
-            return []
-        return self._find_test_scenario_reports(scenario_type, self.top_frame)
+        return [
+            report
+            for report in self.test_scenario_reports()
+            if issubclass(
+                get_scenario_type_by_name(report.scenario_type), scenario_type
+            )
+        ]
 
-    def _find_test_scenario_reports(
-        self, scenario_type: type[TestScenario], frame: ActionStackFrame
-    ) -> list[TestScenarioReport]:
-        results = []
+    def test_scenario_reports(
+        self, frame: ActionStackFrame | None = None
+    ) -> Iterator[TestScenarioReport]:
+        if not frame:
+            frame = self.top_frame
+            if not frame:
+                return
         if (
             frame.report is not None
             and "test_scenario" in frame.report
             and frame.report.test_scenario is not None
         ):
-            report_scenario_type = get_scenario_type_by_name(
-                frame.report.test_scenario.scenario_type
-            )
-            if issubclass(report_scenario_type, scenario_type):
-                results.append(frame.report.test_scenario)
+            yield frame.report.test_scenario
         for child in frame.children:
-            new_results = self._find_test_scenario_reports(scenario_type, child)
-            results.extend(new_results)
-        return results
+            yield from self.test_scenario_reports(child)
 
     @property
     def stop_fast(self) -> bool:

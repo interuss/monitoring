@@ -1,6 +1,6 @@
-import time
 from abc import ABC
-from datetime import timedelta
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 import arrow
 from uas_standards.astm.f3548.v21.constants import (
@@ -9,166 +9,129 @@ from uas_standards.astm.f3548.v21.constants import (
 
 from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
-    PlanningActivityError,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
     Conflict,
+    UserNotification,
 )
+from monitoring.monitorlib.delay import sleep
+from monitoring.monitorlib.fetch import Query
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 
-# We add an (arbitrary) delay of 2 seconds, to allow some notifications to
-# arrive later, staying in the 95% stated in the standard, until the TODO below
-# in implemented.
-EXTRA_DELAY = 2
+SCD0090_NOTE_PREFIX = "scd0090_notification"
+SCD0095_NOTE_PREFIX = "scd0095_notification"
+NOTIFICATION_NOTE_FORMAT = "{participant_id} notification latency: >{latency}s"
+MAX_LATENCY = f"{ConflictingOIMaxUserNotificationTimeSeconds}"
+_ACCEPTABLE_CONFLICTS = {Conflict.Single, Conflict.Multiple}
+
+
+@dataclass
+class Notifications:
+    notifications: list[UserNotification] | None
+    query: Query
 
 
 class NotificationChecker(GenericTestScenario, ABC):
     """Helper class to do notification checks"""
 
-    tested_uss: FlightPlannerClient
-    control_uss: FlightPlannerClient
+    def _get_notifications(
+        self,
+        clients: list[FlightPlannerClient],
+        start_point: datetime,
+        deadline: datetime,
+    ) -> dict[ParticipantID, Notifications]:
+        notifications = {}
+        most_recent_check = arrow.utcnow().datetime
+        while most_recent_check < deadline:
+            for client in clients:
+                if client.participant_id in notifications:
+                    # We've already found notifications for this participant
+                    continue
+                resp, query = client.get_user_notifications(after=start_point)
+                self.record_query(query)
+                most_recent_check = query.response.reported.datetime
 
-    def _record_current_notifications(self):
-        self._notifications_start_point = arrow.utcnow().datetime
-
-        self._base_notifications_response = {}
-
-        for participant in [self.tested_uss, self.control_uss]:
-            with self.check(
-                "Retrieve notifications", [participant.participant_id]
-            ) as check:
-                try:
-                    (
-                        self._base_notifications_response[participant.participant_id],
-                        query,
-                    ) = participant.get_user_notifications(
-                        before=self._notifications_start_point
-                        + timedelta(
-                            seconds=ConflictingOIMaxUserNotificationTimeSeconds
-                            + EXTRA_DELAY
-                        ),
-                        after=self._notifications_start_point,
-                    )
-
-                    self.record_query(query)
-
-                except PlanningActivityError:
-                    (
-                        self._base_notifications_response[participant.participant_id],
-                        query,
-                    ) = (
-                        None,
-                        None,
-                    )
-
-                if (
-                    not self._base_notifications_response[participant.participant_id]
-                    or "user_notifications"
-                    not in self._base_notifications_response[participant.participant_id]
-                ):
-                    check.record_failed(
-                        summary="Unable to retrieve base notifications",
-                        details=f"USS {participant.participant_id} didn't return a list of notifications before the action to compare as a base.",
-                        query_timestamps=[query.request.timestamp] if query else [],
-                    )
-                    self._base_notifications_response[participant.participant_id] = None
-
-    def _wait_for_conflict_notification(self):
-        def _notification_filter(n):
-            return "conflicts" not in n or n.conflicts in [
-                Conflict.Unknown,
-                Conflict.Single,
-                Conflict.Multiple,
-            ]
-
-        def _generic_check(participant, check_name, count=1):
-            with self.check(
-                check_name,
-                [participant.participant_id],
-            ) as check:
-                if not self._base_notifications_response[participant.participant_id]:
-                    # No query: not supported API
-                    check.skip()
-                    return
-
-                base_count = len(
-                    list(
-                        filter(
-                            _notification_filter,
-                            self._base_notifications_response[
-                                participant.participant_id
-                            ].user_notifications,
+                # See if we were able to retrieve notifications
+                with self.check(
+                    "Retrieve notifications", client.participant_id
+                ) as check:
+                    if not resp or "user_notifications" not in resp:
+                        notifications[client.participant_id] = Notifications(
+                            notifications=None, query=query
                         )
-                    )
-                )
-
-                def _check_for_new_notifications():
-                    notifications, query = participant.get_user_notifications(
-                        before=self._notifications_start_point
-                        + timedelta(
-                            seconds=ConflictingOIMaxUserNotificationTimeSeconds
-                            + EXTRA_DELAY
-                        ),
-                        after=self._notifications_start_point,
-                    )
-
-                    self.record_query(query)
-
-                    if not notifications or "user_notifications" not in notifications:
                         check.record_failed(
-                            summary="No notification returned",
-                            details=f"USS {participant.participant_id} didn't return a list of notifications when querying for new notifications.",
+                            summary="No notifications returned",
+                            details=f"{client.participant_id} didn't return a list of notifications when querying for new notifications",
                             query_timestamps=[query.request.timestamp],
                         )
-                        return
+                        continue
 
-                    return (
-                        len(
-                            list(
-                                filter(
-                                    _notification_filter,
-                                    notifications.user_notifications,
-                                )
-                            )
-                        )
-                        >= base_count + count
+                # If there was at least one qualifying notification, use the response obtained for this participant
+                qualifying_notifications = [
+                    notification
+                    for notification in resp.user_notifications
+                    if notification.conflicts in _ACCEPTABLE_CONFLICTS
+                ]
+                if qualifying_notifications:
+                    notifications[client.participant_id] = Notifications(
+                        notifications=qualifying_notifications, query=query
                     )
 
-                deadline = arrow.utcnow() + timedelta(
-                    seconds=ConflictingOIMaxUserNotificationTimeSeconds + EXTRA_DELAY
+            remaining_participants = [
+                client.participant_id
+                for client in clients
+                if client.participant_id not in notifications
+            ]
+            if len(remaining_participants) > 0:
+                sleep(
+                    2,
+                    f"user notifications have not yet appeared in {', '.join(remaining_participants)}",
                 )
+            else:
+                break
 
-                while arrow.utcnow() < deadline:
-                    if _check_for_new_notifications():
-                        return
+        return notifications
 
-                    time.sleep(0.2)
-
-                if (
-                    not _check_for_new_notifications()
-                ):  # Do a final check after the wait
-                    # TODO: To test fully the requirements, we should record the
-                    # failure and test in some aggregated analysis whether 95% of
-                    # these notifications were received within that threshold
-                    check.record_failed(
-                        summary="No new notification about conflict received",
-                        details=f"USS {participant.participant_id} didn't create a new notifications about conflict.",
-                    )
-
-        _generic_check(
-            self.control_uss, "New notification about conflict on creation/modification"
+    def _check_for_user_notifications(
+        self,
+        causing_conflict: FlightPlannerClient,
+        observing_conflict: FlightPlannerClient,
+        earliest_action_time: datetime,
+        latest_action_time: datetime,
+    ):
+        new_notifications = self._get_notifications(
+            [causing_conflict, observing_conflict],
+            earliest_action_time,
+            latest_action_time
+            + timedelta(seconds=ConflictingOIMaxUserNotificationTimeSeconds),
         )
 
-        # if control_uss and tested_uss USS are the same, we do expect 2
-        # notification, since one has already been 'consumed' for
-        # creation/modification
-        # We don't have much data on notification, so we don't know witch one
-        # is for creation and witch one is for awareness.
-        # We could also set both check to two, but that allow to differentiate
-        # the case where only one notification is send (that will be
-        # prioritized for creation/modification arbitrarily).
-        _generic_check(
-            self.tested_uss,
-            "New notification about conflict on awareness",
-            2 if self.control_uss == self.tested_uss else 1,
-        )
+        def _latency_of(notifications: list[UserNotification]) -> str:
+            if not notifications:
+                return MAX_LATENCY
+            dt = (
+                max(notification.observed_at.datetime for notification in notifications)
+                - latest_action_time
+            )
+            if dt.total_seconds() > ConflictingOIMaxUserNotificationTimeSeconds:
+                return MAX_LATENCY
+            elif dt.total_seconds() < 0:
+                return "0"
+            else:
+                return f"{dt.total_seconds():.1f}"
+
+        def _note_for(client: FlightPlannerClient) -> str:
+            return NOTIFICATION_NOTE_FORMAT.format(
+                participant_id=client.participant_id,
+                latency=_latency_of(
+                    new_notifications[client.participant_id].notifications or []
+                ),
+            )
+
+        def _maybe_record_note(prefix: str, client: FlightPlannerClient) -> None:
+            if new_notifications[client.participant_id].notifications is not None:
+                self.record_note(prefix, _note_for(client))
+
+        _maybe_record_note(SCD0090_NOTE_PREFIX, causing_conflict)
+        _maybe_record_note(SCD0095_NOTE_PREFIX, observing_conflict)

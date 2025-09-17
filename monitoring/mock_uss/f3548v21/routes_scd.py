@@ -12,17 +12,20 @@ from uas_standards.astm.f3548.v21.api import (
     OperationalIntentState,
     PutOperationalIntentDetailsParameters,
 )
-from uas_standards.interuss.automated_testing.flight_planning.v1 import api
 
 from monitoring.mock_uss import webapp
 from monitoring.mock_uss.auth import requires_scope
-from monitoring.mock_uss.database import db as core_db
 from monitoring.mock_uss.f3548v21.flight_planning import (
-    check_for_local_conflits,
+    conflicts_with_flightrecords,
     op_intent_from_flightrecord,
 )
 from monitoring.mock_uss.flights.database import FlightRecord, db
+from monitoring.mock_uss.user_interactions.notifications import (
+    UserNotification,
+    UserNotificationType,
+)
 from monitoring.monitorlib import scd
+from monitoring.monitorlib.clients.flight_planning.planning import Conflict
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents/<entityid>", methods=["GET"])
@@ -111,7 +114,7 @@ def scdsc_get_operational_intent_telemetry(entityid: str):
 def scdsc_notify_operational_intent_details_changed():
     """Implements notifyOperationalIntentDetailsChanged in ASTM SCD API."""
 
-    # We check if there is a conflits with our own flights
+    # Parse the notification payload
     try:
         op_intent_data: PutOperationalIntentDetailsParameters = ImplicitDict.parse(
             flask.request.json or {}, PutOperationalIntentDetailsParameters
@@ -123,19 +126,19 @@ def scdsc_notify_operational_intent_details_changed():
         )
 
     if "operational_intent" in op_intent_data and op_intent_data.operational_intent:
+        # An op intent is being created or modified; check if it conflicts with any flights we're managing
         with db as tx:
-            if check_for_local_conflits(
+            if conflicts_with_flightrecords(
                 op_intent_data.operational_intent, tx.flights.values()
             ):
-                with core_db as core_tx:
-                    core_tx.flight_planning_notifications.append(
-                        api.UserNotification(
-                            observed_at=api.Time(
-                                value=StringBasedDateTime(arrow.utcnow().datetime)
-                            ),
-                            conflicts="Single",
-                        )
+                # Virtually notify user that another op intent conflicts with their flight
+                tx.flight_planning_notifications.append(
+                    UserNotification(
+                        type=UserNotificationType.DetectedConflict,
+                        observed_at=StringBasedDateTime(arrow.utcnow().datetime),
+                        conflicts=Conflict.Single,  # TODO: detect multiple conflicts
                     )
+                )
 
     # Do nothing else because this USS is unsophisticated and polls the DSS for
     # every change in its operational intents

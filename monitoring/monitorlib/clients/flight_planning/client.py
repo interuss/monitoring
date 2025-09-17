@@ -98,9 +98,9 @@ class FlightPlannerClient(ABC):
     def get_user_notifications(
         self,
         after: datetime.datetime,
-        before: datetime.datetime,
+        before: datetime.datetime | None = None,
     ) -> tuple[QueryUserNotificationsResponse | None, Query]:
-        """Acting as test director, retrive notification send by the USS.
+        """Acting as test director, retrieve notification send by the USS.
 
         Raises:
             * PlanningActivityError

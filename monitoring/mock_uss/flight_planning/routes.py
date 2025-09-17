@@ -4,7 +4,7 @@ from datetime import timedelta
 
 import arrow
 import flask
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict
 from loguru import logger
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api
 from uas_standards.interuss.automated_testing.flight_planning.v1.constants import Scope
@@ -12,9 +12,8 @@ from uas_standards.interuss.automated_testing.flight_planning.v1.constants impor
 from monitoring.mock_uss import require_config_value, webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.config import KEY_BASE_URL
-from monitoring.mock_uss.database import db
 from monitoring.mock_uss.f3548v21.flight_planning import op_intent_from_flightinfo
-from monitoring.mock_uss.flights.database import FlightRecord
+from monitoring.mock_uss.flights.database import FlightRecord, db
 from monitoring.mock_uss.scd_injection.routes_injection import (
     clear_area,
     delete_flight,
@@ -86,28 +85,6 @@ def flight_planning_v1_upsert_flight_plan(flight_plan_id: str) -> tuple[str, int
         )
 
         inject_resp = inject_flight(flight_plan_id, new_flight, existing_flight)
-
-        if "has_conflict" in inject_resp and inject_resp.has_conflict:
-            with db as tx:
-                tx.flight_planning_notifications.append(
-                    api.UserNotification(
-                        observed_at=api.Time(
-                            value=StringBasedDateTime(arrow.utcnow().datetime)
-                        ),
-                        conflicts="Single",
-                    )
-                )
-
-        if "has_local_conflict" in inject_resp and inject_resp.has_local_conflict:
-            with db as tx:
-                tx.flight_planning_notifications.append(
-                    api.UserNotification(
-                        observed_at=api.Time(
-                            value=StringBasedDateTime(arrow.utcnow().datetime)
-                        ),
-                        conflicts="Single",
-                    )
-                )
 
     finally:
         release_flight_lock(flight_plan_id, log)
@@ -197,15 +174,16 @@ def flight_planning_v1_user_notifications() -> tuple[str, int]:
             400,
         )
 
-    final_list = []
+    final_list: list[api.UserNotification] = []
 
     for user_notification in db.value.flight_planning_notifications:
-        if (
-            after.datetime
-            <= user_notification.observed_at.value.datetime
-            <= before.datetime
-        ):
-            final_list.append(user_notification)
+        if after.datetime <= user_notification.observed_at.datetime <= before.datetime:
+            final_list.append(
+                api.UserNotification(
+                    observed_at=api.Time(value=user_notification.observed_at),
+                    conflicts=user_notification.conflicts.to_api(),
+                )
+            )
 
     r = api.QueryUserNotificationsResponse(user_notifications=final_list)
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, StringBasedDateTime
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.interuss.automated_testing.flight_planning.v1 import (
     api as flight_planning_api,
@@ -94,12 +94,6 @@ class PlanningActivityResponse(ImplicitDict):
 
     includes_advisories: AdvisoryInclusion | None = AdvisoryInclusion.Unknown
 
-    has_conflict: bool | None
-    """If the planning activity has at least one conflict"""
-
-    has_local_conflict: bool | None
-    """If the planning activity has at least one conflict with a local flight"""
-
     def to_inject_flight_response(self) -> scd_api.InjectFlightResponse:
         if self.activity_result == PlanningActivityResult.Completed:
             if self.flight_plan_status == FlightPlanStatus.Planned:
@@ -174,9 +168,12 @@ class Conflict(str, Enum):
     Multiple = "Multiple"
     """Notification indicates the presence of multiple conflicts."""
 
+    def to_api(self) -> flight_planning_api.UserNotificationConflicts:
+        return flight_planning_api.UserNotificationConflicts(self.value)
+
 
 class UserNotification(ImplicitDict):
-    observed_at: flight_planning_api.Time
+    observed_at: StringBasedDateTime
     conflicts: Conflict
 
 
