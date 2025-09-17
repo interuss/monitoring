@@ -94,7 +94,7 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 ### Plan Flight 2 test step
 
 #### [Plan Flight 2](../../../../flight_planning/plan_flight_intent.md)
-The higher priority flight should be successfully planned by the control USS.
+The higher priority flight should be successfully planned by the control USS as there are no other flights in the area yet.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
@@ -119,9 +119,6 @@ The first flight should be successfully planned by the tested USS.
 
 #### [Validate Flight 1 sharing](../../validate_shared_operational_intent.md)
 
-### Record current notifications test step
-#### [Record current notifications](../../record_current_notification.md)
-
 ### Plan Flight 2 test step
 
 #### [Plan Flight 2](../../../../flight_planning/plan_flight_intent.md)
@@ -130,8 +127,15 @@ It conflicts with Flight 1, but it has higher priority.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
-### Check for conflict notification test step
-#### [Check for conflict notification](../../check_for_conflict_notification.md)
+### Check for conflict notifications test step
+
+The test director checks whether a notification reporting the creation of a conflict by Flight 2 was sent to UAS personnel for the control_uss.
+
+The test director also checks whether a notification reporting the creation of a new conflict with Flight 1 was sent to the UAS personnel for the tested_uss managing Flight 1.
+
+#### ℹ️ Retrieve notifications check
+
+We fetch the list of notifications. If the USS doesn't return a valid answer, we cannot proceed with notification tests.
 
 ### Attempt to modify planned Flight 1 in conflict test step
 
@@ -179,9 +183,6 @@ The second flight should be successfully planned by the control USS.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
-### Record current notifications test step
-#### [Record current notifications](../../record_current_notification.md)
-
 ### Activate Flight 2 test step
 
 #### [Activate Flight 2](../../../../flight_planning/activate_flight_intent.md)
@@ -189,8 +190,15 @@ The test driver activates Flight 2, which should be done successfully given that
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
-### Check for conflict notification test step
-#### [Check for conflict notification](../../check_for_conflict_notification.md)
+### Check for conflict notifications test step
+
+The test director checks whether a notification reporting the modification of Flight 2 while in conflict was sent to UAS personnel for the control_uss.
+
+The test director also checks whether a notification reporting the modification of a flight conflicting with Flight 1 was sent to the UAS personnel for the tested_uss managing Flight 1.
+
+#### ℹ️ Retrieve notifications check
+
+We fetch the list of notifications. If the USS doesn't return a valid answer, we cannot proceed with notification tests.
 
 ### Modify activated Flight 1 in conflict with activated Flight 2 test step
 

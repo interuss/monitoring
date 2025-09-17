@@ -1,6 +1,7 @@
 import os
 from datetime import UTC, datetime, timedelta
 
+import arrow
 import flask
 import requests.exceptions
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -23,7 +24,6 @@ from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
 from monitoring.mock_uss.f3548v21 import utm_client
 from monitoring.mock_uss.f3548v21.flight_planning import (
     PlanningError,
-    check_for_local_conflits,
     check_op_intent,
     delete_op_intent,
     op_intent_from_flightinfo,
@@ -36,6 +36,10 @@ from monitoring.mock_uss.flights.planning import (
     lock_flight,
     release_flight_lock,
 )
+from monitoring.mock_uss.user_interactions.notifications import (
+    UserNotification,
+    UserNotificationType,
+)
 from monitoring.mock_uss.uspace import flight_auth
 from monitoring.monitorlib import versioning
 from monitoring.monitorlib.clients import scd as scd_client
@@ -45,6 +49,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
     ClearAreaResponse,
+    Conflict,
     FlightPlanStatus,
     PlanningActivityResponse,
     PlanningActivityResult,
@@ -201,10 +206,15 @@ def inject_flight(
         log("Storing flight in database")
         with db as tx:
             tx.flights[flight_id] = record
-
-            has_local_conflict = check_for_local_conflits(
-                record.op_intent, tx.flights.values()
-            )
+            if has_conflict:
+                # Record virtual user notification that this flight caused/has a conflict
+                tx.flight_planning_notifications.append(
+                    UserNotification(
+                        type=UserNotificationType.CausedConflict,
+                        observed_at=StringBasedDateTime(arrow.utcnow().datetime),
+                        conflicts=Conflict.Single,
+                    )
+                )
 
         step_name = "returning final successful result"
         log("Complete.")
@@ -215,8 +225,6 @@ def inject_flight(
             activity_result=PlanningActivityResult.Completed,
             flight_plan_status=FlightPlanStatus.from_flightinfo(record.flight_info),
             notes=notes,
-            has_conflict=has_conflict,
-            has_local_conflict=has_local_conflict,
         )
     except (ValueError, ConnectionError) as e:
         notes = (

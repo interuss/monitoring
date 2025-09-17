@@ -304,7 +304,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
     def get_user_notifications(
         self,
         after: datetime.datetime,
-        before: datetime.datetime,
+        before: datetime.datetime | None = None,
     ) -> tuple[QueryUserNotificationsResponse | None, Query]:
         raise PlanningActivityError(
             "Legacy scd automated testing API don't support user notification retrival"
