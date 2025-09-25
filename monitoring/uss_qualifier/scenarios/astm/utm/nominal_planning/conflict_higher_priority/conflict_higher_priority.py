@@ -276,6 +276,9 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Plan Flight 2")
+        preexisting_notifications = self._get_preexisting_notifications(
+            [self.control_uss, self.tested_uss]
+        )
         flight2_planned = self.resolve_flight(self.flight2_planned)
 
         with OpIntentValidator(
@@ -296,10 +299,11 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
 
         self.begin_test_step("Check for conflict notifications")
         self._check_for_user_notifications(
-            self.control_uss,
-            self.tested_uss,
-            earliest_creation_time,
-            latest_creation_time,
+            causing_conflict=self.control_uss,
+            observing_conflict=self.tested_uss,
+            preexisting_notifications=preexisting_notifications,
+            earliest_action_time=earliest_creation_time,
+            latest_action_time=latest_creation_time,
         )
         self.end_test_step()
 
@@ -399,6 +403,9 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
         self.end_test_step()
 
         self.begin_test_step("Activate Flight 2")
+        preexisting_notifications = self._get_preexisting_notifications(
+            [self.control_uss, self.tested_uss]
+        )
         flight2_activated = self.resolve_flight(self.flight2_activated)
 
         with OpIntentValidator(
@@ -421,10 +428,11 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
 
         self.begin_test_step("Check for conflict notifications")
         self._check_for_user_notifications(
-            self.control_uss,
-            self.tested_uss,
-            earliest_activation_time,
-            latest_activation_time,
+            causing_conflict=self.control_uss,
+            observing_conflict=self.tested_uss,
+            preexisting_notifications=preexisting_notifications,
+            earliest_action_time=earliest_activation_time,
+            latest_action_time=latest_activation_time,
         )
         self.end_test_step()
 
