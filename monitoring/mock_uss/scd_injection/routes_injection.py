@@ -315,20 +315,20 @@ def delete_flight(flight_id) -> tuple[PlanningActivityResponse, int]:
             f"{e.__class__.__name__} while {step_name} for flight {flight_id}: {str(e)}"
         )
         log(notes)
-        return unsuccessful(notes), 500
+        return unsuccessful(notes), 200  # Activity result is Failed, but we executed the activity successfully
     except requests.exceptions.ConnectionError as e:
         notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
         log(notes)
         response = unsuccessful(notes)
         response["stacktrace"] = stacktrace_string(e)
-        return response, 500
+        return response, 200  # Activity result is Failed, but we executed the activity successfully
     except QueryError as e:
         notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
         log(notes)
         response = unsuccessful(notes)
         response["queries"] = e.queries
         response["stacktrace"] = e.stacktrace
-        return response, 500
+        return response, 200  # Activity result is Failed, but we executed the activity successfully
 
     log("Complete.")
     return (
