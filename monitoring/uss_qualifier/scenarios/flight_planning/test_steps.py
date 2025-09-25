@@ -11,6 +11,7 @@ from monitoring.monitorlib.clients.flight_planning.client import PlanningActivit
 from monitoring.monitorlib.clients.flight_planning.client_v1 import FlightPlannerClient
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     ExecutionStyle,
+    FlightID,
     FlightInfo,
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
@@ -333,14 +334,14 @@ def request_flight(
 
 
 def cleanup_flight(
-    flight_planner: FlightPlannerClient, flight_id: str
+    flight_planner: FlightPlannerClient, flight_id: FlightID
 ) -> tuple[PlanningActivityResponse, Query]:
     try:
         resp = flight_planner.try_end_flight(flight_id, ExecutionStyle.IfAllowed)
     except PlanningActivityError as e:
         raise QueryError(str(e), e.queries)
 
-    flight_planner.created_flight_ids.discard(str(flight_id))
+    flight_planner.created_flight_ids.discard(flight_id)
     return (
         resp,
         resp.queries[0],
@@ -402,7 +403,6 @@ def cleanup_flights(
     * "Successful flight deletion" check declared for cleanup phase in `scenario`'s documentation
     """
     for flight_planner in flight_planners:
-        removed = []
         to_remove = flight_planner.created_flight_ids.copy()
         for flight_id in to_remove:
             with scenario.check(
@@ -429,6 +429,10 @@ def cleanup_flights(
                             details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
                             query_timestamps=[q.request.timestamp for q in e.queries],
                         )
+
+                    # Do not attempt to clean up again as we would expect the same error
+                    flight_planner.created_flight_ids.discard(flight_id)
+
                     continue
 
                 if resp.flight_plan_status != FlightPlanStatus.Closed:
@@ -437,4 +441,4 @@ def cleanup_flights(
                         f"Deletion of flight {flight_id} returned a status of '{resp.flight_plan_status}' ({FlightPlanStatus.Closed} wanted)",
                     )
 
-                removed.append(flight_id)
+                flight_planner.created_flight_ids.discard(flight_id)
