@@ -21,7 +21,10 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
 )
 from monitoring.monitorlib.fetch import Query, QueryError
 from monitoring.monitorlib.geotemporal import end_time_of
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
+from monitoring.uss_qualifier.scenarios.scenario import (
+    ScenarioDidNotStopError,
+    TestScenarioType,
+)
 
 
 def expect_flight_intent_state(
@@ -333,25 +336,10 @@ def request_flight(
     return resp, resp.queries[0], flight_id
 
 
-def cleanup_flight(
-    flight_planner: FlightPlannerClient, flight_id: FlightID
-) -> tuple[PlanningActivityResponse, Query]:
-    try:
-        resp = flight_planner.try_end_flight(flight_id, ExecutionStyle.IfAllowed)
-    except PlanningActivityError as e:
-        raise QueryError(str(e), e.queries)
-
-    flight_planner.created_flight_ids.discard(flight_id)
-    return (
-        resp,
-        resp.queries[0],
-    )
-
-
 def delete_flight(
     scenario: TestScenarioType,
     flight_planner: FlightPlannerClient,
-    flight_id: str,
+    flight_id: FlightID,
 ) -> PlanningActivityResponse:
     """Delete an existing flight intent that should result in success.
     A check fail is considered of high severity and as such will raise an ScenarioCannotContinueError.
@@ -364,33 +352,35 @@ def delete_flight(
         "Successful deletion", [flight_planner.participant_id]
     ) as check:
         try:
-            resp, query = cleanup_flight(flight_planner, flight_id)
+            resp = flight_planner.try_end_flight(flight_id, ExecutionStyle.IfAllowed)
+            scenario.record_queries(resp.queries)
+
         except QueryError as e:
-            for q in e.queries:
-                scenario.record_query(q)
+            scenario.record_queries(e.queries)
             check.record_failed(
                 summary=f"Error from {flight_planner.participant_id} when attempting to delete a flight intent (flight ID: {flight_id})",
                 details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
-        scenario.record_query(query)
+            raise ScenarioDidNotStopError(check)
+
         notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
 
         if (
             resp.activity_result == PlanningActivityResult.Completed
             and resp.flight_plan_status == FlightPlanStatus.Closed
         ):
+            flight_planner.created_flight_ids.discard(flight_id)
             return resp
         else:
             check.record_failed(
                 summary=f"Flight deletion attempt unexpectedly {resp.activity_result} with flight plan status {resp.flight_plan_status}",
                 details=f"{flight_planner.participant_id} indicated {resp.activity_result} with flight plan status {resp.flight_plan_status} rather than the expected Completed with flight plan status Closed{notes_suffix}",
-                query_timestamps=[query.request.timestamp],
+                query_timestamps=[resp.queries[0].request.timestamp]
+                if resp.queries
+                else [],
             )
-
-    raise RuntimeError(
-        "Error with deletion of flight intent, but a High Severity issue didn't interrupt execution"
-    )
+            raise ScenarioDidNotStopError(check)
 
 
 def cleanup_flights(
@@ -401,6 +391,7 @@ def cleanup_flights(
     This function assumes:
     * `scenario` is currently cleaning up (cleanup has started)
     * "Successful flight deletion" check declared for cleanup phase in `scenario`'s documentation
+    * IDs of flights created have been added to each flight_planner.created_flight_ids
     """
     for flight_planner in flight_planners:
         to_remove = flight_planner.created_flight_ids.copy()
@@ -409,11 +400,13 @@ def cleanup_flights(
                 "Successful flight deletion", [flight_planner.participant_id]
             ) as check:
                 try:
-                    resp, query = cleanup_flight(flight_planner, flight_id)
-                    scenario.record_query(query)
+                    resp = flight_planner.try_end_flight(
+                        flight_id, ExecutionStyle.IfAllowed
+                    )
+                    scenario.record_queries(resp.queries)
+
                 except QueryError as e:
-                    for q in e.queries:
-                        scenario.record_query(q)
+                    scenario.record_queries(e.queries)
 
                     if (
                         e.queries and e.queries[0].status_code == 404
@@ -436,9 +429,13 @@ def cleanup_flights(
                     continue
 
                 if resp.flight_plan_status != FlightPlanStatus.Closed:
-                    scenario.record_note(
-                        f"Deletion of {flight_id}",
-                        f"Deletion of flight {flight_id} returned a status of '{resp.flight_plan_status}' ({FlightPlanStatus.Closed} wanted)",
+                    check.record_failed(
+                        summary=f"Failed to clean up flight {flight_id} from {flight_planner.participant_id}",
+                        details=f"Deletion of flight {flight_id} returned a status of '{resp.flight_plan_status}' ({FlightPlanStatus.Closed} wanted)",
+                        query_timestamps=[q.request.timestamp for q in resp.queries],
                     )
 
+                # Remove flight_id from created flights regardless of status.
+                # If status was successful, the flight has been removed.  If the status was unsuccessful, we would
+                # expect the same error status if we were to try again.
                 flight_planner.created_flight_ids.discard(flight_id)
