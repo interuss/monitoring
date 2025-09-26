@@ -23,7 +23,7 @@ from monitoring.monitorlib.fetch import Query, QueryError
 from monitoring.monitorlib.geotemporal import end_time_of
 from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioDidNotStopError,
-    TestScenarioType,
+    TestScenario,
 )
 
 
@@ -31,7 +31,7 @@ def expect_flight_intent_state(
     flight_intent: FlightInfo,
     expected_usage_state: BasicFlightPlanInformationUsageState,
     expected_uas_state: BasicFlightPlanInformationUasState,
-    scenario: TestScenarioType,
+    scenario: TestScenario,
 ) -> None:
     """Confirm that provided flight intent test data has the expected state or raise a ValueError."""
     function_name = str(inspect.stack()[1][3])
@@ -47,7 +47,7 @@ def expect_flight_intent_state(
 
 
 def plan_flight(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     additional_fields: dict | None = None,
@@ -88,7 +88,7 @@ def plan_flight(
 
 
 def modify_planned_flight(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     flight_id: str,
@@ -121,7 +121,7 @@ def modify_planned_flight(
 
 
 def modify_activated_flight(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     flight_id: str,
@@ -191,7 +191,7 @@ def modify_activated_flight(
 
 
 def activate_flight(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     flight_id: str | None = None,
@@ -219,7 +219,7 @@ def activate_flight(
 
 
 def submit_flight(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     success_check: str,
     expected_results: set[tuple[PlanningActivityResult, FlightPlanStatus]],
     failed_checks: dict[PlanningActivityResult, str],
@@ -337,7 +337,7 @@ def request_flight(
 
 
 def delete_flight(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     flight_planner: FlightPlannerClient,
     flight_id: FlightID,
 ) -> PlanningActivityResponse:
@@ -353,7 +353,6 @@ def delete_flight(
     ) as check:
         try:
             resp = flight_planner.try_end_flight(flight_id, ExecutionStyle.IfAllowed)
-            scenario.record_queries(resp.queries)
 
         except QueryError as e:
             scenario.record_queries(e.queries)
@@ -363,6 +362,7 @@ def delete_flight(
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
             raise ScenarioDidNotStopError(check)
+        scenario.record_queries(resp.queries)
 
         notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
 
@@ -384,7 +384,7 @@ def delete_flight(
 
 
 def cleanup_flights(
-    scenario: TestScenarioType, flight_planners: Iterable[FlightPlannerClient]
+    scenario: TestScenario, flight_planners: Iterable[FlightPlannerClient]
 ) -> None:
     """Remove flights during a cleanup test step.
 
@@ -403,7 +403,6 @@ def cleanup_flights(
                     resp = flight_planner.try_end_flight(
                         flight_id, ExecutionStyle.IfAllowed
                     )
-                    scenario.record_queries(resp.queries)
 
                 except QueryError as e:
                     scenario.record_queries(e.queries)
@@ -427,6 +426,7 @@ def cleanup_flights(
                     flight_planner.created_flight_ids.discard(flight_id)
 
                     continue
+                scenario.record_queries(resp.queries)
 
                 if resp.flight_plan_status != FlightPlanStatus.Closed:
                     check.record_failed(
