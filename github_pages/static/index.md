@@ -25,10 +25,10 @@ These reports were generated during continuous integration for the most recent P
 * [Tested requirements](./artifacts/uss_qualifier/reports/f3548_self_contained/gate3)
 * [Globally-expanded report](./artifacts/uss_qualifier/reports/f3548_self_contained/globally_expanded/report.html)
 
-### [US UTM Implementation test configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/utm_implementation_us.yaml)
+### [US UTM Implementation test configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/utm_implementation_us/environments/local/test_1.jsonnet)
 
-* [Sequence view](./artifacts/uss_qualifier/reports/utm_implementation_us/sequence)
-* [Tested requirements](./artifacts/uss_qualifier/reports/utm_implementation_us/scd)
+* [Sequence view](./artifacts/uss_qualifier/reports/test_1/sequence)
+* [Tested requirements](./artifacts/uss_qualifier/reports/test_1/scd)
 
 ### [ASTM F3411-22a test configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/netrid_v22a.yaml)
 
