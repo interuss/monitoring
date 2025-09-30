@@ -60,6 +60,8 @@ class SubscriptionSimple(TestScenario):
     # An area designed to be too big to be allowed to search by the DSS
     _problematically_big_area_vol: Polygon
 
+    _planning_area: PlanningAreaResource
+
     def __init__(
         self,
         dss: DSSInstanceResource,
@@ -81,12 +83,12 @@ class SubscriptionSimple(TestScenario):
         self._dss = dss.get_instance(scopes)
         self._pid = [self._dss.participant_id]
         self._base_sub_id = id_generator.id_factory.make_id(self.SUB_TYPE)
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
         # Build a ready-to-use 4D volume with no specified time for searching
         # the currently active subscriptions
-        self._planning_area_volume4d = Volume4D(
-            volume=self._planning_area.volume,
+        self._planning_area_volume4d = self._planning_area.resolved_volume4d_with_times(
+            None, None
         )
 
         # Prepare 4 different subscription ids:
@@ -656,10 +658,13 @@ class SubscriptionSimple(TestScenario):
         with self.check(
             "Returned USS base URL has correct base URL", self._pid
         ) as check:
-            if sub_under_test.uss_base_url != self._planning_area.get_base_url():
+            if (
+                sub_under_test.uss_base_url
+                != self._planning_area.specification.get_base_url()
+            ):
                 check.record_failed(
                     "Returned USS Base URL does not match provided one",
-                    details=f"Provided: {self._planning_area.get_base_url()}, Returned: {sub_under_test.uss_base_url}",
+                    details=f"Provided: {self._planning_area.specification.get_base_url()}, Returned: {sub_under_test.uss_base_url}",
                     query_timestamps=query_timestamps,
                 )
 
