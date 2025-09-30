@@ -10,7 +10,6 @@ from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib import fetch, schema_validation
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.schema_validation import F3548_21
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources import PlanningAreaResource
@@ -51,6 +50,7 @@ class OIRKeyValidation(TestScenario):
 
     # Keep track of the current OIR state
     _current_oirs: dict[EntityID, OperationalIntentReference]
+    _planning_area: PlanningAreaResource
 
     def __init__(
         self,
@@ -79,10 +79,10 @@ class OIRKeyValidation(TestScenario):
 
         self._expected_manager = client_identity.subject()
 
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
-        self._planning_area_volume4d = Volume4D(
-            volume=self._planning_area.volume,
+        self._planning_area_volume4d = self._planning_area.resolved_volume4d_with_times(
+            None, None
         )
 
         self._current_oirs = {}
@@ -109,7 +109,7 @@ class OIRKeyValidation(TestScenario):
         first_oir_params = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=datetime.now() - timedelta(seconds=10),
             time_end=datetime.now() + timedelta(minutes=20),
             subscription_id=None,
@@ -119,7 +119,7 @@ class OIRKeyValidation(TestScenario):
         second_oir_params = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=datetime.now() + timedelta(hours=1, minutes=20),
             time_end=datetime.now() + timedelta(hours=1, minutes=40),
             subscription_id=None,
@@ -243,7 +243,7 @@ class OIRKeyValidation(TestScenario):
         conflict_first = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=first_oir.time_start.value.datetime,
             time_end=first_oir.time_end.value.datetime,
             subscription_id=None,
@@ -258,7 +258,7 @@ class OIRKeyValidation(TestScenario):
         conflict_second = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=second_oir.time_start.value.datetime,
             time_end=second_oir.time_end.value.datetime,
             subscription_id=None,
@@ -273,7 +273,7 @@ class OIRKeyValidation(TestScenario):
         conflict_both = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=first_oir.time_start.value.datetime,
             time_end=second_oir.time_end.value.datetime,
             subscription_id=None,

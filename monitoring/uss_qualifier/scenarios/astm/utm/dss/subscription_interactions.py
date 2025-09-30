@@ -12,8 +12,6 @@ from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4D
-from monitoring.monitorlib.temporal import Time
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -58,6 +56,8 @@ class SubscriptionInteractions(TestScenario):
 
     _manager: str
 
+    _planning_area: PlanningAreaResource
+
     def __init__(
         self,
         dss: DSSInstanceResource,
@@ -80,7 +80,7 @@ class SubscriptionInteractions(TestScenario):
         }
         self._dss = dss.get_instance(scopes)
         self._pid = [self._dss.participant_id]
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
         self._secondary_instances = [
             dss.get_instance(scopes) for dss in other_instances.dss_instances
@@ -383,10 +383,8 @@ class SubscriptionInteractions(TestScenario):
             sub_id = self._sub_ids[i]
             for other_dss in {self._dss, *self._secondary_instances} - {dss}:
                 other_dss_subs = other_dss.query_subscriptions(
-                    Volume4D(
-                        volume=self._planning_area.volume,
-                        time_start=Time(self._time_start),
-                        time_end=Time(self._time_end),
+                    self._planning_area.resolved_volume4d_with_times(
+                        self._time_start, self._time_end
                     ).to_f3548v21()
                 )
                 self.record_query(other_dss_subs)
@@ -451,7 +449,7 @@ class SubscriptionInteractions(TestScenario):
         self.end_test_step()
 
     def _clean_workspace(self):
-        extents = Volume4D(volume=self._planning_area.volume)
+        extents = self._planning_area.resolved_volume4d_with_times(None, None)
         test_step_fragments.cleanup_active_oirs(
             self,
             self._dss,

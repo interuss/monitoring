@@ -9,7 +9,7 @@ from uas_standards.astm.f3548.v21.api import (
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.fetch import Query, QueryError
-from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
+from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -96,12 +96,12 @@ class OIRSynchronization(TestScenario):
 
         self._oir_id = id_generator.id_factory.make_id(self.SUB_TYPE)
         self._expected_manager = client_identity.subject()
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
         # Build a ready-to-use 4D volume with no specified time for searching
         # the currently active OIRs
-        self._planning_area_volume4d = Volume4D(
-            volume=self._planning_area.volume,
+        self._planning_area_volume4d = self._planning_area.resolved_volume4d_with_times(
+            None, None
         )
 
         self._current_oir = None
@@ -110,7 +110,7 @@ class OIRSynchronization(TestScenario):
         self._oir_params = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=datetime.now() - timedelta(seconds=10),
             time_end=datetime.now() + timedelta(minutes=45),
             subscription_id=None,
