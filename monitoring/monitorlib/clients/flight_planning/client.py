@@ -30,7 +30,7 @@ class FlightPlannerClient(ABC):
 
     def __init__(self, participant_id: ParticipantID):
         self.participant_id = participant_id
-        self.created_flight_ids: set[FlightID] = set()
+        self.created_flight_ids = set()
 
     # ===== Emulation of user actions =====
 
