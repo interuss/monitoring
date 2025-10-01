@@ -40,3 +40,5 @@ The release notes should contain at least the following sections:
 ## Optional migration tasks
 
 ## Important information
+
+* The RID test data of the [U-Space test configuration](monitoring/uss_qualifier/configurations/dev/uspace.yaml) has been adjusted not to overlap. ([#1198](https://github.com/interuss/monitoring/pull/1198))
