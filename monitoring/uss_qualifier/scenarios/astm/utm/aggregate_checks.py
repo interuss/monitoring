@@ -1,9 +1,18 @@
+import re
+from datetime import timedelta
+
 from uas_standards.astm.f3548.v21 import constants
+from uas_standards.astm.f3548.v21.constants import (
+    ConflictingOIMaxUserNotificationTimeSeconds,
+)
 
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.fetch import QueryType, evaluation
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.flight_planning import FlightPlannersResource
+from monitoring.uss_qualifier.scenarios.astm.utm.notifications_to_operator import (
+    notification_checker,
+)
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
@@ -76,6 +85,27 @@ class AggregateChecks(TestScenario):
 
         self._confirm_test_harness_queries_work()
 
+        self.end_test_step()
+        self.end_test_case()
+
+        self.begin_test_case("Notifications to operator")
+        self.begin_test_step("Notifications for causing conflicts")
+        self._check_notification_latencies(
+            context,
+            notification_checker.SCD0090_NOTE_PREFIX,
+            "Notifications for causing conflicts",
+            "Caused-conflict",
+            "conflicts caused by the operator",
+        )
+        self.end_test_step()
+        self.begin_test_step("Notifications for observing conflicts")
+        self._check_notification_latencies(
+            context,
+            notification_checker.SCD0095_NOTE_PREFIX,
+            "Notifications for observing conflicts",
+            "Conflicting flight",
+            "conflicts affecting the operator's flights",
+        )
         self.end_test_step()
         self.end_test_case()
 
@@ -172,6 +202,67 @@ class AggregateChecks(TestScenario):
                         details=f"Found no successful {query_type} interaction with interoperability test instance, "
                         f"indicating that the test instance is either not available or not properly implemented.",
                     )
+
+    def _check_notification_latencies(
+        self,
+        context: ExecutionContext,
+        prefix: str,
+        check_name: str,
+        notification_type: str,
+        notification_type_long: str,
+    ):
+        cutoff = timedelta(seconds=ConflictingOIMaxUserNotificationTimeSeconds)
+        latencies = _get_latencies(context, prefix)
+        for participant_id, latency_list in latencies.items():
+            if not latency_list:
+                continue
+            n_ok = sum(1 if latency < cutoff else 0 for latency in latency_list)
+            n_total = len(latency_list)
+            with self.check(check_name, participant_id) as check:
+                percentage = 100 * n_ok / n_total
+                if percentage < 95:
+                    check.record_failed(
+                        summary=f"{notification_type} notifications delivered {percentage:.1f}% of the time",
+                        details=f"The actual delivery rate of {percentage:.2f}% ({n_ok}/{n_total}) for notifications regarding {notification_type_long} does not meet the 95% threshold",
+                    )
+                else:
+                    latency_list.sort()
+                    median_latency = latency_list[
+                        int((len(latency_list) + 1) / 2)
+                    ].total_seconds()
+                    self.record_note(
+                        f"{participant_id}/{prefix}",
+                        f"Median latency >{median_latency:.2f}s, max >{max(latency_list).total_seconds()}s, min >{min(latency_list).total_seconds()}s",
+                    )
+
+
+def _get_latencies(
+    context: ExecutionContext, prefix: str
+) -> dict[ParticipantID, list[timedelta]]:
+    pattern = notification_checker.NOTIFICATION_NOTE_FORMAT.format(
+        participant_id="(.*)", latency=r"(\d*\.?\d*)"
+    )
+    matcher = re.compile(pattern)
+    latencies = {}
+    for report in context.test_scenario_reports():
+        if "notes" not in report or not report.notes:
+            continue
+        for key, value in report.notes.items():
+            if not key.startswith(prefix):
+                continue
+            m = matcher.match(value.message)
+            if not m:
+                continue
+            participant_id = m.group(1)
+            latency_str = m.group(2)
+            try:
+                latency_s = float(latency_str)
+            except ValueError:
+                continue
+            latency_list = latencies.get(participant_id, [])
+            latency_list.append(timedelta(seconds=latency_s))
+            latencies[participant_id] = latency_list
+    return latencies
 
 
 def _is_interop_test_interaction(query_type: QueryType):

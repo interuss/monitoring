@@ -403,6 +403,8 @@ class QueryType(str, Enum):
     )
     InterUSSSCDInjectionV1ClearArea = "interuss.deprecated_scd_injection.v1.clearArea"
 
+    InterUSSNone = "interuss.none"
+
     def __str__(self):
         return self.value
 

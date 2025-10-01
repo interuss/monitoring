@@ -6,7 +6,9 @@ from monitoring.monitorlib import scd as scd_lib
 from monitoring.monitorlib.fetch import QueryType, query_and_describe
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstanceResource
-from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import make_dss_report
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.test_step_fragments import (
+    make_dss_report,
+)
 from monitoring.uss_qualifier.scenarios.scenario import (
     TestScenario,
 )
@@ -58,5 +60,6 @@ class Report(TestScenario):
         self.begin_test_step("Make valid DSS report")
         dummy_record = gen_record()
         report_id = make_dss_report(self, self._dss, dummy_record)
-        self.record_note(f"{self._dss.participant_id}/report_id", report_id)
+        if report_id:
+            self.record_note(f"{self._dss.participant_id}/report_id", report_id)
         self.end_test_step()

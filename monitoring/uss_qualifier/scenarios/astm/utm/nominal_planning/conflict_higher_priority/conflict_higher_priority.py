@@ -275,11 +275,10 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             flight_1_oi_ref = validator.expect_shared(flight1_planned)
         self.end_test_step()
 
-        self.begin_test_step("Record current notifications")
-        self._record_current_notifications()
-        self.end_test_step()
-
         self.begin_test_step("Plan Flight 2")
+        preexisting_notifications = self._get_preexisting_notifications(
+            [self.control_uss, self.tested_uss]
+        )
         flight2_planned = self.resolve_flight(self.flight2_planned)
 
         with OpIntentValidator(
@@ -288,16 +287,24 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             self.dss,
             flight2_planned,
         ) as validator:
+            earliest_creation_time = arrow.utcnow().datetime
             _, self.flight2_id = plan_flight(
                 self,
                 self.control_uss,
                 flight2_planned,
             )
+            latest_creation_time = arrow.utcnow().datetime
             validator.expect_shared(flight2_planned)
         self.end_test_step()
 
-        self.begin_test_step("Check for conflict notification")
-        self._wait_for_conflict_notification()
+        self.begin_test_step("Check for conflict notifications")
+        self._check_for_user_notifications(
+            causing_conflict=self.control_uss,
+            observing_conflict=self.tested_uss,
+            preexisting_notifications=preexisting_notifications,
+            earliest_action_time=earliest_creation_time,
+            latest_action_time=latest_creation_time,
+        )
         self.end_test_step()
 
         self.begin_test_step("Attempt to modify planned Flight 1 in conflict")
@@ -395,11 +402,10 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             flight_2_oi_ref = validator.expect_shared(flight2_planned)
         self.end_test_step()
 
-        self.begin_test_step("Record current notifications")
-        self._record_current_notifications()
-        self.end_test_step()
-
         self.begin_test_step("Activate Flight 2")
+        preexisting_notifications = self._get_preexisting_notifications(
+            [self.control_uss, self.tested_uss]
+        )
         flight2_activated = self.resolve_flight(self.flight2_activated)
 
         with OpIntentValidator(
@@ -409,17 +415,25 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             flight2_activated,
             flight_2_oi_ref,
         ) as validator:
+            earliest_activation_time = arrow.utcnow().datetime
             activate_flight(
                 self,
                 self.control_uss,
                 flight2_activated,
                 self.flight2_id,
             )
+            latest_activation_time = arrow.utcnow().datetime
             flight_2_oi_ref = validator.expect_shared(flight2_activated)
         self.end_test_step()
 
-        self.begin_test_step("Check for conflict notification")
-        self._wait_for_conflict_notification()
+        self.begin_test_step("Check for conflict notifications")
+        self._check_for_user_notifications(
+            causing_conflict=self.control_uss,
+            observing_conflict=self.tested_uss,
+            preexisting_notifications=preexisting_notifications,
+            earliest_action_time=earliest_activation_time,
+            latest_action_time=latest_activation_time,
+        )
         self.end_test_step()
 
         self.begin_test_step(

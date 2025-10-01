@@ -94,7 +94,7 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 ### Plan Flight 2 test step
 
 #### [Plan Flight 2](../../../../flight_planning/plan_flight_intent.md)
-The higher priority flight should be successfully planned by the control USS.
+The higher priority flight should be successfully planned by the control USS as there are no other flights in the area yet.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
@@ -108,7 +108,6 @@ higher priority. As such it should be rejected per **[astm.f3548.v21.SCD0015](..
 
 ### [Delete Flight 2 test step](../../../../flight_planning/delete_flight_intent.md)
 
-
 ## Attempt to modify planned flight in conflict test case
 ![Test case summary illustration](assets/attempt_to_modify_planned_flight_into_conflict.svg)
 
@@ -119,10 +118,11 @@ The first flight should be successfully planned by the tested USS.
 
 #### [Validate Flight 1 sharing](../../validate_shared_operational_intent.md)
 
-### Record current notifications test step
-#### [Record current notifications](../../record_current_notification.md)
-
 ### Plan Flight 2 test step
+
+#### ℹ️ Retrieve pre-existing notifications check
+
+Just before directing the planning activity, the test director observes pre-existing notifications which cannot relate to the planning activity that has not yet happened.  If these notifications cannot be retrieved, the USS has not fully implemented **[interuss.automated_testing.flight_planning.ImplementAPI](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
 #### [Plan Flight 2](../../../../flight_planning/plan_flight_intent.md)
 The second flight should be successfully planned by the control USS.
@@ -130,8 +130,17 @@ It conflicts with Flight 1, but it has higher priority.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
-### Check for conflict notification test step
-#### [Check for conflict notification](../../check_for_conflict_notification.md)
+### Check for conflict notifications test step
+
+The test director checks whether a notification reporting the creation of a conflict by Flight 2 was sent to UAS personnel for the control_uss.
+
+The test director also checks whether a notification reporting the creation of a new conflict with Flight 1 was sent to the UAS personnel for the tested_uss managing Flight 1.
+
+Note that these actions will not be performed if the test director was unable to retrieve the notifications before the planning activity.
+
+#### ℹ️ Retrieve notifications check
+
+We fetch the list of notifications. If the USS doesn't return a valid answer, the USS has not fully implemented **[interuss.automated_testing.flight_planning.ImplementAPI](../../../../../requirements/interuss/automated_testing/flight_planning.md)** and we cannot proceed with notification tests.
 
 ### Attempt to modify planned Flight 1 in conflict test step
 
@@ -179,18 +188,28 @@ The second flight should be successfully planned by the control USS.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
-### Record current notifications test step
-#### [Record current notifications](../../record_current_notification.md)
-
 ### Activate Flight 2 test step
+
+#### ℹ️ Retrieve pre-existing notifications check
+
+Just before directing the planning activity, the test director observes pre-existing notifications which cannot relate to the planning activity that has not yet happened.  If these notifications cannot be retrieved, the USS has not fully implemented **[interuss.automated_testing.flight_planning.ImplementAPI](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
 #### [Activate Flight 2](../../../../flight_planning/activate_flight_intent.md)
 The test driver activates Flight 2, which should be done successfully given that it is the highest-priority flight.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
-### Check for conflict notification test step
-#### [Check for conflict notification](../../check_for_conflict_notification.md)
+### Check for conflict notifications test step
+
+The test director checks whether a notification reporting the modification of Flight 2 while in conflict was sent to UAS personnel for the control_uss.
+
+The test director also checks whether a notification reporting the modification of a flight conflicting with Flight 1 was sent to the UAS personnel for the tested_uss managing Flight 1.
+
+Note that these actions will not be performed if the test director was unable to retrieve the notifications before the planning activity.
+
+#### ℹ️ Retrieve notifications check
+
+We fetch the list of notifications. If the USS doesn't return a valid answer, the USS has not fully implemented **[interuss.automated_testing.flight_planning.ImplementAPI](../../../../../requirements/interuss/automated_testing/flight_planning.md)** and we cannot proceed with notification tests.
 
 ### Modify activated Flight 1 in conflict with activated Flight 2 test step
 
@@ -219,7 +238,6 @@ If the modification was accepted, Flight 1 should have been modified.
 If the modification was not supported, Flight 1 should not have been modified.
 If the modification was rejected, Flight 1 should not have been modified and should still exist. If it does not exist,
 it means that there is an active flight without an operational intent, which is a failure to meet **[interuss.automated_testing.flight_planning.FlightCoveredByOperationalIntent](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
-
 
 ## Attempt to modify activated flight in conflict test case
 ![Test case summary illustration](assets/attempt_to_modify_activated_flight_into_conflict.svg)

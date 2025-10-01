@@ -4,6 +4,7 @@ from datetime import timedelta
 from implicitdict import ImplicitDict
 from uas_standards.astm.f3548.v21.api import OperationalIntent
 
+from monitoring.mock_uss.user_interactions.notifications import UserNotification
 from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUssFlightBehavior,
@@ -27,6 +28,9 @@ class Database(ImplicitDict):
 
     flights: dict[str, FlightRecord | None] = {}
     cached_operations: dict[str, OperationalIntent] = {}
+
+    flight_planning_notifications: list[UserNotification] = []
+    """List of notifications sent during flight planning operations"""
 
 
 db = SynchronizedValue(

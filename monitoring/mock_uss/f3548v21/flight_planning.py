@@ -90,7 +90,38 @@ def validate_request(op_intent: f3548_v21.OperationalIntent) -> None:
         )
 
 
-def check_for_disallowed_conflicts(
+def conflicts_with_flightrecords(
+    op_intent: f3548_v21.OperationalIntent, flights: list[FlightRecord | None]
+) -> bool:
+    """
+    Return true if the OperationalIntent conflicts with (intersects) any of the specified FlightRecords that do not
+    correspond with op_intent.
+    """
+
+    vc1 = Volume4DCollection.from_f3548v21(
+        (op_intent.details.volumes or [])
+        + (op_intent.details.off_nominal_volumes or [])
+    )
+
+    for other_flight in flights:
+        if not other_flight:
+            continue
+
+        if other_flight.op_intent.reference.id == op_intent.reference.id:  # Same flight
+            continue
+
+        vc2 = Volume4DCollection.from_f3548v21(
+            (other_flight.op_intent.details.volumes or [])
+            + (other_flight.op_intent.details.off_nominal_volumes or [])
+        )
+
+        if vc1.intersects_vol4s(vc2):
+            return True
+
+    return False
+
+
+def check_for_conflicts(
     new_op_intent: f3548_v21.OperationalIntent,
     existing_flight: FlightRecord | None,
     op_intents: list[f3548_v21.OperationalIntent],
@@ -122,7 +153,7 @@ def check_for_disallowed_conflicts(
 
     v1 = Volume4DCollection.from_interuss_scd_api(new_op_intent.details.volumes)
 
-    found_conflict = False
+    allowed_conflict = False
 
     for op_intent in op_intents:
         if (
@@ -142,18 +173,18 @@ def check_for_disallowed_conflicts(
         old_priority = priority_of(op_intent.details)
         if new_priority > old_priority:
             log(
-                f"intersection with {op_intent.reference.id} not considered: intersection with lower-priority operational intents"
+                f"intersection with {op_intent.reference.id} allowed: intersection with lower-priority operational intents"
             )
 
-            found_conflict |= v1.intersects_vol4s(v2)
+            allowed_conflict |= v1.intersects_vol4s(v2)
             continue
         if new_priority == old_priority and locality.allows_same_priority_intersections(
             old_priority
         ):
             log(
-                f"intersection with {op_intent.reference.id} not considered: intersection with same-priority operational intents (if allowed)"
+                f"intersection with {op_intent.reference.id} allowed: intersection with same-priority operational intents (if allowed)"
             )
-            found_conflict |= v1.intersects_vol4s(v2)
+            allowed_conflict |= v1.intersects_vol4s(v2)
             continue
 
         modifying_activated = (
@@ -168,7 +199,7 @@ def check_for_disallowed_conflicts(
             ).intersects_vol4s(v2)
             if preexisting_conflict:
                 log(
-                    f"intersection with {op_intent.reference.id} not considered: modification of Activated operational intent with a pre-existing conflict"
+                    f"intersection with {op_intent.reference.id} allowed: modification of Activated operational intent with a pre-existing conflict"
                 )
                 continue
 
@@ -177,7 +208,7 @@ def check_for_disallowed_conflicts(
                 f"Requested flight (priority {new_priority}) intersected {op_intent.reference.manager}'s operational intent {op_intent.reference.id} (priority {old_priority})"
             )
 
-    return found_conflict
+    return allowed_conflict
 
 
 def op_intent_transition_valid(
@@ -450,7 +481,7 @@ def get_down_uss_op_intent(
 
     Note: This function will populate volumes (for accepted or activated states) and off_nominal_volumes (for contingent
      and non-conforming states) with the area of interest that was requested. The reason is that later on the function
-     `check_for_disallowed_conflicts` will need to evaluate again those conflicts to determine pre-existing conflicts.
+     `check_for_conflicts` will need to evaluate again those conflicts to determine pre-existing conflicts.
     TODO: A better approach to this issue would be to store the area in conflict when a flight is planned with a
      conflict, that way we can just retrieve the conflicting area instead of having to compute again the intersection
      between the flight to be planned and the conflicting operational intent.
@@ -546,7 +577,7 @@ def check_op_intent(
         log(
             f"Checking for intersections with {', '.join(op_intent.reference.id for op_intent in op_intents)}"
         )
-        has_conflicts = check_for_disallowed_conflicts(
+        has_conflicts = check_for_conflicts(
             new_flight.op_intent, existing_flight, op_intents, locality, log
         )
 
@@ -667,11 +698,7 @@ def notify_subscribers(
     :return: Notification errors if any, by subscriber.
     """
     notif_errors: dict[f3548_v21.SubscriptionUssBaseURL, Exception] = {}
-    base_url = f"{webapp.config[KEY_BASE_URL]}/mock/scd"
     for subscriber in subscribers:
-        if subscriber.uss_base_url == base_url:
-            # Do not notify ourselves
-            continue
         update = f3548_v21.PutOperationalIntentDetailsParameters(
             operational_intent_id=op_intent_id,
             operational_intent=op_intent,

@@ -33,58 +33,12 @@ The release notes should contain at least the following sections:
 
 --------------------------------------------------------------------------------------------------------------------
 
-# Release Notes for v0.19.0
+# Release Notes for v0.19.1
 
 ## Mandatory migration tasks
-
-### Replacement of `resources.VerticesResource` with `resources.VolumeResource`
-
-[VerticesResource](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/resources/vertices.py) is being replaced with a new [VolumeResource](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/resources/volume.py),
-which now contains a `Volume4DTemplate`, which can be used to define anything from a simple 2D polygon to a 3D volume to a full 4D spatio-temporal volume with dynamic time-bounds.
-
-The old resources, defined as:
-
-```yaml
-some_resource:
-  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.VerticesResource
-  specification:
-    vertices:
-      - lat: 38
-        lng: -81
-      - lat: 37
-        lng: -81
-      - lat: 37
-        lng: -80
-      - lat: 38
-        lng: -80
-```
-
-Can be straightforwardly replaced with:
-
-```yaml
-planning_area:
-  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.VolumeResource
-  specification:
-    template:
-      outline_polygon:
-        vertices:
-          - lat: 38
-            lng: -81
-          - lat: 37
-            lng: -81
-          - lat: 37
-            lng: -80
-          - lat: 38
-            lng: -80
-```
-
-The optional fields of [Volume4DTemplate](https://github.com/interuss/monitoring/blob/master/monitoring/monitorlib/geotemporal.py#L21) (`altitude_lower`, `altitude_upper`, `start_time`, `start_time`, `duration`, `transformations`) can be safely omitted in all contexts that formerly depended on `VerticesResource`.
 
 ## Optional migration tasks
 
 ## Important information
 
-* The RID test data of the [U-Space test configuration](monitoring/uss_qualifier/configurations/dev/uspace.yaml) has been adjusted to cover the Zurich area. ([#1142](https://github.com/interuss/monitoring/pull/1142) and [#1198](https://github.com/interuss/monitoring/pull/1198))
-* The IDs of test flights are now generated to be unique across multiple USS. They remain consistent within the same run, but differ from those in previous release runs. ([#1148](https://github.com/interuss/monitoring/pull/1148))
+* The RID test data of the [U-Space test configuration](monitoring/uss_qualifier/configurations/dev/uspace.yaml) has been adjusted not to overlap. ([#1198](https://github.com/interuss/monitoring/pull/1198))

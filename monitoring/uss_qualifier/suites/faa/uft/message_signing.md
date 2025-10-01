@@ -18,7 +18,7 @@
     <th><a href="../../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="82" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
+    <td rowspan="83" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0005,1</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/prep_planners.md">ASTM F3548 flight planners preparation</a><br><a href="../../../scenarios/astm/utm/dss/op_intent_ref_access_control.md">ASTM F3548-21 UTM DSS Operational Intent Reference Access Control</a><br><a href="../../../scenarios/astm/utm/dss/op_intent_ref_state_transitions.md">ASTM F3548-21 UTM DSS Operational Intent Reference State Transitions</a><br><a href="../../../scenarios/astm/utm/dss/oir_implicit_sub_handling.md">ASTM SCD DSS: Implicit Subscription handling</a><br><a href="../../../scenarios/astm/utm/dss/authentication/authentication_validation.md">ASTM SCD DSS: Interfaces authentication</a><br><a href="../../../scenarios/astm/utm/dss/oir_explicit_sub_handling.md">ASTM SCD DSS: Operational Intent Explicit Subscription handling</a><br><a href="../../../scenarios/astm/utm/dss/op_intent_ref_key_validation.md">ASTM SCD DSS: Operational Intent Reference Key Validation</a><br><a href="../../../scenarios/astm/utm/dss/op_intent_ref_simple.md">ASTM SCD DSS: Operational Intent Reference Simple</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions_deletion.md">ASTM SCD DSS: Subscription and entity deletion interaction</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions.md">ASTM SCD DSS: Subscription and entity interaction</a><br><a href="../../../scenarios/astm/utm/nominal_planning/conflict_equal_priority_not_permitted/conflict_equal_priority_not_permitted.md">Nominal planning: not permitted conflict with equal priority</a><br><a href="../../../scenarios/interuss/ovn_request/dss_ovn_request.md">OVN Request Optional Extension to ASTM F3548-21</a><br><a href="../../../scenarios/astm/utm/off_nominal_planning/down_uss.md">Off-Nominal planning: down USS</a><br><a href="../../../scenarios/astm/utm/off_nominal_planning/down_uss_equal_priority_not_permitted.md">Off-Nominal planning: down USS with equal priority conflicts not permitted</a><br><a href="../../../scenarios/astm/utm/nominal_planning/solo_happy_path.md">Solo happy path</a></td>
@@ -396,7 +396,12 @@
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">SCD0090</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a></td>
+    <td><a href="../../../scenarios/astm/utm/aggregate_checks.md">ASTM F3548 UTM aggregate checks</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">SCD0095</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/aggregate_checks.md">ASTM F3548 UTM aggregate checks</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">SCD0100</a></td>
@@ -452,7 +457,7 @@
   <tr>
     <td><a href="../../../requirements/interuss/automated_testing/flight_planning.md">ImplementAPI</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/prep_planners.md">ASTM F3548 flight planners preparation</a></td>
+    <td><a href="../../../scenarios/astm/utm/prep_planners.md">ASTM F3548 flight planners preparation</a><br><a href="../../../scenarios/astm/utm/nominal_planning/conflict_higher_priority/conflict_higher_priority.md">Nominal planning: conflict with higher priority</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/interuss/automated_testing/flight_planning.md">Readiness</a></td>

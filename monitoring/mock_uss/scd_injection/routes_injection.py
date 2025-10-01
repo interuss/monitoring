@@ -1,6 +1,7 @@
 import os
 from datetime import UTC, datetime, timedelta
 
+import arrow
 import flask
 import requests.exceptions
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -35,6 +36,10 @@ from monitoring.mock_uss.flights.planning import (
     lock_flight,
     release_flight_lock,
 )
+from monitoring.mock_uss.user_interactions.notifications import (
+    UserNotification,
+    UserNotificationType,
+)
 from monitoring.mock_uss.uspace import flight_auth
 from monitoring.monitorlib import versioning
 from monitoring.monitorlib.clients import scd as scd_client
@@ -44,6 +49,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 )
 from monitoring.monitorlib.clients.flight_planning.planning import (
     ClearAreaResponse,
+    Conflict,
     FlightPlanStatus,
     PlanningActivityResponse,
     PlanningActivityResult,
@@ -200,6 +206,15 @@ def inject_flight(
         log("Storing flight in database")
         with db as tx:
             tx.flights[flight_id] = record
+            if has_conflict:
+                # Record virtual user notification that this flight caused/has a conflict
+                tx.flight_planning_notifications.append(
+                    UserNotification(
+                        type=UserNotificationType.CausedConflict,
+                        observed_at=StringBasedDateTime(arrow.utcnow().datetime),
+                        conflicts=Conflict.Single,
+                    )
+                )
 
         step_name = "returning final successful result"
         log("Complete.")
@@ -210,7 +225,6 @@ def inject_flight(
             activity_result=PlanningActivityResult.Completed,
             flight_plan_status=FlightPlanStatus.from_flightinfo(record.flight_info),
             notes=notes,
-            has_conflict=has_conflict,
         )
     except (ValueError, ConnectionError) as e:
         notes = (
@@ -301,20 +315,23 @@ def delete_flight(flight_id) -> tuple[PlanningActivityResponse, int]:
             f"{e.__class__.__name__} while {step_name} for flight {flight_id}: {str(e)}"
         )
         log(notes)
-        return unsuccessful(notes), 500
+        # Activity result is Failed, but we executed the activity successfully
+        return unsuccessful(notes), 200
     except requests.exceptions.ConnectionError as e:
         notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
         log(notes)
         response = unsuccessful(notes)
         response["stacktrace"] = stacktrace_string(e)
-        return response, 500
+        # Activity result is Failed, but we executed the activity successfully
+        return response, 200
     except QueryError as e:
         notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
         log(notes)
         response = unsuccessful(notes)
         response["queries"] = e.queries
         response["stacktrace"] = e.stacktrace
-        return response, 500
+        # Activity result is Failed, but we executed the activity successfully
+        return response, 200
 
     log("Complete.")
     return (

@@ -17,4 +17,4 @@ A dummy `getOperationalIntentReference` query is made to a non-existent DSS in o
 
 ### Make valid DSS report test step
 
-#### [Make report to DSS](../make_dss_report.md)
+#### [Make report to DSS](./fragments/report/report.md)
