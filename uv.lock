@@ -105,6 +105,19 @@ wheels = [
 ]
 
 [[package]]
+name = "beautifulsoup4"
+version = "4.14.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "soupsieve" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/77/e9/df2358efd7659577435e2177bfa69cba6c33216681af51a707193dec162a/beautifulsoup4-4.14.2.tar.gz", hash = "sha256:2a98ab9f944a11acee9cc848508ec28d9228abfd522ef0fad6a02a72e0ded69e", size = 625822, upload-time = "2025-09-29T10:05:42.613Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/94/fe/3aed5d0be4d404d12d36ab97e2f1791424d9ca39c2f754a6285d59a3b01d/beautifulsoup4-4.14.2-py3-none-any.whl", hash = "sha256:5ef6fa3a8cbece8488d66985560f97ed091e22bbc4e9c2338508a9d5de6d4515", size = 106392, upload-time = "2025-09-29T10:05:43.771Z" },
+]
+
+[[package]]
 name = "bidict"
 version = "0.23.1"
 source = { registry = "https://pypi.org/simple" }
@@ -286,6 +299,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/68/46/753d457492d15458c7b5a653fc9a84a1c9c7a83af6ebdc94c3fc373ca6e8/cryptography-46.0.1-cp38-abi3-win32.whl", hash = "sha256:45f790934ac1018adeba46a0f7289b2b8fe76ba774a88c7f1922213a56c98bc1", size = 3043779, upload-time = "2025-09-17T00:10:08.951Z" },
     { url = "https://files.pythonhosted.org/packages/2f/50/b6f3b540c2f6ee712feeb5fa780bb11fad76634e71334718568e7695cb55/cryptography-46.0.1-cp38-abi3-win_amd64.whl", hash = "sha256:7176a5ab56fac98d706921f6416a05e5aff7df0e4b91516f450f8627cda22af3", size = 3517226, upload-time = "2025-09-17T00:10:10.769Z" },
     { url = "https://files.pythonhosted.org/packages/ff/e8/77d17d00981cdd27cc493e81e1749a0b8bbfb843780dbd841e30d7f50743/cryptography-46.0.1-cp38-abi3-win_arm64.whl", hash = "sha256:efc9e51c3e595267ff84adf56e9b357db89ab2279d7e375ffcaf8f678606f3d9", size = 2923149, upload-time = "2025-09-17T00:10:13.236Z" },
+]
+
+[[package]]
+name = "cssselect"
+version = "1.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/72/0a/c3ea9573b1dc2e151abfe88c7fe0c26d1892fe6ed02d0cdb30f0d57029d5/cssselect-1.3.0.tar.gz", hash = "sha256:57f8a99424cfab289a1b6a816a43075a4b00948c86b4dcf3ef4ee7e15f7ab0c7", size = 42870, upload-time = "2025-03-10T09:30:29.638Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ee/58/257350f7db99b4ae12b614a36256d9cc870d71d9e451e79c2dc3b23d7c3c/cssselect-1.3.0-py3-none-any.whl", hash = "sha256:56d1bf3e198080cc1667e137bc51de9cadfca259f03c2d4e09037b3e01e30f0d", size = 18786, upload-time = "2025-03-10T09:30:28.048Z" },
 ]
 
 [[package]]
@@ -861,6 +883,11 @@ dependencies = [
     { name = "uuid6" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "types-lxml" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "aiohttp" },
@@ -909,6 +936,9 @@ requires-dist = [
     { name = "uas-standards" },
     { name = "uuid6" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "types-lxml", specifier = ">=2025.8.25" }]
 
 [[package]]
 name = "msgpack"
@@ -1717,6 +1747,15 @@ wheels = [
 ]
 
 [[package]]
+name = "soupsieve"
+version = "2.8"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/e6/21ccce3262dd4889aa3332e5a119a3491a95e8f60939870a3a035aabac0d/soupsieve-2.8.tar.gz", hash = "sha256:e2dd4a40a628cb5f28f6d4b0db8800b8f581b65bb380b97de22ba5ca8d72572f", size = 103472, upload-time = "2025-08-27T15:39:51.78Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/14/a0/bb38d3b76b8cae341dad93a2dd83ab7462e6dbcdd84d43f54ee60a8dc167/soupsieve-2.8-py3-none-any.whl", hash = "sha256:0cc76456a30e20f5d7f2e14a98a4ae2ee4e5abdc7c5ea0aafe795f344bc7984c", size = 36679, upload-time = "2025-08-27T15:39:50.179Z" },
+]
+
+[[package]]
 name = "structlog"
 version = "25.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1748,6 +1787,29 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/52/ce/4fd72abe8372cc8c737c62da9dadcdfb6921b57ad8932f7a0feb605e5bf5/testcontainers-4.13.1.tar.gz", hash = "sha256:4a6c5b2faa3e8afb91dff18b389a14b485f3e430157727b58e65d30c8dcde3f3", size = 77955, upload-time = "2025-09-24T22:47:47.2Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cc/30/f0660686920e09680b8afb0d2738580223dbef087a9bd92f3f14163c2fa6/testcontainers-4.13.1-py3-none-any.whl", hash = "sha256:10e6013a215eba673a0bcc153c8809d6f1c53c245e0a236e3877807652af4952", size = 123995, upload-time = "2025-09-24T22:47:45.44Z" },
+]
+
+[[package]]
+name = "types-html5lib"
+version = "1.1.11.20250917"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/68/4b/a970718e8bd9324ee8fb8eaf02ff069f6d03c20d4523bb4232892ecc3d06/types_html5lib-1.1.11.20250917.tar.gz", hash = "sha256:7b52743377f33f9b4fd7385afbd2d457b8864ee51f90ff2a795ad9e8c053373a", size = 16868, upload-time = "2025-09-17T02:47:41.18Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/78/8a/da91a9c64dcb5e69beb567519857411996d8ecae9f6f128bcef8260e7a8d/types_html5lib-1.1.11.20250917-py3-none-any.whl", hash = "sha256:b294fd06d60da205daeb2f615485ca4d475088d2eff1009cf427f4a80fcd5346", size = 22908, upload-time = "2025-09-17T02:47:40.39Z" },
+]
+
+[[package]]
+name = "types-lxml"
+version = "2025.8.25"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "beautifulsoup4" },
+    { name = "cssselect" },
+    { name = "types-html5lib" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e0/3e/a545ece610c1bd9699addd887edfe9477a8f647c4336ba75cfb0561d197c/types_lxml-2025.8.25.tar.gz", hash = "sha256:79b9f5b1f236f937f14fe3add9dc687bd8d4111ca5df58eb9f1bde1a3b032fd5", size = 156126, upload-time = "2025-08-26T06:28:56.793Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b5/29/c45f567b4142288b8184f073af8f659abd134c21de055f971c65f2d755bd/types_lxml-2025.8.25-py3-none-any.whl", hash = "sha256:d61340e5329e102d3f8d64124e90d50c12c0bfeaa9088d65558279ef4e7138ac", size = 95318, upload-time = "2025-08-26T06:28:54.066Z" },
 ]
 
 [[package]]

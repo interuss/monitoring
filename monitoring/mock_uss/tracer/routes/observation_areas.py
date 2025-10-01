@@ -36,7 +36,7 @@ from monitoring.monitorlib.geotemporal import Volume4D
 
 
 @webapp.route("/tracer/observation_areas", methods=["GET"])
-@ui_auth.login_required
+@ui_auth.login_required()
 def tracer_list_observation_areas() -> flask.Response:
     with db as tx:
         result = ListObservationAreasResponse(
@@ -131,7 +131,7 @@ def tracer_import_observation_areas() -> tuple[str, int] | flask.Response:
         elif request.area.volume.outline_polygon:
             points = [
                 s2sphere.LatLng.from_degrees(p.lat, p.lng)
-                for p in request.area.volume.outline_polygon.vertices
+                for p in request.area.volume.outline_polygon.vertices or []
             ]
         else:
             raise NotImplementedError(
