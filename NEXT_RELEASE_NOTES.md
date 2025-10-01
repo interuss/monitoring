@@ -86,5 +86,5 @@ The optional fields of [Volume4DTemplate](https://github.com/interuss/monitoring
 
 ## Important information
 
-* The RID test data of the [U-Space test configuration](monitoring/uss_qualifier/configurations/dev/uspace.yaml) has been adjusted to cover the Zurich area. ([#1142](https://github.com/interuss/monitoring/pull/1142))
+* The RID test data of the [U-Space test configuration](monitoring/uss_qualifier/configurations/dev/uspace.yaml) has been adjusted to cover the Zurich area. ([#1142](https://github.com/interuss/monitoring/pull/1142) and [#1198](https://github.com/interuss/monitoring/pull/1198))
 * The IDs of test flights are now generated to be unique across multiple USS. They remain consistent within the same run, but differ from those in previous release runs. ([#1148](https://github.com/interuss/monitoring/pull/1148))
