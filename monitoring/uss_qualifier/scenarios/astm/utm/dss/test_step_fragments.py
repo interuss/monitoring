@@ -350,8 +350,6 @@ def get_uss_availability(
     Returns:
         The state and version of the USS availability.
     """
-    availability = UssAvailabilityState.Unknown
-    version = ""
     with scenario.check(
         "USS Availability can be requested", dss.participant_id
     ) as check:
@@ -361,6 +359,7 @@ def get_uss_availability(
 
             availability = avail_response.status.availability
             version = avail_response.version
+            return availability, version
         except QueryError as e:
             scenario.record_queries(e.queries)
             avail_query = e.queries[0]
@@ -369,7 +368,7 @@ def get_uss_availability(
                 details=f"DSS responded code {avail_query.status_code}; {e}",
                 query_timestamps=[avail_query.request.timestamp],
             )
-    return availability, version
+            raise ScenarioDidNotStopError(check)
 
 
 def set_uss_availability(
@@ -387,7 +386,6 @@ def set_uss_availability(
     Returns:
         The new version of the USS availability.
     """
-    version = ""
     with scenario.check(
         "USS Availability can be updated", [dss.participant_id]
     ) as check:
@@ -398,6 +396,7 @@ def set_uss_availability(
                 version,
             )
             scenario.record_query(avail_query)
+            return version
         except QueryError as e:
             scenario.record_queries(e.queries)
             avail_query = e.queries[0]
@@ -406,7 +405,7 @@ def set_uss_availability(
                 details=f"DSS responded code {avail_query.status_code}; {e}",
                 query_timestamps=[avail_query.request.timestamp],
             )
-    return version
+            raise ScenarioDidNotStopError(check)
 
 
 def make_dss_report(
