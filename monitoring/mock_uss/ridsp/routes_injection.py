@@ -120,7 +120,7 @@ def ridsp_create_test(test_id: str) -> tuple[str, int]:
 
 @webapp.route("/ridsp/injection/tests/<test_id>/<version>", methods=["DELETE"])
 @requires_scope(injection_api.SCOPE_RID_QUALIFIER_INJECT)
-def ridsp_delete_test(test_id: str, version: str) -> tuple[str, int]:
+def ridsp_delete_test(test_id: str, version: str) -> tuple[str | flask.Response, int]:
     """Implements test deletion in RID automated testing injection API."""
     logger.info(f"Delete test {test_id}")
     rid_version = webapp.config[KEY_RID_VERSION]
@@ -135,36 +135,42 @@ def ridsp_delete_test(test_id: str, version: str) -> tuple[str, int]:
             404,
         )
 
-    # Delete ISA from DSS
-    deleted_isa = mutate.delete_isa(
-        isa_id=record.version,
-        isa_version=record.isa_version,
-        rid_version=rid_version,
-        utm_client=utm_client,
-    )
-    if not deleted_isa.dss_query.success:
-        logger.error(f"Unable to delete ISA {record.version} from DSS")
-        response = ErrorResponse(message="Unable to delete ISA from DSS")
-        response["errors"] = deleted_isa.dss_query.errors
-        response["query"] = deleted_isa.dss_query
-        return flask.jsonify(response), 412
-    logger.info(f"Created ISA {deleted_isa.dss_query.isa.id}")
+    if record.isa_version is not None:
+        # Delete ISA from DSS
+        deleted_isa = mutate.delete_isa(
+            isa_id=record.version,
+            isa_version=record.isa_version,
+            rid_version=rid_version,
+            utm_client=utm_client,
+        )
+        if not deleted_isa.dss_query.success:
+            logger.error(f"Unable to delete ISA {record.version} from DSS")
+            response = ErrorResponse(message="Unable to delete ISA from DSS")
+            response["errors"] = deleted_isa.dss_query.errors
+            response["query"] = deleted_isa.dss_query
+            return flask.jsonify(response), 412
+        logger.info(f"Deleted ISA {deleted_isa.dss_query.isa.id}")
+    else:
+        deleted_isa = None
+
     result = ChangeTestResponse(version=record.version, injected_flights=record.flights)
-    for url, notification in deleted_isa.notifications.items():
-        code = notification.query.status_code
-        if code == 200:
-            logger.warning(
-                f"Notification to {notification.query.request.url} incorrectly returned 200 rather than 204"
-            )
-        elif code != 204:
-            logger.error(
-                f"Notification failure {code} to {notification.query.request.url}"
-            )
-            result["query"] = notification.query
+
+    if deleted_isa:
+        for url, notification in deleted_isa.notifications.items():
+            code = notification.query.status_code
+            if code == 200:
+                logger.warning(
+                    f"Notification to {notification.query.request.url} incorrectly returned 200 rather than 204"
+                )
+            elif code != 204:
+                logger.error(
+                    f"Notification failure {code} to {notification.query.request.url}"
+                )
+                result["query"] = notification.query
 
     with db as tx:
         del tx.tests[test_id]
-    return flask.jsonify(result)
+    return flask.jsonify(result), 200
 
 
 @webapp.route(

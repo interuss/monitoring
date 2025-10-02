@@ -204,11 +204,11 @@ def inject_flight(
         # Store flight in database
         step_name = "storing flight in database"
         log("Storing flight in database")
-        with db as tx:
-            tx.flights[flight_id] = record
+        with db.transact() as tx:
+            tx.value.flights[flight_id] = record
             if has_conflict:
                 # Record virtual user notification that this flight caused/has a conflict
-                tx.flight_planning_notifications.append(
+                tx.value.flight_planning_notifications.append(
                     UserNotification(
                         type=UserNotificationType.CausedConflict,
                         observed_at=StringBasedDateTime(arrow.utcnow().datetime),
@@ -414,6 +414,9 @@ def clear_area(extent: Volume4D) -> ClearAreaResponse:
 
         # Try to remove all relevant flights normally
         for flight_id, flight in db.value.flights.items():
+            if flight is None:
+                continue
+
             # TODO: Check for intersection with flight's area rather than just relying on DSS query
             if flight.op_intent.reference.id not in op_intent_ids:
                 continue
@@ -456,10 +459,10 @@ def clear_area(extent: Volume4D) -> ClearAreaResponse:
                 }
 
         # Clear the op intent cache for every op intent removed
-        with db as tx:
+        with db.transact() as tx:
             for op_intent_id in op_intents_removed:
-                if op_intent_id in tx.cached_operations:
-                    del tx.cached_operations[op_intent_id]
+                if op_intent_id in tx.value.cached_operations:
+                    del tx.value.cached_operations[op_intent_id]
 
     except (ValueError, ConnectionError) as e:
         msg = f"{e.__class__.__name__} while {step_name}: {str(e)}"

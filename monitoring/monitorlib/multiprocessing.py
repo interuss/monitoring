@@ -3,21 +3,87 @@ import multiprocessing
 import multiprocessing.shared_memory
 from collections.abc import Callable
 from multiprocessing.synchronize import RLock as RLockT
-from typing import Any
+from typing import Generic, TypeVar
+
+import deprecation
+
+TValue = TypeVar("TValue")
 
 
-class SynchronizedValue:
+# Note: attempts to change the below to SynchronizedValue[TValue] causes problems because IntelliJ does not reliably
+# understand the newer syntax and therefore fails to provide contextual information for specific TValues.
+class Transaction(Generic[TValue]):  # noqa: UP046
+    _lock: RLockT
+    _get_value: Callable[[], TValue]
+    _set_value: Callable[[TValue], None]
+    _value: TValue | None
+    _locked: bool
+
+    def __init__(
+        self,
+        lock: RLockT,
+        get_value: Callable[[], TValue],
+        set_value: Callable[[TValue], None],
+    ):
+        self._lock = lock
+        self._get_value = get_value
+        self._set_value = set_value
+        self._value = None
+        self._locked = False
+
+    def __enter__(self):
+        self._lock.__enter__()
+        self._locked = True
+        self._value = self._get_value()
+        return self
+
+    @property
+    def value(self) -> TValue:
+        """Value exposed for this transaction.  Mutate or set it to make changes during the transaction."""
+        if not self._locked or self._value is None:
+            raise RuntimeError(
+                "Transaction value accessed when transaction was not active (e.g., outside a `with` block)"
+            )
+        return self._value
+
+    @value.setter
+    def value(self, new_value: TValue):
+        if not self._locked:
+            raise RuntimeError(
+                "Transaction value set when transaction was not active (e.g., outside a `with` block)"
+            )
+        self._value = new_value
+
+    def abort(self):
+        """Do not save any changes made to the value during this transaction and release the lock on the synchronized value."""
+        self._unlock()
+
+    def _unlock(self, exc_type=None, exc_val=None, exc_tb=None):
+        self._lock.__exit__(exc_type, exc_val, exc_tb)
+        self._locked = False
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if not self._locked:
+            return
+        try:
+            if self.value is not None and exc_type is None:
+                self._set_value(self.value)
+        finally:
+            self._unlock()
+
+
+class SynchronizedValue(Generic[TValue]):  # noqa: UP046 (same reason as above)
     """Represents a value synchronized across multiple processes.
 
     The shared value can be read with .value or updated in a transaction.  A
-    transaction is created using `with` which returns the current value.  That
+    transaction is created using `transact` in a `with` block.  The
     object is mutated in the transaction, and then committed when the `with`
     block is exited.  Example:
 
     db = SynchronizedValue({'foo': 'bar'})
-    with db as tx:
-        assert isinstance(tx, dict)
-        tx['foo'] = 'baz'
+    with db.transact() as tx:
+        assert isinstance(tx.value, dict)
+        tx.value['foo'] = 'baz'
     print(json.dumps(db.value))
         >  {"foo":"baz"}
     """
@@ -27,16 +93,16 @@ class SynchronizedValue:
 
     _lock: RLockT
     _shared_memory: multiprocessing.shared_memory.SharedMemory
-    _encoder: Callable[[Any], bytes]
-    _decoder: Callable[[bytes], Any]
-    _current_value: Any
+    _encoder: Callable[[TValue], bytes]
+    _decoder: Callable[[bytes], TValue]
+    _transaction: Transaction | None
 
     def __init__(
         self,
-        initial_value,
+        initial_value: TValue,
         capacity_bytes: int = 10000000,
-        encoder: Callable[[Any], bytes] | None = None,
-        decoder: Callable[[bytes], Any] | None = None,
+        encoder: Callable[[TValue], bytes] | None = None,
+        decoder: Callable[[bytes], TValue] | None = None,
     ):
         """Creates a value synchronized across multiple processes.
 
@@ -57,10 +123,10 @@ class SynchronizedValue:
         self._decoder = (
             decoder if decoder is not None else lambda b: json.loads(b.decode("utf-8"))
         )
-        self._current_value = None
+        self._transaction = None
         self._set_value(initial_value)
 
-    def _get_value(self):
+    def _get_value(self) -> TValue:
         if self._shared_memory.buf is None:
             raise RuntimeError(
                 "SynchronizedValue attempted to get value when shared memory buffer was None"
@@ -77,7 +143,7 @@ class SynchronizedValue:
         )
         return self._decoder(content)
 
-    def _set_value(self, value):
+    def _set_value(self, value: TValue):
         if self._shared_memory.buf is None:
             raise RuntimeError(
                 "SynchronizedValue attempted to set value when shared memory buffer was None"
@@ -96,18 +162,28 @@ class SynchronizedValue:
         )
 
     @property
-    def value(self):
+    def value(self) -> TValue:
         with self._lock:
             return self._get_value()
 
-    def __enter__(self):
-        self._lock.__enter__()
-        self._current_value = self._get_value()
-        return self._current_value
+    def transact(self) -> Transaction[TValue]:
+        return Transaction[TValue](
+            self._lock, lambda: self._get_value(), lambda v: self._set_value(v)
+        )
 
+    @deprecation.deprecated(details="Use `value` of transact() method instead.")
+    def __enter__(self):
+        if self._transaction:
+            raise RuntimeError(
+                "SynchronizedValue transaction started when another transaction was in progress"
+            )
+        self._transaction = self.transact()
+        self._transaction.__enter__()
+        return self._transaction.value
+
+    @deprecation.deprecated(details="Use `value` of transact() method instead.")
     def __exit__(self, exc_type, exc_val, exc_tb):
-        try:
-            if exc_type is None:
-                self._set_value(self._current_value)
-        finally:
-            self._lock.__exit__(exc_type, exc_val, exc_tb)
+        if not self._transaction:
+            return
+        self._transaction.__exit__(exc_type, exc_val, exc_tb)
+        self._transaction = None
