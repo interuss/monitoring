@@ -127,12 +127,12 @@ def scdsc_notify_operational_intent_details_changed():
 
     if "operational_intent" in op_intent_data and op_intent_data.operational_intent:
         # An op intent is being created or modified; check if it conflicts with any flights we're managing
-        with db as tx:
+        with db.transact() as tx:
             if conflicts_with_flightrecords(
-                op_intent_data.operational_intent, tx.flights.values()
+                op_intent_data.operational_intent, list(tx.value.flights.values())
             ):
                 # Virtually notify user that another op intent conflicts with their flight
-                tx.flight_planning_notifications.append(
+                tx.value.flight_planning_notifications.append(
                     UserNotification(
                         type=UserNotificationType.DetectedConflict,
                         observed_at=StringBasedDateTime(arrow.utcnow().datetime),

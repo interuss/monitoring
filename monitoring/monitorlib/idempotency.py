@@ -51,7 +51,7 @@ def _set_responses(responses: dict[str, Response]) -> bytes:
     return s.encode("utf-8")
 
 
-_fulfilled_requests = SynchronizedValue(
+_fulfilled_requests = SynchronizedValue[dict](
     {},
     decoder=_get_responses,
     encoder=_set_responses,
@@ -148,8 +148,8 @@ def idempotent_request(get_request_id: Callable[[], str | None] | None = None):
                     f"Unable to cache Flask view handler result of type '{type(result).__name__}'"
                 )
 
-            with _fulfilled_requests as cached_requests:
-                cached_requests[request_id] = response
+            with _fulfilled_requests.transact() as cached_requests_tx:
+                cached_requests_tx.value[request_id] = response
 
             return to_return
 
