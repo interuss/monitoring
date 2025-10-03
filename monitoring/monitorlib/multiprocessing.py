@@ -61,6 +61,10 @@ class SynchronizedValue:
         self._set_value(initial_value)
 
     def _get_value(self):
+        if self._shared_memory.buf is None:
+            raise RuntimeError(
+                "SynchronizedValue attempted to get value when shared memory buffer was None"
+            )
         content_len = int.from_bytes(
             bytes(self._shared_memory.buf[0 : self.SIZE_BYTES]), "big"
         )
@@ -74,6 +78,10 @@ class SynchronizedValue:
         return self._decoder(content)
 
     def _set_value(self, value):
+        if self._shared_memory.buf is None:
+            raise RuntimeError(
+                "SynchronizedValue attempted to set value when shared memory buffer was None"
+            )
         content = self._encoder(value)
         content_len = len(content)
         if content_len + self.SIZE_BYTES > self._shared_memory.size:
