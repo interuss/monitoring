@@ -194,12 +194,11 @@ v1:
             client_identity: utm_client_identity
 
         # Area that will be used for queries and resource creation that are geo-located
-        planning_area:
+        planning_area_volume:
           $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-          resource_type: resources.PlanningAreaResource
+          resource_type: resources.VolumeResource
           specification:
-            base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/f3548_self_contained/planning_area
-            volume:
+            template:
               outline_polygon:
                 vertices:
                   - lat: 37.1853
@@ -218,6 +217,14 @@ v1:
                 value: 3048
                 reference: W84
                 units: M
+
+        planning_area:
+          $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+          resource_type: resources.PlanningAreaResource
+          dependencies:
+            volume: planning_area_volume
+          specification:
+            base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/f3548_self_contained/planning_area
 
         # An area designed to be soo big as to be refused by systems queries with it.
         problematically_big_area:

@@ -13,7 +13,6 @@ from uas_standards.astm.f3548.v21.api import (
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.fetch import Query, QueryError
-from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources import PlanningAreaResource
@@ -52,6 +51,8 @@ class OIRImplicitSubHandling(TestScenario):
     """
     A scenario that tests that a DSS properly handles the creation and mutation of implicit subscriptions
     """
+
+    _planning_area: PlanningAreaResource
 
     # Identifiers for the test OIRs
     _oir_a_id: str
@@ -97,7 +98,7 @@ class OIRImplicitSubHandling(TestScenario):
         }
         self._dss = dss.get_instance(scopes)
         self._pid = [self._dss.participant_id]
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
         self._oir_a_id = id_generator.id_factory.make_id(OIR_A_TYPE)
         self._oir_b_id = id_generator.id_factory.make_id(OIR_B_TYPE)
@@ -284,7 +285,7 @@ class OIRImplicitSubHandling(TestScenario):
             try:
                 oir, subs, q = self._dss.put_op_intent(
                     extents=[
-                        self._planning_area.get_volume4d(
+                        self._planning_area.resolved_volume4d_with_times(
                             self._time_0, self._time_1
                         ).to_f3548v21()
                     ],
@@ -418,7 +419,7 @@ class OIRImplicitSubHandling(TestScenario):
             try:
                 oir, subs, oir_q = self._dss.put_op_intent(
                     extents=[
-                        self._planning_area.get_volume4d(
+                        self._planning_area.resolved_volume4d_with_times(
                             time_start, time_end
                         ).to_f3548v21()
                     ],
@@ -587,7 +588,7 @@ class OIRImplicitSubHandling(TestScenario):
             try:
                 oir, subs, q = self._dss.put_op_intent(
                     extents=[
-                        self._planning_area.get_volume4d(
+                        self._planning_area.resolved_volume4d_with_times(
                             self._time_0, self._time_1
                         ).to_f3548v21()
                     ],
@@ -632,7 +633,7 @@ class OIRImplicitSubHandling(TestScenario):
             try:
                 oir, subs, q = self._dss.put_op_intent(
                     extents=[
-                        self._planning_area.get_volume4d(
+                        self._planning_area.resolved_volume4d_with_times(
                             self._time_2, self._time_3
                         ).to_f3548v21()
                     ],
@@ -684,7 +685,7 @@ class OIRImplicitSubHandling(TestScenario):
             try:
                 oir, subs, q = self._dss.put_op_intent(
                     extents=[
-                        self._planning_area.get_volume4d(
+                        self._planning_area.resolved_volume4d_with_times(
                             self._time_0, self._time_2
                         ).to_f3548v21()
                     ],
@@ -786,7 +787,7 @@ class OIRImplicitSubHandling(TestScenario):
             try:
                 oir, subs, q = self._dss.put_op_intent(
                     extents=[
-                        self._planning_area.get_volume4d(
+                        self._planning_area.resolved_volume4d_with_times(
                             self._explicit_sub.time_start.value.datetime,
                             self._explicit_sub.time_end.value.datetime,
                         ).to_f3548v21()
@@ -864,7 +865,7 @@ class OIRImplicitSubHandling(TestScenario):
             try:
                 oir_updated, subs, q = self._dss.put_op_intent(
                     extents=[
-                        self._planning_area.get_volume4d(
+                        self._planning_area.resolved_volume4d_with_times(
                             oir_no_sub.time_start.value.datetime,
                             oir_no_sub.time_end.value.datetime,
                         ).to_f3548v21()
@@ -952,7 +953,7 @@ class OIRImplicitSubHandling(TestScenario):
             try:
                 oir_mutated_no_sub, _, q = self._dss.put_op_intent(
                     extents=[
-                        self._planning_area.get_volume4d(
+                        self._planning_area.resolved_volume4d_with_times(
                             self._time_0, self._time_1
                         ).to_f3548v21()
                     ],
@@ -1019,7 +1020,7 @@ class OIRImplicitSubHandling(TestScenario):
             ovn=self._oir_a_ovn,
             oir_params=PutOperationalIntentReferenceParameters(
                 extents=[
-                    self._planning_area.get_volume4d(
+                    self._planning_area.resolved_volume4d_with_times(
                         self._time_2, self._time_3
                     ).to_f3548v21()
                 ],
@@ -1102,7 +1103,7 @@ class OIRImplicitSubHandling(TestScenario):
             ovn=self._oir_a_ovn,
             oir_params=PutOperationalIntentReferenceParameters(
                 extents=[
-                    self._planning_area.get_volume4d(
+                    self._planning_area.resolved_volume4d_with_times(
                         self._time_2, self._time_3
                     ).to_f3548v21()
                 ],
@@ -1188,7 +1189,7 @@ class OIRImplicitSubHandling(TestScenario):
         self.end_test_step()
 
     def _clean_workspace(self):
-        extents = Volume4D(volume=self._planning_area.volume)
+        extents = self._planning_area.resolved_volume4d_with_times(None, None)
         test_step_fragments.cleanup_active_oirs(
             self,
             self._dss,

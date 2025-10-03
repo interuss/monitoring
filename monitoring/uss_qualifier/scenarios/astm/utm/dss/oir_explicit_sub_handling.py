@@ -21,7 +21,6 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
 )
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
-from monitoring.uss_qualifier.resources.planning_area import PlanningAreaSpecification
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.oir import (
     crud as oir_fragments,
@@ -49,7 +48,7 @@ class OIRExplicitSubHandling(TestScenario):
     # Keep track of the current OIR state
     _current_oir: OperationalIntentReference | None
     _expected_manager: str
-    _planning_area: PlanningAreaSpecification
+    _planning_area: PlanningAreaResource
     _planning_area_volume4d: Volume4D
 
     # Keep track of the current subscription
@@ -87,10 +86,10 @@ class OIRExplicitSubHandling(TestScenario):
 
         self._expected_manager = client_identity.subject()
 
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
-        self._planning_area_volume4d = Volume4D(
-            volume=self._planning_area.volume,
+        self._planning_area_volume4d = self._planning_area.resolved_volume4d_with_times(
+            None, None
         )
 
     def run(self, context: ExecutionContext):
@@ -129,7 +128,7 @@ class OIRExplicitSubHandling(TestScenario):
             oir_params=self._planning_area.get_new_operational_intent_ref_params(
                 key=[],
                 state=OperationalIntentState.Accepted,
-                uss_base_url=self._planning_area.get_base_url(),
+                uss_base_url=self._planning_area.specification.get_base_url(),
                 time_start=datetime.now() - timedelta(seconds=10),
                 time_end=datetime.now() + timedelta(minutes=20),
                 subscription_id=None,
@@ -161,7 +160,7 @@ class OIRExplicitSubHandling(TestScenario):
         oir_update_params = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=self._current_oir.time_start.value.datetime,
             time_end=self._current_oir.time_end.value.datetime,
             subscription_id=None,
@@ -214,7 +213,7 @@ class OIRExplicitSubHandling(TestScenario):
         oir_params = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=datetime.now() - timedelta(seconds=10),
             time_end=self._sub_params.end_time
             + timedelta(seconds=1),  # OIR ends 1 sec after subscription
@@ -262,7 +261,7 @@ class OIRExplicitSubHandling(TestScenario):
             oir_params=self._planning_area.get_new_operational_intent_ref_params(
                 key=[],
                 state=OperationalIntentState.Accepted,
-                uss_base_url=self._planning_area.get_base_url(),
+                uss_base_url=self._planning_area.specification.get_base_url(),
                 time_start=datetime.now() - timedelta(seconds=10),
                 time_end=self._sub_params.end_time
                 - timedelta(seconds=60),  # OIR ends at the same time as subscription
@@ -297,7 +296,7 @@ class OIRExplicitSubHandling(TestScenario):
         oir_update_params = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=self._current_oir.time_start.value.datetime,
             time_end=self._current_oir.time_end.value.datetime,
             subscription_id=self._extra_sub_id,
@@ -362,7 +361,7 @@ class OIRExplicitSubHandling(TestScenario):
             oir_params=self._planning_area.get_new_operational_intent_ref_params(
                 key=[],
                 state=OperationalIntentState.Accepted,
-                uss_base_url=self._planning_area.get_base_url(),
+                uss_base_url=self._planning_area.specification.get_base_url(),
                 time_start=self._current_extra_sub.time_start.value.datetime,
                 time_end=self._current_extra_sub.time_end.value.datetime,
                 subscription_id=self._extra_sub_id,
@@ -445,7 +444,7 @@ class OIRExplicitSubHandling(TestScenario):
         return self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=datetime.now() - timedelta(seconds=10),
             time_end=datetime.now() + timedelta(minutes=20),
             subscription_id=subscription_id,

@@ -108,10 +108,10 @@ function(env) {
           },
 
           // Area that will be used for queries and resource creation that are geo-located
-          planning_area: {
-            resource_type: 'resources.PlanningAreaResource',
+          planning_area_volume: {
+            resource_type: 'resources.VolumeResource',
             specification: {
-              volume: {
+              template: {
                 outline_polygon: {
                   vertices: [
                     {
@@ -143,6 +143,13 @@ function(env) {
                   units: 'M',
                 },
               },
+            },
+          },
+          planning_area: {
+            resource_type: 'resources.PlanningAreaResource',
+            specification: {},
+            dependencies: {
+              volume: 'planning_area_volume',
             },
           },
 
