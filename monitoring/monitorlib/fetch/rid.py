@@ -734,7 +734,7 @@ class Subscription(ImplicitDict):
         return self.raw.version
 
     @property
-    def time_start(self) -> datetime:
+    def time_start(self) -> datetime.datetime:
         if self.rid_version == RIDVersion.f3411_19:
             return self.v19_value.time_start.datetime
         elif self.rid_version == RIDVersion.f3411_22a:
@@ -745,7 +745,7 @@ class Subscription(ImplicitDict):
             )
 
     @property
-    def time_end(self) -> datetime:
+    def time_end(self) -> datetime.datetime:
         if self.rid_version == RIDVersion.f3411_19:
             return self.v19_value.time_end.datetime
         elif self.rid_version == RIDVersion.f3411_22a:
