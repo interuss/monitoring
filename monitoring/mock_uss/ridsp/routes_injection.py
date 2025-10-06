@@ -135,6 +135,8 @@ def ridsp_delete_test(test_id: str, version: str) -> tuple[str | flask.Response,
             404,
         )
 
+    result = ChangeTestResponse(version=record.version, injected_flights=record.flights)
+
     if record.isa_version is not None:
         # Delete ISA from DSS
         deleted_isa = mutate.delete_isa(
@@ -150,12 +152,7 @@ def ridsp_delete_test(test_id: str, version: str) -> tuple[str | flask.Response,
             response["query"] = deleted_isa.dss_query
             return flask.jsonify(response), 412
         logger.info(f"Deleted ISA {deleted_isa.dss_query.isa.id}")
-    else:
-        deleted_isa = None
 
-    result = ChangeTestResponse(version=record.version, injected_flights=record.flights)
-
-    if deleted_isa:
         for url, notification in deleted_isa.notifications.items():
             code = notification.query.status_code
             if code == 200:

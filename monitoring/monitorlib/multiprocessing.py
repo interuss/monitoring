@@ -32,6 +32,10 @@ class Transaction(Generic[TValue]):  # noqa: UP046
         self._locked = False
 
     def __enter__(self):
+        if self._locked:
+            raise RuntimeError(
+                "SynchronizedValue Transaction started when Transaction was already in progress"
+            )
         self._lock.__enter__()
         self._locked = True
         self._value = self._get_value()
@@ -61,6 +65,7 @@ class Transaction(Generic[TValue]):  # noqa: UP046
     def _unlock(self, exc_type=None, exc_val=None, exc_tb=None):
         self._lock.__exit__(exc_type, exc_val, exc_tb)
         self._locked = False
+        self._value = None
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if not self._locked:
@@ -167,9 +172,7 @@ class SynchronizedValue(Generic[TValue]):  # noqa: UP046 (same reason as above)
             return self._get_value()
 
     def transact(self) -> Transaction[TValue]:
-        return Transaction[TValue](
-            self._lock, lambda: self._get_value(), lambda v: self._set_value(v)
-        )
+        return Transaction[TValue](self._lock, self._get_value, self._set_value)
 
     @deprecation.deprecated(details="Use `value` of transact() method instead.")
     def __enter__(self):
