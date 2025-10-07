@@ -21,6 +21,11 @@ from monitoring.uss_qualifier.resources.volume import VolumeResource
 
 
 class PlanningAreaSpecification(ImplicitDict):
+    """Specifies a 2D, 3D or 4D volume to be used in flight planning activities.
+    - The base_url is directly declared in this specification
+    - The volume itself is declared separately and passed as a dependency: see resource.VolumeResource for details.
+    """
+
     base_url: str | None
     """Base URL for the USS
 
@@ -44,8 +49,8 @@ class PlanningAreaResource(Resource[PlanningAreaSpecification]):
     def __init__(
         self,
         specification: PlanningAreaSpecification,
-        volume: VolumeResource,
         resource_origin: str,
+        volume: VolumeResource,
     ):
         super().__init__(specification, resource_origin)
         self.specification = specification
