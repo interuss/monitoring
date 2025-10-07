@@ -1,7 +1,5 @@
 import datetime
 
-import arrow
-
 from monitoring.monitorlib.delay import sleep
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
@@ -35,9 +33,11 @@ class ISAExpiry(GenericTestScenario):
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
         self._isa_id = id_generator.id_factory.make_id(ISAExpiry.ISA_TYPE)
         self._isa_version: str | None = None
-        self._isa = isa.specification
-
-        self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._isa = isa
+        self._isa_area = isa.resolved_volume4d({}).volume.s2_vertices()
+        self._isa_altitude_min, self._isa_altitude_max = isa.resolved_altitude_bounds(
+            {}
+        )
 
     def run(self, context: ExecutionContext):
         self._shift_isa_time_relative_to_now()
@@ -56,9 +56,7 @@ class ISAExpiry(GenericTestScenario):
         self.end_test_scenario()
 
     def _shift_isa_time_relative_to_now(self):
-        now = arrow.utcnow().datetime
-        self._isa_start_time = self._isa.shifted_time_start(now)
-        self._isa_end_time = self._isa.shifted_time_end(now)
+        self._isa_start_time, self._isa_end_time = self._isa.resolved_time_bounds({})
 
     def _check_expiry_behaviors(self):
         """
@@ -75,11 +73,11 @@ class ISAExpiry(GenericTestScenario):
                 check=check,
                 expected_error_codes={200},
                 area_vertices=self._isa_area,
-                alt_lo=self._isa.altitude_min,
-                alt_hi=self._isa.altitude_max,
+                alt_lo=self._isa_altitude_min,
+                alt_hi=self._isa_altitude_max,
                 start_time=start_time,
                 end_time=end_time,
-                uss_base_url=self._isa.base_url,
+                uss_base_url=self._isa.specification.base_url,
                 isa_id=self._isa_id,
                 isa_version=None,
             )
@@ -132,7 +130,7 @@ class ISAExpiry(GenericTestScenario):
             rid_version=self._dss.rid_version,
             session=self._dss.client,
             participant_id=self._dss_wrapper.participant_id,
-            ignore_base_url=self._isa.base_url,
+            ignore_base_url=self._isa.specification.base_url,
         )
 
     def cleanup(self):

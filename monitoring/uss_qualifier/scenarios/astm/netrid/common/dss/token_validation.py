@@ -1,6 +1,5 @@
 import datetime
 
-import arrow
 import s2sphere
 from uas_standards.astm.f3411 import v19, v22a
 
@@ -44,9 +43,11 @@ class TokenValidation(GenericTestScenario):
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
         self._isa_id = id_generator.id_factory.make_id(ISASimple.ISA_TYPE)
         self._isa_version: str | None = None
-        self._isa = isa.specification
-
-        self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._isa = isa
+        self._isa_altitude_min, self._isa_altitude_max = isa.resolved_altitude_bounds(
+            {}
+        )
+        self._isa_area = isa.resolved_volume4d({}).volume.s2_vertices()
 
         # correctly formed and signed using an unrecognized private key
         # (should cause requests to be rejected)
@@ -87,9 +88,9 @@ class TokenValidation(GenericTestScenario):
         self.end_test_scenario()
 
     def _shift_isa_time_relative_to_now(self):
-        now = arrow.utcnow().datetime
-        self._isa_start_time = self._isa.shifted_time_start(now)
-        self._isa_end_time = self._isa.shifted_time_end(now)
+        start, end = self._isa.resolved_time_bounds({})
+        self._isa_start_time = start
+        self._isa_end_time = end
 
     def _wrong_auth_put(self):
         # Try to create an ISA with a read scope
@@ -152,11 +153,11 @@ class TokenValidation(GenericTestScenario):
                 area_vertices=self._isa_area,
                 start_time=self._isa_start_time,
                 end_time=self._isa_end_time,
-                uss_base_url=self._isa.base_url,
+                uss_base_url=self._isa.specification.base_url,
                 isa_id=self._isa_id,
                 isa_version=self._isa_version,
-                alt_lo=self._isa.altitude_min,
-                alt_hi=self._isa.altitude_max,
+                alt_lo=self._isa_altitude_min,
+                alt_hi=self._isa_altitude_max,
             )
             self._isa_version = new_isa.dss_query.isa.version
 
@@ -436,12 +437,12 @@ class TokenValidation(GenericTestScenario):
             body = {
                 "extents": rid_v1.make_volume_4d(
                     self._isa_area,
-                    self._isa.altitude_min,
-                    self._isa.altitude_max,
+                    self._isa_altitude_min,
+                    self._isa_altitude_max,
                     self._isa_start_time,
                     self._isa_end_time,
                 ),
-                "flights_url": self._isa.base_url
+                "flights_url": self._isa.specification.base_url
                 + v19.api.OPERATIONS[v19.api.OperationID.SearchFlights].path,
             }
             if isa_version is None:
@@ -472,12 +473,12 @@ class TokenValidation(GenericTestScenario):
             body = {
                 "extents": rid_v2.make_volume_4d(
                     self._isa_area,
-                    self._isa.altitude_min,
-                    self._isa.altitude_max,
+                    self._isa_altitude_min,
+                    self._isa_altitude_max,
                     self._isa_start_time,
                     self._isa_end_time,
                 ),
-                "uss_base_url": self._isa.base_url,
+                "uss_base_url": self._isa.specification.base_url,
             }
             if isa_version is None:
                 op = v22a.api.OPERATIONS[

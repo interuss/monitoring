@@ -3,7 +3,6 @@ import typing
 from datetime import UTC, datetime
 
 import aiohttp
-import arrow
 import requests
 from uas_standards.astm.f3411 import v19, v22a
 
@@ -66,8 +65,8 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
 
         self._isa_versions: dict[str, str] = {}
-        self._isa = isa.specification
-        self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._isa = isa
+        self._isa_area = isa.resolved_volume4d({}).volume.s2_vertices()
 
         # Note that when the test scenario ends prematurely, we may end up with an unclosed session.
         self._async_session = AsyncUTMTestSession(
@@ -78,15 +77,17 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         # The base ID ends in 000: we simply increment it to generate the other IDs
         self._isa_ids = [f"{isa_base_id[:-3]}{i:03d}" for i in range(CREATE_ISAS_COUNT)]
 
+        alt_lower, alt_upper = isa.resolved_altitude_bounds({})
+
         # currently all params are the same:
         # we could improve the test by having unique parameters per ISA
         self._isa_params = dict(
             area_vertices=self._isa_area,
             start_time=None,
             end_time=None,
-            uss_base_url=self._isa.base_url,
-            alt_lo=self._isa.altitude_min,
-            alt_hi=self._isa.altitude_max,
+            uss_base_url=self._isa.specification.base_url,
+            alt_lo=alt_lower,
+            alt_hi=alt_upper,
         )
 
     def run(self, context: ExecutionContext):
@@ -130,9 +131,9 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         self.end_test_scenario()
 
     def _shift_isa_time_relative_to_now(self):
-        now = arrow.utcnow().datetime
-        self._isa_params["start_time"] = self._isa.shifted_time_start(now)
-        self._isa_params["end_time"] = self._isa.shifted_time_end(now)
+        start, end = self._isa.resolved_time_bounds({})
+        self._isa_params["start_time"] = start
+        self._isa_params["end_time"] = end
 
     def _delete_isas_if_exists(self):
         """Delete test ISAs if they exist. Done sequentially."""

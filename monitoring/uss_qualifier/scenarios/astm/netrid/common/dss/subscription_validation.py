@@ -42,8 +42,11 @@ class SubscriptionValidation(GenericTestScenario):
         # TODO: the id_factory seems to generate static IDs:
         #  for creating different subscriptions this probably won't do.
         self._sub_id = id_generator.id_factory.make_id(self.SUB_TYPE)
-        self._isa = isa.specification
-        self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._isa = isa
+        self._isa_area = isa.resolved_volume4d({}).volume.s2_vertices()
+        self._isa_altitude_min, self._isa_altitude_max = isa.resolved_altitude_bounds(
+            {}
+        )
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
@@ -212,12 +215,12 @@ class SubscriptionValidation(GenericTestScenario):
     def _default_subscription_params(self, duration: datetime.timedelta) -> dict:
         now = datetime.datetime.now(datetime.UTC)
         return dict(
-            area_vertices=[vertex.as_s2sphere() for vertex in self._isa.footprint],
-            alt_lo=self._isa.altitude_min,
-            alt_hi=self._isa.altitude_max,
+            area_vertices=self._isa_area,
+            alt_lo=self._isa_altitude_min,
+            alt_hi=self._isa_altitude_max,
             start_time=now,
             end_time=now + duration,
-            uss_base_url=self._isa.base_url,
+            uss_base_url=self._isa.specification.base_url,
         )
 
     def cleanup(self):
