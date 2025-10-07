@@ -24,11 +24,16 @@ from monitoring.mock_uss.tracer.observation_areas import (
     ObservationAreaID,
 )
 from monitoring.monitorlib import versioning
-from monitoring.monitorlib.fetch.rid import FetchedISAs, isas
+from monitoring.monitorlib.fetch.rid import FetchedISAs
+from monitoring.monitorlib.fetch.rid import isas as fetch_rid_isas
 from monitoring.monitorlib.fetch.scd import (
     FetchedEntities,
-    constraints,
-    operations,
+)
+from monitoring.monitorlib.fetch.scd import (
+    constraints as fetch_scd_constraints,
+)
+from monitoring.monitorlib.fetch.scd import (
+    operations as fetch_scd_operations,
 )
 from monitoring.monitorlib.geo import get_latlngrect_vertices, make_latlng_rect
 from monitoring.monitorlib.infrastructure import UTMClientSession
@@ -113,7 +118,7 @@ def poll_isas(area: ObservationArea, logger: tracerlog.Logger) -> None:
     box = get_latlngrect_vertices(make_latlng_rect(area.area.volume))
 
     t0 = datetime.datetime.now(datetime.UTC)
-    result = isas(
+    result = fetch_rid_isas(
         box,
         area.area.time_start.datetime if area.area.time_start else None,
         area.area.time_end.datetime if area.area.time_end else None,
@@ -158,7 +163,7 @@ def poll_ops(
     t0 = datetime.datetime.now(datetime.UTC)
     if "operational_intents" not in context.scd_cache:
         context.scd_cache["operational_intents"] = {}
-    result = operations(
+    result = fetch_scd_operations(
         scd_client,
         box,
         area.area.time_start.datetime,
@@ -204,7 +209,7 @@ def poll_constraints(
     t0 = datetime.datetime.now(datetime.UTC)
     if "constraints" not in context.scd_cache:
         context.scd_cache["constraints"] = {}
-    result = constraints(
+    result = fetch_scd_constraints(
         scd_client,
         box,
         area.area.time_start.datetime,

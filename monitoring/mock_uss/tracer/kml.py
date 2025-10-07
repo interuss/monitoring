@@ -7,7 +7,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import Enum
-from typing import Protocol
+from typing import Protocol, TypeVar
 
 import yaml
 from implicitdict import ImplicitDict
@@ -59,11 +59,14 @@ class HistoricalVolumesCollection:
     active_at: datetime
 
 
-class HistoricalVolumesRenderer[T](Protocol):
+TracerLogEntryType = TypeVar("TracerLogEntryType", bound=TracerLogEntry)
+
+
+class HistoricalVolumesRenderer[TracerLogEntryType](Protocol):
     @abstractmethod
     def __call__(
         self,
-        log_entry: T,
+        log_entry: TracerLogEntryType,
         existing_volume_collections: list[HistoricalVolumesCollection],
     ) -> list[HistoricalVolumesCollection]:
         """Function that generates named collections of 4D volumes from a tracer log entry.
@@ -302,18 +305,23 @@ class VolumesFolder:
             c.truncate(latest_time)
 
     def to_kml_folder(self):
-        def dt(t: Time) -> int:
-            if self.reference_time is None:
-                return -1
-            return round((t.datetime - self.reference_time.datetime).total_seconds())
-
         if self.reference_time:
             description = f"Relative to {self.reference_time}"
             folder = kml.Folder(kml.name(self.name), kml.description(description))
         else:
             folder = kml.Folder(kml.name(self.name))
+
         for v in self.volumes:
-            name = f"{v.name} {dt(v.volume.time_start) if v.volume.time_start else '?'}s-{dt(v.volume.time_end) if v.volume.time_end else '?'}s"
+            name = v.name
+
+            if self.reference_time:
+                base_time = self.reference_time.datetime
+
+                def dt(t: Time) -> int:
+                    return round((t.datetime - base_time).total_seconds())
+
+                name = f"{name} {dt(v.volume.time_start) if v.volume.time_start else '?'}s-{dt(v.volume.time_end) if v.volume.time_end else '?'}s"
+
             folder.append(
                 make_placemark_from_volume(v.volume, name=name, style_url=v.style)
             )

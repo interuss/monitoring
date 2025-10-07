@@ -228,12 +228,12 @@ def tracer_rid_request_poll(observation_area_id: str):
     area = _get_validated_obs_area(observation_area_id)
     if not area.f3411:
         flask.abort(400, "Specified observation area is not observing F3411 remote ID")
-        return
+        raise RuntimeError("An exception should have been raised.")
     if not area.area.volume.outline_polygon and not area.area.volume.outline_circle:
         flask.abort(
             400, "Specified observation area does not define its spatial outline"
         )
-        return
+        raise RuntimeError("An exception should have been raised.")
 
     rid_client = context.get_client(area.f3411.auth_spec, area.f3411.dss_base_url)
     flights_result = rid.all_flights(
