@@ -10,7 +10,9 @@ from monitoring.monitorlib import infrastructure
 
 class Logger:
     def __init__(
-        self, log_path: str, kml_session: infrastructure.KMLGenerationSession = None
+        self,
+        log_path: str,
+        kml_session: infrastructure.KMLGenerationSession | None = None,
     ):
         self.log_path = log_path
         os.makedirs(self.log_path, exist_ok=True)
@@ -54,3 +56,14 @@ class Logger:
                 print(f"Error posting {kml_server_filename} to KML server: {e}")
 
         return logname
+
+
+class DummyLogger(Logger):
+    def __init__(self):
+        pass
+
+    def log_same(self, t0: datetime.datetime, t1: datetime.datetime, code: str) -> None:
+        pass
+
+    def log_new(self, content: TracerLogEntry) -> str:
+        return "dummy"
