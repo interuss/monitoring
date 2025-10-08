@@ -8,7 +8,7 @@ from uas_standards.astm.f3548.v21.api import (
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.fetch import Query, QueryError
-from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
+from monitoring.monitorlib.geotemporal import Volume4DCollection
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -63,6 +63,8 @@ class CRSynchronization(TestScenario):
 
     _expected_manager: str
 
+    _planning_area: PlanningAreaResource
+
     def __init__(
         self,
         dss: DSSInstanceResource,
@@ -99,12 +101,12 @@ class CRSynchronization(TestScenario):
 
         self._cr_id = id_generator.id_factory.make_id(self.CR_TYPE)
         self._expected_manager = client_identity.subject()
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
         # Build a ready-to-use 4D volume with no specified time for searching
         # the currently active CRs
-        self._planning_area_volume4d = Volume4D(
-            volume=self._planning_area.volume,
+        self._planning_area_volume4d = self._planning_area.resolved_volume4d_with_times(
+            None, None
         )
 
         self._current_cr = None

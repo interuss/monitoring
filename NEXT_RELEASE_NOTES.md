@@ -33,9 +33,80 @@ The release notes should contain at least the following sections:
 
 --------------------------------------------------------------------------------------------------------------------
 
-# Release Notes for v0.19.1
+# Release Notes for v0.20.0
 
 ## Mandatory migration tasks
+
+### Update PlanningAreaResource
+
+Resources of type `resources.PlanningAreaResource` now have their volume specified via a separate `resource.VolumeResource` resource, which needs to be passed as a dependency.
+
+Previously, a planning area would be specified as:
+
+```yaml
+planning_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.PlanningAreaResource
+  specification:
+    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/f3548_self_contained/planning_area
+    volume:
+      outline_polygon:
+        vertices:
+          - lat: 37.1853
+            lng: -80.6140
+          - lat: 37.2148
+            lng: -80.6140
+          - lat: 37.2148
+            lng: -80.5440
+          - lat: 37.1853
+            lng: -80.5440
+      altitude_lower:
+        value: 0
+        reference: W84
+        units: M
+      altitude_upper:
+        value: 3048
+        reference: W84
+        units: M
+```
+
+The volume needs to ve moved to a separate `VolumeResource`, and references in the `dependencies` of the existing `PlanningAreaResource`:
+
+```yaml
+# Add a new resource:
+planning_area_volume:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.VolumeResource
+  specification:
+    template:
+      outline_polygon:
+        vertices:
+          - lat: 37.1853
+            lng: -80.6140
+          - lat: 37.2148
+            lng: -80.6140
+          - lat: 37.2148
+            lng: -80.5440
+          - lat: 37.1853
+            lng: -80.5440
+      altitude_lower:
+          value: 0
+          reference: W84
+          units: M
+      altitude_upper:
+          value: 3048
+          reference: W84
+          units: M
+
+# Add a dependencies section with a 'volume' to the existing resource.
+planning_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.PlanningAreaResource
+  dependencies:
+    volume: planning_area_volume
+  specification:
+    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/f3548_self_contained/planning_area
+```
 
 ## Optional migration tasks
 

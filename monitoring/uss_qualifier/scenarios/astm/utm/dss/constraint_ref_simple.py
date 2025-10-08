@@ -13,7 +13,6 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
 )
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
-from monitoring.uss_qualifier.resources.planning_area import PlanningAreaSpecification
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -35,7 +34,7 @@ class CRSimple(TestScenario):
     _cr_id: EntityID
 
     _expected_manager: str
-    _planning_area: PlanningAreaSpecification
+    _planning_area: PlanningAreaResource
     _planning_area_volume4d: Volume4D
 
     def __init__(
@@ -63,11 +62,10 @@ class CRSimple(TestScenario):
 
         self._expected_manager = client_identity.subject()
 
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
-        self._planning_area_volume4d = Volume4D(
-            volume=self._planning_area.volume,
-        )
+        # TODO #1053: pass proper times dict
+        self._planning_area_volume4d = self._planning_area.resolved_volume4d({})
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
@@ -100,7 +98,7 @@ class CRSimple(TestScenario):
                 new_cr, subs, query = self._dss.put_constraint_ref(
                     cr_id=self._cr_id,
                     extents=cr_params.extents,
-                    uss_base_url=self._planning_area.get_base_url(),
+                    uss_base_url=self._planning_area.specification.get_base_url(),
                 )
                 self.record_query(query)
             except QueryError as qe:
@@ -187,7 +185,7 @@ class CRSimple(TestScenario):
                 _, _, q = self._dss.put_constraint_ref(
                     cr_id=self._cr_id,
                     extents=cr_params.extents,
-                    uss_base_url=self._planning_area.get_base_url(),
+                    uss_base_url=self._planning_area.specification.get_base_url(),
                     ovn="",
                 )
                 self.record_query(q)
@@ -226,7 +224,7 @@ class CRSimple(TestScenario):
                 _, _, q = self._dss.put_constraint_ref(
                     cr_id=self._cr_id,
                     extents=cr_params.extents,
-                    uss_base_url=self._planning_area.get_base_url(),
+                    uss_base_url=self._planning_area.specification.get_base_url(),
                     ovn="ThisIsAnIncorrectOVN",
                 )
                 self.record_query(q)

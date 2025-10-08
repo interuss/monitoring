@@ -41,12 +41,11 @@ kentland_service_area:
     time_start: '2023-01-10T00:00:01.123456+00:00'
     time_end: '2023-01-10T01:00:01.123456+00:00'
 
-kentland_planning_area:
+kentland_planning_area_volume:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.PlanningAreaResource
+  resource_type: resources.VolumeResource
   specification:
-    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/kentland_planning_area
-    volume:
+    template:
       outline_polygon:
         vertices:
           - lat: 37.1853
@@ -65,6 +64,14 @@ kentland_planning_area:
         value: 3048
         reference: W84
         units: M
+
+kentland_planning_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.PlanningAreaResource
+  dependencies:
+    volume: kentland_planning_area_volume
+  specification:
+    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/kentland_planning_area
 
 au_problematically_big_area: # A huge (as in "too big") area for checks around area sizes
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -123,12 +130,11 @@ zurich_service_area:
     time_start: '2025-10-15T00:00:01.123456+00:00'
     time_end: '2025-10-15T01:00:01.123456+00:00'
 
-zurich_planning_area:
+zurich_planning_area_volume:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.PlanningAreaResource
+  resource_type: resources.VolumeResource
   specification:
-    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/zurich_planning_area
-    volume:
+    template:
       outline_polygon:
         vertices:
           - lat: 47.45237618874023
@@ -153,6 +159,14 @@ zurich_planning_area:
         value: 1000
         reference: W84
         units: M
+
+zurich_planning_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.PlanningAreaResource
+  dependencies:
+    volume: zurich_planning_area_volume
+  specification:
+    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/zurich_planning_area
 
 zurich_problematically_big_area: # A huge (as in "too big") area for checks around area sizes
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -219,13 +233,11 @@ kml_storage_config:
     flight_record_collection_path: "./output/generate_rid_test_data/flight_data/test_data.usa.netrid.dcdemo_flights.json"
 
 # ===== Flight planning intents =====
-
-che_planning_area:
+che_planning_area_volume:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.PlanningAreaResource
+  resource_type: resources.VolumeResource
   specification:
-    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/che_planning_area
-    volume:
+    template:
       outline_polygon:
         vertices:
           - lat: 45.1853
@@ -244,6 +256,14 @@ che_planning_area:
         value: 3048
         reference: W84
         units: M
+
+che_planning_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.PlanningAreaResource
+  dependencies:
+    volume: che_planning_area_volume
+  specification:
+    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/che_planning_area
 
 che_problematically_big_area:
   resource_type: resources.VolumeResource

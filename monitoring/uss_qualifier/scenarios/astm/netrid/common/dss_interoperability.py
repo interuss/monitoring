@@ -19,7 +19,6 @@ from monitoring.uss_qualifier.resources.astm.f3411.dss import (
 from monitoring.uss_qualifier.resources.dev.test_exclusions import (
     TestExclusionsResource,
 )
-from monitoring.uss_qualifier.resources.planning_area import PlanningAreaSpecification
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -55,7 +54,7 @@ class DSSInteroperability(GenericTestScenario):
     _allow_private_addresses: bool = False
     _context: dict[str, TestEntity]
     _area_vertices: list[s2sphere.LatLng]
-    _planning_area: PlanningAreaSpecification
+    _planning_area: PlanningAreaResource
 
     def __init__(
         self,
@@ -72,9 +71,11 @@ class DSSInteroperability(GenericTestScenario):
             if not dss.is_same_as(primary_dss_instance.dss_instance)
         ]
 
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
         self._area_vertices = get_latlngrect_vertices(
-            make_latlng_rect(self._planning_area.volume)
+            make_latlng_rect(
+                self._planning_area.resolved_volume4d_with_times(None, None).volume
+            )
         )
         if test_exclusions is not None:
             self._allow_private_addresses = test_exclusions.allow_private_addresses
@@ -816,18 +817,14 @@ class DSSInteroperability(GenericTestScenario):
 
     def _default_params(self, duration: datetime.timedelta) -> dict:
         now = datetime.datetime.now().astimezone()
-
+        v4d = self._planning_area.resolved_volume4d_with_times(now, now + duration)
         return dict(
             area_vertices=self._area_vertices,
-            alt_lo=self._planning_area.volume.altitude_lower_wgs84_m(
-                DEFAULT_LOWER_ALT_M
-            ),
-            alt_hi=self._planning_area.volume.altitude_upper_wgs84_m(
-                DEFAULT_UPPER_ALT_M
-            ),
+            alt_lo=v4d.volume.altitude_lower_wgs84_m(DEFAULT_LOWER_ALT_M),
+            alt_hi=v4d.volume.altitude_upper_wgs84_m(DEFAULT_UPPER_ALT_M),
             start_time=now,
             end_time=now + duration,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
         )
 
     def cleanup(self):
