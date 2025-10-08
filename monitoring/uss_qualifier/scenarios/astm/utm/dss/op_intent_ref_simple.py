@@ -19,7 +19,6 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
 )
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
-from monitoring.uss_qualifier.resources.planning_area import PlanningAreaSpecification
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.oir import (
     crud as oir_fragments,
@@ -50,7 +49,7 @@ class OIRSimple(TestScenario):
     _current_oir: OperationalIntentReference | None
     _current_oir_params: PutOperationalIntentReferenceParameters | None
     _expected_manager: str
-    _planning_area: PlanningAreaSpecification
+    _planning_area: PlanningAreaResource
     _planning_area_volume4d: Volume4D
 
     def __init__(
@@ -80,11 +79,10 @@ class OIRSimple(TestScenario):
 
         self._expected_manager = client_identity.subject()
 
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
-        self._planning_area_volume4d = Volume4D(
-            volume=self._planning_area.volume,
-        )
+        # TODO #1053 proper times for resolution
+        self._planning_area_volume4d = self._planning_area.resolved_volume4d({})
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
@@ -341,7 +339,7 @@ class OIRSimple(TestScenario):
         return self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=datetime.now() - timedelta(seconds=10),
             time_end=datetime.now() + timedelta(minutes=20),
             subscription_id=None,
@@ -353,7 +351,7 @@ class OIRSimple(TestScenario):
         return self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=datetime.now() - timedelta(seconds=10),
             time_end=datetime.now() + timedelta(minutes=20),
             subscription_id=subscription_id,
