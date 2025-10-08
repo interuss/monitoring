@@ -54,8 +54,8 @@ def subscribe_rid(
         area_vertices=vertices,
         alt_lo=area.volume.altitude_lower_wgs84_m(0),
         alt_hi=area.volume.altitude_upper_wgs84_m(3048),
-        start_time=area.time_start.datetime,
-        end_time=area.time_end.datetime,
+        start_time=area.time_start.datetime if area.time_start else None,
+        end_time=area.time_end.datetime if area.time_end else None,
         uss_base_url=uss_base_url,
         subscription_id=subscription_id,
         rid_version=rid_version,
@@ -84,6 +84,11 @@ def subscribe_scd(
     box = make_latlng_rect(area.volume)
     base_url = webapp.config[config.KEY_BASE_URL]
     uss_base_url = f"{base_url}/tracer/f3548v21/{area_id}"
+
+    if not area.time_start or not area.time_end:
+        raise SubscriptionManagementError(
+            "Could not create new SCD Subscription -> time_start or time_end not set"
+        )
 
     create_result = mutate_scd.upsert_subscription(
         scd_client,
