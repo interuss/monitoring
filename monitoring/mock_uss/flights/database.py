@@ -33,7 +33,7 @@ class Database(ImplicitDict):
     """List of notifications sent during flight planning operations"""
 
 
-db = SynchronizedValue(
+db = SynchronizedValue[Database](
     Database(),
     decoder=lambda b: ImplicitDict.parse(json.loads(b.decode("utf-8")), Database),
 )

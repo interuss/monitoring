@@ -464,9 +464,9 @@ def query_operational_intents(
                 raise e
     result.extend(updated_op_intents)
 
-    with db as tx:
+    with db.transact() as tx:
         for op_intent in updated_op_intents:
-            tx.cached_operations[op_intent.reference.id] = op_intent
+            tx.value.cached_operations[op_intent.reference.id] = op_intent
 
     return result
 
