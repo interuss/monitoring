@@ -12,12 +12,16 @@ TValue = TypeVar("TValue")
 
 # Note: attempts to change the below to SynchronizedValue[TValue] causes problems because IntelliJ does not reliably
 # understand the newer syntax and therefore fails to provide contextual information for specific TValues.
+# See: https://docs.astral.sh/ruff/rules/non-pep695-generic-class/#known-problems
 class Transaction(Generic[TValue]):  # noqa: UP046
     _lock: RLockT
     _get_value: Callable[[], TValue]
     _set_value: Callable[[TValue], None]
-    _value: TValue | None
+    _value: TValue
+    """This field is only valid when _locked is True"""
+
     _locked: bool
+    """True when _lock is held and _value holds a valid TValue"""
 
     def __init__(
         self,
@@ -28,7 +32,6 @@ class Transaction(Generic[TValue]):  # noqa: UP046
         self._lock = lock
         self._get_value = get_value
         self._set_value = set_value
-        self._value = None
         self._locked = False
 
     def __enter__(self):
@@ -37,14 +40,14 @@ class Transaction(Generic[TValue]):  # noqa: UP046
                 "SynchronizedValue Transaction started when Transaction was already in progress"
             )
         self._lock.__enter__()
-        self._locked = True
         self._value = self._get_value()
+        self._locked = True
         return self
 
     @property
     def value(self) -> TValue:
         """Value exposed for this transaction.  Mutate or set it to make changes during the transaction."""
-        if not self._locked or self._value is None:
+        if not self._locked:
             raise RuntimeError(
                 "Transaction value accessed when transaction was not active (e.g., outside a `with` block)"
             )
@@ -65,13 +68,12 @@ class Transaction(Generic[TValue]):  # noqa: UP046
     def _unlock(self, exc_type=None, exc_val=None, exc_tb=None):
         self._lock.__exit__(exc_type, exc_val, exc_tb)
         self._locked = False
-        self._value = None
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if not self._locked:
             return
         try:
-            if self.value is not None and exc_type is None:
+            if exc_type is None:
                 self._set_value(self.value)
         finally:
             self._unlock()
