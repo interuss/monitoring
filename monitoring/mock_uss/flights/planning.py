@@ -37,10 +37,11 @@ def lock_flight(flight_id: str, log: Callable[[str], None]) -> FlightRecord:
 def release_flight_lock(flight_id: str, log: Callable[[str], None]) -> None:
     with db.transact() as tx:
         if flight_id in tx.value.flights:
-            if tx.value.flights[flight_id]:
+            flight = tx.value.flights[flight_id]
+            if flight:
                 # FlightRecord was a true existing flight
                 log(f"Releasing lock on existing flight_id {flight_id}")
-                tx.value.flights[flight_id].locked = False
+                flight.locked = False
             else:
                 # FlightRecord was just a placeholder for a new flight
                 log(f"Releasing placeholder for existing flight_id {flight_id}")
