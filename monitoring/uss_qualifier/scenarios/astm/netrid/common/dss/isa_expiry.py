@@ -34,10 +34,7 @@ class ISAExpiry(GenericTestScenario):
         self._isa_id = id_generator.id_factory.make_id(ISAExpiry.ISA_TYPE)
         self._isa_version: str | None = None
         self._isa = isa
-        self._isa_area = isa.resolved_volume4d({}).volume.s2_vertices()
-        self._isa_altitude_min, self._isa_altitude_max = isa.resolved_altitude_bounds(
-            {}
-        )
+        self._isa_area = isa.s2_vertices()
 
     def run(self, context: ExecutionContext):
         self._shift_isa_time_relative_to_now()
@@ -73,11 +70,11 @@ class ISAExpiry(GenericTestScenario):
                 check=check,
                 expected_error_codes={200},
                 area_vertices=self._isa_area,
-                alt_lo=self._isa_altitude_min,
-                alt_hi=self._isa_altitude_max,
+                alt_lo=self._isa.altitude_min,
+                alt_hi=self._isa.altitude_max,
                 start_time=start_time,
                 end_time=end_time,
-                uss_base_url=self._isa.specification.base_url,
+                uss_base_url=self._isa.base_url,
                 isa_id=self._isa_id,
                 isa_version=None,
             )
@@ -130,7 +127,7 @@ class ISAExpiry(GenericTestScenario):
             rid_version=self._dss.rid_version,
             session=self._dss.client,
             participant_id=self._dss_wrapper.participant_id,
-            ignore_base_url=self._isa.specification.base_url,
+            ignore_base_url=self._isa.base_url,
         )
 
     def cleanup(self):

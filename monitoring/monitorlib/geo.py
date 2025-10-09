@@ -309,7 +309,7 @@ class Volume3D(ImplicitDict):
 
         return footprint1.intersects(footprint2)
 
-    def transform(self, transformation: Transformation):
+    def transform(self, transformation: Transformation) -> Volume3D:
         if (
             "relative_translation" in transformation
             and transformation.relative_translation

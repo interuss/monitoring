@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from datetime import datetime, timedelta
+from typing import Tuple
 
 import s2sphere as s2sphere
 from implicitdict import ImplicitDict, StringBasedTimeDelta
@@ -43,9 +44,7 @@ class Volume4DTemplate(ImplicitDict):
     transformations: list[Transformation] | None = None
     """If specified, transform this volume according to these transformations in order."""
 
-    def resolve(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
-        """Resolve Volume4DTemplate into concrete Volume4D."""
-        # Make 3D volume
+    def _get_volume(self) -> Volume3D:
         kwargs = {}
         if self.outline_circle is not None:
             kwargs["outline_circle"] = self.outline_circle
@@ -55,11 +54,18 @@ class Volume4DTemplate(ImplicitDict):
             kwargs["altitude_lower"] = self.altitude_lower
         if self.altitude_upper is not None:
             kwargs["altitude_upper"] = self.altitude_upper
-        volume = Volume3D(**kwargs)
+        return Volume3D(**kwargs)
 
-        # Make 4D volume
-        kwargs = {"volume": volume}
+    def resolve_3d(self) -> Volume3D:
+        """Resolve Volume4DTemplate into concrete Volume3D."""
+        result = self._get_volume()
+        if self.transformations:
+            for xform in self.transformations:
+                result = result.transform(xform)
+        return result
 
+    def resolve_times(self, times: dict[TimeDuringTest, Time]) -> Tuple[Time | None, Time | None]:
+        """Resolve Volume4DTemplate into concrete temporal bounds (start, end)"""
         if self.start_time is not None:
             time_start = self.start_time.resolve(times)
         else:
@@ -84,18 +90,23 @@ class Volume4DTemplate(ImplicitDict):
             if time_end is None:
                 time_end = Time(time_start.datetime + self.duration.timedelta)
 
+        return time_start, time_end
+
+    def resolve(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
+        """Resolve Volume4DTemplate into concrete Volume4D."""
+        volume = self.resolve_3d()
+
+        # Make 4D volume
+        kwargs = {"volume": volume}
+
+        time_start, time_end = self.resolve_times(times)
+
         if time_start is not None:
             kwargs["time_start"] = time_start
         if time_end is not None:
             kwargs["time_end"] = time_end
 
-        result = Volume4D(**kwargs)
-
-        if self.transformations:
-            for xform in self.transformations:
-                result = result.transform(xform)
-
-        return result
+        return Volume4D(**kwargs)
 
 
 class Volume4D(ImplicitDict):

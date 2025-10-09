@@ -35,28 +35,25 @@ class ISASubscriptionInteractions(GenericTestScenario):
 
         self._isa_version: str | None = None
         self._isa = isa
-        self._isa_area = isa.resolved_volume4d({}).volume.s2_vertices()
-        self._isa_altitude_min, self._isa_altitude_max = isa.resolved_altitude_bounds(
-            {}
-        )
+        self._isa_area = isa.s2_vertices()
 
         self._slight_overlap_area = geo.generate_slight_overlap_area(self._isa_area)
 
         self._isa_params = dict(
             area_vertices=self._isa_area,
-            alt_lo=self._isa_altitude_min,
-            alt_hi=self._isa_altitude_max,
+            alt_lo=self._isa.altitude_min,
+            alt_hi=self._isa.altitude_max,
             start_time=None,
             end_time=None,
-            uss_base_url=self._isa.specification.base_url,
+            uss_base_url=self._isa.base_url,
             isa_id=self._isa_id,
         )
         self._sub_params = dict(
-            alt_lo=self._isa_altitude_min,
-            alt_hi=self._isa_altitude_max,
+            alt_lo=self._isa.altitude_min,
+            alt_hi=self._isa.altitude_max,
             start_time=None,
             end_time=None,
-            uss_base_url=self._isa.specification.base_url,
+            uss_base_url=self._isa.base_url,
             sub_id=self._sub_id,
         )
 
@@ -115,7 +112,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 check=check,
                 expected_error_codes={200},
                 isa_version=None,
-                do_not_notify=self._isa.specification.base_url,
+                do_not_notify=self._isa.base_url,
                 **self._isa_params,
             )
 
@@ -169,7 +166,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 check=check,
                 expected_error_codes={200},
                 isa_version=created_isa.dss_query.isa.version,
-                do_not_notify=self._isa.specification.base_url,
+                do_not_notify=self._isa.base_url,
                 **isa_mutation_params,
             )
 
@@ -222,7 +219,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 expected_error_codes={200},
                 isa_id=mutated_isa.dss_query.isa.id,
                 isa_version=mutated_isa.dss_query.isa.version,
-                do_not_notify=self._isa.specification.base_url,
+                do_not_notify=self._isa.base_url,
             )
 
         # Check response to deletion of ISA
@@ -249,7 +246,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 )
 
         for subscriber_url, notification in deleted_isa.notifications.items():
-            if subscriber_url.startswith(self._isa.specification.base_url):
+            if subscriber_url.startswith(self._isa.base_url):
                 # Do not attempt to notify ourselves
                 continue
 
@@ -313,7 +310,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 check=check,
                 expected_error_codes={200},
                 isa_version=None,
-                do_not_notify=self._isa.specification.base_url,
+                do_not_notify=self._isa.base_url,
                 **self._isa_params,
             )
 
@@ -390,7 +387,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 check=check,
                 expected_error_codes={200},
                 isa_version=created_isa.dss_query.isa.version,
-                do_not_notify=self._isa.specification.base_url,
+                do_not_notify=self._isa.base_url,
                 **mutation_params,
             )
 
@@ -445,7 +442,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 expected_error_codes={200},
                 isa_id=mutated_isa.dss_query.isa.id,
                 isa_version=mutated_isa.dss_query.isa.version,
-                do_not_notify=self._isa.specification.base_url,
+                do_not_notify=self._isa.base_url,
             )
 
         # Check response to deletion of ISA
@@ -473,7 +470,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
 
         for subscriber_url, notification in deleted_isa.notifications.items():
             # For checking the notifications, we ignore the request we made for the subscription that we created.
-            if self._isa.specification.base_url not in subscriber_url:
+            if self._isa.base_url not in subscriber_url:
                 pid = (
                     notification.query.participant_id
                     if "participant_id" in notification.query
@@ -539,7 +536,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
             rid_version=self._dss.rid_version,
             session=self._dss.client,
             participant_id=self._dss_wrapper.participant_id,
-            ignore_base_url=self._isa.specification.base_url,
+            ignore_base_url=self._isa.base_url,
         )
 
     def _clean_any_sub(self):

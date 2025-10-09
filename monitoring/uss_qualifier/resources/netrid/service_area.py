@@ -59,39 +59,55 @@ class ServiceAreaResource(Resource[ServiceAreaSpecification]):
         times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         return self._volume.specification.template.resolve(times)
 
+    def s2_vertices(self):
+        return self._volume.specification.s2_vertices()
+
+    @property
+    def altitude_min(self) -> float:
+        """Lower altitude bound of service area, meters above WGS84 ellipsoid"""
+        if self._volume.specification.template.altitude_lower is None:
+            # Note this should not happen as we check at construction time that this bound exists
+            raise ValueError(
+                "The underlying volume does not have a lower altitude bound"
+            )
+        return self._volume.specification.template.altitude_lower.to_w84_m()
+
+    @property
+    def altitude_max(self) -> float:
+        """Upper altitude bound of service area, meters above WGS84 ellipsoid"""
+        if self._volume.specification.template.altitude_upper is None:
+            # Note this should not happen as we check at construction time that this bound exists
+            raise ValueError(
+                "The underlying volume does not have a lower altitude bound"
+            )
+        return self._volume.specification.template.altitude_upper.to_w84_m()
+
     def resolved_time_bounds(
-        self, times: dict[TimeDuringTest, Time]
+        self, times: dict[datetime, datetime]
     ) -> tuple[datetime.datetime, datetime.datetime]:
-        v4d = self.resolved_volume4d(times)
-        if v4d.time_start is None or v4d.time_end is None:
+        time_start, time_end = self._volume.specification.template.resolve_times(times)
+        if time_start is None or time_end is None:
             # Note this should not happen as we check at construction time that these bounds exist
             raise ValueError("The underlying volume does not have time bounds")
-        return v4d.time_start.datetime, v4d.time_end.datetime
+        return time_start.datetime, time_end.datetime
 
-    def resolved_altitude_bounds(
-        self, times: dict[TimeDuringTest, Time]
-    ) -> tuple[float, float]:
-        v3d = self.resolved_volume4d(times).volume
-        if v3d.altitude_lower is None or v3d.altitude_upper is None:
-            # Note this should not happen as we check at construction time that these bounds exist
-            raise ValueError("The underlying volume does not have altitude bounds")
-        return v3d.altitude_lower.to_w84_m(), v3d.altitude_upper.to_w84_m()
+    @property
+    def base_url(self) -> str:
+        return self.specification.base_url
 
     def get_new_subscription_params(
         self, sub_id: str, start_time: datetime.datetime, duration: datetime.timedelta
     ) -> dict[str, Any]:
-        # TODO move to VolumeResource (?) or at least merge with the similar function in PlanningAreaResource
         """
         Builds a dict of parameters that can be used to create a subscription, using this ISA's parameters
         and the passed start time and duration
         """
-        alt_lo, alt_hi = self.resolved_altitude_bounds({})
         return dict(
             sub_id=sub_id,
-            area_vertices=self.resolved_volume4d({}).volume.s2_vertices(),
-            alt_lo=alt_lo,
-            alt_hi=alt_hi,
+            area_vertices=self.s2_vertices(),
+            alt_lo=self.altitude_min,
+            alt_hi=self.altitude_max,
             start_time=start_time,
             end_time=start_time + duration,
-            uss_base_url=self.specification.base_url,
+            uss_base_url=self.base_url,
         )

@@ -45,11 +45,8 @@ class ISAValidation(GenericTestScenario):
         self._isa_id = id_generator.id_factory.make_id(ISAValidation.ISA_TYPE)
         self._isa_version: str | None = None
         self._isa = isa
-        self._isa_altitude_min, self._isa_altitude_max = isa.resolved_altitude_bounds(
-            {}
-        )
 
-        self._isa_area = isa.resolved_volume4d({}).volume.s2_vertices()
+        self._isa_area = isa.s2_vertices()
 
         self._huge_area = problematically_big_area.specification.s2_vertices()
 
@@ -117,7 +114,7 @@ class ISAValidation(GenericTestScenario):
             rid_version=self._dss.rid_version,
             session=self._dss.client,
             participant_id=self._dss_wrapper.participant_id,
-            ignore_base_url=self._isa.specification.base_url,
+            ignore_base_url=self._isa.base_url,
         )
 
     def _isa_huge_area_check(self) -> (str, dict[str, Any]):
@@ -144,11 +141,11 @@ class ISAValidation(GenericTestScenario):
                 check=check,
                 expected_error_codes={400},
                 area_vertices=self._huge_area,
-                alt_lo=self._isa_altitude_min,
-                alt_hi=self._isa_altitude_max,
+                alt_lo=self._isa.altitude_min,
+                alt_hi=self._isa.altitude_max,
                 start_time=self._isa_start_time,
                 end_time=self._isa_end_time,
-                uss_base_url=self._isa.specification.base_url,
+                uss_base_url=self._isa.base_url,
                 isa_id=self._isa_id,
                 isa_version=self._isa_version,
             )
@@ -163,11 +160,11 @@ class ISAValidation(GenericTestScenario):
                 check=check,
                 expected_error_codes={400},
                 area_vertices=[],
-                alt_lo=self._isa_altitude_min,
-                alt_hi=self._isa_altitude_max,
+                alt_lo=self._isa.altitude_min,
+                alt_hi=self._isa.altitude_max,
                 start_time=self._isa_start_time,
                 end_time=self._isa_end_time,
-                uss_base_url=self._isa.specification.base_url,
+                uss_base_url=self._isa.base_url,
                 isa_id=self._isa_id,
                 isa_version=self._isa_version,
             )
@@ -185,11 +182,11 @@ class ISAValidation(GenericTestScenario):
                 check=check,
                 expected_error_codes={400},
                 area_vertices=self._isa_area,
-                alt_lo=self._isa_altitude_min,
-                alt_hi=self._isa_altitude_max,
+                alt_lo=self._isa.altitude_min,
+                alt_hi=self._isa.altitude_max,
                 start_time=time_start,
                 end_time=time_end,
-                uss_base_url=self._isa.specification.base_url,
+                uss_base_url=self._isa.base_url,
                 isa_id=self._isa_id,
                 isa_version=self._isa_version,
             )
@@ -202,11 +199,11 @@ class ISAValidation(GenericTestScenario):
                 check=check,
                 expected_error_codes={400},
                 area_vertices=self._isa_area,
-                alt_lo=self._isa_altitude_min,
-                alt_hi=self._isa_altitude_max,
+                alt_lo=self._isa.altitude_min,
+                alt_hi=self._isa.altitude_max,
                 start_time=self._isa_end_time,
                 end_time=self._isa_start_time,
-                uss_base_url=self._isa.specification.base_url,
+                uss_base_url=self._isa.base_url,
                 isa_id=self._isa_id,
                 isa_version=self._isa_version,
             )
@@ -226,11 +223,11 @@ class ISAValidation(GenericTestScenario):
                 check=check,
                 expected_error_codes={400},
                 area_vertices=INVALID_VERTICES,
-                alt_lo=self._isa_altitude_min,
-                alt_hi=self._isa_altitude_max,
+                alt_lo=self._isa.altitude_min,
+                alt_hi=self._isa.altitude_max,
                 start_time=self._isa_start_time,
                 end_time=self._isa_end_time,
-                uss_base_url=self._isa.specification.base_url,
+                uss_base_url=self._isa.base_url,
                 isa_id=self._isa_id,
                 isa_version=self._isa_version,
             )

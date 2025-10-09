@@ -66,7 +66,7 @@ class SubscriptionSimple(GenericTestScenario):
         self._dss_wrapper = DSSWrapper(self, self._dss)
         self._base_sub_id = id_generator.id_factory.make_id(self.SUB_TYPE)
         self._isa = isa
-        self._isa_area = isa.resolved_volume4d({}).volume.s2_vertices()
+        self._isa_area = isa.s2_vertices()
         # List of vertices that has the same first and last point:
         # Used to validate some special-case handling by the DSS
         self._isa_area_loop = self._isa_area.copy()
@@ -618,10 +618,10 @@ class SubscriptionSimple(GenericTestScenario):
         with self.check(
             "Returned ISA URL has correct base URL", [self._dss_wrapper.participant_id]
         ) as check:
-            if not sub_under_test.isa_url.startswith(self._isa.specification.base_url):
+            if not sub_under_test.isa_url.startswith(self._isa.base_url):
                 check.record_failed(
                     "Returned USS Base URL does not match provided one",
-                    details=f"Provided: {self._isa.specification.base_url}, Returned: {sub_under_test.isa_url}",
+                    details=f"Provided: {self._isa.base_url}, Returned: {sub_under_test.isa_url}",
                     query_timestamps=query_timestamps,
                 )
 

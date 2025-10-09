@@ -68,10 +68,7 @@ class DisplayProviderBehavior(GenericTestScenario):
         self._dss_wrapper = DSSWrapper(self, dss_pool.dss_instances[0])
         self._isa_id = id_generator.id_factory.make_id(self.SUB_TYPE)
         self._isa = isa
-        self._isa_area = isa.resolved_volume4d({}).volume.s2_vertices()
-        self._isa_altitude_min, self._isa_altitude_max = isa.resolved_altitude_bounds(
-            {}
-        )
+        self._isa_area = isa.s2_vertices()
         self._identification = uss_identification
 
         isa_center = geo.center_of_mass(self._isa_area)
@@ -180,8 +177,8 @@ class DisplayProviderBehavior(GenericTestScenario):
                 end_time=end_time,
                 uss_base_url=self._mock_sp_base_url(),
                 isa_id=self._isa_id,
-                alt_lo=self._isa_altitude_min,
-                alt_hi=self._isa_altitude_max,
+                alt_lo=self._isa.altitude_min,
+                alt_hi=self._isa.altitude_max,
                 isa_version=None,
             )
             self._isa_version = isa_change.dss_query.isa.version

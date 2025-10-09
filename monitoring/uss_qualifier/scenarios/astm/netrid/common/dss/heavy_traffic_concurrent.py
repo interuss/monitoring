@@ -66,7 +66,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
         self._isa_versions: dict[str, str] = {}
         self._isa = isa
-        self._isa_area = isa.resolved_volume4d({}).volume.s2_vertices()
+        self._isa_area = isa.s2_vertices()
 
         # Note that when the test scenario ends prematurely, we may end up with an unclosed session.
         self._async_session = AsyncUTMTestSession(
@@ -77,17 +77,15 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         # The base ID ends in 000: we simply increment it to generate the other IDs
         self._isa_ids = [f"{isa_base_id[:-3]}{i:03d}" for i in range(CREATE_ISAS_COUNT)]
 
-        alt_lower, alt_upper = isa.resolved_altitude_bounds({})
-
         # currently all params are the same:
         # we could improve the test by having unique parameters per ISA
         self._isa_params = dict(
             area_vertices=self._isa_area,
             start_time=None,
             end_time=None,
-            uss_base_url=self._isa.specification.base_url,
-            alt_lo=alt_lower,
-            alt_hi=alt_upper,
+            uss_base_url=self._isa.base_url,
+            alt_lo=self._isa.altitude_min,
+            alt_hi=self._isa.altitude_max,
         )
 
     def run(self, context: ExecutionContext):
@@ -132,8 +130,8 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
     def _shift_isa_time_relative_to_now(self):
         start, end = self._isa.resolved_time_bounds({})
-        self._isa_params["start_time"] = start
-        self._isa_params["end_time"] = end
+        self._isa_params["start_time"] = start.datetime
+        self._isa_params["end_time"] = end.datetime
 
     def _delete_isas_if_exists(self):
         """Delete test ISAs if they exist. Done sequentially."""

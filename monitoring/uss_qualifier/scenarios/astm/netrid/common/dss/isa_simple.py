@@ -1,9 +1,11 @@
 import datetime
 
+import arrow
 import s2sphere
 
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.mutate import rid as mutate
+from monitoring.monitorlib.temporal import TimeDuringTest, Time
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
@@ -39,15 +41,17 @@ class ISASimple(GenericTestScenario):
         self._isa_id = id_generator.id_factory.make_id(ISASimple.ISA_TYPE)
         self._isa_version: str | None = None
         self._isa = isa
-        self._isa_altitude_min, self._isa_altitude_max = isa.resolved_altitude_bounds(
-            {}
-        )
 
-        self._isa_area = isa.resolved_volume4d({}).volume.s2_vertices()
+        self._isa_area = isa.s2_vertices()
         self._huge_area = problematically_big_area.specification.s2_vertices()
 
     def run(self, context: ExecutionContext):
-        self._shift_isa_time_relative_to_now()
+        times = {
+            TimeDuringTest.StartOfTestRun: Time(context.start_time),
+            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
+        }
+
+        self._resolve_isa_time_bounds(times)
 
         self.begin_test_scenario(context)
 
@@ -58,8 +62,9 @@ class ISASimple(GenericTestScenario):
 
         self.end_test_scenario()
 
-    def _shift_isa_time_relative_to_now(self):
-        self._isa_start_time, self._isa_end_time = self._isa.resolved_time_bounds({})
+    def _resolve_isa_time_bounds(self, times: dict[TimeDuringTest, Time]):
+        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        self._isa_start_time, self._isa_end_time = self._isa.resolved_time_bounds(times)
 
     def _setup_case(self):
         self.begin_test_case("Setup")
@@ -113,7 +118,7 @@ class ISASimple(GenericTestScenario):
                     )
             for subscriber_url, notification in deleted.notifications.items():
                 # For checking the notifications, we ignore the request we made for the subscription that we created.
-                if self._isa.specification.base_url not in subscriber_url:
+                if self._isa.base_url not in subscriber_url:
                     pid = (
                         notification.query.participant_id
                         if "participant_id" in notification.query
@@ -164,11 +169,11 @@ class ISASimple(GenericTestScenario):
                     area_vertices=self._isa_area,
                     start_time=self._isa_start_time,
                     end_time=self._isa_end_time,
-                    uss_base_url=self._isa.specification.base_url,
+                    uss_base_url=self._isa.base_url,
                     isa_id=self._isa_id,
                     isa_version=self._isa_version,
-                    alt_lo=self._isa_altitude_min,
-                    alt_hi=self._isa_altitude_max,
+                    alt_lo=self._isa.altitude_min,
+                    alt_hi=self._isa.altitude_max,
                 )
                 self._isa_version = isa_change.dss_query.isa.version
 
@@ -191,20 +196,20 @@ class ISASimple(GenericTestScenario):
                 self._updated_isa_params = dict(
                     start_time=self._isa_start_time,
                     end_time=self._isa_end_time,
-                    uss_base_url=self._isa.specification.base_url,
-                    alt_lo=self._isa_altitude_min,
-                    alt_hi=self._isa_altitude_max,
+                    uss_base_url=self._isa.base_url,
+                    alt_lo=self._isa.altitude_min,
+                    alt_hi=self._isa.altitude_max,
                 )
                 mutated_isa = self._dss_wrapper.put_isa(
                     check,
                     area_vertices=self._isa_area,
                     start_time=self._isa_start_time,
                     end_time=self._isa_end_time,
-                    uss_base_url=self._isa.specification.base_url,
+                    uss_base_url=self._isa.base_url,
                     isa_id=self._isa_id,
                     isa_version=self._isa_version,
-                    alt_lo=self._isa_altitude_min,
-                    alt_hi=self._isa_altitude_max,
+                    alt_lo=self._isa.altitude_min,
+                    alt_hi=self._isa.altitude_max,
                 )
                 self._isa_version = mutated_isa.dss_query.isa.version
 
