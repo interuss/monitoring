@@ -8,7 +8,7 @@ from uas_standards.astm.f3548.v21 import api as f3548_v21
 from uas_standards.astm.f3548.v21.constants import OiMaxPlanHorizonDays, OiMaxVertices
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.mock_uss.f3548v21 import utm_client
 from monitoring.mock_uss.flights.database import FlightRecord, db

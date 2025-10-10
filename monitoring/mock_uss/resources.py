@@ -1,4 +1,4 @@
-from monitoring.mock_uss import require_config_value, webapp
+from monitoring.mock_uss.app import require_config_value, webapp
 from monitoring.monitorlib import auth, infrastructure
 
 from . import config
