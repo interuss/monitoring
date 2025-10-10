@@ -29,7 +29,7 @@ class Database(ImplicitDict):
     """Interval at which polling of observation areas should occur"""
 
 
-db = SynchronizedValue(
+db = SynchronizedValue[Database](
     Database(observation_areas={}),
     decoder=lambda b: ImplicitDict.parse(json.loads(b.decode("utf-8")), Database),
 )

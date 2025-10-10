@@ -47,7 +47,7 @@ class Database(ImplicitDict):
     """Timestamp of most recent time periodic task loop iterated"""
 
 
-db = SynchronizedValue(
+db = SynchronizedValue[Database](
     Database(
         one_time_tasks=[],
         task_errors=[],

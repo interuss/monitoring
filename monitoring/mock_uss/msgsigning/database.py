@@ -14,7 +14,7 @@ class Database(ImplicitDict):
     private_key_name: str = "messagesigning/mock_faa_priv.pem"
 
 
-db = SynchronizedValue(
+db = SynchronizedValue[Database](
     Database(),
     decoder=lambda b: ImplicitDict.parse(json.loads(b.decode("utf-8")), Database),
 )

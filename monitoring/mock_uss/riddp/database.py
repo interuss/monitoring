@@ -55,7 +55,7 @@ class Database(ImplicitDict):
     subscriptions: list[ObservationSubscription]
 
 
-db = SynchronizedValue(
+db = SynchronizedValue[Database](
     Database(flights={}, subscriptions=[]),
     decoder=lambda b: ImplicitDict.parse(json.loads(b.decode("utf-8")), Database),
 )
