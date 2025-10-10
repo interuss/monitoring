@@ -34,7 +34,7 @@ class Database(ImplicitDict):
     notifications: ServiceProviderUserNotifications = ServiceProviderUserNotifications()
 
 
-db = SynchronizedValue(
+db = SynchronizedValue[Database](
     Database(),
     decoder=lambda b: ImplicitDict.parse(json.loads(b.decode("utf-8")), Database),
 )

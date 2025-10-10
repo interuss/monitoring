@@ -5,8 +5,6 @@ from collections.abc import Callable
 from multiprocessing.synchronize import RLock as RLockT
 from typing import Generic, TypeVar
 
-import deprecation
-
 TValue = TypeVar("TValue")
 
 
@@ -175,20 +173,3 @@ class SynchronizedValue(Generic[TValue]):  # noqa: UP046 (same reason as above)
 
     def transact(self) -> Transaction[TValue]:
         return Transaction[TValue](self._lock, self._get_value, self._set_value)
-
-    @deprecation.deprecated(details="Use `value` of transact() method instead.")
-    def __enter__(self):
-        if self._transaction:
-            raise RuntimeError(
-                "SynchronizedValue transaction started when another transaction was in progress"
-            )
-        self._transaction = self.transact()
-        self._transaction.__enter__()
-        return self._transaction.value
-
-    @deprecation.deprecated(details="Use `value` of transact() method instead.")
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if not self._transaction:
-            return
-        self._transaction.__exit__(exc_type, exc_val, exc_tb)
-        self._transaction = None

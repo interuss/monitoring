@@ -38,9 +38,11 @@ from monitoring.monitorlib.geotemporal import Volume4D
 @webapp.route("/tracer/observation_areas", methods=["GET"])
 @ui_auth.login_required()
 def tracer_list_observation_areas() -> flask.Response:
-    with db as tx:
+    with db.transact() as tx:
         result = ListObservationAreasResponse(
-            areas=[redact_observation_area(a) for a in tx.observation_areas.values()]
+            areas=[
+                redact_observation_area(a) for a in tx.value.observation_areas.values()
+            ]
         )
     return flask.jsonify(result)
 
@@ -62,24 +64,24 @@ def tracer_upsert_observation_area(
         msg = f"Upsert observation area for tracer unable to parse JSON: {e}"
         return msg, 400
 
-    with db as tx:
+    with db.transact() as tx:
         # Determine if this observation area triggers the need to start polling
-        if tx.observation_areas:
-            poll_interval = tx.polling_interval.timedelta
-            for a in tx.observation_areas.values():
+        if tx.value.observation_areas:
+            poll_interval = tx.value.polling_interval.timedelta
+            for a in tx.value.observation_areas.values():
                 if a.polls:
                     poll_interval = None
                     break
         else:
             poll_interval = (
-                tx.polling_interval.timedelta if request.area.polls else None
+                tx.value.polling_interval.timedelta if request.area.polls else None
             )
 
-        if area_id in tx.observation_areas:
+        if area_id in tx.value.observation_areas:
             # Request is to mutate an existing observation area, so we'll first just delete the existing area
-            delete_observation_area(tx.observation_areas[area_id])
+            delete_observation_area(tx.value.observation_areas[area_id])
         created = create_observation_area(area_id, request.area)
-        tx.observation_areas[area_id] = created
+        tx.value.observation_areas[area_id] = created
 
     if poll_interval is not None:
         webapp.set_task_period(TASK_POLL_OBSERVATION_AREAS, poll_interval)
@@ -91,13 +93,13 @@ def tracer_upsert_observation_area(
 def tracer_delete_observation_area(
     area_id: str,
 ) -> tuple[str, int] | flask.Response:
-    with db as tx:
-        if area_id not in tx.observation_areas:
+    with db.transact() as tx:
+        if area_id not in tx.value.observation_areas:
             return "Specified observation area not in system", 404
-        area = tx.observation_areas.pop(area_id)
+        area = tx.value.observation_areas.pop(area_id)
         area = delete_observation_area(area)
         remaining_polling_areas = sum(
-            1 if a.polls else 0 for a in tx.observation_areas.values()
+            1 if a.polls else 0 for a in tx.value.observation_areas.values()
         )
 
     if not remaining_polling_areas:
@@ -180,11 +182,13 @@ def tracer_import_observation_areas() -> tuple[str, int] | flask.Response:
             "Import of F3548 subscriptions into observation areas is not yet implemented"
         )
 
-    with db as tx:
+    with db.transact() as tx:
         new_obs_areas = []
 
         f3411_subscription_ids = {
-            a.f3411.subscription_id for a in tx.observation_areas.values() if a.f3411
+            a.f3411.subscription_id
+            for a in tx.value.observation_areas.values()
+            if a.f3411
         }
         new_obs_areas.extend(
             a
@@ -193,7 +197,9 @@ def tracer_import_observation_areas() -> tuple[str, int] | flask.Response:
         )
 
         f3548_subscription_ids = {
-            a.f3548.subscription_id for a in tx.observation_areas.values() if a.f3548
+            a.f3548.subscription_id
+            for a in tx.value.observation_areas.values()
+            if a.f3548
         }
         new_obs_areas.extend(
             a
@@ -202,7 +208,7 @@ def tracer_import_observation_areas() -> tuple[str, int] | flask.Response:
         )
 
         for obs_area in new_obs_areas:
-            tx.observation_areas[obs_area.id] = obs_area
+            tx.value.observation_areas[obs_area.id] = obs_area
 
     return flask.jsonify(
         ListObservationAreasResponse(
@@ -217,9 +223,9 @@ def _shutdown():
         f"Cleaning up observation areas from PID {os.getpid()} at {datetime.now(UTC)}..."
     )
 
-    with db as tx:
-        observation_areas: list[ObservationArea] = [v for _, v in tx.observation_areas]
-        tx.observation_areas.clear()
+    with db.transact() as tx:
+        observation_areas = list(tx.value.observation_areas.values())
+        tx.value.observation_areas.clear()
 
     for area in observation_areas:
         delete_observation_area(area)

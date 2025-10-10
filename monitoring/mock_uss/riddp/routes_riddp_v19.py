@@ -37,10 +37,12 @@ def riddp_notify_isa_v19(id: str):
 
     subscription_ids = [s.subscription_id for s in put_params.subscriptions]
     if subscription_ids:
-        with db as tx:
+        with db.transact() as tx:
             updated = False
 
-            for subscription in tx.subscriptions:
+            for subscription in tx.value.subscriptions:
+                if not subscription.upsert_result.subscription:
+                    continue
                 if subscription.upsert_result.subscription.id in subscription_ids:
                     query = describe_flask_query(flask.request, flask.jsonify(None), 0)
                     subscription.updates.append(UpdatedISA(v19_query=query))

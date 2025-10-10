@@ -7,7 +7,8 @@ from uas_standards.interuss.automated_testing.geo_awareness.v1.api import (
     GeozoneSourceResponseResult,
 )
 
-from monitoring.mock_uss.geoawareness.database import Database, SourceRecord, db
+from monitoring.mock_uss.geoawareness import database
+from monitoring.mock_uss.geoawareness.database import SourceRecord, db
 from monitoring.mock_uss.geoawareness.ed269 import evaluate_source
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ def combine_results(
 
 
 def check_geozones(req: GeozonesCheckRequest) -> list[GeozonesCheckResultGeozone]:
-    sources: dict[str, SourceRecord] = Database.get_sources(db)
+    sources: dict[str, SourceRecord] = database.get_sources(db)
 
     results: list[GeozonesCheckResultGeozone] = [
         GeozonesCheckResultGeozone.Absent
@@ -44,7 +45,11 @@ def check_geozones(req: GeozonesCheckRequest) -> list[GeozonesCheckResultGeozone
                 )
                 continue
 
-            fmt = source.definition.https_source.format
+            fmt = (
+                source.definition.https_source.format
+                if source.definition.https_source
+                else None
+            )
             if fmt == GeozoneHttpsSourceFormat.ED_269:
                 logger.debug(f" {j + 1}. ED269 source {source_id} ready.")
                 result = combine_results(
