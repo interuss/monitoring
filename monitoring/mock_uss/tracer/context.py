@@ -2,7 +2,7 @@ import yaml
 from implicitdict import StringBasedDateTime
 from yaml.representer import Representer
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.config import KEY_AUTH_SPEC, KEY_DSS_URL
 from monitoring.mock_uss.tracer.config import (
     KEY_TRACER_KML_FOLDER,

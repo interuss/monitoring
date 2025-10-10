@@ -1,4 +1,4 @@
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 
 
 @webapp.route("/scdsc/status")

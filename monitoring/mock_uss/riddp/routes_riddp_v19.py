@@ -8,7 +8,7 @@ from uas_standards.astm.f3411.v19.api import (
 )
 from uas_standards.astm.f3411.v19.constants import Scope
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.riddp.database import db
 from monitoring.monitorlib.fetch import describe_flask_query

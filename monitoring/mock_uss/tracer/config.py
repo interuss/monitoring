@@ -1,4 +1,4 @@
-from monitoring.mock_uss import import_environment_variable, require_config_value
+from monitoring.mock_uss.app import import_environment_variable, require_config_value
 from monitoring.mock_uss.config import KEY_BASE_URL, KEY_DSS_URL
 
 KEY_TRACER_OUTPUT_FOLDER = "MOCK_USS_TRACER_OUTPUT_FOLDER"

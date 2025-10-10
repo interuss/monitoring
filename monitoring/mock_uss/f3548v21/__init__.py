@@ -1,4 +1,4 @@
-from monitoring.mock_uss import require_config_value, webapp
+from monitoring.mock_uss.app import require_config_value, webapp
 from monitoring.mock_uss.config import KEY_AUTH_SPEC, KEY_DSS_URL
 from monitoring.monitorlib import auth
 from monitoring.monitorlib.infrastructure import UTMClientSession

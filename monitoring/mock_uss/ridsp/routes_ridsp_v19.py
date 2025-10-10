@@ -24,7 +24,7 @@ from uas_standards.astm.f3411.v19.constants import (
 )
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.rid import RIDVersion

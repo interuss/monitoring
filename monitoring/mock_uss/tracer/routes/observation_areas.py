@@ -8,7 +8,7 @@ import s2sphere
 from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.database import db
 from monitoring.mock_uss.tracer.log_types import (

@@ -4,7 +4,7 @@ import os
 
 import flask
 
-from monitoring.mock_uss import require_config_value, webapp
+from monitoring.mock_uss.app import require_config_value, webapp
 from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_DIR
 from monitoring.monitorlib.clients import QueryHook, query_hooks
 from monitoring.monitorlib.clients.mock_uss.interactions import (

@@ -6,7 +6,7 @@ from uas_standards.interuss.automated_testing.geo_awareness.v1.api import (
     GeozonesCheckRequest,
 )
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.geoawareness.check import check_geozones
 from monitoring.mock_uss.geoawareness.geozone_sources import (

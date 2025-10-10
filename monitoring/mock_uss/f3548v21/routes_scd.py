@@ -13,7 +13,7 @@ from uas_standards.astm.f3548.v21.api import (
     PutOperationalIntentDetailsParameters,
 )
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.f3548v21.flight_planning import (
     conflicts_with_flightrecords,

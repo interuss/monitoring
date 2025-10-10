@@ -6,7 +6,7 @@ from flask import Response, jsonify, request
 from implicitdict import ImplicitDict, StringBasedDateTime
 from loguru import logger
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_DIR
 from monitoring.mock_uss.interaction_logging.logger import (

@@ -6,7 +6,7 @@ from implicitdict import StringBasedDateTime
 from loguru import logger
 from termcolor import colored
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.log_types import (
     ConstraintNotification,
