@@ -1,4 +1,7 @@
+import arrow
+
 from monitoring.monitorlib import geo
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
@@ -58,7 +61,12 @@ class ISASubscriptionInteractions(GenericTestScenario):
         )
 
     def run(self, context: ExecutionContext):
-        self._shift_resources_time_relative_to_now()
+        times = {
+            TimeDuringTest.StartOfTestRun: Time(context.start_time),
+            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
+        }
+
+        self._resolve_isa_time_bounds(times)
 
         self.begin_test_scenario(context)
 
@@ -90,8 +98,9 @@ class ISASubscriptionInteractions(GenericTestScenario):
         self.end_test_case()
         self.end_test_scenario()
 
-    def _shift_resources_time_relative_to_now(self):
-        start, end = self._isa.resolved_time_bounds({})
+    def _resolve_isa_time_bounds(self, times: dict[TimeDuringTest, Time]):
+        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        start, end = self._isa.resolved_time_bounds(times)
         self._isa_params["start_time"] = start
         self._isa_params["end_time"] = end
         self._sub_params["start_time"] = start

@@ -65,25 +65,27 @@ class ServiceAreaResource(Resource[ServiceAreaSpecification]):
     @property
     def altitude_min(self) -> float:
         """Lower altitude bound of service area, meters above WGS84 ellipsoid"""
-        if self._volume.specification.template.altitude_lower is None:
+        v3d = self._volume.specification.template.resolve_3d()
+        if v3d.altitude_lower is None:
             # Note this should not happen as we check at construction time that this bound exists
             raise ValueError(
                 "The underlying volume does not have a lower altitude bound"
             )
-        return self._volume.specification.template.altitude_lower.to_w84_m()
+        return v3d.altitude_lower.to_w84_m()
 
     @property
     def altitude_max(self) -> float:
         """Upper altitude bound of service area, meters above WGS84 ellipsoid"""
-        if self._volume.specification.template.altitude_upper is None:
+        v3d = self._volume.specification.template.resolve_3d()
+        if v3d.altitude_upper is None:
             # Note this should not happen as we check at construction time that this bound exists
             raise ValueError(
                 "The underlying volume does not have a lower altitude bound"
             )
-        return self._volume.specification.template.altitude_upper.to_w84_m()
+        return v3d.altitude_upper.to_w84_m()
 
     def resolved_time_bounds(
-        self, times: dict[datetime, datetime]
+        self, times: dict[TimeDuringTest, Time]
     ) -> tuple[datetime.datetime, datetime.datetime]:
         time_start, time_end = self._volume.specification.template.resolve_times(times)
         if time_start is None or time_end is None:

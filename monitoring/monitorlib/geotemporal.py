@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 from datetime import datetime, timedelta
-from typing import Tuple
 
 import s2sphere as s2sphere
 from implicitdict import ImplicitDict, StringBasedTimeDelta
@@ -64,7 +63,9 @@ class Volume4DTemplate(ImplicitDict):
                 result = result.transform(xform)
         return result
 
-    def resolve_times(self, times: dict[TimeDuringTest, Time]) -> Tuple[Time | None, Time | None]:
+    def resolve_times(
+        self, times: dict[TimeDuringTest, Time]
+    ) -> tuple[Time | None, Time | None]:
         """Resolve Volume4DTemplate into concrete temporal bounds (start, end)"""
         if self.start_time is not None:
             time_start = self.start_time.resolve(times)

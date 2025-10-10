@@ -5,7 +5,7 @@ import s2sphere
 
 from monitoring.monitorlib.fetch import rid as fetch
 from monitoring.monitorlib.mutate import rid as mutate
-from monitoring.monitorlib.temporal import TimeDuringTest, Time
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
