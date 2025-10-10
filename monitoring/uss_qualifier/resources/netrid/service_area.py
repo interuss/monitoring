@@ -1,9 +1,12 @@
 import datetime
 from typing import Any
 
-from implicitdict import ImplicitDict, StringBasedDateTime
+import arrow
+from implicitdict import ImplicitDict
 
-from monitoring.monitorlib.geo import LatLngPoint
+from monitoring.monitorlib.geotemporal import Volume4D
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
+from monitoring.uss_qualifier.resources import VolumeResource
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
@@ -15,35 +18,84 @@ class ServiceAreaSpecification(ImplicitDict):
 
     This URL will probably not identify a real resource in tests."""
 
-    footprint: list[LatLngPoint]
-    """2D outline of service area"""
 
-    altitude_min: float = 0
-    """Lower altitude bound of service area, meters above WGS84 ellipsoid"""
+class ServiceAreaResource(Resource[ServiceAreaSpecification]):
+    specification: ServiceAreaSpecification
+    _volume: VolumeResource
 
-    altitude_max: float = 3048
-    """Upper altitude bound of service area, meters above WGS84 ellipsoid"""
+    def __init__(
+        self,
+        specification: ServiceAreaSpecification,
+        resource_origin: str,
+        volume: VolumeResource,
+    ):
+        super().__init__(specification, resource_origin)
+        self.specification = specification
+        self._volume = volume
 
-    reference_time: StringBasedDateTime
-    """Reference time used to adjust start and end times at runtime"""
+        now = Time(arrow.utcnow().datetime)
+        resolved_for_tests = self._volume.specification.template.resolve(
+            {
+                TimeDuringTest.StartOfTestRun: now,
+                TimeDuringTest.StartOfScenario: now,
+                TimeDuringTest.TimeOfEvaluation: now,
+            }
+        )
 
-    time_start: StringBasedDateTime
-    """Start time of service area (relative to reference_time)"""
+        if (
+            resolved_for_tests.volume.altitude_lower is None
+            or resolved_for_tests.volume.altitude_upper is None
+        ):
+            raise ValueError(
+                f"In order to be usable for a ServiceAreaResource, the provided VolumeResource must declare altitude bounds. The volume template was obtained from: {resource_origin}"
+            )
 
-    time_end: StringBasedDateTime
-    """End time of service area (relative to reference_time)"""
+        if resolved_for_tests.time_start is None or resolved_for_tests.time_end is None:
+            raise ValueError(
+                f"In order to be usable for a ServiceAreaResource, the provided VolumeResource must declare time bounds. The volume template was obtained from: {resource_origin}"
+            )
 
-    def shifted_time_start(
-        self, new_reference_time: datetime.datetime
-    ) -> datetime.datetime:
-        dt = new_reference_time - self.reference_time.datetime
-        return self.time_start.datetime + dt
+    def resolved_volume4d(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
+        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        return self._volume.specification.template.resolve(times)
 
-    def shifted_time_end(
-        self, new_reference_time: datetime.datetime
-    ) -> datetime.datetime:
-        dt = new_reference_time - self.reference_time.datetime
-        return self.time_end.datetime + dt
+    def s2_vertices(self):
+        return self._volume.specification.s2_vertices()
+
+    @property
+    def altitude_min(self) -> float:
+        """Lower altitude bound of service area, meters above WGS84 ellipsoid"""
+        v3d = self._volume.specification.template.resolve_3d()
+        if v3d.altitude_lower is None:
+            # Note this should not happen as we check at construction time that this bound exists
+            raise ValueError(
+                "The underlying volume does not have a lower altitude bound"
+            )
+        return v3d.altitude_lower.to_w84_m()
+
+    @property
+    def altitude_max(self) -> float:
+        """Upper altitude bound of service area, meters above WGS84 ellipsoid"""
+        v3d = self._volume.specification.template.resolve_3d()
+        if v3d.altitude_upper is None:
+            # Note this should not happen as we check at construction time that this bound exists
+            raise ValueError(
+                "The underlying volume does not have a lower altitude bound"
+            )
+        return v3d.altitude_upper.to_w84_m()
+
+    def resolved_time_bounds(
+        self, times: dict[TimeDuringTest, Time]
+    ) -> tuple[datetime.datetime, datetime.datetime]:
+        time_start, time_end = self._volume.specification.template.resolve_times(times)
+        if time_start is None or time_end is None:
+            # Note this should not happen as we check at construction time that these bounds exist
+            raise ValueError("The underlying volume does not have time bounds")
+        return time_start.datetime, time_end.datetime
+
+    @property
+    def base_url(self) -> str:
+        return self.specification.base_url
 
     def get_new_subscription_params(
         self, sub_id: str, start_time: datetime.datetime, duration: datetime.timedelta
@@ -54,18 +106,10 @@ class ServiceAreaSpecification(ImplicitDict):
         """
         return dict(
             sub_id=sub_id,
-            area_vertices=[vertex.as_s2sphere() for vertex in self.footprint],
+            area_vertices=self.s2_vertices(),
             alt_lo=self.altitude_min,
             alt_hi=self.altitude_max,
             start_time=start_time,
             end_time=start_time + duration,
             uss_base_url=self.base_url,
         )
-
-
-class ServiceAreaResource(Resource[ServiceAreaSpecification]):
-    specification: ServiceAreaSpecification
-
-    def __init__(self, specification: ServiceAreaSpecification, resource_origin: str):
-        super().__init__(specification, resource_origin)
-        self.specification = specification
