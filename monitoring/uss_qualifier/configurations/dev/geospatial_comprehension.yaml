@@ -4,15 +4,34 @@ v1:
     resources:
       resource_declarations:
         example_feature_check_table: {$ref: 'library/resources.yaml#/example_feature_check_table'}
+        generated_feature_check_table: {$ref: 'library/resources.yaml#/generated_feature_check_table'}
 
         utm_auth: {$ref: 'library/environment.yaml#/utm_auth'}
         geospatial_info_provider: {$ref: 'library/environment.yaml#/geospatial_info_provider'}
     action:
-      test_scenario:
-        scenario_type: scenarios.interuss.geospatial_map.GeospatialFeatureComprehension
+      test_suite:
         resources:
           geospatial_info_provider: geospatial_info_provider
-          table: example_feature_check_table
+          example_feature_check_table: example_feature_check_table
+          generated_feature_check_table: generated_feature_check_table
+        suite_definition:
+          name: Geospatial comprehension CI suite
+          resources:
+            geospatial_info_provider: resources.geospatial_info.GeospatialInfoProviderResource
+            example_feature_check_table: resources.interuss.geospatial_map.FeatureCheckTableResource
+            generated_feature_check_table: resources.interuss.geospatial_map.FeatureCheckTableResource
+          actions:
+          - test_scenario:
+              scenario_type: scenarios.interuss.geospatial_map.GeospatialFeatureComprehension
+              resources:
+                geospatial_info_provider: geospatial_info_provider
+                table: example_feature_check_table
+          - test_scenario:
+              scenario_type: scenarios.interuss.geospatial_map.GeospatialFeatureComprehension
+              resources:
+                geospatial_info_provider: geospatial_info_provider
+                table: generated_feature_check_table
+
     execution:
       stop_fast: true
   artifacts:
