@@ -522,6 +522,17 @@ example_feature_check_table:
               duration: 5m
           expected_result: Advise
 
+generated_feature_check_table:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.interuss.geospatial_map.FeatureCheckTableResource
+  specification:
+    generate_at_runtime:
+      dict_resources:
+        geojson_example:
+          path: test_data.aus.incidents
+      jsonnet_script:
+        path: test_data.aus.incident_translator
+
 # ===== mock_uss behavioral control =====
 
 locality_che:

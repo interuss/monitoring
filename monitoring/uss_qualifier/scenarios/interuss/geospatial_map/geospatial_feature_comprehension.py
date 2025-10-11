@@ -98,6 +98,10 @@ class GeospatialFeatureComprehension(TestScenario):
                 checks=[query_check, check],
             )
             self.begin_dynamic_test_step(doc)
+            if row.description:
+                self.record_note(
+                    f"{row.geospatial_check_id}.description", row.description
+                )
 
             # Populate filter set
             filter_set = GeospatialFeatureFilter()
