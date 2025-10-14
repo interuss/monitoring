@@ -12,7 +12,7 @@ from monitoring.monitorlib.locality import Locality
 
 
 @webapp.route("/configuration/locality", methods=["GET"])
-def locality_get() -> flask.Response:
+def locality_get() -> tuple[str, int]:
     return flask.jsonify(
         GetLocalityResponse(locality_code=get_locality().locality_code())
     )
@@ -20,7 +20,7 @@ def locality_get() -> flask.Response:
 
 @webapp.route("/configuration/locality", methods=["PUT"])
 @requires_scope(MOCK_USS_CONFIG_SCOPE)  # TODO: use separate public key for this
-def locality_set() -> tuple[str, int] | flask.Response:
+def locality_set() -> tuple[str, int]:
     """Set the locality of the mock_uss."""
     try:
         json = flask.request.json
@@ -38,8 +38,8 @@ def locality_set() -> tuple[str, int] | flask.Response:
         msg = f"Invalid locality_code: {str(e)}"
         return msg, 400
 
-    with db.transact() as tx:
-        tx.value.locale = req.locality_code
+    with db as tx:
+        tx.locale = req.locality_code
 
     return flask.jsonify(
         GetLocalityResponse(locality_code=get_locality().locality_code())
