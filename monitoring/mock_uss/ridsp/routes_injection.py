@@ -41,7 +41,7 @@ class ErrorResponse(ImplicitDict):
 @webapp.route("/ridsp/injection/tests/<test_id>", methods=["PUT"])
 @requires_scope(injection_api.SCOPE_RID_QUALIFIER_INJECT)
 @idempotent_request()
-def ridsp_create_test(test_id: str) -> tuple[str, int]:
+def ridsp_create_test(test_id: str) -> tuple[str | flask.Response, int]:
     """Implements test creation in RID automated testing injection API."""
     logger.info(f"Create test {test_id}")
     rid_version = webapp.config[KEY_RID_VERSION]
@@ -109,13 +109,13 @@ def ridsp_create_test(test_id: str) -> tuple[str, int]:
             response["query"] = notification.query
             return flask.jsonify(response), 412
 
-    with db as tx:
-        tx.tests[test_id] = record
-        tx.notifications.create_notifications_if_needed(record)
+    with db.transact() as tx:
+        tx.value.tests[test_id] = record
+        tx.value.notifications.create_notifications_if_needed(record)
 
     return flask.jsonify(
         ChangeTestResponse(version=record.version, injected_flights=record.flights)
-    )
+    ), 200
 
 
 @webapp.route("/ridsp/injection/tests/<test_id>/<version>", methods=["DELETE"])
@@ -165,8 +165,8 @@ def ridsp_delete_test(test_id: str, version: str) -> tuple[str | flask.Response,
                 )
                 result["query"] = notification.query
 
-    with db as tx:
-        del tx.tests[test_id]
+    with db.transact() as tx:
+        del tx.value.tests[test_id]
     return flask.jsonify(result), 200
 
 
@@ -175,7 +175,7 @@ def ridsp_delete_test(test_id: str, version: str) -> tuple[str | flask.Response,
     methods=["GET"],
 )
 @requires_scope(injection_api.SCOPE_RID_QUALIFIER_INJECT)
-def ridsp_get_user_notifications() -> tuple[str, int]:
+def ridsp_get_user_notifications() -> tuple[str | flask.Response, int]:
     """Returns the list of user notifications observed by the virtual user"""
 
     if "after" not in flask.request.args:
@@ -222,4 +222,4 @@ def ridsp_get_user_notifications() -> tuple[str, int]:
 
     r = QueryUserNotificationsResponse(user_notifications=final_list)
 
-    return flask.jsonify(r)
+    return flask.jsonify(r), 200

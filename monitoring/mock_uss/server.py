@@ -14,7 +14,7 @@ from jinja2 import FileSystemLoader
 from loguru import logger
 
 from ..monitorlib.errors import stacktrace_string
-from .database import Database, PeriodicTaskStatus, TaskError, db
+from .database import PeriodicTaskStatus, TaskError, db
 
 MAX_PERIODIC_LATENCY = timedelta(seconds=5)
 
@@ -87,10 +87,10 @@ class MockUSS(flask.Flask):
 
     def _run_one_time_tasks(self, trigger: TaskTrigger):
         tasks: dict[str, OneTimeServerTask] = {}
-        with db as tx:
+        with db.transact() as tx:
             for task_name, task in self._one_time_tasks.items():
-                if task.trigger == trigger and task_name not in tx.one_time_tasks:
-                    tx.one_time_tasks.append(task_name)
+                if task.trigger == trigger and task_name not in tx.value.one_time_tasks:
+                    tx.value.one_time_tasks.append(task_name)
                     tasks[task_name] = task
         if not tasks:
             logger.info(f"No {trigger} tasks to initiate from process ID {os.getpid()}")
@@ -105,8 +105,8 @@ class MockUSS(flask.Flask):
             try:
                 setup_task.run()
             except Exception as e:
-                with db as tx:
-                    tx.task_errors.append(TaskError.from_exception(trigger, e))
+                with db.transact() as tx:
+                    tx.value.task_errors.append(TaskError.from_exception(trigger, e))
                 if trigger == TaskTrigger.Shutdown:
                     logger.error(
                         f"{type(e).__name__} error in '{task_name}' on process ID {os.getpid()} while shutting down mock_uss: {str(e)}\n{stacktrace_string(e)}"
@@ -148,11 +148,10 @@ class MockUSS(flask.Flask):
             raise ValueError(
                 f"Periodic task '{task_name}' is not declared, so its period cannot be set"
             )
-        with db as tx:
-            assert isinstance(tx, Database)
-            if task_name not in tx.periodic_tasks:
-                tx.periodic_tasks[task_name] = PeriodicTaskStatus()
-            tx.periodic_tasks[task_name].period = (
+        with db.transact() as tx:
+            if task_name not in tx.value.periodic_tasks:
+                tx.value.periodic_tasks[task_name] = PeriodicTaskStatus()
+            tx.value.periodic_tasks[task_name].period = (
                 StringBasedTimeDelta(period) if period is not None else None
             )
 
@@ -172,21 +171,20 @@ class MockUSS(flask.Flask):
                 # Determine what to do on this loop (execute task or wait)
                 task_to_execute = None
                 next_check = None
-                with db as tx:
-                    assert isinstance(tx, Database)
-                    tx.most_recent_periodic_check = StringBasedDateTime(
+                with db.transact() as tx:
+                    tx.value.most_recent_periodic_check = StringBasedDateTime(
                         datetime.now(UTC)
                     )
 
                     # Cancel the loop if we're stopping
-                    if tx.stopping:
+                    if tx.value.stopping:
                         break
 
                     # Find the earliest scheduled task
                     earliest_task: tuple[str, datetime, PeriodicTaskStatus] | None = (
                         None
                     )
-                    for task_name, task in tx.periodic_tasks.items():
+                    for task_name, task in tx.value.periodic_tasks.items():
                         if task.executing:
                             # Don't consider executing tasks that are already executing
                             continue
@@ -216,7 +214,7 @@ class MockUSS(flask.Flask):
                         task_name, t_execute, task = earliest_task
                         if t_execute <= arrow.utcnow().datetime:
                             # We should execute this task immediately
-                            tx.periodic_tasks[task_name] = PeriodicTaskStatus(
+                            tx.value.periodic_tasks[task_name] = PeriodicTaskStatus(
                                 last_execution_time=StringBasedDateTime(
                                     arrow.utcnow().datetime
                                 ),
@@ -227,7 +225,7 @@ class MockUSS(flask.Flask):
                         else:
                             # We need to wait some time before executing this task
                             next_check = t_execute
-                # </with db as tx>
+                # </with db.transact() as tx>
 
                 if task_to_execute:
                     # Execute the selected task right now
@@ -235,8 +233,8 @@ class MockUSS(flask.Flask):
                         f"Executing '{task_to_execute}' periodic task from process {os.getpid()}"
                     )
                     self._periodic_tasks[task_to_execute].run()
-                    with db as tx:
-                        periodic_task = tx.periodic_tasks[task_to_execute]
+                    with db.transact() as tx:
+                        periodic_task = tx.value.periodic_tasks[task_to_execute]
                         periodic_task.executing = False
                         if (
                             "period" in periodic_task
@@ -260,8 +258,10 @@ class MockUSS(flask.Flask):
             logger.error(
                 f"Shutting down mock_uss due to {type(e).__name__} error while executing '{task_to_execute}' periodic task: {str(e)}\n{stacktrace_string(e)}"
             )
-            with db as tx:
-                tx.task_errors.append(TaskError.from_exception(TaskTrigger.Setup, e))
+            with db.transact() as tx:
+                tx.value.task_errors.append(
+                    TaskError.from_exception(TaskTrigger.Setup, e)
+                )
             self.stop()
         finally:
             logger.info(f"Periodic task daemon for process {os.getpid()} exited")
@@ -271,10 +271,10 @@ class MockUSS(flask.Flask):
 
     def stop(self):
         send_signal = False
-        with db as tx:
-            if not tx.stopping:
+        with db.transact() as tx:
+            if not tx.value.stopping:
                 send_signal = True
-                tx.stopping = True
+                tx.value.stopping = True
         if send_signal:
             logger.info(
                 f"Initiating shutdown of MockUSS process {self._pid} from process {os.getpid()}"
