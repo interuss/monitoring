@@ -180,10 +180,11 @@ def tracer_kml_historical():
 
 
 def _get_validated_obs_area(observation_area_id: str) -> ObservationArea:
-    tx = db.value
-    if observation_area_id not in tx.observation_areas:
-        flask.abort(404, "Specified observation area not found")
-    return tx.observation_areas[observation_area_id]
+    with db as tx:
+        if observation_area_id not in tx.observation_areas:
+            flask.abort(404, "Specified observation area not found")
+        area: ObservationArea = tx.observation_areas[observation_area_id]
+    return area
 
 
 @webapp.route("/tracer/observation_areas/<observation_area_id>/ui", methods=["GET"])
