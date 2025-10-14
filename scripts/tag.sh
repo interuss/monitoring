@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -eo pipefail
+
 # We only enable -o pipefail after having verified that
 # the command line argument satisfies format requirements.
 # Semantic versioning regex (suffixed below) from:

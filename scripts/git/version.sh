@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 # This script prints the current version of a component in the repository based on the tags
 # of the upstream repository (remote origin) matching the following convention:
 # owner/component/version. Examples of values:

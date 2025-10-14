@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -eo pipefail
+
 COMMIT=$(git rev-parse --short HEAD)
 
 if  test -n "$(git status -s)"; then

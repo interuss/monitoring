@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 # Check for 'v19' references in netrid v22a scenario documents
 filesv22a=$(find ./scenarios/astm/netrid/v22a -name '*.md' -exec grep -l 'v19' {} +)
 if [ -n "$filesv22a" ]; then
