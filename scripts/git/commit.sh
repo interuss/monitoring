@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-set -eo pipefail
+set -e
 
 COMMIT=$(git rev-parse --short HEAD)
 
