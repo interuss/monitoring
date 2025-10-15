@@ -1,3 +1,4 @@
+import flask
 import requests
 from uas_standards.eurocae_ed269 import ED269Schema
 from uas_standards.interuss.automated_testing.geo_awareness.v1.api import (
@@ -14,19 +15,21 @@ from monitoring.mock_uss.geoawareness.database import (
 )
 
 
-def get_geozone_source(geozone_source_id: str):
+def get_geozone_source(geozone_source_id: str) -> tuple[flask.Response | str, int]:
     """This handler returns the state of a geozone source"""
 
     source = database.get_source(db, geozone_source_id)
     if source is None:
         return f"source {geozone_source_id} not found or deleted", 404
     return (
-        GeozoneSourceResponse(result=GeozoneSourceResponseResult.Ready),
+        flask.jsonify(GeozoneSourceResponse(result=GeozoneSourceResponseResult.Ready)),
         200,
     )
 
 
-def create_geozone_source(id, source_definition: CreateGeozoneSourceRequest):
+def create_geozone_source(
+    id, source_definition: CreateGeozoneSourceRequest
+) -> tuple[flask.Response | str, int]:
     """This handler creates and activates a geozone source"""
 
     try:
@@ -60,14 +63,16 @@ def create_geozone_source(id, source_definition: CreateGeozoneSourceRequest):
             GeozoneSourceResponseResult.Error,
             "Unsupported source definition. https_source only",
         )
-        return GeozoneSourceResponse(result=source.state, message=source.message), 400
+        return flask.jsonify(
+            GeozoneSourceResponse(result=source.state, message=source.message)
+        ), 400
 
-    return GeozoneSourceResponse(
-        result=source.state, message=source.get("message", None)
-    )
+    return flask.jsonify(
+        GeozoneSourceResponse(result=source.state, message=source.get("message", None))
+    ), 200
 
 
-def delete_geozone_source(geozone_source_id):
+def delete_geozone_source(geozone_source_id) -> tuple[flask.Response | str, int]:
     """This handler deactivates and deletes a geozone source"""
 
     deleted_id = database.delete_source(db, geozone_source_id)
@@ -76,6 +81,8 @@ def delete_geozone_source(geozone_source_id):
         return f"source {geozone_source_id} not found", 404
 
     return (
-        GeozoneSourceResponse(result=GeozoneSourceResponseResult.Deactivating),
+        flask.jsonify(
+            GeozoneSourceResponse(result=GeozoneSourceResponseResult.Deactivating)
+        ),
         200,
     )

@@ -27,11 +27,10 @@ class Database(ImplicitDict):
     sources: dict[str, SourceRecord] = {}
 
 
-def get_source(geo_db: SynchronizedValue[Database], source_id: str) -> SourceRecord:
-    result = geo_db.value.sources.get(source_id, None)
-    if result is None:
-        raise KeyError(f"No source exists with id '{source_id}'")
-    return result
+def get_source(
+    geo_db: SynchronizedValue[Database], source_id: str
+) -> SourceRecord | None:
+    return geo_db.value.sources.get(source_id, None)
 
 
 def get_sources(geo_db: SynchronizedValue[Database]) -> dict[str, SourceRecord]:
