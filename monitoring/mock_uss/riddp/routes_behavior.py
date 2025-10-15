@@ -1,7 +1,7 @@
 import flask
 from implicitdict import ImplicitDict
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 
 from .behavior import DisplayProviderBehavior
 from .database import db

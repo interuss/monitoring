@@ -1,7 +1,7 @@
 import flask
 from uas_standards.interuss.automated_testing.versioning import api, constants
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.monitorlib import versioning
 

@@ -1,7 +1,7 @@
 import flask
 from implicitdict import ImplicitDict
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.auth import MOCK_USS_CONFIG_SCOPE, requires_scope
 from monitoring.mock_uss.dynamic_configuration.configuration import db, get_locality
 from monitoring.monitorlib.clients.mock_uss.locality import (
