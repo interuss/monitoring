@@ -14,7 +14,7 @@ class DynamicConfiguration(ImplicitDict):
     locale: LocalityCode
 
 
-db = SynchronizedValue(
+db = SynchronizedValue[DynamicConfiguration](
     DynamicConfiguration(locale=LocalityCode(webapp.config[KEY_BEHAVIOR_LOCALITY])),
     decoder=lambda b: ImplicitDict.parse(
         json.loads(b.decode("utf-8")), DynamicConfiguration
@@ -24,6 +24,6 @@ db = SynchronizedValue(
 
 
 def get_locality() -> Locality:
-    with db as tx:
-        code = tx.locale
+    with db.transact() as tx:
+        code = tx.value.locale
     return Locality.from_locale(code)

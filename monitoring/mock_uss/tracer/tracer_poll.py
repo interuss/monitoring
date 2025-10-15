@@ -46,7 +46,7 @@ class PollingStatus(ImplicitDict):
     started: bool = False
 
 
-polling_status = SynchronizedValue(
+polling_status = SynchronizedValue[PollingStatus](
     PollingStatus(),
     capacity_bytes=1000,
     decoder=lambda b: ImplicitDict.parse(json.loads(b.decode("utf-8")), PollingStatus),
@@ -60,7 +60,7 @@ class PollingValues(ImplicitDict):
     last_constraints_result: FetchedEntities | None = None
 
 
-polling_values = SynchronizedValue(
+polling_values = SynchronizedValue[PollingValues](
     PollingValues(),
     decoder=lambda b: ImplicitDict.parse(json.loads(b.decode("utf-8")), PollingValues),
 )
@@ -73,10 +73,10 @@ def print_no_newline(s):
 
 def _log_poll_start(logger):
     init = False
-    with polling_status as tx:
-        if not tx.started:
+    with polling_status.transact() as tx:
+        if not tx.value.started:
             init = True
-            tx.started = True
+            tx.value.started = True
     if init:
         config = {
             KEY_TRACER_OUTPUT_FOLDER: webapp.config[KEY_TRACER_OUTPUT_FOLDER],
@@ -129,18 +129,17 @@ def poll_isas(area: ObservationArea, logger: tracerlog.Logger) -> None:
 
     log_new = False
     last_result = None
-    with polling_values as tx:
-        assert isinstance(tx, PollingValues)
-        if tx.last_isa_result is None or result.has_different_content_than(
-            tx.last_isa_result
+    with polling_values.transact() as tx:
+        if tx.value.last_isa_result is None or result.has_different_content_than(
+            tx.value.last_isa_result
         ):
-            last_result = tx.last_isa_result
+            last_result = tx.value.last_isa_result
             log_new = True
-            tx.need_line_break = False
-            tx.last_isa_result = result
+            tx.value.need_line_break = False
+            tx.value.last_isa_result = result
         else:
-            tx.need_line_break = True
-        need_line_break = tx.need_line_break
+            tx.value.need_line_break = True
+        need_line_break = tx.value.need_line_break
 
     log_entry = PollISAs(poll=result, recorded_at=StringBasedDateTime(arrow.utcnow()))
     if log_new:
@@ -174,17 +173,17 @@ def poll_ops(
 
     log_new = False
     last_result = None
-    with polling_values as tx:
-        if tx.last_ops_result is None or result.has_different_content_than(
-            tx.last_ops_result
+    with polling_values.transact() as tx:
+        if tx.value.last_ops_result is None or result.has_different_content_than(
+            tx.value.last_ops_result
         ):
-            last_result = tx.last_ops_result
+            last_result = tx.value.last_ops_result
             log_new = True
-            tx.need_line_break = False
-            tx.last_ops_result = result
+            tx.value.need_line_break = False
+            tx.value.last_ops_result = result
         else:
-            tx.need_line_break = True
-        need_line_break = tx.need_line_break
+            tx.value.need_line_break = True
+        need_line_break = tx.value.need_line_break
 
     log_entry = PollOperationalIntents(
         poll=result, recorded_at=StringBasedDateTime(arrow.utcnow())
@@ -220,15 +219,15 @@ def poll_constraints(
 
     log_new = False
     last_result = None
-    with polling_values as tx:
-        if result.has_different_content_than(tx.last_constraints_result):
-            last_result = tx.last_constraints_result
+    with polling_values.transact() as tx:
+        if result.has_different_content_than(tx.value.last_constraints_result):
+            last_result = tx.value.last_constraints_result
             log_new = True
-            tx.need_line_break = False
-            tx.last_constraints_result = result
+            tx.value.need_line_break = False
+            tx.value.last_constraints_result = result
         else:
-            tx.need_line_break = True
-        need_line_break = tx.need_line_break
+            tx.value.need_line_break = True
+        need_line_break = tx.value.need_line_break
 
     log_entry = PollConstraints(
         poll=result, recorded_at=StringBasedDateTime(arrow.utcnow())
