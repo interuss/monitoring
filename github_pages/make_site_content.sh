@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 # This script generates the content for this repository's GitHub Pages site.  It is invoked by the CI and expects the
 # working folder to contain:
 #   ./monitoring: this repository
