@@ -1,4 +1,4 @@
-from monitoring.mock_uss import import_environment_variable
+from monitoring.mock_uss.app import import_environment_variable
 from monitoring.monitorlib.rid import RIDVersion
 
 KEY_RID_VERSION = "MOCK_USS_RID_VERSION"

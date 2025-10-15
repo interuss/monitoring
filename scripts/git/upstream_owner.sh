@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 # This script attempts to print the organization of the upstream repository.
 
 # The following strategies will be used to determine the organization name:

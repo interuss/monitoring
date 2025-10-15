@@ -17,7 +17,7 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
     DeleteFlightResponseResult,
 )
 
-from monitoring.mock_uss import require_config_value, webapp
+from monitoring.mock_uss.app import require_config_value, webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.mock_uss.dynamic_configuration.configuration import get_locality

@@ -9,7 +9,7 @@ import monitoring.monitorlib.fetch.rid as fetch_rid
 import monitoring.monitorlib.fetch.scd as fetch_scd
 import monitoring.monitorlib.mutate.rid as mutate_rid
 import monitoring.monitorlib.mutate.scd as mutate_scd
-from monitoring.mock_uss import config, webapp
+from monitoring.mock_uss.app import config, webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.log_types import (
     RIDSubscribe,

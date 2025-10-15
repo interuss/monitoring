@@ -12,7 +12,7 @@ from uas_standards.interuss.automated_testing.rid.v1.injection import (
     QueryUserNotificationsResponse,
 )
 
-from monitoring.mock_uss import require_config_value, webapp
+from monitoring.mock_uss.app import require_config_value, webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.mock_uss.riddp.config import KEY_RID_VERSION
