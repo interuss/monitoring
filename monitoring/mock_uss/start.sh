@@ -29,4 +29,4 @@ uv run gunicorn \
     --workers=4 \
     --worker-tmp-dir="/dev/shm" \
     "--bind=0.0.0.0:${port}" \
-    monitoring.mock_uss:webapp
+    monitoring.mock_uss.app:webapp

@@ -1,6 +1,6 @@
 import os.path
 
-from monitoring.mock_uss import import_environment_variable, webapp
+from monitoring.mock_uss.app import import_environment_variable, webapp
 
 KEY_INTERACTIONS_LOG_DIR = "MOCK_USS_INTERACTIONS_LOG_DIR"
 

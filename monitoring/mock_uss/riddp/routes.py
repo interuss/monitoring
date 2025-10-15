@@ -1,4 +1,4 @@
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.riddp.config import KEY_RID_VERSION
 
 from ...monitorlib.rid import RIDVersion

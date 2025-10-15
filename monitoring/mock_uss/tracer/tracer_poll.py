@@ -5,7 +5,7 @@ import sys
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.tracer import context, diff, tracerlog
 from monitoring.mock_uss.tracer.config import (
     KEY_TRACER_KML_FOLDER,

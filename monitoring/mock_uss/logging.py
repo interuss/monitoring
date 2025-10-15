@@ -8,7 +8,7 @@ import loguru
 from flask import Request, Response
 from loguru import logger
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 
 
 def _get_request_id(req: Request) -> str:

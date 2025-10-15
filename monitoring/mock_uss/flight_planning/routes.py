@@ -9,7 +9,7 @@ from loguru import logger
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api
 from uas_standards.interuss.automated_testing.flight_planning.v1.constants import Scope
 
-from monitoring.mock_uss import require_config_value, webapp
+from monitoring.mock_uss.app import require_config_value, webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.config import KEY_BASE_URL
 from monitoring.mock_uss.f3548v21.flight_planning import op_intent_from_flightinfo
