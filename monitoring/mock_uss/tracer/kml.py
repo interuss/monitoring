@@ -351,6 +351,8 @@ def render_historical_kml(log_folder: str) -> str:
     log_files = glob.glob(os.path.join(log_folder, "*.yaml"))
     log_files.sort()
     for log_file in log_files:
+        logger.debug(f"Processing {log_file}")
+
         if "nochange_queries" in log_file:
             continue  # This is a known case where we don't want to print a warning
 
