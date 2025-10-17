@@ -20,7 +20,7 @@ def test_set_uss_availability(ids, scd_session2):
     if version:
         payload["old_version"] = version
 
-    resp = scd_session2.put("/uss_availability/uss1", scope=SCOPE_AA, json=payload)
+    resp = scd_session2.put("/uss_availability/uss1", json=payload)
 
     assert resp.status_code == 200, resp.content
     data = resp.json()
@@ -41,7 +41,6 @@ def test_mutate_uss_availability(ids, scd_session2):
 
     resp = scd_session2.put(
         "/uss_availability/uss1",
-        scope=SCOPE_AA,
         json={"availability": "down", "old_version": version},
     )
 
@@ -60,7 +59,7 @@ def test_mutate_uss_availability(ids, scd_session2):
 @default_scope(SCOPE_AA)
 def test_set_invalid_uss_availability(ids, scd_session2):
     resp = scd_session2.put(
-        "/uss_availability/uss1", scope=SCOPE_AA, json={"availability": "pUrPlE"}
+        "/uss_availability/uss1", json={"availability": "pUrPlE"}
     )
     assert resp.status_code == 400, resp.content
 
