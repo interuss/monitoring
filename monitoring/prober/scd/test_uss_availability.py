@@ -58,9 +58,7 @@ def test_mutate_uss_availability(ids, scd_session2):
 
 @default_scope(SCOPE_AA)
 def test_set_invalid_uss_availability(ids, scd_session2):
-    resp = scd_session2.put(
-        "/uss_availability/uss1", json={"availability": "pUrPlE"}
-    )
+    resp = scd_session2.put("/uss_availability/uss1", json={"availability": "pUrPlE"})
     assert resp.status_code == 400, resp.content
 
     resp = scd_session2.put(
