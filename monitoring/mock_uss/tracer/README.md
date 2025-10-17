@@ -40,3 +40,11 @@ current session has been running.
 
 ## Invocation
 An instance of tracer-enabled mock_uss is brought up as part of the [local deployment](../README.md#local-deployment).  It can also be deployed [with Google Cloud Platform](../deployment/gcp) when configured appropriately.
+
+## Offline historical KML generator
+
+With a large number of log files, KML generation via the server endpoint can
+require a prohibitive amount of time.  To generate a historical KML in these
+cases, the [make_historical_kml utility](./make_historical_kml.py) can be used
+to parse a folder of logs (generally acquired from downloading a .zip file of
+logs while the server is active) into a KML file.
