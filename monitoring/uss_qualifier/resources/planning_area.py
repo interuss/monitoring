@@ -11,16 +11,20 @@ from uas_standards.astm.f3548.v21.api import (
     UssBaseURL,
 )
 
-from monitoring.monitorlib.geo import Volume3D, make_latlng_rect
+from monitoring.monitorlib.geo import make_latlng_rect
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.subscription_params import SubscriptionParams
-from monitoring.monitorlib.temporal import Time
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.uss_qualifier.resources.resource import Resource
+from monitoring.uss_qualifier.resources.volume import VolumeResource
 
 
 class PlanningAreaSpecification(ImplicitDict):
-    """Specifies a 2D or 3D volume along with USS related information to create test resources that require them."""
+    """Specifies a 2D, 3D or 4D volume to be used in flight planning activities.
+    - The base_url is directly declared in this specification
+    - The volume itself is declared separately and passed as a dependency: see resource.VolumeResource for details.
+    """
 
     base_url: str | None
     """Base URL for the USS
@@ -32,22 +36,42 @@ class PlanningAreaSpecification(ImplicitDict):
     If not specified, a fake URL will be generated at runtime according to the test in which the resource is being
     used."""
 
-    volume: Volume3D
-    """3D volume of service area"""
-
-    def get_volume4d(
-        self, time_start: datetime.datetime, time_end: datetime.datetime
-    ) -> Volume4D:
-        return Volume4D(
-            volume=self.volume,
-            time_start=Time(time_start),
-            time_end=Time(time_end),
-        )
-
     def get_base_url(self, frames_above: int = 1):
         if "base_url" in self and self.base_url is not None:
             return self.base_url
         return make_fake_url(frames_above=frames_above + 1)
+
+
+class PlanningAreaResource(Resource[PlanningAreaSpecification]):
+    specification: PlanningAreaSpecification
+    _volume: VolumeResource
+
+    def __init__(
+        self,
+        specification: PlanningAreaSpecification,
+        resource_origin: str,
+        volume: VolumeResource,
+    ):
+        super().__init__(specification, resource_origin)
+        self.specification = specification
+        self._volume = volume
+
+    def resolved_volume4d(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
+        return self._volume.specification.template.resolve(times)
+
+    def resolved_volume4d_with_times(
+        self, time_start: datetime.datetime | None, time_end: datetime.datetime | None
+    ) -> Volume4D:
+        """resolves this resource to a Volume4D via #resolved_volume4d(), but overrides the time_start and time_end with the provided values"""
+        # TODO #1053 we may want to migrate all callers to using resolved_volume4d() with a proper 'times' dict and relevant
+        # scenario configurations instead of passing explicit times.
+        # Alternatively we could fill in the times map here with all possible options defined
+        # to ensure resolution works correctly, and then override the times anyway.
+        return Volume4D(
+            volume=self.resolved_volume4d({}).volume,
+            time_start=Time(time_start) if time_start else None,
+            time_end=Time(time_end) if time_end else None,
+        )
 
     def get_new_subscription_params(
         self,
@@ -61,22 +85,23 @@ class PlanningAreaSpecification(ImplicitDict):
         Builds a dict of parameters that can be used to create a subscription, using this ISA's parameters
         and the passed start time and duration
         """
+        v4d = self.resolved_volume4d_with_times(start_time, start_time + duration)
         return SubscriptionParams(
             sub_id=subscription_id,
-            area_vertices=make_latlng_rect(self.volume),
+            area_vertices=make_latlng_rect(v4d.volume),
             min_alt_m=(
                 None
-                if self.volume.altitude_lower is None
-                else self.volume.altitude_lower_wgs84_m()
+                if v4d.volume.altitude_lower is None
+                else v4d.volume.altitude_lower_wgs84_m()
             ),
             max_alt_m=(
                 None
-                if self.volume.altitude_upper is None
-                else self.volume.altitude_upper_wgs84_m()
+                if v4d.volume.altitude_upper is None
+                else v4d.volume.altitude_upper_wgs84_m()
             ),
             start_time=start_time,
             end_time=start_time + duration,
-            base_url=self.get_base_url(frames_above=2),
+            base_url=self.specification.get_base_url(frames_above=2),
             notify_for_op_intents=notify_for_op_intents,
             notify_for_constraints=notify_for_constraints,
         )
@@ -102,7 +127,9 @@ class PlanningAreaSpecification(ImplicitDict):
         Note that this method allows building inconsistent parameters:
         """
         return PutOperationalIntentReferenceParameters(
-            extents=[self.get_volume4d(time_start, time_end).to_f3548v21()],
+            extents=[
+                self.resolved_volume4d_with_times(time_start, time_end).to_f3548v21()
+            ],
             key=key,
             state=state,
             uss_base_url=uss_base_url,
@@ -130,14 +157,8 @@ class PlanningAreaSpecification(ImplicitDict):
         as for testing authentication or parameter validation.
         """
         return PutConstraintReferenceParameters(
-            extents=[self.get_volume4d(time_start, time_end).to_f3548v21()],
-            uss_base_url=self.get_base_url(frames_above=2),
+            extents=[
+                self.resolved_volume4d_with_times(time_start, time_end).to_f3548v21()
+            ],
+            uss_base_url=self.specification.get_base_url(frames_above=2),
         )
-
-
-class PlanningAreaResource(Resource[PlanningAreaSpecification]):
-    specification: PlanningAreaSpecification
-
-    def __init__(self, specification: PlanningAreaSpecification, resource_origin: str):
-        super().__init__(specification, resource_origin)
-        self.specification = specification

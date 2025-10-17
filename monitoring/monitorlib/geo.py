@@ -207,6 +207,18 @@ class Altitude(ImplicitDict):
             units=fp_api.AltitudeUnits.M,
         )
 
+    def to_w84_m(self):
+        """This altitude expressed in WGS84 meters, if possible to convert to it."""
+        if self.reference != AltitudeDatum.W84:
+            raise NotImplementedError(
+                f"Cannot convert altitude with reference {self.reference} to WGS84 meters"
+            )
+        if self.units != DistanceUnits.M:
+            raise NotImplementedError(
+                f"Cannot convert altitude with units {self.units} to WGS84 meters"
+            )
+        return self.value
+
     @staticmethod
     def from_f3548v21(vol: f3548v21.Altitude | dict) -> Altitude:
         return ImplicitDict.parse(vol, Altitude)
@@ -297,7 +309,7 @@ class Volume3D(ImplicitDict):
 
         return footprint1.intersects(footprint2)
 
-    def transform(self, transformation: Transformation):
+    def transform(self, transformation: Transformation) -> Volume3D:
         if (
             "relative_translation" in transformation
             and transformation.relative_translation

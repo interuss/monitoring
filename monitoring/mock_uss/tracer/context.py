@@ -2,7 +2,7 @@ import yaml
 from implicitdict import StringBasedDateTime
 from yaml.representer import Representer
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.config import KEY_AUTH_SPEC, KEY_DSS_URL
 from monitoring.mock_uss.tracer.config import (
     KEY_TRACER_KML_FOLDER,
@@ -10,7 +10,7 @@ from monitoring.mock_uss.tracer.config import (
     KEY_TRACER_OUTPUT_FOLDER,
 )
 from monitoring.mock_uss.tracer.observation_areas import ObservationAreaID
-from monitoring.mock_uss.tracer.tracerlog import Logger
+from monitoring.mock_uss.tracer.tracerlog import DummyLogger, Logger
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.auth import make_auth_adapter
 from monitoring.monitorlib.fetch import scd
@@ -23,7 +23,7 @@ yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 scd_cache: dict[ObservationAreaID, dict[str, scd.FetchedEntity]] = {}
 
 
-def _get_tracer_logger() -> Logger | None:
+def _get_tracer_logger() -> Logger:
     kml_server = webapp.config[KEY_TRACER_KML_SERVER]
     kml_folder = webapp.config[KEY_TRACER_KML_FOLDER]
     output_folder = webapp.config[KEY_TRACER_OUTPUT_FOLDER]
@@ -36,7 +36,7 @@ def _get_tracer_logger() -> Logger | None:
         if kml_server
         else None
     )
-    return Logger(output_folder, kml_session) if output_folder else None
+    return Logger(output_folder, kml_session) if output_folder else DummyLogger()
 
 
 tracer_logger: Logger = _get_tracer_logger()
@@ -57,14 +57,15 @@ def resolve_auth_spec(requested_auth_spec: AuthSpec | None) -> AuthSpec:
         return requested_auth_spec
 
 
-def resolve_rid_dss_base_url(dss_base_url: str, rid_version: RIDVersion) -> str:
+def resolve_rid_dss_base_url(dss_base_url: str | None, rid_version: RIDVersion) -> str:
     if not dss_base_url:
-        if KEY_DSS_URL not in webapp.config or not webapp.config[KEY_DSS_URL]:
+        dss_base_url = webapp.config.get(KEY_DSS_URL)
+
+        if not dss_base_url:
             raise ValueError(
                 "DSS base URL was not specified explicitly nor in mock_uss_configuration"
             )
-        else:
-            dss_base_url = webapp.config[KEY_DSS_URL]
+
     if rid_version == RIDVersion.f3411_19:
         return dss_base_url
     elif rid_version == RIDVersion.f3411_22a:
@@ -75,14 +76,15 @@ def resolve_rid_dss_base_url(dss_base_url: str, rid_version: RIDVersion) -> str:
         )
 
 
-def resolve_scd_dss_base_url(dss_base_url: str) -> str:
+def resolve_scd_dss_base_url(dss_base_url: str | None) -> str:
     if not dss_base_url:
-        if KEY_DSS_URL not in webapp.config or not webapp.config[KEY_DSS_URL]:
+        dss_base_url = webapp.config.get(KEY_DSS_URL)
+
+        if not dss_base_url:
             raise ValueError(
                 "DSS base URL was not specified explicitly nor in mock_uss_configuration"
             )
-        else:
-            dss_base_url = webapp.config[KEY_DSS_URL]
+
     return dss_base_url
 
 

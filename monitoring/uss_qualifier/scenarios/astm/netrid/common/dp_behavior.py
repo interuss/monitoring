@@ -67,8 +67,8 @@ class DisplayProviderBehavior(GenericTestScenario):
         self._mock_uss = mock_uss.mock_uss
         self._dss_wrapper = DSSWrapper(self, dss_pool.dss_instances[0])
         self._isa_id = id_generator.id_factory.make_id(self.SUB_TYPE)
-        self._isa = isa.specification
-        self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._isa = isa
+        self._isa_area = isa.s2_vertices()
         self._identification = uss_identification
 
         isa_center = geo.center_of_mass(self._isa_area)

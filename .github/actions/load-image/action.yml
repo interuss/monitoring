@@ -1,0 +1,17 @@
+name: 'Load monitoring image'
+description: 'Load single monitoring image built by the build-monitoring-image job in the ci.yml workflow (composite action)'
+runs:
+  using: "composite"
+  steps:
+    - name: Download monitoring image
+      uses: actions/download-artifact@v5
+      with:
+        name: monitoring-docker-image
+        path: monitoring-image
+    - name: Load monitoring image
+      shell: bash
+      run: |
+        set -euo pipefail
+        docker load --input monitoring-image/monitoring-image.tar
+        cp monitoring-image/monitoring/image monitoring/image
+        rm -rf monitoring-image

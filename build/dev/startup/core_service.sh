@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 # This startup script is meant to be invoked from within a Docker container
 # started by docker-compose.yaml, not on a local system.
 

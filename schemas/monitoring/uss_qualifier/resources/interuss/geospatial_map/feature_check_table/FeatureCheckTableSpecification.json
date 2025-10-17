@@ -7,12 +7,28 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
+    "generate_at_runtime": {
+      "description": "Generate feature check table at runtime",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "FeatureCheckTableGenerationSpecification.json"
+        }
+      ]
+    },
     "table": {
-      "$ref": "../definitions/FeatureCheckTable.json"
+      "description": "Statically-defined feature check table",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../definitions/FeatureCheckTable.json"
+        }
+      ]
     }
   },
-  "required": [
-    "table"
-  ],
   "type": "object"
 }

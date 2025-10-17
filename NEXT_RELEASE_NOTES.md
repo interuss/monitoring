@@ -33,7 +33,7 @@ The release notes should contain at least the following sections:
 
 --------------------------------------------------------------------------------------------------------------------
 
-# Release Notes for v0.19.1
+# Release Notes for v0.21.0
 
 ## Mandatory migration tasks
 

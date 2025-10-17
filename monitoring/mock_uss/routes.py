@@ -3,7 +3,7 @@ import traceback
 import flask
 from werkzeug.exceptions import HTTPException
 
-from monitoring.mock_uss import enabled_services, webapp
+from monitoring.mock_uss.app import enabled_services, webapp
 from monitoring.mock_uss.logging import disable_log_reporting_for_request
 from monitoring.monitorlib import auth_validation, versioning
 

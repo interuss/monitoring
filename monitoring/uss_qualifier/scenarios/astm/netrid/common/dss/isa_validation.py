@@ -9,6 +9,7 @@ from uas_standards.astm.f3411 import v19, v22a
 from monitoring.monitorlib.fetch import QueryType, query_and_describe
 from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
@@ -45,9 +46,9 @@ class ISAValidation(GenericTestScenario):
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
         self._isa_id = id_generator.id_factory.make_id(ISAValidation.ISA_TYPE)
         self._isa_version: str | None = None
-        self._isa = isa.specification
+        self._isa = isa
 
-        self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._isa_area = isa.s2_vertices()
 
         self._huge_area = problematically_big_area.specification.s2_vertices()
 
@@ -65,7 +66,12 @@ class ISAValidation(GenericTestScenario):
             ValueError(f"Unsupported RID version '{self._dss.rid_version}'")
 
     def run(self, context: ExecutionContext):
-        self._shift_isa_time_relative_to_now()
+        times = {
+            TimeDuringTest.StartOfTestRun: Time(context.start_time),
+            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
+        }
+
+        self._resolve_isa_time_bounds(times)
 
         self.begin_test_scenario(context)
 
@@ -89,10 +95,9 @@ class ISAValidation(GenericTestScenario):
         self.end_test_case()
         self.end_test_scenario()
 
-    def _shift_isa_time_relative_to_now(self):
-        now = arrow.utcnow().datetime
-        self._isa_start_time = self._isa.shifted_time_start(now)
-        self._isa_end_time = self._isa.shifted_time_end(now)
+    def _resolve_isa_time_bounds(self, times: dict[TimeDuringTest, Time]):
+        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        self._isa_start_time, self._isa_end_time = self._isa.resolved_time_bounds(times)
 
     def _setup_case(self):
         self.begin_test_case("Setup")
@@ -202,8 +207,8 @@ class ISAValidation(GenericTestScenario):
                 area_vertices=self._isa_area,
                 alt_lo=self._isa.altitude_min,
                 alt_hi=self._isa.altitude_max,
-                start_time=self._isa.time_end.datetime,
-                end_time=self._isa.time_start.datetime,
+                start_time=self._isa_end_time,
+                end_time=self._isa_start_time,
                 uss_base_url=self._isa.base_url,
                 isa_id=self._isa_id,
                 isa_version=self._isa_version,
@@ -226,8 +231,8 @@ class ISAValidation(GenericTestScenario):
                 area_vertices=INVALID_VERTICES,
                 alt_lo=self._isa.altitude_min,
                 alt_hi=self._isa.altitude_max,
-                start_time=self._isa.time_start.datetime,
-                end_time=self._isa.time_end.datetime,
+                start_time=self._isa_start_time,
+                end_time=self._isa_end_time,
                 uss_base_url=self._isa.base_url,
                 isa_id=self._isa_id,
                 isa_version=self._isa_version,

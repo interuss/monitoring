@@ -1,3 +1,4 @@
+import flask
 import requests
 from uas_standards.eurocae_ed269 import ED269Schema
 from uas_standards.interuss.automated_testing.geo_awareness.v1.api import (
@@ -7,30 +8,32 @@ from uas_standards.interuss.automated_testing.geo_awareness.v1.api import (
     GeozoneSourceResponseResult,
 )
 
+from monitoring.mock_uss.geoawareness import database
 from monitoring.mock_uss.geoawareness.database import (
-    Database,
     ExistingRecordException,
     db,
 )
 
 
-def get_geozone_source(geozone_source_id: str):
+def get_geozone_source(geozone_source_id: str) -> tuple[flask.Response | str, int]:
     """This handler returns the state of a geozone source"""
 
-    source = Database.get_source(db, geozone_source_id)
+    source = database.get_source(db, geozone_source_id)
     if source is None:
         return f"source {geozone_source_id} not found or deleted", 404
     return (
-        GeozoneSourceResponse(result=GeozoneSourceResponseResult.Ready),
+        flask.jsonify(GeozoneSourceResponse(result=GeozoneSourceResponseResult.Ready)),
         200,
     )
 
 
-def create_geozone_source(id, source_definition: CreateGeozoneSourceRequest):
+def create_geozone_source(
+    id, source_definition: CreateGeozoneSourceRequest
+) -> tuple[flask.Response | str, int]:
     """This handler creates and activates a geozone source"""
 
     try:
-        source = Database.insert_source(
+        source = database.insert_source(
             db, id, source_definition, GeozoneSourceResponseResult.Activating
         )
     except ExistingRecordException:
@@ -41,12 +44,12 @@ def create_geozone_source(id, source_definition: CreateGeozoneSourceRequest):
             raw_data = requests.get(source.definition.https_source.url).json()
             if source.definition.https_source.format == GeozoneHttpsSourceFormat.ED_269:
                 geozones = ED269Schema.from_dict(raw_data)
-                Database.update_source_geozone_ed269(db, id, geozones)
-                source = Database.update_source_state(
+                database.update_source_geozone_ed269(db, id, geozones)
+                source = database.update_source_state(
                     db, id, GeozoneSourceResponseResult.Ready
                 )
         except ValueError as e:
-            source = Database.update_source_state(
+            source = database.update_source_state(
                 db,
                 id,
                 GeozoneSourceResponseResult.Error,
@@ -54,28 +57,32 @@ def create_geozone_source(id, source_definition: CreateGeozoneSourceRequest):
             )
 
     else:
-        source = Database.update_source_state(
+        source = database.update_source_state(
             db,
             id,
             GeozoneSourceResponseResult.Error,
             "Unsupported source definition. https_source only",
         )
-        return GeozoneSourceResponse(result=source.state, message=source.message), 400
+        return flask.jsonify(
+            GeozoneSourceResponse(result=source.state, message=source.message)
+        ), 400
 
-    return GeozoneSourceResponse(
-        result=source.state, message=source.get("message", None)
-    )
+    return flask.jsonify(
+        GeozoneSourceResponse(result=source.state, message=source.get("message", None))
+    ), 200
 
 
-def delete_geozone_source(geozone_source_id):
+def delete_geozone_source(geozone_source_id) -> tuple[flask.Response | str, int]:
     """This handler deactivates and deletes a geozone source"""
 
-    deleted_id = Database.delete_source(db, geozone_source_id)
+    deleted_id = database.delete_source(db, geozone_source_id)
 
     if deleted_id is None:
         return f"source {geozone_source_id} not found", 404
 
     return (
-        GeozoneSourceResponse(result=GeozoneSourceResponseResult.Deactivating),
+        flask.jsonify(
+            GeozoneSourceResponse(result=GeozoneSourceResponseResult.Deactivating)
+        ),
         200,
     )

@@ -3,10 +3,11 @@ from __future__ import annotations
 import glob
 import os
 import re
+from abc import abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import Enum
-from typing import Protocol
+from typing import Protocol, TypeVar
 
 import yaml
 from implicitdict import ImplicitDict
@@ -40,7 +41,8 @@ class Stopwatch:
         self._start_time = datetime.now(UTC)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.elapsed_time += datetime.now(UTC) - self._start_time
+        if self._start_time:
+            self.elapsed_time += datetime.now(UTC) - self._start_time
 
 
 class VolumeType(str, Enum):
@@ -57,10 +59,14 @@ class HistoricalVolumesCollection:
     active_at: datetime
 
 
-class HistoricalVolumesRenderer(Protocol):
+TracerLogEntryType = TypeVar("TracerLogEntryType", bound=TracerLogEntry)
+
+
+class HistoricalVolumesRenderer[TracerLogEntryType](Protocol):
+    @abstractmethod
     def __call__(
         self,
-        log_entry: TracerLogEntry,
+        log_entry: TracerLogEntryType,
         existing_volume_collections: list[HistoricalVolumesCollection],
     ) -> list[HistoricalVolumesCollection]:
         """Function that generates named collections of 4D volumes from a tracer log entry.
@@ -71,6 +77,7 @@ class HistoricalVolumesRenderer(Protocol):
 
         Returns: Collection of 4D volume collections.
         """
+        raise NotImplementedError
 
 
 @dataclass
@@ -126,6 +133,9 @@ def _historical_volumes_op_intent_notification(
     existing_volume_collections: list[HistoricalVolumesCollection],
 ) -> list[HistoricalVolumesCollection]:
     try:
+        if log_entry.request.json is None:
+            raise ValueError("No json data in log entry")
+
         req = ImplicitDict.parse(
             log_entry.request.json, PutOperationalIntentDetailsParameters
         )
@@ -136,7 +146,7 @@ def _historical_volumes_op_intent_notification(
         return []
     assert isinstance(req, PutOperationalIntentDetailsParameters)
 
-    claims = get_token_claims(log_entry.request.headers)
+    claims = get_token_claims(log_entry.request.headers or {})
     manager = claims.get("sub", "[Unknown manager]")
     name = f"{manager} {req.operational_intent_id}"
 
@@ -148,7 +158,7 @@ def _historical_volumes_op_intent_notification(
     else:
         version = "[deleted]"
         state = "Ended"
-        volumes = []
+        volumes = Volume4DCollection()
 
     # See if this op intent version already has a volumes collection
     already_defined = False
@@ -183,6 +193,9 @@ def _historical_volumes_op_intent_poll(
     # Add newly-polled operational intents
     for op_intent_id, query in log_entry.poll.uss_queries.items():
         try:
+            if query.json_result is None:
+                raise ValueError("No json result in query")
+
             resp = ImplicitDict.parse(
                 query.json_result, GetOperationalIntentDetailsResponse
             )
@@ -222,6 +235,9 @@ def _historical_volumes_op_intent_poll(
     # Remove any existing operational intents that no longer exist as of this poll
     for cached_op_intent_id, cached_query in log_entry.poll.cached_uss_queries.items():
         try:
+            if cached_query.json_result is None:
+                raise ValueError("No json result in query")
+
             resp = ImplicitDict.parse(
                 cached_query.json_result, GetOperationalIntentDetailsResponse
             )
@@ -274,26 +290,38 @@ class VolumesFolder:
     def truncate(self, latest_time: Time) -> None:
         to_remove = []
         for v in self.volumes:
-            if v.volume.time_start.datetime > latest_time.datetime:
+            if (
+                v.volume.time_start
+                and v.volume.time_start.datetime > latest_time.datetime
+            ):
                 to_remove.append(v)
-            elif v.volume.time_end.datetime > latest_time.datetime:
+            elif (
+                v.volume.time_end and v.volume.time_end.datetime > latest_time.datetime
+            ):
                 v.volume.time_end = latest_time
         for v in to_remove:
             self.volumes.remove(v)
         for c in self.children:
             c.truncate(latest_time)
 
-    def to_kml_folder(self) -> kml.Folder:
-        def dt(t: Time) -> int:
-            return round((t.datetime - self.reference_time.datetime).total_seconds())
-
+    def to_kml_folder(self):
         if self.reference_time:
             description = f"Relative to {self.reference_time}"
             folder = kml.Folder(kml.name(self.name), kml.description(description))
         else:
             folder = kml.Folder(kml.name(self.name))
+
         for v in self.volumes:
-            name = f"{v.name} {dt(v.volume.time_start)}s-{dt(v.volume.time_end)}s"
+            name = v.name
+
+            if self.reference_time:
+                base_time = self.reference_time.datetime
+
+                def dt(t: Time) -> int:
+                    return round((t.datetime - base_time).total_seconds())
+
+                name = f"{name} {dt(v.volume.time_start) if v.volume.time_start else '?'}s-{dt(v.volume.time_end) if v.volume.time_end else '?'}s"
+
             folder.append(
                 make_placemark_from_volume(v.volume, name=name, style_url=v.style)
             )
@@ -323,6 +351,8 @@ def render_historical_kml(log_folder: str) -> str:
     log_files = glob.glob(os.path.join(log_folder, "*.yaml"))
     log_files.sort()
     for log_file in log_files:
+        logger.debug(f"Processing {log_file}")
+
         if "nochange_queries" in log_file:
             continue  # This is a known case where we don't want to print a warning
 
@@ -408,13 +438,13 @@ def render_historical_kml(log_folder: str) -> str:
             version_folder.children.append(future_folder)
 
             for i, v in enumerate(hvc.volumes):
-                if v.time_end.datetime <= hvc.active_at:
+                if v.time_end and v.time_end.datetime <= hvc.active_at:
                     # This volume ended before the collection was declared, so it never actually existed
                     continue
-                if v.time_start.datetime < hvc.active_at:
+                if v.time_start and v.time_start.datetime < hvc.active_at:
                     # Volume is declared in the past, but it's only visible starting now
                     v.time_start = t_hvc
-                elif v.time_start.datetime > hvc.active_at:
+                elif v.time_start and v.time_start.datetime > hvc.active_at:
                     # Add a "future" volume between when this volume was declared and its start time
                     future_v = Volume4D(v)
                     future_v.time_end = v.time_start

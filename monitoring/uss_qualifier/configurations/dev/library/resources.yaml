@@ -21,32 +21,11 @@ id_generator:
     client_identity: utm_client_identity
   specification: { }
 
-kentland_service_area:
+kentland_service_area_volume:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.netrid.ServiceAreaResource
+  resource_type: resources.VolumeResource
   specification:
-    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/kentland_service_area
-    footprint:
-      - lat: 37.1853
-        lng: -80.6140
-      - lat: 37.2148
-        lng: -80.6140
-      - lat: 37.2148
-        lng: -80.5440
-      - lat: 37.1853
-        lng: -80.5440
-    altitude_min: 0
-    altitude_max: 3048
-    reference_time: '2023-01-10T00:00:00.123456+00:00'
-    time_start: '2023-01-10T00:00:01.123456+00:00'
-    time_end: '2023-01-10T01:00:01.123456+00:00'
-
-kentland_planning_area:
-  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.PlanningAreaResource
-  specification:
-    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/kentland_planning_area
-    volume:
+    template:
       outline_polygon:
         vertices:
           - lat: 37.1853
@@ -65,6 +44,56 @@ kentland_planning_area:
         value: 3048
         reference: W84
         units: M
+      start_time:
+        offset_from:
+          starting_from:
+            time_during_test: TimeOfEvaluation
+          offset: 1s
+      end_time:
+        offset_from:
+          starting_from:
+            time_during_test: TimeOfEvaluation
+          offset: 1h0m1s
+
+kentland_service_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.netrid.ServiceAreaResource
+  dependencies:
+    volume: kentland_service_area_volume
+  specification:
+    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/kentland_service_area
+
+kentland_planning_area_volume:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.VolumeResource
+  specification:
+    template:
+      outline_polygon:
+        vertices:
+          - lat: 37.1853
+            lng: -80.6140
+          - lat: 37.2148
+            lng: -80.6140
+          - lat: 37.2148
+            lng: -80.5440
+          - lat: 37.1853
+            lng: -80.5440
+      altitude_lower:
+        value: 0
+        reference: W84
+        units: M
+      altitude_upper:
+        value: 3048
+        reference: W84
+        units: M
+
+kentland_planning_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.PlanningAreaResource
+  dependencies:
+    volume: kentland_planning_area_volume
+  specification:
+    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/kentland_planning_area
 
 au_problematically_big_area: # A huge (as in "too big") area for checks around area sizes
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -97,38 +126,11 @@ kentland_problematically_big_area:
           - lat: 38
             lng: -80
 
-zurich_service_area:
+zurich_service_area_volume:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.netrid.ServiceAreaResource
+  resource_type: resources.VolumeResource
   specification:
-    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/zurich_service_area
-    footprint:
-      - lat: 47.45237618874023
-        lng: 8.337401667996478
-      - lat: 47.38882810764797
-        lng: 8.343217430398902
-      - lat: 47.3643466256706
-        lng: 8.389932768382156
-      - lat: 47.36323038495268
-        lng: 8.536070011827881
-      - lat: 47.36909451406398
-        lng: 8.580678976356925
-      - lat: 47.4007874493574
-        lng: 8.57764881798931
-      - lat: 47.451319730511365
-        lng: 8.46442103543102
-    altitude_min: 0
-    altitude_max: 1000
-    reference_time: '2025-10-15T00:00:00.123456+00:00'
-    time_start: '2025-10-15T00:00:01.123456+00:00'
-    time_end: '2025-10-15T01:00:01.123456+00:00'
-
-zurich_planning_area:
-  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.PlanningAreaResource
-  specification:
-    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/zurich_planning_area
-    volume:
+    template:
       outline_polygon:
         vertices:
           - lat: 47.45237618874023
@@ -153,6 +155,62 @@ zurich_planning_area:
         value: 1000
         reference: W84
         units: M
+      start_time:
+        offset_from:
+          starting_from:
+            time_during_test: TimeOfEvaluation
+          offset: 1s
+      end_time:
+        offset_from:
+          starting_from:
+            time_during_test: TimeOfEvaluation
+          offset: 1h0m1s
+
+zurich_service_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.netrid.ServiceAreaResource
+  dependencies:
+    volume: zurich_service_area_volume
+  specification:
+    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/zurich_service_area
+
+zurich_planning_area_volume:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.VolumeResource
+  specification:
+    template:
+      outline_polygon:
+        vertices:
+          - lat: 47.45237618874023
+            lng: 8.337401667996478
+          - lat: 47.38882810764797
+            lng: 8.343217430398902
+          - lat: 47.3643466256706
+            lng: 8.389932768382156
+          - lat: 47.36323038495268
+            lng: 8.536070011827881
+          - lat: 47.36909451406398
+            lng: 8.580678976356925
+          - lat: 47.4007874493574
+            lng: 8.57764881798931
+          - lat: 47.451319730511365
+            lng: 8.46442103543102
+      altitude_lower:
+        value: 0
+        reference: W84
+        units: M
+      altitude_upper:
+        value: 1000
+        reference: W84
+        units: M
+
+zurich_planning_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.PlanningAreaResource
+  dependencies:
+    volume: zurich_planning_area_volume
+  specification:
+    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/zurich_planning_area
 
 zurich_problematically_big_area: # A huge (as in "too big") area for checks around area sizes
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -219,13 +277,11 @@ kml_storage_config:
     flight_record_collection_path: "./output/generate_rid_test_data/flight_data/test_data.usa.netrid.dcdemo_flights.json"
 
 # ===== Flight planning intents =====
-
-che_planning_area:
+che_planning_area_volume:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-  resource_type: resources.PlanningAreaResource
+  resource_type: resources.VolumeResource
   specification:
-    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/che_planning_area
-    volume:
+    template:
       outline_polygon:
         vertices:
           - lat: 45.1853
@@ -244,6 +300,14 @@ che_planning_area:
         value: 3048
         reference: W84
         units: M
+
+che_planning_area:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.PlanningAreaResource
+  dependencies:
+    volume: che_planning_area_volume
+  specification:
+    base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/che_planning_area
 
 che_problematically_big_area:
   resource_type: resources.VolumeResource
@@ -457,6 +521,17 @@ example_feature_check_table:
                       offset: 12h
               duration: 5m
           expected_result: Advise
+
+generated_feature_check_table:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.interuss.geospatial_map.FeatureCheckTableResource
+  specification:
+    generate_at_runtime:
+      dict_resources:
+        geojson_example:
+          path: test_data.aus.incidents
+      jsonnet_script:
+        path: test_data.aus.incident_translator
 
 # ===== mock_uss behavioral control =====
 
