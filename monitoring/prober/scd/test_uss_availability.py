@@ -17,11 +17,13 @@ def test_set_uss_availability(ids, scd_session2):
     )
 
     if resp.status_code == 409:
-      # record already exists, retrieving version to mutate
-      _, _, version = _get_uss_availability("uss1", scd_session2)
-      resp = scd_session2.put(
-        "/uss_availability/uss1", scope=SCOPE_AA, json={"availability": "normal", "old_version": version}
-      )
+        # record already exists, retrieving version to mutate
+        _, _, version = _get_uss_availability("uss1", scd_session2)
+        resp = scd_session2.put(
+            "/uss_availability/uss1",
+            scope=SCOPE_AA,
+            json={"availability": "normal", "old_version": version},
+        )
 
     data = resp.json()
     assert data["status"]["uss"] == "uss1"
