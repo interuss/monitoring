@@ -396,15 +396,6 @@ class GenericTestScenario(ABC):
             )
         self._begin_test_step(available_steps[name])
 
-    def begin_dynamic_test_step(self, step: TestStepDocumentation) -> None:
-        self._expect_phase(ScenarioPhase.ReadyForTestStep)
-        available_steps = {c.name: c for c in self._current_case.steps}
-        if "Dynamic" not in available_steps:
-            raise RuntimeError(
-                f'Test scenario `{self.me()}` was instructed to begin_dynamic_test_step "{step.name}" during test case "{self._current_case.name}", but there is no "Dynamic test step" declared in documentation.'
-            )
-        self._begin_test_step(step)
-
     def _begin_test_step(self, step: TestStepDocumentation) -> None:
         self._current_step = step
         self._step_report = TestStepReport(

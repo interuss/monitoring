@@ -36,6 +36,7 @@ local validation = import './library/validation.yaml';
     artifacts: {
       raw_report: {},
       sequence_view: {},
+      globally_expanded_report: {},
       tested_requirements: [
         {
           report_name: 'requirements',
