@@ -81,8 +81,9 @@ class OIRSimple(TestScenario):
 
         self._planning_area = planning_area
 
-        # TODO #1053 proper times for resolution
-        self._planning_area_volume4d = self._planning_area.resolved_volume4d({})
+        self._planning_area_volume4d = self._planning_area.resolved_volume4d_with_times(
+            None, None
+        )
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)

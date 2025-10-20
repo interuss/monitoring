@@ -62,13 +62,10 @@ class PlanningAreaResource(Resource[PlanningAreaSpecification]):
     def resolved_volume4d_with_times(
         self, time_start: datetime.datetime | None, time_end: datetime.datetime | None
     ) -> Volume4D:
-        """resolves this resource to a Volume4D via #resolved_volume4d(), but overrides the time_start and time_end with the provided values"""
-        # TODO #1053 we may want to migrate all callers to using resolved_volume4d() with a proper 'times' dict and relevant
-        # scenario configurations instead of passing explicit times.
-        # Alternatively we could fill in the times map here with all possible options defined
-        # to ensure resolution works correctly, and then override the times anyway.
+        """resolves this resource's underlying volume template to a 3D volume and use it as a base for a 4D volume
+        with the provided time bounds"""
         return Volume4D(
-            volume=self.resolved_volume4d({}).volume,
+            volume=self._volume.specification.template.resolve_3d(),
             time_start=Time(time_start) if time_start else None,
             time_end=Time(time_end) if time_end else None,
         )

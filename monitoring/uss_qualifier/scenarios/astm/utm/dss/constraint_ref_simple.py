@@ -4,7 +4,6 @@ from uas_standards.astm.f3548.v21.api import EntityID
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -28,14 +27,15 @@ class CRSimple(TestScenario):
     """
 
     CR_TYPE = register_resource_type(397, "Constraint Reference")
+    CR_DURATION = timedelta(minutes=20)
 
     _dss: DSSInstance
 
     _cr_id: EntityID
+    _cr_start_time: datetime | None
 
     _expected_manager: str
     _planning_area: PlanningAreaResource
-    _planning_area_volume4d: Volume4D
 
     def __init__(
         self,
@@ -64,12 +64,12 @@ class CRSimple(TestScenario):
 
         self._planning_area = planning_area
 
-        # TODO #1053: pass proper times dict
-        self._planning_area_volume4d = self._planning_area.resolved_volume4d({})
-
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
-        self._setup_case()
+
+        self._cr_start_time = datetime.now() - timedelta(seconds=10)
+
+        self._setup_case(self._cr_start_time)
 
         self.begin_test_case("Deletion requires correct OVN")
         self._step_attempt_delete_missing_ovn()
@@ -83,10 +83,10 @@ class CRSimple(TestScenario):
 
         self.end_test_scenario()
 
-    def _step_create_cr(self):
+    def _step_create_cr(self, start_time: datetime):
         cr_params = self._planning_area.get_new_constraint_ref_params(
-            time_start=datetime.now() - timedelta(seconds=10),
-            time_end=datetime.now() + timedelta(minutes=20),
+            time_start=start_time,
+            time_end=start_time + self.CR_DURATION,
         )
 
         self.begin_test_step("Create a constraint reference")
@@ -248,22 +248,24 @@ class CRSimple(TestScenario):
                     )
         self.end_test_step()
 
-    def _setup_case(self):
+    def _setup_case(self, cr_start_time: datetime):
         self.begin_test_case("Setup")
         self.begin_test_step("Ensure clean workspace")
-        self._ensure_clean_workspace_step()
+        self._ensure_clean_workspace_step(cr_start_time)
         self.end_test_step()
 
-        self._step_create_cr()
+        self._step_create_cr(cr_start_time)
 
         self.end_test_case()
 
-    def _ensure_clean_workspace_step(self):
+    def _ensure_clean_workspace_step(self, start_time: datetime):
         # Delete any active CR we might own
         test_step_fragments.cleanup_active_constraint_refs(
             self,
             self._dss,
-            self._planning_area_volume4d.to_f3548v21(),
+            self._planning_area.resolved_volume4d_with_times(
+                start_time, start_time
+            ).to_f3548v21(),
             self._expected_manager,
         )
 
@@ -272,5 +274,8 @@ class CRSimple(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        self._ensure_clean_workspace_step()
+        start_time = (
+            self._cr_start_time if self._cr_start_time is not None else datetime.now()
+        )
+        self._ensure_clean_workspace_step(start_time)
         self.end_cleanup()
