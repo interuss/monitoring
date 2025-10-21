@@ -358,7 +358,6 @@ class RIDObservationEvaluator:
         else:
             self._evaluate_normal_observation(
                 observer,
-                rect,
                 observation,
                 query,
                 verified_sps,
@@ -367,7 +366,6 @@ class RIDObservationEvaluator:
     def _evaluate_normal_observation(
         self,
         observer: RIDSystemObserver,
-        rect: s2sphere.LatLngRect,
         observation: GetDisplayDataResponse,
         query: fetch.Query,
         verified_sps: set[str],
