@@ -249,6 +249,8 @@ The test driver modifies (activated) Flight 2 with the control USS so that it is
 flight of test USS.
 As Flight 2 is of higher priority, this should succeed and leave Flight 1 clear of conflict.
 
+If flight modification is not supported by the USS, the next test step is going to be skipped and the test case will end here.
+
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
 ### Attempt to modify activated Flight 1 in conflict test step

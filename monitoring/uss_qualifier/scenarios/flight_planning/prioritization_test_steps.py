@@ -81,6 +81,10 @@ def modify_planned_priority_conflict_flight(
                 PlanningActivityResult.Rejected,
                 FlightPlanStatus.Closed,
             ),  # case where the USS closes the flight plan as a result of the rejected modification attempt
+            (
+                PlanningActivityResult.NotSupported,
+                FlightPlanStatus.Planned,
+            ),  # case where the USS does not support modification of flights
         },
         failed_checks={PlanningActivityResult.Failed: "Failure"},
         flight_planner=flight_planner,
@@ -163,6 +167,10 @@ def modify_activated_priority_conflict_flight(
                 PlanningActivityResult.Rejected,
                 FlightPlanStatus.Closed,
             ),  # case where the USS closes the flight plan as a result of the rejected modification attempt; note: is this actually desirable if the flight was activated?
+            (
+                PlanningActivityResult.NotSupported,
+                FlightPlanStatus.OkToFly,
+            ),  # case where the USS does not support modification of flights
         },
         failed_checks={PlanningActivityResult.Failed: "Failure"},
         flight_planner=flight_planner,
@@ -235,6 +243,10 @@ def modify_planned_conflict_flight(
                 PlanningActivityResult.Rejected,
                 FlightPlanStatus.Closed,
             ),  # case where the USS closes the flight plan as a result of the rejected modification attempt
+            (
+                PlanningActivityResult.NotSupported,
+                FlightPlanStatus.Planned,
+            ),  # case where the USS does not support modification of flights
         },
         failed_checks={PlanningActivityResult.Failed: "Failure"},
         flight_planner=flight_planner,
@@ -317,6 +329,10 @@ def modify_activated_conflict_flight(
                 PlanningActivityResult.Rejected,
                 FlightPlanStatus.Closed,
             ),  # case where the USS closes the flight plan as a result of the rejected modification attempt; note: is this actually desirable if the flight was activated?
+            (
+                PlanningActivityResult.NotSupported,
+                FlightPlanStatus.OkToFly,
+            ),  # case where the USS does not support modification of flights
         },
         failed_checks={PlanningActivityResult.Failed: "Failure"},
         flight_planner=flight_planner,
