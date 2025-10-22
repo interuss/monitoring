@@ -32,7 +32,7 @@ class CRSimple(TestScenario):
     _dss: DSSInstance
 
     _cr_id: EntityID
-    _cr_start_time: datetime | None
+    _cr_start_time: datetime
 
     _expected_manager: str
     _planning_area: PlanningAreaResource
@@ -59,6 +59,7 @@ class CRSimple(TestScenario):
         self._pid = [self._dss.participant_id]
 
         self._cr_id = id_generator.id_factory.make_id(self.CR_TYPE)
+        self._cr_start_time = datetime.now()
 
         self._expected_manager = client_identity.subject()
 
@@ -69,7 +70,7 @@ class CRSimple(TestScenario):
 
         self._cr_start_time = datetime.now() - timedelta(seconds=10)
 
-        self._setup_case(self._cr_start_time)
+        self._setup_case()
 
         self.begin_test_case("Deletion requires correct OVN")
         self._step_attempt_delete_missing_ovn()
@@ -83,10 +84,10 @@ class CRSimple(TestScenario):
 
         self.end_test_scenario()
 
-    def _step_create_cr(self, start_time: datetime):
+    def _step_create_cr(self):
         cr_params = self._planning_area.get_new_constraint_ref_params(
-            time_start=start_time,
-            time_end=start_time + self.CR_DURATION,
+            time_start=self._cr_start_time,
+            time_end=self._cr_start_time + self.CR_DURATION,
         )
 
         self.begin_test_step("Create a constraint reference")
@@ -248,23 +249,24 @@ class CRSimple(TestScenario):
                     )
         self.end_test_step()
 
-    def _setup_case(self, cr_start_time: datetime):
+    def _setup_case(self):
         self.begin_test_case("Setup")
         self.begin_test_step("Ensure clean workspace")
-        self._ensure_clean_workspace_step(cr_start_time)
+        self._ensure_clean_workspace_step()
         self.end_test_step()
 
-        self._step_create_cr(cr_start_time)
+        self._step_create_cr()
 
         self.end_test_case()
 
-    def _ensure_clean_workspace_step(self, start_time: datetime):
+    def _ensure_clean_workspace_step(self):
         # Delete any active CR we might own
         test_step_fragments.cleanup_active_constraint_refs(
             self,
             self._dss,
             self._planning_area.resolved_volume4d_with_times(
-                start_time, start_time
+                self._cr_start_time,
+                self._cr_start_time + self.CR_DURATION,
             ).to_f3548v21(),
             self._expected_manager,
         )
@@ -274,8 +276,5 @@ class CRSimple(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        start_time = (
-            self._cr_start_time if self._cr_start_time is not None else datetime.now()
-        )
-        self._ensure_clean_workspace_step(start_time)
+        self._ensure_clean_workspace_step()
         self.end_cleanup()

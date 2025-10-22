@@ -10,7 +10,6 @@ from uas_standards.astm.f3548.v21.api import (
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -50,7 +49,6 @@ class OIRSimple(TestScenario):
     _current_oir_params: PutOperationalIntentReferenceParameters | None
     _expected_manager: str
     _planning_area: PlanningAreaResource
-    _planning_area_volume4d: Volume4D
 
     def __init__(
         self,
@@ -80,10 +78,6 @@ class OIRSimple(TestScenario):
         self._expected_manager = client_identity.subject()
 
         self._planning_area = planning_area
-
-        self._planning_area_volume4d = self._planning_area.resolved_volume4d_with_times(
-            None, None
-        )
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
@@ -319,10 +313,11 @@ class OIRSimple(TestScenario):
 
     def _clean_all_oirs(self):
         # Delete any active OIR we might own
+        vol = self._planning_area.resolved_volume4d_with_times(None, None)
         test_step_fragments.cleanup_active_oirs(
             self,
             self._dss,
-            self._planning_area_volume4d.to_f3548v21(),
+            vol.to_f3548v21(),
             self._expected_manager,
         )
 
