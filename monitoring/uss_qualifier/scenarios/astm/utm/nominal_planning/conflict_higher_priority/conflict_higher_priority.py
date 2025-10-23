@@ -483,14 +483,22 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             flight2m_activated,
             flight_2_oi_ref,
         ) as validator:
-            modify_activated_flight(
+            resp = modify_activated_flight(
                 self,
                 self.control_uss,
                 flight2m_activated,
                 self.flight2_id,
             )
-            validator.expect_shared(flight2m_activated)
+            if resp.activity_result == PlanningActivityResult.Completed:
+                validator.expect_shared(flight2m_activated)
         self.end_test_step()
+
+        if resp.activity_result == PlanningActivityResult.NotSupported:
+            self.record_note(
+                "conflict_higher_priority_skip_step",
+                f"Skip next step since USS {self.control_uss} did not modify flight 2.",
+            )
+            return
 
         self.begin_test_step("Attempt to modify activated Flight 1 in conflict")
         flight1c_activated = self.resolve_flight(self.flight1c_activated)

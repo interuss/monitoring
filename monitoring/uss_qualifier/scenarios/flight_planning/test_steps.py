@@ -111,7 +111,13 @@ def modify_planned_flight(
     return submit_flight(
         scenario=scenario,
         success_check="Successful modification",
-        expected_results={(PlanningActivityResult.Completed, FlightPlanStatus.Planned)},
+        expected_results={
+            (PlanningActivityResult.Completed, FlightPlanStatus.Planned),
+            (
+                PlanningActivityResult.NotSupported,
+                FlightPlanStatus.Planned,
+            ),  # case where the USS does not support modification of flights
+        },
         failed_checks={PlanningActivityResult.Failed: "Failure"},
         flight_planner=flight_planner,
         flight_info=flight_info,
@@ -178,7 +184,11 @@ def modify_activated_flight(
             scenario=scenario,
             success_check="Successful modification",
             expected_results={
-                (PlanningActivityResult.Completed, FlightPlanStatus.OkToFly)
+                (PlanningActivityResult.Completed, FlightPlanStatus.OkToFly),
+                (
+                    PlanningActivityResult.NotSupported,
+                    FlightPlanStatus.OkToFly,
+                ),  # case where the USS does not support modification of flights
             },
             failed_checks={PlanningActivityResult.Failed: "Failure"},
             flight_planner=flight_planner,
