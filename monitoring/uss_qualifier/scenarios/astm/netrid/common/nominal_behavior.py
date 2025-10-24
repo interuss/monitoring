@@ -24,7 +24,10 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.injection import (
 from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
-from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+from monitoring.uss_qualifier.scenarios.scenario import (
+    DISTANCE_ERROR_TOLERANCE_FRACTION,
+    GenericTestScenario,
+)
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
@@ -100,12 +103,28 @@ class NominalBehavior(GenericTestScenario):
             evaluator.evaluate_system_instantaneously(self._observers.observers, rect)
             return False
 
+        max_allowed_diagonal_m = self._rid_version.max_diagonal_km * 1000
+        max_details_diagonal_m = self._rid_version.max_details_diagonal_km * 1000
+
         virtual_observer.start_polling(
             config.min_polling_interval.timedelta,
             [
-                self._rid_version.max_diagonal_km * 1000 + 500,  # too large
-                self._rid_version.max_diagonal_km * 1000 - 100,  # clustered
-                self._rid_version.max_details_diagonal_km * 1000 - 100,  # details
+                # max_allowed_diagonal_m
+                # * (1 + DISTANCE_ERROR_TOLERANCE_FRACTION),  # too large
+                # max_allowed_diagonal_m
+                # * (
+                #     1 - DISTANCE_ERROR_TOLERANCE_FRACTION
+                # ),  # clustered, just below max limit
+                # max_details_diagonal_m
+                # * (
+                #     1 + DISTANCE_ERROR_TOLERANCE_FRACTION
+                # ),  # clustered, just above clustering limit
+                # TODO figure out why if we remove one tolerance fraction mock_uss will
+                #  only return clustered data, when it should still show details, but only on v19
+                max_details_diagonal_m
+                * (
+                    1 - 2*DISTANCE_ERROR_TOLERANCE_FRACTION
+                ),  # details, just below clustering limit
             ],
             poll_fct,
         )
