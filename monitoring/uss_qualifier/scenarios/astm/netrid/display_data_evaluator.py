@@ -1031,9 +1031,6 @@ class DisconnectedUASObservationEvaluator:
             raise ValueError(
                 f"Cannot evaluate a system using RID version {rid_version} with a DSS using RID version {dss.rid_version}"
             )
-        self._retrieved_flight_details: set[str] = (
-            set()
-        )  # Contains the observed IDs of the flights whose details were retrieved.
 
         # Keep track of the flights that we have observed as having been 'disconnected'
         # (last observed telemetry corresponds to last injected one within the window where data is returned)
