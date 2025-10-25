@@ -262,9 +262,8 @@ class RIDObservationEvaluator:
             raise ValueError(
                 f"Cannot evaluate a system using RID version {rid_version} with a DSS using RID version {dss.rid_version}"
             )
-        self._retrieved_flight_details: set[str] = (
-            set()
-        )  # Contains the observed IDs of the flights whose details were retrieved.
+        # dict of observer (identified by its base_url) to set of flight ID for which details were retrieved.
+        self._retrieved_flight_details: dict[str, set[str]] = {}
 
     def evaluate_system_instantaneously(
         self,
@@ -454,14 +453,18 @@ class RIDObservationEvaluator:
                         ),
                     )
 
-        # Check details of flights (once per flight)
+        # Check details of flights (once per flight and per observer)
         for mapping in mapping_by_injection_id.values():
             with self._test_scenario.check(
                 "Successful details observation",
                 [mapping.injected_flight.uss_participant_id],
             ) as check:
-                # query for flight details only once per flight
-                if mapping.observed_flight.id in self._retrieved_flight_details:
+                # query for flight details only once per flight and per observer
+                if (
+                    observer.base_url in self._retrieved_flight_details
+                    and mapping.observed_flight.id
+                    in self._retrieved_flight_details[observer.base_url]
+                ):
                     continue
 
                 details_obs, query = observer.observe_flight_details(
@@ -484,7 +487,13 @@ class RIDObservationEvaluator:
                     details_inj = mapping.injected_flight.flight.get_details(
                         telemetry_inj.timestamp.datetime
                     )
-                    self._retrieved_flight_details.add(mapping.observed_flight.id)
+
+                    if observer.base_url not in self._retrieved_flight_details:
+                        self._retrieved_flight_details[observer.base_url] = set()
+                    self._retrieved_flight_details[observer.base_url].add(
+                        mapping.observed_flight.id
+                    )
+
                     self._common_dictionary_evaluator.evaluate_dp_details(
                         details_inj,
                         details_obs,
@@ -1022,9 +1031,6 @@ class DisconnectedUASObservationEvaluator:
             raise ValueError(
                 f"Cannot evaluate a system using RID version {rid_version} with a DSS using RID version {dss.rid_version}"
             )
-        self._retrieved_flight_details: set[str] = (
-            set()
-        )  # Contains the observed IDs of the flights whose details were retrieved.
 
         # Keep track of the flights that we have observed as having been 'disconnected'
         # (last observed telemetry corresponds to last injected one within the window where data is returned)
