@@ -20,7 +20,8 @@ Verifies the behavior of a DSS for simple interactions pertaining to operational
 
 ### planning_area
 
-[`PlanningAreaResource`](../../../../resources/planning_area.py) describes the 3D volume in which operational intent references will be created.
+[`PlanningAreaResource`](../../../../resources/planning_area.py) describes the 3D volume in which operational intent references will be created. Note that any start or end times specified in the underlying volume template
+will be ignored.
 
 ## Setup test case
 

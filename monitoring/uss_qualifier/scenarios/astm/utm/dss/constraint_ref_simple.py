@@ -4,7 +4,6 @@ from uas_standards.astm.f3548.v21.api import EntityID
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -28,14 +27,15 @@ class CRSimple(TestScenario):
     """
 
     CR_TYPE = register_resource_type(397, "Constraint Reference")
+    CR_DURATION = timedelta(minutes=20)
 
     _dss: DSSInstance
 
     _cr_id: EntityID
+    _cr_start_time: datetime
 
     _expected_manager: str
     _planning_area: PlanningAreaResource
-    _planning_area_volume4d: Volume4D
 
     def __init__(
         self,
@@ -59,16 +59,17 @@ class CRSimple(TestScenario):
         self._pid = [self._dss.participant_id]
 
         self._cr_id = id_generator.id_factory.make_id(self.CR_TYPE)
+        self._cr_start_time = datetime.now()
 
         self._expected_manager = client_identity.subject()
 
         self._planning_area = planning_area
 
-        # TODO #1053: pass proper times dict
-        self._planning_area_volume4d = self._planning_area.resolved_volume4d({})
-
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
+
+        self._cr_start_time = datetime.now() - timedelta(seconds=10)
+
         self._setup_case()
 
         self.begin_test_case("Deletion requires correct OVN")
@@ -85,8 +86,8 @@ class CRSimple(TestScenario):
 
     def _step_create_cr(self):
         cr_params = self._planning_area.get_new_constraint_ref_params(
-            time_start=datetime.now() - timedelta(seconds=10),
-            time_end=datetime.now() + timedelta(minutes=20),
+            time_start=self._cr_start_time,
+            time_end=self._cr_start_time + self.CR_DURATION,
         )
 
         self.begin_test_step("Create a constraint reference")
@@ -263,7 +264,10 @@ class CRSimple(TestScenario):
         test_step_fragments.cleanup_active_constraint_refs(
             self,
             self._dss,
-            self._planning_area_volume4d.to_f3548v21(),
+            self._planning_area.resolved_volume4d_with_times(
+                self._cr_start_time,
+                self._cr_start_time + self.CR_DURATION,
+            ).to_f3548v21(),
             self._expected_manager,
         )
 
