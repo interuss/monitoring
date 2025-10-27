@@ -57,6 +57,12 @@ SQUELCH_WARN_ON_QUERY_TYPE = [
     QueryType.F3411v22aUSSGetFlightDetails,
 ]
 
+# Different spherical models have different precisions: implementations may use a different model
+# than uss_qualifier. We thus accept an error margin of 0.7% around distance limits and thresholds
+# to avoid failing USSes for minor differences in precision whenever the relevant standard is not
+# prescriptive in that regard.
+DISTANCE_ERROR_TOLERANCE_FRACTION = 0.007
+
 
 class ScenarioCannotContinueError(Exception):
     def __init__(self, msg):
