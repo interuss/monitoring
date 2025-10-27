@@ -62,15 +62,36 @@ class NextDay(ImplicitDict):
     """Acceptable days of the week.  Omit to indicate that any day of the week is acceptable."""
 
 
-class TimeDuringTest(str, Enum):
-    StartOfTestRun = "StartOfTestRun"
+class TimeDuringTest(str):
+    """A particular time during the test, as identified/named by this value.
+
+    Names listed below are provided by the framework when appropriate:
+        * StartOfTestRun: The time at which the test run started.
+        * StartOfScenario: The time at which the current scenario started.
+        * TimeOfEvaluation: The time at which a TestTime was resolved to an absolute time; generally close to 'now'.
+    """
+
+    StartOfTestRun: TimeDuringTest
     """The time at which the test run started."""
 
-    StartOfScenario = "StartOfScenario"
+    StartOfScenario: TimeDuringTest
     """The time at which the current scenario started."""
 
-    TimeOfEvaluation = "TimeOfEvaluation"
+    TimeOfEvaluation: TimeDuringTest
     """The time at which a TestTime was resolved to an absolute time; generally close to 'now'."""
+
+    ProvidedByFramework: list[TimeDuringTest]
+    """The TimeDuringTests provided by the framework when appropriate"""
+
+
+TimeDuringTest.StartOfTestRun = TimeDuringTest("StartOfTestRun")
+TimeDuringTest.StartOfScenario = TimeDuringTest("StartOfScenario")
+TimeDuringTest.TimeOfEvaluation = TimeDuringTest("TimeOfEvaluation")
+TimeDuringTest.ProvidedByFramework = [
+    TimeDuringTest.StartOfTestRun,
+    TimeDuringTest.StartOfScenario,
+    TimeDuringTest.TimeOfEvaluation,
+]
 
 
 class TestTime(ImplicitDict):

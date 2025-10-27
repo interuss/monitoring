@@ -35,9 +35,9 @@ class PrepareFlightPlannersScenario(TestScenario):
     ):
         super().__init__()
         now = Time(arrow.utcnow().datetime)
-        times_now = {t: now for t in TimeDuringTest}
+        times_now = {t: now for t in TimeDuringTest.ProvidedByFramework}
         later = now.offset(MAX_TEST_DURATION)
-        times_later = {t: later for t in TimeDuringTest}
+        times_later = {t: later for t in TimeDuringTest.ProvidedByFramework}
         self.areas = []
         for intents in (
             flight_intents,
