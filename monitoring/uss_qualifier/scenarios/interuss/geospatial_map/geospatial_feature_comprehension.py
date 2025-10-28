@@ -1,5 +1,3 @@
-import arrow
-
 from monitoring.monitorlib.clients.geospatial_info.client import (
     GeospatialInfoClient,
     GeospatialInfoError,
@@ -10,7 +8,6 @@ from monitoring.monitorlib.clients.geospatial_info.querying import (
     OperationalImpact,
     SelectionOutcome,
 )
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.resources.geospatial_info import (
@@ -113,18 +110,14 @@ class GeospatialFeatureComprehension(TestScenario):
     def run(self, context: ExecutionContext):
         self._rewrite_documentation()
         self.begin_test_scenario(context)
-        times = {
-            TimeDuringTest.StartOfTestRun: Time(context.start_time),
-            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
-        }
 
         self.begin_test_case("Map query")
-        self._map_query(times)
+        self._map_query()
         self.end_test_case()
 
         self.end_test_scenario()
 
-    def _map_query(self, times: dict[TimeDuringTest, Time]):
+    def _map_query(self):
         for row in self.table.rows:
             self.begin_test_step(row.geospatial_check_id)
             if row.description:
@@ -135,8 +128,8 @@ class GeospatialFeatureComprehension(TestScenario):
             # Populate filter set
             filter_set = GeospatialFeatureFilter()
 
-            times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-            concrete_volumes = [v.resolve(times) for v in row.volumes]
+            self.time_context.evaluate_now()
+            concrete_volumes = [v.resolve(self.time_context) for v in row.volumes]
             filter_set.volumes4d = concrete_volumes
 
             if row.restriction_source:

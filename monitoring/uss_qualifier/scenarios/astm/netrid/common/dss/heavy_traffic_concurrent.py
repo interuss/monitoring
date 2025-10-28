@@ -3,7 +3,6 @@ import typing
 from datetime import UTC, datetime
 
 import aiohttp
-import arrow
 import requests
 from uas_standards.astm.f3411 import v19, v22a
 
@@ -19,7 +18,6 @@ from monitoring.monitorlib.infrastructure import AsyncUTMTestSession
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
@@ -91,12 +89,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         )
 
     def run(self, context: ExecutionContext):
-        times = {
-            TimeDuringTest.StartOfTestRun: Time(context.start_time),
-            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
-        }
-
-        self._resolve_isa_time_bounds(times)
+        self._resolve_isa_time_bounds()
 
         self.begin_test_scenario(context)
 
@@ -135,9 +128,8 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         self.end_test_case()
         self.end_test_scenario()
 
-    def _resolve_isa_time_bounds(self, times: dict[TimeDuringTest, Time]):
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        start, end = self._isa.resolved_time_bounds(times)
+    def _resolve_isa_time_bounds(self):
+        start, end = self._isa.resolved_time_bounds(self.time_context.evaluate_now())
         self._isa_params["start_time"] = start
         self._isa_params["end_time"] = end
 

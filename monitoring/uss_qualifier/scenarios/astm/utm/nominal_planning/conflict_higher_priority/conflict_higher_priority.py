@@ -18,7 +18,6 @@ from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResult,
 )
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
@@ -51,8 +50,6 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class ConflictHigherPriority(TestScenario, NotificationChecker):
-    times: dict[TimeDuringTest, Time]
-
     flight1_id: str | None = None
     flight1_planned: FlightInfoTemplate
     flight1m_planned: FlightInfoTemplate
@@ -162,15 +159,9 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             setattr(self, efi.intent_id, templates[efi.intent_id])
 
     def resolve_flight(self, flight_template: FlightInfoTemplate) -> FlightInfo:
-        self.times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        return flight_template.resolve(self.times)
+        return flight_template.resolve(self.time_context.evaluate_now())
 
     def run(self, context: ExecutionContext):
-        self.times = {
-            TimeDuringTest.StartOfTestRun: Time(context.start_time),
-            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
-        }
-
         self.begin_test_scenario(context)
 
         self.record_note(

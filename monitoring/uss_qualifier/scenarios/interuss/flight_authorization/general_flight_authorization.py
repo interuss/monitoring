@@ -1,5 +1,3 @@
-import arrow
-
 from monitoring.monitorlib.clients.flight_planning.client import (
     FlightPlannerClient,
     PlanningActivityError,
@@ -10,7 +8,6 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     FlightPlanStatus,
     PlanningActivityResult,
 )
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.resources.flight_planning import (
@@ -151,24 +148,21 @@ class GeneralFlightAuthorization(TestScenario):
     def run(self, context: ExecutionContext):
         self._rewrite_documentation()
         self.begin_test_scenario(context)
-        times = {
-            TimeDuringTest.StartOfTestRun: Time(context.start_time),
-            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
-        }
 
         self.begin_test_case("Flight planning")
-        self._plan_flights(times)
+        self._plan_flights()
         self.end_test_case()
 
         self.end_test_scenario()
 
-    def _plan_flights(self, times: dict[TimeDuringTest, Time]):
+    def _plan_flights(self):
         for row in self.table.rows:
             self.begin_test_step(row.flight_check_id)
 
             # Attempt planning action
-            times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-            info = self.flight_intents[row.flight_intent].resolve(times)
+            info = self.flight_intents[row.flight_intent].resolve(
+                self.time_context.evaluate_now()
+            )
             with self.check(_VALID_API_RESPONSE_NAME, [self.participant_id]) as check:
                 try:
                     resp = self.flight_planner.try_plan_flight(

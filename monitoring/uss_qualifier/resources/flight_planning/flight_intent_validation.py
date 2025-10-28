@@ -14,7 +14,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
+from monitoring.monitorlib.temporal import TestTimeContext, Time, TimeDuringTest
 from monitoring.monitorlib.uspace import problems_with_flight_authorisation
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntentID,
@@ -53,23 +53,16 @@ def validate_flight_intent_templates(
     extents = Volume4DCollection([])
 
     now = Time(arrow.utcnow().datetime)
-    times = {
-        TimeDuringTest.StartOfTestRun: now,
-        TimeDuringTest.StartOfScenario: now,
-        TimeDuringTest.TimeOfEvaluation: now,
-    }
-    flight_intents = {k: v.resolve(times) for k, v in templates.items()}
+    context = TestTimeContext.all_times_are(now)
+    flight_intents = {k: v.resolve(context) for k, v in templates.items()}
     for flight_intent in flight_intents.values():
         extents.extend(flight_intent.basic_information.area)
     validate_flight_intents(flight_intents, expected_intents, now)
 
     later = Time(now.datetime + MAX_TEST_RUN_DURATION)
-    times = {
-        TimeDuringTest.StartOfTestRun: now,
-        TimeDuringTest.StartOfScenario: later,
-        TimeDuringTest.TimeOfEvaluation: later,
-    }
-    flight_intents = {k: v.resolve(times) for k, v in templates.items()}
+    context = TestTimeContext.all_times_are(later)
+    context[TimeDuringTest.StartOfTestRun] = now
+    flight_intents = {k: v.resolve(context) for k, v in templates.items()}
     for flight_intent in flight_intents.values():
         extents.extend(flight_intent.basic_information.area)
     validate_flight_intents(flight_intents, expected_intents, later)

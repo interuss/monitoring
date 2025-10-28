@@ -94,6 +94,40 @@ TimeDuringTest.ProvidedByFramework = [
 ]
 
 
+class Time(StringBasedDateTime):
+    def offset(self, dt: timedelta) -> Time:
+        return Time(self.datetime + dt)
+
+    def to_f3548v21(self) -> f3548v21.Time:
+        return f3548v21.Time(value=self)
+
+
+class TestTimeContext(dict[TimeDuringTest, Time]):
+    """Context in which TestTimes are evaluated.
+
+    Stores definitions for TimeDuringTests."""
+
+    def evaluate_now(self) -> TestTimeContext:
+        """Set TimeOfEvaluation in this context to the current time.
+
+        This should be performed once before resolving a TestTime."""
+        self[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        return self
+
+    @staticmethod
+    def all_times_are(t: Time) -> TestTimeContext:
+        """Returns a TestTimeContext where all framework-provided times are the provided time.
+
+        For the purpose of testing/validation."""
+        return TestTimeContext(
+            {
+                TimeDuringTest.StartOfTestRun: t,
+                TimeDuringTest.StartOfScenario: t,
+                TimeDuringTest.TimeOfEvaluation: t,
+            }
+        )
+
+
 class TestTime(ImplicitDict):
     """Exactly one of the time option fields of this object must be specified."""
 
@@ -122,20 +156,20 @@ class TestTime(ImplicitDict):
       * "-08:00" (ISO time zone)
       * "US/Pacific" (IANA time zone)"""
 
-    def resolve(self, times: dict[TimeDuringTest, Time]) -> Time:
+    def resolve(self, context: TestTimeContext) -> Time:
         """Resolve TestTime into specific Time."""
         result = None
         if self.absolute_time is not None:
             result = self.absolute_time.datetime
         elif self.time_during_test is not None:
-            if self.time_during_test not in times:
+            if self.time_during_test not in context:
                 raise ValueError(
                     f"Specified {self.time_during_test} time during test was not provided when resolving TestTime"
                 )
-            result = times[self.time_during_test].datetime
+            result = context[self.time_during_test].datetime
         elif self.next_day is not None:
             t0 = (
-                arrow.get(self.next_day.starting_from.resolve(times).datetime)
+                arrow.get(self.next_day.starting_from.resolve(context).datetime)
                 .to(self.next_day.time_zone)
                 .datetime
             )
@@ -151,11 +185,11 @@ class TestTime(ImplicitDict):
             result = t
         elif self.offset_from is not None:
             result = (
-                self.offset_from.starting_from.resolve(times).datetime
+                self.offset_from.starting_from.resolve(context).datetime
                 + self.offset_from.offset.timedelta
             )
         elif self.next_sun_position is not None:
-            t0 = self.next_sun_position.starting_from.resolve(times).datetime
+            t0 = self.next_sun_position.starting_from.resolve(context).datetime
 
             dt = timedelta(minutes=5)
             lat = self.next_sun_position.observed_from.lat
@@ -233,11 +267,3 @@ def _sun_elevation(t: datetime, lat_deg: float, lng_deg: float) -> float:
     Returns: Degrees above the horizon of the center of the sun.
     """
     return get_solarposition(t, lat_deg, lng_deg).elevation.values[0]  # pyright:ignore[reportAttributeAccessIssue]
-
-
-class Time(StringBasedDateTime):
-    def offset(self, dt: timedelta) -> Time:
-        return Time(self.datetime + dt)
-
-    def to_f3548v21(self) -> f3548v21.Time:
-        return f3548v21.Time(value=self)
