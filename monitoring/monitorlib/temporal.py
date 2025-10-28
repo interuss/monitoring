@@ -140,6 +140,9 @@ class TestTime(ImplicitDict):
     time_during_test: TimeDuringTest | None = None
     """Time option field to, if specified, use a timestamp relating to the current test run."""
 
+    name: TimeDuringTest | None
+    """If specified, update the TestTimeContext with the time computed for this TestTime as this name, which may then later be referenced by a different TestTime via time_during_test."""
+
     next_day: NextDay | None = None
     """Time option field to use a timestamp equal to midnight beginning the next occurrence of any matching day following the specified reference timestamp."""
 
@@ -164,7 +167,7 @@ class TestTime(ImplicitDict):
         elif self.time_during_test is not None:
             if self.time_during_test not in context:
                 raise ValueError(
-                    f"Specified {self.time_during_test} time during test was not provided when resolving TestTime"
+                    f"Specified '{self.time_during_test}' time during test was not provided when resolving TestTime"
                 )
             result = context[self.time_during_test].datetime
         elif self.next_day is not None:
@@ -241,7 +244,12 @@ class TestTime(ImplicitDict):
         if self.use_timezone:
             result = arrow.get(result).to(self.use_timezone).datetime
 
-        return Time(result)
+        t_result = Time(result)
+
+        if "name" in self and self.name:
+            context[self.name] = t_result
+
+        return t_result
 
 
 _weekdays = [
