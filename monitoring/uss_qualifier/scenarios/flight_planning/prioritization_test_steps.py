@@ -164,10 +164,6 @@ def modify_activated_priority_conflict_flight(
         expected_results={
             (PlanningActivityResult.Rejected, FlightPlanStatus.OkToFly),
             (
-                PlanningActivityResult.Rejected,
-                FlightPlanStatus.Closed,
-            ),  # case where the USS closes the flight plan as a result of the rejected modification attempt; note: is this actually desirable if the flight was activated?
-            (
                 PlanningActivityResult.NotSupported,
                 FlightPlanStatus.OkToFly,
             ),  # case where the USS does not support modification of flights
@@ -325,10 +321,6 @@ def modify_activated_conflict_flight(
         success_check="Incorrectly modified",
         expected_results={
             (PlanningActivityResult.Rejected, FlightPlanStatus.OkToFly),
-            (
-                PlanningActivityResult.Rejected,
-                FlightPlanStatus.Closed,
-            ),  # case where the USS closes the flight plan as a result of the rejected modification attempt; note: is this actually desirable if the flight was activated?
             (
                 PlanningActivityResult.NotSupported,
                 FlightPlanStatus.OkToFly,

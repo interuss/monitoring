@@ -389,9 +389,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 flight1_activated,
                 self.flight1_id,
             )
-            flight_1_oi_ref = validator.expect_shared(
-                flight1c_activated, skip_if_not_found=True
-            )
+            validator.expect_not_shared()
         self.end_test_step()
 
         if modify_resp.activity_result == PlanningActivityResult.NotSupported:
@@ -500,7 +498,6 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 expected_results={
                     (PlanningActivityResult.Completed, FlightPlanStatus.OkToFly),
                     (PlanningActivityResult.Rejected, FlightPlanStatus.OkToFly),
-                    (PlanningActivityResult.Rejected, FlightPlanStatus.Closed),
                 },
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
                 flight_planner=self.tested_uss,
@@ -511,7 +508,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             if resp_flight_1.activity_result == PlanningActivityResult.Completed:
                 validator.expect_shared(flight1m_activated)
             elif resp_flight_1.activity_result == PlanningActivityResult.Rejected:
-                validator.expect_shared(flight1_activated, skip_if_not_found=True)
+                validator.expect_not_shared()
         self.end_test_step()
 
     def cleanup(self):
