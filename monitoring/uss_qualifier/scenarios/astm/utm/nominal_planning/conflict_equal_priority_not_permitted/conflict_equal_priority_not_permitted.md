@@ -194,6 +194,11 @@ exist when the modification was initiated, it should be rejected per **[astm.f35
 Because the modification attempt was invalid, either Flight 1c should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
+### [Delete Flight 1c if USS did not support its modification test step](../../../../flight_planning/delete_flight_intent.md)
+If, during the previous step, the USS indicated that it does not support modifications, then it will not be able to
+modify Flight 1c into Flight 1 during the next test case. As such, the test driver deletes Flight 1c from the system so
+that Flight 1 can be created directly activated during the next test case.
+
 ### [Delete Flight 2 test step](../../../../flight_planning/delete_flight_intent.md)
 To prepare for the next test case, Flight 2 must be removed from the system.
 
