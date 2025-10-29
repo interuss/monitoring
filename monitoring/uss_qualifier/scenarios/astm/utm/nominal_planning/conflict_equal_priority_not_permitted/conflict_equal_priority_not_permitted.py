@@ -494,10 +494,11 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
         ) as validator:
             resp_flight_1, _ = submit_flight(
                 scenario=self,
-                success_check="Successful modification or rejection",
+                success_check="Successful flight intent handling",
                 expected_results={
                     (PlanningActivityResult.Completed, FlightPlanStatus.OkToFly),
                     (PlanningActivityResult.Rejected, FlightPlanStatus.OkToFly),
+                    (PlanningActivityResult.NotSupported, FlightPlanStatus.OkToFly),
                 },
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
                 flight_planner=self.tested_uss,
@@ -507,7 +508,10 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
 
             if resp_flight_1.activity_result == PlanningActivityResult.Completed:
                 validator.expect_shared(flight1m_activated)
-            elif resp_flight_1.activity_result == PlanningActivityResult.Rejected:
+            elif resp_flight_1.activity_result in {
+                PlanningActivityResult.Rejected,
+                PlanningActivityResult.NotSupported,
+            }:
                 validator.expect_not_shared()
         self.end_test_step()
 
