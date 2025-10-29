@@ -383,7 +383,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             [flight1c_activated, flight1_activated],
             flight_1_oi_ref,
         ) as validator:
-            modify_activated_conflict_flight(
+            modify_resp = modify_activated_conflict_flight(
                 self,
                 self.tested_uss,
                 flight1_activated,
@@ -393,6 +393,16 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 flight1c_activated, skip_if_not_found=True
             )
         self.end_test_step()
+
+        if modify_resp.activity_result == PlanningActivityResult.NotSupported:
+            self.begin_test_step(
+                "Delete Flight 1c if USS did not support its modification"
+            )
+            if self.flight1_id is None:
+                raise ValueError("flight1_id is None")
+            delete_flight(self, self.control_uss, self.flight1_id)
+            self.flight1_id = None
+            self.end_test_step()
 
         self.begin_test_step("Delete Flight 2")
         delete_flight(self, self.control_uss, self.flight2_id)
@@ -415,7 +425,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             flight1_activated,
             flight_1_oi_ref,
         ) as validator:
-            activate_flight(
+            _, self.flight1_id = activate_flight(
                 self,
                 self.tested_uss,
                 flight1_activated,
