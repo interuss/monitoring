@@ -251,10 +251,13 @@ rejection of the modification does not constitute a violation of a requirement. 
 not result in a failure per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 Nor should Flight 1 have been removed, because doing so would leave an aircraft in flight without any flight plan.
 
-#### 🛑 Successful modification or rejection check
-All flight intent data provided is correct and the USS should have either successfully modified the flight or rejected
-properly the modification per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
-If the USS indicates that the injection attempt failed, this check will fail.
+#### 🛑 Successful flight intent handling check
+All flight intent data provided is correct and the USS should have either:
+- successfully modified the flight; or
+- properly rejected the modification; or
+- indicated that it does not support modification
+per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
+In any other case, this check will fail.
 
 #### 🛑 Failure check
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
