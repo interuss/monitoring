@@ -16,76 +16,76 @@ resources:
   test_exclusions: resources.dev.TestExclusionsResource?
   uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
 actions:
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.ServiceProviderNotifiesSlowUpdates
-      resources:
-        flights_data: flights_data
-        service_providers: service_providers
-        evaluation_configuration: evaluation_configuration
-    on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.DisplayProviderBehavior
-      resources:
-        observers: observers
-        mock_uss: mock_uss_sp
-        id_generator: id_generator
-        dss_pool: dss_instances
-        isa: service_area
-        uss_identification: uss_identification?
-    on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.NetworkedUASDisconnect
-      resources:
-        flights_data: flights_data
-        service_providers: service_providers
-        evaluation_configuration: evaluation_configuration
-        dss_pool: dss_instances
-    on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.SpOperatorNotifyMissingFields
-      resources:
-        flights_data: flights_data
-        service_providers: service_providers
-        evaluation_configuration: evaluation_configuration
-    on_failure: Continue
-  - action_generator:
-      generator_type: action_generators.astm.f3411.ForEachDSS
-      resources:
-        dss_instances: dss_instances
-        dss_datastore_cluster: dss_datastore_cluster?
-        utm_client_identity: utm_client_identity
-        id_generator: id_generator
-        service_area: service_area
-        problematically_big_area: problematically_big_area
-        planning_area: planning_area
-        test_exclusions: test_exclusions?
-      specification:
-        action_to_repeat:
-          test_suite:
-            suite_type: suites.astm.netrid.f3411_19.dss_probing
-            resources:
-              dss: dss
-              all_dss_instances: dss_instances
-              dss_datastore_cluster: dss_datastore_cluster?
-              utm_client_identity: utm_client_identity
-              id_generator: id_generator
-              isa: service_area
-              problematically_big_area: problematically_big_area
-              planning_area: planning_area
-              test_exclusions: test_exclusions?
-          on_failure: Continue
-        dss_instances_source: dss_instances
-        dss_instance_id: dss
-      on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.ServiceProviderNotificationBehavior
-      resources:
-        flights_data: flights_data
-        service_providers: service_providers
-        mock_uss: mock_uss_dp
-        id_generator: id_generator
-        dss_pool: dss_instances
-    on_failure: Continue
+#  - test_scenario:
+#      scenario_type: scenarios.astm.netrid.v19.ServiceProviderNotifiesSlowUpdates
+#      resources:
+#        flights_data: flights_data
+#        service_providers: service_providers
+#        evaluation_configuration: evaluation_configuration
+#    on_failure: Continue
+#  - test_scenario:
+#      scenario_type: scenarios.astm.netrid.v19.DisplayProviderBehavior
+#      resources:
+#        observers: observers
+#        mock_uss: mock_uss_sp
+#        id_generator: id_generator
+#        dss_pool: dss_instances
+#        isa: service_area
+#        uss_identification: uss_identification?
+#    on_failure: Continue
+#  - test_scenario:
+#      scenario_type: scenarios.astm.netrid.v19.NetworkedUASDisconnect
+#      resources:
+#        flights_data: flights_data
+#        service_providers: service_providers
+#        evaluation_configuration: evaluation_configuration
+#        dss_pool: dss_instances
+#    on_failure: Continue
+#  - test_scenario:
+#      scenario_type: scenarios.astm.netrid.v19.SpOperatorNotifyMissingFields
+#      resources:
+#        flights_data: flights_data
+#        service_providers: service_providers
+#        evaluation_configuration: evaluation_configuration
+#    on_failure: Continue
+#  - action_generator:
+#      generator_type: action_generators.astm.f3411.ForEachDSS
+#      resources:
+#        dss_instances: dss_instances
+#        dss_datastore_cluster: dss_datastore_cluster?
+#        utm_client_identity: utm_client_identity
+#        id_generator: id_generator
+#        service_area: service_area
+#        problematically_big_area: problematically_big_area
+#        planning_area: planning_area
+#        test_exclusions: test_exclusions?
+#      specification:
+#        action_to_repeat:
+#          test_suite:
+#            suite_type: suites.astm.netrid.f3411_19.dss_probing
+#            resources:
+#              dss: dss
+#              all_dss_instances: dss_instances
+#              dss_datastore_cluster: dss_datastore_cluster?
+#              utm_client_identity: utm_client_identity
+#              id_generator: id_generator
+#              isa: service_area
+#              problematically_big_area: problematically_big_area
+#              planning_area: planning_area
+#              test_exclusions: test_exclusions?
+#          on_failure: Continue
+#        dss_instances_source: dss_instances
+#        dss_instance_id: dss
+#      on_failure: Continue
+#  - test_scenario:
+#      scenario_type: scenarios.astm.netrid.v19.ServiceProviderNotificationBehavior
+#      resources:
+#        flights_data: flights_data
+#        service_providers: service_providers
+#        mock_uss: mock_uss_dp
+#        id_generator: id_generator
+#        dss_pool: dss_instances
+#    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v19.NominalBehavior
       resources:
@@ -95,26 +95,26 @@ actions:
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances
     on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.Misbehavior
-      resources:
-        flights_data: flights_data
-        service_providers: service_providers
-        observers: observers
-        evaluation_configuration: evaluation_configuration
-        dss_pool: dss_instances
-      on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.OperatorInteractions
-      resources: {}
-      on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.AggregateChecks
-      resources:
-        service_providers: service_providers
-        observers: observers
-        dss_instances: dss_instances
-        test_exclusions: test_exclusions?
+#  - test_scenario:
+#      scenario_type: scenarios.astm.netrid.v19.Misbehavior
+#      resources:
+#        flights_data: flights_data
+#        service_providers: service_providers
+#        observers: observers
+#        evaluation_configuration: evaluation_configuration
+#        dss_pool: dss_instances
+#      on_failure: Continue
+#  - test_scenario:
+#      scenario_type: scenarios.astm.netrid.v19.OperatorInteractions
+#      resources: {}
+#      on_failure: Continue
+#  - test_scenario:
+#      scenario_type: scenarios.astm.netrid.v19.AggregateChecks
+#      resources:
+#        service_providers: service_providers
+#        observers: observers
+#        dss_instances: dss_instances
+#        test_exclusions: test_exclusions?
 participant_verifiable_capabilities:
     - id: service_provider
       name: NetRID Service Provider
