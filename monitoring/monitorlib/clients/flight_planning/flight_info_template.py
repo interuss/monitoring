@@ -14,7 +14,7 @@ from monitoring.monitorlib.geotemporal import (
     Volume4DCollection,
     Volume4DTemplateCollection,
 )
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
+from monitoring.monitorlib.temporal import TestTimeContext
 from monitoring.monitorlib.transformations import Transformation
 
 
@@ -30,9 +30,9 @@ class BasicFlightPlanInformationTemplate(ImplicitDict):
     area: Volume4DTemplateCollection
     """User intends to or may fly anywhere in this entire area."""
 
-    def resolve(self, times: dict[TimeDuringTest, Time]) -> BasicFlightPlanInformation:
+    def resolve(self, context: TestTimeContext) -> BasicFlightPlanInformation:
         kwargs = {k: v for k, v in self.items()}
-        kwargs["area"] = Volume4DCollection([t.resolve(times) for t in self.area])
+        kwargs["area"] = Volume4DCollection([t.resolve(context) for t in self.area])
         return ImplicitDict.parse(kwargs, BasicFlightPlanInformation)
 
 
@@ -53,9 +53,9 @@ class FlightInfoTemplate(ImplicitDict):
     transformations: list[Transformation] | None
     """If specified, transform this flight according to these transformations in order (after all templates are resolved)."""
 
-    def resolve(self, times: dict[TimeDuringTest, Time]) -> FlightInfo:
+    def resolve(self, context: TestTimeContext) -> FlightInfo:
         kwargs = {k: v for k, v in self.items() if k not in {"transformations"}}
-        basic_info = self.basic_information.resolve(times)
+        basic_info = self.basic_information.resolve(context)
         if "transformations" in self and self.transformations:
             for xform in self.transformations:
                 basic_info.area = [v.transform(xform) for v in basic_info.area]
@@ -63,11 +63,11 @@ class FlightInfoTemplate(ImplicitDict):
         return ImplicitDict.parse(kwargs, FlightInfo)
 
     def to_scd_inject_request(
-        self, times: dict[TimeDuringTest, Time]
+        self, context: TestTimeContext
     ) -> scd_api.InjectFlightRequest:
         """Render a legacy SCD injection API request object from this object."""
 
-        info = self.resolve(times)
+        info = self.resolve(context)
         if "astm_f3548_21" not in info or not info.astm_f3548_21:
             raise ValueError(
                 "Legacy SCD injection API requires astm_f3548_21 operational intent priority to be specified in FlightInfo"

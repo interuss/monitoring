@@ -2,14 +2,12 @@ import copy
 import datetime
 from typing import Any
 
-import arrow
 import s2sphere
 from uas_standards.astm.f3411 import v19, v22a
 
 from monitoring.monitorlib.fetch import QueryType, query_and_describe
 from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
@@ -66,12 +64,7 @@ class ISAValidation(GenericTestScenario):
             ValueError(f"Unsupported RID version '{self._dss.rid_version}'")
 
     def run(self, context: ExecutionContext):
-        times = {
-            TimeDuringTest.StartOfTestRun: Time(context.start_time),
-            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
-        }
-
-        self._resolve_isa_time_bounds(times)
+        self._resolve_isa_time_bounds()
 
         self.begin_test_scenario(context)
 
@@ -95,9 +88,10 @@ class ISAValidation(GenericTestScenario):
         self.end_test_case()
         self.end_test_scenario()
 
-    def _resolve_isa_time_bounds(self, times: dict[TimeDuringTest, Time]):
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        self._isa_start_time, self._isa_end_time = self._isa.resolved_time_bounds(times)
+    def _resolve_isa_time_bounds(self):
+        self._isa_start_time, self._isa_end_time = self._isa.resolved_time_bounds(
+            self.time_context.evaluate_now()
+        )
 
     def _setup_case(self):
         self.begin_test_case("Setup")

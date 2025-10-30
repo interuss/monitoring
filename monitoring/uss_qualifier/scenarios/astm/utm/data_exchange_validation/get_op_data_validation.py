@@ -18,7 +18,7 @@ from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUssFlightBehavior,
 )
 from monitoring.monitorlib.delay import sleep
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
+from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
@@ -128,10 +128,6 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
     def run(self, context: ExecutionContext):
         self.op_intent_ids = set()
-        times = {
-            TimeDuringTest.StartOfTestRun: Time(context.start_time),
-            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
-        }
         self.begin_test_scenario(context)
 
         self.record_note(
@@ -140,18 +136,17 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         )
 
         self.begin_test_case("Successfully plan flight near an existing flight")
-        self._plan_successfully_test_case(times)
+        self._plan_successfully_test_case()
         self.end_test_case()
 
         self.begin_test_case("Flight planning prevented due to invalid data sharing")
-        self._plan_unsuccessfully_test_case(times)
+        self._plan_unsuccessfully_test_case()
         self.end_test_case()
 
         self.end_test_scenario()
 
-    def _plan_successfully_test_case(self, times: dict[TimeDuringTest, Time]):
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        flight_2 = self.flight_2.resolve(times)
+    def _plan_successfully_test_case(self):
+        flight_2 = self.flight_2.resolve(self.time_context.evaluate_now())
 
         self.begin_test_step("mock_uss plans flight 2")
         with OpIntentValidator(
@@ -171,8 +166,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self.op_intent_ids.add(flight_2_oi_ref.id)
         self.end_test_step()
 
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        flight_1 = self.flight_1.resolve(times)
+        flight_1 = self.flight_1.resolve(self.time_context.evaluate_now())
 
         self.begin_test_step("tested_uss plans flight 1")
         with OpIntentValidator(
@@ -224,9 +218,8 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         delete_flight(self, self.mock_uss_client, self.flight_2_id)
         self.end_test_step()
 
-    def _plan_unsuccessfully_test_case(self, times: dict[TimeDuringTest, Time]):
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        flight_info = self.flight_2.resolve(times)
+    def _plan_unsuccessfully_test_case(self):
+        flight_info = self.flight_2.resolve(self.time_context.evaluate_now())
 
         modify_field1 = "state"
         modify_field2 = "priority"
@@ -264,8 +257,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self.op_intent_ids.add(flight_2_oi_ref.id)
         self.end_test_step()
 
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        flight_1 = self.flight_1.resolve(times)
+        flight_1 = self.flight_1.resolve(self.time_context.evaluate_now())
         self.begin_test_step("tested_uss attempts to plan flight 1, expect failure")
         with OpIntentValidator(
             self,

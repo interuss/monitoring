@@ -15,6 +15,7 @@ from monitoring.monitorlib import fetch, inspection
 from monitoring.monitorlib.errors import current_stack_string
 from monitoring.monitorlib.fetch import QueryType
 from monitoring.monitorlib.inspection import fullname
+from monitoring.monitorlib.temporal import TestTimeContext
 from monitoring.uss_qualifier import scenarios as scenarios_module
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.reports.report import (
@@ -228,6 +229,7 @@ class GenericTestScenario(ABC):
     declaration: TestScenarioDeclaration
     documentation: TestScenarioDocumentation
     on_failed_check: Callable[[FailedCheck], None] | None = None
+    time_context: TestTimeContext
 
     resource_origins: dict[ResourceID, str]
     """Map between local resource name (as defined in test scenario) to where that resource originated."""
@@ -248,6 +250,7 @@ class GenericTestScenario(ABC):
     def __init__(self):
         self.documentation = get_documentation(self.__class__)
         self._phase = ScenarioPhase.NotStarted
+        self.time_context = TestTimeContext()
 
     @staticmethod
     def make_test_scenario(

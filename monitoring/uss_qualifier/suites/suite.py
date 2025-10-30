@@ -15,6 +15,7 @@ from loguru import logger
 from monitoring.monitorlib.dicts import JSONAddress
 from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.inspection import fullname
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.monitorlib.versioning import repo_url_of
 from monitoring.uss_qualifier.action_generators.action_generator import (
     ActionGenerator,
@@ -153,6 +154,10 @@ class TestSuiteAction[T: ActionGenerator]:
 
         logger.info(f'Running "{scenario.documentation.name}" scenario...')
         scenario.on_failed_check = _print_failed_check
+        scenario.time_context[TimeDuringTest.StartOfTestRun] = Time(context.start_time)
+        scenario.time_context[TimeDuringTest.StartOfScenario] = Time(
+            arrow.utcnow().datetime
+        )
         try:
             try:
                 scenario.run(context)

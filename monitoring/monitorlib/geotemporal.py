@@ -14,7 +14,11 @@ from uas_standards.interuss.automated_testing.scd.v1 import api as interuss_scd_
 
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.geo import Altitude, Circle, LatLngPoint, Polygon, Volume3D
-from monitoring.monitorlib.temporal import TestTime, Time, TimeDuringTest
+from monitoring.monitorlib.temporal import (
+    TestTime,
+    TestTimeContext,
+    Time,
+)
 from monitoring.monitorlib.transformations import Transformation
 
 
@@ -64,16 +68,16 @@ class Volume4DTemplate(ImplicitDict):
         return result
 
     def resolve_times(
-        self, times: dict[TimeDuringTest, Time]
+        self, context: TestTimeContext
     ) -> tuple[Time | None, Time | None]:
         """Resolve Volume4DTemplate into concrete temporal bounds (start, end)"""
         if self.start_time is not None:
-            time_start = self.start_time.resolve(times)
+            time_start = self.start_time.resolve(context)
         else:
             time_start = None
 
         if self.end_time is not None:
-            time_end = self.end_time.resolve(times)
+            time_end = self.end_time.resolve(context)
         else:
             time_end = None
 
@@ -93,14 +97,14 @@ class Volume4DTemplate(ImplicitDict):
 
         return time_start, time_end
 
-    def resolve(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
+    def resolve(self, context: TestTimeContext) -> Volume4D:
         """Resolve Volume4DTemplate into concrete Volume4D."""
         volume = self.resolve_3d()
 
         # Make 4D volume
         kwargs = {"volume": volume}
 
-        time_start, time_end = self.resolve_times(times)
+        time_start, time_end = self.resolve_times(context)
 
         if time_start is not None:
             kwargs["time_start"] = time_start

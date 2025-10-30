@@ -11,7 +11,6 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
@@ -116,10 +115,6 @@ class ReceiveNotificationsForAwareness(TestScenario):
             setattr(self, efi.intent_id, templates[efi.intent_id])
 
     def run(self, context: ExecutionContext):
-        times = {
-            TimeDuringTest.StartOfTestRun: Time(context.start_time),
-            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
-        }
         self.begin_test_scenario(context)
         self.record_note(
             "Tested USS",
@@ -132,25 +127,23 @@ class ReceiveNotificationsForAwareness(TestScenario):
         self.begin_test_case(
             "Activated operational intent receives notification of relevant intent"
         )
-        self._receive_notification_successfully_when_activated_test_case(times)
+        self._receive_notification_successfully_when_activated_test_case()
         self.end_test_case()
 
         self.begin_test_case(
             "Modify Activated operational intent area and receive notification of relevant intent"
         )
-        self._receive_notification_successfully_when_activated_modified_test_case(times)
+        self._receive_notification_successfully_when_activated_modified_test_case()
         self.end_test_case()
 
         self.end_test_scenario()
 
-    def _receive_notification_successfully_when_activated_test_case(
-        self, times: dict[TimeDuringTest, Time]
-    ):
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+    def _receive_notification_successfully_when_activated_test_case(self):
+        self.time_context.evaluate_now()
 
-        flight_1_planned = self.flight_1_planned.resolve(times)
-        flight_1_activated = self.flight_1_activated.resolve(times)
-        flight_2_planned = self.flight_2_planned.resolve(times)
+        flight_1_planned = self.flight_1_planned.resolve(self.time_context)
+        flight_1_activated = self.flight_1_activated.resolve(self.time_context)
+        flight_2_planned = self.flight_2_planned.resolve(self.time_context)
 
         resolved_extents = flight_info.extents_of(
             [flight_1_planned, flight_1_activated, flight_2_planned]
@@ -217,11 +210,10 @@ class ReceiveNotificationsForAwareness(TestScenario):
         )
         self.end_test_step()
 
-    def _receive_notification_successfully_when_activated_modified_test_case(
-        self, times: dict[TimeDuringTest, Time]
-    ):
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        flight_2_planned_modified = self.flight_2_planned_modified.resolve(times)
+    def _receive_notification_successfully_when_activated_modified_test_case(self):
+        flight_2_planned_modified = self.flight_2_planned_modified.resolve(
+            self.time_context.evaluate_now()
+        )
 
         self.begin_test_step("Mock_uss modifies planned Flight 2")
         with OpIntentValidator(

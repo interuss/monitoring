@@ -15,6 +15,13 @@
         "null"
       ]
     },
+    "name": {
+      "description": "If specified, update the TestTimeContext with the time computed for this TestTime as this name, which may then later be referenced by a different TestTime via time_during_test.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "next_day": {
       "description": "Time option field to use a timestamp equal to midnight beginning the next occurrence of any matching day following the specified reference timestamp.",
       "oneOf": [
@@ -50,11 +57,6 @@
     },
     "time_during_test": {
       "description": "Time option field to, if specified, use a timestamp relating to the current test run.",
-      "enum": [
-        "StartOfTestRun",
-        "StartOfScenario",
-        "TimeOfEvaluation"
-      ],
       "type": [
         "string",
         "null"

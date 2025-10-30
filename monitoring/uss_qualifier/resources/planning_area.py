@@ -14,7 +14,7 @@ from uas_standards.astm.f3548.v21.api import (
 from monitoring.monitorlib.geo import make_latlng_rect
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.subscription_params import SubscriptionParams
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
+from monitoring.monitorlib.temporal import TestTimeContext, Time
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.volume import VolumeResource
@@ -56,8 +56,8 @@ class PlanningAreaResource(Resource[PlanningAreaSpecification]):
         self.specification = specification
         self._volume = volume
 
-    def resolved_volume4d(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
-        return self._volume.specification.template.resolve(times)
+    def resolved_volume4d(self, context: TestTimeContext) -> Volume4D:
+        return self._volume.specification.template.resolve(context)
 
     def resolved_volume4d_with_times(
         self, time_start: datetime.datetime | None, time_end: datetime.datetime | None
