@@ -38,13 +38,34 @@ container in order to use the tracer subscribe capability.
 Visit /tracer/logs to see a list of log entries recorded by tracer while the
 current session has been running.
 
+## Log download
+To download the full set of current tracer logs, visit /tracer/logs.zip
+
 ## Invocation
 An instance of tracer-enabled mock_uss is brought up as part of the [local deployment](../README.md#local-deployment).  It can also be deployed [with Google Cloud Platform](../deployment/gcp) when configured appropriately.
 
-## Offline historical KML generator
+## Offline historical KML generation
 
 With a large number of log files, KML generation via the server endpoint can
 require a prohibitive amount of time.  To generate a historical KML in these
 cases, the [make_historical_kml utility](./make_historical_kml.py) can be used
 to parse a folder of logs (generally acquired from downloading a .zip file of
 logs while the server is active) into a KML file.
+
+To use this utility via docker, first set `LOG_PATH` to the folder containing the unzipped log files:
+
+```shell
+export LOG_PATH=/path/to/log/files
+```
+
+Then, invoke the tool, writing to `historical.kml` in the log file folder:
+
+```shell
+docker container run \
+  -u "$(id -u):$(id -g)" \
+  -v "$LOG_PATH:/logs" \
+  interuss/monitoring \
+  uv run /app/monitoring/mock_uss/tracer/make_historical_kml.py \
+      --logfolder /logs \
+      --kmlfile /logs/historical.kml
+```

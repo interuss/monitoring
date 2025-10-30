@@ -33,7 +33,10 @@ from monitoring.uss_qualifier.scenarios.interuss.mock_uss.test_steps import (
     direction_filter,
     get_mock_uss_interactions,
 )
-from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+from monitoring.uss_qualifier.scenarios.scenario import (
+    DISTANCE_ERROR_TOLERANCE_FRACTION,
+    GenericTestScenario,
+)
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
@@ -81,28 +84,21 @@ class DisplayProviderBehavior(GenericTestScenario):
             Angle.from_degrees(1 * degree_per_km)
         )
 
-        limit_side_km = self._rid_version.max_diagonal_km / math.sqrt(2)
+        limit_diagonal_length_ok = self._rid_version.max_diagonal_km * (
+            1 - DISTANCE_ERROR_TOLERANCE_FRACTION
+        )
+
+        limit_side_km = limit_diagonal_length_ok / math.sqrt(2)
         self._limit_rect = LatLngRect.from_point(isa_center).convolve_with_cap(
             Angle.from_degrees(limit_side_km * degree_per_km / 2)
         )
-        # Make sure the limit_rect is close to the allowed diagonal limit
-        assert (
-            self._rid_version.max_diagonal_km * 0.99
-            < geo.get_latlngrect_diagonal_km(self._limit_rect)
-            <= self._rid_version.max_diagonal_km
-        ), (
-            f"{geo.get_latlngrect_diagonal_km(self._limit_rect)} > {self._rid_version.max_diagonal_km}"
+
+        limit_diagonal_length_fail = self._rid_version.max_diagonal_km * (
+            1 + DISTANCE_ERROR_TOLERANCE_FRACTION
         )
 
-        # Make the too big rect 1% larger than the allowed diagonal limit
         self._too_big_rect = LatLngRect.from_point(isa_center).convolve_with_cap(
-            Angle.from_degrees(limit_side_km * 1.01 * degree_per_km / 2)
-        )
-        assert (
-            geo.get_latlngrect_diagonal_km(self._too_big_rect)
-            > self._rid_version.max_diagonal_km
-        ), (
-            f"{geo.get_latlngrect_diagonal_km(self._too_big_rect)} <= {self._rid_version.max_diagonal_km}"
+            Angle.from_degrees(limit_diagonal_length_fail * degree_per_km / 2)
         )
 
     @property
