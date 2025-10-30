@@ -400,7 +400,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             )
             if self.flight1_id is None:
                 raise ValueError("flight1_id is None")
-            delete_flight(self, self.control_uss, self.flight1_id)
+            delete_flight(self, self.tested_uss, self.flight1_id)
             self.flight1_id = None
             self.end_test_step()
 
