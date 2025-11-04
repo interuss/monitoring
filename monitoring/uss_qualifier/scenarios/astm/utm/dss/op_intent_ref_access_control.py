@@ -225,10 +225,9 @@ class OpIntentReferenceAccessControl(TestScenario):
                         query_timestamps=[dq.request.timestamp],
                     )
 
-    def _attempt_to_delete_remaining_op_intents(self):
+    def _attempt_to_delete_remaining_op_intents(self, extent: Volume4D):
         """Search for op intents and attempt to delete them using the main credentials"""
 
-        extent = self._get_extents()
         with self.check(
             "Operational intent references can be searched for",
             self._pid,
@@ -327,7 +326,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         # Delete what we know about
         self._clean_known_op_intents_ids()
         # Search and attempt deleting what may be found through search
-        self._attempt_to_delete_remaining_op_intents()
+        self._attempt_to_delete_remaining_op_intents(extent)
 
         with self.check(
             "Operational intent references can be searched for",

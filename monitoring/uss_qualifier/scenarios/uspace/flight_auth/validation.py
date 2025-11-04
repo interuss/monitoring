@@ -82,7 +82,7 @@ class Validation(TestScenario):
                 self.invalid_flight_intents.append(templates[efi.intent_id])
 
     def resolve_flight(self, flight_template: FlightInfoTemplate) -> FlightInfo:
-        return flight_template.resolve(self.time_context)
+        return flight_template.resolve(self.time_context.evaluate_now())
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
