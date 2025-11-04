@@ -1,4 +1,3 @@
-import arrow
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -11,7 +10,6 @@ from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
 )
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
@@ -108,24 +106,18 @@ class OpIntentReferenceAccessControl(TestScenario):
         self._flight_2 = templates["flight_2"]
 
     def run(self, context: ExecutionContext):
-        times = {
-            TimeDuringTest.StartOfTestRun: Time(context.start_time),
-            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
-        }
         self.begin_test_scenario(context)
         self.begin_test_case("Setup")
 
         self.begin_test_step("Ensure clean workspace")
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        ws_is_clean = self._ensure_clean_workspace(times)
+        ws_is_clean = self._ensure_clean_workspace()
         self.end_test_step()
 
         if ws_is_clean:
             self.begin_test_step(
                 "Create operational intent references with different credentials"
             )
-            times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow())
-            self._create_op_intents(times)
+            self._create_op_intents()
             self._ensure_credentials_are_different()
             self.end_test_step()
 
@@ -138,7 +130,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 "Attempt unauthorized operational intent reference modification"
             )
 
-            self._check_mutation_on_non_owned_intent_fails(times)
+            self._check_mutation_on_non_owned_intent_fails()
 
             self.end_test_step()
             self.end_test_case()
@@ -150,9 +142,13 @@ class OpIntentReferenceAccessControl(TestScenario):
 
         self.end_test_scenario()
 
-    def _get_extents(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
+    def _get_extents(self) -> Volume4D:
         extents = Volume4DCollection()
-        for info in (self._flight_1.resolve(times), self._flight_2.resolve(times)):
+        self.time_context.evaluate_now()
+        for info in (
+            self._flight_1.resolve(self.time_context),
+            self._flight_2.resolve(self.time_context),
+        ):
             extents.extend(info.basic_information.area)
 
         return extents.bounding_volume
@@ -229,12 +225,9 @@ class OpIntentReferenceAccessControl(TestScenario):
                         query_timestamps=[dq.request.timestamp],
                     )
 
-    def _attempt_to_delete_remaining_op_intents(
-        self, times: dict[TimeDuringTest, Time]
-    ):
+    def _attempt_to_delete_remaining_op_intents(self, extent: Volume4D):
         """Search for op intents and attempt to delete them using the main credentials"""
 
-        extent = self._get_extents(times)
         with self.check(
             "Operational intent references can be searched for",
             self._pid,
@@ -315,14 +308,14 @@ class OpIntentReferenceAccessControl(TestScenario):
                             query_timestamps=[dq.request.timestamp],
                         )
 
-    def _ensure_clean_workspace(self, times: dict[TimeDuringTest, Time]) -> bool:
+    def _ensure_clean_workspace(self) -> bool:
         """
         Tries to provide a clean workspace. If it fails to do so and the underlying check
         has a severity below HIGH, this function will return false.
 
         It will only return true if the workspace is clean.
         """
-        extent = self._get_extents(times)
+        extent = self._get_extents()
 
         # Record the subscription to help with troubleshooting in case of failures to clean-up
         self.record_note("main_credentials", self._dss.client.auth_adapter.get_sub())
@@ -333,7 +326,7 @@ class OpIntentReferenceAccessControl(TestScenario):
         # Delete what we know about
         self._clean_known_op_intents_ids()
         # Search and attempt deleting what may be found through search
-        self._attempt_to_delete_remaining_op_intents(times)
+        self._attempt_to_delete_remaining_op_intents(extent)
 
         with self.check(
             "Operational intent references can be searched for",
@@ -365,8 +358,8 @@ class OpIntentReferenceAccessControl(TestScenario):
 
         return True
 
-    def _create_op_intents(self, times: dict[TimeDuringTest, Time]):
-        flight_1 = self._flight_1.resolve(times)
+    def _create_op_intents(self):
+        flight_1 = self._flight_1.resolve(self.time_context.evaluate_now())
         with self.check(
             "Can create an operational intent with valid credentials", self._pid
         ) as check:
@@ -388,7 +381,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                     query_timestamps=[q1.request.timestamp],
                 )
 
-        flight_2 = self._flight_2.resolve(times)
+        flight_2 = self._flight_2.resolve(self.time_context.evaluate_now())
         with self.check(
             "Can create an operational intent with valid credentials", self._pid
         ) as check:
@@ -431,10 +424,8 @@ class OpIntentReferenceAccessControl(TestScenario):
                     f" resources ({self._dss.client.auth_adapter.get_sub()}),",
                 )
 
-    def _check_mutation_on_non_owned_intent_fails(
-        self, times: dict[TimeDuringTest, Time]
-    ):
-        flight_1 = self._flight_1.resolve(times)
+    def _check_mutation_on_non_owned_intent_fails(self):
+        flight_1 = self._flight_1.resolve(self.time_context.evaluate_now())
         with self.check(
             "Non-owning credentials cannot modify operational intent",
             self._pid + self._uids,
