@@ -2,7 +2,6 @@ import arrow
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
     OperationalIntentState,
-    UssAvailabilityState,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -313,25 +312,7 @@ class DownUSS(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-
-        with self.check(
-            "Availability of virtual USS restored", [self.dss.participant_id]
-        ) as check:
-            try:
-                availability_version, avail_query = self.dss.set_uss_availability(
-                    self.uss_qualifier_sub,
-                    UssAvailabilityState.Normal,
-                )
-                self.record_query(avail_query)
-            except QueryError as e:
-                self.record_queries(e.queries)
-                avail_query = e.queries[0]
-                check.record_failed(
-                    summary=f"Availability of USS {self.uss_qualifier_sub} could not be set to available",
-                    details=f"DSS responded code {avail_query.status_code}; {e}",
-                    query_timestamps=[avail_query.request.timestamp],
-                )
-
+        set_uss_available(self, self.dss, self.uss_qualifier_sub)
         cleanup_flights(self, [self.tested_uss])
         self._clear_op_intents()
 
