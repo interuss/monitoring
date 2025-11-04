@@ -507,10 +507,7 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
                 flight1c_activated,
                 self.flight1_id,
             )
-            validator.expect_shared(
-                flight_1_intent,
-                skip_if_not_found=True,
-            )
+            validator.expect_not_shared()
         self.end_test_step()
 
     def cleanup(self):

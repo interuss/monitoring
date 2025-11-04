@@ -259,10 +259,10 @@ If flight modification is not supported by the USS, the next test step is going 
 The test driver attempts to modify Flight 1 so that it becomes in conflict with Flight 2. Both flights are activated at that point.
 However, because the conflict did not exist when the modification was initiated, it should be rejected
 per **[astm.f3548.v21.SCD0030](../../../../../requirements/astm/f3548/v21.md)**.
+In addition, Flight 1 should not have been removed, because doing so would leave an aircraft in flight without any flight plan.
 
-#### [Validate Flight 1 not modified](../../validate_shared_operational_intent.md)
-Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
-original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
+#### [Validate Flight 1 not modified](../../validate_not_shared_operational_intent.md)
+Because the modification attempt was invalid, Flight 1 should not have been modified.
 
 ## Cleanup
 ### ⚠️ Successful flight deletion check
