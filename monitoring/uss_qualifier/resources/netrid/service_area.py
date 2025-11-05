@@ -4,8 +4,7 @@ from typing import Any
 import arrow
 from implicitdict import ImplicitDict
 
-from monitoring.monitorlib.geotemporal import Volume4D
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
+from monitoring.monitorlib.temporal import TestTimeContext, Time
 from monitoring.uss_qualifier.resources import VolumeResource
 from monitoring.uss_qualifier.resources.resource import Resource
 
@@ -35,11 +34,7 @@ class ServiceAreaResource(Resource[ServiceAreaSpecification]):
 
         now = Time(arrow.utcnow().datetime)
         resolved_for_tests = self._volume.specification.template.resolve(
-            {
-                TimeDuringTest.StartOfTestRun: now,
-                TimeDuringTest.StartOfScenario: now,
-                TimeDuringTest.TimeOfEvaluation: now,
-            }
+            TestTimeContext.all_times_are(now)
         )
 
         if (
@@ -54,10 +49,6 @@ class ServiceAreaResource(Resource[ServiceAreaSpecification]):
             raise ValueError(
                 f"In order to be usable for a ServiceAreaResource, the provided VolumeResource must declare time bounds. The volume template was obtained from: {resource_origin}"
             )
-
-    def resolved_volume4d(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        return self._volume.specification.template.resolve(times)
 
     def s2_vertices(self):
         return self._volume.specification.s2_vertices()
@@ -85,9 +76,11 @@ class ServiceAreaResource(Resource[ServiceAreaSpecification]):
         return v3d.altitude_upper.to_w84_m()
 
     def resolved_time_bounds(
-        self, times: dict[TimeDuringTest, Time]
+        self, context: TestTimeContext
     ) -> tuple[datetime.datetime, datetime.datetime]:
-        time_start, time_end = self._volume.specification.template.resolve_times(times)
+        time_start, time_end = self._volume.specification.template.resolve_times(
+            context
+        )
         if time_start is None or time_end is None:
             # Note this should not happen as we check at construction time that these bounds exist
             raise ValueError("The underlying volume does not have time bounds")
