@@ -24,10 +24,10 @@ from monitoring.monitorlib.rid import RIDVersion
 
 @dataclass
 class Settings:
-    connect_timeout_seconds: float | None = 10.1
+    connect_timeout_seconds: float | None = 20.1
     """Number of seconds to allow for establishing a connection."""
 
-    read_timeout_seconds: float | None = 20.1
+    read_timeout_seconds: float | None = 40.1
     """Number of seconds to allow for a request to complete after establishing a connection."""
 
     attempts: int = 2
