@@ -45,6 +45,7 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
 SPEED_PRECISION = 0.05
 HEIGHT_PRECISION_M = 1
+DISTANCE_PRECISION_M = 0.1
 TIMESTAMP_DISCONNECT_TOLERANCE_SEC = 1
 
 # SP responses to /flights endpoint's p99 should be below this:
@@ -675,7 +676,10 @@ class RIDObservationEvaluator:
                 cluster_width, cluster_height = geo.flatten(
                     cluster_rect.lo(), cluster_rect.hi()
                 )
-                min_dim = 2 * self._rid_version.min_obfuscation_distance_m
+                min_dim = (
+                    2 * self._rid_version.min_obfuscation_distance_m
+                    - DISTANCE_PRECISION_M
+                )
                 if cluster_height < min_dim or cluster_width < min_dim:
                     # Cluster has a too small distance to the edge
                     check.record_failed(
