@@ -23,7 +23,7 @@ services:
       start_interval: 5s
 
   rid_bootstrapper:
-    image: interuss/dss:v0.19.0-rc2
+    image: interuss/dss:v0.21.0-rc1
     command: /usr/bin/db-manager migrate --schemas_dir=/db-schemas/rid --db_version "latest" --cockroach_host crdb
     depends_on:
       crdb:
@@ -32,8 +32,17 @@ services:
       - dss_internal_network
 
   scd_bootstrapper:
-    image: interuss/dss:v0.19.0-rc2
+    image: interuss/dss:v0.21.0-rc1
     command: /usr/bin/db-manager migrate --schemas_dir=/db-schemas/scd --db_version "latest" --cockroach_host crdb
+    depends_on:
+      crdb:
+        condition: service_healthy
+    networks:
+      - dss_internal_network
+
+  aux_bootstrapper:
+    image: interuss/dss:v0.21.0-rc1
+    command: /usr/bin/db-manager migrate --schemas_dir=/db-schemas/aux_ --db_version "latest" --cockroach_host crdb
     depends_on:
       crdb:
         condition: service_healthy
@@ -42,7 +51,7 @@ services:
 
   dss:
     hostname: dss.uss1.localutm
-    image: interuss/dss:v0.19.0-rc2
+    image: interuss/dss:v0.21.0-rc1
     volumes:
       - $PWD/../test-certs:/var/test-certs:ro
       - $PWD/startup/core_service.sh:/startup/core_service.sh:ro
@@ -72,6 +81,8 @@ services:
     hostname: oauth.authority.localutm
     image: interuss/dummy-oauth
     command: -private_key_file /var/test-certs/auth2.key
+    volumes:
+      - $PWD/../test-certs:/var/test-certs:ro
     expose:
       - 8085
     ports:
