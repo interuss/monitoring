@@ -4,7 +4,6 @@ from .dss_interoperability import DSSInteroperability as DSSInteroperability
 from .misbehavior import Misbehavior as Misbehavior
 from .networked_uas_disconnect import NetworkedUASDisconnect as NetworkedUASDisconnect
 from .nominal_behavior import NominalBehavior as NominalBehavior
-from .operator_interactions import OperatorInteractions as OperatorInteractions
 from .sp_notification_behavior import (
     ServiceProviderNotificationBehavior as ServiceProviderNotificationBehavior,
 )

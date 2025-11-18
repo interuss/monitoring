@@ -18,7 +18,7 @@
     <th><a href="../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="123" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
+    <td rowspan="122" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
     <td><a href="../../requirements/astm/f3411/v22a.md">DSS0010</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss/token_validation.md">ASTM NetRID DSS: Token Validation</a></td>
@@ -225,13 +225,13 @@
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0030</a></td>
-    <td>Implemented + TODO</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_missing_fields.md">ASTM NetRID Service Provider operator notification on missing fields</a><br><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_missing_fields.md">ASTM NetRID Service Provider operator notification on missing fields</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0040</a></td>
-    <td>Implemented + TODO</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0210</a></td>
@@ -605,13 +605,8 @@
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0610</a></td>
-    <td>Implemented + TODO</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a><br><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../requirements/astm/f3411/v22a.md">NET0620</a></td>
-    <td>TODO</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0710,1</a></td>
