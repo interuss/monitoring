@@ -1,6 +1,6 @@
 import pytest
 from testcontainers.core.container import DockerContainer
-from testcontainers.core.waiting_utils import wait_for_logs
+from testcontainers.core.wait_strategies import LogMessageWaitStrategy
 
 from . import DatastoreDBNode
 
@@ -12,8 +12,8 @@ def good_cockroach(request):
         ports=[26257],
         command="start-single-node",
     )
+    server.waiting_for(LogMessageWaitStrategy("start_node_query"))
     server.start()
-    wait_for_logs(server, "start_node_query")
 
     return DatastoreDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(26257)
@@ -27,8 +27,8 @@ def no_ssl_cockroach(request):
         ports=[26257],
         command="start-single-node --insecure",
     )
+    server.waiting_for(LogMessageWaitStrategy("start_node_query"))
     server.start()
-    wait_for_logs(server, "start_node_query")
 
     return DatastoreDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(26257)
@@ -42,8 +42,8 @@ def old_ssl_cockroach(request):
         ports=[26257],
         command="start-single-node",
     )
+    server.waiting_for(LogMessageWaitStrategy("start_node_query"))
     server.start()
-    wait_for_logs(server, "start_node_query")
 
     return DatastoreDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(26257)
@@ -57,8 +57,10 @@ def good_yugabyte(request):
         ports=[5433],
         command='bash -c "bin/yugabyted cert generate_server_certs --base_dir /yugabyte/certs --hostnames `hostname`  && bin/yugabyted start --secure --certs_dir=/yugabyte/certs/generated_certs/`hostname` --advertise_address=`hostname` --background=false"',
     )
+    server.waiting_for(
+        LogMessageWaitStrategy("Data placement constraint successfully verified")
+    )
     server.start()
-    wait_for_logs(server, "Data placement constraint successfully verified")
 
     return DatastoreDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(5433)
@@ -72,8 +74,10 @@ def no_ssl_yugabyte(request):
         ports=[5433],
         command="bin/yugabyted start --background=false",
     )
+    server.waiting_for(
+        LogMessageWaitStrategy("Data placement constraint successfully verified")
+    )
     server.start()
-    wait_for_logs(server, "Data placement constraint successfully verified")
 
     return DatastoreDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(5433)
@@ -92,8 +96,10 @@ def old_ssl_yugabyte(request):
         ports=[5433],
         command=f'bash -c "echo {config.decode("utf-8")} | base64 -d > /conf.conf && cat /conf.conf && bin/yugabyted cert generate_server_certs --base_dir /yugabyte/certs --hostnames `hostname` && bin/yugabyted start --secure --certs_dir=/yugabyte/certs/generated_certs/`hostname` --advertise_address=`hostname` --background=false --conf /conf.conf"',
     )
+    server.waiting_for(
+        LogMessageWaitStrategy("Data placement constraint successfully verified")
+    )
     server.start()
-    wait_for_logs(server, "Data placement constraint successfully verified")
 
     return DatastoreDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(5433)
