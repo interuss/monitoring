@@ -9,6 +9,9 @@ KEY_SERVICES = "MOCK_USS_SERVICES"
 KEY_DSS_URL = "MOCK_USS_DSS_URL"
 KEY_BEHAVIOR_LOCALITY = "MOCK_USS_BEHAVIOR_LOCALITY"
 KEY_CODE_VERSION = "MONITORING_VERSION"
+KEY_BEHAVIOUR_ACTIVATED_FLIGHTS_EDITABLES = (
+    "MOCK_USS_BEHAVIOUR_ACTIVATED_FLIGHTS_EDITABLE"
+)
 
 
 import_environment_variable(
@@ -27,3 +30,9 @@ import_environment_variable(
 import_environment_variable(KEY_DSS_URL, required=False)
 import_environment_variable(KEY_BEHAVIOR_LOCALITY, default="US.IndustryCollaboration")
 import_environment_variable(KEY_CODE_VERSION, default="Unknown")
+
+import_environment_variable(
+    KEY_BEHAVIOUR_ACTIVATED_FLIGHTS_EDITABLES,
+    default="true",
+    mutator=lambda s: s.lower() == "true",
+)
