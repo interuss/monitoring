@@ -22,7 +22,7 @@ jobs:
         docker version
         docker compose version
     - name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         submodules: true
     - name: Build monitoring image
@@ -59,7 +59,7 @@ jobs:
         docker version
         docker compose version
     - name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         submodules: true
     - name: Load monitoring image
@@ -316,7 +316,7 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: true
           path: monitoring
