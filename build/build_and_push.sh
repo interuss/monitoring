@@ -27,7 +27,8 @@ else
 fi
 cd "${BASEDIR}"
 
-VERSION=$(./scripts/git/version.sh monitoring)
+#VERSION=$(./scripts/git/version.sh monitoring)
+VERSION=cosign-test-bis
 LATEST_TAG="latest"
 
 if [[ -z "${DOCKER_URL}" ]]; then
