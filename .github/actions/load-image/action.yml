@@ -12,6 +12,6 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        docker load --input monitoring-image/monitoring-image.tar
+        gunzip -c monitoring-image/monitoring-image.tar.gz | docker image load
         cp monitoring-image/monitoring/image monitoring/image
         rm -rf monitoring-image

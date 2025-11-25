@@ -29,9 +29,9 @@ jobs:
       run: make image
     - name: Save monitoring image artifact
       run: |
-        docker save interuss/monitoring interuss/monitoring-dev -o monitoring-image.tar
+        docker save interuss/monitoring interuss/monitoring-dev | gzip > monitoring-image.tar.gz
         mkdir -p image-artifact/monitoring
-        mv monitoring-image.tar image-artifact/
+        mv monitoring-image.tar.gz image-artifact/
         cp monitoring/image image-artifact/monitoring/
     - name: Upload monitoring image artifact
       uses: actions/upload-artifact@v5
