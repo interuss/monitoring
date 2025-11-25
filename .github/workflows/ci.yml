@@ -29,7 +29,7 @@ jobs:
       run: make image
     - name: Save monitoring image artifact
       run: |
-        docker save interuss/monitoring -o monitoring-image.tar
+        docker save interuss/monitoring interuss/monitoring-dev -o monitoring-image.tar
         mkdir -p image-artifact/monitoring
         mv monitoring-image.tar image-artifact/
         cp monitoring/image image-artifact/monitoring/

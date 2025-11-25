@@ -19,6 +19,16 @@ docker image build \
     -t "${TAG}" \
     --build-arg version="$(scripts/git/version.sh monitoring --long)" \
     --build-arg commit_hash="$(git rev-parse HEAD)" \
+    --target base \
+    . \
+  || exit 1
+
+docker image build \
+    -f monitoring/Dockerfile \
+    -t "${TAG}-dev" \
+    --build-arg version="$(scripts/git/version.sh monitoring --long)" \
+    --build-arg commit_hash="$(git rev-parse HEAD)" \
+    --target with-dev-dependencies \
     . \
   || exit 1
 echo "File created by monitoring/build.sh to keep track of the latest build run date time." > monitoring/image
