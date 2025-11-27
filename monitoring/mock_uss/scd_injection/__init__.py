@@ -1,0 +1,4 @@
+from monitoring.mock_uss.app import require_config_value
+from monitoring.mock_uss.config import KEY_BEHAVIOUR_ACTIVATED_FLIGHTS_EDITABLES
+
+require_config_value(KEY_BEHAVIOUR_ACTIVATED_FLIGHTS_EDITABLES)
