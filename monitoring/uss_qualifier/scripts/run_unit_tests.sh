@@ -24,5 +24,5 @@ docker run --name uss_qualifier_unit_test \
   -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
   -v "$(pwd):/app" \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  interuss/monitoring \
+  interuss/monitoring-dev \
   uss_qualifier/scripts/in_container/run_unit_tests.sh

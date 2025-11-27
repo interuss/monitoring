@@ -9,15 +9,14 @@
 #
 # This image is intended to be built from the repository root context/folder.
 
-FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS base
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
 # Install system tools
 #   openssl: Provides TLS tools
 #   curl: Useful debugging utility
-#   gcc: Required to build various packages
 #   ca-certificates: Needed to accurately validate TLS connections
-RUN apt-get update --fix-missing && apt-get install -y make openssl curl libgeos-dev gcc g++ && apt-get install ca-certificates
+RUN apt-get update --fix-missing && apt-get install -y make openssl curl && apt-get install ca-certificates
 
 # Required to build in an ARM environment
 #   gevent: libffi-dev libssl-dev python3-dev build-essential
@@ -80,3 +79,12 @@ ENV GIT_COMMIT_HASH=$commit_hash
 
 # No entry point maximizes flexibility in the use of this image
 ENTRYPOINT []
+
+FROM base AS with-dev-dependencies
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=./uv.lock,target=/app/uv.lock \
+    --mount=type=bind,source=./pyproject.toml,target=/app/pyproject.toml \
+    cd /app/ && \
+    unset UV_FROZEN && \
+    uv sync --locked --no-install-project --compile-bytecode --group dev

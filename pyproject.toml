@@ -7,7 +7,6 @@ requires-python = "==3.13.5"
 dependencies = [
     "aiohttp",
     "arrow",
-    "basedpyright>=1.31.1",
     "bc-jsonpath-ng",
     "cryptography",
     "deprecation",
@@ -38,11 +37,8 @@ dependencies = [
     "pykml",
     "pyopenssl",
     "pyproj",
-    "pytest",
-    "pytest-mock",
     "pyyaml",
     "requests",
-    "ruff",
     "s2sphere",
     "scipy",
     "shapely",
@@ -52,6 +48,18 @@ dependencies = [
     "uas-standards",
     "uuid6",
 ]
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.31.1",
+    "pytest",
+    "pytest-mock",
+    "ruff",
+    "types-lxml>=2025.8.25",
+]
+
+[tool.uv]
+default-groups = []
 
 [tool.ruff]
 target-version = "py313"
@@ -79,9 +87,4 @@ exclude = [
   "monitoring/prober/output/*",
   "monitoring/mock_uss/output/*",
   "monitoring/uss_qualifier/output/*",
-]
-
-[dependency-groups]
-dev = [
-    "types-lxml>=2025.8.25",
 ]
