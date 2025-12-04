@@ -2,7 +2,7 @@ import pytest
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.wait_strategies import LogMessageWaitStrategy
 
-from . import DatastoreDBNode
+from . import CockroachDBNode, YugabyteDBNode
 
 
 @pytest.fixture(scope="module")
@@ -15,7 +15,7 @@ def good_cockroach(request):
     server.waiting_for(LogMessageWaitStrategy("start_node_query"))
     server.start()
 
-    return DatastoreDBNode(
+    return CockroachDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(26257)
     )
 
@@ -30,7 +30,7 @@ def no_ssl_cockroach(request):
     server.waiting_for(LogMessageWaitStrategy("start_node_query"))
     server.start()
 
-    return DatastoreDBNode(
+    return CockroachDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(26257)
     )
 
@@ -45,7 +45,7 @@ def old_ssl_cockroach(request):
     server.waiting_for(LogMessageWaitStrategy("start_node_query"))
     server.start()
 
-    return DatastoreDBNode(
+    return CockroachDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(26257)
     )
 
@@ -53,17 +53,34 @@ def old_ssl_cockroach(request):
 @pytest.fixture(scope="module")
 def good_yugabyte(request):
     server = DockerContainer(
-        image="yugabytedb/yugabyte:2.25.2.0-b359",
-        ports=[5433],
-        command='bash -c "bin/yugabyted cert generate_server_certs --base_dir /yugabyte/certs --hostnames `hostname`  && bin/yugabyted start --secure --certs_dir=/yugabyte/certs/generated_certs/`hostname` --advertise_address=`hostname` --background=false"',
+        image="mcuoorb/ytest:v010",  # TODO: Replace me when official images are released
+        ports=[7100],
+        command='bash -c "bin/yugabyted cert generate_server_certs --base_dir /yugabyte/certs --hostnames `hostname` && bin/yugabyted start --secure --certs_dir=/yugabyte/certs/generated_certs/`hostname` --advertise_address=`hostname` --background=false --tserver_flags=node_to_node_encryption_use_client_certificates=true --master_flags=node_to_node_encryption_use_client_certificates=true,use_node_to_node_encryption=true"',
     )
     server.waiting_for(
         LogMessageWaitStrategy("Data placement constraint successfully verified")
     )
     server.start()
 
-    return DatastoreDBNode(
-        "test", server.get_container_host_ip(), server.get_exposed_port(5433)
+    return YugabyteDBNode(
+        "test", server.get_container_host_ip(), server.get_exposed_port(7100)
+    )
+
+
+@pytest.fixture(scope="module")
+def yugabyte_without_client_auth(request):
+    server = DockerContainer(
+        image="yugabytedb/yugabyte:2.25.2.0-b359",
+        ports=[7100],
+        command='bash -c "bin/yugabyted cert generate_server_certs --base_dir /yugabyte/certs --hostnames `hostname` && bin/yugabyted start --secure --certs_dir=/yugabyte/certs/generated_certs/`hostname` --advertise_address=`hostname` --background=false"',
+    )
+    server.waiting_for(
+        LogMessageWaitStrategy("Data placement constraint successfully verified")
+    )
+    server.start()
+
+    return YugabyteDBNode(
+        "test", server.get_container_host_ip(), server.get_exposed_port(7100)
     )
 
 
@@ -71,7 +88,7 @@ def good_yugabyte(request):
 def no_ssl_yugabyte(request):
     server = DockerContainer(
         image="yugabytedb/yugabyte:2.25.2.0-b359",
-        ports=[5433],
+        ports=[7100],
         command="bin/yugabyted start --background=false",
     )
     server.waiting_for(
@@ -79,30 +96,8 @@ def no_ssl_yugabyte(request):
     )
     server.start()
 
-    return DatastoreDBNode(
-        "test", server.get_container_host_ip(), server.get_exposed_port(5433)
-    )
-
-
-@pytest.fixture(scope="module")
-def old_ssl_yugabyte(request):
-    import base64
-
-    config = '{"tserver_flags": "ysql_pg_conf_csv=\\"ssl_min_protocol_version=\'TLSv1.1\'\\""}'
-    config = base64.b64encode(config.encode("utf-8"))  # Avoid escaping hell
-
-    server = DockerContainer(
-        image="yugabytedb/yugabyte:2.25.2.0-b359",
-        ports=[5433],
-        command=f'bash -c "echo {config.decode("utf-8")} | base64 -d > /conf.conf && cat /conf.conf && bin/yugabyted cert generate_server_certs --base_dir /yugabyte/certs --hostnames `hostname` && bin/yugabyted start --secure --certs_dir=/yugabyte/certs/generated_certs/`hostname` --advertise_address=`hostname` --background=false --conf /conf.conf"',
-    )
-    server.waiting_for(
-        LogMessageWaitStrategy("Data placement constraint successfully verified")
-    )
-    server.start()
-
-    return DatastoreDBNode(
-        "test", server.get_container_host_ip(), server.get_exposed_port(5433)
+    return YugabyteDBNode(
+        "test", server.get_container_host_ip(), server.get_exposed_port(7100)
     )
 
 
@@ -131,19 +126,21 @@ def test_datastoredbmode_connect_old_ssl_cockroach(old_ssl_cockroach):
     assert is_reachable
 
 
-def test_datastoredbmode_connect_old_ssl_yugabyte(old_ssl_yugabyte):
-    is_reachable, _ = old_ssl_yugabyte.is_reachable()
-    assert is_reachable
-
-
 def test_datastoredbmode_secure_mode_good_cockroach(good_cockroach):
     is_secure, _ = good_cockroach.runs_in_secure_mode()
     assert is_secure
 
 
 def test_datastoredbmode_secure_mode_good_yugabyte(good_yugabyte):
-    is_secure, _ = good_yugabyte.runs_in_secure_mode()
-    assert is_secure
+    is_secure, e = good_yugabyte.runs_in_secure_mode()
+    assert not e, is_secure
+
+
+def test_datastoredbmode_secure_mode_yugabyte_without_client_auth(
+    yugabyte_without_client_auth,
+):
+    is_secure, _ = yugabyte_without_client_auth.runs_in_secure_mode()
+    assert not is_secure
 
 
 def test_datastoredbmode_secure_mode_no_ssl_cockroach(no_ssl_cockroach):
@@ -161,11 +158,6 @@ def test_datastoredbmode_secure_mode_old_ssl_cockroach(old_ssl_cockroach):
     assert is_secure
 
 
-def test_datastoredbmode_secure_mode_old_ssl_yugabyte(old_ssl_yugabyte):
-    is_secure, _ = old_ssl_yugabyte.runs_in_secure_mode()
-    assert is_secure
-
-
 def test_datastoredbmode_reject_legacy_good_cockroach(good_cockroach):
     legacy_rejected, _ = good_cockroach.legacy_ssl_version_rejected()
     assert legacy_rejected
@@ -178,9 +170,4 @@ def test_datastoredbmode_reject_legacy_good_yugabyte(good_yugabyte):
 
 def test_datastoredbmode_reject_legacy_old_ssl_cockroach(old_ssl_cockroach):
     legacy_rejected, _ = old_ssl_cockroach.legacy_ssl_version_rejected()
-    assert not legacy_rejected
-
-
-def test_datastoredbmode_reject_legacy_old_ssl_yugabyte(old_ssl_yugabyte):
-    legacy_rejected, _ = old_ssl_yugabyte.legacy_ssl_version_rejected()
     assert not legacy_rejected

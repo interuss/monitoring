@@ -50,13 +50,23 @@ class DatastoreAccess(GenericTestScenario):
         self.begin_test_step("Attempt to connect in insecure mode")
         for node in self.datastore_nodes:
             with self.check(
-                "Node runs in secure mode",
+                "Node enforces encryption of its communications",
                 node.participant_id,
             ) as check:
-                secure_mode, e = node.runs_in_secure_mode()
-                if not secure_mode:
+                encrypted, e = node.no_ssl_rejected()
+                if not encrypted:
                     check.record_failed(
-                        "Node is not in secure mode",
+                        "Node did not reject cleartext communication",
+                        details=f"Reported connection error (if any): {e}",
+                    )
+            with self.check(
+                "Node enforces authentication of its communications",
+                node.participant_id,
+            ) as check:
+                authenticated, e = node.unauthenticated_rejected()
+                if not authenticated:
+                    check.record_failed(
+                        "Node did not reject unauthenticated communication",
                         details=f"Reported connection error (if any): {e}",
                     )
         self.end_test_step()
