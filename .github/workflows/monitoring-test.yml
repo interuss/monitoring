@@ -39,7 +39,7 @@ jobs:
       run: ${{ inputs.script }}
     - name: Save containers and tracer logs as artifact
       if: always()
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: monitoring-test-${{ inputs.name }}-logs
         path: |
@@ -47,7 +47,7 @@ jobs:
           monitoring/mock_uss/output
     - name: Save USS qualifier reports as artifact
       if: always()
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: monitoring-test-${{ inputs.name }}-reports
         path: |
