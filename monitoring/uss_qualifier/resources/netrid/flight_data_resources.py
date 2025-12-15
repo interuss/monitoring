@@ -58,6 +58,8 @@ class FlightDataResource(Resource[FlightDataSpecification]):
             )
         self._flight_start_delay = specification.flight_start_delay.timedelta
 
+        self._validate_flights()
+
     def get_test_flights(self) -> list[TestFlight]:
         t0 = arrow.utcnow() + self._flight_start_delay
 
@@ -178,6 +180,44 @@ class FlightDataResource(Resource[FlightDataSpecification]):
         for flight in self_copy.flight_collection.flights:
             flight.states = flight.states[::n]
         return self_copy
+
+    def _validate_flights(self):
+        """Ensure that loaded flights are valid"""
+
+        for flight in self.flight_collection.flights:
+            self._validate_flight(flight)
+
+    def _validate_flight(self, flight):
+        """Ensure flight data is valid"""
+
+        for state in flight.states:
+            # RIDAircraftState don't enforce values for thoses fields so we can
+            # create invalid flight on purpose, but we want then to be valid
+            # when coming from a source.
+            # See https://github.com/interuss/uas_standards/blob/main/src/uas_standards/interuss/automated_testing/rid/v1/injection.py#L412
+
+            for field in [
+                "timestamp",
+                "timestamp_accuracy",
+                "speed",
+                "vertical_speed",
+                "track",
+                "speed_accuracy",
+                "position",
+            ]:
+                if not state.has_field_with_value(field) or state[field] is None:
+                    raise Exception(
+                        f"Mandatory field {field} not found in state {state}"
+                    )
+
+            for field in ["accuracy_h", "accuracy_v"]:
+                if (
+                    not state.position.has_field_with_value(field)
+                    or state.position[field] is None
+                ):
+                    raise Exception(
+                        f"Mandatory field position.{field} not found in state {state}"
+                    )
 
 
 class FlightDataStorageSpecification(ImplicitDict):
