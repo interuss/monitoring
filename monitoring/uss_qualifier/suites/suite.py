@@ -158,6 +158,7 @@ class TestSuiteAction[T: ActionGenerator]:
         scenario.time_context[TimeDuringTest.StartOfScenario] = Time(
             arrow.utcnow().datetime
         )
+
         try:
             try:
                 scenario.run(context)
@@ -412,12 +413,16 @@ class ExecutionContext:
     config: ExecutionConfiguration | None
     top_frame: ActionStackFrame | None
     current_frame: ActionStackFrame | None
+    scenarios_filter: str | None
 
-    def __init__(self, config: ExecutionConfiguration | None):
+    def __init__(
+        self, config: ExecutionConfiguration | None, scenarios_filter: str | None
+    ):
         self.config = config
         self.top_frame = None
         self.current_frame = None
         self.start_time = arrow.utcnow().datetime
+        self.scenarios_filter = scenarios_filter
 
     def sibling_queries(self) -> Iterator[Query]:
         if self.current_frame is None or self.current_frame.parent is None:
@@ -629,6 +634,17 @@ class ExecutionContext:
                         reason=f"Action selected to be skipped by skip_action_when condition {f}",
                         declaration=self.current_frame.action.declaration,
                     )
+
+        if self.scenarios_filter and self.current_frame.action.test_scenario:
+            if not re.match(
+                self.scenarios_filter,
+                self.current_frame.action.test_scenario.__class__.__name__,
+            ):
+                return SkippedActionReport(
+                    timestamp=StringBasedDateTime(arrow.utcnow()),
+                    reason="Filtered scenario",
+                    declaration=self.current_frame.action.declaration,
+                )
 
         return None
 
