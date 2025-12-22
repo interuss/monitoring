@@ -96,4 +96,4 @@ class UnitedStatesIndustryCollaboration(Locality):
         return 100
 
     def uses_cmsa(self) -> bool:
-        return True
+        return False
