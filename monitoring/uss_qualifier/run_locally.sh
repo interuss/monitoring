@@ -78,6 +78,7 @@ docker run ${docker_args} --name uss_qualifier \
   -e PYTHONBUFFERED=1 \
   -e AUTH_SPEC=${AUTH_SPEC} \
   -e AUTH_SPEC_2=${AUTH_SPEC_2} \
+  -e PROJ_NETWORK \
   ${PRIVATE_REPOS_ENV_FLAG} \
   -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
   -v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \

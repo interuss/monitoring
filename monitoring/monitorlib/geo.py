@@ -5,6 +5,7 @@ import os
 from enum import Enum
 
 import numpy as np
+import pyproj
 import s2sphere
 import shapely.geometry
 from implicitdict import ImplicitDict
@@ -694,6 +695,33 @@ def egm96_geoid_offset(p: s2sphere.LatLng) -> float:
     # listed -90 to 90.  Since latitude data are symmetric, we can simply
     # convert "-90 to 90" to "90 to -90" by inverting the requested latitude.
     return _egm96.ev(-lat, lng)
+
+
+def egm2008_geoid_offset(p: s2sphere.LatLng) -> float:
+    """Estimate the EGM2008 geoid height above the WGS84 ellipsoid.
+
+    Args:
+        p: Point where offset should be estimated.
+
+    Returns: Meters above WGS84 ellipsoid of the EGM2008 geoid at p.
+    """
+
+    if not pyproj.network.is_network_enabled():  # pyright:ignore[reportAttributeAccessIssue]
+        raise Exception("""
+To enable EGM2008 conversions, you must allow pyproj to download files to do the conversion. For that, please set PROJ_NETWORK=TRUE in your environment variables.
+
+Please ensure this comply with your policies, and avoid multiple downloads by mounting the directoy '/root/.local/share/proj/' to a docker volume.
+""")
+
+    transformer = pyproj.Transformer.from_crs(
+        "EPSG:4979",  # WGS 84 -- 3D
+        "EPSG:4326+3855",  # WGS 84 (2D) + EGM2008 height (vertical)
+        always_xy=True,
+    )
+
+    _, _, ortho_height = transformer.transform(p.lng().degrees, p.lat().degrees, 0)
+
+    return -ortho_height
 
 
 def center_of_mass(in_points: list[LatLng]) -> LatLng:

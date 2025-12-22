@@ -6,7 +6,7 @@ from uas_standards.interuss.automated_testing.rid.v1.observation import (
 )
 
 from monitoring.monitorlib.fetch import Query, QueryType
-from monitoring.monitorlib.geo import egm96_geoid_offset
+from monitoring.monitorlib.geo import egm96_geoid_offset, egm2008_geoid_offset
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.netrid import NetRIDObserversResource
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.nominal_behavior import (
@@ -110,12 +110,31 @@ class MSLAltitude(TestScenario):
                     and flight.most_recent_position is not None
                 ):
                     with self.check("MSL altitude is correct", participant_id) as check:
-                        geoid_offset = egm96_geoid_offset(
-                            s2sphere.LatLng.from_degrees(
-                                flight.most_recent_position.lat,
-                                flight.most_recent_position.lng,
+                        if (
+                            flight.most_recent_position.msl_alt.reference_datum
+                            == AltitudeReference.EGM96
+                        ):
+                            geoid_offset = egm96_geoid_offset(
+                                s2sphere.LatLng.from_degrees(
+                                    flight.most_recent_position.lat,
+                                    flight.most_recent_position.lng,
+                                )
                             )
-                        )
+                        elif (
+                            flight.most_recent_position.msl_alt.reference_datum
+                            == AltitudeReference.EGM2008
+                        ):
+                            geoid_offset = egm2008_geoid_offset(
+                                s2sphere.LatLng.from_degrees(
+                                    flight.most_recent_position.lat,
+                                    flight.most_recent_position.lng,
+                                )
+                            )
+                        else:
+                            raise Exception(
+                                "Internal error: ACCEPTABLE_DATUMS of netrid/msl.py don't match the datum we can check"
+                            )
+
                         expected_msl_alt = (
                             flight.most_recent_position.alt - geoid_offset
                         )
