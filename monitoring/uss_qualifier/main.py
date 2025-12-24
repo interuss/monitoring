@@ -79,6 +79,12 @@ def parseArgs() -> argparse.Namespace:
         help="When true, do not run a test configuration which would produce unredacted sensitive information in its artifacts",
     )
 
+    parser.add_argument(
+        "--filter",
+        default=None,
+        help="Regex used to filter specific test scenario. If not set, all scenario are ran. Mainly useful to quickly debug a specifc scenario.",
+    )
+
     return parser.parse_args()
 
 
@@ -109,9 +115,14 @@ class TestDefinitionDescription(ImplicitDict):
 
 
 def execute_test_run(
-    whole_config: USSQualifierConfiguration, description: TestDefinitionDescription
+    whole_config: USSQualifierConfiguration,
+    description: TestDefinitionDescription,
+    scenarios_filter: str | None,
 ):
     config = whole_config.v1.test_run
+
+    if not config:
+        raise Exception("Config not found")
 
     logger.info("Instantiating resources")
     stop_when_not_created = (
@@ -127,7 +138,9 @@ def execute_test_run(
     )
 
     logger.info("Instantiating top-level test suite action")
-    context = ExecutionContext(config.execution if "execution" in config else None)
+    context = ExecutionContext(
+        config.execution if "execution" in config else None, scenarios_filter
+    )
     action = TestSuiteAction(config.action, resources)
     logger.info("Running top-level test suite action")
     report = action.run(context)
@@ -172,6 +185,7 @@ def run_config(
     output_path: str | None,
     runtime_metadata: dict | None,
     disallow_unredacted: bool,
+    scenarios_filter: str | None,
 ):
     config_src = load_dict_with_references(config_name)
 
@@ -228,7 +242,7 @@ def run_config(
         )
 
     logger.info("Executing test run")
-    report = execute_test_run(whole_config, description)
+    report = execute_test_run(whole_config, description, scenarios_filter)
 
     if runtime_metadata is not None:
         report.runtime_metadata = runtime_metadata
@@ -257,6 +271,7 @@ def main() -> int:
         raise ValueError("--runtime-metadata must specify a JSON dictionary")
 
     disallow_unredacted = args.disallow_unredacted
+    scenarios_filter = args.filter
 
     config_names = str(args.config).split(",")
 
@@ -285,6 +300,7 @@ def main() -> int:
             output_path,
             runtime_metadata,
             disallow_unredacted,
+            scenarios_filter,
         )
         if exit_code != os.EX_OK:
             return exit_code
