@@ -18,6 +18,9 @@ jobs:
     name: ${{ inputs.name }} test
     permissions:
       contents: read
+    strategy:
+      matrix:
+        behaviour_activated_flights_editables: [true, false]
     steps:
     - name: Job information
       run: |
@@ -36,12 +39,12 @@ jobs:
     - name: Load monitoring image
       uses: ./.github/actions/load-image
     - name: Run ${{ inputs.name }} test
-      run: ${{ inputs.script }}
+      run: export MOCK_USS_BEHAVIOUR_ACTIVATED_FLIGHTS_EDITABLE=${{ matrix.behaviour_activated_flights_editables }} && ${{ inputs.script }}
     - name: Save containers and tracer logs as artifact
       if: always()
       uses: actions/upload-artifact@v6
       with:
-        name: monitoring-test-${{ inputs.name }}-logs
+        name: monitoring-test-${{ inputs.name }}-${{ matrix.behaviour_activated_flights_editables }}-logs
         path: |
           logs
           monitoring/mock_uss/output
@@ -49,7 +52,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v6
       with:
-        name: monitoring-test-${{ inputs.name }}-reports
+        name: monitoring-test-${{ inputs.name }}-${{ matrix.behaviour_activated_flights_editables }}-reports
         path: |
           monitoring/uss_qualifier/output
           monitoring/prober/output

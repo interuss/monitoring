@@ -19,7 +19,10 @@ from uas_standards.interuss.automated_testing.scd.v1.api import (
 
 from monitoring.mock_uss.app import require_config_value, webapp
 from monitoring.mock_uss.auth import requires_scope
-from monitoring.mock_uss.config import KEY_BASE_URL
+from monitoring.mock_uss.config import (
+    KEY_BASE_URL,
+    KEY_BEHAVIOUR_ACTIVATED_FLIGHTS_EDITABLES,
+)
 from monitoring.mock_uss.dynamic_configuration.configuration import get_locality
 from monitoring.mock_uss.f3548v21 import utm_client
 from monitoring.mock_uss.f3548v21.flight_planning import (
@@ -177,6 +180,14 @@ def inject_flight(
         validate_request(new_flight.op_intent)
     except PlanningError as e:
         return unsuccessful(PlanningActivityResult.Rejected, str(e))
+
+    if (
+        not webapp.config[KEY_BEHAVIOUR_ACTIVATED_FLIGHTS_EDITABLES]
+        and old_status == FlightPlanStatus.OkToFly
+    ):
+        return unsuccessful(
+            PlanningActivityResult.NotSupported, "Unable to modify an activated flight"
+        )
 
     step_name = "performing unknown operation"
     notes: str | None = None
