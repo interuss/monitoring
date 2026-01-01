@@ -1,0 +1,61 @@
+version: "3"
+
+# Taskfile for Airwayz RID testing
+#
+# Usage:
+#   From project root: task -t monitoring/uss_qualifier/configurations/personal/Taskfile.yaml <task-name>
+#   Or create alias: alias airwayz-task='task -t monitoring/uss_qualifier/configurations/personal/Taskfile.yaml'
+#
+# Available tasks:
+#   - install-prequisites: Checks and installs uv if not present (macOS only)
+#   - set-noauth: Sets AUTH_SPEC environment variable to NoAuth() (cross-platform)
+#   - run: Runs the Airwayz RID test configuration (automatically runs prerequisites first)
+#   - default: Lists all available tasks
+#
+# Prerequisites:
+#   - Task runner (https://taskfile.dev)
+#   - Homebrew (macOS) or appropriate package manager for your OS
+#   - uv (will be installed automatically via install-prequisites task)
+
+vars:
+  INTERUSS_ADAPTER_URL: "http://localhost:5010"
+
+tasks:
+  default:
+    cmds:
+      - task -a
+
+  install-prequisites:
+    desc: Install prequisites for Airwayz RID testing
+    cmds:
+      - |
+        if ! command -v uv &> /dev/null; then
+          echo "Installing uv..."
+          brew install uv
+        else
+          echo "uv is already installed"
+        fi
+
+  set-noauth:
+    desc: Set AUTH_SPEC to NoAuth()
+    cmds:
+      - |
+        {{if eq OS "windows"}}
+        $env:AUTH_SPEC = "NoAuth()"
+        {{else}}
+        export AUTH_SPEC="NoAuth()"
+        {{end}}
+
+  uv-sync:
+    desc: Sync dependencies
+    dir: ../../../../
+    cmds:
+      - uv sync
+
+  run:
+    desc: Run the Airwayz RID test configuration
+    deps: [install-prequisites, uv-sync]
+    dir: ../../
+    cmds:
+      - export INTERUSS_ADAPTER_URL={{.INTERUSS_ADAPTER_URL}}
+      - PYTHONPATH=$(cd ../../ && pwd) AUTH_SPEC="NoAuth()" uv run main.py --config configurations.personal.airwayz_rid_test
