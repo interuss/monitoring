@@ -46,7 +46,7 @@ def _load_requirement(requirement_id: RequirementID) -> None:
         raise ValueError(
             f'Could not load requirement "{requirement_id}" because the file "{md_filename}" does not exist'
         )
-    with open(md_filename) as f:
+    with open(md_filename, encoding="utf-8") as f:
         doc = marko.parse(f.read())
     _verify_requirements(doc, requirement_id.package())
     if requirement_id not in _verified_requirements:
@@ -120,7 +120,7 @@ def _load_requirement_set(requirement_set_id: RequirementSetID) -> RequirementSe
         raise ValueError(
             f'Could not load requirement set "{requirement_set_id}" because the file "{md_filename}" does not exist'
         )
-    with open(md_filename) as f:
+    with open(md_filename, encoding="utf-8") as f:
         doc = marko.parse(f.read())
 
     # Extract the file-level name from the first top-level header

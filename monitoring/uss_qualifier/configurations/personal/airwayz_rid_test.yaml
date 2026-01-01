@@ -1,80 +1,186 @@
 $content_schema: monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json
 v1:
   test_run:
+    action:
+      test_suite:
+        # 1. Select the Test Suite
+        suite_type: suites.astm.utm.f3548_21
+        resources:
+          # Mapping resources required by the suite to your definitions below
+          flight_planners: flight_planners
+          flight_planners_to_clear: flight_planners
+          test_env_version_providers: test_env_version_providers
+          prod_env_version_providers: prod_env_version_providers
+          dss: dss
+          utm_auth: utm_auth
+          id_generator: id_generator
+          utm_client_identity: utm_client_identity
+          planning_area: planning_area
+          problematically_big_area: problematically_big_area
+          conflicting_flights: conflicting_flights
+          invalid_flight_intents: invalid_flight_intents
+          non_conflicting_flights: non_conflicting_flights
+          test_exclusions: test_exclusions
     resources:
       resource_declarations:
-        # Auth adapter for making authenticated requests
+        # 2. Define Authentication
         utm_auth:
           resource_type: resources.communications.AuthAdapterResource
           specification:
-            environment_variable_containing_auth_spec: AUTH_SPEC
+            # environment_variable_containing_auth_spec: AUTH_SPEC
+            auth_spec: NoAuth(test_user)
             scopes_authorized:
-              - rid.inject_test_data
-              - rid.service_provider
-              - rid.display_provider
+              - interuss.flight_planning.direct_automated_test
+              - interuss.flight_planning.plan
+              - interuss.versioning.read_system_versions
+              - utm.strategic_coordination
+              - utm.availability_arbitration
+              - utm.constraint_management
+        # 3. Define Your Service (Flight Planner)
+        flight_planners:
+          resource_type: resources.flight_planning.FlightPlannersResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            flight_planners:
+              - participant_id: my_service_under_test
+                # URL to point to your service
+                # v1_base_url: http://host.docker.internal:5000
+                v1_base_url: http://localhost:5000
 
-        # Client identity resource
+        # Means by which to obtain the versions of participants' systems under test
+        test_env_version_providers:
+          resource_type: resources.versioning.VersionProvidersResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            instances: []
+
+        # Means by which to obtain the versions of participants' production systems
+        prod_env_version_providers:
+          resource_type: resources.versioning.VersionProvidersResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            instances: []
+
+        # 4. Define the DSS (Decision Support Service)
+        # You normally need a DSS to test against. You can use a local mock or a real one.
+        dss:
+          resource_type: resources.astm.f3548.v21.DSSInstanceResource
+          dependencies:
+            auth_adapter: utm_auth
+          specification:
+            participant_id: dss_provider
+            base_url: http://dss.localutm
+
+        # Controls tests behavior
+        test_exclusions:
+          resource_type: resources.dev.TestExclusionsResource
+          specification:
+            allow_private_addresses: true
+            allow_cleartext_queries: true
+
+        # Means by which uss_qualifier can discover which subscription ('sub' claim of its tokes) it is described by
         utm_client_identity:
           resource_type: resources.communications.ClientIdentityResource
           dependencies:
             auth_adapter: utm_auth
           specification:
             whoami_audience: localhost
-            whoami_scope: rid.display_provider
+            whoami_scope: utm.strategic_coordination
 
-        # Airwayz RID Service Provider
-        airwayz_rid_service:
-          resource_type: resources.netrid.NetRIDServiceProviders
-          dependencies:
-            auth_adapter: utm_auth
-          specification:
-            service_providers:
-              - participant_id: airwayz
-                injection_base_url: http://localhost:5000/uss/flights
-
-        # ID generator for test data
+        # Means by which uss_qualifier generates identifiers
         id_generator:
           resource_type: resources.interuss.IDGeneratorResource
           dependencies:
             client_identity: utm_client_identity
+
+        # Area that will be used for queries and resource creation that are geo-located
+        planning_area_volume:
+          resource_type: resources.VolumeResource
           specification:
-            id_generator_type: uuid4
+            template:
+              outline_polygon:
+                vertices:
+                  - lat: 37.1853
+                    lng: -80.6140
+                  - lat: 37.2148
+                    lng: -80.6140
+                  - lat: 37.2148
+                    lng: -80.5440
+                  - lat: 37.1853
+                    lng: -80.5440
+              altitude_lower:
+                value: 0
+                reference: W84
+                units: M
+              altitude_upper:
+                value: 3048
+                reference: W84
+                units: M
 
-    # Define what test to run
-    action:
-      test_suite:
-        suite_definition:
-          name: Airwayz RID Test
-          resources:
-            service_providers: resources.netrid.NetRIDServiceProviders
-            utm_client_identity: resources.communications.ClientIdentityResource
-            id_generator: resources.interuss.IDGeneratorResource
-          actions:
-            []
-            # TODO: Add actual RID test scenarios here
-            # Example: - test_scenario:
-            #            scenario_type: scenarios.astm.netrid.v22a.dss.ISAValidation
-            #            resources:
-            #              dss_instances: dss_instances
+        planning_area:
+          resource_type: resources.PlanningAreaResource
+          dependencies:
+            volume: planning_area_volume
+          specification:
+            base_url: https://example.com/planning_area
 
-        resources:
-          service_providers: airwayz_rid_service
-          utm_client_identity: utm_client_identity
-          id_generator: id_generator
+        # An area designed to be soo big as to be refused by systems queries with it.
+        problematically_big_area:
+          resource_type: resources.VolumeResource
+          specification:
+            template:
+              outline_polygon:
+                vertices:
+                  - lat: 38
+                    lng: -81
+                  - lat: 37
+                    lng: -81
+                  - lat: 37
+                    lng: -80
+                  - lat: 38
+                    lng: -80
 
-  # Artifacts to generate
+        # Details of conflicting flights
+        conflicting_flights:
+          resource_type: resources.flight_planning.FlightIntentsResource
+          specification:
+            file:
+              path: file://./test_data/flight_intents/standard/conflicting_flights.yaml
+            transformations:
+              - relative_translation:
+                  degrees_north: 32.7181
+                  degrees_east: -96.7587
+                  meters_up: 93
+
+        # Details of flights with invalid operational intents
+        invalid_flight_intents:
+          resource_type: resources.flight_planning.FlightIntentsResource
+          specification:
+            intent_collection:
+              $ref: test_data.flight_intents.standard.invalid_flight_intents
+            transformations:
+              - relative_translation:
+                  degrees_north: 32.7181
+                  degrees_east: -96.7587
+                  meters_up: 93
+
+        # Details of non-conflicting flights
+        non_conflicting_flights:
+          resource_type: resources.flight_planning.FlightIntentsResource
+          specification:
+            intent_collection:
+              # Note that $refs are relative to the file with the $ref (this one, in this case)
+              $ref: file://../../test_data/flight_intents/standard/non_conflicting.yaml
+            transformations:
+              - relative_translation:
+                  degrees_north: 32.7181
+                  degrees_east: -96.7587
+                  meters_up: 93
+    execution:
+      stop_fast: true
   artifacts:
-    raw_report:
-      indent: 2
-    # sequence_view: {}
+    raw_report: {}
     report_html: {}
-
-  # Validation criteria
-  validation:
-    criteria:
-      - applicability:
-          skip_reason: {}
-        pass_condition:
-          each_element:
-            has_field:
-              name: skip_reason

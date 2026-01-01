@@ -94,7 +94,7 @@ def _get_linked_test_step_fragment(
             raise ValueError(
                 f'Test step fragment document "{doc_filename}" linked from "{origin_filename}" does not exist at "{absolute_path}"'
             )
-        with open(absolute_path) as f:
+        with open(absolute_path, encoding="utf-8") as f:
             doc = marko.parse(f.read())
 
         if (
@@ -236,7 +236,7 @@ def _parse_documentation(scenario: type) -> TestScenarioDocumentation:
         raise ValueError(
             f"Test scenario `{fullname(scenario)}` does not have the required documentation file `{doc_filename}`"
         )
-    with open(doc_filename) as f:
+    with open(doc_filename, encoding="utf-8") as f:
         doc = marko.parse(f.read())
     url = repo_url_of(doc_filename)
     anchors = _get_anchors(doc)
