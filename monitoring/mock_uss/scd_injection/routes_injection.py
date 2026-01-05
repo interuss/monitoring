@@ -178,6 +178,16 @@ def inject_flight(
     except PlanningError as e:
         return unsuccessful(PlanningActivityResult.Rejected, str(e))
 
+    if not locality.uses_cmsa():
+        if new_flight.op_intent.reference.state in [
+            scd_api.OperationalIntentState.Nonconforming,
+            scd_api.OperationalIntentState.Contingent,
+        ]:
+            return unsuccessful(
+                PlanningActivityResult.NotSupported,
+                f"The current locality {locality} does not support CMSA, flight cannot transition to {new_flight.op_intent.reference.state}",
+            )
+
     step_name = "performing unknown operation"
     notes: str | None = None
     try:
