@@ -37,6 +37,11 @@ class Locality(ABC):
         """Returns the highest priority level for ASTM F3548-21 defined by the regulator of this locality"""
         raise NotImplementedError(Locality._NOT_IMPLEMENTED_MSG)
 
+    @abstractmethod
+    def uses_cmsa(self) -> bool:
+        """Return true if the ecosystem supports CMSA operations"""
+        raise NotImplementedError(Locality._NOT_IMPLEMENTED_MSG)
+
     def __str__(self):
         return self.__class__.__name__
 
@@ -69,6 +74,13 @@ class Switzerland(Locality):
     def highest_priority(self) -> int:
         return 100
 
+    def uses_cmsa(self) -> bool:
+        # Return True for now as Switzerland didn't determined yet if CMSA is
+        # used.
+        # If switched to False, ensure tests have a locality with CMSA enabled.
+        # See https://github.com/interuss/monitoring/pull/1304#pullrequestreview-3594632974
+        return True
+
 
 class UnitedStatesIndustryCollaboration(Locality):
     @classmethod
@@ -86,3 +98,6 @@ class UnitedStatesIndustryCollaboration(Locality):
 
     def highest_priority(self) -> int:
         return 100
+
+    def uses_cmsa(self) -> bool:
+        return False
