@@ -1,3 +1,4 @@
+import copy
 import datetime
 import json
 import os
@@ -5,7 +6,7 @@ import traceback
 import uuid
 from dataclasses import dataclass
 from enum import Enum
-from typing import TypeVar
+from typing import Self, TypeVar
 from urllib.parse import urlparse
 
 import flask
@@ -458,6 +459,9 @@ class Query(ImplicitDict):
     query_type: QueryType | None
     """If specified, the recognized type of this query."""
 
+    _previous_query: Self | None
+    """If specified, the previous, failling query that generated this query as a retry"""
+
     @property
     def timestamp(self) -> datetime.datetime:
         """Safety property to prevent crashes when Query.timestamp is accessed.
@@ -579,10 +583,12 @@ def describe_query(
     initiated_at: datetime.datetime,
     query_type: QueryType | None = None,
     participant_id: str | None = None,
+    previous_query: Query | None = None,
 ) -> Query:
     query = Query(
         request=describe_request(resp.request, initiated_at),
         response=describe_response(resp),
+        _previous_query=previous_query,
     )
     if query_type is not None:
         query.query_type = query_type
@@ -618,10 +624,9 @@ def query_and_describe(
         Query object describing the request and response/result.
     """
     if client is None:
-        utm_session = False
-        client = requests.session()
+        _client = requests.session()
     else:
-        utm_session = True
+        _client = client
     req_kwargs = kwargs.copy()
     if "timeout" not in req_kwargs:
         req_kwargs["timeout"] = (
@@ -655,6 +660,36 @@ def query_and_describe(
             .strip()
         )
 
+    previous_query = None
+
+    def build_failing_query(t0) -> Query:
+        _req_kwargs = copy.deepcopy(req_kwargs)
+
+        if isinstance(_client, infrastructure.UTMClientSession):
+            _req_kwargs = _client.adjust_request_kwargs(_req_kwargs)
+        del _req_kwargs["timeout"]
+
+        req = requests.Request(verb, url, **_req_kwargs)
+        prepped_req = _client.prepare_request(req)
+
+        t1 = datetime.datetime.now(datetime.UTC)
+
+        query = Query(
+            request=describe_request(prepped_req, t0),
+            response=ResponseDescription(
+                code=None,
+                failure="\n".join(failures),
+                elapsed_s=(t1 - t0).total_seconds(),
+                reported=StringBasedDateTime(t1),
+            ),
+            participant_id=participant_id,
+            _previous_query=previous_query,
+        )
+        if query_type is not None:
+            query.query_type = query_type
+
+        return query
+
     # Note: retry logic could be attached to the `client` Session by `mount`ing an HTTPAdapter with custom
     # `max_retries`, however we do not want to mutate the provided Session.  Instead, retry only on errors we explicitly
     # consider retryable.
@@ -664,13 +699,14 @@ def query_and_describe(
             if is_netloc_fake:
                 failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} was not attempted because network location of {url} was identified as fake: {settings.fake_netlocs}\nAt {get_location()}"
                 failures.append(failure_message)
-                break
+                return build_failing_query(t0)
 
             return describe_query(
-                client.request(verb, url, **req_kwargs),
+                _client.request(verb, url, **req_kwargs),
                 t0,
                 query_type=query_type,
                 participant_id=participant_id,
+                previous_query=previous_query,
             )
         except (requests.Timeout, urllib3.exceptions.ReadTimeoutError) as e:
             failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with timeout {type(e).__name__}: {str(e)}\nAt {get_location()}"
@@ -689,38 +725,28 @@ def query_and_describe(
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
+
             if not retryable:
-                break
+                return build_failing_query(t0)
+
         except requests.RequestException as e:
             failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with non-retryable RequestException {type(e).__name__}: {str(e)}\nAt {get_location()}"
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
 
-            break
-        finally:
-            t1 = datetime.datetime.now(datetime.UTC)
+            return build_failing_query(t0)
 
-    # Reconstruct request similar to the one in the query (which is not
-    # accessible at this point)
-    if utm_session:
-        req_kwargs = client.adjust_request_kwargs(req_kwargs)
-    del req_kwargs["timeout"]
-    req = requests.Request(verb, url, **req_kwargs)
-    prepped_req = client.prepare_request(req)
-    result = Query(
-        request=describe_request(prepped_req, t0),
-        response=ResponseDescription(
-            code=None,
-            failure="\n".join(failures),
-            elapsed_s=(t1 - t0).total_seconds(),
-            reported=StringBasedDateTime(t1),
-        ),
-        participant_id=participant_id,
-    )
-    if query_type is not None:
-        result.query_type = query_type
-    return result
+        previous_query = build_failing_query(
+            t0
+        )  # If we arrive there, query failled, but is retriable
+
+    if not previous_query:
+        raise Exception(
+            "Internal error: arrived after retried without any expected failled query"
+        )
+
+    return previous_query  # Previous query is the last failled one
 
 
 def describe_flask_query(

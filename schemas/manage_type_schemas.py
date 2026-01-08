@@ -4,7 +4,7 @@ import inspect
 import json
 import os
 import sys
-from typing import get_args, get_origin, get_type_hints
+from typing import Self, get_args, get_origin, get_type_hints
 
 import implicitdict
 import implicitdict.jsonschema
@@ -78,7 +78,8 @@ def _make_type_schemas(
                 pending_types.extend(get_args(pending_type))
             else:
                 if (
-                    issubclass(pending_type, ImplicitDict)
+                    pending_type != Self
+                    and issubclass(pending_type, ImplicitDict)
                     and fullname(pending_type) not in already_checked
                 ):
                     _make_type_schemas(

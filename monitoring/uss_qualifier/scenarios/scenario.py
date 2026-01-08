@@ -423,6 +423,11 @@ class GenericTestScenario(ABC):
 
     def record_query(self, query: fetch.Query) -> None:
         self._expect_phase({ScenarioPhase.RunningTestStep, ScenarioPhase.CleaningUp})
+
+        # If the query has a previous one, record it first
+        if "_previous_query" in query and query._previous_query:
+            self.record_query(query._previous_query)
+
         if "queries" not in self._step_report:
             self._step_report.queries = []
         for existing_query in self._step_report.queries:
