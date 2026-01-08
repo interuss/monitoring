@@ -12,6 +12,8 @@ from loguru import logger
 from monitoring.monitorlib.dicts import get_element_or_default, remove_elements
 from monitoring.monitorlib.versioning import get_code_version, get_commit_hash
 from monitoring.uss_qualifier.configurations.configuration import (
+    ExecutionConfiguration,
+    TestConfiguration,
     USSQualifierConfiguration,
     USSQualifierConfigurationV1,
 )
@@ -79,6 +81,12 @@ def parseArgs() -> argparse.Namespace:
         help="When true, do not run a test configuration which would produce unredacted sensitive information in its artifacts",
     )
 
+    parser.add_argument(
+        "--filter",
+        default=None,
+        help="Regex used to filter specific test scenario. If not set, all scenario are ran. Mainly useful to quickly debug a specifc scenario.",
+    )
+
     return parser.parse_args()
 
 
@@ -101,17 +109,19 @@ class TestDefinitionDescription(ImplicitDict):
             baseline = whole_config
             environment = []
         self.baseline_signature = compute_baseline_signature(
-            self.codebase_version,
-            self.commit_hash,
-            compute_signature(baseline),
+            self.codebase_version, self.commit_hash, compute_signature(baseline)
         )
         self.environment_signature = compute_signature(environment)
 
 
 def execute_test_run(
-    whole_config: USSQualifierConfiguration, description: TestDefinitionDescription
+    whole_config: USSQualifierConfiguration,
+    description: TestDefinitionDescription,
 ):
     config = whole_config.v1.test_run
+
+    if not config:
+        raise Exception("Config not found")
 
     logger.info("Instantiating resources")
     stop_when_not_created = (
@@ -172,6 +182,7 @@ def run_config(
     output_path: str | None,
     runtime_metadata: dict | None,
     disallow_unredacted: bool,
+    scenarios_filter: str | None,
 ):
     config_src = load_dict_with_references(config_name)
 
@@ -186,6 +197,18 @@ def run_config(
             )
 
     whole_config = ImplicitDict.parse(config_src, USSQualifierConfiguration)
+
+    if scenarios_filter:
+        # We set the scenario filter in the test run execution's object
+        # As parameters are optionnals, we ensure they do exists first
+
+        if not whole_config.v1:
+            whole_config.v1 = USSQualifierConfigurationV1()
+        if not whole_config.v1.test_run:
+            whole_config.v1.test_run = TestConfiguration()
+        if not whole_config.v1.test_run.execution:
+            whole_config.v1.test_run.execution = ExecutionConfiguration()
+        whole_config.v1.test_run.execution._scenarios_filter = scenarios_filter
 
     if config_output:
         logger.info("Writing flattened configuration to {}", config_output)
@@ -257,6 +280,7 @@ def main() -> int:
         raise ValueError("--runtime-metadata must specify a JSON dictionary")
 
     disallow_unredacted = args.disallow_unredacted
+    scenarios_filter = args.filter
 
     config_names = str(args.config).split(",")
 
@@ -285,6 +309,7 @@ def main() -> int:
             output_path,
             runtime_metadata,
             disallow_unredacted,
+            scenarios_filter,
         )
         if exit_code != os.EX_OK:
             return exit_code
